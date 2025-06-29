@@ -5,7 +5,7 @@ git add -A
 
 git commit -m "Auto-backup %DATE% %TIME%"
 
-git push https://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@github.com/JAAFAR1996/ai-teddy-bear-.git main
+git push https://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@github.com/JAAFAR1996/ai-teddy-bear-.git main
 git status
 git log -1
 pause
