@@ -1,0 +1,1002 @@
+{
+  "child_safety_dashboard": {
+    "dashboard": {
+      "id": null,
+      "title": "AI Teddy Bear - Child Safety Monitoring",
+      "tags": ["ai-teddy", "child-safety", "critical"],
+      "style": "dark",
+      "timezone": "browser",
+      "editable": true,
+      "hideControls": false,
+      "graphTooltip": 1,
+      "time": {
+        "from": "now-24h",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"],
+        "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+      },
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": 1,
+          "title": "🔴 Critical Safety Violations (Real-time)",
+          "type": "stat",
+          "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+          "targets": [
+            {
+              "expr": "sum(increase(child_safety_violations_total{severity=\"critical\"}[5m]))",
+              "legendFormat": "Critical Violations (5m)",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 1},
+                  {"color": "red", "value": 3}
+                ]
+              },
+              "unit": "short",
+              "min": 0
+            }
+          },
+          "options": {
+            "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+            "orientation": "auto",
+            "textMode": "auto",
+            "colorMode": "background",
+            "graphMode": "area",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 2,
+          "title": "🚨 Emergency Response Time",
+          "type": "gauge",
+          "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, rate(emergency_protocol_activations_duration_bucket[5m])) / 1000",
+              "legendFormat": "P95 Response Time (seconds)",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 10},
+                  {"color": "red", "value": 15}
+                ]
+              },
+              "unit": "s",
+              "min": 0,
+              "max": 30
+            }
+          },
+          "options": {
+            "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+            "orientation": "auto",
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          }
+        },
+        {
+          "id": 3,
+          "title": "📊 COPPA Compliance Score",
+          "type": "stat",
+          "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+          "targets": [
+            {
+              "expr": "coppa_compliance_score * 100",
+              "legendFormat": "COPPA Compliance %",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 95},
+                  {"color": "green", "value": 99}
+                ]
+              },
+              "unit": "percent",
+              "min": 90,
+              "max": 100
+            }
+          },
+          "options": {
+            "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+            "orientation": "auto",
+            "textMode": "auto",
+            "colorMode": "background",
+            "graphMode": "area",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 4,
+          "title": "🛡️ Content Toxicity Distribution",
+          "type": "heatmap",
+          "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+          "targets": [
+            {
+              "expr": "increase(content_toxicity_score_bucket[5m])",
+              "legendFormat": "{{le}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "spectrum"},
+              "unit": "short"
+            }
+          },
+          "options": {
+            "calculate": false,
+            "yAxis": {"unit": "short", "min": 0, "max": 1},
+            "xAxis": {"show": true}
+          }
+        },
+        {
+          "id": 5,
+          "title": "📈 Safety Violations by Type (24h)",
+          "type": "piechart",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "targets": [
+            {
+              "expr": "sum by (violation_type) (increase(child_safety_violations_total[24h]))",
+              "legendFormat": "{{violation_type}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "short"
+            }
+          },
+          "options": {
+            "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+            "pieType": "pie",
+            "tooltip": {"mode": "single"},
+            "legend": {"displayMode": "table", "placement": "right", "values": ["value", "percent"]},
+            "displayLabels": ["name", "percent"]
+          }
+        },
+        {
+          "id": 6,
+          "title": "🎯 Age Appropriateness Score Trends",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, rate(age_appropriateness_score_bucket[5m]))",
+              "legendFormat": "P50 Age Appropriateness",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.95, rate(age_appropriateness_score_bucket[5m]))",
+              "legendFormat": "P95 Age Appropriateness",
+              "refId": "B"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "short",
+              "min": 0,
+              "max": 1,
+              "thresholds": {
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 0.6},
+                  {"color": "green", "value": 0.8}
+                ]
+              }
+            }
+          },
+          "options": {
+            "tooltip": {"mode": "multi"},
+            "legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}
+          }
+        },
+        {
+          "id": 7,
+          "title": "👨‍👩‍👧‍👦 Parental Control Events",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+          "targets": [
+            {
+              "expr": "rate(parental_control_events_total{action=\"approved\"}[5m]) * 60",
+              "legendFormat": "Approved Controls/min",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(parental_control_events_total{action=\"denied\"}[5m]) * 60",
+              "legendFormat": "Denied Controls/min",
+              "refId": "B"
+            },
+            {
+              "expr": "rate(parental_control_events_total{action=\"override\"}[5m]) * 60",
+              "legendFormat": "Override Attempts/min",
+              "refId": "C"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "short",
+              "min": 0
+            }
+          },
+          "options": {
+            "tooltip": {"mode": "multi"},
+            "legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}
+          }
+        },
+        {
+          "id": 8,
+          "title": "😊 Child Sentiment Analysis",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+          "targets": [
+            {
+              "expr": "avg_over_time(conversation_sentiment[5m])",
+              "legendFormat": "Average Sentiment",
+              "refId": "A"
+            },
+            {
+              "expr": "avg by (age_group) (conversation_sentiment)",
+              "legendFormat": "{{age_group}} Sentiment",
+              "refId": "B"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "short",
+              "min": -1,
+              "max": 1,
+              "thresholds": {
+                "steps": [
+                  {"color": "red", "value": -1},
+                  {"color": "yellow", "value": -0.2},
+                  {"color": "green", "value": 0.2}
+                ]
+              }
+            }
+          },
+          "options": {
+            "tooltip": {"mode": "multi"},
+            "legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}
+          }
+        }
+      ]
+    }
+  },
+  "ai_performance_dashboard": {
+    "dashboard": {
+      "id": null,
+      "title": "AI Teddy Bear - AI Performance Monitoring",
+      "tags": ["ai-teddy", "ai-performance", "monitoring"],
+      "style": "dark",
+      "timezone": "browser",
+      "editable": true,
+      "hideControls": false,
+      "graphTooltip": 1,
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"],
+        "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+      },
+      "refresh": "1m",
+      "panels": [
+        {
+          "id": 11,
+          "title": "⚡ AI Response Time Distribution",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, rate(ai_response_time_ms_bucket[5m]))",
+              "legendFormat": "P50 Response Time",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.95, rate(ai_response_time_ms_bucket[5m]))",
+              "legendFormat": "P95 Response Time",
+              "refId": "B"
+            },
+            {
+              "expr": "histogram_quantile(0.99, rate(ai_response_time_ms_bucket[5m]))",
+              "legendFormat": "P99 Response Time",
+              "refId": "C"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "ms",
+              "min": 0,
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 500},
+                  {"color": "red", "value": 1000}
+                ]
+              }
+            }
+          },
+          "options": {
+            "tooltip": {"mode": "multi"},
+            "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom"}
+          }
+        },
+        {
+          "id": 12,
+          "title": "🎯 AI Accuracy Score",
+          "type": "gauge",
+          "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, rate(ai_accuracy_score_bucket[10m]))",
+              "legendFormat": "Current Accuracy",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 0.8},
+                  {"color": "green", "value": 0.9}
+                ]
+              },
+              "unit": "percentunit",
+              "min": 0.7,
+              "max": 1.0
+            }
+          },
+          "options": {
+            "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+            "orientation": "auto",
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          }
+        },
+        {
+          "id": 13,
+          "title": "🚨 AI Hallucination Rate",
+          "type": "stat",
+          "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+          "targets": [
+            {
+              "expr": "ai_hallucination_rate * 100",
+              "legendFormat": "Hallucination Rate %",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 1},
+                  {"color": "red", "value": 2}
+                ]
+              },
+              "unit": "percent",
+              "min": 0,
+              "max": 5
+            }
+          },
+          "options": {
+            "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+            "orientation": "auto",
+            "textMode": "auto",
+            "colorMode": "background",
+            "graphMode": "area",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 14,
+          "title": "💰 Token Usage and Cost Tracking",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "targets": [
+            {
+              "expr": "rate(ai_tokens_used_total[5m]) * 60",
+              "legendFormat": "Tokens/min",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(ai_inference_cost_total[5m]) * 3600",
+              "legendFormat": "Cost/hour ($)",
+              "refId": "B"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "short",
+              "min": 0
+            },
+            "overrides": [
+              {
+                "matcher": {"id": "byName", "options": "Cost/hour ($)"},
+                "properties": [
+                  {"id": "unit", "value": "currencyUSD"},
+                  {"id": "custom.axisPlacement", "value": "right"}
+                ]
+              }
+            ]
+          },
+          "options": {
+            "tooltip": {"mode": "multi"},
+            "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom"}
+          }
+        },
+        {
+          "id": 15,
+          "title": "📝 Context Window Utilization",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, rate(ai_context_utilization_bucket[5m]))",
+              "legendFormat": "P50 Context Usage",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.95, rate(ai_context_utilization_bucket[5m]))",
+              "legendFormat": "P95 Context Usage",
+              "refId": "B"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1,
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 0.8},
+                  {"color": "red", "value": 0.95}
+                ]
+              }
+            }
+          },
+          "options": {
+            "tooltip": {"mode": "multi"},
+            "legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}
+          }
+        },
+        {
+          "id": 16,
+          "title": "⭐ Response Quality by Age Group",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, rate(ai_response_quality_score_bucket{age_group=\"3-5\"}[10m]))",
+              "legendFormat": "Age 3-5 Quality",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.95, rate(ai_response_quality_score_bucket{age_group=\"6-8\"}[10m]))",
+              "legendFormat": "Age 6-8 Quality",
+              "refId": "B"
+            },
+            {
+              "expr": "histogram_quantile(0.95, rate(ai_response_quality_score_bucket{age_group=\"9-12\"}[10m]))",
+              "legendFormat": "Age 9-12 Quality",
+              "refId": "C"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "short",
+              "min": 0,
+              "max": 1,
+              "thresholds": {
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 0.7},
+                  {"color": "green", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "options": {
+            "tooltip": {"mode": "multi"},
+            "legend": {"calcs": ["mean"], "displayMode": "table", "placement": "bottom"}
+          }
+        },
+        {
+          "id": 17,
+          "title": "🔧 Model Temperature Effectiveness",
+          "type": "bargauge",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+          "targets": [
+            {
+              "expr": "avg by (temperature_range) (ai_temperature_effectiveness)",
+              "legendFormat": "{{temperature_range}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "continuous-GrYlRd"},
+              "unit": "short",
+              "min": 0,
+              "max": 1,
+              "thresholds": {
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 0.6},
+                  {"color": "green", "value": 0.8}
+                ]
+              }
+            }
+          },
+          "options": {
+            "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        }
+      ]
+    }
+  },
+  "system_reliability_dashboard": {
+    "dashboard": {
+      "id": null,
+      "title": "AI Teddy Bear - System Reliability & SLOs",
+      "tags": ["ai-teddy", "reliability", "slo", "infrastructure"],
+      "style": "dark",
+      "timezone": "browser",
+      "editable": true,
+      "hideControls": false,
+      "graphTooltip": 1,
+      "time": {
+        "from": "now-24h",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"],
+        "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+      },
+      "refresh": "30s",
+      "panels": [
+        {
+          "id": 21,
+          "title": "🎯 Service Availability (SLO: 99.9%)",
+          "type": "stat",
+          "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+          "targets": [
+            {
+              "expr": "avg_over_time(up[24h]) * 100",
+              "legendFormat": "24h Availability",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 99.5},
+                  {"color": "green", "value": 99.9}
+                ]
+              },
+              "unit": "percent",
+              "min": 99,
+              "max": 100
+            }
+          },
+          "options": {
+            "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+            "orientation": "auto",
+            "textMode": "auto",
+            "colorMode": "background",
+            "graphMode": "area",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 22,
+          "title": "❌ Error Rate (SLO: <0.1%)",
+          "type": "stat",
+          "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+          "targets": [
+            {
+              "expr": "rate(requests_total{status_code!~\"2..\"}[24h]) / rate(requests_total[24h]) * 100",
+              "legendFormat": "24h Error Rate",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 0.05},
+                  {"color": "red", "value": 0.1}
+                ]
+              },
+              "unit": "percent",
+              "min": 0,
+              "max": 1
+            }
+          },
+          "options": {
+            "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+            "orientation": "auto",
+            "textMode": "auto",
+            "colorMode": "background",
+            "graphMode": "area",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 23,
+          "title": "⚡ Request Latency P95 (SLO: <200ms)",
+          "type": "gauge",
+          "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, rate(request_latency_ms_bucket[5m]))",
+              "legendFormat": "P95 Latency",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 150},
+                  {"color": "red", "value": 200}
+                ]
+              },
+              "unit": "ms",
+              "min": 0,
+              "max": 500
+            }
+          },
+          "options": {
+            "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+            "orientation": "auto",
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          }
+        },
+        {
+          "id": 24,
+          "title": "💾 Database Health (SLO: >99%)",
+          "type": "gauge",
+          "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+          "targets": [
+            {
+              "expr": "database_connection_health * 100",
+              "legendFormat": "DB Health %",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 95},
+                  {"color": "green", "value": 99}
+                ]
+              },
+              "unit": "percent",
+              "min": 90,
+              "max": 100
+            }
+          },
+          "options": {
+            "reduceOptions": {"values": false, "calcs": ["lastNotNull"], "fields": ""},
+            "orientation": "auto",
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          }
+        },
+        {
+          "id": 25,
+          "title": "📊 Error Budget Consumption",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 6},
+          "targets": [
+            {
+              "expr": "(1 - avg_over_time(up[30d])) / (1 - 0.999) * 100",
+              "legendFormat": "Availability Error Budget Used %",
+              "refId": "A"
+            },
+            {
+              "expr": "(rate(requests_total{status_code!~\"2..\"}[30d]) / rate(requests_total[30d])) / 0.001 * 100",
+              "legendFormat": "Error Rate Budget Used %",
+              "refId": "B"
+            },
+            {
+              "expr": "(increase(child_safety_violations_total[30d]) / 1000) / (30 * 24 * 60 * 0.1 / 1000) * 100",
+              "legendFormat": "Child Safety Budget Used %",
+              "refId": "C"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 50},
+                  {"color": "orange", "value": 80},
+                  {"color": "red", "value": 95}
+                ]
+              }
+            }
+          },
+          "options": {
+            "tooltip": {"mode": "multi"},
+            "legend": {"calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom"}
+          }
+        },
+        {
+          "id": 26,
+          "title": "🔄 Throughput by Service",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+          "targets": [
+            {
+              "expr": "rate(requests_total{service=\"ai-service\"}[5m]) * 60",
+              "legendFormat": "AI Service (req/min)",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(requests_total{service=\"audio-service\"}[5m]) * 60",
+              "legendFormat": "Audio Service (req/min)",
+              "refId": "B"
+            },
+            {
+              "expr": "rate(requests_total{service=\"child-service\"}[5m]) * 60",
+              "legendFormat": "Child Service (req/min)",
+              "refId": "C"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "short",
+              "min": 0
+            }
+          },
+          "options": {
+            "tooltip": {"mode": "multi"},
+            "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom"}
+          }
+        },
+        {
+          "id": 27,
+          "title": "🖥️ Resource Utilization",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+          "targets": [
+            {
+              "expr": "cpu_utilization * 100",
+              "legendFormat": "CPU Usage %",
+              "refId": "A"
+            },
+            {
+              "expr": "(memory_usage_bytes / (1024^3))",
+              "legendFormat": "Memory Usage (GB)",
+              "refId": "B"
+            },
+            {
+              "expr": "cache_hit_rate * 100",
+              "legendFormat": "Cache Hit Rate %",
+              "refId": "C"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "short",
+              "min": 0
+            },
+            "overrides": [
+              {
+                "matcher": {"id": "byName", "options": "Memory Usage (GB)"},
+                "properties": [
+                  {"id": "unit", "value": "bytes"},
+                  {"id": "custom.axisPlacement", "value": "right"}
+                ]
+              }
+            ]
+          },
+          "options": {
+            "tooltip": {"mode": "multi"},
+            "legend": {"calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom"}
+          }
+        }
+      ]
+    }
+  },
+  "error_budget_dashboard": {
+    "dashboard": {
+      "id": null,
+      "title": "AI Teddy Bear - Error Budget Management",
+      "tags": ["ai-teddy", "error-budget", "slo", "sre"],
+      "style": "dark",
+      "timezone": "browser",
+      "editable": true,
+      "hideControls": false,
+      "graphTooltip": 1,
+      "time": {
+        "from": "now-30d",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": ["5m", "15m", "30m", "1h", "2h", "1d"],
+        "time_options": ["1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+      },
+      "refresh": "5m",
+      "panels": [
+        {
+          "id": 31,
+          "title": "📊 Error Budget Summary Table",
+          "type": "table",
+          "gridPos": {"h": 10, "w": 24, "x": 0, "y": 0},
+          "targets": [
+            {
+              "expr": "vector(99.9)",
+              "legendFormat": "Service Availability",
+              "refId": "A",
+              "format": "table",
+              "instant": true
+            },
+            {
+              "expr": "vector(0.1)",
+              "legendFormat": "Error Rate",
+              "refId": "B",
+              "format": "table",
+              "instant": true
+            },
+            {
+              "expr": "vector(0.1)",
+              "legendFormat": "Child Safety Violations",
+              "refId": "C",
+              "format": "table",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 50},
+                  {"color": "red", "value": 80}
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "options": {
+            "showHeader": true,
+            "sortBy": [{"displayName": "Budget Consumed %", "desc": true}]
+          },
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "columns": [
+                  {"text": "SLO Name", "value": "__name__"},
+                  {"text": "Target", "value": "Value"},
+                  {"text": "Current", "value": "Current"},
+                  {"text": "Budget Consumed %", "value": "Budget"},
+                  {"text": "Remaining Budget", "value": "Remaining"},
+                  {"text": "Time to Exhaustion", "value": "Time"}
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": 32,
+          "title": "🔥 SLO Burn Rate Alerts",
+          "type": "alertlist",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 10},
+          "targets": [],
+          "options": {
+            "showOptions": "current",
+            "maxItems": 20,
+            "sortOrder": 1,
+            "dashboardAlerts": false,
+            "alertName": "",
+            "dashboardTitle": "",
+            "folderId": null,
+            "tags": ["burn-rate", "slo"]
+          }
+        },
+        {
+          "id": 33,
+          "title": "📈 Historical Error Budget Trends",
+          "type": "timeseries",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 10},
+          "targets": [
+            {
+              "expr": "(1 - avg_over_time(up[7d])) / (1 - 0.999) * 100",
+              "legendFormat": "Availability Budget (7d)",
+              "refId": "A"
+            },
+            {
+              "expr": "(rate(requests_total{status_code!~\"2..\"}[7d]) / rate(requests_total[7d])) / 0.001 * 100",
+              "legendFormat": "Error Rate Budget (7d)",
+              "refId": "B"
+            },
+            {
+              "expr": "(increase(child_safety_violations_total[7d]) / 1000) / (7 * 24 * 60 * 0.1 / 1000) * 100",
+              "legendFormat": "Child Safety Budget (7d)",
+              "refId": "C"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 50},
+                  {"color": "orange", "value": 80},
+                  {"color": "red", "value": 100}
+                ]
+              }
+            }
+          },
+          "options": {
+            "tooltip": {"mode": "multi"},
+            "legend": {"calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom"}
+          }
+        }
+      ]
+    }
+  }
+} 

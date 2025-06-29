@@ -1,0 +1,213 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: ai-teddy-bear-production
+  annotations:
+    config.kubernetes.io/local-config: "true"
+
+namespace: ai-teddy-production
+
+# Common Labels
+commonLabels:
+  app.kubernetes.io/instance: ai-teddy-bear
+  app.kubernetes.io/part-of: teddy-bear-system
+  environment: production
+  managed-by: argocd
+  project: ai-teddy-bear
+
+# Common Annotations
+commonAnnotations:
+  deployment.kubernetes.io/environment: production
+  argocd.argoproj.io/tracking-id: ai-teddy-bear
+  kubernetes.io/managed-by: argocd
+
+# Name Prefix
+namePrefix: teddy-bear-prod-
+
+# Resources to include
+resources:
+  # Core Services
+  - ../base/namespace.yaml
+  - ../base/configmap.yaml
+  - ../base/secrets.yaml
+  
+  # Microservices
+  - ../base/child-service
+  - ../base/ai-service
+  - ../base/monitoring-service
+  - ../base/safety-service
+  - ../base/graphql-federation
+  
+  # Infrastructure
+  - ../base/redis
+  - ../base/postgresql
+  - ../base/nginx
+  
+  # Monitoring Stack
+  - ../base/prometheus
+  - ../base/grafana
+  - ../base/jaeger
+  
+  # Security
+  - ../base/network-policies
+  - ../base/pod-security-policies
+  - ../base/service-mesh
+
+# Patches for Production
+patchesStrategicMerge:
+  # Production-specific patches
+  - patches/production-replicas.yaml
+  - patches/production-resources.yaml
+  - patches/production-security.yaml
+  - patches/production-monitoring.yaml
+  - patches/production-networking.yaml
+
+# JSON Patches
+patchesJson6902:
+  # Child Service Production Patches
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: child-service
+    path: patches/child-service-production.yaml
+  
+  # AI Service Production Patches
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: ai-service
+    path: patches/ai-service-production.yaml
+  
+  # GraphQL Federation Production Patches
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: graphql-federation
+    path: patches/graphql-federation-production.yaml
+
+# Images with specific tags for production
+images:
+  - name: ai-teddy-bear/child-service
+    newTag: v1.2.3
+  - name: ai-teddy-bear/ai-service
+    newTag: v2.1.0
+  - name: ai-teddy-bear/monitoring-service
+    newTag: v1.1.0
+  - name: ai-teddy-bear/safety-service
+    newTag: v1.0.5
+  - name: ai-teddy-bear/graphql-federation
+    newTag: v1.1.0
+  - name: redis
+    newTag: 7.0-alpine
+  - name: postgres
+    newTag: 15-alpine
+  - name: nginx
+    newTag: 1.25-alpine
+
+# Configuration Map Generator
+configMapGenerator:
+  - name: production-config
+    literals:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - METRICS_ENABLED=true
+      - TRACING_ENABLED=true
+      - SECURITY_ENABLED=true
+      - ENCRYPTION_ENABLED=true
+      - MONITORING_ENABLED=true
+      - AUTOSCALING_ENABLED=true
+    files:
+      - configs/production.env
+      - configs/database.conf
+      - configs/redis.conf
+      - configs/nginx.conf
+
+# Secret Generator
+secretGenerator:
+  - name: production-secrets
+    type: Opaque
+    literals:
+      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    files:
+      - secrets/tls.crt
+      - secrets/tls.key
+      - secrets/ca.crt
+
+# Replica Count Modifier
+replicas:
+  - name: child-service
+    count: 3
+  - name: ai-service
+    count: 5
+  - name: monitoring-service
+    count: 2
+  - name: safety-service
+    count: 3
+  - name: graphql-federation
+    count: 3
+  - name: redis
+    count: 6
+  - name: postgresql
+    count: 3
+
+# Generators
+generators:
+  - generators/production-monitoring.yaml
+  - generators/production-alerts.yaml
+  - generators/production-dashboards.yaml
+
+# Transformers
+transformers:
+  - transformers/production-security.yaml
+  - transformers/production-networking.yaml
+  - transformers/production-resources.yaml
+
+# Validation
+openapi:
+  schema: schema/kubernetes-openapi.yaml
+
+# Vars for substitution
+vars:
+  - name: ENVIRONMENT
+    objref:
+      kind: ConfigMap
+      name: production-config
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.ENVIRONMENT
+  
+  - name: NAMESPACE
+    objref:
+      kind: Namespace
+      name: ai-teddy-production
+      apiVersion: v1
+    fieldref:
+      fieldpath: metadata.name
+  
+  - name: DATABASE_HOST
+    objref:
+      kind: Service
+      name: postgresql
+      apiVersion: v1
+    fieldref:
+      fieldpath: metadata.name
+  
+  - name: REDIS_HOST
+    objref:
+      kind: Service
+      name: redis
+      apiVersion: v1
+    fieldref:
+      fieldpath: metadata.name
+
+# Build Metadata
+buildMetadata:
+  - originAnnotations
+  - transformerAnnotations
+  - managedByLabel 

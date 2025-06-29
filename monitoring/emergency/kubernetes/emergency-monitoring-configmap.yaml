@@ -1,0 +1,497 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: emergency-monitoring-config
+  namespace: teddy-security
+  labels:
+    app: emergency-monitoring
+    component: security
+    environment: production
+    version: v2025.1
+  annotations:
+    security.teddy.ai/level: "critical"
+    monitoring.teddy.ai/emergency: "true"
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 5s          # مراقبة مكثفة كل 5 ثوان
+      evaluation_interval: 5s     # تقييم فوري للقواعد
+      scrape_timeout: 10s
+      external_labels:
+        monitor: 'teddy-emergency-security'
+        cluster: 'production'
+        datacenter: 'main'
+        security_level: 'critical'
+    
+    # قواعد التنبيه الأمنية الطارئة
+    rule_files:
+      - '/etc/prometheus/rules/security_critical.yml'
+      - '/etc/prometheus/rules/api_security.yml'
+      - '/etc/prometheus/rules/data_breach.yml'
+      - '/etc/prometheus/rules/ddos_protection.yml'
+      - '/etc/prometheus/rules/authentication.yml'
+    
+    # تكوين Alertmanager للطوارئ
+    alerting:
+      alertmanagers:
+        - static_configs:
+          - targets: ['alertmanager-emergency:9093']
+          scheme: https
+          tls_config:
+            ca_file: '/etc/ssl/certs/ca.pem'
+            cert_file: '/etc/ssl/certs/client.pem'
+            key_file: '/etc/ssl/private/client-key.pem'
+          bearer_token_file: '/var/run/secrets/alertmanager/token'
+    
+    # تكوينات المراقبة الأمنية المكثفة
+    scrape_configs:
+      # مراقبة API الأمنية - أولوية عالية
+      - job_name: 'api-security-critical'
+        metrics_path: '/security/metrics'
+        scrape_interval: 3s
+        scrape_timeout: 10s
+        static_configs:
+          - targets: ['api-gateway:8000', 'api-auth:8001', 'api-main:8002']
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: 'api-security-exporter:9115'
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            regex: 'teddy_security_.*'
+            action: keep
+        basic_auth:
+          username: 'security_monitor'
+          password_file: '/var/run/secrets/monitoring/password'
+      
+      # مراقبة قاعدة البيانات للأنشطة المشبوهة
+      - job_name: 'database-security'
+        metrics_path: '/db/security-metrics'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['postgres-security:9187', 'redis-security:9121']
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            regex: 'pg_stat_activity_suspicious|redis_blocked_clients'
+            action: keep
+      
+      # مراقبة WAF وجدار الحماية
+      - job_name: 'waf-security'
+        metrics_path: '/waf/metrics'
+        scrape_interval: 2s  # مراقبة فائقة السرعة للهجمات
+        static_configs:
+          - targets: ['nginx-waf:9113', 'cloudflare-exporter:9199']
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            regex: 'nginx_waf_.*|cloudflare_security_.*'
+            action: keep
+      
+      # مراقبة الشبكة والترافيك المشبوه
+      - job_name: 'network-security'
+        metrics_path: '/network/security'
+        scrape_interval: 3s
+        static_configs:
+          - targets: ['network-monitor:9100', 'snort-exporter:9166']
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            regex: 'network_intrusion_.*|packet_suspicious_.*'
+            action: keep
+      
+      # مراقبة النظام والحاويات للاختراق
+      - job_name: 'system-security'
+        metrics_path: '/metrics'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['node-security:9100', 'container-security:8080']
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            regex: 'node_security_.*|container_rootkit_.*'
+            action: keep
+      
+      # مراقبة تطبيق Teddy Bear للسلوك الأمني
+      - job_name: 'teddy-app-security'
+        metrics_path: '/app/security-metrics'
+        scrape_interval: 2s
+        static_configs:
+          - targets: ['teddy-main:8000', 'teddy-ai:8001', 'teddy-audio:8002']
+        scrape_configs:
+          - source_labels: [__meta_kubernetes_service_name]
+            target_label: service
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            regex: 'teddy_security_violations|teddy_api_key_usage|teddy_child_data_access'
+            action: keep
+      
+      # مراقبة خدمات السحابة (AWS/Azure/GCP)
+      - job_name: 'cloud-security'
+        metrics_path: '/cloud/security'
+        scrape_interval: 10s
+        static_configs:
+          - targets: ['aws-security:9100', 'azure-security:9101']
+        oauth2:
+          client_id: 'teddy-security-monitor'
+          client_secret_file: '/var/run/secrets/cloud/client-secret'
+          token_url: 'https://security.teddycloud.ai/oauth/token'
+      
+      # Prometheus self-monitoring للأمان
+      - job_name: 'prometheus-security'
+        static_configs:
+          - targets: ['localhost:9090']
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            regex: 'prometheus_tsdb_.*|prometheus_config_.*'
+            action: keep
+
+  alertmanager.yml: |
+    global:
+      smtp_smarthost: 'smtp.teddysecurity.ai:587'
+      smtp_from: 'emergency-alerts@teddysecurity.ai'
+      smtp_auth_username: 'emergency-bot'
+      smtp_auth_password_file: '/var/run/secrets/email/password'
+      smtp_require_tls: true
+      resolve_timeout: 30s  # حل سريع للتنبيهات
+      slack_api_url_file: '/var/run/secrets/slack/webhook-url'
+      pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+      opsgenie_api_url: 'https://api.opsgenie.com/'
+      victorops_api_url: 'https://alert.victorops.com/integrations/generic/20131114/alert/'
+    
+    # شجرة توجيه التنبيهات الطارئة
+    route:
+      receiver: 'emergency-default'
+      group_by: ['severity', 'category', 'source', 'instance']
+      group_wait: 0s      # لا انتظار للحالات الطارئة
+      group_interval: 10s
+      repeat_interval: 30s # إعادة إرسال كل 30 ثانية للحالات الحرجة
+      
+      routes:
+        # API Key تم اختراقها - إجراء فوري
+        - match_re:
+            alertname: '(APIKeyCompromised|APIKeyLeaked|UnauthorizedAPIAccess)'
+          receiver: 'api-security-emergency'
+          group_wait: 0s
+          repeat_interval: 15s
+          continue: true
+        
+        # هجوم DDoS - دفاع فوري
+        - match_re:
+            alertname: '(DDoSAttackDetected|MassiveTrafficSpike|SuspiciousTrafficPattern)'
+          receiver: 'ddos-defense-team'
+          group_wait: 0s
+          repeat_interval: 30s
+          continue: true
+        
+        # تسريب بيانات الأطفال - أولوية قصوى
+        - match_re:
+            alertname: '(ChildDataBreach|PersonalDataExfiltration|UnauthorizedDataAccess)'
+          receiver: 'child-data-protection'
+          group_wait: 0s
+          repeat_interval: 10s
+          continue: true
+        
+        # اختراق النظام - عزل فوري
+        - match_re:
+            alertname: '(SystemCompromised|RootkitDetected|MalwareDetected)'
+          receiver: 'system-compromise-team'
+          group_wait: 0s
+          repeat_interval: 20s
+        
+        # هجمات قاعدة البيانات
+        - match_re:
+            alertname: '(SQLInjectionAttempt|DatabaseIntrusion|SuspiciousQuery)'
+          receiver: 'database-security-team'
+          group_wait: 5s
+          repeat_interval: 60s
+    
+    receivers:
+      # الاستجابة الافتراضية للطوارئ
+      - name: 'emergency-default'
+        webhook_configs:
+          - url: 'https://emergency-response.teddysecurity.ai/webhook/general'
+            send_resolved: true
+            http_config:
+              bearer_token_file: '/var/run/secrets/webhooks/token'
+              tls_config:
+                insecure_skip_verify: false
+            title: '🚨 Teddy Security Emergency Alert'
+            text: |
+              Emergency Alert Details:
+              {{ range .Alerts }}
+              - Alert: {{ .Labels.alertname }}
+              - Severity: {{ .Labels.severity }}
+              - Instance: {{ .Labels.instance }}
+              - Description: {{ .Annotations.description }}
+              {{ end }}
+      
+      # فريق أمان API المختص
+      - name: 'api-security-emergency'
+        pagerduty_configs:
+          - routing_key_file: '/var/run/secrets/pagerduty/api-security-key'
+            description: 'API Security Breach - Immediate Action Required'
+            severity: 'critical'
+            component: 'api-gateway'
+            group: 'security'
+        
+        slack_configs:
+          - channel: '#api-security-emergency'
+            username: 'TeddySecurityBot'
+            icon_emoji: ':rotating_light:'
+            title: '🔥 API SECURITY BREACH'
+            text: |
+              CRITICAL: API Security Incident
+              {{ range .Alerts }}
+              🚨 {{ .Annotations.summary }}
+              📍 Component: {{ .Labels.component }}
+              ⚠️ Action: {{ .Annotations.remediation }}
+              {{ end }}
+        
+        email_configs:
+          - to: 'api-security@teddysecurity.ai'
+            subject: '🚨 CRITICAL: API Security Breach'
+            headers:
+              X-Priority: '1'
+              X-MC-Important: 'true'
+            body: |
+              IMMEDIATE ACTION REQUIRED
+              
+              API Security breach detected and requires immediate intervention:
+              {{ range .Alerts }}
+              
+              Alert: {{ .Labels.alertname }}
+              Severity: {{ .Labels.severity }}
+              Component: {{ .Labels.component }}
+              Instance: {{ .Labels.instance }}
+              
+              Description: {{ .Annotations.description }}
+              Impact: {{ .Annotations.impact }}
+              Remediation Steps: {{ .Annotations.remediation }}
+              
+              Time: {{ .StartsAt }}
+              {{ end }}
+      
+      # فريق الدفاع ضد DDoS
+      - name: 'ddos-defense-team'
+        opsgenie_configs:
+          - api_key_file: '/var/run/secrets/opsgenie/api-key'
+            message: 'DDoS Attack Detected - Emergency Response Required'
+            description: |
+              {{ range .Alerts }}
+              DDoS Attack Details:
+              - Source: {{ .Labels.source_ip }}
+              - Target: {{ .Labels.target }}
+              - Magnitude: {{ .Labels.attack_magnitude }}
+              {{ end }}
+            priority: 'P1'
+            tags: ['ddos', 'attack', 'emergency']
+        
+        webhook_configs:
+          - url: 'https://ddos-defense.teddysecurity.ai/webhook/activate'
+            send_resolved: true
+            http_config:
+              bearer_token_file: '/var/run/secrets/ddos/defense-token'
+      
+      # حماية بيانات الأطفال - أولوية قصوى
+      - name: 'child-data-protection'
+        email_configs:
+          - to: 'legal@teddysecurity.ai,compliance@teddysecurity.ai,ceo@teddysecurity.ai'
+            subject: '🚨 CHILD DATA BREACH - LEGAL ACTION REQUIRED'
+            headers:
+              X-Priority: '1'
+              X-MC-Important: 'true'
+              Importance: 'High'
+            body: |
+              URGENT: CHILD DATA PROTECTION BREACH
+              
+              A potential breach involving children's personal data has been detected.
+              Immediate legal and compliance action is required.
+              
+              {{ range .Alerts }}
+              Breach Details:
+              - Type: {{ .Labels.breach_type }}
+              - Affected Records: {{ .Labels.affected_records }}
+              - Data Categories: {{ .Labels.data_categories }}
+              
+              Legal Requirements:
+              - Report to authorities within 72 hours
+              - Notify affected families
+              - Document incident for compliance
+              - Implement containment measures
+              {{ end }}
+        
+        victorops_configs:
+          - api_key_file: '/var/run/secrets/victorops/api-key'
+            routing_key: 'child-data-protection'
+            message_type: 'CRITICAL'
+            entity_display_name: 'Child Data Protection Alert'
+            monitoring_tool: 'Teddy Security Monitor'
+
+  security-rules.yml: |
+    groups:
+      - name: api_security_critical
+        interval: 5s
+        rules:
+          # تسريب مفاتيح API
+          - alert: APIKeyCompromised
+            expr: rate(teddy_api_key_invalid_usage[1m]) > 10
+            for: 0s
+            labels:
+              severity: critical
+              category: api_security
+              component: api-gateway
+            annotations:
+              summary: "API Key potentially compromised"
+              description: "High rate of invalid API key usage detected"
+              impact: "Unauthorized access to system APIs"
+              remediation: "1. Rotate all API keys immediately 2. Block suspicious IPs 3. Audit access logs"
+              dashboard: "https://grafana.teddysecurity.ai/d/api-security"
+          
+          # وصول غير مصرح به لـ API
+          - alert: UnauthorizedAPIAccess
+            expr: rate(teddy_api_unauthorized_requests[2m]) > 5
+            for: 10s
+            labels:
+              severity: critical
+              category: api_security
+              component: api-gateway
+            annotations:
+              summary: "Unauthorized API access attempts"
+              description: "Multiple unauthorized API access attempts detected"
+              impact: "Potential system breach"
+              remediation: "Block source IPs and review authentication mechanisms"
+          
+          # استخدام مفرط لـ API
+          - alert: APIRateLimitBreach
+            expr: rate(teddy_api_requests[1m]) > 1000
+            for: 30s
+            labels:
+              severity: warning
+              category: api_security
+              component: rate-limiter
+            annotations:
+              summary: "API rate limit exceeded"
+              description: "Unusual high API usage detected"
+              impact: "Potential DDoS or abuse"
+              remediation: "Implement stricter rate limiting"
+      
+      - name: ddos_protection
+        interval: 3s
+        rules:
+          # هجوم DDoS
+          - alert: DDoSAttackDetected
+            expr: rate(nginx_http_requests_total[1m]) > 10000
+            for: 15s
+            labels:
+              severity: critical
+              category: ddos_attack
+              component: nginx-waf
+            annotations:
+              summary: "DDoS attack in progress"
+              description: "Massive traffic spike detected"
+              impact: "Service availability at risk"
+              remediation: "Activate DDoS protection and block attacking IPs"
+          
+          # ترافيك مشبوه
+          - alert: SuspiciousTrafficPattern
+            expr: rate(nginx_http_requests_total{status=~"4..|5.."}[2m]) > 100
+            for: 20s
+            labels:
+              severity: warning
+              category: ddos_attack
+              component: nginx-waf
+            annotations:
+              summary: "Suspicious traffic pattern detected"
+              description: "High error rate indicating potential attack"
+      
+      - name: data_breach_protection
+        interval: 2s
+        rules:
+          # تسريب بيانات الأطفال
+          - alert: ChildDataBreach
+            expr: rate(teddy_child_data_unauthorized_access[1m]) > 0
+            for: 0s
+            labels:
+              severity: critical
+              category: data_breach
+              component: data-protection
+              data_type: child_personal_info
+            annotations:
+              summary: "Unauthorized access to child personal data"
+              description: "Critical breach of child data protection"
+              impact: "Legal and compliance violations"
+              remediation: "1. Isolate affected systems 2. Notify legal team 3. Report to authorities"
+          
+          # محاولة تصدير البيانات
+          - alert: PersonalDataExfiltration
+            expr: rate(teddy_data_export_suspicious[5m]) > 0
+            for: 10s
+            labels:
+              severity: critical
+              category: data_breach
+              component: data-loss-prevention
+            annotations:
+              summary: "Suspicious data export activity"
+              description: "Potential data exfiltration detected"
+              impact: "Personal data may be compromised"
+              remediation: "Block data exports and investigate source"
+      
+      - name: system_compromise
+        interval: 5s
+        rules:
+          # اختراق النظام
+          - alert: SystemCompromised
+            expr: node_security_rootkit_detected > 0
+            for: 0s
+            labels:
+              severity: critical
+              category: system_compromise
+              component: host-security
+            annotations:
+              summary: "System compromise detected"
+              description: "Rootkit or malware detected on system"
+              impact: "Complete system security breach"
+              remediation: "Isolate system immediately and initiate incident response"
+          
+          # عملية مشبوهة
+          - alert: SuspiciousProcessActivity
+            expr: rate(node_security_suspicious_process[1m]) > 0
+            for: 30s
+            labels:
+              severity: warning
+              category: system_compromise
+              component: process-monitor
+            annotations:
+              summary: "Suspicious process activity"
+              description: "Unusual process behavior detected"
+      
+      - name: database_security
+        interval: 5s
+        rules:
+          # محاولة SQL Injection
+          - alert: SQLInjectionAttempt
+            expr: rate(postgresql_security_injection_attempts[1m]) > 0
+            for: 15s
+            labels:
+              severity: critical
+              category: injection_attack
+              component: postgresql
+            annotations:
+              summary: "SQL injection attack detected"
+              description: "Malicious SQL injection attempt"
+              impact: "Database security breach risk"
+              remediation: "Block attacking IPs and review query patterns"
+          
+          # نشاط مشبوه في قاعدة البيانات
+          - alert: DatabaseIntrusion
+            expr: rate(postgresql_security_unauthorized_queries[2m]) > 5
+            for: 20s
+            labels:
+              severity: warning
+              category: database_intrusion
+              component: postgresql
+            annotations:
+              summary: "Suspicious database activity"
+              description: "Unauthorized or unusual database queries" 

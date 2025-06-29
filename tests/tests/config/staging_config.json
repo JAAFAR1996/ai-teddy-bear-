@@ -1,0 +1,37 @@
+{
+    "app_name": "AI Teddy Bear (Staging)",
+    "version": "0.1.0",
+    "deployment_environment": "staging",
+    "logging": {
+        "level": "DEBUG",
+        "file_path": "logs/staging_ai_teddy_bear.log"
+    },
+    "llm": {
+        "provider": "openai",
+        "model": "gpt-3.5-turbo",
+        "safety_level": 2
+    },
+    "voice": {
+        "provider": "elevenlabs",
+        "default_voice": "experimental"
+    },
+    "privacy": {
+        "coppa_compliance": true,
+        "gdpr_compliance": true,
+        "data_retention_days": 60
+    },
+    "age_restrictions": {
+        "min_age": 4,
+        "max_age": 12
+    },
+    "monitoring": {
+        "enabled": true,
+        "metrics_endpoint": "/staging-metrics",
+        "alert_email": "staging-admin@teddyai.com"
+    },
+    "feature_flags": {
+        "new_voice_model": true,
+        "experimental_llm_features": true,
+        "beta_safety_filters": true
+    }
+}

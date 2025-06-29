@@ -1,0 +1,514 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sli-slo-definitions
+  namespace: ai-teddy-observability
+  labels:
+    app: observability-stack
+    component: sli-slo
+data:
+  sli-definitions.yaml: |
+    # Service Level Indicators (SLIs) for AI Teddy Bear System
+    # =======================================================
+    
+    slis:
+      # Child Safety SLIs - Critical for child protection
+      child_safety:
+        safety_violation_rate:
+          description: "Rate of child safety violations per 1000 interactions"
+          query: "rate(child_safety_violations_total[5m]) * 1000"
+          unit: "violations_per_1000_interactions"
+          target_availability_sli: false
+          
+        content_toxicity_rate:
+          description: "Rate of toxic content detection"
+          query: "histogram_quantile(0.95, rate(content_toxicity_score_bucket[5m]))"
+          unit: "toxicity_score"
+          target_availability_sli: false
+          
+        emergency_response_time:
+          description: "95th percentile emergency protocol response time"
+          query: "histogram_quantile(0.95, rate(emergency_protocol_activations_duration_bucket[5m]))"
+          unit: "milliseconds"
+          target_availability_sli: false
+          
+        age_appropriateness_compliance:
+          description: "Rate of age-appropriate responses"
+          query: "rate(age_appropriateness_score_bucket{le=\"0.8\"}[5m]) / rate(age_appropriateness_score_count[5m])"
+          unit: "ratio"
+          target_availability_sli: false
+          
+        coppa_compliance_rate:
+          description: "COPPA compliance score"
+          query: "coppa_compliance_score"
+          unit: "ratio"
+          target_availability_sli: false
+      
+      # AI Performance SLIs
+      ai_performance:
+        ai_response_time:
+          description: "95th percentile AI response time"
+          query: "histogram_quantile(0.95, rate(ai_response_time_ms_bucket[5m]))"
+          unit: "milliseconds"
+          target_availability_sli: false
+          
+        ai_accuracy:
+          description: "AI model accuracy rate"
+          query: "rate(ai_accuracy_score_bucket{le=\"0.9\"}[5m]) / rate(ai_accuracy_score_count[5m])"
+          unit: "ratio"
+          target_availability_sli: false
+          
+        ai_quality_score:
+          description: "AI response quality score"
+          query: "histogram_quantile(0.95, rate(ai_response_quality_score_bucket[5m]))"
+          unit: "quality_score"
+          target_availability_sli: false
+          
+        token_efficiency:
+          description: "Token usage efficiency"
+          query: "rate(ai_tokens_used_total[5m]) / rate(requests_total[5m])"
+          unit: "tokens_per_request"
+          target_availability_sli: false
+          
+        hallucination_rate:
+          description: "AI hallucination detection rate"
+          query: "ai_hallucination_rate"
+          unit: "ratio"
+          target_availability_sli: false
+      
+      # System Reliability SLIs
+      system_reliability:
+        service_availability:
+          description: "Service availability rate"
+          query: "avg_over_time(up[5m])"
+          unit: "ratio"
+          target_availability_sli: true
+          
+        error_rate:
+          description: "Overall error rate"
+          query: "rate(requests_total{status_code!~\"2..\"}[5m]) / rate(requests_total[5m])"
+          unit: "ratio"
+          target_availability_sli: true
+          
+        request_latency:
+          description: "95th percentile request latency"
+          query: "histogram_quantile(0.95, rate(request_latency_ms_bucket[5m]))"
+          unit: "milliseconds"
+          target_availability_sli: false
+          
+        throughput:
+          description: "Request throughput"
+          query: "rate(requests_total[5m])"
+          unit: "requests_per_second"
+          target_availability_sli: false
+          
+        database_health:
+          description: "Database connection health"
+          query: "database_connection_health"
+          unit: "ratio"
+          target_availability_sli: false
+      
+      # Child Experience SLIs
+      child_experience:
+        engagement_quality:
+          description: "Child engagement duration quality"
+          query: "histogram_quantile(0.75, rate(child_engagement_duration_seconds_bucket[5m]))"
+          unit: "seconds"
+          target_availability_sli: false
+          
+        conversation_sentiment:
+          description: "Average conversation sentiment"
+          query: "avg_over_time(conversation_sentiment[5m])"
+          unit: "sentiment_score"
+          target_availability_sli: false
+          
+        interaction_success_rate:
+          description: "Successful interaction rate"
+          query: "rate(child_engagement_duration_seconds_count{success=\"true\"}[5m]) / rate(child_engagement_duration_seconds_count[5m])"
+          unit: "ratio"
+          target_availability_sli: true
+          
+        parental_satisfaction:
+          description: "Parental control effectiveness"
+          query: "rate(parental_control_events_total{action=\"approved\"}[5m]) / rate(parental_control_events_total[5m])"
+          unit: "ratio"
+          target_availability_sli: false
+
+  slo-objectives.yaml: |
+    # Service Level Objectives (SLOs) for AI Teddy Bear System
+    # ========================================================
+    
+    slos:
+      # Critical Child Safety SLOs
+      child_safety_slos:
+        - name: "child_safety_violation_rate"
+          description: "Child safety violation rate must be below 0.1 per 1000 interactions"
+          sli_name: "child_safety.safety_violation_rate"
+          target: 0.1
+          comparison: "lt"  # less than
+          time_window: "30d"
+          error_budget_policy: "strict"
+          alerting:
+            page_immediately: true
+            severity: "critical"
+            
+        - name: "emergency_response_time"
+          description: "Emergency protocol response time must be under 15 seconds"
+          sli_name: "child_safety.emergency_response_time"
+          target: 15000  # 15 seconds in ms
+          comparison: "lt"
+          time_window: "7d"
+          error_budget_policy: "strict"
+          alerting:
+            page_immediately: true
+            severity: "critical"
+            
+        - name: "content_toxicity_rate"
+          description: "Content toxicity score must be below 0.1"
+          sli_name: "child_safety.content_toxicity_rate"
+          target: 0.1
+          comparison: "lt"
+          time_window: "24h"
+          error_budget_policy: "balanced"
+          alerting:
+            page_immediately: true
+            severity: "high"
+            
+        - name: "age_appropriateness_compliance"
+          description: "Age appropriateness compliance must be above 95%"
+          sli_name: "child_safety.age_appropriateness_compliance"
+          target: 0.95
+          comparison: "gt"  # greater than
+          time_window: "7d"
+          error_budget_policy: "balanced"
+          alerting:
+            page_immediately: false
+            severity: "medium"
+            
+        - name: "coppa_compliance"
+          description: "COPPA compliance must be above 99%"
+          sli_name: "child_safety.coppa_compliance_rate"
+          target: 0.99
+          comparison: "gt"
+          time_window: "30d"
+          error_budget_policy: "strict"
+          alerting:
+            page_immediately: true
+            severity: "critical"
+      
+      # AI Performance SLOs
+      ai_performance_slos:
+        - name: "ai_response_time"
+          description: "AI response time must be under 500ms for 95% of requests"
+          sli_name: "ai_performance.ai_response_time"
+          target: 500
+          comparison: "lt"
+          time_window: "24h"
+          error_budget_policy: "balanced"
+          alerting:
+            page_immediately: false
+            severity: "medium"
+            
+        - name: "ai_accuracy"
+          description: "AI accuracy must be above 90%"
+          sli_name: "ai_performance.ai_accuracy"
+          target: 0.90
+          comparison: "gt"
+          time_window: "7d"
+          error_budget_policy: "balanced"
+          alerting:
+            page_immediately: false
+            severity: "medium"
+            
+        - name: "ai_quality_score"
+          description: "AI quality score must be above 0.85"
+          sli_name: "ai_performance.ai_quality_score"
+          target: 0.85
+          comparison: "gt"
+          time_window: "24h"
+          error_budget_policy: "relaxed"
+          alerting:
+            page_immediately: false
+            severity: "low"
+            
+        - name: "hallucination_rate"
+          description: "AI hallucination rate must be below 1%"
+          sli_name: "ai_performance.hallucination_rate"
+          target: 0.01
+          comparison: "lt"
+          time_window: "7d"
+          error_budget_policy: "strict"
+          alerting:
+            page_immediately: true
+            severity: "high"
+      
+      # System Reliability SLOs
+      system_reliability_slos:
+        - name: "service_availability"
+          description: "Service availability must be above 99.9%"
+          sli_name: "system_reliability.service_availability"
+          target: 0.999
+          comparison: "gt"
+          time_window: "30d"
+          error_budget_policy: "strict"
+          alerting:
+            page_immediately: true
+            severity: "critical"
+            
+        - name: "error_rate"
+          description: "Error rate must be below 0.1%"
+          sli_name: "system_reliability.error_rate"
+          target: 0.001
+          comparison: "lt"
+          time_window: "24h"
+          error_budget_policy: "balanced"
+          alerting:
+            page_immediately: false
+            severity: "medium"
+            
+        - name: "request_latency"
+          description: "Request latency must be under 200ms for 95% of requests"
+          sli_name: "system_reliability.request_latency"
+          target: 200
+          comparison: "lt"
+          time_window: "1h"
+          error_budget_policy: "balanced"
+          alerting:
+            page_immediately: false
+            severity: "medium"
+            
+        - name: "database_health"
+          description: "Database health must be above 99%"
+          sli_name: "system_reliability.database_health"
+          target: 0.99
+          comparison: "gt"
+          time_window: "24h"
+          error_budget_policy: "balanced"
+          alerting:
+            page_immediately: true
+            severity: "high"
+      
+      # Child Experience SLOs
+      child_experience_slos:
+        - name: "engagement_quality"
+          description: "Child engagement should last at least 30 seconds on average"
+          sli_name: "child_experience.engagement_quality"
+          target: 30
+          comparison: "gt"
+          time_window: "7d"
+          error_budget_policy: "relaxed"
+          alerting:
+            page_immediately: false
+            severity: "low"
+            
+        - name: "conversation_sentiment"
+          description: "Conversation sentiment should be positive (>0.1)"
+          sli_name: "child_experience.conversation_sentiment"
+          target: 0.1
+          comparison: "gt"
+          time_window: "24h"
+          error_budget_policy: "relaxed"
+          alerting:
+            page_immediately: false
+            severity: "low"
+            
+        - name: "interaction_success_rate"
+          description: "Interaction success rate must be above 95%"
+          sli_name: "child_experience.interaction_success_rate"
+          target: 0.95
+          comparison: "gt"
+          time_window: "24h"
+          error_budget_policy: "balanced"
+          alerting:
+            page_immediately: false
+            severity: "medium"
+
+  error-budget-policies.yaml: |
+    # Error Budget Policies
+    # ====================
+    
+    error_budget_policies:
+      strict:
+        description: "For critical child safety and system availability SLOs"
+        burn_rate_alerts:
+          - alert_window: "1h"
+            burn_rate_threshold: 14.4  # Burns 2 weeks of budget in 1 hour
+            long_window: "1h"
+            short_window: "5m"
+            severity: "critical"
+            
+          - alert_window: "6h"
+            burn_rate_threshold: 6  # Burns 2 weeks of budget in 6 hours
+            long_window: "6h"
+            short_window: "30m"
+            severity: "critical"
+            
+          - alert_window: "24h"
+            burn_rate_threshold: 3  # Burns 2 weeks of budget in 1 day
+            long_window: "24h"
+            short_window: "2h"
+            severity: "high"
+            
+          - alert_window: "72h"
+            burn_rate_threshold: 1  # Burns 2 weeks of budget in 3 days
+            long_window: "72h"
+            short_window: "6h"
+            severity: "medium"
+        
+      balanced:
+        description: "For important performance and quality SLOs"
+        burn_rate_alerts:
+          - alert_window: "1h"
+            burn_rate_threshold: 14.4
+            long_window: "1h"
+            short_window: "5m"
+            severity: "high"
+            
+          - alert_window: "6h"
+            burn_rate_threshold: 6
+            long_window: "6h"
+            short_window: "30m"
+            severity: "medium"
+            
+          - alert_window: "24h"
+            burn_rate_threshold: 3
+            long_window: "24h"
+            short_window: "2h"
+            severity: "medium"
+            
+          - alert_window: "72h"
+            burn_rate_threshold: 1
+            long_window: "72h"
+            short_window: "6h"
+            severity: "low"
+        
+      relaxed:
+        description: "For nice-to-have experience SLOs"
+        burn_rate_alerts:
+          - alert_window: "6h"
+            burn_rate_threshold: 6
+            long_window: "6h"
+            short_window: "30m"
+            severity: "medium"
+            
+          - alert_window: "24h"
+            burn_rate_threshold: 3
+            long_window: "24h"
+            short_window: "2h"
+            severity: "low"
+            
+          - alert_window: "72h"
+            burn_rate_threshold: 1
+            long_window: "72h"
+            short_window: "6h"
+            severity: "low"
+
+  slo-dashboard-config.yaml: |
+    # SLO Dashboard Configuration
+    # ==========================
+    
+    dashboards:
+      child_safety_slo_dashboard:
+        title: "Child Safety SLOs"
+        description: "Critical child safety service level objectives"
+        refresh_interval: "30s"
+        time_range: "24h"
+        panels:
+          - title: "Safety Violation Rate"
+            type: "stat"
+            target: "child_safety_violation_rate"
+            thresholds:
+              - value: 0.05
+                color: "green"
+              - value: 0.08
+                color: "yellow"
+              - value: 0.1
+                color: "red"
+                
+          - title: "Emergency Response Time"
+            type: "gauge"
+            target: "emergency_response_time"
+            max: 30000
+            thresholds:
+              - value: 10000
+                color: "green"
+              - value: 15000
+                color: "yellow"
+              - value: 20000
+                color: "red"
+                
+          - title: "Content Toxicity Distribution"
+            type: "histogram"
+            target: "content_toxicity_rate"
+            
+          - title: "COPPA Compliance"
+            type: "stat"
+            target: "coppa_compliance"
+            format: "percent"
+            
+      ai_performance_slo_dashboard:
+        title: "AI Performance SLOs"
+        description: "AI model performance and quality objectives"
+        refresh_interval: "1m"
+        time_range: "6h"
+        panels:
+          - title: "AI Response Time P95"
+            type: "graph"
+            target: "ai_response_time"
+            
+          - title: "AI Accuracy Trend"
+            type: "graph"
+            target: "ai_accuracy"
+            
+          - title: "Response Quality Score"
+            type: "gauge"
+            target: "ai_quality_score"
+            
+          - title: "Hallucination Rate Alert"
+            type: "stat"
+            target: "hallucination_rate"
+            format: "percent"
+            
+      system_reliability_slo_dashboard:
+        title: "System Reliability SLOs"
+        description: "Infrastructure and service reliability objectives"
+        refresh_interval: "30s"
+        time_range: "24h"
+        panels:
+          - title: "Service Availability"
+            type: "stat"
+            target: "service_availability"
+            format: "percent"
+            
+          - title: "Error Rate"
+            type: "graph"
+            target: "error_rate"
+            
+          - title: "Request Latency P95"
+            type: "graph"
+            target: "request_latency"
+            
+          - title: "Database Health"
+            type: "gauge"
+            target: "database_health"
+            
+      error_budget_dashboard:
+        title: "Error Budget Management"
+        description: "Error budget consumption and burn rate monitoring"
+        refresh_interval: "1m"
+        time_range: "30d"
+        panels:
+          - title: "Error Budget Consumption by SLO"
+            type: "table"
+            columns:
+              - "SLO Name"
+              - "Budget Consumed (%)"
+              - "Remaining Budget"
+              - "Projected Exhaustion"
+              
+          - title: "Burn Rate Alert Status"
+            type: "alertlist"
+            
+          - title: "Historical Error Budget Trends"
+            type: "graph"
+            stacked: true 

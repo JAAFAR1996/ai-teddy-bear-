@@ -1,0 +1,357 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: observability-stack
+  namespace: ai-teddy-observability
+  labels:
+    app: observability-stack
+    version: "1.0.0"
+    component: configuration
+data:
+  # OpenTelemetry Collector Configuration
+  otel-collector-config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+            max_recv_msg_size: 4194304
+          http:
+            endpoint: 0.0.0.0:4318
+            cors:
+              allowed_origins: ["*"]
+      
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'ai-teddy-services'
+              kubernetes_sd_configs:
+                - role: pod
+                  namespaces:
+                    names: ["ai-teddy-production", "ai-teddy-staging"]
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                  action: keep
+                  regex: true
+                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+                  action: replace
+                  target_label: __metrics_path__
+                  regex: (.+)
+                - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+                  action: replace
+                  regex: ([^:]+)(?::\d+)?;(\d+)
+                  replacement: $1:$2
+                  target_label: __address__
+            
+            - job_name: 'child-safety-metrics'
+              static_configs:
+                - targets: ['child-safety-service:8000']
+              scrape_interval: 5s
+              metrics_path: /metrics
+              
+            - job_name: 'ai-performance-metrics'
+              static_configs:
+                - targets: ['ai-service:8001']
+              scrape_interval: 10s
+              
+      jaeger:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:14250
+          thrift_http:
+            endpoint: 0.0.0.0:14268
+      
+      fluentforward:
+        endpoint: 0.0.0.0:8006
+        
+      hostmetrics:
+        collection_interval: 10s
+        scrapers:
+          cpu:
+            metrics:
+              system.cpu.utilization:
+                enabled: true
+          memory:
+            metrics:
+              system.memory.utilization:
+                enabled: true
+          disk:
+            metrics:
+              system.disk.io:
+                enabled: true
+          network:
+            metrics:
+              system.network.io:
+                enabled: true
+    
+    processors:
+      batch:
+        timeout: 1s
+        send_batch_size: 1024
+        send_batch_max_size: 2048
+        
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 75
+        spike_limit_percentage: 30
+        
+      attributes:
+        actions:
+          # Child Safety Attributes
+          - key: child.safety.score
+            action: insert
+            from_attribute: safety_score
+          - key: child.age.group
+            action: insert
+            from_attribute: age_group
+          - key: ai.response.toxicity
+            action: insert
+            from_attribute: toxicity_level
+          - key: content.appropriateness
+            action: insert
+            from_attribute: content_appropriate
+          - key: parental.control.status
+            action: insert
+            from_attribute: parental_control_enabled
+          - key: emergency.protocol.active
+            action: insert
+            from_attribute: emergency_active
+          
+      resource:
+        attributes:
+          - key: service.name
+            from_attribute: service_name
+            action: insert
+          - key: service.version
+            from_attribute: service_version
+            action: insert
+          - key: deployment.environment
+            from_attribute: environment
+            action: insert
+            
+      filter:
+        metrics:
+          exclude:
+            match_type: regexp
+            metric_names:
+              - .*grpc_io.*
+        traces:
+          span:
+            - 'attributes["http.route"] == "/health"'
+            
+      probabilistic_sampler:
+        hash_seed: 22
+        sampling_percentage: 15.0
+        
+      tail_sampling:
+        decision_wait: 10s
+        num_traces: 100
+        expected_new_traces_per_sec: 10
+        policies:
+          - name: child_safety_traces
+            type: string_attribute
+            string_attribute:
+              key: child.safety.violation
+              values: ["true"]
+          - name: high_latency_traces
+            type: latency
+            latency:
+              threshold_ms: 500
+          - name: error_traces
+            type: status_code
+            status_code:
+              status_codes: ["ERROR"]
+    
+    exporters:
+      prometheus:
+        endpoint: "0.0.0.0:8889"
+        namespace: ai_teddy
+        const_labels:
+          environment: production
+          cluster: main
+          
+      jaeger:
+        endpoint: jaeger-collector.observability:14250
+        tls:
+          insecure: false
+          cert_file: /etc/ssl/certs/jaeger-cert.pem
+          key_file: /etc/ssl/private/jaeger-key.pem
+          ca_file: /etc/ssl/certs/ca.pem
+          
+      loki:
+        endpoint: http://loki.observability:3100/loki/api/v1/push
+        tenant_id: ai-teddy-production
+        headers:
+          X-Scope-OrgID: ai-teddy-production
+          
+      elasticsearch:
+        endpoints: ["https://elasticsearch.observability:9200"]
+        index: ai-teddy-logs
+        pipeline: child-safety-pipeline
+        tls:
+          insecure: false
+          cert_file: /etc/ssl/certs/elasticsearch-cert.pem
+          key_file: /etc/ssl/private/elasticsearch-key.pem
+          
+      kafka:
+        brokers: ["kafka.observability:9092"]
+        topic: ai-teddy-metrics
+        protocol_version: 2.6.0
+        
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+        
+      pprof:
+        endpoint: 0.0.0.0:1777
+        
+      zpages:
+        endpoint: 0.0.0.0:55679
+        
+    service:
+      extensions: [health_check, pprof, zpages]
+      pipelines:
+        traces:
+          receivers: [otlp, jaeger]
+          processors: [memory_limiter, attributes, resource, probabilistic_sampler, tail_sampling, batch]
+          exporters: [jaeger, elasticsearch]
+          
+        metrics:
+          receivers: [otlp, prometheus, hostmetrics]
+          processors: [memory_limiter, attributes, resource, filter, batch]
+          exporters: [prometheus, kafka]
+          
+        logs:
+          receivers: [otlp, fluentforward]
+          processors: [memory_limiter, attributes, resource, batch]
+          exporters: [loki, elasticsearch]
+      
+      telemetry:
+        logs:
+          level: "info"
+        metrics:
+          address: 0.0.0.0:8888
+          
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: ai-teddy-observability
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'ai-teddy-production'
+        replica: 'prometheus-0'
+    
+    rule_files:
+      - "/etc/prometheus/rules/*.yml"
+    
+    alerting:
+      alertmanagers:
+        - static_configs:
+          - targets: ['alertmanager.observability:9093']
+        - kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: ["ai-teddy-observability"]
+    
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+      
+      - job_name: 'ai-teddy-child-safety'
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names: ["ai-teddy-production"]
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape_child_safety]
+            action: keep
+            regex: true
+        scrape_interval: 5s
+        metrics_path: /child-safety-metrics
+        
+      - job_name: 'ai-teddy-performance'
+        kubernetes_sd_configs:
+          - role: service
+            namespaces:
+              names: ["ai-teddy-production"]
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape_performance]
+            action: keep
+            regex: true
+        scrape_interval: 10s
+        
+      - job_name: 'otel-collector'
+        static_configs:
+          - targets: ['otel-collector.observability:8889']
+        scrape_interval: 30s
+        
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+            action: replace
+            target_label: __scheme__
+            regex: (https?)
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: ai-teddy-observability
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus.observability:9090
+        isDefault: true
+        editable: true
+        
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki.observability:3100
+        editable: true
+        
+      - name: Jaeger
+        type: jaeger
+        access: proxy
+        url: http://jaeger-query.observability:16686
+        editable: true
+        
+      - name: Elasticsearch
+        type: elasticsearch
+        access: proxy
+        url: http://elasticsearch.observability:9200
+        database: ai-teddy-logs
+        editable: true 

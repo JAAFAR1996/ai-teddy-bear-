@@ -1,0 +1,32 @@
+{
+    "app_name": "AI Teddy Bear",
+    "version": "0.1.0",
+    "deployment_environment": "production",
+    "logging": {
+        "level": "WARNING",
+        "file_path": "/var/log/ai_teddy_bear/app.log"
+    },
+    "llm": {
+        "provider": "openai",
+        "model": "gpt-4",
+        "safety_level": 3
+    },
+    "voice": {
+        "provider": "elevenlabs",
+        "default_voice": "professional"
+    },
+    "privacy": {
+        "coppa_compliance": true,
+        "gdpr_compliance": true,
+        "data_retention_days": 90
+    },
+    "age_restrictions": {
+        "min_age": 4,
+        "max_age": 12
+    },
+    "monitoring": {
+        "enabled": true,
+        "metrics_endpoint": "/metrics",
+        "alert_email": "admin@teddyai.com"
+    }
+}

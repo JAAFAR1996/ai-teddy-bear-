@@ -1,0 +1,329 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: ai-teddy-cicd-pipeline
+  namespace: argocd
+  labels:
+    project: ai-teddy-bear
+    type: ci-cd-workflow
+spec:
+  entrypoint: main-pipeline
+  serviceAccountName: argocd-production-deployer
+  
+  templates:
+    - name: main-pipeline
+      dag:
+        tasks:
+          - name: code-quality-check
+            template: quality-gates
+          
+          - name: security-scan
+            template: security-scanner
+            dependencies: [code-quality-check]
+          
+          - name: build-and-test
+            template: build-test
+            dependencies: [security-scan]
+          
+          - name: deploy-staging
+            template: deploy-environment
+            arguments:
+              parameters:
+                - name: environment
+                  value: "staging"
+                - name: sync-policy
+                  value: "manual"
+            dependencies: [build-and-test]
+          
+          - name: integration-tests
+            template: run-integration-tests
+            dependencies: [deploy-staging]
+          
+          - name: deploy-production
+            template: deploy-environment
+            arguments:
+              parameters:
+                - name: environment
+                  value: "production"
+                - name: sync-policy
+                  value: "automated"
+            dependencies: [integration-tests]
+          
+          - name: post-deployment-tests
+            template: smoke-tests
+            dependencies: [deploy-production]
+
+    - name: quality-gates
+      container:
+        image: python:3.11-slim
+        command: [sh, -c]
+        args:
+          - |
+            echo "🔍 Running Code Quality Checks..."
+            
+            # Install dependencies
+            pip install pylint mypy black pytest-cov bandit safety
+            
+            # Code formatting check
+            echo "Checking code formatting..."
+            black --check --diff . || exit 1
+            
+            # Static type checking
+            echo "Running type checking..."
+            mypy src/ --ignore-missing-imports || exit 1
+            
+            # Linting
+            echo "Running linting..."
+            pylint src/ --fail-under=8.0 || exit 1
+            
+            # Security vulnerability scan
+            echo "Scanning for security vulnerabilities..."
+            bandit -r src/ -f json -o bandit-report.json
+            safety check --json --output safety-report.json
+            
+            echo "✅ All quality gates passed!"
+
+    - name: security-scanner
+      container:
+        image: securecodewarrior/docker-security-scanner:latest
+        command: [sh, -c]
+        args:
+          - |
+            echo "🛡️ Running Security Scans..."
+            
+            # Container security scan
+            echo "Scanning container images..."
+            trivy image --exit-code 1 --severity HIGH,CRITICAL ai-teddy-bear:latest
+            
+            # Infrastructure as Code scan
+            echo "Scanning IaC configurations..."
+            checkov -d deployments/k8s --framework kubernetes --check CKV_K8S_*
+            
+            # OWASP dependency check
+            echo "Checking dependencies for vulnerabilities..."
+            dependency-check --project "AI Teddy Bear" --scan ./requirements.txt --format JSON
+            
+            echo "✅ Security scans completed!"
+
+    - name: build-test
+      container:
+        image: docker:20.10-dind
+        command: [sh, -c]
+        args:
+          - |
+            echo "🏗️ Building and Testing Application..."
+            
+            # Start Docker daemon
+            dockerd-entrypoint.sh &
+            sleep 10
+            
+            # Build Docker images
+            echo "Building Docker images..."
+            docker build -t ai-teddy-bear/child-service:{{workflow.parameters.version}} -f child-service/Dockerfile .
+            docker build -t ai-teddy-bear/ai-service:{{workflow.parameters.version}} -f ai-service/Dockerfile .
+            docker build -t ai-teddy-bear/graphql-federation:{{workflow.parameters.version}} -f graphql-federation/Dockerfile .
+            
+            # Run unit tests
+            echo "Running unit tests..."
+            docker run --rm ai-teddy-bear/child-service:{{workflow.parameters.version}} pytest tests/unit/
+            
+            # Push to registry
+            echo "Pushing images to registry..."
+            docker push ai-teddy-bear/child-service:{{workflow.parameters.version}}
+            docker push ai-teddy-bear/ai-service:{{workflow.parameters.version}}
+            docker push ai-teddy-bear/graphql-federation:{{workflow.parameters.version}}
+            
+            echo "✅ Build and test completed!"
+
+    - name: deploy-environment
+      inputs:
+        parameters:
+          - name: environment
+          - name: sync-policy
+      container:
+        image: argoproj/argocd:v2.8.0
+        command: [sh, -c]
+        args:
+          - |
+            echo "🚀 Deploying to {{inputs.parameters.environment}}..."
+            
+            # Login to ArgoCD
+            argocd login argocd-server:443 --username admin --password $ARGOCD_PASSWORD --insecure
+            
+            # Update application with new image tags
+            argocd app set ai-teddy-bear-{{inputs.parameters.environment}} \
+              --parameter image.tag={{workflow.parameters.version}} \
+              --parameter global.environment={{inputs.parameters.environment}}
+            
+            # Set sync policy
+            if [ "{{inputs.parameters.sync-policy}}" = "automated" ]; then
+              argocd app set ai-teddy-bear-{{inputs.parameters.environment}} --sync-policy automated
+              argocd app sync ai-teddy-bear-{{inputs.parameters.environment}}
+            else
+              argocd app set ai-teddy-bear-{{inputs.parameters.environment}} --sync-policy manual
+              echo "Manual sync required for {{inputs.parameters.environment}}"
+            fi
+            
+            # Wait for sync completion
+            argocd app wait ai-teddy-bear-{{inputs.parameters.environment}} --timeout 600
+            
+            echo "✅ Deployment to {{inputs.parameters.environment}} completed!"
+
+    - name: run-integration-tests
+      container:
+        image: python:3.11-slim
+        command: [sh, -c]
+        args:
+          - |
+            echo "🧪 Running Integration Tests..."
+            
+            # Install test dependencies
+            pip install pytest pytest-asyncio httpx websockets
+            
+            # Wait for services to be ready
+            echo "Waiting for services to be ready..."
+            sleep 60
+            
+            # Run integration tests against staging
+            echo "Running integration tests..."
+            python -m pytest tests/integration/ \
+              --env=staging \
+              --base-url=https://staging-api.teddy-bear.ai \
+              --junitxml=integration-test-results.xml
+            
+            echo "✅ Integration tests passed!"
+
+    - name: smoke-tests
+      container:
+        image: curlimages/curl:latest
+        command: [sh, -c]
+        args:
+          - |
+            echo "💨 Running Smoke Tests..."
+            
+            # Health check
+            curl -f https://api.teddy-bear.ai/health || exit 1
+            
+            # GraphQL endpoint check
+            curl -f -X POST https://api.teddy-bear.ai/graphql \
+              -H "Content-Type: application/json" \
+              -d '{"query": "query { __schema { types { name } } }"}' || exit 1
+            
+            # Authentication endpoint check
+            curl -f https://api.teddy-bear.ai/auth/health || exit 1
+            
+            echo "✅ Smoke tests passed!"
+
+  onExit:
+    template: cleanup-and-notify
+  
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: rollback-workflow
+  namespace: argocd
+spec:
+  entrypoint: rollback-pipeline
+  
+  templates:
+    - name: rollback-pipeline
+      inputs:
+        parameters:
+          - name: application
+          - name: target-revision
+          - name: environment
+      dag:
+        tasks:
+          - name: validate-rollback
+            template: validate-target
+            arguments:
+              parameters:
+                - name: application
+                  value: "{{inputs.parameters.application}}"
+                - name: target-revision
+                  value: "{{inputs.parameters.target-revision}}"
+          
+          - name: perform-rollback
+            template: rollback-app
+            arguments:
+              parameters:
+                - name: application
+                  value: "{{inputs.parameters.application}}"
+                - name: target-revision
+                  value: "{{inputs.parameters.target-revision}}"
+            dependencies: [validate-rollback]
+          
+          - name: verify-rollback
+            template: verify-deployment
+            arguments:
+              parameters:
+                - name: application
+                  value: "{{inputs.parameters.application}}"
+                - name: environment
+                  value: "{{inputs.parameters.environment}}"
+            dependencies: [perform-rollback]
+
+    - name: validate-target
+      inputs:
+        parameters:
+          - name: application
+          - name: target-revision
+      container:
+        image: argoproj/argocd:v2.8.0
+        command: [sh, -c]
+        args:
+          - |
+            echo "🔍 Validating rollback target..."
+            
+            # Check if target revision exists
+            argocd app history {{inputs.parameters.application}} | grep {{inputs.parameters.target-revision}} || exit 1
+            
+            echo "✅ Target revision is valid"
+
+    - name: rollback-app
+      inputs:
+        parameters:
+          - name: application
+          - name: target-revision
+      container:
+        image: argoproj/argocd:v2.8.0
+        command: [sh, -c]
+        args:
+          - |
+            echo "⏪ Performing rollback..."
+            
+            # Perform rollback
+            argocd app rollback {{inputs.parameters.application}} {{inputs.parameters.target-revision}}
+            
+            # Wait for rollback completion
+            argocd app wait {{inputs.parameters.application}} --timeout 300
+            
+            echo "✅ Rollback completed"
+
+    - name: verify-deployment
+      inputs:
+        parameters:
+          - name: application
+          - name: environment
+      container:
+        image: curlimages/curl:latest
+        command: [sh, -c]
+        args:
+          - |
+            echo "✅ Verifying rollback..."
+            
+            # Wait for services to stabilize
+            sleep 30
+            
+            # Verify health endpoints
+            if [ "{{inputs.parameters.environment}}" = "production" ]; then
+              BASE_URL="https://api.teddy-bear.ai"
+            else
+              BASE_URL="https://{{inputs.parameters.environment}}-api.teddy-bear.ai"
+            fi
+            
+            curl -f $BASE_URL/health || exit 1
+            curl -f $BASE_URL/graphql || exit 1
+            
+            echo "✅ Rollback verification successful" 

@@ -1,0 +1,478 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alert-rules
+  namespace: ai-teddy-observability
+  labels:
+    app: observability-stack
+    component: alerting
+data:
+  child-safety-alerts.yml: |
+    groups:
+      - name: child.safety.critical
+        interval: 30s
+        rules:
+          # Critical Child Safety Violations
+          - alert: ChildSafetyViolationCritical
+            expr: increase(child_safety_violations_total{severity="critical"}[5m]) > 0
+            for: 0m
+            labels:
+              severity: critical
+              team: child-safety
+              runbook: "https://runbooks.ai-teddy.com/child-safety-violation"
+              page: "true"
+            annotations:
+              summary: "Critical child safety violation detected"
+              description: "{{ $value }} critical child safety violations detected in the last 5 minutes for violation type: {{ $labels.violation_type }}"
+              impact: "Immediate child safety concern requiring immediate attention"
+              action: "1. Alert child safety team immediately 2. Review conversation logs 3. Activate emergency protocols if needed"
+              
+          - alert: EmergencyProtocolSlowResponse
+            expr: histogram_quantile(0.95, rate(emergency_protocol_activations_duration_bucket[5m])) > 15000
+            for: 2m
+            labels:
+              severity: critical
+              team: emergency-response
+              runbook: "https://runbooks.ai-teddy.com/emergency-response"
+              page: "true"
+            annotations:
+              summary: "Emergency protocol response time too slow"
+              description: "Emergency protocol 95th percentile response time is {{ $value }}ms, exceeding 15s threshold"
+              impact: "Delayed emergency response could compromise child safety"
+              action: "1. Check emergency service health 2. Review system load 3. Scale emergency services if needed"
+              
+          - alert: ContentToxicityHigh
+            expr: histogram_quantile(0.95, rate(content_toxicity_score_bucket[5m])) > 0.3
+            for: 1m
+            labels:
+              severity: high
+              team: content-moderation
+              runbook: "https://runbooks.ai-teddy.com/content-toxicity"
+            annotations:
+              summary: "High content toxicity detected"
+              description: "95th percentile content toxicity score is {{ $value }}, exceeding 0.3 threshold"
+              impact: "Potentially inappropriate content being generated for children"
+              action: "1. Review AI model responses 2. Check content filters 3. Update toxicity detection models"
+              
+          - alert: COPPAComplianceViolation
+            expr: coppa_compliance_score < 0.99
+            for: 5m
+            labels:
+              severity: critical
+              team: compliance
+              runbook: "https://runbooks.ai-teddy.com/coppa-compliance"
+              page: "true"
+            annotations:
+              summary: "COPPA compliance below required threshold"
+              description: "COPPA compliance score is {{ $value }}, below required 99% threshold"
+              impact: "Legal compliance risk for children's privacy protection"
+              action: "1. Review data collection practices 2. Check parental consent flows 3. Audit child data handling"
+              
+          - alert: AgeInappropriateContentDetected
+            expr: rate(age_appropriateness_score_bucket{le="0.6"}[5m]) / rate(age_appropriateness_score_count[5m]) > 0.05
+            for: 2m
+            labels:
+              severity: high
+              team: content-moderation
+              runbook: "https://runbooks.ai-teddy.com/age-appropriate-content"
+            annotations:
+              summary: "Age-inappropriate content rate exceeded"
+              description: "{{ $value | humanizePercentage }} of content scored below 0.6 for age appropriateness"
+              impact: "Content not suitable for target age groups being delivered"
+              action: "1. Review AI model training data 2. Update age-appropriateness filters 3. Check content classification"
+              
+          - alert: ParentalControlBypassAttempt
+            expr: increase(child_safety_violations_total{violation_type="parental_bypass_attempt"}[10m]) > 3
+            for: 0m
+            labels:
+              severity: high
+              team: security
+              runbook: "https://runbooks.ai-teddy.com/parental-bypass"
+            annotations:
+              summary: "Multiple parental control bypass attempts detected"
+              description: "{{ $value }} parental control bypass attempts in last 10 minutes"
+              impact: "Potential security breach of parental controls"
+              action: "1. Review authentication logs 2. Check for suspicious patterns 3. Strengthen access controls"
+
+      - name: child.safety.monitoring
+        interval: 60s
+        rules:
+          # Safety Monitoring and Trends
+          - alert: SafetyViolationRateIncreasing
+            expr: rate(child_safety_violations_total[1h]) > rate(child_safety_violations_total[6h] offset 6h) * 2
+            for: 5m
+            labels:
+              severity: medium
+              team: child-safety
+              runbook: "https://runbooks.ai-teddy.com/safety-trends"
+            annotations:
+              summary: "Child safety violation rate increasing"
+              description: "Safety violation rate has doubled compared to 6 hours ago"
+              impact: "Potential degradation in safety systems"
+              action: "1. Analyze violation patterns 2. Review recent system changes 3. Check AI model performance"
+              
+          - alert: LowChildEngagementSentiment
+            expr: avg_over_time(conversation_sentiment[1h]) < -0.2
+            for: 10m
+            labels:
+              severity: medium
+              team: experience
+              runbook: "https://runbooks.ai-teddy.com/child-engagement"
+            annotations:
+              summary: "Child engagement sentiment very low"
+              description: "Average conversation sentiment is {{ $value }}, indicating negative child experience"
+              impact: "Poor child experience may indicate safety or quality issues"
+              action: "1. Review conversation logs 2. Check content quality 3. Analyze interaction patterns"
+
+  ai-performance-alerts.yml: |
+    groups:
+      - name: ai.performance.critical
+        interval: 30s
+        rules:
+          # AI Performance Critical Alerts
+          - alert: AIResponseTimeHigh
+            expr: histogram_quantile(0.95, rate(ai_response_time_ms_bucket[5m])) > 1000
+            for: 3m
+            labels:
+              severity: high
+              team: ai-platform
+              runbook: "https://runbooks.ai-teddy.com/ai-response-time"
+            annotations:
+              summary: "AI response time too high"
+              description: "AI 95th percentile response time is {{ $value }}ms, exceeding 1000ms threshold"
+              impact: "Slow AI responses affect child engagement and experience"
+              action: "1. Check AI service health 2. Review model inference time 3. Scale AI compute resources"
+              
+          - alert: AIHallucinationRateHigh
+            expr: ai_hallucination_rate > 0.02
+            for: 2m
+            labels:
+              severity: critical
+              team: ai-safety
+              runbook: "https://runbooks.ai-teddy.com/ai-hallucination"
+              page: "true"
+            annotations:
+              summary: "AI hallucination rate exceeds threshold"
+              description: "AI hallucination rate is {{ $value | humanizePercentage }}, exceeding 2% threshold"
+              impact: "AI generating false or inappropriate information for children"
+              action: "1. Review AI model outputs 2. Update safety guardrails 3. Consider model rollback"
+              
+          - alert: AIAccuracyLow
+            expr: rate(ai_accuracy_score_bucket{le="0.8"}[10m]) / rate(ai_accuracy_score_count[10m]) > 0.2
+            for: 5m
+            labels:
+              severity: high
+              team: ai-platform
+              runbook: "https://runbooks.ai-teddy.com/ai-accuracy"
+            annotations:
+              summary: "AI accuracy below acceptable threshold"
+              description: "{{ $value | humanizePercentage }} of AI responses have accuracy below 0.8"
+              impact: "Poor AI accuracy affects response quality for children"
+              action: "1. Review model performance 2. Check training data quality 3. Consider model retraining"
+              
+          - alert: AITokenUsageSpike
+            expr: rate(ai_tokens_used_total[5m]) > rate(ai_tokens_used_total[1h] offset 1h) * 3
+            for: 2m
+            labels:
+              severity: medium
+              team: ai-platform
+              runbook: "https://runbooks.ai-teddy.com/token-usage"
+            annotations:
+              summary: "AI token usage spike detected"
+              description: "Token usage rate has tripled compared to baseline"
+              impact: "Increased costs and potential service degradation"
+              action: "1. Check for unusual traffic patterns 2. Review context window usage 3. Monitor service costs"
+              
+          - alert: AIQualityScoreLow
+            expr: histogram_quantile(0.50, rate(ai_response_quality_score_bucket[10m])) < 0.7
+            for: 5m
+            labels:
+              severity: medium
+              team: ai-platform
+              runbook: "https://runbooks.ai-teddy.com/ai-quality"
+            annotations:
+              summary: "AI response quality degraded"
+              description: "Median AI response quality score is {{ $value }}, below 0.7 threshold"
+              impact: "Degraded response quality affects child experience"
+              action: "1. Review response evaluation metrics 2. Check model temperature settings 3. Analyze response patterns"
+
+  system-reliability-alerts.yml: |
+    groups:
+      - name: system.reliability.critical
+        interval: 30s
+        rules:
+          # System Reliability Critical Alerts
+          - alert: ServiceDown
+            expr: up == 0
+            for: 1m
+            labels:
+              severity: critical
+              team: sre
+              runbook: "https://runbooks.ai-teddy.com/service-down"
+              page: "true"
+            annotations:
+              summary: "Service {{ $labels.instance }} is down"
+              description: "Service {{ $labels.instance }} has been down for more than 1 minute"
+              impact: "Service unavailability affects child experience"
+              action: "1. Check service health 2. Review service logs 3. Restart service if needed"
+              
+          - alert: HighErrorRate
+            expr: rate(requests_total{status_code!~"2.."}[5m]) / rate(requests_total[5m]) > 0.01
+            for: 3m
+            labels:
+              severity: high
+              team: sre
+              runbook: "https://runbooks.ai-teddy.com/high-error-rate"
+            annotations:
+              summary: "High error rate detected"
+              description: "Error rate is {{ $value | humanizePercentage }}, exceeding 1% threshold"
+              impact: "Increased errors affect service reliability"
+              action: "1. Check application logs 2. Review recent deployments 3. Monitor system resources"
+              
+          - alert: HighLatency
+            expr: histogram_quantile(0.95, rate(request_latency_ms_bucket[5m])) > 500
+            for: 5m
+            labels:
+              severity: medium
+              team: sre
+              runbook: "https://runbooks.ai-teddy.com/high-latency"
+            annotations:
+              summary: "High request latency detected"
+              description: "95th percentile latency is {{ $value }}ms, exceeding 500ms threshold"
+              impact: "High latency affects user experience"
+              action: "1. Check system resources 2. Review database performance 3. Analyze slow queries"
+              
+          - alert: DatabaseConnectionIssue
+            expr: database_connection_health < 0.95
+            for: 2m
+            labels:
+              severity: high
+              team: database
+              runbook: "https://runbooks.ai-teddy.com/database-health"
+            annotations:
+              summary: "Database connection health degraded"
+              description: "Database connection health is {{ $value | humanizePercentage }}"
+              impact: "Database issues can cause service failures"
+              action: "1. Check database logs 2. Review connection pool 3. Monitor database performance"
+              
+          - alert: LowDiskSpace
+            expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+            for: 5m
+            labels:
+              severity: high
+              team: infrastructure
+              runbook: "https://runbooks.ai-teddy.com/disk-space"
+            annotations:
+              summary: "Low disk space on {{ $labels.instance }}"
+              description: "Disk space is {{ $value | humanizePercentage }} available"
+              impact: "Low disk space can cause service failures"
+              action: "1. Clean up logs 2. Archive old data 3. Scale storage if needed"
+              
+          - alert: HighMemoryUsage
+            expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.1
+            for: 5m
+            labels:
+              severity: medium
+              team: infrastructure
+              runbook: "https://runbooks.ai-teddy.com/memory-usage"
+            annotations:
+              summary: "High memory usage on {{ $labels.instance }}"
+              description: "Available memory is {{ $value | humanizePercentage }}"
+              impact: "High memory usage can cause performance issues"
+              action: "1. Check memory leaks 2. Review application memory usage 3. Scale resources if needed"
+
+  slo-burn-rate-alerts.yml: |
+    groups:
+      - name: slo.burn.rate.critical
+        interval: 30s
+        rules:
+          # Critical SLO Burn Rate Alerts (Child Safety)
+          - alert: ChildSafetySLOBurnRateCritical
+            expr: |
+              (
+                rate(child_safety_violations_total[1h]) > (14.4 * 0.1) and
+                rate(child_safety_violations_total[5m]) > (14.4 * 0.1)
+              )
+            for: 2m
+            labels:
+              severity: critical
+              team: child-safety
+              slo: "child_safety_violation_rate"
+              page: "true"
+            annotations:
+              summary: "Child Safety SLO burn rate critical"
+              description: "High burn rate detected for child safety SLO - 2 weeks budget will be consumed in 1 hour"
+              impact: "Child safety SLO budget exhaustion imminent"
+              action: "1. Immediate incident response 2. Review safety systems 3. Implement emergency measures"
+              
+          - alert: EmergencyResponseSLOBurnRateCritical
+            expr: |
+              (
+                histogram_quantile(0.95, rate(emergency_protocol_activations_duration_bucket[1h])) > (14.4 * 15000) and
+                histogram_quantile(0.95, rate(emergency_protocol_activations_duration_bucket[5m])) > (14.4 * 15000)
+              )
+            for: 2m
+            labels:
+              severity: critical
+              team: emergency-response
+              slo: "emergency_response_time"
+              page: "true"
+            annotations:
+              summary: "Emergency Response SLO burn rate critical"
+              description: "High burn rate for emergency response time SLO"
+              impact: "Emergency response SLO budget exhaustion imminent"
+              action: "1. Scale emergency services 2. Review response procedures 3. Check system capacity"
+              
+          # High SLO Burn Rate Alerts
+          - alert: AvailabilitySLOBurnRateHigh
+            expr: |
+              (
+                (1 - avg_over_time(up[6h])) > (6 * (1 - 0.999)) and
+                (1 - avg_over_time(up[30m])) > (6 * (1 - 0.999))
+              )
+            for: 15m
+            labels:
+              severity: high
+              team: sre
+              slo: "service_availability"
+            annotations:
+              summary: "Service Availability SLO burn rate high"
+              description: "High burn rate for service availability SLO - 2 weeks budget will be consumed in 6 hours"
+              impact: "Service availability SLO budget consumption accelerated"
+              action: "1. Investigate availability issues 2. Review service health 3. Implement fixes"
+              
+          - alert: ErrorRateSLOBurnRateHigh
+            expr: |
+              (
+                rate(requests_total{status_code!~"2.."}[6h]) / rate(requests_total[6h]) > (6 * 0.001) and
+                rate(requests_total{status_code!~"2.."}[30m]) / rate(requests_total[30m]) > (6 * 0.001)
+              )
+            for: 15m
+            labels:
+              severity: medium
+              team: sre
+              slo: "error_rate"
+            annotations:
+              summary: "Error Rate SLO burn rate high"
+              description: "High burn rate for error rate SLO"
+              impact: "Error rate SLO budget consumption accelerated"
+              action: "1. Investigate error sources 2. Review recent changes 3. Implement error reduction measures"
+
+  error-budget-alerts.yml: |
+    groups:
+      - name: error.budget.management
+        interval: 300s  # 5 minutes
+        rules:
+          # Error Budget Exhaustion Warnings
+          - alert: ErrorBudgetExhaustionWarning
+            expr: |
+              (
+                label_replace(
+                  label_replace(
+                    (increase(child_safety_violations_total[30d]) / 1000) / (30 * 24 * 60 * 0.1 / 1000),
+                    "slo", "child_safety_violation_rate", "", ""
+                  ),
+                  "budget_consumed", "$1", "value", "(.*)"
+                ) > 0.8
+              ) or (
+                label_replace(
+                  label_replace(
+                    (1 - avg_over_time(up[30d])) / (1 - 0.999),
+                    "slo", "service_availability", "", ""
+                  ),
+                  "budget_consumed", "$1", "value", "(.*)"
+                ) > 0.8
+              )
+            for: 10m
+            labels:
+              severity: medium
+              team: sre
+            annotations:
+              summary: "Error budget 80% consumed for {{ $labels.slo }}"
+              description: "{{ $labels.slo }} has consumed {{ $value | humanizePercentage }} of its error budget"
+              impact: "Approaching error budget exhaustion"
+              action: "1. Review SLO performance 2. Plan improvement measures 3. Consider freezing risky changes"
+              
+          - alert: ErrorBudgetExhaustionCritical
+            expr: |
+              (
+                label_replace(
+                  label_replace(
+                    (increase(child_safety_violations_total[30d]) / 1000) / (30 * 24 * 60 * 0.1 / 1000),
+                    "slo", "child_safety_violation_rate", "", ""
+                  ),
+                  "budget_consumed", "$1", "value", "(.*)"
+                ) > 0.95
+              ) or (
+                label_replace(
+                  label_replace(
+                    (1 - avg_over_time(up[30d])) / (1 - 0.999),
+                    "slo", "service_availability", "", ""
+                  ),
+                  "budget_consumed", "$1", "value", "(.*)"
+                ) > 0.95
+              )
+            for: 5m
+            labels:
+              severity: critical
+              team: sre
+              page: "true"
+            annotations:
+              summary: "Error budget 95% consumed for {{ $labels.slo }}"
+              description: "{{ $labels.slo }} has consumed {{ $value | humanizePercentage }} of its error budget"
+              impact: "Error budget nearly exhausted - service quality at risk"
+              action: "1. Immediate incident response 2. Freeze all changes 3. Focus on reliability improvements"
+
+  business-impact-alerts.yml: |
+    groups:
+      - name: business.impact.alerts
+        interval: 60s
+        rules:
+          # Business Impact Alerts
+          - alert: ChildExperienceDegradation
+            expr: |
+              (
+                histogram_quantile(0.75, rate(child_engagement_duration_seconds_bucket[1h])) < 30 and
+                avg_over_time(conversation_sentiment[1h]) < 0
+              )
+            for: 15m
+            labels:
+              severity: high
+              team: product
+              impact: "child_experience"
+            annotations:
+              summary: "Child experience significantly degraded"
+              description: "Both engagement duration and sentiment are below thresholds"
+              impact: "Poor child experience may lead to user churn and safety concerns"
+              action: "1. Review conversation quality 2. Check AI responses 3. Analyze user feedback"
+              
+          - alert: ParentalSatisfactionLow
+            expr: rate(parental_control_events_total{action="approved"}[24h]) / rate(parental_control_events_total[24h]) < 0.8
+            for: 30m
+            labels:
+              severity: medium
+              team: product
+              impact: "parental_trust"
+            annotations:
+              summary: "Low parental satisfaction with controls"
+              description: "Only {{ $value | humanizePercentage }} of parental control actions are approved"
+              impact: "Low parental trust may affect adoption and retention"
+              action: "1. Review parental control UX 2. Gather parent feedback 3. Improve control mechanisms"
+              
+          - alert: ComplianceRiskHigh
+            expr: |
+              (
+                coppa_compliance_score < 0.99 or
+                child_safety_compliance_rate < 0.95
+              )
+            for: 10m
+            labels:
+              severity: critical
+              team: compliance
+              impact: "legal_risk"
+              page: "true"
+            annotations:
+              summary: "High compliance risk detected"
+              description: "Compliance scores below required thresholds"
+              impact: "Legal and regulatory compliance at risk"
+              action: "1. Immediate compliance review 2. Legal team notification 3. Implement corrective measures" 

@@ -1,0 +1,19 @@
+extends: default
+
+rules:
+  # 80 chars should be enough, but allow up to 120
+  line-length:
+    max: 120
+    level: warning
+
+  # Disable some strict rules
+  indentation:
+    indent-sequences: consistent
+
+  # Allow multiple keys on same line
+  braces:
+    max-spaces-inside: 1
+    level: warning
+
+  # Relaxed key ordering
+  key-ordering: disable

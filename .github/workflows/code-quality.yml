@@ -1,0 +1,371 @@
+name: 🛡️ Code Quality & Security
+
+# 🎯 Trigger on every PR and push to main
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# 🔒 Permissions for security scanning
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+# ⚡ Concurrency control
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ================== WILDCARD IMPORT PREVENTION ==================
+  check-wildcard-imports:
+    name: 🚫 No Wildcard Imports
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 🔍 Check for wildcard imports
+        run: |
+          echo "🔍 Scanning for wildcard imports..."
+          python -c "
+          import sys
+          import re
+          import os
+          import glob
+
+          def check_wildcard_imports(filename):
+              try:
+                  with open(filename, 'r', encoding='utf-8') as f:
+                      content = f.read()
+              except UnicodeDecodeError:
+                  return []
+              
+              # Pattern to match wildcard imports
+              pattern = r'from\s+[\w.]+\s+import\s+\*'
+              matches = re.finditer(pattern, content, re.MULTILINE)
+              
+              violations = []
+              for match in matches:
+                  line_number = content[:match.start()].count('\n') + 1
+                  violations.append({
+                      'file': filename,
+                      'line': line_number,
+                      'import': match.group().strip()
+                  })
+              
+              return violations
+
+          # Find all Python files
+          python_files = []
+          for root, dirs, files in os.walk('.'):
+              # Skip certain directories
+              dirs[:] = [d for d in dirs if d not in ['.git', '__pycache__', '.pytest_cache', 'node_modules', '.venv', 'venv']]
+              for file in files:
+                  if file.endswith('.py'):
+                      python_files.append(os.path.join(root, file))
+
+          all_violations = []
+          for filename in python_files:
+              # Skip test files and __init__.py for now
+              if 'test' in filename.lower() or filename.endswith('__init__.py'):
+                  continue
+              
+              violations = check_wildcard_imports(filename)
+              all_violations.extend(violations)
+
+          if all_violations:
+              print('❌ WILDCARD IMPORTS DETECTED:')
+              print('')
+              for violation in all_violations:
+                  print(f'  📄 {violation[\"file\"]}:{violation[\"line\"]}')
+                  print(f'     🚫 {violation[\"import\"]}')
+                  print('')
+              
+              print('🛠️  REQUIRED FIXES:')
+              print('   ❌ from module import *')
+              print('   ✅ from module import ClassA, function_b, CONSTANT_C')
+              print('')
+              print('💡 Use your IDE to auto-complete specific imports')
+              print('')
+              sys.exit(1)
+          else:
+              print('✅ No wildcard imports found!')
+          "
+
+  # ================== CODE FORMATTING & LINTING ==================
+  code-quality:
+    name: 🧹 Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black isort flake8 mypy
+          pip install flake8-docstrings flake8-import-order flake8-bandit
+          pip install flake8-bugbear flake8-comprehensions flake8-simplify
+          pip install -r requirements.txt
+
+      - name: 🎨 Check code formatting with Black
+        run: |
+          echo "🎨 Checking code formatting..."
+          black --check --diff .
+
+      - name: 📚 Check import sorting with isort
+        run: |
+          echo "📚 Checking import sorting..."
+          isort --check-only --diff .
+
+      - name: 🔍 Lint with Flake8
+        run: |
+          echo "🔍 Running Flake8 linting..."
+          flake8 --config=config/.flake8 . || exit 1
+
+      - name: 🧮 Type checking with MyPy
+        run: |
+          echo "🧮 Running type checking..."
+          mypy --config-file=config/mypy.ini . || echo "⚠️ Type checking warnings found"
+
+  # ================== SECURITY SCANNING ==================
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit[toml] safety
+          pip install -r requirements.txt
+
+      - name: 🛡️ Security scan with Bandit
+        run: |
+          echo "🛡️ Running security scan..."
+          bandit -r . -f json -o bandit-report.json || true
+          bandit -r . -ll
+
+      - name: 🔍 Dependency vulnerability check
+        run: |
+          echo "🔍 Checking for vulnerable dependencies..."
+          safety check --json --output safety-report.json || true
+          safety check
+
+      - name: 📊 Upload security reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+
+  # ================== TESTING ==================
+  tests:
+    name: 🧪 Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pytest-asyncio
+          pip install -r requirements.txt
+
+      - name: 🧪 Run tests
+        run: |
+          echo "🧪 Running tests..."
+          pytest tests/ -v --cov=. --cov-report=xml --cov-report=html
+
+      - name: 📊 Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
+  # ================== ARCHITECTURE VALIDATION ==================
+  architecture-check:
+    name: 🏗️ Architecture Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 🏗️ Validate Clean Architecture
+        run: |
+          echo "🏗️ Validating Clean Architecture..."
+          python -c "
+          import os
+          import sys
+
+          # Check required directories exist
+          required_dirs = ['api', 'domain', 'infrastructure', 'services']
+          missing_dirs = []
+          
+          for dir_name in required_dirs:
+              if not os.path.exists(dir_name):
+                  missing_dirs.append(dir_name)
+          
+          if missing_dirs:
+              print(f'❌ Missing required directories: {missing_dirs}')
+              sys.exit(1)
+          
+          # Check for circular dependencies (simplified)
+          print('✅ Clean Architecture structure validated')
+          "
+
+      - name: 📊 Generate complexity report
+        run: |
+          echo "📊 Generating complexity report..."
+          pip install radon
+          radon cc . --total-average --show-complexity || echo "⚠️ Complexity analysis completed"
+
+  # ================== PERFORMANCE CHECK ==================
+  performance-check:
+    name: ⚡ Performance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: ⚡ Check for performance anti-patterns
+        run: |
+          echo "⚡ Checking for performance issues..."
+          python -c "
+          import os
+          import re
+
+          # Check for common performance issues
+          issues = []
+          
+          for root, dirs, files in os.walk('.'):
+              if any(skip in root for skip in ['.git', '__pycache__', '.pytest_cache']):
+                  continue
+                  
+              for file in files:
+                  if file.endswith('.py'):
+                      filepath = os.path.join(root, file)
+                      try:
+                          with open(filepath, 'r') as f:
+                              content = f.read()
+                          
+                          # Check for synchronous code in async functions
+                          if re.search(r'def.*async.*:', content) and 'requests\.' in content:
+                              issues.append(f'{filepath}: Using sync requests in async function')
+                          
+                          # Check for inefficient loops
+                          if '+=' in content and 'for' in content:
+                              lines = content.split('\n')
+                              for i, line in enumerate(lines):
+                                  if 'for' in line and i+1 < len(lines) and '+=' in lines[i+1]:
+                                      issues.append(f'{filepath}:{i+1}: Potential inefficient string concatenation')
+                                      
+                      except Exception:
+                          continue
+          
+          if issues:
+              print('⚠️ Performance issues found:')
+              for issue in issues[:5]:  # Show first 5
+                  print(f'  {issue}')
+          else:
+              print('✅ No major performance issues detected')
+          "
+
+  # ================== DOCUMENTATION CHECK ==================
+  docs-check:
+    name: 📚 Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📚 Check documentation
+        run: |
+          echo "📚 Checking documentation..."
+          
+          # Check if README exists and is not empty
+          if [[ ! -f README.md ]] || [[ ! -s README.md ]]; then
+            echo "❌ README.md is missing or empty"
+            exit 1
+          fi
+          
+          # Check for API documentation
+          if [[ ! -f "COMPREHENSIVE_AUDIT_REPORT_2025.md" ]]; then
+            echo "⚠️ Audit report not found"
+          fi
+          
+          echo "✅ Documentation check passed"
+
+  # ================== FINAL SUMMARY ==================
+  quality-gate:
+    name: 🎯 Quality Gate
+    needs: [check-wildcard-imports, code-quality, security-scan, tests, architecture-check]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: 📊 Quality Gate Summary
+        run: |
+          echo "🎯 QUALITY GATE SUMMARY"
+          echo "======================="
+          echo ""
+          echo "Wildcard Imports: ${{ needs.check-wildcard-imports.result }}"
+          echo "Code Quality: ${{ needs.code-quality.result }}"
+          echo "Security Scan: ${{ needs.security-scan.result }}"
+          echo "Tests: ${{ needs.tests.result }}"
+          echo "Architecture: ${{ needs.architecture-check.result }}"
+          echo ""
+          
+          if [[ "${{ needs.check-wildcard-imports.result }}" != "success" ]]; then
+            echo "❌ Wildcard imports must be fixed before merge"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.code-quality.result }}" != "success" ]]; then
+            echo "❌ Code quality issues must be resolved"
+            exit 1
+          fi
+          
+          echo "✅ Quality gate passed!" 

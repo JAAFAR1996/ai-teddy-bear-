@@ -1,0 +1,112 @@
+groups:
+- name: ai_teddy_bear_alerts
+  rules:
+  # High CPU Usage Alert
+  - alert: HighCPUUsage
+    expr: node_cpu_seconds_total{mode!='idle'} > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU usage detected"
+      description: "CPU usage is over 80% for more than 5 minutes"
+
+  # Low Memory Alert
+  - alert: LowMemory
+    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 20
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Low memory availability"
+      description: "Less than 20% memory available for more than 5 minutes"
+
+  # Disk Space Alert
+  - alert: LowDiskSpace
+    expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} * 100 < 10
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Low disk space"
+      description: "Less than 10% disk space available for more than 10 minutes"
+
+  # AI Teddy Bear Service Availability
+  - alert: ServiceDown
+    expr: up{job="ai_teddy_bear"} == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "AI Teddy Bear service is down"
+      description: "The AI Teddy Bear service has been unavailable for more than 2 minutes"
+
+  # High Error Rate
+  - alert: HighErrorRate
+    expr: sum(rate(python_exceptions_total[5m])) > 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High error rate detected"
+      description: "More than 10 exceptions per second over 5 minutes"
+
+  # Long-Running Requests
+  - alert: LongRunningRequests
+    expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[10m])) by (le)) > 2
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Long-running requests detected"
+      description: "95% of requests taking longer than 2 seconds"
+
+  # Safety Violation Alert
+  - alert: SafetyViolationAlert
+    expr: sum(increase(safety_violation_total[1h])) > 5
+    for: 1h
+    labels:
+      severity: critical
+    annotations:
+      summary: "Multiple safety violations detected"
+      description: "More than 5 safety violations in the past hour"
+
+  # Redis Connection Issues
+  - alert: RedisConnectionIssues
+    expr: redis_up == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Redis service is down"
+      description: "Redis has been unavailable for more than 2 minutes"
+
+  # Voice Synthesis Failure Rate
+  - alert: VoiceSynthesisFailures
+    expr: sum(rate(voice_synthesis_errors_total[5m])) > 0.1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High voice synthesis failure rate"
+      description: "More than 10% of voice synthesis attempts are failing"
+
+  # LLM Response Generation Failures
+  - alert: LLMResponseFailures
+    expr: sum(rate(llm_response_generation_errors_total[5m])) > 0.05
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High LLM response generation failure rate"
+      description: "More than 5% of LLM response generation attempts are failing"
+
+  # Child Interaction Safety Monitoring
+  - alert: ChildInteractionSafetyIssue
+    expr: sum(increase(child_interaction_safety_violation_total[1h])) > 3
+    for: 1h
+    labels:
+      severity: critical
+    annotations:
+      summary: "Potential child interaction safety concern"
+      description: "More than 3 safety violations related to child interactions in the past hour"

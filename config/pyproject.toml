@@ -1,0 +1,247 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-teddy-bear"
+version = "2.0.0"
+description = "🧸 AI Teddy Bear - Production System with Enterprise Security"
+authors = [
+    {name = "AI Teddy Bear Team", email = "team@teddy-ai.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic>=2.5.0",
+    "sqlalchemy[asyncio]>=2.0.23",
+    "redis>=5.0.0",
+    "openai>=1.3.0",
+    "asyncio",
+    "aiohttp>=3.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.9.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.6.0",
+    "pre-commit>=3.4.0",
+    "bandit[toml]>=1.7.5",
+    "safety>=2.3.0",
+]
+
+test = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.25.0",
+    "pytest-mock>=3.11.0",
+]
+
+lint = [
+    "flake8>=6.0.0",
+    "flake8-docstrings>=1.7.0",
+    "flake8-import-order>=0.18.0",
+    "flake8-bandit>=4.1.0",
+    "flake8-bugbear>=23.9.0",
+    "flake8-comprehensions>=3.14.0",
+    "flake8-simplify>=0.20.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/ai-teddy-bear/production"
+"Bug Reports" = "https://github.com/ai-teddy-bear/production/issues"
+"Source" = "https://github.com/ai-teddy-bear/production"
+
+# ================== BLACK CONFIGURATION ==================
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+# ================== ISORT CONFIGURATION ==================
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 88
+known_first_party = ["api", "domain", "infrastructure", "services", "core", "config"]
+known_third_party = ["fastapi", "pydantic", "sqlalchemy", "redis", "openai"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+# ================== PYTEST CONFIGURATION ==================
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=.",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+    "--cov-fail-under=80",
+    "--tb=short",
+]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "e2e: marks tests as end-to-end tests",
+    "security: marks tests as security tests",
+]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+
+# ================== COVERAGE CONFIGURATION ==================
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/env/*",
+    "*/.venv/*",
+    "setup.py",
+    "*/conftest.py",
+]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+show_missing = true
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+# ================== MYPY CONFIGURATION ==================
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+# ================== BANDIT CONFIGURATION ==================
+[tool.bandit]
+exclude_dirs = ["tests", "migrations", "venv", "env", ".venv"]
+skips = ["B101"]  # Skip assert_used test
+
+# ================== RUFF CONFIGURATION (Alternative to Flake8) ==================
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+select = [
+    # Pyflakes
+    "F",
+    # Pycodestyle
+    "E", "W",
+    # isort
+    "I",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # flake8-comprehensions
+    "C4",
+    # flake8-import-conventions
+    "ICN",
+    # flake8-bandit
+    "S",
+    # flake8-quotes
+    "Q",
+]
+
+ignore = [
+    # Line too long (handled by black)
+    "E501",
+    # Line break before binary operator
+    "W503",
+]
+
+# ================== WILDCARD IMPORT PREVENTION ==================
+[tool.ruff.per-file-ignores]
+# Test files can have relaxed import rules
+"test_*.py" = ["F401", "F811", "S101"]
+"tests/*.py" = ["F401", "F811", "S101"]
+# __init__.py files for re-exports
+"__init__.py" = ["F401"]
+
+# ZERO TOLERANCE for wildcard imports in production code
+# F403 and F405 should NEVER be ignored in non-test files
+
+[tool.ruff.flake8-import-conventions.aliases]
+"sqlalchemy.orm" = "orm"
+"sqlalchemy" = "sa"
+"fastapi" = "fastapi"
+"pydantic" = "pydantic"
+
+# ================== PRE-COMMIT HOOKS ==================
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["api*", "domain*", "infrastructure*", "services*", "core*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.md", "*.txt", "*.json", "*.yaml", "*.yml"] 

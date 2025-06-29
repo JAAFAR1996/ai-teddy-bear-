@@ -1,0 +1,164 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ai-teddy-bear
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: ai-teddy-bear
+    app.kubernetes.io/part-of: teddy-bear-system
+    project: ai-teddy-bear
+    environment: production
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/hook: PostSync
+    notifications.argoproj.io/subscribe.on-deployed.slack: teddy-bear-alerts
+    notifications.argoproj.io/subscribe.on-health-degraded.slack: teddy-bear-alerts
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: ai-teddy-bear
+  source:
+    repoURL: https://github.com/ai-teddy-bear/infrastructure
+    targetRevision: HEAD
+    path: deployments/k8s/production
+    helm:
+      releaseName: ai-teddy-bear
+      parameters:
+        - name: global.image.tag
+          value: "latest"
+        - name: global.environment
+          value: "production"
+        - name: global.monitoring.enabled
+          value: "true"
+        - name: security.encryption.enabled
+          value: "true"
+      valueFiles:
+        - values-production.yaml
+        - secrets/production-secrets.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ai-teddy-production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - Validate=true
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - RespectIgnoreDifferences=true
+      - Replace=false
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  revisionHistoryLimit: 10
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: ""
+      kind: Secret
+      name: argocd-secret
+      jsonPointers:
+        - /data
+  info:
+    - name: 'Production Environment'
+      value: 'AI Teddy Bear System - Production Deployment'
+    - name: 'Contact'
+      value: 'devops-team@teddy-bear.ai'
+    - name: 'Documentation'
+      value: 'https://docs.teddy-bear.ai/deployment'
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ai-teddy-bear
+  namespace: argocd
+  labels:
+    project: ai-teddy-bear
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: AI Teddy Bear System Project
+  sourceRepos:
+    - 'https://github.com/ai-teddy-bear/*'
+    - 'https://helm.charts.io/*'
+  destinations:
+    - namespace: 'ai-teddy-*'
+      server: https://kubernetes.default.svc
+    - namespace: 'monitoring'
+      server: https://kubernetes.default.svc
+    - namespace: 'security'
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: security.istio.io
+      kind: PeerAuthentication
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - name: admin
+      description: Full access to AI Teddy Bear project
+      policies:
+        - p, proj:ai-teddy-bear:admin, applications, *, ai-teddy-bear/*, allow
+        - p, proj:ai-teddy-bear:admin, repositories, *, *, allow
+        - p, proj:ai-teddy-bear:admin, clusters, *, *, allow
+      groups:
+        - teddy-bear:devops-team
+        - teddy-bear:sre-team
+    - name: developer
+      description: Limited access for developers
+      policies:
+        - p, proj:ai-teddy-bear:developer, applications, get, ai-teddy-bear/*, allow
+        - p, proj:ai-teddy-bear:developer, applications, sync, ai-teddy-bear/*, allow
+        - p, proj:ai-teddy-bear:developer, repositories, get, *, allow
+      groups:
+        - teddy-bear:developers
+    - name: readonly
+      description: Read-only access
+      policies:
+        - p, proj:ai-teddy-bear:readonly, applications, get, ai-teddy-bear/*, allow
+        - p, proj:ai-teddy-bear:readonly, repositories, get, *, allow
+      groups:
+        - teddy-bear:viewers
+  syncWindows:
+    - kind: allow
+      schedule: '0 9-17 * * 1-5'  # Business hours Monday-Friday
+      duration: 8h
+      applications:
+        - '*'
+      manualSync: true
+    - kind: deny
+      schedule: '0 18-8 * * *'     # Outside business hours
+      duration: 14h
+      applications:
+        - '*'
+      manualSync: false
+      clusters:
+        - https://kubernetes.default.svc
+  orphanedResources:
+    warn: true
+    ignore:
+      - group: ''
+        kind: Secret
+        name: argocd-*
+      - group: ''
+        kind: ConfigMap
+        name: argocd-* 

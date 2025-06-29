@@ -1,0 +1,250 @@
+# Critical Security Alerts - AI Teddy Bear Project
+# تنبيهات أمنية حرجة للاستجابة الفورية
+
+groups:
+  - name: critical_security_breaches
+    interval: 5s  # تقييم فوري كل 5 ثواني
+    rules:
+      
+      # تنبيه فوري لتسريب مفاتيح API
+      - alert: CriticalAPIKeyExposure
+        expr: api_key_exposure_detected > 0
+        for: 0s  # تنبيه فوري بدون انتظار
+        labels:
+          severity: critical
+          category: data_breach
+          action: immediate_rotation
+          team: security
+          priority: p0
+        annotations:
+          summary: "💥 CRITICAL: API Key Exposure Detected"
+          description: "{{ $value }} exposed API keys detected in the system"
+          impact: "Potential unauthorized access to all services"
+          remediation: |
+            IMMEDIATE ACTIONS:
+            1. Rotate all exposed API keys within 5 minutes
+            2. Block suspicious IPs immediately
+            3. Enable emergency monitoring mode
+            4. Notify security team via all channels
+          runbook: "https://security.teddybear.ai/runbooks/api-key-exposure"
+          dashboard: "https://grafana.teddybear.ai/d/security-breaches"
+
+      # محاولات وصول غير مصرح بها مكثفة
+      - alert: MassiveUnauthorizedAccess
+        expr: rate(http_requests_total{status=~"401|403"}[1m]) > 20
+        for: 10s
+        labels:
+          severity: critical
+          category: unauthorized_access
+          action: immediate_block
+          team: security
+          priority: p0
+        annotations:
+          summary: "🚨 CRITICAL: Mass unauthorized access attempts"
+          description: "{{ $labels.instance }} receiving {{ $value }} unauthorized requests per minute from {{ $labels.source_ip }}"
+          impact: "Potential brute force or credential stuffing attack"
+          remediation: |
+            IMMEDIATE ACTIONS:
+            1. Block source IPs immediately
+            2. Enable emergency rate limiting
+            3. Force password reset for affected accounts
+            4. Activate incident response team
+          source_ip: "{{ $labels.source_ip }}"
+          user_agent: "{{ $labels.user_agent }}"
+
+      # تسريب بيانات محتمل
+      - alert: PotentialDataBreach
+        expr: |
+          (
+            rate(database_queries_total{query_type="select",table=~".*user.*|.*child.*|.*personal.*"}[5m]) > 100
+          ) or (
+            rate(http_response_size_bytes{status="200"}[5m]) > 10000000  # 10MB/min
+          )
+        for: 30s
+        labels:
+          severity: critical
+          category: data_breach
+          action: immediate_lockdown
+          team: security
+          priority: p0
+        annotations:
+          summary: "💀 CRITICAL: Potential data breach detected"
+          description: "Unusual data access patterns detected - {{ $value }} suspicious queries/responses per minute"
+          impact: "Potential exfiltration of sensitive user data"
+          remediation: |
+            IMMEDIATE ACTIONS:
+            1. Lock down database access
+            2. Enable audit logging
+            3. Isolate affected systems
+            4. Preserve evidence for forensics
+            5. Notify legal and compliance teams
+
+      # اختراق النظام المحتمل
+      - alert: SystemCompromiseDetected
+        expr: |
+          (
+            rate(process_start_time_seconds[5m]) > 10
+          ) or (
+            rate(node_network_transmit_bytes_total[5m]) > 100000000  # 100MB/min
+          ) or (
+            rate(suspicious_file_access_total[1m]) > 5
+          )
+        for: 30s
+        labels:
+          severity: critical
+          category: system_compromise
+          action: immediate_isolation
+          team: security
+          priority: p0
+        annotations:
+          summary: "☠️ CRITICAL: System compromise detected"
+          description: "System showing signs of compromise - unusual process/network activity"
+          impact: "Full system compromise possible"
+          remediation: |
+            IMMEDIATE ACTIONS:
+            1. Isolate affected systems immediately
+            2. Capture memory dumps for forensics
+            3. Preserve all logs
+            4. Activate disaster recovery procedures
+            5. Contact law enforcement if necessary
+
+      # هجوم DDoS حرج
+      - alert: CriticalDDoSAttack
+        expr: rate(http_requests_total[1m]) > 1000
+        for: 1m
+        labels:
+          severity: critical
+          category: ddos_attack
+          action: immediate_mitigation
+          team: security
+          priority: p0
+        annotations:
+          summary: "🌊 CRITICAL: Severe DDoS attack in progress"
+          description: "{{ $labels.instance }} receiving {{ $value }} requests per minute"
+          impact: "Service availability severely compromised"
+          remediation: |
+            IMMEDIATE ACTIONS:
+            1. Activate DDoS mitigation service
+            2. Block attack sources at CDN level
+            3. Scale infrastructure immediately
+            4. Implement emergency rate limiting
+            5. Notify ISP and DDoS protection service
+
+      # وصول مشبوه للأسرار في Vault
+      - alert: VaultSecretsBreach
+        expr: |
+          (
+            rate(vault_audit_log_request_total{path=~"/v1/secret/.*"}[1m]) > 50
+          ) or (
+            vault_audit_log_request_total{operation="read",path=~"/v1/secret/.*",auth_display_name!~"teddy-.*"} > 0
+          )
+        for: 0s
+        labels:
+          severity: critical
+          category: secrets_breach
+          action: immediate_lockdown
+          team: security
+          priority: p0
+        annotations:
+          summary: "🔐 CRITICAL: Vault secrets breach detected"
+          description: "Unauthorized access to secrets in Vault - {{ $value }} suspicious accesses per minute"
+          impact: "All application secrets potentially compromised"
+          remediation: |
+            IMMEDIATE ACTIONS:
+            1. Revoke all current Vault tokens
+            2. Rotate all secrets immediately
+            3. Enable Vault emergency seal
+            4. Audit all recent access logs
+            5. Generate new root tokens
+
+      # SQL Injection نشط
+      - alert: ActiveSQLInjection
+        expr: rate(sql_injection_attempts_total[1m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          category: injection_attack
+          action: immediate_block
+          team: security
+          priority: p0
+        annotations:
+          summary: "💉 CRITICAL: Active SQL injection attack"
+          description: "SQL injection attempts from {{ $labels.source_ip }} - {{ $value }} attempts per minute"
+          impact: "Database compromise imminent"
+          remediation: |
+            IMMEDIATE ACTIONS:
+            1. Block source IP immediately
+            2. Enable emergency WAF rules
+            3. Review and patch vulnerable queries
+            4. Monitor database for unauthorized changes
+            5. Backup current database state
+
+      # تطبيق Teddy معطل
+      - alert: TeddyApplicationDown
+        expr: up{job="teddy-app-security"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          category: service_outage
+          action: immediate_recovery
+          team: security
+          priority: p0
+        annotations:
+          summary: "💔 CRITICAL: Teddy application is down"
+          description: "Main Teddy Bear application is not responding"
+          impact: "Complete service outage - children cannot access AI companion"
+          remediation: |
+            IMMEDIATE ACTIONS:
+            1. Check for security incidents causing shutdown
+            2. Activate backup systems immediately
+            3. Investigate root cause
+            4. Restore from last known good state
+            5. Communicate with users about outage
+
+  - name: authentication_security
+    interval: 10s
+    rules:
+      
+      # فشل متكرر في المصادقة (هجوم القوة الغاشمة)
+      - alert: BruteForceAttackDetected
+        expr: rate(authentication_failures_total[2m]) > 30
+        for: 1m
+        labels:
+          severity: critical
+          category: brute_force
+          action: immediate_lockout
+          team: security
+          priority: p1
+        annotations:
+          summary: "🔨 CRITICAL: Brute force attack detected"
+          description: "{{ $labels.source_ip }} has {{ $value }} failed authentication attempts"
+          impact: "Account compromise possible"
+          remediation: |
+            IMMEDIATE ACTIONS:
+            1. Lock affected accounts immediately
+            2. Block source IP for 24 hours
+            3. Force password reset for targeted accounts
+            4. Enable additional MFA requirements
+            5. Monitor for credential stuffing patterns
+
+      # استخدام tokens منتهية الصلاحية بكثرة
+      - alert: ExpiredTokenAbuse
+        expr: rate(expired_token_usage_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: high
+          category: token_abuse
+          action: investigate
+          team: security
+          priority: p1
+        annotations:
+          summary: "🎫 HIGH: Excessive expired token usage"
+          description: "{{ $value }} expired tokens used per minute"
+          impact: "Potential token replay attack"
+          remediation: |
+            ACTIONS REQUIRED:
+            1. Identify source of expired tokens
+            2. Revoke all active sessions for affected users
+            3. Implement token blacklisting
+            4. Review token generation/validation logic
+            5. Force re-authentication for suspicious sessions 

@@ -1,0 +1,37 @@
+{
+    "environment": "development",
+    "database": {
+        "path": "data/teddy.db",
+        "pool_size": 5,
+        "timeout": 30,
+        "retention_days": 30
+    },
+    "ai": {
+        "openai_api_key": "",
+        "model": "gpt-4",
+        "temperature": 0.7,
+        "max_tokens": 150,
+        "rate_limit_per_minute": 60,
+        "retry_attempts": 3,
+        "retry_delay": 1
+    },
+    "speech": {
+        "azure_key": "",
+        "azure_region": "",
+        "language": "en-US",
+        "voice_name": "en-US-JennyNeural"
+    },
+    "security": {
+        "encryption_key": "TEST-12345-KEY-98765-EXAMPLE-54321",
+        "jwt_secret": "",
+        "password_hash_rounds": 12
+    },
+    "logging": {
+        "level": "INFO",
+        "format": "%(asctime)s - %(levelname)s - [%(name)s] - %(message)s",
+        "directory": "logs",
+        "retention_days": 30,
+        "max_size_mb": 100
+    },
+    "debug": false
+}

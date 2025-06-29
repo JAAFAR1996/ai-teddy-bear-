@@ -1,0 +1,211 @@
+# Alertmanager Configuration - Emergency Security Notifications
+# AI Teddy Bear Project - Critical Alert Management
+
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'security-alerts@teddybear.ai'
+  smtp_auth_username: 'security@teddybear.ai'
+  smtp_auth_password: 'secure_email_password'
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+
+# توجيه التنبيهات حسب الخطورة
+route:
+  group_by: ['severity', 'category', 'alertname']
+  group_wait: 5s        # انتظار قصير لتجميع التنبيهات
+  group_interval: 30s   # فترة تجميع التنبيهات
+  repeat_interval: 2m   # إعادة إرسال سريعة للتنبيهات الحرجة
+  receiver: 'emergency-default'
+  
+  routes:
+    # تنبيهات حرجة - استجابة فورية
+    - match:
+        severity: critical
+      receiver: 'critical-emergency-team'
+      group_wait: 0s
+      repeat_interval: 1m
+      continue: true  # أرسل لقنوات متعددة
+    
+    # تنبيهات تسريب البيانات - إشعار خاص
+    - match:
+        category: data_breach
+      receiver: 'data-breach-team'
+      group_wait: 0s
+      repeat_interval: 30s
+      continue: true
+    
+    # هجمات الأمان - فريق الدفاع
+    - match_re:
+        category: (attack|injection_attack|ddos_attack)
+      receiver: 'security-defense-team'
+      group_wait: 5s
+      repeat_interval: 1m
+    
+    # مشاكل المصادقة - فريق الهوية
+    - match_re:
+        category: (brute_force|unauthorized_access)
+      receiver: 'identity-team'
+      group_wait: 10s
+      repeat_interval: 2m
+    
+    # مشاكل النظام - فريق البنية التحتية
+    - match_re:
+        category: (system_compromise|service_outage)
+      receiver: 'infrastructure-team'
+      group_wait: 15s
+      repeat_interval: 5m
+
+# إعدادات المتلقين
+receivers:
+  # الفريق الافتراضي للطوارئ
+  - name: 'emergency-default'
+    webhook_configs:
+      - url: 'http://emergency-response:8080/webhook/general'
+        send_resolved: true
+        http_config:
+          bearer_token: 'emergency_webhook_token'
+        title: '🚨 Teddy Bear Security Alert'
+        text: |
+          {{ range .Alerts }}
+          الخطورة: {{ .Labels.severity }}
+          النوع: {{ .Labels.category }}
+          الوصف: {{ .Annotations.summary }}
+          {{ end }}
+
+  # فريق الطوارئ الحرجة
+  - name: 'critical-emergency-team'
+    # إشعارات فورية متعددة القنوات
+    webhook_configs:
+      - url: 'http://emergency-response:8080/webhook/critical'
+        send_resolved: true
+        title: '💥 CRITICAL SECURITY BREACH'
+        text: |
+          🚨 تنبيه أمني حرج فوري 🚨
+          {{ range .Alerts }}
+          التهديد: {{ .Annotations.summary }}
+          التأثير: {{ .Annotations.impact }}
+          الإجراءات المطلوبة: {{ .Annotations.remediation }}
+          {{ end }}
+    
+    slack_configs:
+      - channel: '#security-emergency'
+        username: 'TeddySecurityBot'
+        icon_emoji: ':rotating_light:'
+        title: 'CRITICAL SECURITY ALERT'
+        title_link: 'https://grafana.teddybear.ai/d/security-dashboard'
+        text: |
+          {{ range .Alerts }}
+          🔥 **{{ .Annotations.summary }}**
+          📊 **Impact:** {{ .Annotations.impact }}
+          🛠️ **Action Required:** {{ .Annotations.remediation }}
+          📈 **Dashboard:** {{ .Annotations.dashboard }}
+          {{ end }}
+        send_resolved: true
+        short_fields: true
+    
+    email_configs:
+      - to: 'security-team@teddybear.ai,cto@teddybear.ai,ceo@teddybear.ai'
+        subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        headers:
+          Priority: 'urgent'
+          X-Priority: '1'
+        body: |
+          تنبيه أمني حرج - يتطلب إجراءً فورياً
+          
+          {{ range .Alerts }}
+          نوع التهديد: {{ .Labels.category }}
+          مستوى الخطورة: {{ .Labels.severity }}
+          
+          التفاصيل:
+          {{ .Annotations.description }}
+          
+          التأثير المحتمل:
+          {{ .Annotations.impact }}
+          
+          الإجراءات المطلوبة فوراً:
+          {{ .Annotations.remediation }}
+          
+          معلومات إضافية:
+          - الوقت: {{ .StartsAt }}
+          - المصدر: {{ .Labels.instance }}
+          - الفئة: {{ .Labels.category }}
+          {{ end }}
+
+  # فريق تسريب البيانات
+  - name: 'data-breach-team'
+    webhook_configs:
+      - url: 'http://emergency-response:8080/webhook/data-breach'
+        send_resolved: true
+        title: '💀 DATA BREACH DETECTED'
+    
+    email_configs:
+      - to: 'legal@teddybear.ai,compliance@teddybear.ai,privacy@teddybear.ai'
+        subject: '🚨 POTENTIAL DATA BREACH: {{ .GroupLabels.alertname }}'
+        body: |
+          تم اكتشاف تسريب محتمل للبيانات
+          
+          {{ range .Alerts }}
+          نوع التسريب: {{ .Labels.category }}
+          التفاصيل: {{ .Annotations.description }}
+          
+          الإجراءات القانونية المطلوبة:
+          1. توثيق الحادث فوراً
+          2. إشعار السلطات المختصة
+          3. إعداد تقرير الامتثال
+          4. تقييم التأثير على الخصوصية
+          {{ end }}
+
+  # فريق الدفاع الأمني
+  - name: 'security-defense-team'
+    webhook_configs:
+      - url: 'http://emergency-response:8080/webhook/defense'
+        send_resolved: true
+    
+    slack_configs:
+      - channel: '#security-defense'
+        title: '🛡️ Security Attack Detected'
+        text: |
+          {{ range .Alerts }}
+          نوع الهجوم: {{ .Labels.category }}
+          المصدر: {{ .Labels.source_ip }}
+          التفاصيل: {{ .Annotations.description }}
+          {{ end }}
+
+  # فريق إدارة الهوية
+  - name: 'identity-team'
+    webhook_configs:
+      - url: 'http://emergency-response:8080/webhook/identity'
+        send_resolved: true
+    
+    email_configs:
+      - to: 'identity-team@teddybear.ai'
+        subject: 'Authentication Security Alert: {{ .GroupLabels.alertname }}'
+
+  # فريق البنية التحتية
+  - name: 'infrastructure-team'
+    webhook_configs:
+      - url: 'http://emergency-response:8080/webhook/infrastructure'
+        send_resolved: true
+    
+    slack_configs:
+      - channel: '#infrastructure-alerts'
+        title: '🏗️ Infrastructure Security Issue'
+
+# تثبيط التنبيهات المكررة
+inhibit_rules:
+  # إذا كان النظام معطل، لا ترسل تنبيهات أخرى للنفس النظام
+  - source_match:
+      alertname: 'TeddyApplicationDown'
+    target_match_re:
+      alertname: '(HighResponseTime|DatabaseConnectionFailure)'
+    equal: ['instance']
+  
+  # إذا كان هناك هجوم DDoS، لا ترسل تنبيهات الحمولة العالية
+  - source_match:
+      alertname: 'CriticalDDoSAttack'
+    target_match_re:
+      alertname: '(HighCPUUsage|HighMemoryUsage|HighNetworkTraffic)'
+    equal: ['instance']
+
+# قوالب التنبيهات
+templates:
+  - '/etc/alertmanager/templates/*.tmpl' 

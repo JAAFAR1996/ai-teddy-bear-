@@ -1,0 +1,262 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-environment-config
+  namespace: argocd
+  labels:
+    environment: production
+    app.kubernetes.io/name: argocd-config
+data:
+  # Global Environment Configuration
+  environment.name: "production"
+  environment.region: "us-east-1"
+  environment.cluster: "teddy-bear-prod"
+  
+  # Application Configuration
+  app.domain: "api.teddy-bear.ai"
+  app.protocol: "https"
+  app.tls.enabled: "true"
+  app.monitoring.enabled: "true"
+  app.logging.level: "INFO"
+  app.tracing.enabled: "true"
+  app.metrics.enabled: "true"
+  
+  # Security Configuration
+  security.encryption.enabled: "true"
+  security.authentication.required: "true"
+  security.authorization.rbac.enabled: "true"
+  security.network.policies.enabled: "true"
+  security.pod.security.standards: "restricted"
+  security.secrets.management: "sealed-secrets"
+  
+  # Resource Limits
+  resources.default.cpu.request: "100m"
+  resources.default.memory.request: "128Mi"
+  resources.default.cpu.limit: "500m"
+  resources.default.memory.limit: "512Mi"
+  
+  # High Availability Configuration
+  ha.enabled: "true"
+  ha.min.replicas: "2"
+  ha.max.replicas: "20"
+  ha.autoscaling.enabled: "true"
+  ha.pod.disruption.budget: "25%"
+  
+  # Database Configuration
+  database.type: "postgresql"
+  database.ha.enabled: "true"
+  database.backup.enabled: "true"
+  database.backup.schedule: "0 2 * * *"
+  database.retention.days: "30"
+  
+  # Cache Configuration
+  cache.type: "redis"
+  cache.cluster.enabled: "true"
+  cache.persistence.enabled: "true"
+  cache.backup.enabled: "true"
+  
+  # Monitoring Configuration
+  monitoring.prometheus.enabled: "true"
+  monitoring.grafana.enabled: "true"
+  monitoring.alertmanager.enabled: "true"
+  monitoring.jaeger.enabled: "true"
+  monitoring.elasticsearch.enabled: "true"
+  
+  # GitOps Configuration
+  gitops.sync.policy: "automated"
+  gitops.sync.prune: "true"
+  gitops.sync.self.heal: "true"
+  gitops.webhook.enabled: "true"
+  gitops.notifications.enabled: "true"
+  
+  # Performance Configuration
+  performance.scaling.enabled: "true"
+  performance.caching.enabled: "true"
+  performance.optimization.enabled: "true"
+  performance.cdn.enabled: "true"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-environment-secrets
+  namespace: argocd
+  labels:
+    environment: production
+    app.kubernetes.io/name: argocd-secrets
+type: Opaque
+stringData:
+  # Database Secrets
+  DATABASE_URL: "postgresql://teddy_user:${DB_PASSWORD}@postgresql.ai-teddy-production.svc.cluster.local:5432/teddy_bear_db"
+  DATABASE_PASSWORD: "${DB_PASSWORD}"
+  DATABASE_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+  
+  # Redis Secrets
+  REDIS_URL: "redis://redis.ai-teddy-production.svc.cluster.local:6379"
+  REDIS_PASSWORD: "${REDIS_PASSWORD}"
+  
+  # JWT Secrets
+  JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
+  JWT_REFRESH_SECRET: "${JWT_REFRESH_SECRET}"
+  
+  # AI Service Secrets
+  OPENAI_API_KEY: "${OPENAI_API_KEY}"
+  HUGGINGFACE_API_TOKEN: "${HUGGINGFACE_API_TOKEN}"
+  ELEVENLABS_API_KEY: "${ELEVENLABS_API_KEY}"
+  HUME_API_KEY: "${HUME_API_KEY}"
+  
+  # External Services
+  GITHUB_TOKEN: "${GITHUB_TOKEN}"
+  DOCKER_REGISTRY_TOKEN: "${DOCKER_REGISTRY_TOKEN}"
+  SLACK_WEBHOOK_URL: "${SLACK_WEBHOOK_URL}"
+  
+  # Encryption Keys
+  HOMOMORPHIC_ENCRYPTION_KEY: "${HE_KEY}"
+  AES_ENCRYPTION_KEY: "${AES_KEY}"
+  
+  # Monitoring Secrets
+  PROMETHEUS_BEARER_TOKEN: "${PROMETHEUS_TOKEN}"
+  GRAFANA_ADMIN_PASSWORD: "${GRAFANA_PASSWORD}"
+  
+  # Certificate Secrets
+  TLS_CERT: "${TLS_CERT}"
+  TLS_KEY: "${TLS_KEY}"
+  CA_CERT: "${CA_CERT}"
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: argocd-network-policy
+  namespace: argocd
+  labels:
+    environment: production
+    app.kubernetes.io/name: argocd-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: argocd
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow ArgoCD Server access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: argocd
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+    # Allow ArgoCD API access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ai-teddy-production
+      ports:
+        - protocol: TCP
+          port: 443
+  egress:
+    # Allow Git repository access
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 22
+    # Allow Kubernetes API access
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 6443
+    # Allow DNS resolution
+    - to: []
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: argocd-production-deployer
+  namespace: argocd
+  labels:
+    environment: production
+    app.kubernetes.io/name: argocd-deployer
+automountServiceAccountToken: true
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argocd-production-deployer
+  labels:
+    environment: production
+    app.kubernetes.io/name: argocd-deployer
+rules:
+  # Application Management
+  - apiGroups: [""]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["apps"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["extensions"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["autoscaling"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["policy"]
+    resources: ["*"]
+    verbs: ["*"]
+  
+  # Security and Monitoring
+  - apiGroups: ["security.istio.io"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["monitoring.coreos.com"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["cert-manager.io"]
+    resources: ["*"]
+    verbs: ["*"]
+  
+  # Custom Resources
+  - apiGroups: ["argoproj.io"]
+    resources: ["*"]
+    verbs: ["*"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["*"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argocd-production-deployer
+  labels:
+    environment: production
+    app.kubernetes.io/name: argocd-deployer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argocd-production-deployer
+subjects:
+  - kind: ServiceAccount
+    name: argocd-production-deployer
+    namespace: argocd 

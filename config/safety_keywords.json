@@ -1,0 +1,124 @@
+{
+  "inappropriate_content": {
+    "keywords": [
+      "violence", "violent", "kill", "death", "blood", "murder", "weapon",
+      "scary", "nightmare", "fear", "afraid", "terror", "horror", "ghost",
+      "monster", "demon", "evil", "dark", "dangerous", "harm", "hurt"
+    ],
+    "risk_level": "high",
+    "age_restrictions": [0, 6],
+    "description": "Content that may frighten or disturb young children"
+  },
+  
+  "adult_themes": {
+    "keywords": [
+      "adult", "mature", "romance", "dating", "love", "kiss", "boyfriend", 
+      "girlfriend", "relationship", "marriage", "wedding", "pregnant",
+      "birth", "baby making", "adult content", "grown up stuff"
+    ],
+    "risk_level": "medium",
+    "age_restrictions": [0, 8],
+    "description": "Adult relationship and life concepts inappropriate for young children"
+  },
+  
+  "negative_emotions": {
+    "keywords": [
+      "hate", "stupid", "dumb", "ugly", "fat", "skinny", "weird", "loser",
+      "failure", "worthless", "bad", "terrible", "awful", "disgusting",
+      "gross", "yuck", "nasty", "mean", "cruel", "evil"
+    ],
+    "risk_level": "medium",
+    "age_restrictions": [0, 12],
+    "description": "Negative language that could harm child's self-esteem"
+  },
+  
+  "privacy_risks": {
+    "keywords": [
+      "address", "phone number", "telephone", "password", "secret code",
+      "don't tell anyone", "our secret", "where do you live", "what's your address",
+      "parent's name", "mom's work", "dad's work", "school name", "real name",
+      "personal information", "family details", "home location", "private"
+    ],
+    "risk_level": "critical",
+    "age_restrictions": [0, 18],
+    "description": "Requests for personal information that could compromise child safety"
+  },
+  
+  "inappropriate_behavior": {
+    "keywords": [
+      "don't tell mom", "don't tell dad", "keep secret", "hide from parents",
+      "meet in person", "come over", "visit me", "give me your photo",
+      "send picture", "webcam", "camera", "video call alone", "private chat"
+    ],
+    "risk_level": "critical", 
+    "age_restrictions": [0, 18],
+    "description": "Requests for inappropriate interactions or secrecy"
+  },
+  
+  "body_related": {
+    "keywords": [
+      "body parts", "private parts", "touch yourself", "show me", "take off",
+      "naked", "clothes off", "inappropriate touching", "body secrets",
+      "special places", "private areas", "grown up games"
+    ],
+    "risk_level": "critical",
+    "age_restrictions": [0, 18],
+    "description": "Inappropriate body-related content"
+  },
+  
+  "emotional_manipulation": {
+    "keywords": [
+      "no one loves you", "your parents don't care", "you're alone", 
+      "nobody wants you", "you're not good enough", "you'll never succeed",
+      "give up", "it's hopeless", "you can't do anything right"
+    ],
+    "risk_level": "high",
+    "age_restrictions": [0, 18],
+    "description": "Emotionally manipulative or harmful statements"
+  },
+  
+  "educational_positive": {
+    "keywords": [
+      "learn", "study", "read", "book", "school", "smart", "clever", 
+      "good job", "well done", "excellent", "wonderful", "amazing",
+      "great work", "keep trying", "practice", "discover", "explore",
+      "curious", "question", "think", "solve", "create", "imagine"
+    ],
+    "risk_level": "safe",
+    "boost_score": 0.2,
+    "description": "Positive educational and encouraging language"
+  },
+  
+  "emotional_positive": {
+    "keywords": [
+      "happy", "joy", "fun", "excited", "cheerful", "smile", "laugh",
+      "love", "care", "kind", "nice", "sweet", "gentle", "warm",
+      "friend", "friendship", "help", "share", "together", "family"
+    ],
+    "risk_level": "safe",
+    "boost_score": 0.15,
+    "description": "Positive emotional language that promotes wellbeing"
+  },
+  
+  "creative_play": {
+    "keywords": [
+      "play", "game", "toy", "puzzle", "blocks", "doll", "car", "ball",
+      "build", "make", "create", "draw", "color", "paint", "music",
+      "sing", "dance", "story", "adventure", "pretend", "imagine"
+    ],
+    "risk_level": "safe",
+    "boost_score": 0.1,
+    "description": "Creative and playful activities appropriate for children"
+  },
+  
+  "health_wellness": {
+    "keywords": [
+      "healthy", "exercise", "run", "jump", "strong", "grow", "sleep",
+      "eat good food", "vegetables", "fruit", "water", "clean", "wash",
+      "brush teeth", "take care", "rest", "breathe", "calm"
+    ],
+    "risk_level": "safe",
+    "boost_score": 0.1,
+    "description": "Health and wellness promoting content"
+  }
+} 
