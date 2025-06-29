@@ -179,8 +179,8 @@
       "ENABLE_PROFILING": false
     },
     "SECURITY": {
-      "encryption_key": "QjMfAp5xLV520CNBy7chNxRsNolV_xwHYeBiV1EyIXY=",
-      "jwt_secret": "hK1NjE%TP!%9r^Z&jdIffpRsu@9Ezg^DDp8tf%frOUoP!AyId1tqh@Sqehy^C^ip",
+      "encryption_key": "${TEDDY_ENCRYPTION_KEY}",
+      "jwt_secret": "${TEDDY_JWT_SECRET}",
       "token_expiry": 3600,
       "refresh_token_expiry": 2592000,
       "password_hash_rounds": 12

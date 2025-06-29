@@ -146,4 +146,43 @@ certs/
 *.tmp
 *.temp
 .cache/
-.temp/ 
+.temp/
+
+# ===============================
+# ADDITIONAL SECURITY (Auto-generated)
+# ===============================
+.env.local
+.env.production
+.env.staging
+*.env
+secrets/
+keys/
+certificates/
+*.backup
+*.bak
+backup_*
+emergency_keys*
+api_keys*
+!api_keys.json.example
+vault_*
+*.vault
+
+# Git secrets scanning
+.secrets.baseline
+.trufflehog_output
+
+# Configuration backups
+config/*.backup
+config/*.bak
+config/config.json.backup
+
+# Temporary secret files
+temp_keys*
+*.secret
+*.private
+
+# Generated security files
+generated_keys.env
+secrets_to_replace.txt
+GIT_SECRETS_CLEANUP_REPORT.md
+SECURITY_CLEANUP_REPORT.md 
