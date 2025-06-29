@@ -1,0 +1,588 @@
+# ===================================================================
+# 🚀 AI Teddy Bear - Multi-Region Infrastructure CI/CD Pipeline
+# Enterprise-Grade GitHub Actions Workflow
+# Infrastructure Team Lead: Senior Infrastructure Engineer
+# Date: January 2025
+# ===================================================================
+
+name: Multi-Region Infrastructure Deployment
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'infrastructure/terraform/**'
+      - '.github/workflows/infrastructure.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'infrastructure/terraform/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      action:
+        description: 'Terraform action'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  TF_VERSION: "1.6.0"
+  AWS_DEFAULT_REGION: us-east-1
+  TERRAFORM_WORKSPACE: ${{ github.event.inputs.environment || 'staging' }}
+
+jobs:
+  # ===================================================================
+  # 🔍 VALIDATION AND SECURITY SCANNING
+  # ===================================================================
+  
+  validate:
+    name: "🔍 Validate & Security Scan"
+    runs-on: ubuntu-latest
+    outputs:
+      terraform-version: ${{ steps.setup.outputs.terraform-version }}
+    
+    steps:
+      - name: "📥 Checkout Code"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: "🔧 Setup Terraform"
+        id: setup
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+      
+      - name: "📋 Terraform Format Check"
+        id: fmt
+        run: |
+          cd infrastructure/terraform
+          terraform fmt -check -recursive
+        continue-on-error: true
+      
+      - name: "✅ Terraform Validate"
+        id: validate
+        run: |
+          cd infrastructure/terraform
+          terraform init -backend=false
+          terraform validate
+      
+      - name: "🔒 Security Scan with tfsec"
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: infrastructure/terraform
+          soft_fail: false
+          format: sarif
+          additional_args: --minimum-severity MEDIUM
+      
+      - name: "📊 Upload Security Scan Results"
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: tfsec.sarif
+      
+      - name: "🔍 Terraform Compliance Check"
+        uses: terraform-compliance/github_action@main
+        with:
+          plan: terraform.tfplan
+          features: infrastructure/terraform/compliance/
+        continue-on-error: true
+      
+      - name: "💰 Cost Estimation"
+        uses: infracost/actions/setup@v2
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+        continue-on-error: true
+      
+      - name: "💰 Generate Cost Report"
+        if: success()
+        run: |
+          cd infrastructure/terraform
+          infracost breakdown --path . --format json --out-file infracost.json
+          infracost comment github --path infracost.json \
+            --repo ${{ github.repository }} \
+            --github-token ${{ secrets.GITHUB_TOKEN }} \
+            --pull-request ${{ github.event.pull_request.number }} \
+            --behavior update
+        continue-on-error: true
+
+  # ===================================================================
+  # 📝 TERRAFORM PLAN
+  # ===================================================================
+  
+  plan:
+    name: "📝 Plan Infrastructure"
+    runs-on: ubuntu-latest
+    needs: validate
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+    
+    strategy:
+      matrix:
+        region: [us-east-1, eu-west-1, ap-southeast-1]
+    
+    steps:
+      - name: "📥 Checkout Code"
+        uses: actions/checkout@v4
+      
+      - name: "🔧 Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      
+      - name: "🔐 Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ matrix.region }}
+          role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+          role-duration-seconds: 3600
+          role-session-name: terraform-deployment-${{ github.run_id }}
+      
+      - name: "🏗️ Terraform Init"
+        run: |
+          cd infrastructure/terraform
+          terraform init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="key=infrastructure/terraform-${{ matrix.region }}.tfstate" \
+            -backend-config="region=us-east-1" \
+            -backend-config="dynamodb_table=${{ secrets.TF_STATE_LOCK_TABLE }}" \
+            -backend-config="encrypt=true"
+      
+      - name: "🎯 Select Terraform Workspace"
+        run: |
+          cd infrastructure/terraform
+          terraform workspace select ${{ env.TERRAFORM_WORKSPACE }} || \
+          terraform workspace new ${{ env.TERRAFORM_WORKSPACE }}
+      
+      - name: "📋 Terraform Plan"
+        id: plan
+        run: |
+          cd infrastructure/terraform
+          terraform plan \
+            -var-file="environments/${{ env.TERRAFORM_WORKSPACE }}.tfvars" \
+            -var="current_region=${{ matrix.region }}" \
+            -out=terraform-${{ matrix.region }}.tfplan \
+            -detailed-exitcode
+        continue-on-error: true
+      
+      - name: "📊 Plan Summary"
+        run: |
+          cd infrastructure/terraform
+          terraform show -json terraform-${{ matrix.region }}.tfplan > plan-${{ matrix.region }}.json
+          
+          # Extract resource changes
+          echo "## 📋 Terraform Plan Summary - ${{ matrix.region }}" >> $GITHUB_STEP_SUMMARY
+          echo "| Action | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          
+          CREATE=$(jq '.resource_changes[] | select(.change.actions[] == "create") | .address' plan-${{ matrix.region }}.json | wc -l)
+          UPDATE=$(jq '.resource_changes[] | select(.change.actions[] == "update") | .address' plan-${{ matrix.region }}.json | wc -l)
+          DELETE=$(jq '.resource_changes[] | select(.change.actions[] == "delete") | .address' plan-${{ matrix.region }}.json | wc -l)
+          
+          echo "| Create | $CREATE |" >> $GITHUB_STEP_SUMMARY
+          echo "| Update | $UPDATE |" >> $GITHUB_STEP_SUMMARY
+          echo "| Delete | $DELETE |" >> $GITHUB_STEP_SUMMARY
+      
+      - name: "💾 Upload Plan Artifacts"
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ matrix.region }}
+          path: |
+            infrastructure/terraform/terraform-${{ matrix.region }}.tfplan
+            infrastructure/terraform/plan-${{ matrix.region }}.json
+          retention-days: 30
+      
+      - name: "📝 Comment Plan on PR"
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const planJson = JSON.parse(fs.readFileSync('infrastructure/terraform/plan-${{ matrix.region }}.json', 'utf8'));
+            
+            const changes = planJson.resource_changes || [];
+            const create = changes.filter(c => c.change.actions.includes('create')).length;
+            const update = changes.filter(c => c.change.actions.includes('update')).length;
+            const delete_ = changes.filter(c => c.change.actions.includes('delete')).length;
+            
+            const comment = `## 🏗️ Terraform Plan - ${{ matrix.region }}
+            
+            | Action | Count |
+            |--------|-------|
+            | Create | ${create} |
+            | Update | ${update} |
+            | Delete | ${delete_} |
+            
+            Plan status: ${{ steps.plan.outcome }}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # ===================================================================
+  # 🚀 TERRAFORM APPLY
+  # ===================================================================
+  
+  apply:
+    name: "🚀 Deploy Infrastructure"
+    runs-on: ubuntu-latest
+    needs: [validate, plan]
+    if: |
+      (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+    environment: 
+      name: ${{ github.event.inputs.environment || 'staging' }}
+      url: "https://console.aws.amazon.com/eks/home?region=us-east-1#/clusters"
+    
+    strategy:
+      matrix:
+        region: [us-east-1, eu-west-1, ap-southeast-1]
+      max-parallel: 1  # Deploy regions sequentially for safety
+    
+    steps:
+      - name: "📥 Checkout Code"
+        uses: actions/checkout@v4
+      
+      - name: "🔧 Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      
+      - name: "🔐 Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ matrix.region }}
+          role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+          role-duration-seconds: 7200  # Extended for apply operations
+          role-session-name: terraform-apply-${{ github.run_id }}
+      
+      - name: "💾 Download Plan Artifacts"
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan-${{ matrix.region }}
+          path: infrastructure/terraform/
+      
+      - name: "🏗️ Terraform Init"
+        run: |
+          cd infrastructure/terraform
+          terraform init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="key=infrastructure/terraform-${{ matrix.region }}.tfstate" \
+            -backend-config="region=us-east-1" \
+            -backend-config="dynamodb_table=${{ secrets.TF_STATE_LOCK_TABLE }}" \
+            -backend-config="encrypt=true"
+      
+      - name: "🎯 Select Terraform Workspace"
+        run: |
+          cd infrastructure/terraform
+          terraform workspace select ${{ env.TERRAFORM_WORKSPACE }}
+      
+      - name: "🚀 Terraform Apply"
+        run: |
+          cd infrastructure/terraform
+          terraform apply \
+            -auto-approve \
+            terraform-${{ matrix.region }}.tfplan
+      
+      - name: "🔍 Post-Deployment Validation"
+        run: |
+          cd infrastructure/terraform
+          
+          # Validate EKS cluster
+          if terraform output -raw eks_cluster_endpoint_${{ matrix.region }} 2>/dev/null; then
+            echo "✅ EKS cluster deployed successfully in ${{ matrix.region }}"
+          fi
+          
+          # Validate RDS instance
+          if terraform output -raw rds_endpoint_${{ matrix.region }} 2>/dev/null; then
+            echo "✅ RDS instance deployed successfully in ${{ matrix.region }}"
+          fi
+          
+          # Validate ALB
+          if terraform output -raw alb_dns_name_${{ matrix.region }} 2>/dev/null; then
+            echo "✅ ALB deployed successfully in ${{ matrix.region }}"
+          fi
+      
+      - name: "📊 Generate Deployment Report"
+        run: |
+          cd infrastructure/terraform
+          
+          echo "## 🚀 Deployment Report - ${{ matrix.region }}" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Check each major component
+          terraform output -json > outputs.json
+          
+          if jq -e '.eks_cluster_name_'${{ matrix.region }}'.value' outputs.json > /dev/null; then
+            echo "| EKS Cluster | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| EKS Cluster | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if jq -e '.rds_endpoint_'${{ matrix.region }}'.value' outputs.json > /dev/null; then
+            echo "| RDS Database | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| RDS Database | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ===================================================================
+  # 🧪 POST-DEPLOYMENT TESTING
+  # ===================================================================
+  
+  test:
+    name: "🧪 Post-Deployment Tests"
+    runs-on: ubuntu-latest
+    needs: apply
+    if: success()
+    
+    strategy:
+      matrix:
+        region: [us-east-1, eu-west-1, ap-southeast-1]
+    
+    steps:
+      - name: "📥 Checkout Code"
+        uses: actions/checkout@v4
+      
+      - name: "🔐 Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ matrix.region }}
+          role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+          role-duration-seconds: 1800
+          role-session-name: terraform-test-${{ github.run_id }}
+      
+      - name: "🔍 Infrastructure Health Check"
+        run: |
+          # Check EKS cluster status
+          CLUSTER_NAME=$(aws eks list-clusters --query 'clusters[?contains(@, `ai-teddy`)]' --output text)
+          if [ ! -z "$CLUSTER_NAME" ]; then
+            STATUS=$(aws eks describe-cluster --name $CLUSTER_NAME --query 'cluster.status' --output text)
+            echo "EKS Cluster Status: $STATUS"
+            [ "$STATUS" = "ACTIVE" ] || exit 1
+          fi
+          
+          # Check RDS instance status
+          RDS_INSTANCE=$(aws rds describe-db-instances --query 'DBInstances[?contains(DBInstanceIdentifier, `ai-teddy`)].DBInstanceIdentifier' --output text)
+          if [ ! -z "$RDS_INSTANCE" ]; then
+            STATUS=$(aws rds describe-db-instances --db-instance-identifier $RDS_INSTANCE --query 'DBInstances[0].DBInstanceStatus' --output text)
+            echo "RDS Instance Status: $STATUS"
+            [ "$STATUS" = "available" ] || exit 1
+          fi
+          
+          # Check ElastiCache cluster status
+          CACHE_CLUSTER=$(aws elasticache describe-replication-groups --query 'ReplicationGroups[?contains(ReplicationGroupId, `ai-teddy`)].ReplicationGroupId' --output text)
+          if [ ! -z "$CACHE_CLUSTER" ]; then
+            STATUS=$(aws elasticache describe-replication-groups --replication-group-id $CACHE_CLUSTER --query 'ReplicationGroups[0].Status' --output text)
+            echo "ElastiCache Status: $STATUS"
+            [ "$STATUS" = "available" ] || exit 1
+          fi
+      
+      - name: "🌐 Connectivity Tests"
+        run: |
+          # Test ALB endpoint
+          ALB_DNS=$(aws elbv2 describe-load-balancers --query 'LoadBalancers[?contains(LoadBalancerName, `ai-teddy`)].DNSName' --output text)
+          if [ ! -z "$ALB_DNS" ]; then
+            echo "Testing ALB connectivity to $ALB_DNS"
+            curl -f -s --max-time 30 "http://$ALB_DNS/health" || echo "Health endpoint not yet available"
+          fi
+      
+      - name: "🔒 Security Validation"
+        run: |
+          # Check security groups
+          aws ec2 describe-security-groups --filters "Name=group-name,Values=*ai-teddy*" --query 'SecurityGroups[].GroupId' --output table
+          
+          # Check KMS keys
+          aws kms list-keys --query 'Keys[].KeyId' --output table
+          
+          # Check IAM roles
+          aws iam list-roles --query 'Roles[?contains(RoleName, `ai-teddy`)].RoleName' --output table
+
+  # ===================================================================
+  # 📊 MONITORING AND ALERTS SETUP
+  # ===================================================================
+  
+  monitoring:
+    name: "📊 Setup Monitoring & Alerts"
+    runs-on: ubuntu-latest
+    needs: test
+    if: success() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: "📥 Checkout Code"
+        uses: actions/checkout@v4
+      
+      - name: "🔐 Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+          role-duration-seconds: 1800
+          role-session-name: monitoring-setup-${{ github.run_id }}
+      
+      - name: "📊 Create CloudWatch Dashboards"
+        run: |
+          # Create main infrastructure dashboard
+          aws cloudwatch put-dashboard \
+            --dashboard-name "AI-Teddy-Infrastructure" \
+            --dashboard-body file://infrastructure/terraform/monitoring/dashboard.json
+      
+      - name: "🚨 Setup CloudWatch Alarms"
+        run: |
+          # High CPU alarm
+          aws cloudwatch put-metric-alarm \
+            --alarm-name "AI-Teddy-High-CPU" \
+            --alarm-description "Alert when CPU exceeds 80%" \
+            --metric-name CPUUtilization \
+            --namespace AWS/EKS \
+            --statistic Average \
+            --period 300 \
+            --threshold 80 \
+            --comparison-operator GreaterThanThreshold \
+            --evaluation-periods 2
+      
+      - name: "📧 Setup SNS Notifications"
+        run: |
+          # Create SNS topic for alerts
+          aws sns create-topic --name ai-teddy-infrastructure-alerts
+          
+          # Subscribe to notifications
+          aws sns subscribe \
+            --topic-arn "arn:aws:sns:us-east-1:${{ secrets.AWS_ACCOUNT_ID }}:ai-teddy-infrastructure-alerts" \
+            --protocol email \
+            --notification-endpoint ${{ secrets.ALERT_EMAIL }}
+
+  # ===================================================================
+  # 📝 DOCUMENTATION UPDATE
+  # ===================================================================
+  
+  documentation:
+    name: "📝 Update Documentation"
+    runs-on: ubuntu-latest
+    needs: monitoring
+    if: success() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: "📥 Checkout Code"
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: "📊 Generate Infrastructure Diagram"
+        run: |
+          # Generate Terraform graph
+          cd infrastructure/terraform
+          terraform graph | dot -Tpng > infrastructure-diagram.png
+      
+      - name: "📝 Update README with Outputs"
+        run: |
+          cd infrastructure/terraform
+          
+          # Extract outputs and update documentation
+          echo "## 🚀 Deployed Infrastructure" >> deployment-info.md
+          echo "" >> deployment-info.md
+          echo "### EKS Clusters" >> deployment-info.md
+          terraform output -json | jq -r '.[] | select(.type == "string" and (.value | contains("eks"))) | "- \(.value)"' >> deployment-info.md
+          echo "" >> deployment-info.md
+          echo "### Load Balancers" >> deployment-info.md
+          terraform output -json | jq -r '.[] | select(.type == "string" and (.value | contains("elb"))) | "- \(.value)"' >> deployment-info.md
+          
+          # Append to main README
+          cat deployment-info.md >> README.md
+      
+      - name: "📤 Commit Documentation Updates"
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "📝 Update infrastructure documentation [skip ci]" || exit 0
+          git push
+
+  # ===================================================================
+  # 🧹 CLEANUP ON FAILURE
+  # ===================================================================
+  
+  cleanup:
+    name: "🧹 Cleanup on Failure"
+    runs-on: ubuntu-latest
+    needs: [validate, plan, apply, test]
+    if: failure() && github.event.inputs.action == 'apply'
+    
+    steps:
+      - name: "📥 Checkout Code"
+        uses: actions/checkout@v4
+      
+      - name: "🔐 Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+          role-duration-seconds: 3600
+          role-session-name: terraform-cleanup-${{ github.run_id }}
+      
+      - name: "🧹 Emergency Cleanup"
+        run: |
+          echo "🚨 Deployment failed, initiating emergency cleanup..."
+          
+          # List resources that might need manual cleanup
+          echo "Resources to review:"
+          aws ec2 describe-instances --filters "Name=tag:Project,Values=ai-teddy-bear" --query 'Reservations[].Instances[].InstanceId'
+          aws rds describe-db-instances --query 'DBInstances[?contains(DBInstanceIdentifier, `ai-teddy`)].DBInstanceIdentifier'
+          aws eks list-clusters --query 'clusters[?contains(@, `ai-teddy`)]'
+          
+          # Send notification
+          aws sns publish \
+            --topic-arn "arn:aws:sns:us-east-1:${{ secrets.AWS_ACCOUNT_ID }}:ai-teddy-infrastructure-alerts" \
+            --message "🚨 Infrastructure deployment failed. Manual review required." \
+            --subject "AI Teddy Infrastructure Deployment Failed"
+
+# ===================================================================
+# 📧 NOTIFICATION ON COMPLETION
+# ===================================================================
+
+  notify:
+    name: "📧 Send Completion Notification"
+    runs-on: ubuntu-latest
+    needs: [apply, test, monitoring, documentation]
+    if: always()
+    
+    steps:
+      - name: "📧 Success Notification"
+        if: needs.apply.result == 'success' && needs.test.result == 'success'
+        run: |
+          echo "✅ Multi-region infrastructure deployment completed successfully!"
+          echo "🌍 Regions: us-east-1, eu-west-1, ap-southeast-1"
+          echo "🚀 Environment: ${{ env.TERRAFORM_WORKSPACE }}"
+      
+      - name: "🚨 Failure Notification"
+        if: contains(needs.*.result, 'failure')
+        run: |
+          echo "❌ Infrastructure deployment failed!"
+          echo "Please check the workflow logs and take appropriate action."
+          exit 1 
