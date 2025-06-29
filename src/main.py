@@ -1,213 +1,502 @@
+#!/usr/bin/env python3
 """
-🚀 AI Teddy Bear Application Entry Point
-=======================================
+🚀 AI Teddy Bear - Unified Application Entry Point
+Lead Architect: جعفر أديب (Jaafar Adeeb)
+Senior Backend Developer & Professor
 
-Main application startup with Clean Architecture structure.
-Sets up dependency injection, initializes adapters, and starts the application.
-
-Architecture:
-- Clean Architecture with Hexagonal Design
-- Dependency Injection Container
-- Event-Driven Architecture
-- Comprehensive Error Handling
-- Production-Ready Monitoring
+Enterprise-grade application bootstrap with:
+- Unified IoC Container with dependency-injector
+- Comprehensive health checks and migrations
+- Prometheus metrics server
+- Multi-server concurrent startup (GraphQL, WebSocket, gRPC)
+- Graceful shutdown and error handling
+- Vault integration for secrets management
 """
 
 import asyncio
 import logging
+import signal
 import sys
 from pathlib import Path
 from typing import Optional
+import structlog
+from dependency_injector import containers, providers
+from prometheus_client import start_http_server, Counter, Histogram, Gauge
 
 # Add src to Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from infrastructure.config import ConfigFactory
-from infrastructure.container import ApplicationContainer
-from infrastructure.monitoring import setup_monitoring, setup_logging
-from infrastructure.security import setup_security
-from adapters.inbound.fastapi_app import create_fastapi_app
-from adapters.inbound.websocket import setup_websocket_handlers
-from adapters.inbound.grpc import setup_grpc_server
-from core.application.events import EventBus
+# Configure structured logging
+structlog.configure(
+    processors=[
+        structlog.stdlib.filter_by_level,
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.UnicodeDecoder(),
+        structlog.processors.JSONRenderer()
+    ],
+    context_class=dict,
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    wrapper_class=structlog.stdlib.BoundLogger,
+    cache_logger_on_first_use=True,
+)
+
+logger = structlog.get_logger()
+
+# Prometheus metrics
+STARTUP_TIME = Histogram('app_startup_duration_seconds', 'Application startup time')
+HEALTH_CHECK_FAILURES = Counter('app_health_check_failures_total', 'Health check failures', ['service'])
+ACTIVE_CONNECTIONS = Gauge('app_active_connections', 'Active connections', ['server_type'])
+SERVICE_STATUS = Gauge('app_service_status', 'Service status', ['service'])
 
 
-class ApplicationStartup:
-    """Application startup orchestrator"""
+class Container(containers.DeclarativeContainer):
+    """
+    🏗️ Enterprise IoC Container
+    Advanced dependency injection with lifecycle management
+    """
     
-    def __init__(self):
-        self.container: Optional[ApplicationContainer] = None
-        self.config = None
-        self.logger = None
-
-    async def initialize(self) -> None:
-        """Initialize all application components"""
-        try:
-            # Load configuration
-            self.config = ConfigFactory.create()
-            
-            # Setup logging
-            self.logger = setup_logging(self.config.logging)
-            self.logger.info("🚀 Starting AI Teddy Bear Application")
-            
-            # Setup security
-            setup_security(self.config.security)
-            
-            # Setup monitoring
-            setup_monitoring(self.config.monitoring)
-            
-            # Initialize dependency injection container
-            self.container = ApplicationContainer()
-            self.container.config.from_dict(self.config.to_dict())
-            
-            # Wire dependencies
-            await self._wire_dependencies()
-            
-            # Initialize event bus
-            await self._setup_event_bus()
-            
-            # Setup database
-            await self._setup_database()
-            
-            self.logger.info("✅ Application initialized successfully")
-            
-        except Exception as e:
-            if self.logger:
-                self.logger.error(f"❌ Failed to initialize application: {e}")
-            else:
-                print(f"❌ Failed to initialize application: {e}")
-            raise
-
-    async def _wire_dependencies(self) -> None:
-        """Wire all dependencies in the container"""
-        self.container.wire(modules=[
-            "core.application.use_cases",
-            "adapters.inbound.rest",
-            "adapters.inbound.websocket", 
-            "adapters.inbound.grpc",
-            "adapters.outbound.persistence",
-            "adapters.outbound.ai_services",
-            "adapters.outbound.messaging"
-        ])
-
-    async def _setup_event_bus(self) -> None:
-        """Setup and configure the event bus"""
-        event_bus = self.container.event_bus()
-        
-        # Register event handlers
-        from core.application.event_handlers import (
-            ChildEventHandlers,
-            ConversationEventHandlers,
-            LearningEventHandlers,
-            SafetyEventHandlers
-        )
-        
-        await event_bus.register_handlers([
-            ChildEventHandlers(),
-            ConversationEventHandlers(),
-            LearningEventHandlers(),
-            SafetyEventHandlers()
-        ])
-
-    async def _setup_database(self) -> None:
-        """Setup database connections and run migrations"""
-        database_manager = self.container.database_manager()
-        await database_manager.initialize()
-        await database_manager.run_migrations()
-
-    async def create_fastapi_application(self):
-        """Create and configure FastAPI application"""
-        return create_fastapi_app(self.container)
-
-    async def start_websocket_server(self) -> None:
-        """Start WebSocket server for real-time communication"""
-        websocket_handler = setup_websocket_handlers(self.container)
-        await websocket_handler.start()
-
-    async def start_grpc_server(self) -> None:
-        """Start gRPC server for high-performance communication"""
-        grpc_server = setup_grpc_server(self.container)
-        await grpc_server.start()
-
-    async def shutdown(self) -> None:
-        """Graceful application shutdown"""
-        if self.logger:
-            self.logger.info("🛑 Shutting down AI Teddy Bear Application")
-        
-        if self.container:
-            # Close database connections
-            database_manager = self.container.database_manager()
-            await database_manager.close()
-            
-            # Stop event bus
-            event_bus = self.container.event_bus()
-            await event_bus.stop()
-            
-            # Clear container
-            self.container.unwire()
-
-        if self.logger:
-            self.logger.info("✅ Application shutdown complete")
-
-
-async def run_development_server():
-    """Run development server with hot reload"""
-    import uvicorn
+    # Configuration provider
+    config = providers.Configuration()
     
-    startup = ApplicationStartup()
-    await startup.initialize()
+    # ================== INFRASTRUCTURE LAYER ==================
     
-    app = await startup.create_fastapi_application()
-    
-    config = uvicorn.Config(
-        app=app,
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
+    # Database connection
+    database = providers.Singleton(
+        "infrastructure.database.Database",
+        connection_string=config.database.url,
+        pool_size=config.database.pool_size.as_int(),
+        max_overflow=config.database.max_overflow.as_int()
     )
     
-    server = uvicorn.Server(config)
+    # Vault client for secrets management
+    vault_client = providers.Singleton(
+        "infrastructure.vault.VaultClient",
+        url=config.vault.url,
+        token=config.vault.token
+    )
     
-    try:
-        await server.serve()
-    finally:
-        await startup.shutdown()
+    # Redis cache
+    redis_client = providers.Singleton(
+        "infrastructure.cache.RedisClient",
+        url=config.redis.url,
+        max_connections=config.redis.max_connections.as_int()
+    )
+    
+    # Message broker
+    message_broker = providers.Singleton(
+        "infrastructure.messaging.MessageBroker",
+        broker_url=config.messaging.broker_url
+    )
+    
+    # ================== DOMAIN REPOSITORIES ==================
+    
+    # Child repository
+    child_repository = providers.Factory(
+        "src.domain.entities.child_repository.ChildRepository",
+        session_factory=database.provided.get_session
+    )
+    
+    # Conversation repository
+    conversation_repository = providers.Factory(
+        "src.infrastructure.persistence.repositories.conversation_repository.ConversationRepository",
+        session_factory=database.provided.get_session
+    )
+    
+    # ================== APPLICATION SERVICES ==================
+    
+    # AI service with vault-managed API keys
+    ai_service = providers.Factory(
+        "infrastructure.ai.AIService",
+        openai_api_key=vault_client.provided.get_secret("openai_api_key"),
+        anthropic_api_key=vault_client.provided.get_secret("anthropic_api_key")
+    )
+    
+    # Speech service
+    speech_service = providers.Factory(
+        "infrastructure.ai.SpeechService",
+        elevenlabs_api_key=vault_client.provided.get_secret("elevenlabs_api_key")
+    )
+    
+    # Emotion analysis service
+    emotion_service = providers.Factory(
+        "infrastructure.ai.EmotionService",
+        hume_api_key=vault_client.provided.get_secret("hume_api_key")
+    )
+    
+    # ================== COMMAND/QUERY HANDLERS ==================
+    
+    # Command bus
+    command_bus = providers.Singleton(
+        "src.application.commands.command_bus.CommandBus"
+    )
+    
+    # Query bus
+    query_bus = providers.Singleton(
+        "src.application.queries.query_bus.QueryBus"
+    )
+    
+    # ================== PRESENTATION LAYER ==================
+    
+    # FastAPI application
+    fastapi_app = providers.Factory(
+        "infrastructure.web.create_fastapi_app",
+        container=providers.Self()
+    )
+    
+    # WebSocket handler
+    websocket_handler = providers.Factory(
+        "infrastructure.websocket.WebSocketHandler",
+        container=providers.Self()
+    )
+    
+    # gRPC server
+    grpc_server = providers.Factory(
+        "infrastructure.grpc.GRPCServer",
+        container=providers.Self()
+    )
+    
+    # GraphQL server
+    graphql_server = providers.Factory(
+        "infrastructure.graphql.GraphQLServer",
+        container=providers.Self()
+    )
+    
+    # ================== MONITORING & HEALTH ==================
+    
+    # Health checker
+    health_checker = providers.Singleton(
+        "infrastructure.health.HealthChecker",
+        container=providers.Self()
+    )
+    
+    # Metrics collector
+    metrics_collector = providers.Singleton(
+        "infrastructure.metrics.MetricsCollector"
+    )
 
 
-async def run_production_server():
-    """Run production server with all services"""
-    startup = ApplicationStartup()
-    await startup.initialize()
+class Application:
+    """
+    🎯 Main Application Class
+    Orchestrates startup, health checks, and graceful shutdown
+    """
     
-    # Start all services concurrently
-    tasks = [
-        startup.create_fastapi_application(),
-        startup.start_websocket_server(),
-        startup.start_grpc_server()
-    ]
+    def __init__(self):
+        self.container = Container()
+        self.servers = []
+        self.shutdown_event = asyncio.Event()
+        
+        # Load configuration from environment
+        self._load_configuration()
+        
+        # Setup signal handlers
+        self._setup_signal_handlers()
     
-    try:
-        await asyncio.gather(*tasks)
-    except KeyboardInterrupt:
-        print("\n🛑 Received shutdown signal")
-    finally:
-        await startup.shutdown()
+    def _load_configuration(self):
+        """Load configuration from environment variables"""
+        config = {
+            "database": {
+                "url": "sqlite:///ai_teddy.db",
+                "pool_size": 10,
+                "max_overflow": 20
+            },
+            "vault": {
+                "url": "http://localhost:8200",
+                "token": "dev-token"
+            },
+            "redis": {
+                "url": "redis://localhost:6379/0",
+                "max_connections": 10
+            },
+            "messaging": {
+                "broker_url": "redis://localhost:6379/1"
+            },
+            "servers": {
+                "fastapi_port": 8000,
+                "websocket_port": 8765,
+                "grpc_port": 50051,
+                "graphql_port": 8080,
+                "metrics_port": 9090
+            }
+        }
+        
+        self.container.config.from_dict(config)
+    
+    def _setup_signal_handlers(self):
+        """Setup graceful shutdown signal handlers"""
+        if sys.platform != 'win32':
+            for sig in (signal.SIGTERM, signal.SIGINT):
+                signal.signal(sig, self._signal_handler)
+    
+    def _signal_handler(self, signum, frame):
+        """Handle shutdown signals"""
+        logger.info("Received shutdown signal", signal=signum)
+        self.shutdown_event.set()
+    
+    @STARTUP_TIME.time()
+    async def startup(self):
+        """
+        🚀 Application startup sequence
+        1. Health checks
+        2. Database migrations  
+        3. Metrics server
+        4. Service initialization
+        """
+        logger.info("🚀 Starting AI Teddy Bear Application...")
+        
+        try:
+            # Step 1: Run health checks
+            await self._run_health_checks()
+            
+            # Step 2: Run database migrations
+            await self._run_migrations()
+            
+            # Step 3: Start metrics server
+            self._start_metrics_server()
+            
+            # Step 4: Initialize services
+            await self._initialize_services()
+            
+            logger.info("✅ Application startup completed successfully")
+            
+        except Exception as e:
+            logger.error("❌ Application startup failed", error=str(e))
+            raise
+    
+    async def _run_health_checks(self):
+        """Run comprehensive health checks"""
+        logger.info("🏥 Running health checks...")
+        
+        health_checker = self.container.health_checker()
+        health_status = await health_checker.check_all()
+        
+        failed_checks = [
+            service for service, status in health_status.items() 
+            if not status["healthy"]
+        ]
+        
+        if failed_checks:
+            logger.error("Health checks failed", failed_services=failed_checks)
+            for service in failed_checks:
+                HEALTH_CHECK_FAILURES.labels(service=service).inc()
+            raise RuntimeError(f"Health checks failed for: {failed_checks}")
+        
+        logger.info("✅ All health checks passed")
+        
+        # Update service status metrics
+        for service, status in health_status.items():
+            SERVICE_STATUS.labels(service=service).set(1 if status["healthy"] else 0)
+    
+    async def _run_migrations(self):
+        """Run database migrations"""
+        logger.info("🗄️ Running database migrations...")
+        
+        try:
+            database = self.container.database()
+            await database.run_migrations()
+            logger.info("✅ Database migrations completed")
+            
+        except Exception as e:
+            logger.error("❌ Database migrations failed", error=str(e))
+            raise
+    
+    def _start_metrics_server(self):
+        """Start Prometheus metrics server"""
+        metrics_port = self.container.config()["servers"]["metrics_port"]
+        
+        logger.info("📊 Starting metrics server", port=metrics_port)
+        start_http_server(metrics_port)
+        logger.info("✅ Metrics server started")
+    
+    async def _initialize_services(self):
+        """Initialize all application services"""
+        logger.info("⚙️ Initializing services...")
+        
+        # Initialize AI services
+        ai_service = self.container.ai_service()
+        await ai_service.initialize()
+        
+        # Initialize speech service
+        speech_service = self.container.speech_service()
+        await speech_service.initialize()
+        
+        # Initialize emotion service
+        emotion_service = self.container.emotion_service()
+        await emotion_service.initialize()
+        
+        # Initialize command/query buses
+        command_bus = self.container.command_bus()
+        await command_bus.initialize()
+        
+        query_bus = self.container.query_bus()
+        await query_bus.initialize()
+        
+        logger.info("✅ All services initialized")
+    
+    async def run(self):
+        """
+        🏃 Main application run loop
+        Starts all servers concurrently and waits for shutdown signal
+        """
+        try:
+            # Run startup sequence
+            await self.startup()
+            
+            # Start all servers concurrently
+            server_tasks = await asyncio.gather(
+                self._run_fastapi_server(),
+                self._run_websocket_server(),
+                self._run_grpc_server(),
+                self._run_graphql_server(),
+                return_exceptions=True
+            )
+            
+            # Wait for shutdown signal
+            await self.shutdown_event.wait()
+            
+        except KeyboardInterrupt:
+            logger.info("🛑 Received keyboard interrupt")
+        except Exception as e:
+            logger.error("💥 Application run failed", error=str(e))
+            raise
+        finally:
+            await self._shutdown()
+    
+    async def _run_fastapi_server(self):
+        """Start FastAPI server"""
+        import uvicorn
+        
+        config = self.container.config()
+        port = config["servers"]["fastapi_port"]
+        
+        logger.info("🌐 Starting FastAPI server", port=port)
+        
+        app = self.container.fastapi_app()
+        
+        config = uvicorn.Config(
+            app=app,
+            host="0.0.0.0",
+            port=port,
+            log_level="info",
+            access_log=True
+        )
+        
+        server = uvicorn.Server(config)
+        ACTIVE_CONNECTIONS.labels(server_type="fastapi").set(1)
+        
+        try:
+            await server.serve()
+        finally:
+            ACTIVE_CONNECTIONS.labels(server_type="fastapi").set(0)
+    
+    async def _run_websocket_server(self):
+        """Start WebSocket server"""
+        import websockets
+        
+        config = self.container.config()
+        port = config["servers"]["websocket_port"]
+        
+        logger.info("⚡ Starting WebSocket server", port=port)
+        
+        handler = self.container.websocket_handler()
+        
+        ACTIVE_CONNECTIONS.labels(server_type="websocket").set(1)
+        
+        try:
+            async with websockets.serve(handler.handle_connection, "0.0.0.0", port):
+                await self.shutdown_event.wait()
+        finally:
+            ACTIVE_CONNECTIONS.labels(server_type="websocket").set(0)
+    
+    async def _run_grpc_server(self):
+        """Start gRPC server"""
+        config = self.container.config()
+        port = config["servers"]["grpc_port"]
+        
+        logger.info("🔧 Starting gRPC server", port=port)
+        
+        server = self.container.grpc_server()
+        
+        ACTIVE_CONNECTIONS.labels(server_type="grpc").set(1)
+        
+        try:
+            await server.start(port)
+            await self.shutdown_event.wait()
+        finally:
+            await server.stop()
+            ACTIVE_CONNECTIONS.labels(server_type="grpc").set(0)
+    
+    async def _run_graphql_server(self):
+        """Start GraphQL server"""
+        config = self.container.config()
+        port = config["servers"]["graphql_port"]
+        
+        logger.info("📊 Starting GraphQL server", port=port)
+        
+        server = self.container.graphql_server()
+        
+        ACTIVE_CONNECTIONS.labels(server_type="graphql").set(1)
+        
+        try:
+            await server.start(port)
+            await self.shutdown_event.wait()
+        finally:
+            await server.stop()
+            ACTIVE_CONNECTIONS.labels(server_type="graphql").set(0)
+    
+    async def _shutdown(self):
+        """
+        🛑 Graceful application shutdown
+        """
+        logger.info("🛑 Starting graceful shutdown...")
+        
+        try:
+            # Close database connections
+            database = self.container.database()
+            await database.close()
+            
+            # Close Redis connections
+            redis_client = self.container.redis_client()
+            await redis_client.close()
+            
+            # Close message broker
+            message_broker = self.container.message_broker()
+            await message_broker.close()
+            
+            # Reset metrics
+            for server_type in ["fastapi", "websocket", "grpc", "graphql"]:
+                ACTIVE_CONNECTIONS.labels(server_type=server_type).set(0)
+            
+            logger.info("✅ Graceful shutdown completed")
+            
+        except Exception as e:
+            logger.error("❌ Error during shutdown", error=str(e))
 
 
 def main():
-    """Main entry point"""
-    import os
+    """
+    🎯 Main entry point
+    Creates and runs the application
+    """
+    print("🧸 AI Teddy Bear - Enterprise Application")
+    print("👨‍💻 Lead Architect: جعفر أديب (Jaafar Adeeb)")
+    print("🏆 Senior Backend Developer & Professor")
+    print("=" * 50)
     
-    # Determine run mode
-    environment = os.getenv("ENVIRONMENT", "development")
+    app = Application()
     
-    if environment == "development":
-        print("🔧 Starting in development mode")
-        asyncio.run(run_development_server())
-    else:
-        print("🏭 Starting in production mode")
-        asyncio.run(run_production_server())
+    try:
+        asyncio.run(app.run())
+    except KeyboardInterrupt:
+        print("\n🛑 Application stopped by user")
+    except Exception as e:
+        print(f"\n💥 Application failed: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
