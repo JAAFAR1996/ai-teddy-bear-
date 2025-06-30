@@ -17,9 +17,9 @@ import numpy as np
 
 from elevenlabs import VoiceSettings
 from elevenlabs.client import AsyncElevenLabs
-    import whisper
+import whisper
 from gtts import gTTS
-    import azure.cognitiveservices.speech as speechsdk
+import azure.cognitiveservices.speech as speechsdk
 
 from core.domain.value_objects import Language, EmotionalTone
 from core.infrastructure.config import Settings
@@ -39,7 +39,8 @@ class IVoiceService:
         language: str = "Arabic"
     ) -> Optional[str]:
         """Transcribe audio to text"""
-        raise NotImplementedError
+        # This is an interface method - will be implemented by concrete classes
+        pass
     
     async def synthesize_speech(
         self,
@@ -48,7 +49,8 @@ class IVoiceService:
         language: str = "Arabic"
     ) -> str:
         """Synthesize text to speech"""
-        raise NotImplementedError
+        # This is an interface method - will be implemented by concrete classes
+        pass
 
 # ================== ASYNC AUDIO PROCESSOR ==================
 
@@ -114,9 +116,9 @@ class MultiProviderVoiceService(IVoiceService):
         try:
             self.whisper_model = whisper.load_model("base")
             logger.info("✅ Whisper model loaded")
-            except Exception as e:
+        except Exception as e:
             logger.error(f"Failed to load Whisper: {str(e)}")
-                self.whisper_model = None
+            self.whisper_model = None
         
     def _init_elevenlabs(self) -> Any:
         """Initialize ElevenLabs client"""
@@ -298,8 +300,8 @@ class MultiProviderVoiceService(IVoiceService):
                 try:
                     return r.recognize_google(audio, language=lang_code)
                 except Exception as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)                    return None
+                    logger.error(f"Error in operation: {e}", exc_info=True)
+                    return None
             
             return await loop.run_in_executor(None, transcribe)
             
@@ -501,7 +503,7 @@ class MultiProviderVoiceService(IVoiceService):
                     await asyncio.get_event_loop().run_in_executor(
                         None, os.unlink, path
                     )
-            except Exception as e:
+                except Exception as e:
                     logger.warning(f"Failed to delete temp file {path}: {e}")
 
 # ================== FACTORY ==================

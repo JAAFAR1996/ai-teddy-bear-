@@ -315,8 +315,9 @@ async def verify_system_health(service_endpoints: Dict[str, str]) -> Dict[str, b
             )
             health_results[service_name] = health_response.status_code == 200
             
-        except Exception:
+        except Exception as e:
             health_results[service_name] = False
+            logger.error(f"Health check failed for {service_name}: {e}")
     
     return health_results
 

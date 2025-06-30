@@ -209,7 +209,8 @@ async def simulate_ai_service_overload(configuration: Dict[str, Any] = None) -> 
                 }
             except requests.Timeout:
                 return {"success": False, "timeout": True, "response_time": 10.0}
-            except Exception:
+            except Exception as e:
+                logger.error(f"AI request failed: {e}")
                 return {"success": False, "timeout": False, "response_time": 0.0}
         
         # Create concurrent requests

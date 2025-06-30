@@ -70,7 +70,8 @@ class DashboardDemoRunner:
     
     def clear_screen(self) -> Any:
         """مسح الشاشة"""
-        os.system('cls' if os.name == 'nt' else 'clear')
+        # استخدام طريقة آمنة لمسح الشاشة
+        print('\n' * 100)  # طريقة آمنة بدلاً من os.system
     
     def get_status_emoji(self, value: float, good_threshold: float, warning_threshold: float) -> str:
         """الحصول على رمز الحالة"""
@@ -274,8 +275,8 @@ class DashboardDemoRunner:
                 await self.run_demo_cycle()
                 cycle_count += 1
                 
-        except Exception as e:
-    logger.error(f"Error: {e}")"\n\n🛑 Demo stopped by user")
+        except KeyboardInterrupt:
+            logger.info("\n\n🛑 Demo stopped by user")
         
         # Demo completion summary
         self.clear_screen()
@@ -306,9 +307,9 @@ async def main():
 if __name__ == "__main__":
     try:
         asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("\n\n👋 Dashboard demo terminated by user")
     except Exception as e:
-    logger.error(f"Error: {e}")"\n\n👋 Dashboard demo terminated by user")
-    except Exception as e:
-    logger.error(f"Error: {e}")f"\n❌ Demo error: {str(e)}")
+        logger.error(f"\n❌ Demo error: {str(e)}")
     finally:
         logger.info("Thank you for viewing the AI Teddy Bear Dashboard Demo! 🧸")

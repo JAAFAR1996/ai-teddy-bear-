@@ -26,6 +26,11 @@ from src.infrastructure.security.encryption import EncryptionService
 from src.infrastructure.config import get_config
 from src.domain.entities.conversation import Conversation, Message
 from src.application.services.parent_dashboard_service import ParentDashboardService
+from src.domain.exceptions import (
+    ExternalServiceException,
+    ChildSafetyException,
+    InappropriateContentException
+)
 
 Base = declarative_base()
 
@@ -121,7 +126,7 @@ class RuleEngine:
         self.compiled_patterns: Dict[str, re.Pattern] = {}
         self._load_default_rules()
 
-    def _load_default_rules(self) -> Any:
+    def _load_default_rules(self) -> None:
         """Load default moderation rules"""
         default_rules = [
             ModerationRule(
@@ -165,14 +170,14 @@ class RuleEngine:
         for rule in default_rules:
             self.add_rule(rule)
 
-    def add_rule(self, rule -> Any: ModerationRule) -> Any:
+    def add_rule(self, rule: ModerationRule) -> None:
         """Add a moderation rule"""
         self.rules[rule.id] = rule
         if rule.pattern and rule.is_regex:
             self.compiled_patterns[rule.id] = re.compile(
                 rule.pattern, re.IGNORECASE)
 
-    def remove_rule(self, rule_id -> Any: str) -> Any:
+    def remove_rule(self, rule_id: str) -> None:
         """Remove a moderation rule"""
         if rule_id in self.rules:
             del self.rules[rule_id]
@@ -256,7 +261,7 @@ class ModerationService:
         # NLP models
         self._init_nlp_models()
 
-    def _init_api_clients(self) -> Any:
+    def _init_api_clients(self) -> None:
         """Initialize external API clients"""
         # Azure Content Safety
         if getattr(self.config.api_keys, "AZURE_CONTENT_SAFETY_KEY", None) and getattr(self.config.api_keys, "AZURE_CONTENT_SAFETY_ENDPOINT", None):
@@ -282,7 +287,7 @@ class ModerationService:
         else:
             self.anthropic_client = None
 
-    def _init_nlp_models(self) -> Any:
+    def _init_nlp_models(self) -> None:
 
         hf_token = (
             os.environ.get("HUGGINGFACE_TOKEN")
@@ -321,7 +326,7 @@ class ModerationService:
             self.sentiment_analyzer = None
             self.toxicity_classifier = None
 
-    def _load_lists(self) -> Any:
+    def _load_lists(self) -> None:
         """Load whitelist and blacklist"""
         # Load from config or database
         whitelist_words = getattr(self.config, 'MODERATION_WHITELIST', [])
@@ -544,9 +549,16 @@ class ModerationService:
                 confidence_scores=confidence_scores,
                 context_notes=["OpenAI Moderation API"]
             )
+        except ExternalServiceException:
+            # Re-raise external service exceptions
+            raise
         except Exception as e:
-            self.logger.error(f"OpenAI moderation error: {e}")
-            return ModerationResult(is_safe=True, severity=ModerationSeverity.SAFE)
+            # Wrap other exceptions in ExternalServiceException
+            raise ExternalServiceException(
+                service_name="OpenAI Moderation",
+                status_code=None,
+                response_body=str(e)
+            ) from e
 
     async def _check_with_azure(self, content: str) -> ModerationResult:
         """Use Azure Content Safety API"""
@@ -1072,8 +1084,8 @@ class ModerationService:
             self.logger.error(f"Failed to export logs: {e}")
             return ""
 
-    def set_parent_dashboard(self, dashboard -> Any: ParentDashboardService) -> Any:
-        """Set parent dashboard service for alerts"""
+    def set_parent_dashboard(self, dashboard: 'ParentDashboardService') -> None:
+        """Set parent dashboard reference"""
         self.parent_dashboard = dashboard
 
     async def test_moderation(self, test_content: List[str]) -> List[Dict[str, Any]]:

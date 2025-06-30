@@ -8,6 +8,7 @@ Author: API Team Lead
 import pytest
 import asyncio
 import json
+import os
 from datetime import datetime, timedelta
 from unittest.mock import Mock, AsyncMock, patch
 from typing import Dict, Any
@@ -199,7 +200,7 @@ class TestAuthentication:
         user = await auth_service.create_user(
             username="testuser",
             email="test@example.com",
-            password="testpassword",
+            password=os.environ.get("TEST_PASSWORD", "test_secure_password_2025"),
             role=UserRole.PARENT
         )
         

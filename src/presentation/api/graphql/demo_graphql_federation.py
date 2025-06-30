@@ -9,7 +9,12 @@ Author: API Team Lead
 import asyncio
 import logging
 import json
+import os
 from datetime import datetime
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Demo imports
 try:
@@ -19,12 +24,8 @@ try:
     from src.infrastructure.graphql.authentication import create_auth_service, create_auth_config
     FEDERATION_AVAILABLE = True
 except Exception as e:
-    logger.error(f"Error: {e}")f"⚠️  GraphQL Federation not available: {e}")
+    logger.error(f"⚠️  GraphQL Federation not available: {e}")
     FEDERATION_AVAILABLE = False
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class FederationDemoSystem:
@@ -56,7 +57,7 @@ class FederationDemoSystem:
             return True
             
         except Exception as e:
-    logger.error(f"Error: {e}")f"❌ Initialization failed: {e}")
+            logger.error(f"❌ Initialization failed: {e}")
             return False
     
     async def demo_basic_queries(self):
@@ -111,7 +112,7 @@ class FederationDemoSystem:
                 )
                 logger.info(f"✅ Result: {json.dumps(result, indent=2, default=str)}")
             except Exception as e:
-    logger.error(f"Error: {e}")f"❌ Error: {e}")
+                logger.error(f"❌ Error: {e}")
     
     async def demo_federated_queries(self):
         """Demonstrate federated queries across services."""
@@ -155,7 +156,7 @@ class FederationDemoSystem:
             result = await self.gateway._execute_federated_query(federated_query, {})
             logger.info(f"✅ Federated Result: {json.dumps(result, indent=2, default=str)}")
         except Exception as e:
-    logger.error(f"Error: {e}")f"❌ Error: {e}")
+            logger.error(f"❌ Error: {e}")
     
     async def demo_authentication(self):
         """Demonstrate authentication features."""
@@ -168,7 +169,7 @@ class FederationDemoSystem:
         user = await self.auth_service.create_user(
             username="demo_parent",
             email="demo@teddy-bear.ai",
-            password="demo123",
+            password=os.environ.get("DEMO_PASSWORD", "secure_demo_2025"),
             role="parent"
         )
         logger.info(f"✅ Created user: {user.username} with role: {user.role}")
