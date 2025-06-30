@@ -26,7 +26,7 @@ if %ERRORLEVEL% EQU 0 (
     git commit -m "Auto-backup %TIMESTAMP%"
 
     :: رفع التغييرات (باستخدام التوكن المباشر مثل سكربتك الأصلي)
-    git push https://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@github.com/JAAFAR1996/ai-teddy-bear-.git main
+    git push https://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@github.com/JAAFAR1996/ai-teddy-bear-.git main
 
     echo ✅ التغييرات تم رفعها بنجاح إلى GitHub.
     git log -1 --oneline

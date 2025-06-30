@@ -33,3 +33,25 @@ from .audio.services import (
     VoiceActivityDetector,
     AudioProcessor
 )
+
+# Add reporting domain exports
+from .reporting.models import (
+    ChildProgress,
+    InteractionAnalysis, 
+    ProgressMetrics,
+    ReportPeriod,
+    EmotionDistribution,
+    SkillAnalysis,
+    LLMRecommendation,
+    ActivityRecommendation,
+    InterventionRecommendation,
+    RecommendationBundle,
+    UrgencyLevel
+)
+
+from .reporting.services import (
+    ProgressAnalyzer,
+    EmotionAnalyzerService,
+    SkillAnalyzer,
+    BehaviorAnalyzer
+)
