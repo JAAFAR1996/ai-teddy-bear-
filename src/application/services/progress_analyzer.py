@@ -54,7 +54,7 @@ class ProgressAnalyzer:
         self.logger = logging.getLogger(__name__)
         self._init_llm_client()
     
-    def _init_llm_client(self):
+    def _init_llm_client(self) -> Any:
         """تهيئة عميل LLM"""
         if LLM_AVAILABLE and self.config.get('openai_api_key'):
             self.openai_client = openai.OpenAI(api_key=self.config['openai_api_key'])

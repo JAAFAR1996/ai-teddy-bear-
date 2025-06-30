@@ -130,7 +130,7 @@ class AudioIO:
         if self.auto_cleanup:
             self._start_cleanup_scheduler()
 
-    def _ensure_temp_dir(self):
+    def _ensure_temp_dir(self) -> Any:
         """Ensure temporary directory exists with proper permissions."""
         try:
             temp_path = Path(self.temp_dir)
@@ -145,9 +145,9 @@ class AudioIO:
             self.logger.error(f"Error creating temp directory: {e}")
             raise AudioProcessingError(f"Failed to create temp directory: {e}")
 
-    def _start_cleanup_scheduler(self):
+    def _start_cleanup_scheduler(self) -> Any:
         """Start background cleanup scheduler."""
-        def cleanup_worker():
+        def cleanup_worker() -> Any:
             while True:
                 try:
                     self.cleanup_temp_files()
@@ -480,7 +480,7 @@ class AudioIO:
             self.logger.error(f"Error creating temp file: {e}")
             raise AudioProcessingError(f"Failed to create temp file: {e}")
 
-    def _cleanup_oldest_temp_files(self):
+    def _cleanup_oldest_temp_files(self) -> Any:
         """Clean up oldest temporary files."""
         try:
             temp_files_with_time = []
@@ -502,7 +502,7 @@ class AudioIO:
         except Exception as e:
             self.logger.error(f"Error cleaning up oldest temp files: {e}")
 
-    def _remove_temp_file(self, filepath: str):
+    def _remove_temp_file(self, filepath -> Any: str) -> Any:
         """Remove a temporary file and its metadata."""
         try:
             if os.path.exists(filepath):
@@ -518,7 +518,7 @@ class AudioIO:
         except Exception as e:
             self.logger.warning(f"Error removing temp file {filepath}: {e}")
 
-    def cleanup_temp_files(self, max_age_hours: int = 24):
+    def cleanup_temp_files(self, max_age_hours -> Any: int = 24) -> Any:
         """
         Clean up old temporary files.
         
@@ -561,7 +561,7 @@ class AudioIO:
         except Exception as e:
             self.logger.error(f"Error cleaning up temp files: {e}")
 
-    def _save_metadata(self, audio_filename: str, metadata: AudioMetadata):
+    def _save_metadata(self, audio_filename -> Any: str, metadata -> Any: AudioMetadata) -> Any:
         """Save metadata to companion file."""
         try:
             metadata_filename = audio_filename + ".meta"
@@ -720,7 +720,7 @@ class AudioIO:
 
 # Utility functions for backward compatibility and convenience
 
-def cleanup_temp_files(max_age_hours: int = 24):
+def cleanup_temp_files(max_age_hours -> Any: int = 24) -> Any:
     """Global function to clean up temporary audio files."""
     try:
         with AudioIO() as audio_io:

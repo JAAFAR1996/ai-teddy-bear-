@@ -26,7 +26,7 @@ try:
     AUDIO_LIBS_AVAILABLE = True
 except ImportError:
     AUDIO_LIBS_AVAILABLE = False
-    print("⚠️ Audio libraries not available. Some features will be limited.")
+    logger.warning("⚠️ Audio libraries not available. Some features will be limited.")
 
 # Try to import local audio components
 try:
@@ -38,7 +38,7 @@ try:
     LOCAL_AUDIO_AVAILABLE = True
 except ImportError:
     LOCAL_AUDIO_AVAILABLE = False
-    print("⚠️ Local audio components not fully available")
+    logger.warning("⚠️ Local audio components not fully available")
 
 
 class AudioSessionType(Enum):
@@ -192,7 +192,7 @@ class EnhancedAudioManager:
 
         self.logger.info("Enhanced audio manager initialized with modern format support")
 
-    def _init_pygame_mixer(self):
+    def _init_pygame_mixer(self) -> Any:
         """Initialize pygame mixer for audio playback."""
         try:
             import pygame
@@ -212,7 +212,7 @@ class EnhancedAudioManager:
             self.pygame_available = False
             self.logger.error(f"Error initializing pygame mixer: {e}")
 
-    def _initialize_components(self):
+    def _initialize_components(self) -> Any:
         """Initialize audio system components."""
         try:
             # Initialize core components if available
@@ -236,7 +236,7 @@ class EnhancedAudioManager:
             self.logger.error(f"Error initializing audio components: {e}")
             raise AudioSystemError(f"Failed to initialize audio system: {e}")
 
-    def _create_mock_components(self):
+    def _create_mock_components(self) -> Any:
         """Create mock components for testing when real components aren't available."""
         self.recorder = MockAudioRecorder()
         self.processor = MockAudioProcessor()
@@ -244,7 +244,7 @@ class EnhancedAudioManager:
         self.tts = MockTTSPlayback()
         self.logger.info("Using mock audio components")
 
-    def _configure_components(self):
+    def _configure_components(self) -> Any:
         """Configure components based on current settings."""
         try:
             # Configure recorder
@@ -262,9 +262,9 @@ class EnhancedAudioManager:
         except Exception as e:
             self.logger.warning(f"Error configuring components: {e}")
 
-    def _start_background_tasks(self):
+    def _start_background_tasks(self) -> Any:
         """Start background monitoring and cleanup tasks."""
-        def monitoring_worker():
+        def monitoring_worker() -> Any:
             while True:
                 try:
                     time.sleep(30)  # Check every 30 seconds
@@ -274,7 +274,7 @@ class EnhancedAudioManager:
                 except Exception as e:
                     self.logger.error(f"Monitoring worker error: {e}")
 
-        def cleanup_worker():
+        def cleanup_worker() -> Any:
             while True:
                 try:
                     time.sleep(300)  # Clean up every 5 minutes
@@ -284,7 +284,7 @@ class EnhancedAudioManager:
                 except Exception as e:
                     self.logger.error(f"Cleanup worker error: {e}")
 
-        def cloud_sync_worker():
+        def cloud_sync_worker() -> Any:
             while True:
                 try:
                     time.sleep(60)  # Sync every minute
@@ -805,7 +805,7 @@ class EnhancedAudioManager:
                 state_manager.set_error(str(e))
             return False
 
-    def stop_all(self, session_id: Optional[str] = None):
+    def stop_all(self, session_id -> Any: Optional[str] = None) -> Any:
         """
         Stop all audio operations, optionally for specific session.
 
@@ -1092,7 +1092,7 @@ class EnhancedAudioManager:
 
         return test_results
 
-    def _set_quality_mode(self, quality_mode: AudioQualityMode):
+    def _set_quality_mode(self, quality_mode -> Any: AudioQualityMode) -> Any:
         """Set audio quality mode for all components."""
         try:
             quality_config = {
@@ -1149,7 +1149,7 @@ class EnhancedAudioManager:
         except Exception as e:
             self.logger.error(f"Error setting quality mode: {e}")
 
-    def _trigger_event(self, event_type: str, event_data: Dict[str, Any]):
+    def _trigger_event(self, event_type -> Any: str, event_data -> Any: Dict[str, Any]) -> Any:
         """Trigger event callbacks."""
         try:
             if event_type in self.event_callbacks:
@@ -1161,18 +1161,18 @@ class EnhancedAudioManager:
         except Exception as e:
             self.logger.error(f"Error triggering event {event_type}: {e}")
 
-    def add_event_listener(self, event_type: str, callback: Callable[[Dict[str, Any]], None]):
+    def add_event_listener(self, event_type -> Any: str, callback -> Any: Callable[[Dict[str, Any]], None]) -> Any:
         """Add event listener."""
         if event_type not in self.event_callbacks:
             self.event_callbacks[event_type] = []
         self.event_callbacks[event_type].append(callback)
 
-    def remove_event_listener(self, event_type: str, callback: Callable[[Dict[str, Any]], None]):
+    def remove_event_listener(self, event_type -> Any: str, callback -> Any: Callable[[Dict[str, Any]], None]) -> Any:
         """Remove event listener."""
         if event_type in self.event_callbacks and callback in self.event_callbacks[event_type]:
             self.event_callbacks[event_type].remove(callback)
 
-    def _check_session_timeouts(self):
+    def _check_session_timeouts(self) -> Any:
         """Check for session timeouts."""
         try:
             timeout_threshold = timedelta(minutes=self.config.session_timeout_minutes)
@@ -1190,7 +1190,7 @@ class EnhancedAudioManager:
         except Exception as e:
             self.logger.error(f"Error checking session timeouts: {e}")
 
-    def _update_performance_stats(self):
+    def _update_performance_stats(self) -> Any:
         """Update performance statistics."""
         try:
             # Add any performance monitoring logic here
@@ -1198,7 +1198,7 @@ class EnhancedAudioManager:
         except Exception as e:
             self.logger.error(f"Error updating performance stats: {e}")
 
-    def _check_system_health(self):
+    def _check_system_health(self) -> Any:
         """Check overall system health."""
         try:
             # Check component health
@@ -1223,7 +1223,7 @@ class EnhancedAudioManager:
         except Exception as e:
             self.logger.error(f"Error checking system health: {e}")
 
-    def _update_avg_processing_time(self, new_time: float):
+    def _update_avg_processing_time(self, new_time -> Any: float) -> Any:
         """Update average processing time."""
         current_avg = self.performance_stats["average_processing_time"]
         total_recordings = self.performance_stats["total_recordings"]
@@ -1236,7 +1236,7 @@ class EnhancedAudioManager:
                 (current_avg * (total_recordings - 1) + new_time) / total_recordings
             )
 
-    def _save_session_data(self, session: AudioSession):
+    def _save_session_data(self, session -> Any: AudioSession) -> Any:
         """Save session data to storage."""
         try:
             session_data = {
@@ -1261,7 +1261,7 @@ class EnhancedAudioManager:
         except Exception as e:
             self.logger.error(f"Error saving session data: {e}")
 
-    def _cleanup_old_sessions(self):
+    def _cleanup_old_sessions(self) -> Any:
         """Cleanup old session files."""
         try:
             if not hasattr(self, 'log_directory'):
@@ -1279,7 +1279,7 @@ class EnhancedAudioManager:
         except Exception as e:
             self.logger.error(f"Error cleaning up old sessions: {e}")
 
-    def _handle_error(self, event: StateChangeEvent):
+    def _handle_error(self, event -> Any: StateChangeEvent) -> Any:
         """Handle error state changes."""
         if event.details and "error" in event.details:
             error_msg = event.details['error']
@@ -1294,7 +1294,7 @@ class EnhancedAudioManager:
             # Stop any ongoing operations
             self.stop_all()
 
-    def _handle_recording_state(self, event: StateChangeEvent):
+    def _handle_recording_state(self, event -> Any: StateChangeEvent) -> Any:
         """Handle recording state changes."""
         if hasattr(event, 'new_state'):
             if event.new_state == AudioState.RECORDING:
@@ -1302,7 +1302,7 @@ class EnhancedAudioManager:
             elif event.new_state == AudioState.IDLE:
                 self.logger.debug("Recording state changed to IDLE")
 
-    def _handle_playback_state(self, event: StateChangeEvent):
+    def _handle_playback_state(self, event -> Any: StateChangeEvent) -> Any:
         """Handle playback state changes."""
         if hasattr(event, 'new_state'):
             if event.new_state == AudioState.PLAYING:
@@ -1310,13 +1310,13 @@ class EnhancedAudioManager:
             elif event.new_state == AudioState.IDLE:
                 self.logger.debug("Playback state changed to IDLE")
 
-    def _on_playback_complete(self):
+    def _on_playback_complete(self) -> Any:
         """Callback function for when TTS playback is complete."""
         self.logger.info("TTS playback complete.")
         if LOCAL_AUDIO_AVAILABLE:
             state_manager.set_state("playback", AudioState.IDLE)
 
-    def cleanup(self):
+    def cleanup(self) -> Any:
         """Clean up all resources and stop background tasks."""
         try:
             self.logger.info("Starting audio manager cleanup")
@@ -1711,7 +1711,7 @@ class EnhancedAudioManager:
             self.logger.error(f"Error applying fades: {e}")
             return audio_data
 
-    def _write_basic_wav(self, audio_data: np.ndarray, filename: str):
+    def _write_basic_wav(self, audio_data -> Any: np.ndarray, filename -> Any: str) -> Any:
         """Write basic WAV file without external libraries."""
         import struct
         import wave
@@ -1730,7 +1730,7 @@ class EnhancedAudioManager:
             self.logger.error(f"Error writing basic WAV: {e}")
             raise
 
-    def _embed_wav_metadata(self, filename: str, metadata: Dict[str, Any]):
+    def _embed_wav_metadata(self, filename -> Any: str, metadata -> Any: Dict[str, Any]) -> Any:
         """Embed metadata in WAV file (simplified)."""
         try:
             # This is a simplified implementation
@@ -1741,7 +1741,7 @@ class EnhancedAudioManager:
 
     # Cloud integration methods
 
-    def _add_to_cloud_queue(self, filename: str, session_id: Optional[str], metadata: Optional[Dict]):
+    def _add_to_cloud_queue(self, filename -> Any: str, session_id -> Any: Optional[str], metadata -> Any: Optional[Dict]) -> Any:
         """Add file to cloud sync queue."""
         try:
             cloud_item = {
@@ -1758,7 +1758,7 @@ class EnhancedAudioManager:
         except Exception as e:
             self.logger.error(f"Error adding to cloud queue: {e}")
 
-    def _process_cloud_queue(self):
+    def _process_cloud_queue(self) -> Any:
         """Process pending cloud sync operations."""
         if not self.cloud_queue:
             return
@@ -1823,7 +1823,7 @@ class EnhancedAudioManager:
 
     # Cleanup and maintenance methods
 
-    def _cleanup_temp_files(self):
+    def _cleanup_temp_files(self) -> Any:
         """Clean up temporary audio files."""
         try:
             files_cleaned = 0
@@ -1846,7 +1846,7 @@ class EnhancedAudioManager:
         except Exception as e:
             self.logger.error(f"Error cleaning temp files: {e}")
 
-    def _cleanup_audio_cache(self):
+    def _cleanup_audio_cache(self) -> Any:
         """Clean up audio cache to free memory."""
         try:
             cache_size = len(self.audio_cache)
@@ -2082,7 +2082,7 @@ class EnhancedAudioManager:
                 state_manager.set_error(str(e))
             return False
 
-    def stop_all(self, session_id: Optional[str] = None):
+    def stop_all(self, session_id -> Any: Optional[str] = None) -> Any:
         """
         Stop all audio operations, optionally for specific session.
 
@@ -2243,13 +2243,13 @@ class MockAudioRecorder:
     def is_recording(self) -> bool:
         return self._recording
     
-    def stop_recording(self):
+    def stop_recording(self) -> Any:
         self._recording = False
     
-    def set_noise_reduction(self, enabled: bool):
+    def set_noise_reduction(self, enabled -> Any: bool) -> Any:
         pass
     
-    def set_sample_rate(self, rate: int):
+    def set_sample_rate(self, rate -> Any: int) -> Any:
         pass
 
 
@@ -2263,10 +2263,10 @@ class MockAudioProcessor:
             return audio_data / max_val * 0.95
         return audio_data
     
-    def set_processing_level(self, level: str):
+    def set_processing_level(self, level -> Any: str) -> Any:
         pass
     
-    def set_child_safe_mode(self, enabled: bool):
+    def set_child_safe_mode(self, enabled -> Any: bool) -> Any:
         pass
 
 
@@ -2277,18 +2277,18 @@ class MockAudioIO:
         self.temp_dir = Path("temp_audio")
         self.temp_dir.mkdir(exist_ok=True)
     
-    def save_audio(self, audio_data: np.ndarray, filename: str, metadata: Dict = None):
+    def save_audio(self, audio_data -> Any: np.ndarray, filename -> Any: str, metadata -> Any: Dict = None) -> Any:
         """Mock save audio."""
         Path(filename).parent.mkdir(parents=True, exist_ok=True)
         # Just create an empty file to simulate saving
         Path(filename).touch()
     
-    def load_audio(self, filename: str):
+    def load_audio(self, filename -> Any: str) -> Any:
         """Mock load audio."""
         # Return mock data
         return np.random.random(44100).astype(np.float32), 44100, {"duration": 1.0}
     
-    def cleanup_temp_files(self):
+    def cleanup_temp_files(self) -> Any:
         """Mock cleanup."""
         pass
     
@@ -2328,13 +2328,13 @@ class MockTTSPlayback:
     def is_playing(self) -> bool:
         return self._playing
     
-    def stop(self):
+    def stop(self) -> Any:
         self._playing = False
     
-    def set_volume(self, volume: float):
+    def set_volume(self, volume -> Any: float) -> Any:
         self._volume = max(0.0, min(1.0, volume))
     
-    def cleanup_cache(self):
+    def cleanup_cache(self) -> Any:
         pass
 
 
@@ -2421,7 +2421,7 @@ def get_audio_manager(config: Optional[AudioSystemConfig] = None) -> EnhancedAud
     return _global_audio_manager
 
 
-def shutdown_audio_manager():
+def shutdown_audio_manager() -> Any:
     """Shutdown global audio manager."""
     global _global_audio_manager
 
@@ -2433,19 +2433,19 @@ def shutdown_audio_manager():
 # Module initialization
 if __name__ == "__main__":
     # Example usage
-    print("AI Teddy Bear Enhanced Audio Manager")
-    print("====================================")
+    logger.info("AI Teddy Bear Enhanced Audio Manager")
+    logger.info("====================================")
     
     # Create audio manager with child-safe config
     config = create_child_safe_config()
     manager = create_audio_manager(config)
     
-    print(f"Supported formats: {manager.get_supported_formats()}")
-    print(f"System stats: {manager.get_system_stats()}")
+    logger.info(f"Supported formats: {manager.get_supported_formats()}")
+    logger.info(f"System stats: {manager.get_system_stats()}")
     
     # Run system test
     test_results = manager.test_audio_system()
-    print(f"System test: {test_results['overall_status']}")
+    logger.info(f"System test: {test_results['overall_status']}")
     
     # Clean up
     manager.cleanup()

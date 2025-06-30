@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Enterprise-Grade Homomorphic Encryption System for AI Teddy Bear Project.
 

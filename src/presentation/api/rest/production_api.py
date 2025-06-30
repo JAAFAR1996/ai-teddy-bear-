@@ -47,7 +47,7 @@ class RegisterDeviceRequest(BaseModel):
     hardware_info: Dict[str, Any] = Field(default_factory=dict)
     
     @validator('device_id')
-    def validate_device_id(cls, v):
+    def validate_device_id(cls, v) -> Any:
         if not v.startswith('ESP32_'):
             raise ValueError('Device ID must start with ESP32_')
         return v
@@ -60,7 +60,7 @@ class AudioProcessRequest(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
     
     @validator('audio')
-    def validate_audio_not_empty(cls, v):
+    def validate_audio_not_empty(cls, v) -> Any:
         if not v or len(v) < 100:  # Minimum reasonable audio size
             raise ValueError('Audio data too small')
         return v
@@ -325,7 +325,7 @@ class ConnectionManager:
         self.active_connections[device_id] = websocket
         logger.info(f"WebSocket connected: {device_id}")
     
-    def disconnect(self, device_id: str):
+    def disconnect(self, device_id -> Any: str) -> Any:
         if device_id in self.active_connections:
             del self.active_connections[device_id]
             logger.info(f"WebSocket disconnected: {device_id}")

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 🚀 AI Teddy Bear - Unified Application Entry Point
@@ -212,7 +214,7 @@ class Application:
         # Setup signal handlers
         self._setup_signal_handlers()
     
-    def _load_configuration(self):
+    def _load_configuration(self) -> Any:
         """Load configuration from environment variables"""
         config = {
             "database": {
@@ -242,13 +244,13 @@ class Application:
         
         self.container.config.from_dict(config)
     
-    def _setup_signal_handlers(self):
+    def _setup_signal_handlers(self) -> Any:
         """Setup graceful shutdown signal handlers"""
         if sys.platform != 'win32':
             for sig in (signal.SIGTERM, signal.SIGINT):
                 signal.signal(sig, self._signal_handler)
     
-    def _signal_handler(self, signum, frame):
+    def _signal_handler(self, signum, frame) -> Any:
         """Handle shutdown signals"""
         logger.info("Received shutdown signal", signal=signum)
         self.shutdown_event.set()
@@ -320,7 +322,7 @@ class Application:
             logger.error("❌ Database migrations failed", error=str(e))
             raise
     
-    def _start_metrics_server(self):
+    def _start_metrics_server(self) -> Any:
         """Start Prometheus metrics server"""
         metrics_port = self.container.config()["servers"]["metrics_port"]
         
@@ -549,15 +551,15 @@ class Application:
             logger.error("❌ Error during shutdown", error=str(e))
 
 
-def main():
+def main() -> Any:
     """
     🎯 Main entry point
     Creates and runs the application
     """
-    print("🧸 AI Teddy Bear - Enterprise Application")
-    print("👨‍💻 Lead Architect: جعفر أديب (Jaafar Adeeb)")
-    print("🏆 Senior Backend Developer & Professor")
-    print("=" * 50)
+    logger.info("🧸 AI Teddy Bear - Enterprise Application")
+    logger.info("👨‍💻 Lead Architect: جعفر أديب (Jaafar Adeeb)")
+    logger.info("🏆 Senior Backend Developer & Professor")
+    logger.info("=" * 50)
     
     app = Application()
     

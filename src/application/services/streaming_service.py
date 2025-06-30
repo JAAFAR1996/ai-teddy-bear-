@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 # streaming_service.py - النسخة الكاملة مع جميع الميزات
 
 import asyncio
@@ -134,22 +136,22 @@ class StreamingService:
         self.stream_task: Optional[asyncio.Task] = None
 
     @property
-    def is_streaming(self):
+    def is_streaming(self) -> Any:
         """Check if service is streaming"""
         return getattr(self, '_is_streaming', False)
 
     @is_streaming.setter
-    def is_streaming(self, value):
+    def is_streaming(self, value) -> Any:
         self._is_streaming = value
 
     async def start(self):
-        print(f"[START] id={id(self)}, is_active(before)={self._is_active}")
+        logger.info(f"[START] id={id(self)}, is_active(before)={self._is_active}")
 
         self.logger.info("Start method called!")
         try:
             # Initialize streaming components
             self._is_active = True
-            print(f"[START] id={id(self)}, is_active(after)={self._is_active}")
+            logger.info(f"[START] id={id(self)}, is_active(after)={self._is_active}")
             self.is_streaming = True
             self.logger.info("Streaming service started")
         except Exception as e:
@@ -161,7 +163,7 @@ class StreamingService:
         return self._is_active
 
     def health_check(self) -> dict:
-        print(f"[HEALTH] id={id(self)}, is_active={self._is_active}")
+        logger.info(f"[HEALTH] id={id(self)}, is_active={self._is_active}")
         """Perform health check"""
         return {
             "healthy": self._is_active,
@@ -240,7 +242,7 @@ class StreamingService:
         try:
             data = json.loads(message)
             message_type = data.get('type')
-            print(f"[TEST] Received message type: {message_type}")
+            logger.info(f"[TEST] Received message type: {message_type}")
 
             if message_type == 'ping':
                 # Handle ping test
@@ -248,7 +250,7 @@ class StreamingService:
                     "type": "pong",
                     "message": "WebSocket connection working!"
                 }))
-                print("[TEST] Sent pong response")
+                logger.info("[TEST] Sent pong response")
 
             elif message_type == 'audio':
                 # Handle audio data
@@ -365,7 +367,7 @@ class StreamingService:
 
     async def process_audio_input(self, audio_data: bytes, session_id: str, websocket: Optional[WebSocketServerProtocol] = None):
         """Process incoming audio data"""
-        print("[DEBUG] دخل process_audio_input")
+        logger.debug("[DEBUG] دخل process_audio_input")
         try:
             # Set processing state
             state_manager.set_processing(True)
@@ -374,18 +376,18 @@ class StreamingService:
             await self.input_buffer.write(audio_data)
             # Process with STT when buffer has enough data
             buffer_size = await self.input_buffer.size
-            print(
+            logger.info()
                 f"[DEBUG] بعد إضافة الصوت: buffer_size={buffer_size}, chunk_size={self.chunk_size}")
             if buffer_size >= self.chunk_size:
                 audio_chunk = await self.input_buffer.read(buffer_size)
-                print(
+                logger.info()
                     f"[DEBUG] buffer_size={buffer_size}, chunk_size={self.chunk_size}, audio_chunk len={len(audio_chunk)}")
 
                 # Convert to text
                 if self.stt_service:
-                    print("[DEBUG] قبل استدعاء stt_service.transcribe")
+                    logger.debug("[DEBUG] قبل استدعاء stt_service.transcribe")
                     text = await self.stt_service.transcribe(audio_chunk)
-                    print(
+                    logger.info()
                         f"[DEBUG] بعد استدعاء stt_service.transcribe: {text}")
                     if text:
                         await self.process_text_input(text, session_id, websocket)
@@ -398,11 +400,11 @@ class StreamingService:
 
     async def process_text_input(self, text: str, session_id: str, websocket=None):
         """Process text input and generate response"""
-        print(f"[DEBUG] دخل process_text_input: text={text}")
+        logger.debug(f"[DEBUG] دخل process_text_input: text={text}")
         try:
             # Get LLM response
             response = await self.get_llm_response(text, session_id)
-            print(f"[DEBUG] الرد من LLM: {response}")
+            logger.debug(f"[DEBUG] الرد من LLM: {response}")
 
             # تحويل النص إلى صوت
             audio_bytes = None
@@ -424,7 +426,7 @@ class StreamingService:
             # محاولة استخدام ElevenLabs
             if self.elevenlabs_api_key and ELEVENLABS_AVAILABLE:
                 try:
-                    print("[DEBUG] استخدام ElevenLabs لتحويل النص...")
+                    logger.debug("[DEBUG] استخدام ElevenLabs لتحويل النص...")
 
                     audio_bytes = await asyncio.to_thread(
                         generate,
@@ -434,7 +436,7 @@ class StreamingService:
                         api_key=self.elevenlabs_api_key
                     )
                     audio_format = "mp3"  # ElevenLabs يرجع MP3
-                    print(
+                    logger.info()
                         f"[DEBUG] نجح ElevenLabs - حجم الصوت: {len(audio_bytes)}")
 
                 except Exception as e:
@@ -446,14 +448,14 @@ class StreamingService:
                 try:
                     import io
 
-                    print("[DEBUG] استخدام gTTS كبديل...")
+                    logger.debug("[DEBUG] استخدام gTTS كبديل...")
                     tts = gTTS(text=response, lang='ar')
                     audio_buffer = io.BytesIO()
                     tts.write_to_fp(audio_buffer)
                     audio_buffer.seek(0)
                     audio_bytes = audio_buffer.read()
                     audio_format = "mp3"
-                    print(f"[DEBUG] نجح gTTS - حجم الصوت: {len(audio_bytes)}")
+                    logger.debug(f"[DEBUG] نجح gTTS - حجم الصوت: {len(audio_bytes)}")
 
                 except Exception as e:
     logger.error(f"Error: {e}")f"[DEBUG] فشل gTTS: {e}")
@@ -470,20 +472,20 @@ class StreamingService:
                     "timestamp": datetime.now().isoformat()
                 }
 
-                print(
+                logger.info()
                     f"[DEBUG] إرسال رد بحجم: {len(response_data['audio'])} حرف")
                 await websocket.send(json.dumps(response_data))
-                print("[DEBUG] ✅ تم إرسال الرد بنجاح!")
+                logger.debug("[DEBUG] ✅ تم إرسال الرد بنجاح!")
 
             elif not audio_bytes:
-                print("[DEBUG] ❌ فشل توليد الصوت!")
+                logger.error("[DEBUG] ❌ فشل توليد الصوت!")
                 if websocket:
                     await websocket.send(json.dumps({
                         "type": "error",
                         "message": "عذراً، فشل تحويل النص إلى صوت. حاول مرة أخرى."
                     }))
             else:
-                print("[DEBUG] ❌ لا يوجد websocket للإرسال!")
+                logger.error("[DEBUG] ❌ لا يوجد websocket للإرسال!")
 
         except Exception as e:
             self.logger.error(f"Error processing text input: {e}")
@@ -640,7 +642,7 @@ class SessionManager:
         """Get session by ID"""
         return self.sessions.get(session_id)
 
-    def add_message(self, session_id: str, message_type: str, content: str, metadata: Optional[Dict] = None):
+    def add_message(self, session_id -> Any: str, message_type -> Any: str, content -> Any: str, metadata -> Any: Optional[Dict] = None) -> Any:
         """Add message to session history"""
         if session_id not in self.session_history:
             self.session_history[session_id] = []
@@ -658,7 +660,7 @@ class SessionManager:
         if session_id in self.sessions:
             self.sessions[session_id]['last_activity'] = datetime.now()
 
-    def end_session(self, session_id: str):
+    def end_session(self, session_id -> Any: str) -> Any:
         """End session"""
         if session_id in self.sessions:
             self.sessions[session_id]['ended_at'] = datetime.now()

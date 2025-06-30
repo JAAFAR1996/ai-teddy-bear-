@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 🧠 Smart DDD Restructuring Tool
@@ -86,7 +88,7 @@ class SmartRestructurer:
         rec_stack = set()
         cycles = []
         
-        def dfs(node):
+        def dfs(node) -> Any:
             if node in rec_stack:
                 return True  # Cycle detected
             if node in visited:
@@ -208,7 +210,7 @@ class SmartRestructurer:
         skip_patterns = ['__pycache__', '.git', 'venv', 'env', 'test', '__init__.py']
         return any(pattern in str(file_path) for pattern in skip_patterns)
     
-    def _extract_imports(self, tree: ast.AST, file_path: Path):
+    def _extract_imports(self, tree -> Any: ast.AST, file_path -> Any: Path) -> Any:
         """Extract imports from AST"""
         file_str = str(file_path)
         imports = set()
@@ -223,7 +225,7 @@ class SmartRestructurer:
         
         self.import_map[file_str] = imports
     
-    def _build_dependency_graph(self):
+    def _build_dependency_graph(self) -> Any:
         """Build dependency graph from imports"""
         for file_path, imports in self.import_map.items():
             self.dependency_graph[file_path] = set()
@@ -304,7 +306,7 @@ class SmartRestructurer:
         else:
             return "HIGH"
     
-    def _create_ddd_directories(self):
+    def _create_ddd_directories(self) -> Any:
         """Create new DDD directory structure"""
         logger.info("📁 Creating DDD directory structure...")
         
@@ -317,7 +319,7 @@ class SmartRestructurer:
             if not init_file.exists():
                 init_file.write_text('"""DDD Layer Module"""')
     
-    def _classify_existing_files(self):
+    def _classify_existing_files(self) -> Any:
         """Classify existing files into DDD layers"""
         logger.info("🏷️ Classifying existing files...")
         
@@ -347,7 +349,7 @@ class SmartRestructurer:
             elif 'graphql' in file_content:
                 self.new_structure['src/presentation/api/graphql'].append(file_path)
     
-    def _migrate_domain_files(self):
+    def _migrate_domain_files(self) -> Any:
         """Migrate domain layer files"""
         logger.info("🎯 Migrating domain layer...")
         
@@ -359,7 +361,7 @@ class SmartRestructurer:
             for file_path in files:
                 self._move_file_safely(file_path, target_path)
     
-    def _migrate_application_files(self):
+    def _migrate_application_files(self) -> Any:
         """Migrate application layer files"""
         logger.info("⚙️ Migrating application layer...")
         
@@ -371,7 +373,7 @@ class SmartRestructurer:
             for file_path in files:
                 self._move_file_safely(file_path, target_path)
     
-    def _migrate_infrastructure_files(self):
+    def _migrate_infrastructure_files(self) -> Any:
         """Migrate infrastructure layer files"""
         logger.info("🏗️ Migrating infrastructure layer...")
         
@@ -383,7 +385,7 @@ class SmartRestructurer:
             for file_path in files:
                 self._move_file_safely(file_path, target_path)
     
-    def _move_file_safely(self, source_path: str, target_dir: Path):
+    def _move_file_safely(self, source_path -> Any: str, target_dir -> Any: Path) -> Any:
         """Safely move file to new location"""
         source = Path(source_path)
         if not source.exists():
@@ -404,7 +406,7 @@ class SmartRestructurer:
         except Exception as e:
             logger.error(f"Failed to move {source}: {e}")
     
-    def _update_all_imports(self, import_updates: Dict[str, List[str]]):
+    def _update_all_imports(self, import_updates -> Any: Dict[str, List[str]]) -> Any:
         """Update all import statements"""
         logger.info("🔄 Updating import statements...")
         
@@ -413,7 +415,7 @@ class SmartRestructurer:
         for new_import, old_imports in import_updates.items():
             logger.info(f"Would update {old_imports} -> {new_import}")
     
-    def _validate_migration(self):
+    def _validate_migration(self) -> Any:
         """Validate the migration"""
         logger.info("✅ Validating migration...")
         
@@ -425,39 +427,39 @@ class SmartRestructurer:
         
         logger.info("Migration validation passed!")
 
-def main():
+def main() -> Any:
     """Main execution function"""
-    print("🧠 Smart DDD Restructuring Tool")
-    print("Lead Architect: جعفر أديب")
-    print("=" * 40)
+    logger.info("🧠 Smart DDD Restructuring Tool")
+    logger.info("Lead Architect: جعفر أديب")
+    logger.info("=" * 40)
     
     restructurer = SmartRestructurer()
     
     # Step 1: Analyze dependencies
     analysis = restructurer.analyze_dependencies()
-    print(f"📊 Analyzed {analysis['analyzed_files']} files")
+    logger.info(f"📊 Analyzed {analysis['analyzed_files']} files")
     
     # Step 2: Detect circular dependencies
     circular_deps = restructurer.detect_circular_dependencies()
     if circular_deps:
-        print(f"⚠️ Found {len(circular_deps)} circular dependencies")
+        logger.warning(f"⚠️ Found {len(circular_deps)} circular dependencies")
     
     # Step 3: Generate migration plan
     plan = restructurer.generate_migration_plan()
-    print(f"📋 Generated migration plan with {len(plan.steps)} steps")
-    print(f"🎯 Risk Level: {plan.risk_level}")
-    print(f"⏱️ Estimated Time: {plan.estimated_hours} hours")
+    logger.info(f"📋 Generated migration plan with {len(plan.steps)} steps")
+    logger.info(f"🎯 Risk Level: {plan.risk_level}")
+    logger.info(f"⏱️ Estimated Time: {plan.estimated_hours} hours")
     
     # Step 4: Execute migration (with user confirmation)
     confirm = input("\n🚀 Execute migration? (y/N): ")
     if confirm.lower() == 'y':
         success = restructurer.execute_migration(plan)
         if success:
-            print("✅ Migration completed successfully!")
+            logger.info("✅ Migration completed successfully!")
         else:
-            print("❌ Migration failed!")
+            logger.error("❌ Migration failed!")
     else:
-        print("Migration cancelled.")
+        logger.info("Migration cancelled.")
 
 if __name__ == "__main__":
     main() 

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 👶 Child Queries Implementation
 ==============================
@@ -357,7 +359,7 @@ class GetChildSafetyReportQueryHandler(QueryHandler):
         return recommendations
 
 
-def register_child_query_handlers():
+def register_child_query_handlers() -> Any:
     """Register all child query handlers"""
     
     query_bus = get_query_bus()

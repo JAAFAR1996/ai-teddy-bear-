@@ -35,7 +35,7 @@ class TeddyMainWindow(QMainWindow):
         self._setup_connections()
         self._restore_window_state()
     
-    def _setup_components(self):
+    def _setup_components(self) -> Any:
         """Initialize core components"""
         # Networking
         self.websocket_client = WebSocketClient()
@@ -49,7 +49,7 @@ class TeddyMainWindow(QMainWindow):
         self.audio_widget.set_message_sender(self.message_sender)
         self.conversation_widget.set_message_sender(self.message_sender)
     
-    def _setup_ui(self):
+    def _setup_ui(self) -> Any:
         """Setup the user interface"""
         self.setWindowTitle("AI Teddy Bear - Enterprise Edition 2025")
         self.setMinimumSize(1000, 700)
@@ -96,7 +96,7 @@ class TeddyMainWindow(QMainWindow):
         # Apply modern styling
         self._apply_modern_theme()
     
-    def _create_menu_bar(self):
+    def _create_menu_bar(self) -> Any:
         """Create application menu bar"""
         menubar = self.menuBar()
         
@@ -120,7 +120,7 @@ class TeddyMainWindow(QMainWindow):
         about_action.triggered.connect(self._show_about)
         help_menu.addAction(about_action)
     
-    def _setup_connections(self):
+    def _setup_connections(self) -> Any:
         """Setup signal-slot connections"""
         # WebSocket connections
         self.websocket_client.connected.connect(self._on_connected)
@@ -129,28 +129,28 @@ class TeddyMainWindow(QMainWindow):
         self.websocket_client.error_occurred.connect(self._on_error)
         self.websocket_client.connection_status_changed.connect(self._update_connection_status)
     
-    def _toggle_connection(self):
+    def _toggle_connection(self) -> Any:
         """Toggle WebSocket connection"""
         if self.websocket_client.is_connected:
             self.websocket_client.disconnect_from_server()
         else:
             self.websocket_client.connect_to_server()
     
-    def _on_connected(self):
+    def _on_connected(self) -> Any:
         """Handle successful connection"""
         self.connect_button.setText("🔌 Disconnect")
         self.status_label.setText("Connected to server")
         self.status_bar.showMessage("Connected to AI Teddy Bear server")
         logger.info("UI connected to server")
     
-    def _on_disconnected(self):
+    def _on_disconnected(self) -> Any:
         """Handle disconnection"""
         self.connect_button.setText("🔌 Connect")
         self.status_label.setText("Disconnected")
         self.status_bar.showMessage("Disconnected from server")
         logger.info("UI disconnected from server")
     
-    def _on_message_received(self, message: Dict[str, Any]):
+    def _on_message_received(self, message -> Any: Dict[str, Any]) -> Any:
         """Handle incoming WebSocket message"""
         message_type = message.get("type")
         
@@ -162,18 +162,18 @@ class TeddyMainWindow(QMainWindow):
         else:
             logger.debug("Unhandled message type", message_type=message_type)
     
-    def _handle_status_update(self, message: Dict[str, Any]):
+    def _handle_status_update(self, message -> Any: Dict[str, Any]) -> Any:
         """Handle server status updates"""
         status = message.get("status", "unknown")
         self.status_bar.showMessage(f"Server: {status}")
     
-    def _on_error(self, error: str):
+    def _on_error(self, error -> Any: str) -> Any:
         """Handle WebSocket error"""
         self.status_label.setText(f"Error: {error}")
         self.status_bar.showMessage(f"Connection error: {error}")
         logger.error("WebSocket error", error=error)
     
-    def _update_connection_status(self, status: str):
+    def _update_connection_status(self, status -> Any: str) -> Any:
         """Update connection status display"""
         status_colors = {
             "Connecting...": "🟡",
@@ -186,7 +186,7 @@ class TeddyMainWindow(QMainWindow):
         color = status_colors.get(status, "❓")
         self.connection_label.setText(f"{color} {status}")
     
-    def _show_about(self):
+    def _show_about(self) -> Any:
         """Show about dialog"""
         QMessageBox.about(
             self,
@@ -205,7 +205,7 @@ class TeddyMainWindow(QMainWindow):
             """
         )
     
-    def _apply_modern_theme(self):
+    def _apply_modern_theme(self) -> Any:
         """Apply modern dark theme"""
         self.setStyleSheet("""
             QMainWindow {
@@ -247,12 +247,12 @@ class TeddyMainWindow(QMainWindow):
             }
         """)
     
-    def _save_window_state(self):
+    def _save_window_state(self) -> Any:
         """Save window state to settings"""
         self.settings.setValue("geometry", self.saveGeometry())
         self.settings.setValue("windowState", self.saveState())
     
-    def _restore_window_state(self):
+    def _restore_window_state(self) -> Any:
         """Restore window state from settings"""
         geometry = self.settings.value("geometry")
         if geometry:
@@ -262,7 +262,7 @@ class TeddyMainWindow(QMainWindow):
         if window_state:
             self.restoreState(window_state)
     
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> Any:
         """Handle window close event"""
         self._save_window_state()
         
@@ -286,7 +286,7 @@ class ModernTeddyUI:
         
         self.main_window = TeddyMainWindow()
     
-    def run(self):
+    def run(self) -> Any:
         """Run the application"""
         self.main_window.show()
         
@@ -295,7 +295,7 @@ class ModernTeddyUI:
         
         return self.app.exec()
     
-    def _handle_exception(self, exc_type, exc_value, exc_traceback):
+    def _handle_exception(self, exc_type, exc_value, exc_traceback) -> Any:
         """Handle uncaught exceptions"""
         if issubclass(exc_type, KeyboardInterrupt):
             sys.__excepthook__(exc_type, exc_value, exc_traceback)
@@ -313,7 +313,7 @@ class ModernTeddyUI:
         )
 
 
-def main():
+def main() -> Any:
     """Main entry point"""
     ui = ModernTeddyUI()
     return ui.run()

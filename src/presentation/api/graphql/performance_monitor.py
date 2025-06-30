@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Performance Monitoring for GraphQL Federation.
 
@@ -123,7 +125,7 @@ class GraphQLPerformanceMonitor:
         if self.enable_prometheus:
             self._initialize_prometheus_metrics()
     
-    def _initialize_prometheus_metrics(self):
+    def _initialize_prometheus_metrics(self) -> Any:
         """Initialize Prometheus metrics."""
         self.prom_query_counter = Counter(
             'graphql_queries_total',
@@ -376,7 +378,7 @@ class GraphQLPerformanceMonitor:
         
         self.logger.warning(f"Performance alert: {alert_type} - {message}")
     
-    def add_alert_callback(self, callback: Callable):
+    def add_alert_callback(self, callback -> Any: Callable) -> Any:
         """Add callback for performance alerts."""
         self.alert_callbacks.append(callback)
     

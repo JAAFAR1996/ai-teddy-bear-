@@ -33,7 +33,7 @@ class PushService:
         self._load_config()
         self._setup_clients()
     
-    def _load_config(self):
+    def _load_config(self) -> Any:
         """تحميل إعدادات الإشعارات المحمولة"""
         try:
             config_path = Path(__file__).parent.parent.parent / "config" / "config.json"
@@ -66,7 +66,7 @@ class PushService:
             self.timeout = 30
             self.max_retries = 3
     
-    def _setup_clients(self):
+    def _setup_clients(self) -> Any:
         """إعداد عملاء HTTP"""
         self.http_client = httpx.AsyncClient(timeout=self.timeout)
         
@@ -333,7 +333,7 @@ async def send_push_with_data(device_id: str, title: str, message: str, data: Di
 if __name__ == "__main__":
     # اختبار الخدمة
     async def test_push():
-        print("📱 Testing Push Notification Service...")
+        logger.info("📱 Testing Push Notification Service...")
         
         # اختبار إشعار بسيط
         success = await send_push(
@@ -341,7 +341,7 @@ if __name__ == "__main__":
             "This is a test push notification from AI Teddy Bear!",
             "Test Notification"
         )
-        print(f"Simple push test: {'✅ Success' if success else '❌ Failed'}")
+        logger.error(f"Simple push test: {'✅ Success' if success else '❌ Failed'}")
         
         # اختبار إشعار مع بيانات
         success = await send_push_with_data(
@@ -350,7 +350,7 @@ if __name__ == "__main__":
             "Check this notification with custom data",
             {"type": "test", "priority": "high"}
         )
-        print(f"Data push test: {'✅ Success' if success else '❌ Failed'}")
+        logger.error(f"Data push test: {'✅ Success' if success else '❌ Failed'}")
         
         # اختبار إرسال مجموعة
         notifications = [
@@ -367,7 +367,7 @@ if __name__ == "__main__":
         ]
         
         stats = await push_service.send_batch_notifications(notifications)
-        print(f"Batch push test: {stats['sent']}/{stats['total']} sent successfully")
+        logger.info(f"Batch push test: {stats['sent']}/{stats['total']} sent successfully")
         
         # إغلاق الخدمة
         await push_service.close()

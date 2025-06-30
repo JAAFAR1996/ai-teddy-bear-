@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 ModerationResult - Component extracted from large service
 مكون منفصل من خدمة كبيرة
@@ -42,7 +44,7 @@ class ModerationResult:
         """Initialize ModerationResult"""
         pass
     
-    def overall_score(self):
+    def overall_score(self) -> Any:
         """
         overall_score - Extracted method
         TODO: Implement the actual logic from original class

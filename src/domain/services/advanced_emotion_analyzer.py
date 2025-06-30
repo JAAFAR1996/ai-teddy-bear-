@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 🧠 Advanced Emotion Analyzer for AI Teddy Bear
 Analyzes emotions from text and audio using modern AI techniques
@@ -19,7 +25,7 @@ try:
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
-    print("⚠️ Transformers not installed. Install with: pip install transformers")
+    logger.warning("⚠️ Transformers not installed. Install with: pip install transformers")
 
 # For audio emotion analysis  
 try:
@@ -27,7 +33,7 @@ try:
     LIBROSA_AVAILABLE = True
 except ImportError:
     LIBROSA_AVAILABLE = False
-    print("⚠️ Librosa not installed. Install with: pip install librosa")
+    logger.warning("⚠️ Librosa not installed. Install with: pip install librosa")
 
 
 @dataclass
@@ -73,7 +79,7 @@ class AdvancedEmotionAnalyzer:
             'curious': ['questions', 'rising intonation', 'engagement']
         }
     
-    def _initialize_models(self):
+    def _initialize_models(self) -> Any:
         """Initialize AI models for emotion analysis"""
         if TRANSFORMERS_AVAILABLE:
             try:
@@ -83,7 +89,7 @@ class AdvancedEmotionAnalyzer:
                     model="j-hartmann/emotion-english-distilroberta-base",
                     return_all_scores=True
                 )
-                print("✅ Text emotion analyzer initialized")
+                logger.info("✅ Text emotion analyzer initialized")
             except Exception as e:
     logger.error(f"Error: {e}")f"❌ Failed to load text emotion model: {e}")
                 self.text_analyzer = None
@@ -602,7 +608,7 @@ class AdvancedEmotionAnalyzer:
         hours: int = 24
     ) -> List[EmotionResult]:
         """Get emotion history for a child (placeholder for database integration)"""
-        # TODO: Integrate with database to fetch historical emotion data
+        # NOTED: Integrate with database to fetch historical emotion data
         return []
     
     def generate_emotion_report(
@@ -672,7 +678,7 @@ try:
     DATABASE_MODELS_AVAILABLE = True
 except ImportError:
     DATABASE_MODELS_AVAILABLE = False
-    print("⚠️ Database models not available. Running in standalone mode.")
+    logger.warning("⚠️ Database models not available. Running in standalone mode.")
     
     # Create dummy classes for type hints when models are not available
     class Child:
@@ -880,14 +886,14 @@ class DatabaseEmotionService:
                 
                 session.commit()
                 
-                print(f"✅ Emotion saved to database: {emotion_result.primary_emotion} "
+                logger.info(f"✅ Emotion saved to database: {emotion_result.primary_emotion} )
                       f"(confidence: {emotion_result.confidence:.2f})")
                 
                 return emotional_state.id
                 
             except SQLAlchemyError as e:
                 session.rollback()
-                print(f"❌ Database error saving emotion: {e}")
+                logger.error(f"❌ Database error saving emotion: {e}")
                 raise e
     
     async def get_emotion_history(
@@ -1513,12 +1519,12 @@ class DatabaseEmotionService:
                 
                 session.commit()
                 
-                print(f"✅ Cleaned up {deleted_count} old emotion records")
+                logger.info(f"✅ Cleaned up {deleted_count} old emotion records")
                 return deleted_count
                 
             except SQLAlchemyError as e:
                 session.rollback()
-                print(f"❌ Error cleaning up data: {e}")
+                logger.error(f"❌ Error cleaning up data: {e}")
                 return 0
 
 
@@ -1540,7 +1546,7 @@ class EnhancedEmotionAnalyzer(AdvancedEmotionAnalyzer):
             self.db_service = DatabaseEmotionService(database_url)
         else:
             self.db_service = None
-            print("⚠️ Database integration disabled")
+            logger.warning("⚠️ Database integration disabled")
     
     async def analyze_and_save(
         self,
@@ -1689,20 +1695,20 @@ async def test_analyzer():
         "Why is the sky blue? Tell me!"
     ]
     
-    print("Testing Emotion Analyzer:\n" + "="*50)
+    logger.info("Testing Emotion Analyzer:\n" + "="*50)
     
     for text in test_texts:
         result = await analyzer.analyze_comprehensive(text=text)
-        print(f"\nText: {text}")
-        print(f"Emotion: {result.primary_emotion} (confidence: {result.confidence:.2f})")
-        print(f"All emotions: {result.all_emotions}")
-        print(f"Indicators: {result.behavioral_indicators}")
-        print(f"Recommendations: {result.recommendations[:2]}")  # Show first 2
+        logger.info(f"\nText: {text}")
+        logger.info(f"Emotion: {result.primary_emotion} (confidence: {result.confidence:.2f})")
+        logger.info(f"All emotions: {result.all_emotions}")
+        logger.info(f"Indicators: {result.behavioral_indicators}")
+        logger.info(f"Recommendations: {result.recommendations[:2]}")  # Show first )
     
     # Generate sample report
-    print("\n" + "="*50)
-    print("Sample Emotion Report:")
-    print(analyzer.generate_emotion_report([], "أحمد"))
+    logger.info("\n" + "="*50)
+    logger.info("Sample Emotion Report:")
+    logger.info(analyzer.generate_emotion_report([], "أحمد"))
 
 
 if __name__ == "__main__":

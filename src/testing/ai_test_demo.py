@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 AI-Powered Testing Framework Demo
 ================================
@@ -448,7 +450,7 @@ import pytest
 class TestExample:
     """Example test class"""
     
-    def test_something(self):
+    def test_something(self) -> Any:
         """Test basic functionality"""
         result = True  # Would be actual function call
         assert result is True, "Expected True result"

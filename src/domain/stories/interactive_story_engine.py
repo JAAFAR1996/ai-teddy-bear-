@@ -87,7 +87,7 @@ class InteractiveStoryEngine:
         self.behavioral_patterns: Dict[str, List[BehavioralPattern]] = {}
         self._load_stored_stories()
     
-    def _load_stored_stories(self):
+    def _load_stored_stories(self) -> Any:
         """تحميل القصص المخزنة المسبقاً"""
         
         # قصة مغامرة الكنز المفقود
@@ -393,7 +393,7 @@ class InteractiveStoryEngine:
         else:
             return {"error": "المشهد التالي غير موجود"}
     
-    def _update_behavioral_data(self, story_state: Dict, choice: StoryChoice):
+    def _update_behavioral_data(self, story_state -> Any: Dict, choice -> Any: StoryChoice) -> Any:
         """تحديث البيانات السلوكية"""
         if "behavioral_data" not in story_state:
             story_state["behavioral_data"] = {}

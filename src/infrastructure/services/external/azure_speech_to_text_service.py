@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import structlog
 logger = structlog.get_logger(__name__)
 
@@ -16,9 +22,9 @@ class AzureSpeechToTextService:
         self.region = region or os.getenv('AZURE_REGION')
 
         # For debugging
-        print(
+        logger.info()
             f"Azure Speech Key: {self.subscription_key[:5]}... (length: {len(self.subscription_key) if self.subscription_key else 0})")
-        print(f"Azure Speech Region: {self.region}")
+        logger.info(f"Azure Speech Region: {self.region}")
 
         if not self.subscription_key or not self.region:
             raise ValueError("Azure Speech Service requires a subscription key and region. "
@@ -62,12 +68,12 @@ class AzureSpeechToTextService:
         )
 
         # Perform recognition
-        print("----> قبل recognize_once")
+        logger.info("----> قبل recognize_once")
         try:
             result = speech_recognizer.recognize_once()
-            print("----> بعد recognize_once")
-            print("Azure result:", vars(result))
-            print("Azure result.text:", result.text)
+            logger.info("----> بعد recognize_once")
+            logger.info("Azure result:", vars(result))
+            logger.info("Azure result.text:", result.text)
         except Exception as e:
     logger.error(f"Error: {e}")"!!!!!! Exception داخل Azure recognize_once:", e)
             raise
@@ -75,7 +81,7 @@ class AzureSpeechToTextService:
         # Check recognition result
         if result.reason == speechsdk.ResultReason.RecognizedSpeech:
             if not result.text.strip():
-                print("Azure STT: RecognizedSpeech, but result.text is empty!")
+                logger.info("Azure STT: RecognizedSpeech, but result.text is empty!")
                 raise ValueError(
                     "Azure STT: No recognized text in the result.")
             # Create transcription entity
@@ -122,6 +128,6 @@ class AzureSpeechToTextService:
                 )
         return transcriptions
 
-    def get_conversation_transcriptions(self, conversation_id: int):
+    def get_conversation_transcriptions(self, conversation_id -> Any: int) -> Any:
         """Retrieve all transcriptions for a specific conversation."""
         return self.transcription_repo.get_by_conversation_id(conversation_id)

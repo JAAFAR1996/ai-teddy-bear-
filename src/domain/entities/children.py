@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 from flask import jsonify, request, current_app
 from datetime import datetime
 from .. import api_bp
@@ -6,7 +8,7 @@ from ..middleware.auth import require_parent_auth
 
 @api_bp.route('/children', methods=['GET'])
 @require_parent_auth
-def list_children():
+def list_children() -> Any:
     """List children with real data"""
     try:
         orchestrator = current_app.orchestrator
@@ -32,7 +34,7 @@ def list_children():
 
 @api_bp.route('/children', methods=['POST'])
 @require_parent_auth
-def create_child():
+def create_child() -> Any:
     """Create new child profile"""
     try:
         data = request.json
@@ -59,7 +61,7 @@ def create_child():
 
 @api_bp.route('/children/<child_id>', methods=['PUT'])
 @require_parent_auth
-def update_child(child_id):
+def update_child(child_id) -> Any:
     """Update child profile"""
     try:
         data = request.json

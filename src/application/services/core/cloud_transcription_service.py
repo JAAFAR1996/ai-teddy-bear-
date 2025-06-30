@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Cloud-based Transcription Service
 Supports multiple providers: OpenAI Whisper API, Google Speech-to-Text, Azure Speech
@@ -373,7 +375,7 @@ class AzureTranscriptionProvider(TranscriptionProviderBase):
         """Async wrapper for recognition"""
         future = asyncio.Future()
         
-        def recognized_cb(evt):
+        def recognized_cb(evt) -> Any:
             future.set_result(evt.result)
         
         recognizer.recognized.connect(recognized_cb)
@@ -549,6 +551,6 @@ class AudioInputStream:
         self.position += len(data)
         return data
     
-    def close(self):
+    def close(self) -> Any:
         """Close stream"""
         pass 

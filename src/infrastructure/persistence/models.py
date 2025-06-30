@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 SQLAlchemy Models for AI Teddy Bear Project
@@ -122,27 +128,27 @@ class Child(Base, UUIDMixin, TimestampMixin):
     
     # Validation
     @validates('age')
-    def validate_age(self, key, age):
+    def validate_age(self, key, age) -> Any:
         if age < 3 or age > 18:
             raise ValueError("Age must be between 3 and 18")
         return age
     
     @validates('max_daily_interaction_time')
-    def validate_interaction_time(self, key, time):
+    def validate_interaction_time(self, key, time) -> Any:
         if time < 300 or time > 14400:  # 5 minutes to 4 hours
             raise ValueError("Daily interaction time must be between 5 minutes and 4 hours")
         return time
     
     # Hybrid properties for calculated fields
     @hybrid_property
-    def daily_time_remaining(self):
+    def daily_time_remaining(self) -> Any:
         """Calculate remaining interaction time for today"""
         if self.daily_interaction_reset != date.today():
             return self.max_daily_interaction_time
         return max(0, self.max_daily_interaction_time - self.total_interaction_time)
     
     @hybrid_property
-    def interaction_streak_days(self):
+    def interaction_streak_days(self) -> Any:
         """Calculate consecutive days of interaction"""
         if not self.last_interaction:
             return 0
@@ -272,18 +278,18 @@ class Conversation(Base, UUIDMixin, TimestampMixin):
     
     # Hybrid properties
     @hybrid_property
-    def duration_minutes(self):
+    def duration_minutes(self) -> Any:
         """Duration in minutes"""
         return self.duration_seconds / 60 if self.duration_seconds else 0
     
     @hybrid_property
-    def average_response_time(self):
+    def average_response_time(self) -> Any:
         """Calculate average response time from messages"""
         # This would be calculated from message timestamps
         return 2.5  # Placeholder
     
     @hybrid_property
-    def dominant_emotion(self):
+    def dominant_emotion(self) -> Any:
         """Get the most frequent emotion from emotional states"""
         if not self.emotional_states:
             return 'neutral'
@@ -472,7 +478,7 @@ Interest.children = relationship("Child", secondary=child_interests_table, back_
 # Event listeners for automatic updates
 
 @listens_for(Child, 'before_update')
-def child_before_update(mapper, connection, target):
+def child_before_update(mapper, connection, target) -> Any:
     """Update child's daily interaction reset if date changed"""
     if target.daily_interaction_reset != date.today():
         target.total_interaction_time = 0
@@ -480,7 +486,7 @@ def child_before_update(mapper, connection, target):
 
 
 @listens_for(Conversation, 'before_update')
-def conversation_before_update(mapper, connection, target):
+def conversation_before_update(mapper, connection, target) -> Any:
     """Calculate conversation duration when end_time is set"""
     if target.end_time and target.start_time:
         duration = target.end_time - target.start_time
@@ -488,19 +494,19 @@ def conversation_before_update(mapper, connection, target):
 
 
 @listens_for(Message, 'after_insert')
-def message_after_insert(mapper, connection, target):
+def message_after_insert(mapper, connection, target) -> Any:
     """Update conversation statistics when message is added"""
     # This would be implemented with direct SQL for performance
     pass
 
 
 # Database initialization function
-def create_tables(engine):
+def create_tables(engine) -> Any:
     """Create all tables with indexes and constraints"""
     Base.metadata.create_all(engine)
 
 
-def get_session_factory(engine):
+def get_session_factory(engine) -> Any:
     """Get SQLAlchemy session factory"""
     from sqlalchemy.orm import sessionmaker
     return sessionmaker(bind=engine)
@@ -537,6 +543,6 @@ if __name__ == "__main__":
     session.add(child)
     session.commit()
     
-    print(f"Created child: {child.to_dict()}")
+    logger.info(f"Created child: {child.to_dict()}")
     
     session.close() 

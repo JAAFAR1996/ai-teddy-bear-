@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 🎤 HUME AI Integration Script
@@ -22,10 +28,10 @@ load_dotenv()
 try:
     from hume import HumeClient, AsyncHumeClient
     HUME_AVAILABLE = True
-    print("✅ HUME AI SDK loaded successfully")
+    logger.info("✅ HUME AI SDK loaded successfully")
 except ImportError:
     HUME_AVAILABLE = False
-    print("❌ HUME AI SDK not available. Install with: pip install hume")
+    logger.error("❌ HUME AI SDK not available. Install with: pip install hume")
 
 class HumeIntegration:
     """
@@ -39,17 +45,17 @@ class HumeIntegration:
         if not self.api_key:
             raise ValueError("❌ HUME API Key not found! Set HUME_API_KEY environment variable")
         
-        print(f"🔑 HUME API Key loaded: {self.api_key[:8]}...")
+        logger.info(f"🔑 HUME API Key loaded: {self.api_key[:8]}...")
         
         # إنشاء العملاء
         if HUME_AVAILABLE:
             self.client = HumeClient(api_key=self.api_key)
             self.async_client = AsyncHumeClient(api_key=self.api_key)
-            print("✅ HUME Clients initialized")
+            logger.info("✅ HUME Clients initialized")
         else:
             self.client = None
             self.async_client = None
-            print("⚠️ HUME Clients not available")
+            logger.warning("⚠️ HUME Clients not available")
     
     # ==================== BATCH MODE ====================
     
@@ -73,17 +79,17 @@ class HumeIntegration:
         session_record = None
         
         try:
-            print("🔄 Starting Batch Analysis...")
-            print(f"📁 Files to analyze: {len(file_paths)}")
+            logger.info("🔄 Starting Batch Analysis...")
+            logger.info(f"📁 Files to analyze: {len(file_paths)}")
             
             # التحقق من وجود الملفات
             valid_files = []
             for file_path in file_paths:
                 if Path(file_path).exists():
                     valid_files.append(file_path)
-                    print(f"  ✅ {file_path}")
+                    logger.info(f"  ✅ {file_path}")
                 else:
-                    print(f"  ❌ File not found: {file_path}")
+                    logger.error(f"  ❌ File not found: {file_path}")
             
             if not valid_files:
                 return {"error": "No valid files found"}
@@ -97,7 +103,7 @@ class HumeIntegration:
                 audio_file=valid_files[0] if valid_files else None
             )
             
-            print("📤 Submitting batch job to HUME...")
+            logger.info("📤 Submitting batch job to HUME...")
             
             # إرسال الملفات للتحليل (واجهة HUME v0.9.0)
             job = self.client.expression_measurement.batch.submit_job(
@@ -108,14 +114,14 @@ class HumeIntegration:
                 ]
             )
             
-            print(f"📋 Job ID: {job.job_id}")
-            print("⏳ Waiting for analysis to complete...")
+            logger.info(f"📋 Job ID: {job.job_id}")
+            logger.info("⏳ Waiting for analysis to complete...")
             
             # انتظار اكتمال التحليل
             job = self.client.expression_measurement.batch.get_job_details(job.job_id)
             
             while job.state not in ["COMPLETED", "FAILED"]:
-                print("⏳ Still processing...")
+                logger.info("⏳ Still processing...")
                 import time
                 time.sleep(5)
                 job = self.client.expression_measurement.batch.get_job_details(job.job_id)
@@ -128,14 +134,14 @@ class HumeIntegration:
                 }
             
             # تحميل النتائج
-            print("📥 Downloading predictions...")
+            logger.info("📥 Downloading predictions...")
             predictions = self.client.expression_measurement.batch.get_job_predictions(job.job_id)
             
             # استخراج المشاعر وحفظها في قاعدة البيانات
             emotions_data = self._extract_emotions_from_predictions(predictions)
             
             if emotions_data and session_record:
-                print("💾 Saving emotions to database...")
+                logger.info("💾 Saving emotions to database...")
                 db_manager.save_emotions(session_record.id, emotions_data)
                 db_manager.update_session_status(session_record.id, "success")
             
@@ -144,7 +150,7 @@ class HumeIntegration:
             with open(output_file, 'w') as f:
                 json.dump(predictions, f, indent=2)
             
-            print("✅ Batch analysis completed successfully!")
+            logger.info("✅ Batch analysis completed successfully!")
             
             return {
                 "status": "success",
@@ -193,8 +199,8 @@ class HumeIntegration:
         session_record = None
         
         try:
-            print("⚡ Starting Stream Analysis...")
-            print(f"🎵 Audio file: {audio_path}")
+            logger.info("⚡ Starting Stream Analysis...")
+            logger.info(f"🎵 Audio file: {audio_path}")
             
             # التحقق من وجود الملف
             if not Path(audio_path).exists():
@@ -213,14 +219,14 @@ class HumeIntegration:
                 audio_file=audio_path
             )
             
-            print("🔗 Connecting to HUME Stream...")
+            logger.info("🔗 Connecting to HUME Stream...")
             
             # استخدام واجهة HUME v0.9.0 للـ Stream
             socket = await self.async_client.expression_measurement.stream.connect(
                 config={"prosody": {}}  # تحليل نبرة الصوت فقط
             )
             
-            print("📤 Sending audio file...")
+            logger.info("📤 Sending audio file...")
             
             # قراءة الملف الصوتي وإرساله
             with open(audio_path, 'rb') as audio_file:
@@ -233,11 +239,11 @@ class HumeIntegration:
             emotions_data = self._extract_emotions_from_predictions(result)
             
             if emotions_data and session_record:
-                print("💾 Saving emotions to database...")
+                logger.info("💾 Saving emotions to database...")
                 db_manager.save_emotions(session_record.id, emotions_data)
                 db_manager.update_session_status(session_record.id, "success")
             
-            print("✅ Stream analysis completed!")
+            logger.info("✅ Stream analysis completed!")
             
             return {
                 "status": "success", 
@@ -311,7 +317,7 @@ class HumeIntegration:
                             }
                             emotions_data.append(emotion_data)
             
-            print(f"🎭 Extracted {len(emotions_data)} emotions from predictions")
+            logger.info(f"🎭 Extracted {len(emotions_data)} emotions from predictions")
             
         except Exception as e:
     logger.error(f"Error: {e}")f"❌ Error extracting emotions: {e}")
@@ -384,7 +390,7 @@ class HumeIntegration:
         except Exception as e:
             return {"error": f"Summary extraction failed: {e}"}
     
-    def create_sample_files(self):
+    def create_sample_files(self) -> Any:
         """
         🎵 إنشاء ملفات تجريبية للاختبار
         """
@@ -392,7 +398,7 @@ class HumeIntegration:
             import numpy as np
             import soundfile as sf
             
-            print("🎵 Creating sample audio files...")
+            logger.info("🎵 Creating sample audio files...")
             
             # إنشاء نغمات مختلفة
             sample_rate = 16000
@@ -417,7 +423,7 @@ class HumeIntegration:
                 
                 sf.write(filename, audio, sample_rate)
                 created_files.append(filename)
-                print(f"  ✅ Created: {filename}")
+                logger.info(f"  ✅ Created: {filename}")
             
             return created_files
             
@@ -432,9 +438,9 @@ async def test_stream_mode():
     """
     🧪 اختبار نمط Stream
     """
-    print("\n" + "="*50)
-    print("🧪 TESTING STREAM MODE")
-    print("="*50)
+    logger.info("\n" + "="*50)
+    logger.info("🧪 TESTING STREAM MODE")
+    logger.info("="*50)
     
     try:
         hume = HumeIntegration()
@@ -448,31 +454,31 @@ async def test_stream_mode():
             # تحليل Stream
             result = await hume.analyze_stream(audio_file)
             
-            print(f"\n📊 Stream Results:")
-            print(f"Status: {result.get('status')}")
+            logger.info(f"\n📊 Stream Results:")
+            logger.info(f"Status: {result.get('status')}")
             
             if result.get('status') == 'success':
                 # استخراج ملخص المشاعر
                 summary = hume.extract_emotions_summary(result)
-                print(f"\n🎭 Emotions Summary:")
-                print(json.dumps(summary, indent=2, ensure_ascii=False))
+                logger.info(f"\n🎭 Emotions Summary:")
+                logger.info(json.dumps(summary, indent=2, ensure_ascii=False))
             else:
-                print(f"Error: {result.get('error')}")
+                logger.error(f"Error: {result.get('error')}")
             
             return result
         else:
-            print("❌ No sample files available for testing")
+            logger.error("❌ No sample files available for testing")
             
     except Exception as e:
     logger.error(f"Error: {e}")f"❌ Stream test failed: {e}")
 
-def test_batch_mode():
+def test_batch_mode() -> Any:
     """
     🧪 اختبار نمط Batch
     """
-    print("\n" + "="*50)
-    print("🧪 TESTING BATCH MODE")
-    print("="*50)
+    logger.info("\n" + "="*50)
+    logger.info("🧪 TESTING BATCH MODE")
+    logger.info("="*50)
     
     try:
         hume = HumeIntegration()
@@ -484,23 +490,23 @@ def test_batch_mode():
             # تحليل Batch
             result = hume.analyze_batch(sample_files)
             
-            print(f"\n📊 Batch Results:")
-            print(f"Status: {result.get('status')}")
-            print(f"Files analyzed: {result.get('files_analyzed')}")
+            logger.info(f"\n📊 Batch Results:")
+            logger.info(f"Status: {result.get('status')}")
+            logger.info(f"Files analyzed: {result.get('files_analyzed')}")
             
             if result.get('status') == 'success':
-                print(f"Output file: {result.get('output_file')}")
+                logger.info(f"Output file: {result.get('output_file')}")
                 
                 # استخراج ملخص المشاعر
                 summary = hume.extract_emotions_summary(result)
-                print(f"\n🎭 Emotions Summary:")
-                print(json.dumps(summary, indent=2, ensure_ascii=False))
+                logger.info(f"\n🎭 Emotions Summary:")
+                logger.info(json.dumps(summary, indent=2, ensure_ascii=False))
             else:
-                print(f"Error: {result.get('error')}")
+                logger.error(f"Error: {result.get('error')}")
             
             return result
         else:
-            print("❌ No sample files available for testing")
+            logger.error("❌ No sample files available for testing")
             
     except Exception as e:
     logger.error(f"Error: {e}")f"❌ Batch test failed: {e}")
@@ -509,17 +515,17 @@ async def run_all_tests():
     """
     🧪 تشغيل جميع الاختبارات
     """
-    print("🎤 HUME AI Integration Testing")
-    print("="*60)
+    logger.info("🎤 HUME AI Integration Testing")
+    logger.info("="*60)
     
     # التحقق من API Key
     api_key = os.getenv("HUME_API_KEY")
     if not api_key:
-        print("❌ HUME_API_KEY not set!")
-        print("💡 Set it with: export HUME_API_KEY='xmkFxYNrKdHjhY6RiEA0JT46C2xAo4YsdiujXqtg5fd1C99Q'")
+        logger.error("❌ HUME_API_KEY not set!")
+        logger.info("💡 Set it with: export HUME_API_KEY='xmkFxYNrKdHjhY6RiEA0JT46C2xAo4YsdiujXqtg5fd1C99Q'")
         return
     
-    print(f"🔑 API Key: {api_key[:8]}...")
+    logger.info(f"🔑 API Key: {api_key[:8]}...")
     
     # اختبار Stream Mode
     await test_stream_mode()
@@ -527,9 +533,9 @@ async def run_all_tests():
     # اختبار Batch Mode
     test_batch_mode()
     
-    print("\n" + "="*60)
-    print("✅ All tests completed!")
-    print("📁 Check 'batch_predictions.json' for detailed results")
+    logger.info("\n" + "="*60)
+    logger.info("✅ All tests completed!")
+    logger.info("📁 Check 'batch_predictions.json' for detailed results")
 
 if __name__ == "__main__":
     # تعيين API Key إذا لم يكن موجوداً

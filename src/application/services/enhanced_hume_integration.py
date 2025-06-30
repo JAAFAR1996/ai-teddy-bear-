@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 🎤 Enhanced HUME AI Integration - 2025 Edition
@@ -843,7 +845,7 @@ class EnhancedHumeIntegration:
             rms = librosa.feature.rms(y=y)[0]
             return min(1.0, float(np.mean(rms) * 10))  # تطبيع إلى 0-1
             
-        except Exception:
+        except Exception as e:
             return 0.5  # قيمة افتراضية
 
     def _assess_voice_quality(self, audio_data: bytes) -> float:

@@ -338,8 +338,8 @@ emergency_response = EmergencyResponseSystem()
 
 async def main():
     """اختبار نظام الاستجابة للطوارئ"""
-    print("🚨 Emergency Response System - اختبار النظام")
-    print("=" * 50)
+    logger.info("🚨 Emergency Response System - اختبار النظام")
+    logger.info("=" * 50)
     
     # محاكاة حادث تسريب مفاتيح
     exposed_keys = [
@@ -352,11 +352,11 @@ async def main():
         "manual_security_audit"
     )
     
-    print(f"✅ تم إنشاء حادث أمني: {incident_id}")
+    logger.info(f"✅ تم إنشاء حادث أمني: {incident_id}")
     
     # عرض تقرير الحادث
     report = emergency_response.get_incident_report(incident_id)
-    print(f"📊 تقرير الحادث: {json.dumps(report, indent=2, default=str)}")
+    logger.info(f"📊 تقرير الحادث: {json.dumps(report, indent=2, default=str)}")
 
 
 if __name__ == "__main__":

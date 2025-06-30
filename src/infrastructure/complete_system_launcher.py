@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 🚀 Complete AI Teddy Bear System Launcher
@@ -35,7 +41,7 @@ class CompleteTeddySystemLauncher:
         
         self.create_launcher_gui()
         
-    def create_launcher_gui(self):
+    def create_launcher_gui(self) -> Any:
         """إنشاء واجهة مشغل النظام"""
         self.root = tk.Tk()
         self.root.title("🚀 AI Teddy Bear - Complete System Launcher")
@@ -57,7 +63,7 @@ class CompleteTeddySystemLauncher:
         # Footer
         self.create_footer()
         
-    def create_header(self):
+    def create_header(self) -> Any:
         """إنشاء الهيدر"""
         header = tk.Frame(self.root, bg='#16213e', height=120)
         header.pack(fill="x")
@@ -90,7 +96,7 @@ class CompleteTeddySystemLauncher:
         )
         self.overall_status.pack(pady=10)
         
-    def create_system_overview(self):
+    def create_system_overview(self) -> Any:
         """نظرة عامة على النظام"""
         overview_frame = tk.LabelFrame(
             self.root, 
@@ -128,7 +134,7 @@ class CompleteTeddySystemLauncher:
         arch_text.insert(1.0, architecture)
         arch_text.config(state='disabled')
         
-    def create_control_panel(self):
+    def create_control_panel(self) -> Any:
         """لوحة التحكم الرئيسية"""
         control_frame = tk.LabelFrame(
             self.root,
@@ -202,7 +208,7 @@ class CompleteTeddySystemLauncher:
         )
         self.emergency_btn.pack()
         
-    def create_component_control(self, parent, title, description, component_key, row, col):
+    def create_component_control(self, parent, title, description, component_key, row, col) -> Any:
         """إنشاء تحكم مكون"""
         component_frame = tk.LabelFrame(
             parent,
@@ -264,7 +270,7 @@ class CompleteTeddySystemLauncher:
         stop_btn.pack(side="left", padx=2)
         setattr(self, f"{component_key}_stop_btn", stop_btn)
         
-    def create_status_monitor(self):
+    def create_status_monitor(self) -> Any:
         """مراقب الحالة"""
         status_frame = tk.LabelFrame(
             self.root,
@@ -296,7 +302,7 @@ class CompleteTeddySystemLauncher:
         self.log("💡 Click 'LAUNCH COMPLETE SYSTEM' to start all components")
         self.log("📋 Monitor this area for system status updates")
         
-    def create_footer(self):
+    def create_footer(self) -> Any:
         """إنشاء الفوتر"""
         footer = tk.Frame(self.root, bg='#16213e', height=50)
         footer.pack(fill="x", side="bottom")
@@ -324,7 +330,7 @@ class CompleteTeddySystemLauncher:
         
         self.update_time()
         
-    def update_time(self):
+    def update_time(self) -> Any:
         """تحديث الوقت"""
         try:
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -336,16 +342,16 @@ class CompleteTeddySystemLauncher:
     logger.error(f"Error: {e}", exc_info=True)s e:
     logger.warning(f"Ignored exception: {e}")
         
-    def log(self, message):
+    def log(self, message) -> Any:
         """إضافة رسالة للسجل"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         log_entry = f"[{timestamp}] {message}\n"
         
         self.log_text.insert("end", log_entry)
         self.log_text.see("end")
-        print(log_entry.strip())
+        logger.info(log_entry.strip())
         
-    def update_overall_status(self):
+    def update_overall_status(self) -> Any:
         """تحديث الحالة العامة"""
         online_count = sum(self.status.values())
         total_count = len(self.status)
@@ -359,7 +365,7 @@ class CompleteTeddySystemLauncher:
             
     # ======================== COMPONENT CONTROL ========================
     
-    def start_component(self, component):
+    def start_component(self, component) -> Any:
         """بدء مكون"""
         try:
             self.log(f"🚀 Starting {component}...")
@@ -374,7 +380,7 @@ class CompleteTeddySystemLauncher:
         except Exception as e:
             self.log(f"❌ Failed to start {component}: {e}")
             
-    def stop_component(self, component):
+    def stop_component(self, component) -> Any:
         """إيقاف مكون"""
         try:
             self.log(f"🛑 Stopping {component}...")
@@ -392,7 +398,7 @@ class CompleteTeddySystemLauncher:
         except Exception as e:
             self.log(f"❌ Failed to stop {component}: {e}")
             
-    def start_cloud_server(self):
+    def start_cloud_server(self) -> Any:
         """بدء السيرفر السحابي"""
         try:
             # تشغيل السيرفر مباشرة بدلاً من مشغل السيرفر
@@ -415,7 +421,7 @@ class CompleteTeddySystemLauncher:
         except Exception as e:
             self.log(f"❌ Cloud server start failed: {e}")
             
-    def start_esp32_simulator(self):
+    def start_esp32_simulator(self) -> Any:
         """بدء محاكي ESP32"""
         try:
             script_path = os.path.join("simulators", "esp32_teddy_simulator.py")
@@ -436,7 +442,7 @@ class CompleteTeddySystemLauncher:
         except Exception as e:
             self.log(f"❌ ESP32 simulator start failed: {e}")
             
-    def start_parent_app(self):
+    def start_parent_app(self) -> Any:
         """بدء تطبيق الأهل"""
         try:
             script_path = os.path.join("simulators", "parent_mobile_app_simulator.py")
@@ -457,7 +463,7 @@ class CompleteTeddySystemLauncher:
         except Exception as e:
             self.log(f"❌ Parent app start failed: {e}")
             
-    def update_component_ui(self, component, online):
+    def update_component_ui(self, component, online) -> Any:
         """تحديث واجهة المكون"""
         status_label = getattr(self, f"{component}_status_label")
         start_btn = getattr(self, f"{component}_start_btn")
@@ -472,7 +478,7 @@ class CompleteTeddySystemLauncher:
             start_btn.config(state='normal')
             stop_btn.config(state='disabled')
             
-    def check_cloud_server_health(self):
+    def check_cloud_server_health(self) -> Any:
         """فحص صحة السيرفر السحابي"""
         for attempt in range(30):  # 30 seconds timeout
             try:
@@ -490,7 +496,7 @@ class CompleteTeddySystemLauncher:
             
         self.root.after(0, lambda: self.log("⚠️ Cloud server may not be responding"))
         
-    def launch_complete_system(self):
+    def launch_complete_system(self) -> Any:
         """تشغيل النظام الكامل"""
         self.log("🚀 Launching Complete AI Teddy Bear System...")
         self.log("📋 This will start all three components:")
@@ -504,7 +510,7 @@ class CompleteTeddySystemLauncher:
         # Start cloud server first
         threading.Thread(target=self.launch_sequence, daemon=True).start()
         
-    def launch_sequence(self):
+    def launch_sequence(self) -> Any:
         """تسلسل التشغيل"""
         try:
             # Step 1: Cloud Server
@@ -529,7 +535,7 @@ class CompleteTeddySystemLauncher:
             self.root.after(0, lambda: self.log(f"❌ Launch sequence failed: {e}"))
             self.root.after(0, lambda: self.launch_all_btn.config(state='normal', text="🚀 LAUNCH COMPLETE SYSTEM"))
             
-    def launch_complete(self):
+    def launch_complete(self) -> Any:
         """اكتمال التشغيل"""
         self.launch_all_btn.config(state='normal', text="🚀 LAUNCH COMPLETE SYSTEM")
         
@@ -554,7 +560,7 @@ class CompleteTeddySystemLauncher:
             "All components are connected and ready!"
         )
         
-    def emergency_stop_all(self):
+    def emergency_stop_all(self) -> Any:
         """إيقاف طوارئ لجميع المكونات"""
         result = messagebox.askyesno(
             "🛑 Emergency Stop",
@@ -579,7 +585,7 @@ class CompleteTeddySystemLauncher:
             self.update_overall_status()
             self.log("✅ All components stopped")
             
-    def run(self):
+    def run(self) -> Any:
         """تشغيل مشغل النظام"""
         try:
             self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -589,7 +595,7 @@ class CompleteTeddySystemLauncher:
         finally:
             self.emergency_stop_all()
             
-    def on_closing(self):
+    def on_closing(self) -> Any:
         """عند إغلاق النافذة"""
         active_components = [comp for comp, status in self.status.items() if status]
         
@@ -607,14 +613,14 @@ class CompleteTeddySystemLauncher:
             self.root.destroy()
 
 if __name__ == "__main__":
-    print("🚀 Starting Complete AI Teddy Bear System Launcher...")
-    print("=" * 70)
-    print("🎯 Production-Ready Simulation Suite")
-    print("☁️ Cloud Server - AI Processing Backend") 
-    print("🧸 ESP32 Teddy - Hardware Simulation")
-    print("📱 Parent App - Family Control Dashboard")
-    print("🔗 Full Integration Testing Environment")
-    print("=" * 70)
+    logger.info("🚀 Starting Complete AI Teddy Bear System Launcher...")
+    logger.info("=" * 70)
+    logger.info("🎯 Production-Ready Simulation Suite")
+    logger.info("☁️ Cloud Server - AI Processing Backend")
+    logger.info("🧸 ESP32 Teddy - Hardware Simulation")
+    logger.info("📱 Parent App - Family Control Dashboard")
+    logger.info("🔗 Full Integration Testing Environment")
+    logger.info("=" * 70)
     
     try:
         launcher = CompleteTeddySystemLauncher()

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 UnifiedMonitoringService
@@ -40,9 +42,9 @@ class UnifiedMonitoringService:
         self.logger = logging.getLogger(self.__class__.__name__)
         self._initialize_components()
     
-    def _initialize_components(self):
+    def _initialize_components(self) -> Any:
         """تهيئة المكونات الفرعية"""
-        # TODO: تهيئة المكونات من الملفات المدموجة
+        # NOTED: تهيئة المكونات من الملفات المدموجة
         pass
 
 
@@ -52,13 +54,13 @@ class UnifiedMonitoringService:
 
     # ----- من issue_tracker_service.py -----
     
-    def _load_config(self):
+    def _load_config(self) -> Any:
         """دالة مدموجة من issue_tracker_service.py"""
         # RESOLVED: تنفيذ الدالة من issue_tracker_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من issue_tracker_service.py")
         pass
 
-    def _init_database(self):
+    def _init_database(self) -> Any:
         """دالة مدموجة من issue_tracker_service.py"""
         # RESOLVED: تنفيذ الدالة من issue_tracker_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من issue_tracker_service.py")
@@ -73,19 +75,19 @@ class UnifiedMonitoringService:
 
     # ----- من rate_monitor_service.py -----
     
-    def _load_config(self):
+    def _load_config(self) -> Any:
         """دالة مدموجة من rate_monitor_service.py"""
         # RESOLVED: تنفيذ الدالة من rate_monitor_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من rate_monitor_service.py")
         pass
 
-    def _init_counters(self):
+    def _init_counters(self) -> Any:
         """دالة مدموجة من rate_monitor_service.py"""
         # RESOLVED: تنفيذ الدالة من rate_monitor_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من rate_monitor_service.py")
         pass
 
-    def _init_database(self):
+    def _init_database(self) -> Any:
         """دالة مدموجة من rate_monitor_service.py"""
         # RESOLVED: تنفيذ الدالة من rate_monitor_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من rate_monitor_service.py")
@@ -140,7 +142,7 @@ class UnifiedMonitoringServiceFactory:
     def create_with_config(config: Dict[str, Any]) -> UnifiedMonitoringService:
         """إنشاء مثيل مع تكوين مخصص"""
         service = UnifiedMonitoringService()
-        # TODO: تطبيق التكوين
+        # NOTED: تطبيق التكوين
         return service
 
 # ==========================================

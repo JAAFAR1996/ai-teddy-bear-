@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🔐 Enhanced JWT Authentication - Refresh Tokens & Advanced Security
 ===================================================================

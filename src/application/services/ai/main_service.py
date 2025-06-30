@@ -225,7 +225,7 @@ class AITeddyBearService(ServiceBase):
                 try:
                     service_health = await service.health_check()
                     checks[f"{service_name}_healthy"] = service_health.get("healthy", False)
-                except Exception:
+                except Exception as e:
                     checks[f"{service_name}_healthy"] = False
                     
         healthy = all([

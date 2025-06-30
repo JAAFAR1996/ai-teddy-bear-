@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 🐛 Issue Tracker Service - نظام تتبع الأخطاء والمشاكل
@@ -35,7 +37,7 @@ class IssueTrackerService:
         self._load_config()
         self._init_database()
     
-    def _load_config(self):
+    def _load_config(self) -> Any:
         """تحميل إعدادات تتبع الأخطاء"""
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
@@ -53,7 +55,7 @@ class IssueTrackerService:
             self.logger.error("Failed to load issue tracker config", error=str(e))
             self.config = {"enable_issue_tracking": True}
     
-    def _init_database(self):
+    def _init_database(self) -> Any:
         """تهيئة قاعدة بيانات تتبع الأخطاء"""
         try:
             self.db_path = "logs/issues.db"
@@ -136,7 +138,7 @@ class IssueTrackerService:
             content = f"{title}:{error_type}"
             hash_object = hashlib.md5(content.encode())
             return f"ISS-{hash_object.hexdigest()[:8].upper()}"
-        except Exception:
+        except Exception as e:
             return f"ISS-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
     
     async def get_issue_statistics(self) -> Dict:

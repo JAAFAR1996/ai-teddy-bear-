@@ -256,7 +256,7 @@ class ModernModerationService:
             try:
                 test_result = await self._ai_moderation("Hello, this is a test.")
                 health['ai_test'] = 'passed' if test_result['safe'] else 'failed'
-            except Exception:
+            except Exception as e:
                 health['ai_test'] = 'failed'
                 health['service'] = 'degraded'
         

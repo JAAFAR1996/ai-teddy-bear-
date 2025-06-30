@@ -162,7 +162,7 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         
         return query
     
-    def _build_condition(self, criterion: SearchCriteria):
+    def _build_condition(self, criterion -> Any: SearchCriteria) -> Any:
         """Build SQLAlchemy condition from search criteria"""
         field_attr = getattr(self.model_class, criterion.field, None)
         if field_attr is None:

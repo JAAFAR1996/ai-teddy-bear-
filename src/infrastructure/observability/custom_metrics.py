@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Custom Metrics for AI Teddy Bear Observability
 ==============================================
@@ -153,7 +155,7 @@ class ChildSafetyMetrics:
             boundaries=[0.7, 0.8, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 1.0]
         )
         
-    def _setup_telemetry(self):
+    def _setup_telemetry(self) -> Any:
         """Setup OpenTelemetry providers and exporters"""
         # Metrics setup
         registry = CollectorRegistry()
@@ -234,7 +236,7 @@ class ChildSafetyMetrics:
                 }
             )
     
-    def record_child_interaction(self, metrics: ChildInteractionMetrics):
+    def record_child_interaction(self, metrics -> Any: ChildInteractionMetrics) -> Any:
         """Record comprehensive child interaction metrics"""
         with self.tracer.start_as_current_span("child_interaction") as span:
             span.set_attributes({
@@ -330,7 +332,7 @@ class ChildSafetyMetrics:
                 }
             )
     
-    def update_compliance_metrics(self):
+    def update_compliance_metrics(self) -> Any:
         """Update compliance metrics based on recent data"""
         # This would typically query recent metrics to calculate compliance rates
         # For demo purposes, using simulated values
@@ -678,7 +680,7 @@ class SystemHealthMetrics:
                 }
             )
     
-    def update_slo_metrics(self, service_name: str):
+    def update_slo_metrics(self, service_name -> Any: str) -> Any:
         """Update SLO compliance metrics"""
         # This would typically calculate from actual metrics
         # For demo purposes, using simulated values

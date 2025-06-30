@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 # src/infrastructure/security/audit.py
 from sqlalchemy import Column, String, DateTime, JSON, Enum
 from sqlalchemy.ext.declarative import declarative_base

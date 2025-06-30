@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🧸 Enhanced Child Interaction Service - 2025 Edition
 خدمة تفاعل الطفل المحسنة مع التحسينات الجديدة

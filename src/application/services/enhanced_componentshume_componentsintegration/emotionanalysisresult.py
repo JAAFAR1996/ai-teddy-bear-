@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 EmotionAnalysisResult - Component extracted from large service
 مكون منفصل من خدمة كبيرة
@@ -17,7 +19,7 @@ class EmotionAnalysisResult:
         """Initialize EmotionAnalysisResult"""
         pass
     
-    def to_dict(self):
+    def to_dict(self) -> Any:
         """
         to_dict - Extracted method
         TODO: Implement the actual logic from original class

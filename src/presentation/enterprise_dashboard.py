@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 Enterprise Dashboard with Advanced Analytics and Live Emotion Tracking
@@ -28,7 +30,7 @@ try:
     WEBENGINE_AVAILABLE = True
 except ImportError:
     WEBENGINE_AVAILABLE = False
-    print("⚠️ QWebEngineView not available - using fallback chart display")
+    logger.warning("⚠️ QWebEngineView not available - using fallback chart display")
 
 import structlog
 
@@ -44,7 +46,7 @@ class EmotionAnalyticsEngine:
         self.predictions = {}
         self.setup_plotly()
         
-    def setup_plotly(self):
+    def setup_plotly(self) -> Any:
         """Setup Plotly for advanced visualization"""
         try:
             import plotly.graph_objects as go
@@ -62,7 +64,7 @@ class EmotionAnalyticsEngine:
             self.plotly_available = False
             logger.warning("Plotly not available - install with: pip install plotly")
     
-    def add_emotion_data(self, emotion: str, confidence: float, metadata: dict = None):
+    def add_emotion_data(self, emotion -> Any: str, confidence -> Any: float, metadata -> Any: dict = None) -> Any:
         """Add new emotion data point"""
         entry = {
             "emotion": emotion,
@@ -80,7 +82,7 @@ class EmotionAnalyticsEngine:
         # Trigger pattern analysis
         self.analyze_patterns()
     
-    def analyze_patterns(self):
+    def analyze_patterns(self) -> Any:
         """Analyze emotion patterns for insights"""
         if len(self.emotion_history) < 10:
             return
@@ -443,7 +445,7 @@ class SmartAlertSystem:
             if alert["timestamp"] >= cutoff_time
         ]
     
-    def set_sensitivity(self, level: float):
+    def set_sensitivity(self, level -> Any: float) -> Any:
         """Set alert sensitivity (0.1 to 2.0)"""
         self.sensitivity = max(0.1, min(2.0, level))
         
@@ -486,7 +488,7 @@ class EnterpriseDashboardWidget(QWidget):
         
         logger.info("Enterprise dashboard initialized with advanced analytics")
     
-    def setup_ui(self):
+    def setup_ui(self) -> Any:
         """Setup comprehensive dashboard UI"""
         layout = QVBoxLayout(self)
         
@@ -668,7 +670,7 @@ class EnterpriseDashboardWidget(QWidget):
         
         return panel
     
-    def setup_timers(self):
+    def setup_timers(self) -> Any:
         """Setup update timers"""
         # Real-time updates every 3 seconds
         self.realtime_timer = QTimer()
@@ -685,7 +687,7 @@ class EnterpriseDashboardWidget(QWidget):
         self.alerts_timer.timeout.connect(self.process_alerts)
         self.alerts_timer.start(10000)
     
-    def update_realtime_metrics(self):
+    def update_realtime_metrics(self) -> Any:
         """Update real-time metrics"""
         try:
             import random
@@ -708,7 +710,7 @@ class EnterpriseDashboardWidget(QWidget):
         except Exception as e:
             logger.error("Failed to update real-time metrics", error=str(e))
     
-    def add_emotion_data(self, emotion: str, confidence: float, metadata: dict = None):
+    def add_emotion_data(self, emotion -> Any: str, confidence -> Any: float, metadata -> Any: dict = None) -> Any:
         """Add new emotion data and update displays"""
         # Add to analytics engine
         self.emotion_engine.add_emotion_data(emotion, confidence, metadata)
@@ -721,7 +723,7 @@ class EnterpriseDashboardWidget(QWidget):
         
         logger.info("Emotion data added", emotion=emotion, confidence=confidence)
     
-    def update_current_emotion_display(self, emotion: str, confidence: float):
+    def update_current_emotion_display(self, emotion -> Any: str, confidence -> Any: float) -> Any:
         """Update current emotion display"""
         emotion_emojis = {
             "happy": "😊", "excited": "🤩", "calm": "😌", "curious": "🤔",
@@ -753,7 +755,7 @@ class EnterpriseDashboardWidget(QWidget):
             }}
         """)
     
-    def update_charts(self):
+    def update_charts(self) -> Any:
         """Update all emotion charts"""
         if not self.emotion_engine.plotly_available:
             return
@@ -793,7 +795,7 @@ class EnterpriseDashboardWidget(QWidget):
         except Exception as e:
             logger.error("Failed to update charts", error=str(e))
     
-    def display_plotly_chart(self, fig, chart_type: str):
+    def display_plotly_chart(self, fig, chart_type -> Any: str) -> Any:
         """Display Plotly chart in widget"""
         try:
             if WEBENGINE_AVAILABLE:
@@ -833,7 +835,7 @@ class EnterpriseDashboardWidget(QWidget):
             error_label.setStyleSheet("QLabel { color: red; }")
             self.emotion_charts_layout.addWidget(error_label)
     
-    def process_alerts(self):
+    def process_alerts(self) -> Any:
         """Process smart alerts"""
         if not self.alert_system.enabled:
             return
@@ -851,7 +853,7 @@ class EnterpriseDashboardWidget(QWidget):
         except Exception as e:
             logger.error("Failed to process alerts", error=str(e))
     
-    def display_alert(self, alert: Dict):
+    def display_alert(self, alert -> Any: Dict) -> Any:
         """Display alert in the alerts panel"""
         timestamp = alert["timestamp"].strftime("%H:%M:%S")
         priority_colors = {
@@ -875,7 +877,7 @@ class EnterpriseDashboardWidget(QWidget):
         # Emit signal for parent handling
         self.alert_triggered.emit(alert["type"], alert["message"], alert["data"])
     
-    def toggle_alerts(self, enabled: bool):
+    def toggle_alerts(self, enabled -> Any: bool) -> Any:
         """Toggle smart alerts system"""
         self.alert_system.enabled = enabled
         
@@ -886,17 +888,17 @@ class EnterpriseDashboardWidget(QWidget):
             self.alerts_timer.stop()
             logger.info("Smart alerts disabled")
     
-    def update_alert_sensitivity(self, value: int):
+    def update_alert_sensitivity(self, value -> Any: int) -> Any:
         """Update alert sensitivity"""
         sensitivity = value / 5.0  # Convert 1-10 scale to 0.2-2.0
         self.alert_system.set_sensitivity(sensitivity)
     
-    def refresh_all_charts(self):
+    def refresh_all_charts(self) -> Any:
         """Manually refresh all charts"""
         self.update_charts()
         logger.info("Charts refreshed manually")
     
-    def update_connection_status(self, status: str):
+    def update_connection_status(self, status -> Any: str) -> Any:
         """Update connection status indicator"""
         status_config = {
             "Connected": {"color": "green", "symbol": "●"},
@@ -910,7 +912,7 @@ class EnterpriseDashboardWidget(QWidget):
         self.connection_indicator.setText(f"{config['symbol']} {status}")
         self.connection_indicator.setStyleSheet(f"QLabel {{ color: {config['color']}; font-weight: bold; }}")
     
-    def add_child_profile(self, name: str, age: int, metadata: dict = None):
+    def add_child_profile(self, name -> Any: str, age -> Any: int, metadata -> Any: dict = None) -> Any:
         """Add child profile to dashboard"""
         profile_text = f"{name} (Age: {age})"
         self.profiles_list.addItem(profile_text)

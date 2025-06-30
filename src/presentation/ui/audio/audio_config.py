@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Audio Configuration for AI Teddy Bear UI
 Centralized audio settings and device management
@@ -44,12 +46,12 @@ class AudioConfig:
                    sample_rate=self.sample_rate,
                    channels=self.channels)
     
-    def update_sample_rate(self, rate: int):
+    def update_sample_rate(self, rate -> Any: int) -> Any:
         """Update audio sample rate"""
         self.sample_rate = rate
         logger.info("Sample rate updated", rate=rate)
     
-    def get_audio_devices(self):
+    def get_audio_devices(self) -> Any:
         """Get available audio input devices"""
         devices = []
         

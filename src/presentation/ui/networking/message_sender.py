@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Enterprise Message Sender for AI Teddy Bear
 Advanced message handling with retry logic, compression, and chunking
@@ -40,7 +42,7 @@ class EnterpriseMessageSender(QObject):
         
         self._setup_retry_system()
         
-    def _setup_retry_system(self):
+    def _setup_retry_system(self) -> Any:
         """Setup automatic retry system"""
         self.retry_timer = QTimer()
         self.retry_timer.timeout.connect(self._process_retry_queue)
@@ -197,7 +199,7 @@ class EnterpriseMessageSender(QObject):
             logger.warning("Failed to compress message, sending uncompressed", error=str(e))
             return message_data
     
-    def _queue_for_retry(self, message_data: dict):
+    def _queue_for_retry(self, message_data -> Any: dict) -> Any:
         """Queue message for retry"""
         message_data["retry_attempts"] = message_data.get("retry_attempts", 0) + 1
         
@@ -216,7 +218,7 @@ class EnterpriseMessageSender(QObject):
             self.pending_messages.pop(message_data["id"], None)
             self.message_failed.emit(message_data["id"], "Max retry attempts reached")
     
-    def _process_retry_queue(self):
+    def _process_retry_queue(self) -> Any:
         """Process queued retry messages"""
         if not self.retry_queue or not self.websocket_client.is_connected:
             return
@@ -237,7 +239,7 @@ class EnterpriseMessageSender(QObject):
                            message_id=message_data["id"], 
                            error=str(e))
     
-    def _on_connection_restored(self):
+    def _on_connection_restored(self) -> Any:
         """Handle connection restoration"""
         logger.info("Connection restored, processing retry queue",
                    pending_count=len(self.retry_queue))
@@ -247,7 +249,7 @@ class EnterpriseMessageSender(QObject):
         if self.retry_queue:
             self._process_retry_queue()
     
-    def _handle_server_response(self, response: dict):
+    def _handle_server_response(self, response -> Any: dict) -> Any:
         """Handle server response for sent messages"""
         if response.get("type") == "message_ack":
             message_id = response.get("message_id")
@@ -286,7 +288,7 @@ class EnterpriseMessageSender(QObject):
         """Get count of pending messages"""
         return len(self.pending_messages)
     
-    def clear_pending_messages(self):
+    def clear_pending_messages(self) -> Any:
         """Clear all pending messages"""
         cleared_count = len(self.pending_messages)
         self.pending_messages.clear()

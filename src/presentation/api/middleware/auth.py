@@ -1,11 +1,13 @@
+from typing import Dict, List, Any, Optional
+
 from functools import wraps
 from flask import request, jsonify
 import jwt
 
-def require_api_key(f):
+def require_api_key(f) -> Any:
     """Require API key for endpoint access"""
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated_function(*args, **kwargs) -> Any:
         api_key = request.headers.get('X-API-Key')
         if not api_key:
             return jsonify({"error": "API key required"}), 401
@@ -17,10 +19,10 @@ def require_api_key(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def require_parent_auth(f):
+def require_parent_auth(f) -> Any:
     """Require parent authentication for endpoint access"""
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated_function(*args, **kwargs) -> Any:
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Bearer '):
             return jsonify({"error": "Authentication required"}), 401
@@ -41,10 +43,10 @@ def require_parent_auth(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def require_child_auth(f):
+def require_child_auth(f) -> Any:
     """Require child authentication for endpoint access"""
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated_function(*args, **kwargs) -> Any:
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Bearer '):
             return jsonify({"error": "Authentication required"}), 401

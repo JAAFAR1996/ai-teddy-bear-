@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🎵 Enhanced Audio Processor - 2025 Edition
 معالج صوت متطور مع معالجة متوازية وتحسين الأداء
@@ -103,7 +105,7 @@ class EnhancedAudioProcessor:
         # تهيئة المودلات
         self._initialize_models()
     
-    def _initialize_models(self):
+    def _initialize_models(self) -> Any:
         """تهيئة المودلات المطلوبة"""
         try:
             # تحميل مودل Whisper للتحليل
@@ -357,7 +359,7 @@ class EnhancedAudioProcessor:
         hash_input = str(data_to_hash).encode('utf-8')
         return hashlib.md5(hash_input).hexdigest()
     
-    def _update_processing_stats(self, processing_time: float):
+    def _update_processing_stats(self, processing_time -> Any: float) -> Any:
         """تحديث إحصائيات الأداء"""
         self.processing_stats['total_processing_time'] += processing_time
         self.processing_stats['average_processing_time'] = (
@@ -426,18 +428,18 @@ async def test_audio_processor():
     # معالجة الصوت
     result = await processor.process_audio_stream(audio_stream())
     
-    print("🎵 Audio Processing Test Results:")
-    print(f"   Original length: {len(test_audio)}")
-    print(f"   Processed length: {len(result.processed_audio)}")
-    print(f"   Quality score: {result.quality_score:.3f}")
-    print(f"   Voice activity: {result.voice_activity_score:.3f}")
-    print(f"   Processing time: {result.processing_time_ms:.1f}ms")
-    print(f"   Confidence: {result.confidence:.3f}")
-    print(f"   Emotion features: {len(result.emotion_features)}")
+    logger.info("🎵 Audio Processing Test Results:")
+    logger.info(f"   Original length: {len(test_audio)}")
+    logger.info(f"   Processed length: {len(result.processed_audio)}")
+    logger.info(f"   Quality score: {result.quality_score:.3f}")
+    logger.info(f"   Voice activity: {result.voice_activity_score:.3f}")
+    logger.info(f"   Processing time: {result.processing_time_ms:.1f}ms")
+    logger.info(f"   Confidence: {result.confidence:.3f}")
+    logger.info(f"   Emotion features: {len(result.emotion_features)}")
     
     # إحصائيات الأداء
     stats = processor.get_performance_stats()
-    print(f"   Performance stats: {stats}")
+    logger.info(f"   Performance stats: {stats}")
     
     await processor.cleanup()
     

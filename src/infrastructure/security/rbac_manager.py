@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🔐 Role-Based Access Control (RBAC) Manager - Enterprise Security 2025
 =====================================================================
@@ -173,7 +175,7 @@ class TeddyBearRBACManager:
         # Emergency override settings
         self.emergency_contacts: Dict[str, List[str]] = {}
     
-    def _initialize_role_permissions(self):
+    def _initialize_role_permissions(self) -> Any:
         """Initialize default permissions for each role"""
         
         # Super Admin - Full access
@@ -628,9 +630,9 @@ def get_rbac_manager() -> TeddyBearRBACManager:
 
 # Convenience decorators for permission checking
 
-def require_permission(permission: Permission, context: AccessContext = AccessContext.DIRECT_INTERACTION):
+def require_permission(permission -> Any: Permission, context -> Any: AccessContext = AccessContext.DIRECT_INTERACTION) -> Any:
     """Decorator to require specific permission for a function"""
-    def decorator(func):
+    def decorator(func) -> Any:
         async def wrapper(*args, **kwargs):
             # Extract user_id from kwargs or first argument
             user_id = kwargs.get('user_id') or (args[0] if args else None)
@@ -658,9 +660,9 @@ def require_permission(permission: Permission, context: AccessContext = AccessCo
     return decorator
 
 
-def require_role(allowed_roles: List[UserRole]):
+def require_role(allowed_roles -> Any: List[UserRole]) -> Any:
     """Decorator to require specific roles for a function"""
-    def decorator(func):
+    def decorator(func) -> Any:
         async def wrapper(*args, **kwargs):
             user_id = kwargs.get('user_id') or (args[0] if args else None)
             if not user_id:

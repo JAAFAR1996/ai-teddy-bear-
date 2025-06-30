@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 ﻿# ===================================================================
 # 🤖 AI Teddy Bear - Advanced Child Interaction Pipeline
 # Enterprise-Grade AI Pipeline with Child Safety Focus
@@ -530,7 +532,7 @@ def child_interaction_pipeline(
 # 🚀 PIPELINE DEPLOYMENT AND HELPER FUNCTIONS
 # ===================================================================
 
-def deploy_child_interaction_pipeline():
+def deploy_child_interaction_pipeline() -> Any:
     """نشر خط الأنابيب في بيئة الإنتاج"""
     import kfp
     
@@ -599,36 +601,36 @@ def create_emergency_safe_response(age: int) -> Dict[str, any]:
 
 
 # Helper functions for audio processing
-def apply_toddler_voice_enhancement(waveform, sr):
+def apply_toddler_voice_enhancement(waveform, sr) -> Any:
     """تحسين خاص لأصوات الأطفال الصغار"""
     return apply_frequency_filter(waveform, sr, 300, 3000)
 
 
-def apply_child_voice_enhancement(waveform, sr):
+def apply_child_voice_enhancement(waveform, sr) -> Any:
     """تحسين عام لأصوات الأطفال"""
     return apply_frequency_filter(waveform, sr, 200, 4000)
 
 
-def apply_general_enhancement(waveform, sr):
+def apply_general_enhancement(waveform, sr) -> Any:
     """تحسين عام للأطفال الأكبر سناً"""
     return apply_frequency_filter(waveform, sr, 100, 8000)
 
 
-def apply_frequency_filter(waveform, sr, low_freq, high_freq):
+def apply_frequency_filter(waveform, sr, low_freq, high_freq) -> Any:
     """تطبيق فلتر ترددي"""
     import torch
     # تطبيق فلتر بسيط
     return waveform
 
 
-def reduce_noise(waveform, factor):
+def reduce_noise(waveform, factor) -> Any:
     """تقليل الضوضاء"""
     import torch
     noise_profile = torch.std(waveform) * factor
     return torch.clamp(waveform, -noise_profile, noise_profile)
 
 
-def normalize_audio(waveform):
+def normalize_audio(waveform) -> Any:
     """تطبيع الصوت"""
     import torch
     max_val = torch.max(torch.abs(waveform))
@@ -637,7 +639,7 @@ def normalize_audio(waveform):
     return waveform
 
 
-def calculate_audio_quality(waveform, sr):
+def calculate_audio_quality(waveform, sr) -> Any:
     """حساب جودة الصوت"""
     import torch
     signal_power = torch.mean(waveform ** 2)
@@ -646,5 +648,5 @@ def calculate_audio_quality(waveform, sr):
 
 if __name__ == "__main__":
     pipeline = deploy_child_interaction_pipeline()
-    print(f"✅ Advanced AI Pipeline deployed successfully!")
-    print(f"Pipeline ID: {pipeline.id}")
+    logger.info(f"✅ Advanced AI Pipeline deployed successfully!")
+    logger.info(f"Pipeline ID: {pipeline.id}")

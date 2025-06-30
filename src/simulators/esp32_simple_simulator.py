@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 🧸 ESP32 Teddy Bear Simulator - Exact Hardware Simulation
@@ -56,11 +62,11 @@ class ESP32TeddySimulator:
         # إنشاء الواجهة
         self.create_gui()
         
-        print(f"🧸 ESP32 Teddy Simulator Started")
-        print(f"🆔 Device ID: {self.device_id}")
-        print(f"🌐 Cloud Server: {SERVER_URL}")
+        logger.info(f"🧸 ESP32 Teddy Simulator Started")
+        logger.info(f"🆔 Device ID: {self.device_id}")
+        logger.info(f"🌐 Cloud Server: {SERVER_URL}")
     
-    def init_audio(self):
+    def init_audio(self) -> Any:
         """تهيئة نظام الصوت"""
         try:
             # تهيئة pygame للتشغيل
@@ -71,15 +77,15 @@ class ESP32TeddySimulator:
             self.microphone = sr.Microphone()
             
             # معايرة الميكروفون
-            print("🎤 Calibrating microphone...")
+            logger.info("🎤 Calibrating microphone...")
             with self.microphone as source:
                 self.recognizer.adjust_for_ambient_noise(source, duration=1)
-            print("✅ Microphone calibrated")
+            logger.info("✅ Microphone calibrated")
             
         except Exception as e:
     logger.error(f"Error: {e}")f"❌ Audio initialization error: {e}")
     
-    def create_gui(self):
+    def create_gui(self) -> Any:
         """إنشاء واجهة المحاكي"""
         self.root = tk.Tk()
         self.root.title(f"🧸 ESP32 Teddy Bear - {self.device_id}")
@@ -162,23 +168,23 @@ class ESP32TeddySimulator:
         self.log(f"🆔 Device ID: {self.device_id}")
         self.log("💡 Press 'تشغيل الدبدوب' to power on")
     
-    def log(self, message):
+    def log(self, message) -> Any:
         """إضافة رسالة للسجل"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         log_entry = f"[{timestamp}] {message}\n"
         
         self.log_text.insert("end", log_entry)
         self.log_text.see("end")
-        print(log_entry.strip())
+        logger.info(log_entry.strip())
     
-    def toggle_power(self):
+    def toggle_power(self) -> Any:
         """تشغيل/إطفاء الدبدوب"""
         if not self.is_powered_on:
             self.power_on()
         else:
             self.power_off()
     
-    def power_on(self):
+    def power_on(self) -> Any:
         """تشغيل الدبدوب"""
         self.is_powered_on = True
         self.stop_listening = False
@@ -199,7 +205,7 @@ class ESP32TeddySimulator:
         self.listening_thread = threading.Thread(target=self.listen_for_wake_word, daemon=True)
         self.listening_thread.start()
     
-    def power_off(self):
+    def power_off(self) -> Any:
         """إطفاء الدبدوب"""
         self.is_powered_on = False
         self.stop_listening = True
@@ -215,7 +221,7 @@ class ESP32TeddySimulator:
         if self.listening_thread and self.listening_thread.is_alive():
             self.stop_listening = True
     
-    def register_device(self):
+    def register_device(self) -> Any:
         """تسجيل الجهاز مع السيرفر"""
         try:
             data = {
@@ -239,7 +245,7 @@ class ESP32TeddySimulator:
             self.log(f"❌ Server connection failed: {e}")
             self.log("⚠️ Working in offline mode")
     
-    def listen_for_wake_word(self):
+    def listen_for_wake_word(self) -> Any:
         """الاستماع المستمر لكلمة التفعيل"""
         while self.is_powered_on and not self.stop_listening:
             try:
@@ -274,7 +280,7 @@ class ESP32TeddySimulator:
                     self.root.after(0, lambda: self.log(f"❌ Listening error: {e}"))
                 time.sleep(1)
     
-    def wake_word_detected(self):
+    def wake_word_detected(self) -> Any:
         """عند اكتشاف كلمة التفعيل"""
         self.log("🎯 Wake word detected: 'يا دبدوب'")
         self.log("🎤 Recording your message...")
@@ -287,7 +293,7 @@ class ESP32TeddySimulator:
         recording_thread = threading.Thread(target=self.record_and_process, daemon=True)
         recording_thread.start()
     
-    def record_and_process(self):
+    def record_and_process(self) -> Any:
         """تسجيل ومعالجة الرسالة"""
         try:
             with self.microphone as source:
@@ -316,7 +322,7 @@ class ESP32TeddySimulator:
             self.root.after(0, lambda: self.log(f"❌ Recording error: {e}"))
             self.return_to_listening()
     
-    def send_to_ai(self, message):
+    def send_to_ai(self, message) -> Any:
         """إرسال الرسالة للذكاء الاصطناعي"""
         try:
             data = {
@@ -345,7 +351,7 @@ class ESP32TeddySimulator:
             self.root.after(0, lambda: self.log(f"❌ AI request failed: {e}"))
             self.return_to_listening()
     
-    def speak_response(self, text):
+    def speak_response(self, text) -> Any:
         """تشغيل رد الدبدوب"""
         try:
             # LED بنفسجي = يتكلم
@@ -375,14 +381,14 @@ class ESP32TeddySimulator:
             # العودة للاستماع
             self.return_to_listening()
     
-    def return_to_listening(self):
+    def return_to_listening(self) -> Any:
         """العودة لحالة الاستماع"""
         if self.is_powered_on:
             self.led_canvas.itemconfig(self.led_circle, fill='green')
             self.status_label.config(text="🟢 الدبدوب يعمل - يستمع للنداء", fg='#27ae60')
             self.log("👂 Back to listening for 'يا دبدوب'")
     
-    def run(self):
+    def run(self) -> Any:
         """تشغيل المحاكي"""
         try:
             self.root.mainloop()
@@ -395,13 +401,13 @@ class ESP32TeddySimulator:
 # ============================ MAIN ============================
 
 if __name__ == "__main__":
-    print("🧸 Starting ESP32 Teddy Bear Simulator...")
-    print("=" * 50)
-    print("🎯 This simulates the EXACT behavior of ESP32 in teddy bear")
-    print("🔌 Hardware: ESP32 with microphone, speaker, LED")
-    print("☁️ Cloud: Your computer running the AI server")
-    print("🎤 Wake Word: 'يا دبدوب'")
-    print("=" * 50)
+    logger.info("🧸 Starting ESP32 Teddy Bear Simulator...")
+    logger.info("=" * 50)
+    logger.info("🎯 This simulates the EXACT behavior of ESP32 in teddy bear")
+    logger.info("🔌 Hardware: ESP32 with microphone, speaker, LED")
+    logger.info("☁️ Cloud: Your computer running the AI server")
+    logger.info("🎤 Wake Word: 'يا دبدوب'")
+    logger.info("=" * 50)
     
     try:
         simulator = ESP32TeddySimulator()

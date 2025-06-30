@@ -217,7 +217,7 @@ class AdvancedFamilySystem:
         
         return family_id
     
-    def _create_default_scheduled_messages(self, family: FamilyProfile):
+    def _create_default_scheduled_messages(self, family -> Any: FamilyProfile) -> Any:
         """إنشاء رسائل تشجيعية افتراضية للعائلة"""
         
         children = [member for member in family.members if member.role == "child"]
@@ -259,7 +259,7 @@ class AdvancedFamilySystem:
                 
                 self.scheduled_messages.extend([morning_msg, bedtime_msg])
     
-    def _create_default_time_restrictions(self, family: FamilyProfile):
+    def _create_default_time_restrictions(self, family -> Any: FamilyProfile) -> Any:
         """إنشاء قيود زمنية افتراضية"""
         
         children = [member for member in family.members if member.role == "child"]

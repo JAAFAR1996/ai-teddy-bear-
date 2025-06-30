@@ -84,7 +84,7 @@ class ConfigManager:
 
     def _process_env_vars(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Replace ${VAR} placeholders with environment variables"""
-        def process_value(value):
+        def process_value(value) -> Any:
             if isinstance(value, str):
                 # Check for ${VAR} pattern
                 if value.startswith('${') and value.endswith('}'):
@@ -105,7 +105,7 @@ class ConfigManager:
 
         return process_value(config)
 
-    def _validate_config(self, config: Dict[str, Any]):
+    def _validate_config(self, config -> Any: Dict[str, Any]) -> Any:
         """Validate configuration against schema"""
         try:
             validate(config, self.schema)
@@ -170,7 +170,7 @@ class ConfigManager:
         """Get all configuration"""
         return self._config.copy()
 
-    def reload(self):
+    def reload(self) -> Any:
         """Reload configuration"""
         self._config = self.load_config()
 
@@ -178,7 +178,7 @@ class ConfigManager:
         """إرجاع كل الإعدادات"""
         return self._config.copy()
 
-    def load_app_config(path="config/config.json"):
+    def load_app_config(path="config/config.json") -> Any:
         with open(path, "r", encoding="utf-8") as f:
             config_dict = json.load(f)
             # حمّل voice_settings من الدكت الفرعي الخاص به

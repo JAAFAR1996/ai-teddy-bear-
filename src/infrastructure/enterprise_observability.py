@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Enterprise-Grade Observability Manager for AI Teddy Bear System
 ==============================================================
@@ -118,37 +120,37 @@ class EnterpriseMetrics:
                 registry=self.registry
             )
     
-    def increment_requests(self, method: str, endpoint: str, status_code: int):
+    def increment_requests(self, method -> Any: str, endpoint -> Any: str, status_code -> Any: int) -> Any:
         """Increment request counter."""
         if self.request_count:
             self.request_count.labels(method=method, endpoint=endpoint, status_code=status_code).inc()
     
-    def record_request_duration(self, method: str, endpoint: str, duration: float):
+    def record_request_duration(self, method -> Any: str, endpoint -> Any: str, duration -> Any: float) -> Any:
         """Record request duration."""
         if self.request_duration:
             self.request_duration.labels(method=method, endpoint=endpoint).observe(duration)
     
-    def set_active_connections(self, count: int):
+    def set_active_connections(self, count -> Any: int) -> Any:
         """Set active connections count."""
         if self.active_connections:
             self.active_connections.set(count)
     
-    def increment_errors(self, error_type: str, component: str):
+    def increment_errors(self, error_type -> Any: str, component -> Any: str) -> Any:
         """Increment error counter."""
         if self.error_count:
             self.error_count.labels(error_type=error_type, component=component).inc()
     
-    def set_health_score(self, score: float):
+    def set_health_score(self, score -> Any: float) -> Any:
         """Set system health score."""
         if self.system_health:
             self.system_health.set(score)
     
-    def record_ai_processing(self, model_type: str, operation: str, duration: float):
+    def record_ai_processing(self, model_type -> Any: str, operation -> Any: str, duration -> Any: float) -> Any:
         """Record AI processing time."""
         if self.ai_processing_time:
             self.ai_processing_time.labels(model_type=model_type, operation=operation).observe(duration)
     
-    def record_audio_latency(self, operation: str, latency: float):
+    def record_audio_latency(self, operation -> Any: str, latency -> Any: float) -> Any:
         """Record audio processing latency."""
         if self.audio_processing_latency:
             self.audio_processing_latency.labels(operation=operation).observe(latency)
@@ -169,7 +171,7 @@ class EnterpriseTracer:
         self.provider = None
         self._setup_tracing()
     
-    def _setup_tracing(self):
+    def _setup_tracing(self) -> Any:
         """Setup OpenTelemetry tracing with enterprise configuration."""
         if not OTEL_AVAILABLE:
             logging.warning("OpenTelemetry not available, using fallback tracing")
@@ -215,7 +217,7 @@ class EnterpriseTracer:
             self.tracer = None
     
     @contextmanager
-    def start_span(self, name: str, **kwargs):
+    def start_span(self, name -> Any: str, **kwargs) -> Any:
         """Start a new trace span with enterprise context."""
         if self.tracer and OTEL_AVAILABLE:
             with self.tracer.start_as_current_span(name, **kwargs) as span:
@@ -233,7 +235,7 @@ class EnterpriseTracer:
             # Fallback context manager
             yield self._create_fallback_span(name)
     
-    def _create_fallback_span(self, name: str):
+    def _create_fallback_span(self, name -> Any: str) -> Any:
         """Create a fallback span object for when OpenTelemetry is not available."""
         return type('FallbackSpan', (), {
             'set_attribute': lambda self, key, value: None,
@@ -242,7 +244,7 @@ class EnterpriseTracer:
             'add_event': lambda self, name, attributes=None: None
         })()
     
-    def instrument_fastapi(self, app):
+    def instrument_fastapi(self, app) -> Any:
         """Instrument FastAPI application with enterprise tracing."""
         if OTEL_AVAILABLE:
             try:

@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 import asyncio
 import base64
@@ -37,7 +43,7 @@ class TeddySimulator(QWidget):
         while self.is_on:
             # محاكاة wake word: أي إدخال من المستخدم في الطرفية
             await asyncio.sleep(0.5)
-            print("اكتب 'يا دبدوب' في الطرفية لتفعيل الدبدوب:")
+            logger.info("اكتب 'يا دبدوب' في الطرفية لتفعيل الدبدوب:")
             try:
                 loop = asyncio.get_event_loop()
                 word = await loop.run_in_executor(None, sys.stdin.readline)
@@ -97,7 +103,7 @@ class TeddySimulator(QWidget):
         except Exception as e:
             self.status.setText(f"⚠️ خطأ في الاتصال بالسيرفر: {e}")
 
-    def toggle_power(self):
+    def toggle_power(self) -> Any:
         self.is_on = not self.is_on
         if self.is_on:
             self.status.setText("🟢 الدبدوب يعمل... يستمع للنداء")

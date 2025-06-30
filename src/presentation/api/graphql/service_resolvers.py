@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Service-specific GraphQL Resolvers for Federation.
 
@@ -93,7 +95,7 @@ class Child:
         )
     
     @classmethod
-    def resolve_reference(cls, id: strawberry.ID):
+    def resolve_reference(cls, id -> Any: strawberry.ID) -> Any:
         """Resolve child entity reference."""
         return Child(
             id=id,
@@ -118,7 +120,7 @@ class Conversation:
     is_active: bool = True
     
     @classmethod
-    def resolve_reference(cls, id: strawberry.ID):
+    def resolve_reference(cls, id -> Any: strawberry.ID) -> Any:
         """Resolve conversation entity reference."""
         return Conversation(
             id=id,

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Enhanced Security Module - Enterprise Grade 2025
 OWASP compliant security with advanced threat protection
@@ -834,7 +836,7 @@ def get_security_manager() -> EnterpriseSecurityManager:
     return _security_manager
 
 
-def set_security_manager(manager: EnterpriseSecurityManager):
+def set_security_manager(manager -> Any: EnterpriseSecurityManager) -> Any:
     """Set global security manager instance"""
     global _security_manager
     _security_manager = manager 

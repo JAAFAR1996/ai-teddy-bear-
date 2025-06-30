@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Enterprise-Grade Distributed AI Processing System for AI Teddy Bear Project.
 
@@ -255,7 +257,7 @@ if RAY_AVAILABLE:
             self.service_stats = {"requests": 0, "total_time": 0.0}
             self._initialize_models()
         
-        def _initialize_models(self):
+        def _initialize_models(self) -> Any:
             """Initialize transcription models."""
             try:
                 if AI_SERVICES_AVAILABLE:
@@ -336,7 +338,7 @@ if RAY_AVAILABLE:
             self.service_stats = {"requests": 0, "total_time": 0.0}
             self._initialize_models()
         
-        def _initialize_models(self):
+        def _initialize_models(self) -> Any:
             """Initialize emotion analysis models."""
             try:
                 if CORE_SERVICES_AVAILABLE:
@@ -485,7 +487,7 @@ if RAY_AVAILABLE:
             self.service_stats = {"requests": 0, "total_time": 0.0}
             self._initialize_models()
         
-        def _initialize_models(self):
+        def _initialize_models(self) -> Any:
             """Initialize AI response models."""
             try:
                 if AI_SERVICES_AVAILABLE:
@@ -595,7 +597,7 @@ if RAY_AVAILABLE:
             self.service_stats = {"requests": 0, "total_time": 0.0}
             self._initialize_models()
         
-        def _initialize_models(self):
+        def _initialize_models(self) -> Any:
             """Initialize TTS models."""
             try:
                 # Initialize ElevenLabs or other TTS service
@@ -878,7 +880,7 @@ class DistributedAIProcessor:
             self.logger.error(f"❌ Service call failed for {service_type}: {e}")
             return {"error": str(e)}
     
-    def _update_metrics(self, processing_time_ms: float):
+    def _update_metrics(self, processing_time_ms -> Any: float) -> Any:
         """Update processing metrics."""
         # Update average processing time
         total_successful = self.metrics.successful_requests

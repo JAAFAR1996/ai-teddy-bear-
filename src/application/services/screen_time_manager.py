@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 ⏰ مدير وقت الاستخدام والتحكم الأبوي
@@ -70,7 +72,7 @@ class ScreenTimeManager:
         self.monitoring_task = None
         self.start_monitoring()
     
-    def _load_data(self):
+    def _load_data(self) -> Any:
         """تحميل البيانات من الملفات"""
         try:
             settings_file = self.data_dir / "settings.json"
@@ -88,7 +90,7 @@ class ScreenTimeManager:
         except Exception as e:
             logger.error(f"خطأ في تحميل بيانات وقت الاستخدام: {e}")
     
-    def _save_data(self):
+    def _save_data(self) -> Any:
         """حفظ البيانات في الملفات"""
         try:
             settings_file = self.data_dir / "settings.json"
@@ -122,14 +124,14 @@ class ScreenTimeManager:
         settings = self.get_child_settings(child_id)
         
         if not self._is_allowed_time(settings):
-            print(f"⛔ وقت غير مسموح للعب. تعال لنلعب في وقت آخر!")
+            logger.info(f"⛔ وقت غير مسموح للعب. تعال لنلعب في وقت آخر!")
             return False
         
         today = datetime.now().strftime("%Y-%m-%d")
         daily_used = self._get_daily_usage(child_id, today)
         
         if daily_used >= settings.daily_limit_minutes:
-            print(f"📅 انتهى وقت اللعب لليوم! سنلعب مرة أخرى غداً 🌙")
+            logger.info(f"📅 انتهى وقت اللعب لليوم! سنلعب مرة أخرى غداً 🌙")
             return False
         
         session = UsageSession(
@@ -189,7 +191,7 @@ class ScreenTimeManager:
         await asyncio.sleep(delay_seconds)
         
         if child_id in self.active_sessions:
-            print(f"🕐 {child_id}: باقي {minutes_remaining} دقائق على انتهاء وقت اللعب!")
+            logger.info(f"🕐 {child_id}: باقي {minutes_remaining} دقائق على انتهاء وقت اللعب!")
     
     async def _setup_break_reminders(self, child_id: str, settings: ScreenTimeSettings):
         """إعداد تذكيرات الراحة"""
@@ -206,9 +208,9 @@ class ScreenTimeManager:
             await asyncio.sleep(interval_seconds)
             
             if child_id in self.active_sessions:
-                print(f"🤸‍♂️ {child_id}: هل تريد أخذ استراحة قصيرة؟ تحرك قليلاً أو اشرب الماء!")
+                logger.info(f"🤸‍♂️ {child_id}: هل تريد أخذ استراحة قصيرة؟ تحرك قليلاً أو اشرب الماء!")
     
-    def start_monitoring(self):
+    def start_monitoring(self) -> Any:
         """بدء مراقبة الجلسات النشطة"""
         try:
             if self.monitoring_task is None or self.monitoring_task.done():
@@ -249,7 +251,7 @@ class ScreenTimeManager:
         
         logger.info(f"انتهت جلسة الطفل {child_id}: {duration_minutes} دقيقة")
     
-    def _add_daily_usage(self, child_id: str, date: str, minutes: int):
+    def _add_daily_usage(self, child_id -> Any: str, date -> Any: str, minutes -> Any: int) -> Any:
         """إضافة دقائق للاستخدام اليومي"""
         if child_id not in self.daily_usage:
             self.daily_usage[child_id] = {}

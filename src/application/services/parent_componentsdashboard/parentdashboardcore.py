@@ -40,4 +40,3 @@ from src.domain.repositories.child_repository import ChildRepository
 from src.domain.entities.conversation import Conversation, Message
 from src.domain.repositories.conversation_repository import ConversationRepository
 from src.infrastructure.config import get_config
-

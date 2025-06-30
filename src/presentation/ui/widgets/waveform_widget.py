@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Waveform Visualization Widget for AI Teddy Bear
 Real-time audio waveform display with smooth rendering
@@ -18,13 +20,13 @@ class WaveformWidget(QWidget):
         self.data = np.array([])
         self.setMinimumHeight(100)
     
-    def update_data(self, data):
+    def update_data(self, data) -> Any:
         """Update waveform data and trigger repaint"""
         if isinstance(data, (list, np.ndarray)):
             self.data = np.array(data)
             self.update()
     
-    def paintEvent(self, event):
+    def paintEvent(self, event) -> Any:
         """Custom paint event for waveform rendering"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)

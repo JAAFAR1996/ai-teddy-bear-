@@ -578,7 +578,7 @@ class ModelSelector:
             context_window=model_capabilities[best_model]['context_window']
         )
 
-    def record_performance(self, model_name: str, success: bool, latency_ms: int):
+    def record_performance(self, model_name -> Any: str, success -> Any: bool, latency_ms -> Any: int) -> Any:
         """Record model performance for future selection"""
         self.performance_history[model_name].append(1.0 if success else 0.0)
 
@@ -691,7 +691,7 @@ class LLMServiceFactory:
             'total_latency_ms': 0
         })
 
-    def _init_adapters(self):
+    def _init_adapters(self) -> Any:
         """Initialize API adapters for different providers"""
 
         # OpenAI
@@ -966,7 +966,7 @@ class LLMServiceFactory:
         rate_data['requests'] += 1
         return True
 
-    def _update_usage_stats(self, provider: LLMProvider, response: LLMResponse):
+    def _update_usage_stats(self, provider -> Any: LLMProvider, response -> Any: LLMResponse) -> Any:
         """Update usage statistics"""
         stats = self.usage_stats[provider]
         stats['total_requests'] += 1

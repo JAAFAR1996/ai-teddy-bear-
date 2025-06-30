@@ -121,7 +121,7 @@ class RuleEngine:
         self.compiled_patterns: Dict[str, re.Pattern] = {}
         self._load_default_rules()
 
-    def _load_default_rules(self):
+    def _load_default_rules(self) -> Any:
         """Load default moderation rules"""
         default_rules = [
             ModerationRule(
@@ -165,14 +165,14 @@ class RuleEngine:
         for rule in default_rules:
             self.add_rule(rule)
 
-    def add_rule(self, rule: ModerationRule):
+    def add_rule(self, rule -> Any: ModerationRule) -> Any:
         """Add a moderation rule"""
         self.rules[rule.id] = rule
         if rule.pattern and rule.is_regex:
             self.compiled_patterns[rule.id] = re.compile(
                 rule.pattern, re.IGNORECASE)
 
-    def remove_rule(self, rule_id: str):
+    def remove_rule(self, rule_id -> Any: str) -> Any:
         """Remove a moderation rule"""
         if rule_id in self.rules:
             del self.rules[rule_id]
@@ -256,7 +256,7 @@ class ModerationService:
         # NLP models
         self._init_nlp_models()
 
-    def _init_api_clients(self):
+    def _init_api_clients(self) -> Any:
         """Initialize external API clients"""
         # Azure Content Safety
         if getattr(self.config.api_keys, "AZURE_CONTENT_SAFETY_KEY", None) and getattr(self.config.api_keys, "AZURE_CONTENT_SAFETY_ENDPOINT", None):
@@ -282,7 +282,7 @@ class ModerationService:
         else:
             self.anthropic_client = None
 
-    def _init_nlp_models(self):
+    def _init_nlp_models(self) -> Any:
 
         hf_token = (
             os.environ.get("HUGGINGFACE_TOKEN")
@@ -321,7 +321,7 @@ class ModerationService:
             self.sentiment_analyzer = None
             self.toxicity_classifier = None
 
-    def _load_lists(self):
+    def _load_lists(self) -> Any:
         """Load whitelist and blacklist"""
         # Load from config or database
         whitelist_words = getattr(self.config, 'MODERATION_WHITELIST', [])
@@ -1072,7 +1072,7 @@ class ModerationService:
             self.logger.error(f"Failed to export logs: {e}")
             return ""
 
-    def set_parent_dashboard(self, dashboard: ParentDashboardService):
+    def set_parent_dashboard(self, dashboard -> Any: ParentDashboardService) -> Any:
         """Set parent dashboard service for alerts"""
         self.parent_dashboard = dashboard
 

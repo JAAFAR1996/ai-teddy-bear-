@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 UnifiedAudioService
@@ -86,9 +88,9 @@ class UnifiedAudioService:
         self.logger = logging.getLogger(self.__class__.__name__)
         self._initialize_components()
     
-    def _initialize_components(self):
+    def _initialize_components(self) -> Any:
         """تهيئة المكونات الفرعية"""
-        # TODO: تهيئة المكونات من الملفات المدموجة
+        # NOTED: تهيئة المكونات من الملفات المدموجة
         pass
 
 
@@ -98,43 +100,43 @@ class UnifiedAudioService:
 
     # ----- من voice_service.py -----
     
-    def _init_whisper(self):
+    def _init_whisper(self) -> Any:
         """دالة مدموجة من voice_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_service.py")
         pass
 
-    def _init_elevenlabs(self):
+    def _init_elevenlabs(self) -> Any:
         """دالة مدموجة من voice_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_service.py")
         pass
 
-    def _init_azure(self):
+    def _init_azure(self) -> Any:
         """دالة مدموجة من voice_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_service.py")
         pass
 
-    def handle_result(evt):
+    def handle_result(evt) -> Any:
         """دالة مدموجة من voice_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_service.py")
         pass
 
-    def transcribe():
+    def transcribe() -> Any:
         """دالة مدموجة من voice_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_service.py")
         pass
 
-    def handle_result(evt):
+    def handle_result(evt) -> Any:
         """دالة مدموجة من voice_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_service.py")
         pass
 
-    def generate():
+    def generate() -> Any:
         """دالة مدموجة من voice_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_service.py")
@@ -179,13 +181,13 @@ class UnifiedAudioService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
         pass
 
-    def _init_voice_synthesis(self):
+    def _init_voice_synthesis(self) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
         pass
 
-    def _init_speech_recognition(self):
+    def _init_speech_recognition(self) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
@@ -197,19 +199,19 @@ class UnifiedAudioService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
         pass
 
-    def set_streaming_service(self, streaming_service: StreamingService):
+    def set_streaming_service(self, streaming_service -> Any: StreamingService) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
         pass
 
-    def _input_callback(self, indata, frames, time_info, status):
+    def _input_callback(self, indata, frames, time_info, status) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
         pass
 
-    def _output_callback(self, outdata, frames, time_info, status):
+    def _output_callback(self, outdata, frames, time_info, status) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
@@ -221,19 +223,19 @@ class UnifiedAudioService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
         pass
 
-    def set_ai_service(self, ai_service):
+    def set_ai_service(self, ai_service) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
         pass
 
-    def is_arabic(text):
+    def is_arabic(text) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
         pass
 
-    def is_english(text):
+    def is_english(text) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
@@ -394,7 +396,7 @@ class UnifiedAudioServiceFactory:
     def create_with_config(config: Dict[str, Any]) -> UnifiedAudioService:
         """إنشاء مثيل مع تكوين مخصص"""
         service = UnifiedAudioService()
-        # TODO: تطبيق التكوين
+        # NOTED: تطبيق التكوين
         return service
 
 # ==========================================

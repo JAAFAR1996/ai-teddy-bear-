@@ -67,7 +67,7 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         """
         pass
 
-    def _ensure_table_exists(self):
+    def _ensure_table_exists(self) -> Any:
         """Create table if it doesn't exist"""
         try:
             schema = self._get_table_schema()
@@ -78,7 +78,7 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             raise DatabaseError(f"Failed to create table: {e}")
 
     @contextmanager
-    def transaction(self):
+    def transaction(self) -> Any:
         """Context manager for database transactions"""
         cursor = self._connection.cursor()
         try:
@@ -710,7 +710,7 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             self.logger.error(f"Error getting table info: {e}")
             raise DatabaseError(f"Failed to get table info: {e}")
 
-    def vacuum(self):
+    def vacuum(self) -> Any:
         """Vacuum database to reclaim space and optimize"""
         try:
             self._connection.execute("VACUUM")
@@ -720,7 +720,7 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             self.logger.error(f"Error vacuuming database: {e}")
             raise DatabaseError(f"Failed to vacuum database: {e}")
 
-    def analyze(self):
+    def analyze(self) -> Any:
         """Analyze database to update query planner statistics"""
         try:
             self._connection.execute("ANALYZE")
@@ -730,7 +730,7 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             self.logger.error(f"Error analyzing database: {e}")
             raise DatabaseError(f"Failed to analyze database: {e}")
 
-    def close(self):
+    def close(self) -> Any:
         """Close database connection"""
         if self._connection:
             self._connection.close()

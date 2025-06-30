@@ -81,7 +81,7 @@ class ARVRService:
         self._initialize_default_experiences()
         self._load_data()
     
-    def _initialize_default_experiences(self):
+    def _initialize_default_experiences(self) -> Any:
         """تهيئة التجارب الافتراضية"""
         # تجارب الواقع المعزز التعليمية
         educational_ar = [
@@ -168,7 +168,7 @@ class ARVRService:
         for env in educational_vr:
             self.vr_environments[env.environment_id] = env
     
-    def _load_data(self):
+    def _load_data(self) -> Any:
         """تحميل البيانات من الملفات"""
         try:
             # تحميل تجارب AR
@@ -204,7 +204,7 @@ class ARVRService:
         except Exception as e:
             logger.error(f"خطأ في تحميل بيانات AR/VR: {e}")
     
-    def _save_data(self):
+    def _save_data(self) -> Any:
         """حفظ البيانات في الملفات"""
         try:
             # حفظ تجارب AR (المخصصة فقط)
@@ -431,7 +431,7 @@ class ARVRService:
             "أخبر الكبار إذا شعرت بأي إزعاج"
         ]
     
-    def log_interaction(self, session_id: str, interaction_data: Dict):
+    def log_interaction(self, session_id -> Any: str, interaction_data -> Any: Dict) -> Any:
         """تسجيل تفاعل في الجلسة"""
         # البحث عن الجلسة
         for child_id, sessions in self.user_sessions.items():
@@ -518,7 +518,7 @@ class ARVRService:
         
         return performance
     
-    def _update_child_preferences(self, child_id: str, session: Dict):
+    def _update_child_preferences(self, child_id -> Any: str, session -> Any: Dict) -> Any:
         """تحديث تفضيلات الطفل"""
         if child_id not in self.child_preferences:
             self.child_preferences[child_id] = {

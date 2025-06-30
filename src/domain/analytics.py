@@ -32,7 +32,7 @@ class ChildAnalytics:
         except Exception as e:
     logger.error(f"Error in operation: {e}", exc_info=True)            return 0.5
     
-    def get_speech_concerns(self, chilexcept IndexError as e:
+    def get_speech_concerns(self, chilexcept IndexError as e -> Any:
     logger.error(f"Error in operation: {e}", exc_info=True)tr) -> List[str]:
         """الحصول على مخاوف النطق"""
         try:

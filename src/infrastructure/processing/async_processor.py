@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 Advanced Async Processor for AI Teddy Bear Project
@@ -241,7 +243,7 @@ class PerformanceMonitor:
         self._last_throughput_check = time.time()
         self._last_task_count = 0
         
-    def record_task_completion(self, task: ProcessingTask, result: TaskResult):
+    def record_task_completion(self, task -> Any: ProcessingTask, result -> Any: TaskResult) -> Any:
         """Record task completion metrics"""
         self.metrics['tasks_processed'] += 1
         
@@ -264,11 +266,11 @@ class PerformanceMonitor:
         if task.worker_id:
             self.metrics['worker_utilization'][task.worker_id] += result.execution_time
     
-    def record_queue_size(self, size: int):
+    def record_queue_size(self, size -> Any: int) -> Any:
         """Record current queue size"""
         self.metrics['queue_size_history'].append((time.time(), size))
     
-    def calculate_throughput(self):
+    def calculate_throughput(self) -> Any:
         """Calculate current throughput (tasks per second)"""
         current_time = time.time()
         time_diff = current_time - self._last_throughput_check
@@ -371,13 +373,13 @@ class AdvancedAsyncProcessor:
         # Set up signal handlers for graceful shutdown
         self._setup_signal_handlers()
     
-    def _setup_signal_handlers(self):
+    def _setup_signal_handlers(self) -> Any:
         """Set up signal handlers for graceful shutdown"""
         if sys.platform != 'win32':
             for sig in (signal.SIGTERM, signal.SIGINT):
                 signal.signal(sig, self._signal_handler)
     
-    def _signal_handler(self, signum, frame):
+    def _signal_handler(self, signum, frame) -> Any:
         """Handle shutdown signals"""
         self.logger.info(f"Received signal {signum}, initiating graceful shutdown...")
         asyncio.create_task(self.shutdown())
@@ -1010,13 +1012,13 @@ async def main():
         # Wait for tasks to complete
         for task_id in tasks:
             result = await processor.wait_for_task(task_id, timeout=30.0)
-            print(f"Task {task_id}: {result.status.value}")
+            logger.info(f"Task {task_id}: {result.status.value}")
             if result.result:
-                print(f"Result: {result.result}")
+                logger.info(f"Result: {result.result}")
         
         # Get performance metrics
         metrics = await processor.get_performance_metrics()
-        print("Performance Metrics:", json.dumps(metrics, indent=2, default=str))
+        logger.info("Performance Metrics:", json.dumps(metrics, indent=2, default=str))
         
     finally:
         # Graceful shutdown

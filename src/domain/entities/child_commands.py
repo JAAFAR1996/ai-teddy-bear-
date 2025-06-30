@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 👶 Child Commands Implementation
 ===============================
@@ -265,7 +267,7 @@ class ReportSafetyViolationCommandHandler(CommandHandler):
             )
 
 
-def register_child_command_handlers():
+def register_child_command_handlers() -> Any:
     """Register all child command handlers"""
     
     command_bus = get_command_bus()

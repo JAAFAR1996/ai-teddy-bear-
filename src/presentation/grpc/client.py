@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 import grpc
 import asyncio
 
@@ -81,15 +85,15 @@ async def main():
     
     # Process audio
     audio_result = await client.process_audio(b"audio_data")
-    print(f"Transcription: {audio_result['transcription']}")
+    logger.info(f"Transcription: {audio_result['transcription']}")
     
     # Generate AI response
     ai_result = await client.generate_ai_response("مرحبا", "child-123")
-    print(f"AI Response: {ai_result['response_text']}")
+    logger.info(f"AI Response: {ai_result['response_text']}")
     
     # Stream response
     async for chunk in client.stream_ai_response("احكي قصة", "child-123"):
-        print(chunk["text"], end="")
+        logger.info(chunk["text"], end="")
     
     await client.close()
 

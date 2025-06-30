@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 SQLAlchemy Models for AI Teddy Bear Project
@@ -101,14 +107,14 @@ class Child(Base, UUIDMixin, TimestampMixin):
     
     # Validation
     @validates('age')
-    def validate_age(self, key, age):
+    def validate_age(self, key, age) -> Any:
         if age < 3 or age > 18:
             raise ValueError("Age must be between 3 and 18")
         return age
     
     # Hybrid properties
     @hybrid_property
-    def daily_time_remaining(self):
+    def daily_time_remaining(self) -> Any:
         return max(0, self.max_daily_interaction_time - self.total_interaction_time)
     
     __table_args__ = (
@@ -210,7 +216,7 @@ class Conversation(Base, UUIDMixin, TimestampMixin):
     
     # Hybrid properties
     @hybrid_property
-    def duration_minutes(self):
+    def duration_minutes(self) -> Any:
         return self.duration_seconds / 60 if self.duration_seconds else 0
     
     __table_args__ = (
@@ -287,18 +293,18 @@ class EmotionalState(Base, UUIDMixin, TimestampMixin):
 
 
 # Database initialization
-def create_database_engine(database_url: str = "sqlite:///data/teddyai.db"):
+def create_database_engine(database_url -> Any: str = "sqlite -> Any:///data/teddyai.db") -> Any:
     """Create SQLAlchemy engine"""
     engine = create_engine(database_url, echo=False)
     return engine
 
 
-def create_tables(engine):
+def create_tables(engine) -> Any:
     """Create all tables"""
     Base.metadata.create_all(engine)
 
 
-def get_session_factory(engine):
+def get_session_factory(engine) -> Any:
     """Get session factory"""
     return sessionmaker(bind=engine)
 
@@ -307,4 +313,4 @@ def get_session_factory(engine):
 if __name__ == "__main__":
     engine = create_database_engine("sqlite:///test.db")
     create_tables(engine)
-    print("Database tables created successfully!") 
+    logger.info("Database tables created successfully!")

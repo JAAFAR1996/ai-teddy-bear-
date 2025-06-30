@@ -87,7 +87,7 @@ class AdvancedPersonalizationService:
         
         self._load_data()
     
-    def _load_data(self):
+    def _load_data(self) -> Any:
         """تحميل البيانات من الملفات"""
         try:
             # تحميل الشخصيات
@@ -119,7 +119,7 @@ class AdvancedPersonalizationService:
         except Exception as e:
             logger.error(f"خطأ في تحميل بيانات التخصيص: {e}")
     
-    def _save_data(self):
+    def _save_data(self) -> Any:
         """حفظ البيانات في الملفات"""
         try:
             # حفظ الشخصيات
@@ -261,7 +261,7 @@ class AdvancedPersonalizationService:
         
         return personality
     
-    def update_interaction_patterns(self, child_id: str, interaction_data: Dict):
+    def update_interaction_patterns(self, child_id -> Any: str, interaction_data -> Any: Dict) -> Any:
         """تحديث أنماط التفاعل"""
         patterns = self.get_interaction_patterns(child_id)
         
@@ -482,7 +482,7 @@ class AdvancedPersonalizationService:
         
         return conversations
     
-    def track_content_performance(self, child_id: str, content: Dict, performance_data: Dict):
+    def track_content_performance(self, child_id -> Any: str, content -> Any: Dict, performance_data -> Any: Dict) -> Any:
         """تتبع أداء المحتوى"""
         if child_id not in self.content_performance:
             self.content_performance[child_id] = []

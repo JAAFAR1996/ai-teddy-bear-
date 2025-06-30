@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Circuit Breaker Pattern Implementation
 Provides fault tolerance and prevents cascading failures
@@ -271,7 +273,7 @@ class CircuitBreaker:
             return await self.call(func, *args, **kwargs)
         
         @wraps(func)
-        def sync_wrapper(*args, **kwargs):
+        def sync_wrapper(*args, **kwargs) -> Any:
             # Run in event loop if needed
             try:
                 loop = asyncio.get_running_loop()
@@ -355,7 +357,7 @@ circuit_breaker_manager = CircuitBreakerManager()
 
 
 # Convenience decorator
-def circuit_breaker(name: str, **kwargs):
+def circuit_breaker(name -> Any: str, **kwargs) -> Any:
     """
     Decorator to apply circuit breaker to a function
     
@@ -364,7 +366,7 @@ def circuit_breaker(name: str, **kwargs):
         async def call_external_api():
             return await external_api.request()
     """
-    def decorator(func):
+    def decorator(func) -> Any:
         breaker = circuit_breaker_manager.get_breaker(name)
         if not breaker:
             breaker = circuit_breaker_manager.create_breaker(name, **kwargs)

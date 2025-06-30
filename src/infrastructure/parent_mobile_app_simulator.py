@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 📱 Parent Mobile App Simulator - Complete Control Dashboard
@@ -33,7 +39,7 @@ class ParentMobileAppSimulator:
         self.create_modern_gui()
         self.setup_notifications()
         
-    def create_modern_gui(self):
+    def create_modern_gui(self) -> Any:
         """إنشاء واجهة حديثة للتطبيق"""
         self.root = tk.Tk()
         self.root.title("📱 AI Teddy Bear - Parent Control App")
@@ -55,7 +61,7 @@ class ParentMobileAppSimulator:
         
         self.log("📱 Parent Mobile App Simulator Ready")
         
-    def create_header(self):
+    def create_header(self) -> Any:
         """إنشاء الهيدر"""
         header = tk.Frame(self.root, bg='#007acc', height=80)
         header.pack(fill="x")
@@ -106,7 +112,7 @@ class ParentMobileAppSimulator:
         )
         self.notif_button.pack(pady=5)
         
-    def create_main_tabs(self):
+    def create_main_tabs(self) -> Any:
         """إنشاء التبويبات الرئيسية"""
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(fill="both", expand=True, padx=10, pady=10)
@@ -126,7 +132,7 @@ class ParentMobileAppSimulator:
         # Settings Tab
         self.create_settings_tab()
         
-    def create_dashboard_tab(self):
+    def create_dashboard_tab(self) -> Any:
         """تبويب لوحة التحكم الرئيسية"""
         dashboard_frame = tk.Frame(self.notebook, bg='#f8f9fa')
         self.notebook.add(dashboard_frame, text="🏠 Dashboard")
@@ -157,7 +163,7 @@ class ParentMobileAppSimulator:
         # Load sample activity
         self.load_sample_activity()
         
-    def create_stat_card(self, parent, title, value, color, row, col):
+    def create_stat_card(self, parent, title, value, color, row, col) -> Any:
         """إنشاء بطاقة إحصائية"""
         card = tk.Frame(parent, bg=color, relief='raised', bd=2)
         card.grid(row=row, column=col, padx=10, pady=10, ipadx=20, ipady=10)
@@ -165,7 +171,7 @@ class ParentMobileAppSimulator:
         tk.Label(card, text=title, font=('Arial', 10), fg='white', bg=color).pack()
         tk.Label(card, text=value, font=('Arial', 16, 'bold'), fg='white', bg=color).pack()
         
-    def create_children_tab(self):
+    def create_children_tab(self) -> Any:
         """تبويب إدارة الأطفال"""
         children_frame = tk.Frame(self.notebook, bg='#f8f9fa')
         self.notebook.add(children_frame, text="👶 Children")
@@ -205,7 +211,7 @@ class ParentMobileAppSimulator:
         # Load sample children
         self.load_sample_children()
         
-    def create_device_control_tab(self):
+    def create_device_control_tab(self) -> Any:
         """تبويب التحكم بالأجهزة"""
         device_frame = tk.Frame(self.notebook, bg='#f8f9fa')
         self.notebook.add(device_frame, text="🧸 Device Control")
@@ -291,7 +297,7 @@ class ParentMobileAppSimulator:
         
         tk.Button(wifi_grid, text="📶 Update WiFi", command=self.update_wifi, bg="#2980b9", fg="white").grid(row=2, column=0, columnspan=2, pady=10)
         
-    def create_analytics_tab(self):
+    def create_analytics_tab(self) -> Any:
         """تبويب التحليلات والتقارير"""
         analytics_frame = tk.Frame(self.notebook, bg='#f8f9fa')
         self.notebook.add(analytics_frame, text="📊 Analytics")
@@ -344,7 +350,7 @@ class ParentMobileAppSimulator:
                 width=15
             ).pack(side="left", padx=5)
         
-    def create_settings_tab(self):
+    def create_settings_tab(self) -> Any:
         """تبويب الإعدادات"""
         settings_frame = tk.Frame(self.notebook, bg='#f8f9fa')
         self.notebook.add(settings_frame, text="⚙️ Settings")
@@ -410,7 +416,7 @@ class ParentMobileAppSimulator:
             width=20
         ).pack(pady=20)
         
-    def create_status_bar(self):
+    def create_status_bar(self) -> Any:
         """إنشاء شريط الحالة"""
         self.status_bar = tk.Frame(self.root, bg='#34495e', height=30)
         self.status_bar.pack(fill="x", side="bottom")
@@ -435,7 +441,7 @@ class ParentMobileAppSimulator:
         )
         self.connection_label.pack(side="right", padx=10, pady=5)
         
-    def setup_notifications(self):
+    def setup_notifications(self) -> Any:
         """تهيئة نظام الإشعارات"""
         # Sample notifications
         sample_notifications = [
@@ -448,26 +454,26 @@ class ParentMobileAppSimulator:
         self.notifications = sample_notifications
         self.update_notification_badge()
         
-    def update_notification_badge(self):
+    def update_notification_badge(self) -> Any:
         """تحديث شارة الإشعارات"""
         count = len(self.notifications)
         self.notif_button.config(text=f"🔔 {count}")
         
-    def log(self, message):
+    def log(self, message) -> Any:
         """إضافة رسالة للسجل"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         log_entry = f"[{timestamp}] {message}\n"
-        print(log_entry.strip())
+        logger.info(log_entry.strip())
         
     # ======================== EVENT HANDLERS ========================
     
-    def volume_changed(self, value):
+    def volume_changed(self, value) -> Any:
         """تغيير مستوى الصوت"""
         volume = int(float(value))
         self.volume_label.config(text=f"Volume: {volume}%")
         self.send_volume_to_device(volume)
         
-    def send_volume_to_device(self, volume):
+    def send_volume_to_device(self, volume) -> Any:
         """إرسال مستوى الصوت للجهاز"""
         device_id = self.device_var.get().split()[0]
         try:
@@ -481,43 +487,43 @@ class ParentMobileAppSimulator:
     logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
     logger.error(f"Error in operation: {e}", exc_info=True)            self.status_label.config(text="❌ Failed to update volume")
             
-    def emergency_stop(self):
+    def emergency_stop(self) -> Any:
         """إيقاف الطوارئ"""
         result = messagebox.askyesno("Emergency Stop", "Are you sure you want to emergency stop the teddy bear?")
         if result:
             self.status_label.config(text="🛑 Emergency stop sent to device")
             self.log("🛑 Emergency stop activated")
             
-    def sleep_mode(self):
+    def sleep_mode(self) -> Any:
         """وضع السكون"""
         self.status_label.config(text="😴 Sleep mode activated")
         self.log("😴 Device set to sleep mode")
         
-    def play_lullaby(self):
+    def play_lullaby(self) -> Any:
         """تشغيل تهويدة"""
         self.status_label.config(text="🎵 Playing lullaby...")
         self.log("🎵 Lullaby sent to device")
         
-    def call_child(self):
+    def call_child(self) -> Any:
         """استدعاء الطفل"""
         self.status_label.config(text="📞 Calling child...")
         self.log("📞 Call sent to device")
         
-    def restart_device(self):
+    def restart_device(self) -> Any:
         """إعادة تشغيل الجهاز"""
         result = messagebox.askyesno("Restart Device", "Are you sure you want to restart the device?")
         if result:
             self.status_label.config(text="🔄 Restarting device...")
             self.log("🔄 Device restart initiated")
             
-    def update_firmware(self):
+    def update_firmware(self) -> Any:
         """تحديث البرمجيات"""
         result = messagebox.askyesno("Firmware Update", "Check for firmware updates?")
         if result:
             self.status_label.config(text="⚙️ Checking for updates...")
             self.log("⚙️ Firmware update check started")
             
-    def update_wifi(self):
+    def update_wifi(self) -> Any:
         """تحديث إعدادات WiFi"""
         ssid = self.ssid_entry.get()
         password = self.password_entry.get()
@@ -528,14 +534,14 @@ class ParentMobileAppSimulator:
         else:
             messagebox.showwarning("Warning", "Please enter both SSID and password")
             
-    def on_child_select(self, event):
+    def on_child_select(self, event) -> Any:
         """عند اختيار طفل"""
         selection = self.children_listbox.curselection()
         if selection:
             child_name = self.children_listbox.get(selection[0])
             self.load_child_details(child_name)
             
-    def load_child_details(self, child_name):
+    def load_child_details(self, child_name) -> Any:
         """تحميل تفاصيل الطفل"""
         # Sample child details
         details = f"""
@@ -575,13 +581,13 @@ class ParentMobileAppSimulator:
         self.child_details_text.delete(1.0, "end")
         self.child_details_text.insert(1.0, details)
         
-    def load_sample_children(self):
+    def load_sample_children(self) -> Any:
         """تحميل عينة من الأطفال"""
         children = ["👧 Sara (7 years)", "👦 Ahmed (5 years)", "👶 Layla (3 years)"]
         for child in children:
             self.children_listbox.insert("end", child)
             
-    def load_sample_activity(self):
+    def load_sample_activity(self) -> Any:
         """تحميل نشاط عينة"""
         activities = [
             "[09:15] 👧 Sara started morning conversation",
@@ -603,7 +609,7 @@ class ParentMobileAppSimulator:
         for activity in activities:
             self.activity_text.insert("end", activity + "\n")
             
-    def create_sample_charts(self, parent):
+    def create_sample_charts(self, parent) -> Any:
         """إنشاء مخططات عينة"""
         # Daily Usage Chart
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(10, 6))
@@ -641,7 +647,7 @@ class ParentMobileAppSimulator:
         
     # ======================== DIALOG FUNCTIONS ========================
     
-    def add_child_dialog(self):
+    def add_child_dialog(self) -> Any:
         """حوار إضافة طفل جديد"""
         dialog = tk.Toplevel(self.root)
         dialog.title("👶 Add New Child")
@@ -674,7 +680,7 @@ class ParentMobileAppSimulator:
         button_frame = tk.Frame(dialog, bg='#f8f9fa')
         button_frame.pack(pady=20)
         
-        def save_child():
+        def save_child() -> Any:
             name = name_entry.get().strip()
             age = age_entry.get()
             gender = gender_var.get()
@@ -691,7 +697,7 @@ class ParentMobileAppSimulator:
         tk.Button(button_frame, text="💾 Save", command=save_child, bg="#27ae60", fg="white", width=10).pack(side="left", padx=5)
         tk.Button(button_frame, text="❌ Cancel", command=dialog.destroy, bg="#e74c3c", fg="white", width=10).pack(side="left", padx=5)
         
-    def show_notifications(self):
+    def show_notifications(self) -> Any:
         """عرض الإشعارات"""
         dialog = tk.Toplevel(self.root)
         dialog.title("🔔 Notifications")
@@ -716,7 +722,7 @@ class ParentMobileAppSimulator:
         # Clear button
         tk.Button(dialog, text="🗑️ Clear All", command=lambda: self.clear_notifications(dialog), bg="#e74c3c", fg="white").pack(pady=10)
         
-    def clear_notifications(self, dialog):
+    def clear_notifications(self, dialog) -> Any:
         """مسح الإشعارات"""
         self.notifications = []
         self.update_notification_badge()
@@ -724,34 +730,34 @@ class ParentMobileAppSimulator:
         
     # ======================== REPORT FUNCTIONS ========================
     
-    def load_analytics(self, days):
+    def load_analytics(self, days) -> Any:
         """تحميل التحليلات"""
         self.status_label.config(text=f"📊 Loading {days} days analytics...")
         self.log(f"📊 Analytics loaded for {days} days")
         
-    def usage_report(self):
+    def usage_report(self) -> Any:
         """تقرير الاستخدام"""
         self.log("📈 Usage report generated")
         
-    def emotional_report(self):
+    def emotional_report(self) -> Any:
         """تقرير المشاعر"""
         self.log("😊 Emotional report generated")
         
-    def learning_report(self):
+    def learning_report(self) -> Any:
         """تقرير التعلم"""
         self.log("🎓 Learning progress report generated")
         
-    def family_report(self):
+    def family_report(self) -> Any:
         """تقرير العائلة"""
         self.log("👨‍👩‍👧‍👦 Family insights report generated")
         
-    def save_settings(self):
+    def save_settings(self) -> Any:
         """حفظ الإعدادات"""
         self.status_label.config(text="💾 Settings saved successfully")
         self.log("💾 All settings saved")
         messagebox.showinfo("Success", "Settings saved successfully!")
         
-    def run(self):
+    def run(self) -> Any:
         """تشغيل التطبيق"""
         try:
             self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -759,19 +765,19 @@ class ParentMobileAppSimulator:
         except Exception as e:
     logger.error(f"Error: {e}")"\n👋 Parent App shutting down...")
         
-    def on_closing(self):
+    def on_closing(self) -> Any:
         """عند إغلاق التطبيق"""
         self.root.destroy()
 
 if __name__ == "__main__":
-    print("📱 Starting Parent Mobile App Simulator...")
-    print("=" * 60)
-    print("🎯 Complete Parent Control Dashboard")
-    print("👨‍👩‍👧‍👦 Family Management System")
-    print("📊 Real-time Analytics & Reports")
-    print("🔔 Smart Notifications & Alerts")
-    print("⚙️ Full Device Control")
-    print("=" * 60)
+    logger.info("📱 Starting Parent Mobile App Simulator...")
+    logger.info("=" * 60)
+    logger.info("🎯 Complete Parent Control Dashboard")
+    logger.info("👨‍👩‍👧‍👦 Family Management System")
+    logger.info("📊 Real-time Analytics & Reports")
+    logger.info("🔔 Smart Notifications & Alerts")
+    logger.info("⚙️ Full Device Control")
+    logger.info("=" * 60)
     
     try:
         app = ParentMobileAppSimulator()

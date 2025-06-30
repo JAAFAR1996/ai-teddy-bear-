@@ -639,7 +639,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    print("""
+    logger.info("")
     🧸 AI Teddy Bear - Observability Stack Demo
     ==========================================
     

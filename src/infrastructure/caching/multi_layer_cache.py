@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Enterprise-Grade Multi-Layer Caching System for AI Teddy Bear Project.
 
@@ -1007,7 +1009,7 @@ class MultiLayerCache:
         key_prefix: str = ""
     ):
         """Decorator for caching function results."""
-        def decorator(func: Callable):
+        def decorator(func -> Any: Callable) -> Any:
             async def wrapper(*args, **kwargs):
                 # Generate cache key
                 cache_key = self._generate_cache_key(

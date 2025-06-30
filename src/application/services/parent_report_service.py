@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 📊 Parent Report Service for AI Teddy Bear
 Generates comprehensive reports about child's emotional and behavioral progress
@@ -21,7 +25,7 @@ try:
     plt.style.use('seaborn-v0_8')  # Modern, clean style
 except ImportError:
     PLOTTING_AVAILABLE = False
-    print("⚠️ Matplotlib/Seaborn not installed. Install with: pip install matplotlib seaborn")
+    logger.warning("⚠️ Matplotlib/Seaborn not installed. Install with: pip install matplotlib seaborn")
 
 # For PDF generation
 try:
@@ -33,7 +37,7 @@ try:
     PDF_AVAILABLE = True
 except ImportError:
     PDF_AVAILABLE = False
-    print("⚠️ ReportLab not installed. Install with: pip install reportlab")
+    logger.warning("⚠️ ReportLab not installed. Install with: pip install reportlab")
 
 
 @dataclass
@@ -862,15 +866,15 @@ async def example_usage():
     
     # Create visual report
     pdf_path = report_service.create_visual_report(progress, format='pdf')
-    print(f"PDF report created: {pdf_path}")
+    logger.info(f"PDF report created: {pdf_path}")
     
     # Create text report
     text_report = report_service.create_text_report(progress)
-    print(text_report)
+    logger.info(text_report)
     
     # Generate monthly report
     monthly = await report_service.generate_monthly_report("child_123")
-    print(f"Monthly report generated with {len(monthly['weekly_reports'])} weeks of data")
+    logger.info(f"Monthly report generated with {len(monthly['weekly_reports'])} weeks of data")
 
 
     # ================ TASK 7: ADVANCED PROGRESS ANALYSIS ================
@@ -1267,25 +1271,25 @@ async def example_usage():
     report_service = ParentReportService()
     
     # Task 7: Generate advanced progress analysis
-    print("🧠 Task 7: Advanced Progress Analysis")
+    logger.info("🧠 Task 7: Advanced Progress Analysis")
     metrics = await report_service.analyze_progress(123)
-    print(f"✅ Analysis completed for child {metrics.child_id}")
-    print(f"   Unique words: {metrics.total_unique_words}")
-    print(f"   Vocabulary complexity: {metrics.vocabulary_complexity_score:.2f}")
-    print(f"   Emotional intelligence: {metrics.emotional_intelligence_score:.2f}")
+    logger.info(f"✅ Analysis completed for child {metrics.child_id}")
+    logger.info(f"   Unique words: {metrics.total_unique_words}")
+    logger.info(f"   Vocabulary complexity: {metrics.vocabulary_complexity_score:.2f}")
+    logger.info(f"   Emotional intelligence: {metrics.emotional_intelligence_score:.2f}")
     
     # Generate LLM recommendations
     recommendations = await report_service.generate_llm_recommendations(123, metrics)
-    print(f"📝 Generated {len(recommendations)} recommendations")
+    logger.info(f"📝 Generated {len(recommendations)} recommendations")
     
     # Generate and store complete report
     full_report = await report_service.generate_and_store_report(123)
-    print(f"💾 Complete report stored with ID: {full_report['report_id']}")
+    logger.info(f"💾 Complete report stored with ID: {full_report['report_id']}")
     
     # Traditional report generation still available
     progress = await report_service.generate_weekly_report("child_123")
     pdf_path = report_service.create_visual_report(progress, format='pdf')
-    print(f"📄 Traditional PDF report created: {pdf_path}")
+    logger.info(f"📄 Traditional PDF report created: {pdf_path}")
 
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Enterprise Dependency Injection Container - 2025
 Advanced DI container with service lifecycle management, health monitoring, and async capabilities
@@ -288,7 +290,7 @@ class AsyncServiceResolver:
         # Create new instance
         return await self.container._create_service_instance(service_name, registration)
     
-    def clear_cache(self, service_name: Optional[str] = None):
+    def clear_cache(self, service_name -> Any: Optional[str] = None) -> Any:
         """Clear resolution cache"""
         if service_name:
             self._resolution_cache.pop(service_name, None)
@@ -638,24 +640,24 @@ def get_container() -> EnterpriseContainer:
     return _global_container
 
 
-def set_container(container: EnterpriseContainer):
+def set_container(container -> Any: EnterpriseContainer) -> Any:
     """Set global container instance"""
     global _global_container
     _global_container = container
 
 
 # Dependency injection decorators
-def injectable(lifetime: ServiceLifetime = ServiceLifetime.TRANSIENT):
+def injectable(lifetime -> Any: ServiceLifetime = ServiceLifetime.TRANSIENT) -> Any:
     """Mark class as injectable service"""
-    def decorator(cls):
+    def decorator(cls) -> Any:
         cls._injectable_lifetime = lifetime
         return cls
     return decorator
 
 
-def inject_service(service_name: str):
+def inject_service(service_name -> Any: str) -> Any:
     """Inject service dependency"""
-    def decorator(func):
+    def decorator(func) -> Any:
         async def wrapper(*args, **kwargs):
             container = get_container()
             service = await container.get_service(service_name)

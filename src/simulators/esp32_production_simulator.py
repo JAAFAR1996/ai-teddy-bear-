@@ -78,7 +78,7 @@ class AsyncWorker(QThread):
         self.websocket: Optional[websockets.WebSocketClientProtocol] = None
         self.running = False
         
-    def run(self):
+    def run(self) -> Any:
         """Run async event loop in thread"""
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
@@ -149,12 +149,12 @@ class AsyncWorker(QThread):
             self.error_occurred.emit(f"API request failed: {str(e)}")
             raise
     
-    def _schedule_coroutine(self, coro):
+    def _schedule_coroutine(self, coro) -> Any:
         """Schedule coroutine in worker loop"""
         if self.loop and self.running:
             asyncio.run_coroutine_threadsafe(coro, self.loop)
     
-    def _stop(self):
+    def _stop(self) -> Any:
         """Stop worker thread"""
         self.running = False
         if self.websocket:
@@ -176,7 +176,7 @@ class AudioHandler(QThread):
         self.is_recording = False
         self.audio_buffer = []
         
-    def start_recording(self):
+    def start_recording(self) -> Any:
         """Start audio recording"""
         self.is_recording = True
         self.audio_buffer = []
@@ -193,7 +193,7 @@ class AudioHandler(QThread):
             return self._numpy_to_wav(audio_data)
         return b''
     
-    def _run(self):
+    def _run(self) -> Any:
         """Recording thread"""
         try:
             with sd.InputStream(
@@ -208,7 +208,7 @@ class AudioHandler(QThread):
         except Exception as e:
             self.error.emit(f"Recording error: {str(e)}")
     
-    def _audio_callback(self, indata, frames, time, status):
+    def _audio_callback(self, indata, frames, time, status) -> Any:
         """Audio stream callback"""
         if status:
             logger.warning(f"Audio status: {status}")
@@ -237,7 +237,7 @@ class AudioHandler(QThread):
         
         return buffer.getvalue()
     
-    def _play_audio(self, audio_data: bytes):
+    def _play_audio(self, audio_data -> Any: bytes) -> Any:
         """Play audio data"""
         try:
             # Decode base64 if needed
@@ -262,7 +262,7 @@ class ModernButton(QPushButton):
         self._setup_style()
         self._setup_animation()
     
-    def _setup_style(self):
+    def _setup_style(self) -> Any:
         """Setup modern button style"""
         base_style = """
             QPushButton {
@@ -293,7 +293,7 @@ class ModernButton(QPushButton):
         
         self.setStyleSheet(base_style % colors)
     
-    def _setup_animation(self):
+    def _setup_animation(self) -> Any:
         """Setup hover animation"""
         self.animation = QPropertyAnimation(self, b"geometry")
         self.animation.setDuration(100)
@@ -316,7 +316,7 @@ class ConsoleWidget(QTextEdit):
             }
         """)
     
-    def _log(self, message: str, level: str = "info"):
+    def _log(self, message -> Any: str, level -> Any: str = "info") -> Any:
         """Add log message with color coding"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         
@@ -354,7 +354,7 @@ class ESP32ProductionSimulator(QMainWindow):
         # Start async worker
         self.async_worker.start()
         
-    def _setup_ui(self):
+    def _setup_ui(self) -> Any:
         """Setup modern UI"""
         self.setWindowTitle("🧸 AI Teddy Bear - ESP32 Simulator")
         self.setMinimumSize(1200, 800)
@@ -542,7 +542,7 @@ class ESP32ProductionSimulator(QMainWindow):
         panel.setLayout(layout)
         return panel
     
-    def _create_status_bar(self):
+    def _create_status_bar(self) -> Any:
         """Create status bar"""
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
@@ -554,7 +554,7 @@ class ESP32ProductionSimulator(QMainWindow):
         self.status_bar.addPermanentWidget(self.api_status)
         self.status_bar.addPermanentWidget(self.ws_status)
     
-    def _setup_connections(self):
+    def _setup_connections(self) -> Any:
         """Setup signal connections"""
         # Async worker signals
         self.async_worker.message_received.connect(self.handle_ws_message)
@@ -565,7 +565,7 @@ class ESP32ProductionSimulator(QMainWindow):
         self.audio_handler.audio_level.connect(self.update_audio_level)
         self.audio_handler.error.connect(self.handle_error)
     
-    def _apply_theme(self):
+    def _apply_theme(self) -> Any:
         """Apply dark theme"""
         self.setStyleSheet("""
             QMainWindow {
@@ -592,7 +592,7 @@ class ESP32ProductionSimulator(QMainWindow):
     # ================== SLOTS ==================
     
     @Slot()
-    def _connect_to_server(self):
+    def _connect_to_server(self) -> Any:
         """Connect to server"""
         self.console.log("Connecting to server...", "info")
         
@@ -631,7 +631,7 @@ class ESP32ProductionSimulator(QMainWindow):
         self.async_worker.schedule_coroutine(connect())
     
     @Slot()
-    def setup_child_profile(self):
+    def setup_child_profile(self) -> Any:
         """Setup child profile"""
         name, ok = QInputDialog.getText(self, "Child Profile", "Enter child's name:")
         if not ok or not name:
@@ -666,14 +666,14 @@ class ESP32ProductionSimulator(QMainWindow):
         self.async_worker.schedule_coroutine(create_profile())
     
     @Slot()
-    def _start_recording(self):
+    def _start_recording(self) -> Any:
         """Start voice recording"""
         self.console.log("🎤 Recording started...", "info")
         self.state.is_recording = True
         self.audio_handler.start_recording()
     
     @Slot()
-    def _stop_recording(self):
+    def _stop_recording(self) -> Any:
         """Stop recording and send audio"""
         if not self.state.is_recording:
             return
@@ -687,7 +687,7 @@ class ESP32ProductionSimulator(QMainWindow):
         else:
             self.console.log("No audio recorded", "warning")
     
-    def _send_audio_data(self, audio_data: bytes):
+    def _send_audio_data(self, audio_data -> Any: bytes) -> Any:
         """Send audio data to server"""
         async def send():
             try:
@@ -716,7 +716,7 @@ class ESP32ProductionSimulator(QMainWindow):
         self.async_worker.schedule_coroutine(send())
     
     @Slot()
-    def _send_text_message(self):
+    def _send_text_message(self) -> Any:
         """Send text message"""
         message = self.message_input.text().strip()
         if not message:
@@ -730,7 +730,7 @@ class ESP32ProductionSimulator(QMainWindow):
         # In production, this would use actual TTS
     
     @Slot(dict)
-    def _handle_ws_message(self, data: dict):
+    def _handle_ws_message(self, data -> Any: dict) -> Any:
         """Handle WebSocket message"""
         msg_type = data.get("type", "unknown")
         
@@ -741,21 +741,21 @@ class ESP32ProductionSimulator(QMainWindow):
             self.console.log(f"WebSocket message: {json.dumps(data)}", "info")
     
     @Slot(str)
-    def _handle_error(self, error: str):
+    def _handle_error(self, error -> Any: str) -> Any:
         """Handle error messages"""
         self.console.log(error, "error")
     
     @Slot(str)
-    def _update_status(self, status: str):
+    def _update_status(self, status -> Any: str) -> Any:
         """Update status message"""
         self.status_bar.showMessage(status, 3000)
     
     @Slot(float)
-    def _update_audio_level(self, level: float):
+    def _update_audio_level(self, level -> Any: float) -> Any:
         """Update audio level indicator"""
         self.audio_level_bar.setValue(int(level * 100))
     
-    def _update_connection_status(self, connected: bool):
+    def _update_connection_status(self, connected -> Any: bool) -> Any:
         """Update connection status display"""
         if connected:
             self.connection_status.setText("● Connected")
@@ -769,7 +769,7 @@ class ESP32ProductionSimulator(QMainWindow):
             self.ws_status.setText("WebSocket: Disconnected")
     
     @Slot()
-    def _run_auto_demo(self):
+    def _run_auto_demo(self) -> Any:
         """Run automated demo"""
         self.console.log("Starting automated demo...", "info")
         
@@ -785,7 +785,7 @@ class ESP32ProductionSimulator(QMainWindow):
         for i, msg in enumerate(demo_messages):
             QTimer.singleShot(i * 5000, lambda m=msg: self.console.log(f"👤 Demo: {m}", "info"))
     
-    def _closeEvent(self, event):
+    def _closeEvent(self, event) -> Any:
         """Handle window close"""
         self.async_worker.stop()
         self.async_worker.wait()
@@ -793,7 +793,7 @@ class ESP32ProductionSimulator(QMainWindow):
 
 # ================== MAIN ENTRY POINT ==================
 
-def main():
+def main() -> Any:
     """Main entry point"""
     # Setup logging
     logging.basicConfig(

@@ -109,7 +109,7 @@ class AudioChunk(BaseModel):
     energy_level: float = Field(default=0.0, description="Audio energy level")
     
     @validator('data')
-    def validate_data_size(cls, v):
+    def validate_data_size(cls, v) -> Any:
         """Validate chunk size"""
         max_size = 1024 * 1024  # 1MB max per chunk
         if len(v) > max_size:
@@ -155,7 +155,7 @@ class StreamBuffer(BaseModel):
         self.total_size_bytes -= chunk.get_size_bytes()
         return chunk
     
-    def clear(self):
+    def clear(self) -> Any:
         """Clear buffer"""
         self.chunks.clear()
         self.total_duration_ms = 0.0
@@ -234,7 +234,7 @@ class AudioStream(BaseModel):
     
     # Methods
     
-    def start(self):
+    def start(self) -> Any:
         """Start the stream"""
         if self.state not in [StreamState.IDLE, StreamState.ERROR]:
             raise ValueError(f"Cannot start stream in state {self.state}")
@@ -243,7 +243,7 @@ class AudioStream(BaseModel):
         self.started_at = datetime.now()
         self.buffer.clear()
     
-    def stop(self):
+    def stop(self) -> Any:
         """Stop the stream"""
         if self.state in [StreamState.STREAMING, StreamState.PAUSED, StreamState.BUFFERING]:
             self.state = StreamState.COMPLETED
@@ -251,12 +251,12 @@ class AudioStream(BaseModel):
             if self.started_at:
                 self.duration = self.ended_at - self.started_at
     
-    def pause(self):
+    def pause(self) -> Any:
         """Pause the stream"""
         if self.state == StreamState.STREAMING:
             self.state = StreamState.PAUSED
     
-    def resume(self):
+    def resume(self) -> Any:
         """Resume the stream"""
         if self.state == StreamState.PAUSED:
             self.state = StreamState.STREAMING
@@ -301,7 +301,7 @@ class AudioStream(BaseModel):
             
         return chunk
     
-    def set_error(self, error_message: str):
+    def set_error(self, error_message -> Any: str) -> Any:
         """Set stream to error state"""
         self.state = StreamState.ERROR
         self.error_count += 1

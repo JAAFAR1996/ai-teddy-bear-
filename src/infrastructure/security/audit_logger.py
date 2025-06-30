@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Comprehensive Audit Logging System
 Provides tamper-proof audit logs for security and compliance
@@ -530,7 +532,7 @@ class AuditLogger:
 
 
 # Convenience decorator for automatic audit logging
-def audit_log(event_type: AuditEventType, resource_param: str = None):
+def audit_log(event_type -> Any: AuditEventType, resource_param -> Any: str = None) -> Any:
     """
     Decorator for automatic audit logging
     
@@ -539,7 +541,7 @@ def audit_log(event_type: AuditEventType, resource_param: str = None):
         async def get_child_data(child_id: str):
             ...
     """
-    def decorator(func):
+    def decorator(func) -> Any:
         async def wrapper(*args, **kwargs):
             # Get audit logger from somewhere (e.g., dependency injection)
             audit_logger = kwargs.get('audit_logger')

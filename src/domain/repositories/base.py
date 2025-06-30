@@ -347,17 +347,17 @@ class BaseRepository(ABC, Generic[T, ID]):
         await asyncio.sleep(self._cache_ttl)
         self._cache.pop(entity_id, None)
     
-    def clear_cache(self):
+    def clear_cache(self) -> Any:
         """Clear all cached entries"""
         self._cache.clear()
     
     # Hooks and Events
     
-    def add_hook(self, operation: OperationType, hook: Callable):
+    def add_hook(self, operation -> Any: OperationType, hook -> Any: Callable) -> Any:
         """Add a hook for an operation type"""
         self._hooks[operation].append(hook)
     
-    def remove_hook(self, operation: OperationType, hook: Callable):
+    def remove_hook(self, operation -> Any: OperationType, hook -> Any: Callable) -> Any:
         """Remove a hook"""
         if hook in self._hooks[operation]:
             self._hooks[operation].remove(hook)

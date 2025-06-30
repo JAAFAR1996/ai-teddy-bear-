@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 import structlog
 logger = structlog.get_logger(__name__)
 
@@ -62,10 +66,10 @@ class ESP32TeddyBearSimulator:
         # GUI
         self.create_advanced_gui()
         
-        print(f"🧸 ESP32 Teddy Bear Simulator - Production Ready")
-        print(f"🆔 Device ID: {self.device_id}")
+        logger.info(f"🧸 ESP32 Teddy Bear Simulator - Production Ready")
+        logger.info(f"🆔 Device ID: {self.device_id}")
     
-    def _init_audio(self):
+    def _init_audio(self) -> Any:
         """تهيئة نظام الصوت المتقدم"""
         try:
             pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
@@ -84,20 +88,20 @@ class ESP32TeddyBearSimulator:
             self.recognizer.non_speaking_duration = 0.2  # Very quick cutoff
             
             # Quick calibration
-            print("🎤 Calibrating microphone for MAXIMUM sensitivity...")
+            logger.info("🎤 Calibrating microphone for MAXIMUM sensitivity...")
             with self.microphone as source:
                 # Very short calibration to avoid adjusting threshold too high
                 self.recognizer.adjust_for_ambient_noise(source, duration=0.1)
                 # Force low threshold after calibration
                 self.recognizer.energy_threshold = 100
             
-            print("✅ Microphone ready - ULTRA SENSITIVE MODE!")
-            print(f"🔊 Energy threshold: {self.recognizer.energy_threshold}")
+            logger.info("✅ Microphone ready - ULTRA SENSITIVE MODE!")
+            logger.info(f"🔊 Energy threshold: {self.recognizer.energy_threshold}")
             
         except Exception as e:
     logger.error(f"Error: {e}")f"❌ Audio error: {e}")
     
-    def _create_advanced_gui(self):
+    def _create_advanced_gui(self) -> Any:
         """إنشاء واجهة المحاكي المتقدمة"""
         self.root = tk.Tk()
         self.root.title(f"🧸 ESP32 Teddy Bear - {self.device_id}")
@@ -138,7 +142,7 @@ class ESP32TeddyBearSimulator:
         # بدء مراقبة السيرفر المستمرة
         self.start_server_monitor()
     
-    def _create_status_panel(self):
+    def _create_status_panel(self) -> Any:
         """لوحة حالة الجهاز"""
         status_frame = tk.LabelFrame(self.root, text="Device Status", bg='#ecf0f1', font=('Arial', 12, 'bold'))
         status_frame.pack(fill="x", padx=15, pady=10)
@@ -185,7 +189,7 @@ class ESP32TeddyBearSimulator:
         self.volume_label = tk.Label(info_frame, text=f"🔊 Volume: {self.volume_level}%", bg='#ecf0f1', font=('Arial', 10))
         self.volume_label.pack(anchor="w")
     
-    def _create_control_panel(self):
+    def _create_control_panel(self) -> Any:
         """لوحة التحكم الرئيسية"""
         control_frame = tk.LabelFrame(self.root, text="Main Controls", bg='#ecf0f1', font=('Arial', 12, 'bold'))
         control_frame.pack(fill="x", padx=15, pady=10)
@@ -265,7 +269,7 @@ class ESP32TeddyBearSimulator:
         self.sensitivity_label = tk.Label(mic_frame, text="Sensitivity: 300", bg='#ecf0f1', font=('Arial', 9))
         self.sensitivity_label.pack(side="left", padx=5)
     
-    def _create_child_panel(self):
+    def _create_child_panel(self) -> Any:
         """لوحة ملف الطفل"""
         child_frame = tk.LabelFrame(self.root, text="Child Profile", bg='#ecf0f1', font=('Arial', 12, 'bold'))
         child_frame.pack(fill="x", padx=15, pady=10)
@@ -287,7 +291,7 @@ class ESP32TeddyBearSimulator:
         self.profile_status = tk.Label(child_frame, text="👶 No child profile set", bg='#ecf0f1', font=('Arial', 10))
         self.profile_status.pack(pady=5)
     
-    def _create_activity_panel(self):
+    def _create_activity_panel(self) -> Any:
         """لوحة مراقبة النشاط"""
         activity_frame = tk.LabelFrame(self.root, text="Activity Monitor", bg='#ecf0f1', font=('Arial', 12, 'bold'))
         activity_frame.pack(fill="both", expand=True, padx=15, pady=10)
@@ -323,7 +327,7 @@ class ESP32TeddyBearSimulator:
         self.analytics_text = tk.Text(analytics_frame, height=8, font=('Arial', 9))
         self.analytics_text.pack(fill="both", expand=True, padx=10, pady=10)
     
-    def _create_features_panel(self):
+    def _create_features_panel(self) -> Any:
         """لوحة الميزات المتقدمة"""
         features_frame = tk.LabelFrame(self.root, text="Advanced Features", bg='#ecf0f1', font=('Arial', 12, 'bold'))
         features_frame.pack(fill="x", padx=15, pady=10)
@@ -355,16 +359,16 @@ class ESP32TeddyBearSimulator:
         tk.Button(emergency_frame, text="🛡️ KEEP ALIVE", command=self.force_stay_alive, bg='#e67e22', fg='white', width=15).pack(side="left", padx=5)
         tk.Button(emergency_frame, text="🔧 FORCE FIX", command=self.force_fix_system, bg='#c0392b', fg='white', width=15).pack(side="left", padx=5)
     
-    def _log(self, message):
+    def _log(self, message) -> Any:
         """إضافة رسالة للسجل"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         log_entry = f"[{timestamp}] {message}\n"
         
         self.log_text.insert("end", log_entry)
         self.log_text.see("end")
-        print(log_entry.strip())
+        logger.info(log_entry.strip())
     
-    def _log_conversation(self, user_msg, ai_response):
+    def _log_conversation(self, user_msg, ai_response) -> Any:
         """تسجيل المحادثة"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         conv_entry = f"[{timestamp}] 👶: {user_msg}\n[{timestamp}] 🧸: {ai_response}\n\n"
@@ -379,20 +383,20 @@ class ESP32TeddyBearSimulator:
             "ai": ai_response
         })
     
-    def _start_audio_visualizer(self):
+    def _start_audio_visualizer(self) -> Any:
         """بدء المؤشر الصوتي المتحرك"""
         if not self.is_visualizing:  # منع التشغيل المتعدد
             self.is_visualizing = True
             self.animate_visualizer()
     
-    def _stop_audio_visualizer(self):
+    def _stop_audio_visualizer(self) -> Any:
         """إيقاف المؤشر الصوتي"""
         self.is_visualizing = False
         # إعادة تعيين الأعمدة للوضع الطبيعي
         for i, bar in enumerate(self.visualizer_bars):
             self.audio_visualizer.coords(bar, i*10+5, 70, i*10+13, 70)
     
-    def _animate_visualizer(self):
+    def _animate_visualizer(self) -> Any:
         """تحريك المؤشر الصوتي"""
         if not self.is_visualizing:
             return
@@ -420,14 +424,14 @@ class ESP32TeddyBearSimulator:
         if self.is_visualizing:
             self.root.after(100, self.animate_visualizer)
     
-    def _toggle_power(self):
+    def _toggle_power(self) -> Any:
         """تشغيل/إطفاء الدبدوب"""
         if not self.is_powered_on:
             self.power_on()
         else:
             self.power_off()
     
-    def _power_on(self):
+    def _power_on(self) -> Any:
         """تشغيل الدبدوب"""
         if self.is_powered_on:
             self.log("⚠️ Teddy is already powered on")
@@ -449,7 +453,7 @@ class ESP32TeddyBearSimulator:
         # بدء الاستماع
         threading.Timer(3.0, self.start_listening).start()
     
-    def _power_off(self):
+    def _power_off(self) -> Any:
         """إطفاء الدبدوب"""
         if not self.is_powered_on:
             return  # لا تطفئ إذا كان مطفأ بالفعل
@@ -474,7 +478,7 @@ class ESP32TeddyBearSimulator:
         
         self.log("🔴 Teddy Bear POWERED OFF")
     
-    def _connect_wifi(self):
+    def _connect_wifi(self) -> Any:
         """الاتصال بالواي فاي أولاً ثم السيرفر - محاكاة واقعية"""
         
         # خطوة 1: محاكاة الاتصال بالواي فاي
@@ -505,7 +509,7 @@ class ESP32TeddyBearSimulator:
             self.led_canvas.itemconfig(self.led_circle, fill='red')
             self.status_label.config(text="❌ NO WIFI", fg='red')
     
-    def _connect_to_server(self):
+    def _connect_to_server(self) -> Any:
         """الاتصال بالسيرفر (يتطلب WiFi أولاً)"""
         if not self.wifi_connected:
             self.log("❌ Cannot connect to server - No WiFi!")
@@ -531,7 +535,7 @@ class ESP32TeddyBearSimulator:
             self.led_canvas.itemconfig(self.led_circle, fill='orange')
             self.status_label.config(text="⚠️ SERVER OFFLINE", fg='orange')
     
-    def _register_device(self):
+    def _register_device(self) -> Any:
         """تسجيل الجهاز"""
         try:
             data = {
@@ -549,7 +553,7 @@ class ESP32TeddyBearSimulator:
         except Exception as e:
             self.log(f"❌ Registration failed: {e}")
     
-    def _start_listening(self):
+    def _start_listening(self) -> Any:
         """Start listening for wake words with detailed debugging"""
         if not self.is_powered_on:
             self.log("❌ Cannot start listening - Device not powered on")
@@ -590,7 +594,7 @@ class ESP32TeddyBearSimulator:
         # Update UI
         self.update_connection_status()
     
-    def _listen_for_audio(self):
+    def _listen_for_audio(self) -> Any:
         """SUPER RESPONSIVE wake word detection with detailed logging"""
         self.log("🎤 🎤 🎤 LISTENING THREAD STARTED! 🎤 🎤 🎤")
         self.log(f"🔊 Energy threshold: {self.recognizer.energy_threshold}")
@@ -688,7 +692,7 @@ class ESP32TeddyBearSimulator:
         else:
             self.log("🛑 Listening stopped - device powered off or disconnected")
     
-    def _wake_word_detected(self, wake_word, full_text):
+    def _wake_word_detected(self, wake_word, full_text) -> Any:
         """عند اكتشاف كلمة التفعيل"""
         self.log(f"🎯 Wake word detected: '{wake_word}' (Language: {self.current_language})")
         self.log("🎤 Recording your message...")
@@ -703,7 +707,7 @@ class ESP32TeddyBearSimulator:
         # تسجيل الرسالة
         threading.Thread(target=self.record_and_process, args=(full_text,), daemon=True).start()
     
-    def _record_and_process(self, initial_text=None):
+    def _record_and_process(self, initial_text=None) -> Any:
         """تسجيل ومعالجة الرسالة"""
         if not self.is_powered_on:
             return  # لا تعمل شيء إذا كان الدبدوب مطفأ
@@ -761,7 +765,7 @@ class ESP32TeddyBearSimulator:
             self.stop_audio_visualizer()
             self.return_to_listening()
     
-    def _send_to_ai(self, message):
+    def _send_to_ai(self, message) -> Any:
         """إرسال للذكاء الاصطناعي"""
         try:
             data = {
@@ -797,7 +801,7 @@ class ESP32TeddyBearSimulator:
             self.root.after(0, lambda: self.log(f"❌ AI request failed: {e}"))
             self.return_to_listening()
     
-    def _speak_response(self, text):
+    def _speak_response(self, text) -> Any:
         """تشغيل رد الدبدوب"""
         try:
             # LED بنفسجي = يتكلم
@@ -852,7 +856,7 @@ class ESP32TeddyBearSimulator:
             self.stop_audio_visualizer()
             self.return_to_listening()
     
-    def _return_to_listening(self):
+    def _return_to_listening(self) -> Any:
         """العودة لحالة الاستماع"""
         # إيقاف المؤشر الصوتي دائماً عند العودة للاستماع
         self.stop_audio_visualizer()
@@ -878,17 +882,17 @@ class ESP32TeddyBearSimulator:
     
     # ======================== CONTROLS ========================
     
-    def _volume_up(self):
+    def _volume_up(self) -> Any:
         self.volume_level = min(100, self.volume_level + 10)
         self.volume_scale.set(self.volume_level)
         self.volume_changed(self.volume_level)
     
-    def _volume_down(self):
+    def _volume_down(self) -> Any:
         self.volume_level = max(0, self.volume_level - 10)
         self.volume_scale.set(self.volume_level)
         self.volume_changed(self.volume_level)
     
-    def _volume_changed(self, value):
+    def _volume_changed(self, value) -> Any:
         self.volume_level = int(float(value))
         self.volume_label.config(text=f"🔊 Volume: {self.volume_level}%")
         if self.wifi_connected:
@@ -902,19 +906,19 @@ class ESP32TeddyBearSimulator:
                 }, timeout=2)except Exception as e:
     logger.warning(f"Ignoring error: {e}")         pass
     
-    def _sensitivity_up(self):
+    def _sensitivity_up(self) -> Any:
         current = self.sensitivity_scale.get()
         new_value = min(1000, current + 50)
         self.sensitivity_scale.set(new_value)
         self.sensitivity_changed(new_value)
     
-    def _sensitivity_down(self):
+    def _sensitivity_down(self) -> Any:
         current = self.sensitivity_scale.get()
         new_value = max(100, current - 50)
         self.sensitivity_scale.set(new_value)
         self.sensitivity_changed(new_value)
     
-    def _sensitivity_changed(self, value):
+    def _sensitivity_changed(self, value) -> Any:
         threshold = int(float(value))
         self.recognizer.energy_threshold = threshold
         self.sensitivity_label.config(text=f"Sensitivity: {threshold}")
@@ -930,7 +934,7 @@ class ESP32TeddyBearSimulator:
             self.recognizer.pause_threshold = 0.8  # متوسط
             self.recognizer.phrase_threshold = 0.3
     
-    def _full_restart(self):
+    def _full_restart(self) -> Any:
         """إعادة تشغيل كاملة للنظام"""
         self.log("🔄 Full system restart initiated...")
         
@@ -949,13 +953,13 @@ class ESP32TeddyBearSimulator:
         
         self.log("🔄 System restart completed")
     
-    def _emergency_stop(self):
+    def _emergency_stop(self) -> Any:
         """إيقاف طوارئ"""
         self.power_off()
         pygame.mixer.stop()
         self.log("🛑 EMERGENCY STOP ACTIVATED")
     
-    def _restart_audio_system(self):
+    def _restart_audio_system(self) -> Any:
         """إعادة تشغيل نظام الصوت"""
         try:
             self.log("🔄 Restarting audio system...")
@@ -981,7 +985,7 @@ class ESP32TeddyBearSimulator:
         except Exception as e:
             self.log(f"❌ Audio restart failed: {e}")
     
-    def _save_child_profile(self):
+    def _save_child_profile(self) -> Any:
         """حفظ ملف الطفل"""
         name = self.child_name.get().strip()
         age = self.child_age.get()
@@ -1016,49 +1020,49 @@ class ESP32TeddyBearSimulator:
     
     # ======================== ADVANCED FEATURES ========================
     
-    def test_games(self):
+    def test_games(self) -> Any:
         """اختبار الألعاب"""
         self.log("🎮 Testing educational games...")
         self.send_test_message("هل نلعب لعبة تعليمية؟")
     
-    def test_stories(self):
+    def test_stories(self) -> Any:
         """اختبار القصص"""
         self.log("📚 Testing interactive stories...")
         self.send_test_message("احكي لي قصة جميلة")
     
-    def test_songs(self):
+    def test_songs(self) -> Any:
         """اختبار الأغاني"""
         self.log("🎵 Testing songs and music...")
         self.send_test_message("غني لي أغنية")
     
-    def test_learning(self):
+    def test_learning(self) -> Any:
         """اختبار التعلم"""
         self.log("🧠 Testing learning modules...")
         self.send_test_message("علمني الألوان")
     
-    def test_emotions(self):
+    def test_emotions(self) -> Any:
         """اختبار تحليل المشاعر"""
         self.log("😊 Testing emotion detection...")
         self.send_test_message("أنا سعيد اليوم")
     
-    def test_family(self):
+    def test_family(self) -> Any:
         """اختبار النظام العائلي"""
         self.log("👨‍👩‍👧‍👦 Testing family system...")
         self.send_test_message("أين أمي؟")
     
-    def send_test_message(self, message):
+    def send_test_message(self, message) -> Any:
         """إرسال رسالة تجريبية"""
         if self.wifi_connected:
             threading.Thread(target=lambda: self.send_to_ai(message), daemon=True).start()
         else:
             self.log("❌ Please connect to server first")
     
-    def quick_test(self):
+    def quick_test(self) -> Any:
         """اختبار سريع لمحاكاة كلمة التفعيل"""
         self.log("🧪 Quick Test: Simulating 'يا دبدوب' + 'مرحبا'")
         self.wake_word_detected("يا دبدوب", "يا دبدوب مرحبا")
     
-    def test_server(self):
+    def test_server(self) -> Any:
         """اختبار الاتصال بالسيرفر"""
         self.log("🔍 Testing server connection...")
         try:
@@ -1071,18 +1075,18 @@ class ESP32TeddyBearSimulator:
         except Exception as e:
             self.log(f"❌ Server connection failed: {e}")
     
-    def test_tts(self):
+    def test_tts(self) -> Any:
         """اختبار تحويل النص لصوت"""
         self.log("🎵 Testing Text-to-Speech...")
         test_text = "مرحباً! هذا اختبار للنظام الصوتي"
         threading.Thread(target=lambda: self.speak_response(test_text), daemon=True).start()
     
-    def test_ai_direct(self):
+    def test_ai_direct(self) -> Any:
         """اختبار الذكاء الاصطناعي مباشرة"""
         self.log("💬 Testing AI with: 'ما هو اسمك؟'")
         threading.Thread(target=lambda: self.send_to_ai("ما هو اسمك؟"), daemon=True).start()
     
-    def _force_stay_alive(self):
+    def _force_stay_alive(self) -> Any:
         """منع إطفاء الدبدوب تلقائياً"""
         self.log("🛡️ KEEP ALIVE mode activated")
         if not self.is_powered_on:
@@ -1093,7 +1097,7 @@ class ESP32TeddyBearSimulator:
         threading.Timer(2.0, self.start_listening).start()
         self.log("✅ System forced to stay alive")
     
-    def _force_fix_system(self):
+    def _force_fix_system(self) -> Any:
         """إصلاح إجباري للنظام"""
         self.log("🔧 FORCE FIX initiexcept Exception as e:
     logger.error(f"Error in operation: {e}", exc_info=True)")
@@ -1120,14 +1124,14 @@ class ESP32TeddyBearSimulator:
         self.log("🔧 System force-fixed and restarted")
         threading.Timer(2.0, self.start_listening).start()
     
-    def _start_server_monitor(self):
+    def _start_server_monitor(self) -> Any:
         """بدء مراقبة السيرفر المستمرة"""
         if not self.server_monitor_active:
             self.server_monitor_active = True
             self.log("🔍 Starting server monitor...")
             threading.Thread(target=self.monitor_server_continuously, daemon=True).start()
     
-    def _monitor_server_continuously(self):
+    def _monitor_server_continuously(self) -> Any:
         """مراقبة مستمرة لحالة السيرفر"""
         while self.server_monitor_active:
             try:
@@ -1182,7 +1186,7 @@ class ESP32TeddyBearSimulator:
                         self.root.after(0, lambda: self.led_canvas.itemconfig(self.led_circle, fill='orange'))
                         self.root.after(0, lambda: self.status_label.config(text="⚠️ SERVER OFFLINE", fg='orange'))
     
-    def _show_reports(self):
+    def _show_reports(self) -> Any:
         """عرض التقارير"""
         analytics_data = f"""
 📊 ESP32 Teddy Bear Analytics Report
@@ -1210,7 +1214,7 @@ class ESP32TeddyBearSimulator:
         self.analytics_text.insert(1.0, analytics_data)
         self.log("📊 Analytics updated")
     
-    def _show_settings(self):
+    def _show_settings(self) -> Any:
         """عرض الإعدادات"""
         settings_window = tk.Toplevel(self.root)
         settings_window.title("⚙️ ESP32 Teddy Settings")
@@ -1243,7 +1247,7 @@ class ESP32TeddyBearSimulator:
         
         tk.Button(settings_window, text="💾 Save Settings", bg='#27ae60', fg='white').pack(pady=20)
     
-    def _run(self):
+    def _run(self) -> Any:
         """تشغيل المحاكي"""
         try:
             self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -1253,21 +1257,21 @@ class ESP32TeddyBearSimulator:
         finally:
             self.power_off()
     
-    def _on_closing(self):
+    def _on_closing(self) -> Any:
         """عند إغلاق النافذة"""
         self.server_monitor_active = False  # إيقاف مراقبة السيرفر
         self.power_off()
         self.root.destroy()
 
 if __name__ == "__main__":
-    print("🧸 Starting ESP32 Teddy Bear Simulator...")
-    print("=" * 60)
-    print("🎯 Complete Production Simulator")
-    print("🔌 Hardware: ESP32-S3 with full audio system")
-    print("☁️ Cloud: AI processing with advanced features")
-    print("🎤 Wake Word: 'يا دبدوب'")
-    print("🎮 Features: Games, Stories, Learning, Emotions")
-    print("=" * 60)
+    logger.info("🧸 Starting ESP32 Teddy Bear Simulator...")
+    logger.info("=" * 60)
+    logger.info("🎯 Complete Production Simulator")
+    logger.info("🔌 Hardware: ESP32-S3 with full audio system")
+    logger.info("☁️ Cloud: AI processing with advanced features")
+    logger.info("🎤 Wake Word: 'يا دبدوب'")
+    logger.info("🎮 Features: Games, Stories, Learning, Emotions")
+    logger.info("=" * 60)
     
     try:
         simulator = ESP32TeddyBearSimulator()

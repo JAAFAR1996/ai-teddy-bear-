@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 🎭 Emotion Analysis Service for AI Teddy Bear
 حفظ وإدارة وتحليل بيانات المشاعر من HUME AI
@@ -30,7 +36,7 @@ class EmotionService(BaseService):
         # إنشاء قاعدة البيانات
         asyncio.create_task(self._initialize_database())
         
-        print("🎭 Emotion Service initialized")
+        logger.info("🎭 Emotion Service initialized")
     
     async def _initialize_database(self):
         """إنشاء جداول قاعدة البيانات"""
@@ -108,7 +114,7 @@ class EmotionService(BaseService):
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_dominant_emotion ON emotion_analyses (dominant_emotion)")
             
             conn.commit()
-            print("✅ Emotion database initialized")
+            logger.info("✅ Emotion database initialized")
     
     async def save_emotion_analysis(
         self, 
@@ -159,7 +165,7 @@ class EmotionService(BaseService):
                 # تحديث إحصائيات الطفل
                 await self._update_child_stats(udid, child_name, emotion_data)
                 
-                print(f"✅ Emotion analysis saved for {child_name} (ID: {interaction_id})")
+                logger.info(f"✅ Emotion analysis saved for {child_name} (ID: {interaction_id})")
                 return interaction_id
                 
         except Exception as e:
@@ -416,7 +422,7 @@ class EmotionService(BaseService):
                 ))
                 
                 conn.commit()
-                print(f"✅ Parent feedback saved for interaction {interaction_id}")
+                logger.info(f"✅ Parent feedback saved for interaction {interaction_id}")
                 
         except Exception as e:
     logger.error(f"Error: {e}")f"❌ Error saving parent feedback: {e}")

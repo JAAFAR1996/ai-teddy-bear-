@@ -43,7 +43,7 @@ class QueryMetrics:
     errors: List[str] = field(default_factory=list)
     status: str = "pending"  # pending, success, error
     
-    def finish(self):
+    def finish(self) -> Any:
         """Mark query as finished and calculate duration"""
         self.end_time = time.time()
         self.duration = self.end_time - self.start_time
@@ -106,7 +106,7 @@ class GraphQLPerformanceMonitor:
         
         return query_id
     
-    def finish_query(self, query_id: str, errors: List[str] = None):
+    def finish_query(self, query_id -> Any: str, errors -> Any: List[str] = None) -> Any:
         """Finish monitoring a GraphQL query"""
         if query_id not in self.active_queries:
             logger.warning("Query not found in active queries", query_id=query_id)
@@ -151,7 +151,7 @@ class GraphQLPerformanceMonitor:
                     status=metrics.status,
                     query_id=query_id)
     
-    def record_resolver_call(self, resolver_name: str, duration: float):
+    def record_resolver_call(self, resolver_name -> Any: str, duration -> Any: float) -> Any:
         """Record a resolver call"""
         if self.config.enable_resolver_timing:
             self.resolver_stats[resolver_name]["count"] += 1
@@ -161,24 +161,24 @@ class GraphQLPerformanceMonitor:
                 resolver_name=resolver_name
             ).observe(duration)
     
-    def record_dataloader_hit(self, loader_name: str):
+    def record_dataloader_hit(self, loader_name -> Any: str) -> Any:
         """Record a DataLoader cache hit"""
         if self.config.enable_dataloader_monitoring:
             self.dataloader_stats[loader_name]["hits"] += 1
             GRAPHQL_DATALOADER_HITS.labels(loader_name=loader_name).inc()
     
-    def record_dataloader_miss(self, loader_name: str):
+    def record_dataloader_miss(self, loader_name -> Any: str) -> Any:
         """Record a DataLoader cache miss"""
         if self.config.enable_dataloader_monitoring:
             self.dataloader_stats[loader_name]["misses"] += 1
             GRAPHQL_DATALOADER_MISSES.labels(loader_name=loader_name).inc()
     
-    def record_dataloader_load(self, loader_name: str, batch_size: int):
+    def record_dataloader_load(self, loader_name -> Any: str, batch_size -> Any: int) -> Any:
         """Record a DataLoader batch load"""
         if self.config.enable_dataloader_monitoring:
             self.dataloader_stats[loader_name]["loads"] += 1
     
-    def set_query_complexity(self, query_id: str, complexity: int):
+    def set_query_complexity(self, query_id -> Any: str, complexity -> Any: int) -> Any:
         """Set complexity score for a query"""
         if query_id in self.active_queries:
             self.active_queries[query_id].complexity = complexity
@@ -306,7 +306,7 @@ class GraphQLPerformanceMonitor:
         
         return recommendations
     
-    def _cleanup_history(self):
+    def _cleanup_history(self) -> Any:
         """Clean up old query history"""
         if not self.config.cache_performance_metrics:
             return
@@ -317,7 +317,7 @@ class GraphQLPerformanceMonitor:
             if q.end_time and q.end_time > cutoff_time
         ]
     
-    def reset_stats(self):
+    def reset_stats(self) -> Any:
         """Reset all performance statistics"""
         self.query_history.clear()
         self.resolver_stats.clear()
@@ -330,9 +330,9 @@ performance_monitor = GraphQLPerformanceMonitor()
 
 
 # Decorator for timing resolvers
-def timed_resolver(resolver_name: str):
+def timed_resolver(resolver_name -> Any: str) -> Any:
     """Decorator to time GraphQL resolvers"""
-    def decorator(func):
+    def decorator(func) -> Any:
         async def wrapper(*args, **kwargs):
             start_time = time.time()
             try:

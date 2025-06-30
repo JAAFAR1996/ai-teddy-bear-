@@ -30,7 +30,7 @@ class SMSService:
         self.logger = logger.bind(service="sms")
         self._load_config()
     
-    def _load_config(self):
+    def _load_config(self) -> Any:
         """تحميل إعدادات الرسائل النصية"""
         try:
             config_path = Path(__file__).parent.parent.parent / "config" / "config.json"

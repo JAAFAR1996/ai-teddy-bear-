@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 Simple Backward Compatibility Test for modern_ui.py
@@ -8,7 +10,7 @@ import sys
 import importlib.util
 import ast
 
-def check_file_has_exports():
+def check_file_has_exports() -> Any:
     """Check that modern_ui.py has the expected exports"""
     print("🔍 Checking modern_ui.py structure...")
     
@@ -82,7 +84,7 @@ def check_file_has_exports():
     logger.error(f"Error: {e}")f"❌ Error reading file: {e}")
         return False
 
-def check_modular_files_exist():
+def check_modular_files_exist() -> Any:
     """Check that the modular files exist"""
     print("\n🏗️ Checking Modular Structure:")
     
@@ -107,7 +109,7 @@ def check_modular_files_exist():
     
     return True
 
-def check_import_syntax():
+def check_import_syntax() -> Any:
     """Check that imports are syntactically correct"""
     print("\n📝 Checking Import Syntax:")
     
@@ -135,7 +137,7 @@ def check_import_syntax():
     logger.error(f"Error: {e}")f"   ❌ Error checking syntax: {e}")
         return False
 
-def main():
+def main() -> Any:
     """Run all compatibility checks"""
     print("🧸 AI Teddy Bear - Backward Compatibility Test")
     print("=" * 60)

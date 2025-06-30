@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🔐 Security Audit System - Comprehensive Logging
 ===============================================
@@ -249,7 +251,7 @@ class SecurityAuditLogger:
         
         logger.debug("Audit events flushed", count=len(events_to_store))
     
-    def _start_monitoring(self):
+    def _start_monitoring(self) -> Any:
         """Start background monitoring tasks"""
         
         async def periodic_flush():

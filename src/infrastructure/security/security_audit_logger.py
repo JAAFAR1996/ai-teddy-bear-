@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🔐 Security Audit Logger - Comprehensive Audit Trail
 ====================================================
@@ -540,7 +542,7 @@ class SecurityAuditLogger:
             'last_seen': datetime.utcnow().isoformat()
         }
     
-    def _start_background_tasks(self):
+    def _start_background_tasks(self) -> Any:
         """Start background monitoring tasks"""
         
         async def buffer_flush_task():

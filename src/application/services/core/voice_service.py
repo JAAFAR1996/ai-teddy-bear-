@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🎤 Voice Service - Clean Architecture Implementation
 Enterprise-grade voice processing with async operations
@@ -107,7 +109,7 @@ class MultiProviderVoiceService(IVoiceService):
         self._init_elevenlabs()
         self._init_azure()
     
-    def _init_whisper(self):
+    def _init_whisper(self) -> Any:
         """Initialize Whisper model"""
         try:
             self.whisper_model = whisper.load_model("base")
@@ -116,7 +118,7 @@ class MultiProviderVoiceService(IVoiceService):
             logger.error(f"Failed to load Whisper: {str(e)}")
                 self.whisper_model = None
         
-    def _init_elevenlabs(self):
+    def _init_elevenlabs(self) -> Any:
         """Initialize ElevenLabs client"""
         try:
             if self.settings.elevenlabs_api_key:
@@ -130,7 +132,7 @@ class MultiProviderVoiceService(IVoiceService):
             logger.error(f"Failed to initialize ElevenLabs: {str(e)}")
             self.elevenlabs_client = None
     
-    def _init_azure(self):
+    def _init_azure(self) -> Any:
         """Initialize Azure Speech services"""
         try:
             if self.settings.azure_speech_key and self.settings.azure_speech_region:
@@ -257,7 +259,7 @@ class MultiProviderVoiceService(IVoiceService):
             # Async recognition
             future = asyncio.Future()
             
-            def handle_result(evt):
+            def handle_result(evt) -> Any:
                 if evt.result.reason == speechsdk.ResultReason.RecognizedSpeech:
                     future.set_result(evt.result.text)
                 else:
@@ -287,7 +289,7 @@ class MultiProviderVoiceService(IVoiceService):
             
             loop = asyncio.get_event_loop()
             
-            def transcribe():
+            def transcribe() -> Any:
                 r = sr.Recognizer()
                 with sr.AudioFile(audio_path) as source:
                     audio = r.record(source)
@@ -392,7 +394,7 @@ class MultiProviderVoiceService(IVoiceService):
             # Async synthesis
             future = asyncio.Future()
             
-            def handle_result(evt):
+            def handle_result(evt) -> Any:
                 if evt.result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
                     audio_data = evt.result.audio_data
                     future.set_result(base64.b64encode(audio_data).decode('utf-8'))
@@ -422,7 +424,7 @@ class MultiProviderVoiceService(IVoiceService):
             lang_code = "ar" if language == "Arabic" else "en"
             
             # Generate in executor
-            def generate():
+            def generate() -> Any:
                 tts = gTTS(text=text, lang=lang_code, slow=False)
                 temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
                 tts.save(temp_file.name)

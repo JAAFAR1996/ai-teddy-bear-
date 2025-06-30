@@ -13,7 +13,7 @@ class LLMService:
         self._logger = logging.getLogger(__name__)
         self._initialize_provider()
 
-    def _initialize_provider(self):
+    def _initialize_provider(self) -> Any:
         """Initialize the selected LLM provider"""
         try:
             if self._provider == LLMProvider.GPT4:

@@ -63,13 +63,13 @@ class InMemoryCache:
     def get(self, key: str) -> Any:
         return self._cache.get(key)
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None):
+    def set(self, key -> Any: str, value -> Any: Any, ttl -> Any: Optional[int] = None) -> Any:
         self._cache[key] = value
 
-    def delete(self, key: str):
+    def delete(self, key -> Any: str) -> Any:
         self._cache.pop(key, None)
 
-    def clear(self):
+    def clear(self) -> Any:
         self._cache.clear()
 
 
@@ -77,17 +77,17 @@ class RedisCache:
     def __init__(self, redis_url: str):
         self._client = redis.from_url(redis_url)
 
-    def get(self, key: str):
+    def get(self, key -> Any: str) -> Any:
         value = self._client.get(key)
         return value.decode() if value else None
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None):
+    def set(self, key -> Any: str, value -> Any: Any, ttl -> Any: Optional[int] = None) -> Any:
         self._client.set(key, value, ex=ttl)
 
-    def delete(self, key: str):
+    def delete(self, key -> Any: str) -> Any:
         self._client.delete(key)
 
-    def clear(self):
+    def clear(self) -> Any:
         self._client.flushdb()
 
 
@@ -280,7 +280,7 @@ class ParentDashboardService:
         # Start scheduler
         self._init_scheduler()
 
-    def _init_cache(self):
+    def _init_cache(self) -> Any:
         """Initialize cache if Redis is available"""
         try:
             # Check if config is dictionary or object
@@ -302,7 +302,7 @@ class ParentDashboardService:
             self.logger.warning(f"Cache initialization failed: {e}")
             self.cache = InMemoryCache()
 
-    def _init_scheduler(self):
+    def _init_scheduler(self) -> Any:
         """Initialize scheduled tasks"""
         # Daily summary at 8 PM
         self.scheduler.add_job(

@@ -358,7 +358,7 @@ class AnthropicProvider:
                 messages=[{"role": "user", "content": "hi"}]
             )
             return True
-        except Exception:
+        except Exception as e:
             return False
     
     def _get_child_safe_system_prompt(self) -> str:
@@ -389,7 +389,7 @@ class ModernAIService:
         self.total_tokens_used = 0
         self.average_response_time = 0.0
     
-    def _initialize_providers(self):
+    def _initialize_providers(self) -> Any:
         """Initialize available AI providers"""
         if self.config.openai_api_key:
             self.providers[AIProvider.OPENAI] = OpenAIProvider(
@@ -456,7 +456,7 @@ class ModernAIService:
         provider_instance = self.providers[provider]
         return await provider_instance.generate_response(request)
     
-    def _update_metrics(self, response: AIResponse):
+    def _update_metrics(self, response -> Any: AIResponse) -> Any:
         """Update internal metrics"""
         self.request_count += 1
         self.total_tokens_used += response.tokens_used

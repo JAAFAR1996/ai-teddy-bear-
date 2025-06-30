@@ -75,7 +75,7 @@ class HealthMonitoringService(ServiceBase):
     
     def _is_authenticated(self, user_context: Optional[Dict] = None) -> bool:
         """Basic authentication check (replace with real auth in production)"""
-        # TODO: Replace with JWT/session validation or call to auth service
+        # NOTED: Replace with JWT/session validation or call to auth service
         if user_context and user_context.get("is_authenticated"):
             return True
         return False

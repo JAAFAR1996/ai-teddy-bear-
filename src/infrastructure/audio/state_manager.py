@@ -48,7 +48,7 @@ class StateManager:
         with self._lock:
             return self._state
 
-    def set_state(self, state: AudioState, details: Optional[dict] = None):
+    def set_state(self, state -> Any: AudioState, details -> Any: Optional[dict] = None) -> Any:
         """Set system state."""
         with self._lock:
             if state == self._state:
@@ -75,7 +75,7 @@ class StateManager:
         with self._lock:
             return self._recording
 
-    def set_recording(self, recording: bool):
+    def set_recording(self, recording -> Any: bool) -> Any:
         """Set recording state."""
         with self._lock:
             if recording == self._recording:
@@ -104,7 +104,7 @@ class StateManager:
         with self._lock:
             return self._playing
 
-    def set_playing(self, playing: bool):
+    def set_playing(self, playing -> Any: bool) -> Any:
         """Set playback state."""
         with self._lock:
             if playing == self._playing:
@@ -133,7 +133,7 @@ class StateManager:
         with self._lock:
             return self._processing
 
-    def set_processing(self, processing: bool):
+    def set_processing(self, processing -> Any: bool) -> Any:
         """Set processing state."""
         with self._lock:
             if processing == self._processing:
@@ -152,7 +152,7 @@ class StateManager:
         with self._lock:
             return self._error
 
-    def set_error(self, error: Optional[str]):
+    def set_error(self, error -> Any: Optional[str]) -> Any:
         """Set error state."""
         with self._lock:
             self._error = error
@@ -175,7 +175,7 @@ class StateManager:
                 # Clear error state
                 self._update_composite_state()
 
-    def _update_composite_state(self):
+    def _update_composite_state(self) -> Any:
         """Update system state based on component states."""
         if self._error:
             self.set_state(AudioState.ERROR)
@@ -213,7 +213,7 @@ class StateManager:
         except ValueError:
             pass
 
-    def _notify_observers(self, event_type: str, event: StateChangeEvent):
+    def _notify_observers(self, event_type -> Any: str, event -> Any: StateChangeEvent) -> Any:
         """Notify observers of state change."""
         if event_type not in self._observers:
             return

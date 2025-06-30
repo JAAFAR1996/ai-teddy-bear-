@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 Test Backward Compatibility for modern_ui.py
@@ -7,7 +9,7 @@ Test Backward Compatibility for modern_ui.py
 import sys
 import traceback
 
-def test_import(import_statement, expected_name):
+def test_import(import_statement, expected_name) -> Any:
     """Test a single import statement"""
     try:
         exec(import_statement)
@@ -18,7 +20,7 @@ def test_import(import_statement, expected_name):
         print(f"   Error: {e}")
         return False
 
-def test_backward_compatibility():
+def test_backward_compatibility() -> Any:
     """Test all backward compatibility imports"""
     print("🔍 Testing Backward Compatibility for modern_ui.py")
     print("=" * 60)

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🛡️ Advanced Content Filter - 2025 Edition
 نظام فلترة محتوى متطور مع أمان شامل متعدد الطبقات
@@ -606,7 +608,7 @@ class AdvancedContentFilter:
         cache_string = '_'.join(cache_components)
         return hashlib.md5(cache_string.encode()).hexdigest()
     
-    def _update_filter_stats(self, result: ContentAnalysisResult):
+    def _update_filter_stats(self, result -> Any: ContentAnalysisResult) -> Any:
         """تحديث إحصائيات الفلتر"""
         
         if not result.is_safe:

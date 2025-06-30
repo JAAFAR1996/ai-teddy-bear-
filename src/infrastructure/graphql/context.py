@@ -27,15 +27,15 @@ class GraphQLContext:
     request_id: Optional[str] = None
     auth_token: Optional[str] = None
     
-    def get_dataloader(self, name: str):
+    def get_dataloader(self, name -> Any: str) -> Any:
         """Get DataLoader by name"""
         return self.dataloaders.get(name)
     
-    def get_paginator(self, name: str):
+    def get_paginator(self, name -> Any: str) -> Any:
         """Get paginator by name"""
         return self.paginators.get(name)
     
-    def get_repository(self, name: str):
+    def get_repository(self, name -> Any: str) -> Any:
         """Get repository by name"""
         return self.repositories.get(name)
 
@@ -254,7 +254,7 @@ class GraphQLContextManager:
             return await self._dataloader_registry.get_all_metrics()
         return {}
     
-    def reset_metrics(self):
+    def reset_metrics(self) -> Any:
         """Reset all DataLoader metrics"""
         if self._dataloader_registry:
             self._dataloader_registry.reset_all_metrics()

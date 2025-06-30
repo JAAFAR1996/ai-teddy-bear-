@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Authentication and Authorization for GraphQL Federation.
 
@@ -199,7 +201,7 @@ class AuthenticationService:
         # Initialize default users
         self._initialize_default_users()
     
-    def _initialize_default_users(self):
+    def _initialize_default_users(self) -> Any:
         """Initialize default system users."""
         # Super admin
         admin_user = User(
@@ -509,7 +511,7 @@ class AuthenticationService:
             # Clear attempts on successful login
             self.login_attempts[username] = []
     
-    def _store_password(self, user_id: str, hashed_password: str):
+    def _store_password(self, user_id -> Any: str, hashed_password -> Any: str) -> Any:
         """Store hashed password (mock implementation)."""
         # In production, store in secure database
         setattr(self, f"_pwd_{user_id}", hashed_password)
@@ -559,9 +561,9 @@ class GraphQLAuthenticator:
         
         return user
     
-    def require_permission(self, permission: Permission):
+    def require_permission(self, permission -> Any: Permission) -> Any:
         """Decorator to require specific permission."""
-        def decorator(func):
+        def decorator(func) -> Any:
             async def wrapper(*args, **kwargs):
                 # Get user from context (implementation depends on GraphQL library)
                 user = getattr(wrapper, '_current_user', None)
@@ -582,9 +584,9 @@ class GraphQLAuthenticator:
             return wrapper
         return decorator
     
-    def require_child_access(self, child_id_param: str = "child_id"):
+    def require_child_access(self, child_id_param -> Any: str = "child_id") -> Any:
         """Decorator to require access to specific child."""
-        def decorator(func):
+        def decorator(func) -> Any:
             async def wrapper(*args, **kwargs):
                 user = getattr(wrapper, '_current_user', None)
                 child_id = kwargs.get(child_id_param)

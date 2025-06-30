@@ -59,10 +59,10 @@ except ImportError:
         def __init__(self):
             self.services = {}
         
-        def get(self, service_name):
+        def get(self, service_name) -> Any:
             return self.services.get(service_name)
         
-        def register(self, service_name, service):
+        def register(self, service_name, service) -> Any:
             self.services[service_name] = service
 
 # Try to import emotion analysis
@@ -670,7 +670,7 @@ class ModernAudioManager(BaseService if BASE_SERVICE_AVAILABLE else object):
         """
         
         try:
-            print(f"🎤 Processing voice for {child_name} (age {child_age})...")
+            logger.info(f"🎤 Processing voice for {child_name} (age {child_age})...")
             
             # 1. Emotion analysis using HUME AI (if available)
             emotion_analysis = None
@@ -893,7 +893,7 @@ class ModernAudioManager(BaseService if BASE_SERVICE_AVAILABLE else object):
                 except Exception as e:
                     self.logger.error(f"Event callback error: {e}")
 
-    def _update_avg_processing_time(self, new_time: float):
+    def _update_avg_processing_time(self, new_time -> Any: float) -> Any:
         """Update average processing time."""
         current_avg = self.performance_stats["average_processing_time"]
         total_recordings = self.performance_stats["total_recordings"]

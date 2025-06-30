@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 🗄️ Database Module for HUME AI Emotion Analysis
@@ -131,13 +137,13 @@ class DatabaseManager:
     def __init__(self):
         self.engine = engine
         self.Session = Session
-        print("🗄️ Database Manager initialized")
+        logger.info("🗄️ Database Manager initialized")
     
-    def create_tables(self):
+    def create_tables(self) -> Any:
         """إنشاء جداول قاعدة البيانات"""
         try:
             Base.metadata.create_all(self.engine)
-            print("✅ Database tables created successfully")
+            logger.info("✅ Database tables created successfully")
         except Exception as e:
     logger.error(f"Error: {e}")f"❌ Error creating database tables: {e}")
     
@@ -172,17 +178,17 @@ class DatabaseManager:
             session.add(session_record)
             session.commit()
             
-            print(f"✅ Session saved: ID={session_record.id}, UDID={udid}")
+            logger.info(f"✅ Session saved: ID={session_record.id}, UDID={udid}")
             return session_record
             
         except Exception as e:
             session.rollback()
-            print(f"❌ Error saving session: {e}")
+            logger.error(f"❌ Error saving session: {e}")
             raise
         finally:
             session.close()
     
-    def save_emotions(self, session_id: int, emotions_data: List[Dict[str, Any]]):
+    def save_emotions(self, session_id -> Any: int, emotions_data -> Any: List[Dict[str, Any]]) -> Any:
         """
         🎭 حفظ المشاعر المكتشفة
         
@@ -202,16 +208,16 @@ class DatabaseManager:
                 session.add(emotion)
             
             session.commit()
-            print(f"✅ Saved {len(emotions_data)} emotions for session {session_id}")
+            logger.info(f"✅ Saved {len(emotions_data)} emotions for session {session_id}")
             
         except Exception as e:
             session.rollback()
-            print(f"❌ Error saving emotions: {e}")
+            logger.error(f"❌ Error saving emotions: {e}")
             raise
         finally:
             session.close()
     
-    def update_session_status(self, session_id: int, status: str, error_message: str = None):
+    def update_session_status(self, session_id -> Any: int, status -> Any: str, error_message -> Any: str = None) -> Any:
         """
         📝 تحديث حالة الجلسة
         """
@@ -223,13 +229,13 @@ class DatabaseManager:
                 if error_message:
                     session_record.error_message = error_message
                 session.commit()
-                print(f"✅ Session {session_id} status updated to: {status}")
+                logger.info(f"✅ Session {session_id} status updated to: {status}")
             else:
-                print(f"⚠️ Session {session_id} not found")
+                logger.warning(f"⚠️ Session {session_id} not found")
                 
         except Exception as e:
             session.rollback()
-            print(f"❌ Error updating session status: {e}")
+            logger.error(f"❌ Error updating session status: {e}")
         finally:
             session.close()
     
@@ -247,7 +253,7 @@ class DatabaseManager:
                 SessionRecord.timestamp >= since_date
             ).order_by(SessionRecord.timestamp.desc()).all()
             
-            print(f"📊 Found {len(sessions)} sessions for UDID {udid} in last {days} days")
+            logger.info(f"📊 Found {len(sessions)} sessions for UDID {udid} in last {days} days")
             return sessions
             
         except Exception as e:
@@ -310,7 +316,7 @@ class DatabaseManager:
         finally:
             session.close()
     
-    def save_child_profile(self, udid: str, child_name: str, child_age: int = None, parent_name: str = None):
+    def save_child_profile(self, udid -> Any: str, child_name -> Any: str, child_age -> Any: int = None, parent_name -> Any: str = None) -> Any:
         """
         👶 حفظ أو تحديث ملف الطفل
         """
@@ -327,7 +333,7 @@ class DatabaseManager:
                 if parent_name:
                     profile.parent_name = parent_name
                 profile.updated_at = datetime.utcnow()
-                print(f"✅ Child profile updated: {child_name} (UDID: {udid})")
+                logger.info(f"✅ Child profile updated: {child_name} (UDID: {udid})")
             else:
                 # إنشاء ملف جديد
                 profile = ChildProfile(
@@ -337,14 +343,14 @@ class DatabaseManager:
                     parent_name=parent_name
                 )
                 session.add(profile)
-                print(f"✅ New child profile created: {child_name} (UDID: {udid})")
+                logger.info(f"✅ New child profile created: {child_name} (UDID: {udid})")
             
             session.commit()
             return profile
             
         except Exception as e:
             session.rollback()
-            print(f"❌ Error saving child profile: {e}")
+            logger.error(f"❌ Error saving child profile: {e}")
             raise
         finally:
             session.close()
@@ -357,8 +363,8 @@ db_manager = DatabaseManager()
 db_manager.create_tables()
 
 if __name__ == "__main__":
-    print("🗄️ Database module loaded successfully")
-    print(f"📁 Database location: {DATABASE_URL}")
+    logger.info("🗄️ Database module loaded successfully")
+    logger.info(f"📁 Database location: {DATABASE_URL}")
     
     # اختبار بسيط
     try:
@@ -391,9 +397,9 @@ if __name__ == "__main__":
         
         # استرجاع الإحصائيات
         stats = db_manager.get_emotion_statistics("TEST_ESP32_001", 7)
-        print(f"📊 Test statistics: {stats}")
+        logger.info(f"📊 Test statistics: {stats}")
         
-        print("✅ Database test completed successfully!")
+        logger.info("✅ Database test completed successfully!")
         
     except Exception as e:
     logger.error(f"Error: {e}")f"❌ Database test failed: {e}") 

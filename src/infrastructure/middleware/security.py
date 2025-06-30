@@ -324,7 +324,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         return token
 
 
-def setup_security(app, config: Dict[str, Any], redis_client: Optional[redis.Redis] = None):
+def setup_security(app, config -> Any: Dict[str, Any], redis_client -> Any: Optional[redis.Redis] = None) -> Any:
     """Setup all security middleware"""
     security_config = SecurityConfig(**config.get("security", {}))
     
@@ -352,9 +352,9 @@ def setup_security(app, config: Dict[str, Any], redis_client: Optional[redis.Red
 
 
 # Rate limiting decorator for specific endpoints
-def rate_limit(requests_per_minute: int = 10):
+def rate_limit(requests_per_minute -> Any: int = 10) -> Any:
     """Decorator for endpoint-specific rate limiting"""
-    def decorator(func):
+    def decorator(func) -> Any:
         @wraps(func)
         async def wrapper(request: Request, *args, **kwargs):
             # Implement endpoint-specific rate limiting

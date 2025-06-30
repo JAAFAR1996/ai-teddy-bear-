@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 🎤 Enhanced HUME AI Integration - 2025 Edition
@@ -24,10 +26,10 @@ try:
     import librosa
     import soundfile as sf
     HUME_AVAILABLE = True
-    print("✅ HUME AI SDK available")
+    logger.info("✅ HUME AI SDK available")
 except ImportError as e:
     HUME_AVAILABLE = False
-    print(f"⚠️ HUME AI SDK not available: {e}")
+    logger.warning(f"⚠️ HUME AI SDK not available: {e}")
 
 
 class Language(Enum):
@@ -57,7 +59,7 @@ class EnhancedHumeIntegration:
         """تهيئة التكامل المحسن مع HUME AI"""
         self.api_key = api_key or os.getenv("HUME_API_KEY")
         if not self.api_key:
-            print("⚠️ HUME API Key not found - using demo mode")
+            logger.warning("⚠️ HUME API Key not found - using demo mode")
             self.api_key = "demo_key"
         
         self.config = CalibrationConfig()
@@ -68,7 +70,7 @@ class EnhancedHumeIntegration:
             try:
                 self.client = HumeClient(api_key=self.api_key)
                 self.async_client = AsyncHumeClient(api_key=self.api_key)
-                print("✅ HUME AI clients initialized successfully")
+                logger.info("✅ HUME AI clients initialized successfully")
             except Exception as e:
     logger.error(f"Error: {e}")f"⚠️ HUME client initialization failed: {e}")
                 self.client = None
@@ -76,7 +78,7 @@ class EnhancedHumeIntegration:
         else:
             self.client = None
             self.async_client = None
-            print("🔄 Running in mock mode for development")
+            logger.info("🔄 Running in mock mode for development")
     
     # ==================== TASK 1: CALIBRATION ====================
     
@@ -90,18 +92,18 @@ class EnhancedHumeIntegration:
         Returns:
             نتائج المعايرة والتوصيات
         """
-        print(f"🎯 بدء معايرة HUME مع عتبة الثقة: {confidence_threshold}")
+        logger.info(f"🎯 بدء معايرة HUME مع عتبة الثقة: {confidence_threshold}")
         
         try:
             # إنشاء عينات اختبار
             test_samples = self._create_calibration_samples()
-            print(f"📊 تم إنشاء {len(test_samples)} عينة للاختبار")
+            logger.info(f"📊 تم إنشاء {len(test_samples)} عينة للاختبار")
             
             results = []
             total_processing_time = 0
             
             for i, sample in enumerate(test_samples, 1):
-                print(f"🔍 تحليل العينة {i}/{len(test_samples)}: {sample['name']}")
+                logger.debug(f"🔍 تحليل العينة {i}/{len(test_samples)}: {sample['name']}")
                 
                 start_time = datetime.now()
                 emotion_data = self._analyze_calibration_sample(sample)
@@ -120,7 +122,7 @@ class EnhancedHumeIntegration:
                     'processing_time': processing_time
                 })
                 
-                print(f"   نتيجة: {emotion_data.get('dominant_emotion')} ({confidence:.2f})")
+                logger.info(f"   نتيجة: {emotion_data.get('dominant_emotion')} ({confidence:.2f})")
             
             # حساب الإحصائيات
             success_rate = sum(1 for r in results if r['passes_threshold']) / len(results)
@@ -152,11 +154,11 @@ class EnhancedHumeIntegration:
                 'detailed_results': results
             }
             
-            print(f"✅ معايرة مكتملة:")
-            print(f"   معدل النجاح: {success_rate:.1%}")
-            print(f"   دقة التعرف: {accuracy:.1%}")
-            print(f"   متوسط الثقة: {avg_confidence:.2f}")
-            print(f"   التوصية: {recommendation}")
+            logger.info(f"✅ معايرة مكتملة:")
+            logger.info(f"   معدل النجاح: {success_rate:.1%}")
+            logger.info(f"   دقة التعرف: {accuracy:.1%}")
+            logger.info(f"   متوسط الثقة: {avg_confidence:.2f}")
+            logger.info(f"   التوصية: {recommendation}")
             
             return calibration_result
             
@@ -229,7 +231,7 @@ class EnhancedHumeIntegration:
                     'pattern': pattern
                 })
                 
-                print(f"   ✅ تم إنشاء عينة: {filename}")
+                logger.info(f"   ✅ تم إنشاء عينة: {filename}")
                 
             except Exception as e:
     logger.error(f"Error: {e}")f"   ❌ فشل في إنشاء عينة {emotion}: {e}")
@@ -337,9 +339,9 @@ class EnhancedHumeIntegration:
         Returns:
             نتائج التحليل مع السياق اللغوي
         """
-        print(f"🌍 بدء تحليل المشاعر متعدد اللغات")
-        print(f"   اللغة المحددة: {lang}")
-        print(f"   الطفل: {child_name} ({child_age} سنوات)")
+        logger.info(f"🌍 بدء تحليل المشاعر متعدد اللغات")
+        logger.info(f"   اللغة المحددة: {lang}")
+        logger.info(f"   الطفل: {child_name} ({child_age} سنوات)")
         
         try:
             start_time = datetime.now()
@@ -351,11 +353,11 @@ class EnhancedHumeIntegration:
             detected_lang = lang
             if lang == "auto":
                 detected_lang = await self._detect_language_advanced(audio_path)
-                print(f"🔍 تم كشف اللغة: {detected_lang}")
+                logger.debug(f"🔍 تم كشف اللغة: {detected_lang}")
             
             # الحصول على إعدادات خاصة باللغة
             language_config = self._get_language_specific_config(detected_lang)
-            print(f"⚙️ تطبيق إعدادات {detected_lang}")
+            logger.info(f"⚙️ تطبيق إعدادات {detected_lang}")
             
             # تنفيذ التحليل مع السياق اللغوي
             if HUME_AVAILABLE and self.client:
@@ -393,11 +395,11 @@ class EnhancedHumeIntegration:
                 'calibration_applied': True
             }
             
-            print(f"✅ تحليل مكتمل:")
-            print(f"   اللغة المكتشفة: {detected_lang}")
-            print(f"   المشاعر المهيمنة: {final_result['dominant_emotion']}")
-            print(f"   مستوى الثقة: {final_result['confidence']:.2f}")
-            print(f"   وقت المعالجة: {processing_time:.2f}s")
+            logger.info(f"✅ تحليل مكتمل:")
+            logger.info(f"   اللغة المكتشفة: {detected_lang}")
+            logger.info(f"   المشاعر المهيمنة: {final_result['dominant_emotion']}")
+            logger.info(f"   مستوى الثقة: {final_result['confidence']:.2f}")
+            logger.info(f"   وقت المعالجة: {processing_time:.2f}s")
             
             return final_result
             
@@ -412,7 +414,7 @@ class EnhancedHumeIntegration:
     async def _detect_language_advanced(self, audio_path: str) -> str:
         """كشف اللغة المتقدم من الصوت"""
         try:
-            print("🔍 تحليل الخصائص الصوتية لكشف اللغة...")
+            logger.debug("🔍 تحليل الخصائص الصوتية لكشف اللغة...")
             
             # تحميل الصوت
             y, sr = librosa.load(audio_path, sr=16000)
@@ -457,9 +459,9 @@ class EnhancedHumeIntegration:
                 detected = "en"
                 confidence = english_score / (arabic_score + english_score)
             
-            print(f"   نتيجة الكشف: {detected} (ثقة: {confidence:.2f})")
-            print(f"   التردد المركزي: {avg_centroid:.0f} Hz")
-            print(f"   Rolloff: {avg_rolloff:.0f} Hz")
+            logger.info(f"   نتيجة الكشف: {detected} (ثقة: {confidence:.2f})")
+            logger.info(f"   التردد المركزي: {avg_centroid:.0f} Hz")
+            logger.info(f"   Rolloff: {avg_rolloff:.0f} Hz")
             
             return detected
             
@@ -487,7 +489,7 @@ class EnhancedHumeIntegration:
                     "detect_language": True
                 }
             })
-            print("   📝 تطبيق إعدادات العربية: granularity=word")
+            logger.info("   📝 تطبيق إعدادات العربية: granularity=word")
             
         elif language == "en":
             # إعدادات خاصة بالإنجليزية
@@ -498,7 +500,7 @@ class EnhancedHumeIntegration:
                     "language_context": "english"
                 }
             })
-            print("   📝 تطبيق إعدادات الإنجليزية: granularity=utterance")
+            logger.info("   📝 تطبيق إعدادات الإنجليزية: granularity=utterance")
         
         return base_config
     
@@ -545,10 +547,10 @@ class EnhancedHumeIntegration:
             final_confidence = 0.5
             adjusted_emotions = {"calm": 0.5}
         
-        print(f"   🔧 معايرة اللغة:")
-        print(f"      وزن {language}: {language_weight}")
-        print(f"      الثقة الأصلية: {original_confidence:.2f}")
-        print(f"      الثقة المعدلة: {final_confidence:.2f}")
+        logger.info(f"   🔧 معايرة اللغة:")
+        logger.info(f"      وزن {language}: {language_weight}")
+        logger.info(f"      الثقة الأصلية: {original_confidence:.2f}")
+        logger.info(f"      الثقة المعدلة: {final_confidence:.2f}")
         
         return {
             'emotions': adjusted_emotions,
@@ -655,10 +657,10 @@ class EnhancedHumeIntegration:
         Returns:
             تقرير شامل للبيانات التاريخية مع الاتجاهات والرؤى
         """
-        print(f"📊 بدء تكامل البيانات التاريخية")
-        print(f"   الجهاز: {device_id}")
-        print(f"   الفترة: {start_date.date()} إلى {end_date.date()}")
-        print(f"   المدة: {(end_date - start_date).days} يوم")
+        logger.info(f"📊 بدء تكامل البيانات التاريخية")
+        logger.info(f"   الجهاز: {device_id}")
+        logger.info(f"   الفترة: {start_date.date()} إلى {end_date.date()}")
+        logger.info(f"   المدة: {(end_date - start_date).days} يوم")
         
         try:
             # جلب البيانات التاريخية
@@ -673,7 +675,7 @@ class EnhancedHumeIntegration:
                     'device_id': device_id
                 }
             
-            print(f"📦 تم جلب {len(historical_sessions)} جلسة")
+            logger.info(f"📦 تم جلب {len(historical_sessions)} جلسة")
             
             # معالجة وتحليل البيانات
             processed_data = await self._process_historical_sessions_advanced(
@@ -746,11 +748,11 @@ class EnhancedHumeIntegration:
             # حفظ التقرير (اختياري)
             await self._save_historical_report(device_id, comprehensive_report)
             
-            print(f"✅ تم إنجاز التحليل التاريخي:")
-            print(f"   إجمالي الجلسات: {len(historical_sessions)}")
-            print(f"   المشاعر المهيمنة: {processed_data['dominant_emotion']}")
-            print(f"   نقاط الاستقرار العاطفي: {processed_data['stability_score']:.2f}")
-            print(f"   التوصيات: {len(insights['recommendations'])}")
+            logger.info(f"✅ تم إنجاز التحليل التاريخي:")
+            logger.info(f"   إجمالي الجلسات: {len(historical_sessions)}")
+            logger.info(f"   المشاعر المهيمنة: {processed_data['dominant_emotion']}")
+            logger.info(f"   نقاط الاستقرار العاطفي: {processed_data['stability_score']:.2f}")
+            logger.info(f"   التوصيات: {len(insights['recommendations'])}")
             
             return comprehensive_report
             
@@ -829,7 +831,7 @@ class EnhancedHumeIntegration:
             current_date += timedelta(days=1)
             pattern_index += 1
         
-        print(f"   💾 تم توليد {len(sessions)} جلسة محاكاة")
+        logger.info(f"   💾 تم توليد {len(sessions)} جلسة محاكاة")
         return sessions
     
     def _generate_realistic_emotion_distribution(self, primary_emotion: str) -> Dict[str, float]:

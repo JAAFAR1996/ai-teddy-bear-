@@ -38,7 +38,7 @@ class SchedulerService:
         self.logger = logger.bind(service="scheduler")
         self._setup_scheduler()
     
-    def _setup_scheduler(self):
+    def _setup_scheduler(self) -> Any:
         """إعداد APScheduler"""
         try:
             # إعداد job stores و executors
@@ -72,7 +72,7 @@ class SchedulerService:
             self.logger.error("Failed to setup scheduler", error=str(e))
             raise
     
-    def _job_listener(self, event):
+    def _job_listener(self, event) -> Any:
         """مراقب الأحداث للمهام"""
         try:
             if event.exception:
@@ -86,7 +86,7 @@ class SchedulerService:
         except Exception as e:
             self.logger.error("Error in job listener", error=str(e))
     
-    def start(self):
+    def start(self) -> Any:
         """بدء تشغيل المجدول"""
         try:
             if not self.scheduler:
@@ -104,7 +104,7 @@ class SchedulerService:
             self.logger.error("Failed to start scheduler", error=str(e))
             raise
     
-    def shutdown(self, wait: bool = True):
+    def shutdown(self, wait -> Any: bool = True) -> Any:
         """إيقاف المجدول"""
         try:
             if self.scheduler and self.scheduler.running:
@@ -114,7 +114,7 @@ class SchedulerService:
         except Exception as e:
             self.logger.error("Failed to stop scheduler", error=str(e))
     
-    def _add_scheduled_jobs(self):
+    def _add_scheduled_jobs(self) -> Any:
         """إضافة المهام المجدولة حسب المنطقة الزمنية"""
         try:
             # تحميل أوقات مناسبة للمنطقة الزمنية (السعودية UTC+3)
@@ -272,7 +272,7 @@ class SchedulerService:
         except Exception as e:
             self.logger.error("System report generation failed", error=str(e))
     
-    def add_custom_job(self, func, trigger, job_id: str, **kwargs):
+    def add_custom_job(self, func, trigger, job_id -> Any: str, **kwargs) -> Any:
         """إضافة مهمة مخصصة"""
         try:
             self.scheduler.add_job(
@@ -290,7 +290,7 @@ class SchedulerService:
                             job_id=job_id, error=str(e))
             raise
     
-    def remove_job(self, job_id: str):
+    def remove_job(self, job_id -> Any: str) -> Any:
         """إزالة مهمة"""
         try:
             self.scheduler.remove_job(job_id)
@@ -330,11 +330,11 @@ class SchedulerService:
 scheduler_service = SchedulerService()
 
 # 🚀 دوال مساعدة
-def start_scheduler():
+def start_scheduler() -> Any:
     """بدء تشغيل المجدول"""
     scheduler_service.start()
 
-def stop_scheduler(wait: bool = True):
+def stop_scheduler(wait -> Any: bool = True) -> Any:
     """إيقاف المجدول"""
     scheduler_service.shutdown(wait=wait)
 
@@ -355,21 +355,21 @@ if __name__ == "__main__":
     import time
     
     async def test_scheduler():
-        print("🧪 Testing Scheduler Service...")
+        logger.info("🧪 Testing Scheduler Service...")
         
         # بدء المجدول
         start_scheduler()
         
         # عرض حالة المهام
         status = get_scheduler_status()
-        print("📋 Scheduler Status:")
-        print(json.dumps(status, indent=2, ensure_ascii=False))
+        logger.info("📋 Scheduler Status:")
+        logger.info(json.dumps(status, indent=2, ensure_ascii=False))
         
         # انتظار قليل ثم إيقاف
         await asyncio.sleep(5)
         stop_scheduler()
         
-        print("✅ Scheduler test completed")
+        logger.info("✅ Scheduler test completed")
     
     import json
     asyncio.run(test_scheduler()) 

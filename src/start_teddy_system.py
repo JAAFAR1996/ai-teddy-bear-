@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 🧸 AI Teddy Bear - Complete System Launcher
@@ -13,9 +19,9 @@ import time
 import sys
 import os
 
-def start_server():
+def start_server() -> Any:
     """تشغيل السيرفر"""
-    print("🖥️ Starting Cloud Server...")
+    logger.info("🖥️ Starting Cloud Server...")
     cmd = [sys.executable, "production_teddy_system.py"]
     
     # تمرير الخيار "1" للسيرفر
@@ -33,21 +39,21 @@ def start_server():
     
     return process
 
-def start_esp32_simulator():
+def start_esp32_simulator() -> Any:
     """تشغيل محاكي ESP32"""
-    print("📱 Starting ESP32 Simulator...")
+    logger.info("📱 Starting ESP32 Simulator...")
     time.sleep(3)  # انتظار بدء السيرفر
     
     cmd = [sys.executable, "esp32_simple_simulator.py"]
     process = subprocess.Popen(cmd)
     return process
 
-def main():
-    print("🧸 AI Teddy Bear - Complete System")
-    print("=" * 50)
-    print("🎯 Starting both Cloud Server and ESP32 Simulator")
-    print("💡 This simulates the complete production environment")
-    print("=" * 50)
+def main() -> Any:
+    logger.info("🧸 AI Teddy Bear - Complete System")
+    logger.info("=" * 50)
+    logger.info("🎯 Starting both Cloud Server and ESP32 Simulator")
+    logger.info("💡 This simulates the complete production environment")
+    logger.info("=" * 50)
     
     try:
         # تشغيل السيرفر في thread منفصل
@@ -60,14 +66,14 @@ def main():
         # تشغيل محاكي ESP32
         esp32_process = start_esp32_simulator()
         
-        print("\n✅ System Started Successfully!")
-        print("🖥️ Cloud Server: http://localhost:8000")
-        print("📱 ESP32 Simulator: Running in GUI window")
-        print("\n💡 Instructions:")
-        print("1. Click 'تشغيل الدبدوب' in the ESP32 window")
-        print("2. Say 'يا دبدوب' to wake up the teddy")
-        print("3. Talk to your AI teddy bear!")
-        print("\n🛑 Press Ctrl+C to stop the system")
+        logger.info("\n✅ System Started Successfully!")
+        logger.info("🖥️ Cloud Server: http://localhost:8000")
+        logger.info("📱 ESP32 Simulator: Running in GUI window")
+        logger.info("\n💡 Instructions:")
+        logger.info("1. Click 'تشغيل الدبدوب' in the ESP32 window")
+        logger.info("2. Say 'يا دبدوب' to wake up the teddy")
+        logger.info("3. Talk to your AI teddy bear!")
+        logger.info("\n🛑 Press Ctrl+C to stop the system")
         
         # انتظار انتهاء المحاكي
         esp32_process.wait()

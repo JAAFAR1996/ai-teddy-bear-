@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 import grpc
 from concurrent import futures
 import asyncio
@@ -67,7 +71,7 @@ async def serve_audio_service(port: int = 50051):
     server.add_insecure_port(listen_addr)
     
     await server.start()
-    print(f"Audio Service started on {listen_addr}")
+    logger.info(f"Audio Service started on {listen_addr}")
     
     try:
         await server.wait_for_termination()

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Audio Recorder for AI Teddy Bear UI
 Professional audio recording with multiple backend support
@@ -34,7 +36,7 @@ class AudioRecorder:
         self.pyaudio_instance = None
         self._setup_audio_system()
     
-    def _setup_audio_system(self):
+    def _setup_audio_system(self) -> Any:
         """Initialize audio recording system"""
         try:
             if PYAUDIO_AVAILABLE:
@@ -48,7 +50,7 @@ class AudioRecorder:
             logger.error("Failed to initialize audio system", error=str(e))
             raise
     
-    def start_recording(self, device_id=None):
+    def start_recording(self, device_id=None) -> Any:
         """Start audio recording"""
         try:
             self.config.is_recording = True
@@ -70,9 +72,9 @@ class AudioRecorder:
             self.config.is_recording = False
             raise
     
-    def _start_sounddevice_recording(self, device_id):
+    def _start_sounddevice_recording(self, device_id) -> Any:
         """Start recording using SoundDevice"""
-        def audio_callback(indata, frames, time, status):
+        def audio_callback(indata, frames, time, status) -> Any:
             if status:
                 logger.warning("SoundDevice status", status=status)
             
@@ -93,9 +95,9 @@ class AudioRecorder:
         )
         self.audio_stream.start()
     
-    def _start_pyaudio_recording(self):
+    def _start_pyaudio_recording(self) -> Any:
         """Start recording using PyAudio"""
-        def audio_callback(in_data, frame_count, time_info, status):
+        def audio_callback(in_data, frame_count, time_info, status) -> Any:
             if self.config.is_recording:
                 self.config.audio_data.append(in_data)
                 
@@ -115,7 +117,7 @@ class AudioRecorder:
         )
         self.audio_stream.start_stream()
     
-    def stop_recording(self):
+    def stop_recording(self) -> Any:
         """Stop audio recording"""
         try:
             self.config.is_recording = False
@@ -154,7 +156,7 @@ class AudioRecorder:
         
         return wav_buffer.getvalue()
     
-    def cleanup(self):
+    def cleanup(self) -> Any:
         """Clean up audio resources"""
         if self.config.is_recording:
             self.stop_recording()

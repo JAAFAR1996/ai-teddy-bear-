@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Performance Tester for AI Teddy Bear System
 ==========================================
@@ -391,7 +393,7 @@ class PerformanceTester:
                         response = target_function("test stress", context)
                     
                     successful_requests += 1
-                except Exception:
+                except Exception as e:
                     error_count += 1
             
             # Run stress level

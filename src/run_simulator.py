@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 🧸 ESP32 Simulator Launcher
@@ -14,7 +16,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-def main():
+def main() -> Any:
     """Run the ESP32 simulator"""
     try:
         # Ensure we're in the right directory

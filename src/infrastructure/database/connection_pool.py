@@ -152,17 +152,17 @@ class ConnectionPool:
     def _setup_event_listeners(self) -> None:
         """Setup SQLAlchemy event listeners for monitoring"""
         @event.listens_for(self._engine.sync_engine, "connect")
-        def receive_connect(dbapi_connection, connection_record):
+        def receive_connect(dbapi_connection, connection_record) -> Any:
             connection_record.info['connect_time'] = datetime.utcnow()
             logger.debug("New database connection established")
         
         @event.listens_for(self._engine.sync_engine, "checkout")
-        def receive_checkout(dbapi_connection, connection_record, connection_proxy):
+        def receive_checkout(dbapi_connection, connection_record, connection_proxy) -> Any:
             # Track checkout time
             connection_proxy._checkout_time = datetime.utcnow()
         
         @event.listens_for(self._engine.sync_engine, "checkin")
-        def receive_checkin(dbapi_connection, connection_record):
+        def receive_checkin(dbapi_connection, connection_record) -> Any:
             # Calculate connection usage time
             if hasattr(dbapi_connection, '_checkout_time'):
                 duration = (datetime.utcnow() - dbapi_connection._checkout_time).total_seconds()

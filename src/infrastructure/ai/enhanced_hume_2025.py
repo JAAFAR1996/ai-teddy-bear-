@@ -70,7 +70,7 @@ class EnhancedHumeIntegration:
     
     def calibrate_hume(self, confidence_threshold: float) -> Dict[str, float]:
         """🎯 معايرة دقة تحليل المشاعر"""
-        print(f"🎯 Calibrating HUME with threshold: {confidence_threshold}")
+        logger.info(f"🎯 Calibrating HUME with threshold: {confidence_threshold}")
         
         # Create test samples
         test_samples = self._create_test_samples()
@@ -94,7 +94,7 @@ class EnhancedHumeIntegration:
         # Update configuration
         self.config.confidence_threshold = confidence_threshold
         
-        print(f"✅ Calibration complete: {success_rate:.1%} success rate")
+        logger.info(f"✅ Calibration complete: {success_rate:.1%} success rate")
         
         return {
             'success_rate': success_rate,
@@ -176,13 +176,13 @@ class EnhancedHumeIntegration:
     
     async def analyze_emotion_multilang(self, audio_file: str, lang: str) -> Dict:
         """🌍 تحليل المشاعر مع دعم اللغات المتعددة"""
-        print(f"🌍 Analyzing emotion in language: {lang}")
+        logger.info(f"🌍 Analyzing emotion in language: {lang}")
         
         try:
             # Detect language if auto
             if lang == "auto":
                 detected_lang = await self._detect_language(audio_file)
-                print(f"🔍 Language detected: {detected_lang}")
+                logger.debug(f"🔍 Language detected: {detected_lang}")
             else:
                 detected_lang = lang
             
@@ -303,7 +303,7 @@ class EnhancedHumeIntegration:
     
     def merge_historical_data(self, device_id: str, start_date: datetime, end_date: datetime) -> Dict:
         """📊 تكامل البيانات التاريخية"""
-        print(f"📊 Merging historical data for {device_id}")
+        logger.info(f"📊 Merging historical data for {device_id}")
         
         try:
             # Fetch historical data (simulated)
@@ -336,7 +336,7 @@ class EnhancedHumeIntegration:
                 'recommendations': insights['recommendations']
             }
             
-            print(f"✅ Historical analysis complete: {len(historical_sessions)} sessions processed")
+            logger.info(f"✅ Historical analysis complete: {len(historical_sessions)} sessions processed")
             return report
             
         except Exception as e:
@@ -568,45 +568,45 @@ class EnhancedHumeIntegration:
 
 async def demo_enhanced_hume():
     """مثال شامل للاستخدام"""
-    print("🎤 Enhanced HUME AI Integration Demo")
-    print("="*50)
+    logger.info("🎤 Enhanced HUME AI Integration Demo")
+    logger.info("="*50)
     
     # Initialize
     try:
         hume = EnhancedHumeIntegration()
-        print("✅ HUME Integration initialized")
+        logger.info("✅ HUME Integration initialized")
     except Exception as e:
     logger.error(f"Error: {e}")f"❌ Initialization failed: {e}")
         return
     
     # Task 1: Calibration
-    print("\n🎯 Task 1: Calibrating emotion analysis...")
+    logger.info("\n🎯 Task 1: Calibrating emotion analysis...")
     calibration_result = hume.calibrate_hume(confidence_threshold=0.75)
-    print(f"Success rate: {calibration_result['success_rate']:.1%}")
-    print(f"Recommendation: {calibration_result['recommendation']}")
+    logger.info(f"Success rate: {calibration_result['success_rate']:.1%}")
+    logger.info(f"Recommendation: {calibration_result['recommendation']}")
     
     # Task 2: Multi-language analysis
-    print("\n🌍 Task 2: Multi-language emotion analysis...")
+    logger.info("\n🌍 Task 2: Multi-language emotion analysis...")
     
     # Create a test audio file
     test_samples = hume._create_test_samples()
     if test_samples:
         result = await hume.analyze_emotion_multilang(test_samples[0]['file'], "auto")
-        print(f"Detected language: {result.get('detected_language', 'unknown')}")
-        print(f"Dominant emotion: {result.get('dominant_emotion', 'unknown')}")
-        print(f"Confidence: {result.get('confidence', 0):.2f}")
+        logger.info(f"Detected language: {result.get('detected_language', 'unknown')}")
+        logger.info(f"Dominant emotion: {result.get('dominant_emotion', 'unknown')}")
+        logger.info(f"Confidence: {result.get('confidence', 0):.2f}")
     
     # Task 3: Historical data integration
-    print("\n📊 Task 3: Historical data analysis...")
+    logger.info("\n📊 Task 3: Historical data analysis...")
     start_date = datetime.now() - timedelta(days=14)
     end_date = datetime.now()
     
     historical_result = hume.merge_historical_data("TEST_DEVICE_001", start_date, end_date)
-    print(f"Sessions analyzed: {historical_result.get('summary', {}).get('total_sessions', 0)}")
-    print(f"Most common emotion: {historical_result.get('summary', {}).get('most_common_emotion', 'unknown')}")
-    print(f"Emotional stability: {historical_result.get('summary', {}).get('emotional_stability', 0):.2f}")
+    logger.info(f"Sessions analyzed: {historical_result.get('summary', {}).get('total_sessions', 0)}")
+    logger.info(f"Most common emotion: {historical_result.get('summary', {}).get('most_common_emotion', 'unknown')}")
+    logger.info(f"Emotional stability: {historical_result.get('summary', {}).get('emotional_stability', 0):.2f}")
     
-    print("\n✅ Demo completed successfully!")
+    logger.info("\n✅ Demo completed successfully!")
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ try:
     NLP_AVAILABLE = True
 except ImportError:
     NLP_AVAILABLE = False
-    print("⚠️ NLP libraries not available. Install with: pip install spacy nltk")
+    logger.warning("⚠️ NLP libraries not available. Install with: pip install spacy nltk")
 
 # LLM Integration
 try:
@@ -30,7 +30,7 @@ try:
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
-    print("⚠️ LLM libraries not available. Install with: pip install openai anthropic")
+    logger.warning("⚠️ LLM libraries not available. Install with: pip install openai anthropic")
 
 @dataclass
 class ProgressMetrics:
@@ -111,7 +111,7 @@ class EnhancedParentReportService:
         # Load analysis templates
         self._load_cot_templates()
     
-    def _init_nlp_models(self):
+    def _init_nlp_models(self) -> Any:
         """Initialize NLP models and tools"""
         if not NLP_AVAILABLE:
             self.logger.warning("NLP models not available")
@@ -130,7 +130,7 @@ class EnhancedParentReportService:
             self.logger.error(f"Failed to initialize NLP models: {e}")
             self.nlp = None
     
-    def _init_llm_clients(self):
+    def _init_llm_clients(self) -> Any:
         """Initialize LLM clients"""
         if not LLM_AVAILABLE:
             self.logger.warning("LLM clients not available")
@@ -152,7 +152,7 @@ class EnhancedParentReportService:
         except Exception as e:
             self.logger.error(f"Failed to initialize LLM clients: {e}")
     
-    def _load_cot_templates(self):
+    def _load_cot_templates(self) -> Any:
         """Load Chain-of-Thought prompting templates"""
         self.cot_templates = {
             "progress_analysis": """

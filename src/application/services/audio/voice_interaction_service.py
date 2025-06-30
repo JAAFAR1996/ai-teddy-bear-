@@ -298,7 +298,7 @@ class VoiceInteractionService:
             self.config, 'RECORDINGS_PATH', 'data/recordings'))
         self.recordings_path.mkdir(parents=True, exist_ok=True)
 
-    def _init_voice_synthesis(self):
+    def _init_voice_synthesis(self) -> Any:
         """Initialize voice synthesis"""
         # ElevenLabs
         if getattr(self.config, 'ELEVENLABS_API_KEY', None):
@@ -317,7 +317,7 @@ class VoiceInteractionService:
         else:
             self.azure_speech_config = None
 
-    def _init_speech_recognition(self):
+    def _init_speech_recognition(self) -> Any:
         """Initialize speech recognition"""
         # Whisper
         try:
@@ -380,7 +380,7 @@ class VoiceInteractionService:
 
         return profiles
 
-    def set_streaming_service(self, streaming_service: StreamingService):
+    def set_streaming_service(self, streaming_service -> Any: StreamingService) -> Any:
         """Set streaming service for integration"""
         self.streaming_service = streaming_service
 
@@ -822,7 +822,7 @@ class VoiceInteractionService:
         except Exception as e:
             self.logger.error(f"Failed to stop audio streams: {e}")
 
-    def _input_callback(self, indata, frames, time_info, status):
+    def _input_callback(self, indata, frames, time_info, status) -> Any:
         """Audio input callback"""
         if status:
             self.logger.warning(f"Input status: {status}")
@@ -831,7 +831,7 @@ class VoiceInteractionService:
         if self.is_recording and indata is not None:
             asyncio.create_task(self._add_to_buffer(indata.copy()))
 
-    def _output_callback(self, outdata, frames, time_info, status):
+    def _output_callback(self, outdata, frames, time_info, status) -> Any:
         """Audio output callback"""
         if status:
             self.logger.warning(f"Output status: {status}")
@@ -1122,7 +1122,7 @@ class VoiceInteractionService:
             self.logger.error(f"Speech recognition test failed: {e}")
             return {"text": "", "language": "", "confidence": 0.0}
 
-    def set_ai_service(self, ai_service):
+    def set_ai_service(self, ai_service) -> Any:
         self.ai_service = ai_service
 
 
@@ -1200,10 +1200,10 @@ async def process_message(self, conversation_id, data):
 
     return {"type": "response", "text": response_text}
 
-def is_arabic(text):
+def is_arabic(text) -> Any:
     return any('\u0600' <= c <= '\u06FF' for c in text)
 
-def is_english(text):
+def is_english(text) -> Any:
     return all(ord(c) < 128 for c in text if c.isalpha())
 
 def get_emotion_from_sentiment(sentiment: str) -> EmotionalTone:

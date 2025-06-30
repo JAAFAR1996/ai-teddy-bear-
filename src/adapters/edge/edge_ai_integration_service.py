@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Edge AI Integration Service for AI Teddy Bear Project.
 

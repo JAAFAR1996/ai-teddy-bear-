@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 🎤 HUME AI Speech Emotion Analyzer for AI Teddy Bear
 Real-time emotion analysis directly from children's voice without text
@@ -26,7 +32,7 @@ try:
     HUME_AVAILABLE = True
 except ImportError:
     HUME_AVAILABLE = False
-    print("⚠️ HUME AI not installed. Install with: pip install hume")
+    logger.warning("⚠️ HUME AI not installed. Install with: pip install hume")
 
 
 @dataclass
@@ -117,8 +123,8 @@ class HumeSpeechEmotionAnalyzer:
             "11+": {"sensitivity": 0.4, "attention_threshold": 0.7}
         }
         
-        print(f"🎤 HUME Speech Emotion Analyzer initialized")
-        print(f"   API Status: {'✅ Ready' if self.api_key else '❌ No API Key'}")
+        logger.info(f"🎤 HUME Speech Emotion Analyzer initialized")
+        logger.error(f"   API Status: {'✅ Ready' if self.api_key else '❌ No API Key'}")
     
     async def analyze_child_voice(
         self, 
@@ -141,7 +147,7 @@ class HumeSpeechEmotionAnalyzer:
         """
         try:
             if not self.api_key:
-                print("⚠️ No HUME API key provided, using fallback analysis")
+                logger.warning("⚠️ No HUME API key provided, using fallback analysis")
                 return self._create_fallback_analysis()
             
             # حفظ الصوت في ملف مؤقت
@@ -687,7 +693,7 @@ class HumeSpeechEmotionAnalyzer:
 async def test_hume_analyzer():
     """اختبار محلل HUME"""
     
-    print("🧪 Testing HUME Speech Emotion Analyzer...")
+    logger.info("🧪 Testing HUME Speech Emotion Analyzer...")
     
     analyzer = HumeSpeechEmotionAnalyzer()
     
@@ -702,14 +708,14 @@ async def test_hume_analyzer():
         context={"recent_activity": "لعب", "time_of_day": "afternoon"}
     )
     
-    print(f"🎯 Dominant Emotion: {emotion.dominant_emotion}")
-    print(f"😊 Joy: {emotion.joy:.2f}")
-    print(f"🤔 Curiosity: {emotion.curiosity:.2f}")
-    print(f"💪 Energy Level: {emotion.energy_level:.2f}")
-    print(f"🎯 Attention Level: {emotion.attention_level:.2f}")
-    print(f"📋 Indicators: {emotion.developmental_indicators}")
+    logger.info(f"🎯 Dominant Emotion: {emotion.dominant_emotion}")
+    logger.info(f"😊 Joy: {emotion.joy:.2f}")
+    logger.info(f"🤔 Curiosity: {emotion.curiosity:.2f}")
+    logger.info(f"💪 Energy Level: {emotion.energy_level:.2f}")
+    logger.info(f"🎯 Attention Level: {emotion.attention_level:.2f}")
+    logger.info(f"📋 Indicators: {emotion.developmental_indicators}")
     
-    print("✅ HUME analyzer test completed!")
+    logger.info("✅ HUME analyzer test completed!")
 
 
 if __name__ == "__main__":

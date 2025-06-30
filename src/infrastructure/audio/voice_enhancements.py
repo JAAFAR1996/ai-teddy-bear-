@@ -101,7 +101,7 @@ class ChildExperienceOptimizer:
         else:
             return "لدي تحدي ممتع لك اليوم!"
     
-    def track_engagement(self, interaction_type: str, response_quality: float):
+    def track_engagement(self, interaction_type -> Any: str, response_quality -> Any: float) -> Any:
         """تتبع مستوى التفاعل"""
         self.interaction_history.append({
             'type': interaction_type,

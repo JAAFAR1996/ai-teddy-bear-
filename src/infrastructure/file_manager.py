@@ -50,7 +50,7 @@ class FileManager:
     logger.error(f"Error in operation: {e}", exc_info=True)FileNotFoundError as e:
     logger.error(f"Error in operation: {e}", exc_info=True)            return False
     
-    def cleanup_temp_files(self):
+    def cleanup_temp_files(self) -> Any:
         """تنظيف الملفات المؤقتة"""
         temp_dir = self.base_path / "temp"
         

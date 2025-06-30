@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 📊 Child Read Model Implementation
 =================================

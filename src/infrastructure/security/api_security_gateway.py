@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🔐 API Security Gateway - Rate Limiting & DDoS Protection
 =========================================================
@@ -242,7 +244,7 @@ class APISecurityGateway:
         else:
             return 'default'
     
-    def add_security_headers(self, response):
+    def add_security_headers(self, response) -> Any:
         """Add security headers to response"""
         
         headers = {

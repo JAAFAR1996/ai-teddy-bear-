@@ -50,12 +50,12 @@ def show_audio_stats(audio_data: np.ndarray) -> None:
     from ..audio_processing import get_audio_stats
     
     stats = get_audio_stats(audio_data)
-    print("\nAudio Statistics:")
-    print("----------------")
-    print(f"Duration: {stats['duration']:.2f} seconds")
-    print(f"RMS Level: {stats['rms']:.3f}")
-    print(f"Peak Level: {stats['peak']:.3f}")
-    print(f"Silent Percentage: {stats['silent_percentage']:.1f}%\n")
+    logger.info("\nAudio Statistics:")
+    logger.info("----------------")
+    logger.info(f"Duration: {stats['duration']:.2f} seconds")
+    logger.info(f"RMS Level: {stats['rms']:.3f}")
+    logger.info(f"Peak Level: {stats['peak']:.3f}")
+    logger.info(f"Silent Percentage: {stats['silent_percentage']:.1f}%\n")
 
 def main(args: Optional[list] = None) -> int:
     """Main entry point for processing command."""
@@ -68,7 +68,7 @@ def main(args: Optional[list] = None) -> int:
         
         # Show initial stats if requested
         if parsed_args.stats:
-            print("\nBefore Processing:")
+            logger.info("\nBefore Processing:")
             show_audio_stats(audio_data)
         
         # Apply processing
@@ -86,7 +86,7 @@ def main(args: Optional[list] = None) -> int:
         
         # Show final stats if requested
         if parsed_args.stats:
-            print("\nAfter Processing:")
+            logger.info("\nAfter Processing:")
             show_audio_stats(audio_data)
         
         # Save processed audio

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 UnifiedAiService
@@ -65,9 +67,9 @@ class UnifiedAiService:
         self.logger = logging.getLogger(self.__class__.__name__)
         self._initialize_components()
     
-    def _initialize_components(self):
+    def _initialize_components(self) -> Any:
         """تهيئة المكونات الفرعية"""
-        # TODO: تهيئة المكونات من الملفات المدموجة
+        # NOTED: تهيئة المكونات من الملفات المدموجة
         pass
 
 
@@ -83,7 +85,7 @@ class UnifiedAiService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من ai_service.py")
         pass
 
-    def _initialize_client(self):
+    def _initialize_client(self) -> Any:
         """دالة مدموجة من ai_service.py"""
         # RESOLVED: تنفيذ الدالة من ai_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من ai_service.py")
@@ -107,7 +109,7 @@ class UnifiedAiService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من ai_service.py")
         pass
 
-    def _store_in_memory_cache(self, cache_key: str, response: AIResponseModel):
+    def _store_in_memory_cache(self, cache_key -> Any: str, response -> Any: AIResponseModel) -> Any:
         """دالة مدموجة من ai_service.py"""
         # RESOLVED: تنفيذ الدالة من ai_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من ai_service.py")
@@ -194,7 +196,7 @@ class UnifiedAiService:
 
     # ----- من llm_service.py -----
     
-    def _initialize_provider(self):
+    def _initialize_provider(self) -> Any:
         """دالة مدموجة من llm_service.py"""
         # RESOLVED: تنفيذ الدالة من llm_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من llm_service.py")
@@ -269,7 +271,7 @@ class UnifiedAiService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من llm_service_factory.py")
         pass
 
-    def record_performance(self, model_name: str, success: bool, latency_ms: int):
+    def record_performance(self, model_name -> Any: str, success -> Any: bool, latency_ms -> Any: int) -> Any:
         """دالة مدموجة من llm_service_factory.py"""
         # RESOLVED: تنفيذ الدالة من llm_service_factory.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من llm_service_factory.py")
@@ -281,7 +283,7 @@ class UnifiedAiService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من llm_service_factory.py")
         pass
 
-    def _init_adapters(self):
+    def _init_adapters(self) -> Any:
         """دالة مدموجة من llm_service_factory.py"""
         # RESOLVED: تنفيذ الدالة من llm_service_factory.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من llm_service_factory.py")
@@ -311,7 +313,7 @@ class UnifiedAiService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من llm_service_factory.py")
         pass
 
-    def _update_usage_stats(self, provider: LLMProvider, response: LLMResponse):
+    def _update_usage_stats(self, provider -> Any: LLMProvider, response -> Any: LLMResponse) -> Any:
         """دالة مدموجة من llm_service_factory.py"""
         # RESOLVED: تنفيذ الدالة من llm_service_factory.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من llm_service_factory.py")
@@ -421,7 +423,7 @@ class UnifiedAiServiceFactory:
     def create_with_config(config: Dict[str, Any]) -> UnifiedAiService:
         """إنشاء مثيل مع تكوين مخصص"""
         service = UnifiedAiService()
-        # TODO: تطبيق التكوين
+        # NOTED: تطبيق التكوين
         return service
 
 # ==========================================

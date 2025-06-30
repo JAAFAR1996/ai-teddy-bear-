@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 # ===================================================================
 # 🧸 AI Teddy Bear - Real-time Dashboard Demo Runner
 # Enterprise Analytics Dashboard Live Demonstration
@@ -60,9 +66,9 @@ class DashboardDemoRunner:
             }
         ]
         
-        print("🧸 AI Teddy Bear Dashboard Demo initialized successfully!")
+        logger.info("🧸 AI Teddy Bear Dashboard Demo initialized successfully!")
     
-    def clear_screen(self):
+    def clear_screen(self) -> Any:
         """مسح الشاشة"""
         os.system('cls' if os.name == 'nt' else 'clear')
     
@@ -84,7 +90,7 @@ class DashboardDemoRunner:
         else:
             return "🔴"
     
-    def simulate_real_time_updates(self):
+    def simulate_real_time_updates(self) -> Any:
         """محاكاة التحديثات في الوقت الفعلي"""
         # تحديث درجة الأمان
         self.metrics['safety_score'] = max(95, min(100, 
@@ -106,66 +112,66 @@ class DashboardDemoRunner:
         self.metrics['conversation_growth'] = max(-5, min(25,
             self.metrics['conversation_growth'] + random.uniform(-2, 2)))
     
-    def display_header(self):
+    def display_header(self) -> Any:
         """عرض رأس اللوحة"""
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print("=" * 80)
-        print("🧸 AI TEDDY BEAR - EXECUTIVE DASHBOARD (LIVE DEMO)")
-        print("=" * 80)
-        print(f"📅 Real-time monitoring and analytics • Last updated: {current_time}")
-        print(f"🔄 Auto-refresh: Every {self.refresh_interval} seconds • Overall Health: {self.metrics['system_health']:.1f}%")
-        print("=" * 80)
-        print()
+        logger.info("=" * 80)
+        logger.info("🧸 AI TEDDY BEAR - EXECUTIVE DASHBOARD (LIVE DEMO)")
+        logger.info("=" * 80)
+        logger.info(f"📅 Real-time monitoring and analytics • Last updated: {current_time}")
+        logger.info(f"🔄 Auto-refresh: Every {self.refresh_interval} seconds • Overall Health: {self.metrics['system_health']:.1f}%")
+        logger.info("=" * 80)
+        logger.info()
     
-    def display_kpis(self):
+    def display_kpis(self) -> Any:
         """عرض مؤشرات الأداء الرئيسية"""
-        print("📊 KEY PERFORMANCE INDICATORS")
-        print("-" * 50)
+        logger.info("📊 KEY PERFORMANCE INDICATORS")
+        logger.info("-" * 50)
         
         # Child Safety Score
         safety_emoji = self.get_status_emoji(self.metrics['safety_score'], 95, 85)
-        print(f"🛡️  Child Safety Score:     {self.metrics['safety_score']:.1f}% {safety_emoji}")
-        print(f"    Target: >95% • Status: {'EXCELLENT' if self.metrics['safety_score'] >= 95 else 'GOOD' if self.metrics['safety_score'] >= 85 else 'NEEDS ATTENTION'}")
-        print()
+        logger.info(f"🛡️  Child Safety Score:     {self.metrics['safety_score']:.1f}% {safety_emoji}")
+        logger.info(f"    Target: >95% • Status: {'EXCELLENT' if self.metrics['safety_score'] >= 95 else 'GOOD' if self.metrics['safety_score'] >= 85 else 'NEEDS ATTENTION'}")
+        logger.info()
         
         # Active Conversations
         growth_sign = "↗️" if self.metrics['conversation_growth'] > 0 else "↘️"
-        print(f"💬 Active Conversations:   {self.metrics['active_conversations']:,} users")
-        print(f"    Growth: {growth_sign} {self.metrics['conversation_growth']:+.1f}% from yesterday")
-        print()
+        logger.info(f"💬 Active Conversations:   {self.metrics['active_conversations']:,} users")
+        logger.info(f"    Growth: {growth_sign} {self.metrics['conversation_growth']:+.1f}% from yesterday")
+        logger.info()
         
         # AI Response Time
         response_emoji = self.get_response_time_emoji(self.metrics['avg_response_time'])
-        print(f"⚡ AI Response Time:       {self.metrics['avg_response_time']}ms {response_emoji}")
-        print(f"    Target: <500ms • Status: {'EXCELLENT' if self.metrics['avg_response_time'] < 200 else 'GOOD' if self.metrics['avg_response_time'] < 500 else 'NEEDS ATTENTION'}")
-        print()
+        logger.info(f"⚡ AI Response Time:       {self.metrics['avg_response_time']}ms {response_emoji}")
+        logger.info(f"    Target: <500ms • Status: {'EXCELLENT' if self.metrics['avg_response_time'] < 200 else 'GOOD' if self.metrics['avg_response_time'] < 500 else 'NEEDS ATTENTION'}")
+        logger.info()
         
         # System Health
         health_emoji = self.get_status_emoji(self.metrics['system_health'], 95, 85)
-        print(f"🖥️  System Health:         {self.metrics['system_health']:.1f}% {health_emoji}")
-        print(f"    Services: {self.metrics['healthy_services']}/{self.metrics['total_services']} healthy, {self.metrics['warning_services']} warnings, {self.metrics['critical_services']} critical")
-        print()
+        logger.info(f"🖥️  System Health:         {self.metrics['system_health']:.1f}% {health_emoji}")
+        logger.warning(f"    Services: {self.metrics['healthy_services']}/{self.metrics['total_services']} healthy, {self.metrics['warning_services']} warnings, {self.metrics['critical_services']} critical")
+        logger.info()
     
-    def display_detailed_metrics(self):
+    def display_detailed_metrics(self) -> Any:
         """عرض المقاييس التفصيلية"""
-        print("🔍 DETAILED METRICS")
-        print("-" * 50)
+        logger.debug("🔍 DETAILED METRICS")
+        logger.info("-" * 50)
         
         # Child Safety & Compliance
-        print("👶 Child Safety & Compliance:")
-        print(f"   • Children Protected:     {self.metrics['children_protected']:,}")
-        print(f"   • COPPA Compliance Rate:  {self.metrics['compliance_rate']:.1f}%")
-        print(f"   • Violations Detected:    {self.metrics['violations_detected']}")
-        print(f"   • Auto-resolved Issues:   {self.metrics['auto_resolved_issues']}")
-        print()
+        logger.info("👶 Child Safety & Compliance:")
+        logger.info(f"   • Children Protected:     {self.metrics['children_protected']:,}")
+        logger.info(f"   • COPPA Compliance Rate:  {self.metrics['compliance_rate']:.1f}%")
+        logger.info(f"   • Violations Detected:    {self.metrics['violations_detected']}")
+        logger.info(f"   • Auto-resolved Issues:   {self.metrics['auto_resolved_issues']}")
+        logger.info()
         
         # System Performance
-        print("📈 System Performance:")
-        print(f"   • System Uptime:          {self.metrics['uptime']}")
-        print(f"   • Healthy Services:       {self.metrics['healthy_services']}")
-        print(f"   • Warning Services:       {self.metrics['warning_services']}")
-        print(f"   • Critical Services:      {self.metrics['critical_services']}")
-        print()
+        logger.info("📈 System Performance:")
+        logger.info(f"   • System Uptime:          {self.metrics['uptime']}")
+        logger.info(f"   • Healthy Services:       {self.metrics['healthy_services']}")
+        logger.warning(f"   • Warning Services:       {self.metrics['warning_services']}")
+        logger.info(f"   • Critical Services:      {self.metrics['critical_services']}")
+        logger.info()
         
         # Service Health Visualization
         total = self.metrics['total_services']
@@ -173,19 +179,19 @@ class DashboardDemoRunner:
         warning_pct = (self.metrics['warning_services'] / total) * 100
         critical_pct = (self.metrics['critical_services'] / total) * 100
         
-        print("🎯 Service Health Distribution:")
-        print(f"   🟢 Healthy:  {'█' * int(healthy_pct // 3)} {healthy_pct:.1f}%")
-        print(f"   🟡 Warning:  {'█' * int(warning_pct // 3)} {warning_pct:.1f}%")
-        print(f"   🔴 Critical: {'█' * int(critical_pct // 3)} {critical_pct:.1f}%")
-        print()
+        logger.info("🎯 Service Health Distribution:")
+        logger.info(f"   🟢 Healthy:  {'█' * int(healthy_pct // 3)} {healthy_pct:.1f}%")
+        logger.warning(f"   🟡 Warning:  {'█' * int(warning_pct // 3)} {warning_pct:.1f}%")
+        logger.info(f"   🔴 Critical: {'█' * int(critical_pct // 3)} {critical_pct:.1f}%")
+        logger.info()
     
-    def display_alerts(self):
+    def display_alerts(self) -> Any:
         """عرض التنبيهات"""
-        print("🚨 REAL-TIME ALERTS")
-        print("-" * 50)
+        logger.info("🚨 REAL-TIME ALERTS")
+        logger.info("-" * 50)
         
         if not self.alerts:
-            print("✅ No active alerts - All systems operating normally")
+            logger.info("✅ No active alerts - All systems operating normally")
         else:
             for alert in self.alerts:
                 severity_emoji = {
@@ -197,40 +203,40 @@ class DashboardDemoRunner:
                 time_ago = datetime.now() - alert['timestamp']
                 minutes_ago = int(time_ago.total_seconds() / 60)
                 
-                print(f"{severity_emoji} {alert['severity'].upper()}: {alert['title']}")
-                print(f"   {alert['message']}")
-                print(f"   Time: {minutes_ago} minutes ago")
-                print()
+                logger.info(f"{severity_emoji} {alert['severity'].upper()}: {alert['title']}")
+                logger.info(f"   {alert['message']}")
+                logger.info(f"   Time: {minutes_ago} minutes ago")
+                logger.info()
     
-    def display_quick_actions(self):
+    def display_quick_actions(self) -> Any:
         """عرض الإجراءات السريعة"""
-        print("⚡ QUICK ACTIONS")
-        print("-" * 50)
-        print("📊 [1] Generate Report     🔄 [2] Refresh Data")
-        print("🚨 [3] View All Alerts     ⚙️ [4] System Settings")
-        print("📋 [5] Compliance Report   🛡️ [6] Child Safety Details")
-        print()
+        logger.info("⚡ QUICK ACTIONS")
+        logger.info("-" * 50)
+        logger.info("📊 [1] Generate Report     🔄 [2] Refresh Data")
+        logger.info("🚨 [3] View All Alerts     ⚙️ [4] System Settings")
+        logger.info("📋 [5] Compliance Report   🛡️ [6] Child Safety Details")
+        logger.info()
     
-    def display_footer(self):
+    def display_footer(self) -> Any:
         """عرض تذييل اللوحة"""
-        print("=" * 80)
-        print("🧸 AI Teddy Bear Analytics Dashboard • Built with ❤️ by Analytics Team")
-        print(f"Real-time monitoring • Auto-refresh: Enabled • Data as of {datetime.now().strftime('%H:%M:%S')}")
-        print("=" * 80)
+        logger.info("=" * 80)
+        logger.info("🧸 AI Teddy Bear Analytics Dashboard • Built with ❤️ by Analytics Team")
+        logger.info(f"Real-time monitoring • Auto-refresh: Enabled • Data as of {datetime.now().strftime('%H:%M:%S')}")
+        logger.info("=" * 80)
     
-    def display_safety_status(self):
+    def display_safety_status(self) -> Any:
         """عرض حالة الأمان"""
         if self.metrics['violations_detected'] == 0:
-            print("🟢 SAFETY STATUS: ALL CLEAR")
-            print("   ✅ Zero critical violations in the last 24 hours")
-            print("   ✅ All child safety protocols active")
-            print("   ✅ Real-time monitoring operational")
+            logger.info("🟢 SAFETY STATUS: ALL CLEAR")
+            logger.info("   ✅ Zero critical violations in the last 24 hours")
+            logger.info("   ✅ All child safety protocols active")
+            logger.info("   ✅ Real-time monitoring operational")
         else:
-            print(f"🟡 SAFETY STATUS: {self.metrics['violations_detected']} MINOR VIOLATIONS")
-            print("   ⚠️ Non-critical issues detected and resolved")
-            print("   ✅ All children remain protected")
-            print("   ✅ Automated remediation successful")
-        print()
+            logger.info(f"🟡 SAFETY STATUS: {self.metrics['violations_detected']} MINOR VIOLATIONS")
+            logger.warning("   ⚠️ Non-critical issues detected and resolved")
+            logger.info("   ✅ All children remain protected")
+            logger.info("   ✅ Automated remediation successful")
+        logger.info()
     
     async def run_demo_cycle(self):
         """تشغيل دورة واحدة من العرض التوضيحي"""
@@ -253,10 +259,10 @@ class DashboardDemoRunner:
     
     async def run_demo(self):
         """تشغيل العرض التوضيحي الكامل"""
-        print("🚀 Starting AI Teddy Bear Dashboard Demo...")
-        print(f"⏱️ Demo will run for {self.demo_duration} seconds with {self.refresh_interval}s refresh intervals")
-        print("Press Ctrl+C to stop the demo at any time")
-        print()
+        logger.info("🚀 Starting AI Teddy Bear Dashboard Demo...")
+        logger.info(f"⏱️ Demo will run for {self.demo_duration} seconds with {self.refresh_interval}s refresh intervals")
+        logger.info("Press Ctrl+C to stop the demo at any time")
+        logger.info()
         
         await asyncio.sleep(2)
         
@@ -273,22 +279,22 @@ class DashboardDemoRunner:
         
         # Demo completion summary
         self.clear_screen()
-        print("=" * 80)
-        print("🎉 AI TEDDY BEAR DASHBOARD DEMO COMPLETED")
-        print("=" * 80)
-        print(f"📊 Demo ran for {cycle_count} cycles")
-        print(f"⏱️ Total duration: {time.time() - start_time:.1f} seconds")
-        print(f"🔄 Refresh rate: Every {self.refresh_interval} seconds")
-        print()
-        print("✅ FINAL METRICS:")
-        print(f"   🛡️ Child Safety Score: {self.metrics['safety_score']:.1f}%")
-        print(f"   💬 Active Conversations: {self.metrics['active_conversations']:,}")
-        print(f"   ⚡ AI Response Time: {self.metrics['avg_response_time']}ms")
-        print(f"   🖥️ System Health: {self.metrics['system_health']:.1f}%")
-        print()
-        print("🏆 STATUS: ALL SYSTEMS OPERATIONAL")
-        print("🎯 READY FOR PRODUCTION DEPLOYMENT")
-        print("=" * 80)
+        logger.info("=" * 80)
+        logger.info("🎉 AI TEDDY BEAR DASHBOARD DEMO COMPLETED")
+        logger.info("=" * 80)
+        logger.info(f"📊 Demo ran for {cycle_count} cycles")
+        logger.info(f"⏱️ Total duration: {time.time() - start_time:.1f} seconds")
+        logger.info(f"🔄 Refresh rate: Every {self.refresh_interval} seconds")
+        logger.info()
+        logger.info("✅ FINAL METRICS:")
+        logger.info(f"   🛡️ Child Safety Score: {self.metrics['safety_score']:.1f}%")
+        logger.info(f"   💬 Active Conversations: {self.metrics['active_conversations']:,}")
+        logger.info(f"   ⚡ AI Response Time: {self.metrics['avg_response_time']}ms")
+        logger.info(f"   🖥️ System Health: {self.metrics['system_health']:.1f}%")
+        logger.info()
+        logger.info("🏆 STATUS: ALL SYSTEMS OPERATIONAL")
+        logger.info("🎯 READY FOR PRODUCTION DEPLOYMENT")
+        logger.info("=" * 80)
 
 
 async def main():
@@ -305,4 +311,4 @@ if __name__ == "__main__":
     except Exception as e:
     logger.error(f"Error: {e}")f"\n❌ Demo error: {str(e)}")
     finally:
-        print("Thank you for viewing the AI Teddy Bear Dashboard Demo! 🧸") 
+        logger.info("Thank you for viewing the AI Teddy Bear Dashboard Demo! 🧸")

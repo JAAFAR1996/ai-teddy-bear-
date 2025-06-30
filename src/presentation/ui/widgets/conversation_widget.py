@@ -27,7 +27,7 @@ class ConversationWidget(QWidget):
         self.message_sender = None  # Will be set by parent
         self.setup_ui()
     
-    def setup_ui(self):
+    def setup_ui(self) -> Any:
         """Initialize the conversation interface"""
         layout = QVBoxLayout(self)
         
@@ -96,7 +96,7 @@ class ConversationWidget(QWidget):
         # Add welcome message
         self.add_message("Teddy", "Hi! I'm your AI Teddy Bear. How can I help you today?")
     
-    def add_message(self, sender: str, message: str, timestamp: Optional[datetime] = None):
+    def add_message(self, sender -> Any: str, message -> Any: str, timestamp -> Any: Optional[datetime] = None) -> Any:
         """Add a message to the conversation display"""
         if timestamp is None:
             timestamp = datetime.now()
@@ -130,7 +130,7 @@ class ConversationWidget(QWidget):
         scrollbar.setValue(scrollbar.maximum())
     
     @pyqtSlot()
-    def send_message(self):
+    def send_message(self) -> Any:
         """Send message to the server"""
         message = self.message_input.text().strip()
         if not message:
@@ -145,7 +145,7 @@ class ConversationWidget(QWidget):
         # Send to server
         self._send_message_to_server(message)
     
-    def _send_message_to_server(self, message: str):
+    def _send_message_to_server(self, message -> Any: str) -> Any:
         """Send message to server asynchronously"""
         if self.message_sender:
             try:
@@ -170,11 +170,11 @@ class ConversationWidget(QWidget):
             logger.warning("No message sender configured")
             self.add_message("System", "⚠️ No connection to server")
     
-    def set_message_sender(self, message_sender):
+    def set_message_sender(self, message_sender) -> Any:
         """Set the message sender instance"""
         self.message_sender = message_sender
     
-    def handle_server_response(self, response: dict):
+    def handle_server_response(self, response -> Any: dict) -> Any:
         """Handle response from server"""
         if response.get("type") == "text_response":
             teddy_message = response.get("response", "I didn't understand that.")
@@ -183,7 +183,7 @@ class ConversationWidget(QWidget):
             error_msg = response.get("message", "Unknown error occurred")
             self.add_message("System", f"❌ Error: {error_msg}")
     
-    def clear_conversation(self):
+    def clear_conversation(self) -> Any:
         """Clear the conversation history"""
         self.chat_display.clear()
         self.add_message("Teddy", "Conversation cleared! How can I help you?")

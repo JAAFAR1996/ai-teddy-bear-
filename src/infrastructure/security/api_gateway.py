@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🔐 Enterprise API Gateway - Security & Rate Limiting 2025
 =========================================================
@@ -119,7 +121,7 @@ class SecurityAPIGateway:
         self._monitoring_tasks: List[asyncio.Task] = []
         self._start_monitoring()
     
-    def _initialize_default_rules(self):
+    def _initialize_default_rules(self) -> Any:
         """Initialize default rate limiting rules"""
         self.rate_limit_rules = [
             # General API limits
@@ -147,7 +149,7 @@ class SecurityAPIGateway:
             RateLimitRule("child_api", 30, 60, user_role="child"),
         ]
     
-    def _initialize_threat_signatures(self):
+    def _initialize_threat_signatures(self) -> Any:
         """Initialize security threat signatures"""
         self.threat_signatures = [
             # SQL Injection patterns
@@ -663,7 +665,7 @@ class SecurityAPIGateway:
         
         return False
     
-    def _start_monitoring(self):
+    def _start_monitoring(self) -> Any:
         """Start background monitoring tasks"""
         
         async def cleanup_task():
@@ -735,7 +737,7 @@ def get_api_gateway(redis_client: Optional[redis.Redis] = None) -> SecurityAPIGa
     return _api_gateway
 
 
-def configure_app_security(app: FastAPI, redis_client: Optional[redis.Redis] = None):
+def configure_app_security(app -> Any: FastAPI, redis_client -> Any: Optional[redis.Redis] = None) -> Any:
     """Configure FastAPI app with security middleware"""
     
     # Get API gateway instance

@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 Professional Audio Processing Engine for AI Teddy Bear
 Enterprise-grade audio enhancement with noise reduction and voice optimization
@@ -16,14 +20,14 @@ try:
     LIBROSA_AVAILABLE = True
 except ImportError:
     LIBROSA_AVAILABLE = False
-    print("⚠️ librosa not available. Install with: pip install librosa")
+    logger.warning("⚠️ librosa not available. Install with: pip install librosa")
 
 try:
     import noisereduce as nr
     NOISEREDUCE_AVAILABLE = True
 except ImportError:
     NOISEREDUCE_AVAILABLE = False
-    print("⚠️ noisereduce not available. Install with: pip install noisereduce")
+    logger.warning("⚠️ noisereduce not available. Install with: pip install noisereduce")
 
 try:
     from scipy import signal
@@ -31,7 +35,7 @@ try:
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
-    print("⚠️ scipy not available. Install with: pip install scipy")
+    logger.warning("⚠️ scipy not available. Install with: pip install scipy")
 
 logger = structlog.get_logger()
 

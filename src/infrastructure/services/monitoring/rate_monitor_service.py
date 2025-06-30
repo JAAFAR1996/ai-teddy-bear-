@@ -46,7 +46,7 @@ class RateMonitorService:
         self._init_counters()
         self._init_database()
     
-    def _load_config(self):
+    def _load_config(self) -> Any:
         """تحميل إعدادات المراقبة"""
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
@@ -68,13 +68,13 @@ class RateMonitorService:
             self.logger.error("Failed to load rate monitor config", error=str(e))
             self.rate_limit = RateLimit()
     
-    def _init_counters(self):
+    def _init_counters(self) -> Any:
         """تهيئة العدادات"""
         self.minute_counter = deque(maxlen=60)
         self.hour_counter = deque(maxlen=3600)
         self.day_counter = deque(maxlen=86400)
     
-    def _init_database(self):
+    def _init_database(self) -> Any:
         """تهيئة قاعدة بيانات المراقبة"""
         try:
             self.db_path = "logs/rate_monitor.db"

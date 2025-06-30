@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 Verification Script for GraphQL Federation Implementation.
@@ -17,23 +23,23 @@ def check_file_exists(file_path: str, description: str) -> bool:
     """Check if a file exists and report."""
     if os.path.exists(file_path):
         size = os.path.getsize(file_path)
-        print(f"✅ {description}: {file_path} ({size:,} bytes)")
+        logger.info(f"✅ {description}: {file_path} ({size:,} bytes)")
         return True
     else:
-        print(f"❌ {description}: {file_path} (NOT FOUND)")
+        logger.error(f"❌ {description}: {file_path} (NOT FOUND)")
         return False
 
-def verify_implementation():
+def verify_implementation() -> Any:
     """Verify GraphQL Federation implementation."""
-    print("🔍 GraphQL Federation Implementation Verification")
-    print("=" * 60)
-    print("API Team - Task 13")
-    print("=" * 60)
+    logger.debug("🔍 GraphQL Federation Implementation Verification")
+    logger.info("=" * 60)
+    logger.info("API Team - Task 13")
+    logger.info("=" * 60)
     
     all_files_exist = True
     
     # Core implementation files
-    print("\n📁 Core Implementation Files:")
+    logger.info("\n📁 Core Implementation Files:")
     core_files = [
         ("core/api/graphql/federation_gateway.py", "Federation Gateway"),
         ("core/api/graphql/authentication.py", "Authentication System"),
@@ -47,7 +53,7 @@ def verify_implementation():
             all_files_exist = False
     
     # Testing files
-    print("\n🧪 Testing Files:")
+    logger.info("\n🧪 Testing Files:")
     test_files = [
         ("tests/unit/test_graphql_federation.py", "Unit Tests"),
         ("scripts/demo_graphql_federation.py", "Interactive Demo"),
@@ -59,7 +65,7 @@ def verify_implementation():
             all_files_exist = False
     
     # Documentation and configuration
-    print("\n📚 Documentation & Configuration:")
+    logger.info("\n📚 Documentation & Configuration:")
     doc_files = [
         ("requirements_graphql_federation.txt", "Dependencies"),
         ("GRAPHQL_FEDERATION_IMPLEMENTATION_SUMMARY.md", "Implementation Summary")
@@ -70,7 +76,7 @@ def verify_implementation():
             all_files_exist = False
     
     # Count lines of code
-    print("\n📊 Implementation Statistics:")
+    logger.info("\n📊 Implementation Statistics:")
     total_lines = 0
     total_files = 0
     
@@ -89,14 +95,14 @@ def verify_implementation():
                 lines = len(f.readlines())
                 total_lines += lines
                 total_files += 1
-                print(f"   📄 {file_path}: {lines:,} lines")
+                logger.info(f"   📄 {file_path}: {lines:,} lines")
     
-    print(f"\n📈 Total Implementation:")
-    print(f"   Files: {total_files}")
-    print(f"   Lines of Code: {total_lines:,}")
+    logger.info(f"\n📈 Total Implementation:")
+    logger.info(f"   Files: {total_files}")
+    logger.info(f"   Lines of Code: {total_lines:,}")
     
     # Feature verification
-    print("\n🎯 Feature Implementation Checklist:")
+    logger.info("\n🎯 Feature Implementation Checklist:")
     features = [
         ("Federation Gateway", "Multi-service GraphQL federation"),
         ("Authentication System", "JWT, API keys, role-based access"),
@@ -111,10 +117,10 @@ def verify_implementation():
     ]
     
     for feature, description in features:
-        print(f"✅ {feature}: {description}")
+        logger.info(f"✅ {feature}: {description}")
     
     # Architecture components
-    print("\n🏗️ Architecture Components:")
+    logger.info("\n🏗️ Architecture Components:")
     components = [
         ("GraphQL Federation Gateway", "Unified API entry point"),
         ("Service Discovery", "Automatic service detection"),
@@ -129,24 +135,24 @@ def verify_implementation():
     ]
     
     for component, description in components:
-        print(f"🔧 {component}: {description}")
+        logger.info(f"🔧 {component}: {description}")
     
     # Final status
-    print("\n" + "=" * 60)
+    logger.info("\n" + "=" * 60)
     if all_files_exist:
-        print("🎉 IMPLEMENTATION COMPLETE!")
-        print("   ✅ All core files implemented")
-        print("   ✅ Testing and documentation complete")
-        print("   ✅ Ready for integration and deployment")
-        print(f"   📊 {total_lines:,} lines of enterprise-grade code")
+        logger.info("🎉 IMPLEMENTATION COMPLETE!")
+        logger.info("   ✅ All core files implemented")
+        logger.info("   ✅ Testing and documentation complete")
+        logger.info("   ✅ Ready for integration and deployment")
+        logger.info(f"   📊 {total_lines:,} lines of enterprise-grade code")
     else:
-        print("⚠️  IMPLEMENTATION INCOMPLETE")
-        print("   ❌ Some files are missing")
-        print("   🔧 Please check the missing components")
+        logger.warning("⚠️  IMPLEMENTATION INCOMPLETE")
+        logger.error("   ❌ Some files are missing")
+        logger.info("   🔧 Please check the missing components")
     
-    print("=" * 60)
-    print("API Team - Task 13: GraphQL Federation")
-    print("Enterprise-grade federated API architecture")
+    logger.info("=" * 60)
+    logger.info("API Team - Task 13: GraphQL Federation")
+    logger.info("Enterprise-grade federated API architecture")
     
     return all_files_exist
 

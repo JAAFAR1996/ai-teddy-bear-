@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 import whisper
 import os
 import logging
@@ -69,7 +71,7 @@ class SpeechToTextService:
                 self.logger.error(f"Error during transcription: {e}")
                 return None
 
-    def _validate_azure_service(self):
+    def _validate_azure_service(self) -> Any:
         """
         Perform a validation check on Azure Speech Service
         Raises an exception if the service is not fully operational
@@ -81,7 +83,7 @@ class SpeechToTextService:
         # For example, check configuration, network connectivity, etc.
         # This is a placeholder and should be expanded based on Azure SDK capabilities
 
-    def _load_whisper_model(self):
+    def _load_whisper_model(self) -> Any:
         """
         Load Whisper model as a last resort fallback
 
@@ -100,7 +102,7 @@ class SpeechToTextService:
                 return None
 
     def _clean_arabic_text(self, text: str) -> str:
-        print("نص قبل التنظيف في الدالة:", text)
+        logger.info("نص قبل التنظيف في الدالة:", text)
         """
         Clean up Arabic transcription text
         - Remove extra whitespaces
@@ -116,7 +118,7 @@ class SpeechToTextService:
 
         # Remove multiple consecutive spaces
         cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
-        print("نص بعد التنظيف في الدالة:", cleaned_text)
+        logger.info("نص بعد التنظيف في الدالة:", cleaned_text)
 
         return cleaned_text
 
@@ -129,7 +131,7 @@ class SpeechToTextService:
                 transcriptions.append(text)
         return transcriptions
 
-    def get_conversation_transcriptions(self, conversation_id: int):
+    def get_conversation_transcriptions(self, conversation_id -> Any: int) -> Any:
         """Retrieve all transcriptions for a specific conversation."""
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row

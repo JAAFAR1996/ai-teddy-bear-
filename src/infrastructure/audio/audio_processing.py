@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """Enhanced Audio Processing Module for AI Teddy Bear Project.
 
 This module provides comprehensive audio signal processing capabilities including:
@@ -91,7 +93,7 @@ class AudioProcessor:
         
         self.logger.info("Audio processor initialized with config: %s", self.config)
 
-    def _setup_filters(self):
+    def _setup_filters(self) -> Any:
         """Set up audio filters for various processing stages."""
         fs = self.config.sample_rate
         
@@ -119,7 +121,7 @@ class AudioProcessor:
             2, 4000, btype='lowpass', fs=fs, output='sos'
         )
 
-    def _setup_vad(self):
+    def _setup_vad(self) -> Any:
         """Set up Voice Activity Detection."""
         self.vad = webrtcvad.Vad(self.config.vad_aggressiveness)
         
@@ -130,7 +132,7 @@ class AudioProcessor:
         # VAD buffer for smoothing decisions
         self.vad_buffer = deque(maxlen=10)
 
-    def _setup_buffers(self):
+    def _setup_buffers(self) -> Any:
         """Set up audio buffers for streaming processing."""
         self.input_buffer = deque(maxlen=self.config.buffer_size * 10)
         self.output_buffer = deque(maxlen=self.config.buffer_size * 10)
@@ -725,7 +727,7 @@ class AudioProcessor:
             
             yield processed
 
-    def cleanup(self):
+    def cleanup(self) -> Any:
         """Clean up resources."""
         self.executor.shutdown(wait=True)
         self.input_buffer.clear()
@@ -826,7 +828,7 @@ if __name__ == "__main__":
     class TestAudioProcessor(unittest.TestCase):
         """Unit tests for AudioProcessor class."""
         
-        def setUp(self):
+        def setUp(self) -> Any:
             """Set up test fixtures."""
             self.processor = AudioProcessor()
             self.sample_rate = 16000
@@ -847,12 +849,12 @@ if __name__ == "__main__":
             # Clipped signal
             self.clipped_signal = np.clip(self.tone * 2, -1, 1)
         
-        def test_initialization(self):
+        def test_initialization(self) -> Any:
             """Test processor initialization."""
             self.assertIsNotNone(self.processor)
             self.assertEqual(self.processor.config.sample_rate, 16000)
         
-        def test_process_audio(self):
+        def test_process_audio(self) -> Any:
             """Test basic audio processing."""
             processed = self.processor.process_audio(self.noisy_signal)
             self.assertEqual(len(processed), len(self.noisy_signal))
@@ -869,7 +871,7 @@ if __name__ == "__main__":
             # SNR should improve
             self.assertGreater(processed_snr, original_snr)
         
-        def test_normalize_volume(self):
+        def test_normalize_volume(self) -> Any:
             """Test volume normalization."""
             quiet_signal = self.tone * 0.1
             normalized = self.processor.normalize_volume(quiet_signal)
@@ -880,7 +882,7 @@ if __name__ == "__main__":
             
             self.assertAlmostEqual(rms, target_rms, places=2)
         
-        def test_detect_silence(self):
+        def test_detect_silence(self) -> Any:
             """Test silence detection."""
             # Create signal with silence
             signal = np.concatenate([
@@ -896,7 +898,7 @@ if __name__ == "__main__":
             # Should detect at least 2 silent segments
             self.assertGreaterEqual(len(silent_segments), 2)
         
-        def test_trim_silence(self):
+        def test_trim_silence(self) -> Any:
             """Test silence trimming."""
             # Add silence to beginning and end
             padded_signal = np.concatenate([
@@ -913,7 +915,7 @@ if __name__ == "__main__":
             # Should preserve most of the tone
             self.assertGreater(len(trimmed), len(self.tone) * 0.9)
         
-        def test_voice_activity_detection(self):
+        def test_voice_activity_detection(self) -> Any:
             """Test VAD functionality."""
             # Create signal with speech and silence
             signal = np.concatenate([
@@ -936,7 +938,7 @@ if __name__ == "__main__":
                 self.assertLess(start, 2000)
                 self.assertGreater(end, len(self.tone))
         
-        def test_calculate_metrics(self):
+        def test_calculate_metrics(self) -> Any:
             """Test audio metrics calculation."""
             metrics = self.processor.calculate_metrics(self.tone)
             
@@ -949,7 +951,7 @@ if __name__ == "__main__":
             self.assertGreater(metrics.frequency_centroid, 0)
             self.assertAlmostEqual(metrics.duration, self.duration, places=2)
         
-        def test_segment_audio(self):
+        def test_segment_audio(self) -> Any:
             """Test audio segmentation."""
             segments = self.processor.segment_audio(
                 self.tone,
@@ -965,7 +967,7 @@ if __name__ == "__main__":
             for segment in segments[:-1]:  # Except possibly the last
                 self.assertEqual(len(segment), segment_samples)
         
-        def test_format_conversion(self):
+        def test_format_conversion(self) -> Any:
             """Test audio format conversion."""
             # Test WAV conversion
             wav_bytes = self.processor.convert_format(
@@ -1013,7 +1015,7 @@ if __name__ == "__main__":
             total_samples = sum(len(chunk) for chunk in processed_chunks)
             self.assertAlmostEqual(total_samples, len(self.tone), delta=1024)
         
-        def tearDown(self):
+        def tearDown(self) -> Any:
             """Clean up after tests."""
             self.processor.cleanup()
     

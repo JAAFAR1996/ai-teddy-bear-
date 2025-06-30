@@ -180,7 +180,7 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
             )
         '''
     
-    def _create_messages_table(self):
+    def _create_messages_table(self) -> Any:
         """Create messages table for storing individual messages"""
         schema = '''
             CREATE TABLE IF NOT EXISTS messages (
@@ -208,7 +208,7 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
         except sqlite3.Error as e:
             self.logger.error(f"Error creating messages table: {e}")
     
-    def _create_emotional_states_table(self):
+    def _create_emotional_states_table(self) -> Any:
         """Create emotional states table"""
         schema = '''
             CREATE TABLE IF NOT EXISTS emotional_states (
@@ -437,7 +437,7 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
             conversation_turns=data.get('total_messages', 0) // 2
         )
     
-    def _save_messages(self, conversation_id: str, messages: List[Message]):
+    def _save_messages(self, conversation_id -> Any: str, messages -> Any: List[Message]) -> Any:
         """Save messages to the messages table"""
         try:
             with self.transaction() as cursor:
@@ -468,7 +468,7 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
             self.logger.error(f"Error saving messages: {e}")
             raise
     
-    def _save_emotional_states(self, conversation_id: str, emotional_states: List[EmotionalState]):
+    def _save_emotional_states(self, conversation_id -> Any: str, emotional_states -> Any: List[EmotionalState]) -> Any:
         """Save emotional states to the emotional_states table"""
         try:
             with self.transaction() as cursor:
@@ -1345,7 +1345,7 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
             }
         }
     
-    def close(self):
+    def close(self) -> Any:
         """Close database connection"""
         if self._connection:
             self._connection.close()

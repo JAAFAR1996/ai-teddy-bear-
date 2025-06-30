@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 🔗 Moderation Service Integration Example
 How to integrate the new modern moderation service into existing codebase
@@ -98,7 +102,7 @@ async def add_custom_moderation_rules():
     
     for name, pattern in custom_patterns:
         success = moderation_service.add_custom_pattern(name, pattern)
-        print(f"Added pattern '{name}': {'✅' if success else '❌'}")
+        logger.error(f"Added pattern '{name}': {'✅' if success else '❌'}")
 
 # ================== MONITORING AND STATS ==================
 
@@ -109,15 +113,15 @@ async def moderation_monitoring():
     
     # Get performance stats
     stats = await moderation_service.get_moderation_stats()
-    print(f"📊 Moderation Stats: {stats}")
+    logger.info(f"📊 Moderation Stats: {stats}")
     
     # Health check
     health = await moderation_service.health_check()
-    print(f"💚 Health Status: {health}")
+    logger.info(f"💚 Health Status: {health}")
     
     # Example: Log to monitoring system
     if health['service'] != 'healthy':
-        print("🚨 Alert: Moderation service degraded!")
+        logger.info("🚨 Alert: Moderation service degraded!")
 
 # ================== BATCH PROCESSING EXAMPLE ==================
 
@@ -143,28 +147,28 @@ async def batch_moderate_content(content_list, user_age: int = 10):
 async def main_demo():
     """Complete integration demo"""
     
-    print("🚀 Modern Moderation Service Integration Demo")
+    logger.info("🚀 Modern Moderation Service Integration Demo")
     
     # Test API endpoint integration
-    print("\n1️⃣ API Endpoint Test:")
+    logger.info("\n1️⃣ API Endpoint Test:")
     api_result = await api_endpoint_example("Hello, my friend!", 10)
-    print(f"   Result: {api_result}")
+    logger.info(f"   Result: {api_result}")
     
     # Test voice integration
-    print("\n2️⃣ Voice Integration Test:")
+    logger.info("\n2️⃣ Voice Integration Test:")
     voice_result = await voice_interaction_moderation("I hate you!", 8)
-    print(f"   Result: {voice_result}")
+    logger.info(f"   Result: {voice_result}")
     
     # Test custom patterns
-    print("\n3️⃣ Custom Patterns:")
+    logger.info("\n3️⃣ Custom Patterns:")
     await add_custom_moderation_rules()
     
     # Test monitoring
-    print("\n4️⃣ Monitoring:")
+    logger.info("\n4️⃣ Monitoring:")
     await moderation_monitoring()
     
     # Test batch processing
-    print("\n5️⃣ Batch Processing:")
+    logger.info("\n5️⃣ Batch Processing:")
     test_content = [
         "Hello world!",
         "I hate you stupid",
@@ -174,9 +178,9 @@ async def main_demo():
     batch_results = await batch_moderate_content(test_content)
     for result in batch_results:
         status = "✅" if result['safe'] else "❌"
-        print(f"   {status} {result['content']}: {result['flags']}")
+        logger.info(f"   {status} {result['content']}: {result['flags']}")
 
 if __name__ == "__main__":
     # Run the demo (without actual API keys)
-    print("📋 Integration example created successfully!")
-    print("💡 To run demo: python moderation_integration_example.py") 
+    logger.info("📋 Integration example created successfully!")
+    logger.info("💡 To run demo: python moderation_integration_example.py")

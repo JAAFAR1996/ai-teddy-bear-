@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🤖 AI Service - Enterprise 2025 Implementation
 Modern AI service with advanced caching, robust error handling, and emotion analysis
@@ -120,7 +122,7 @@ class ModernOpenAIService(IAIService):
         self._initialize_client()
         logger.info("✅ Modern OpenAI Service initialized with enhanced features")
     
-    def _initialize_client(self):
+    def _initialize_client(self) -> Any:
         """Initialize OpenAI client with comprehensive error handling"""
         try:
             api_key = self.settings.openai_api_key
@@ -165,7 +167,7 @@ class ModernOpenAIService(IAIService):
         
         return None
     
-    def _store_in_memory_cache(self, cache_key: str, response: AIResponseModel):
+    def _store_in_memory_cache(self, cache_key -> Any: str, response -> Any: AIResponseModel) -> Any:
         """Store response in memory cache with size management"""
         # Clean old entries if cache is full
         if len(self.memory_cache) >= self.max_cache_size:

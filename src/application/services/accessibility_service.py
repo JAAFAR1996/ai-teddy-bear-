@@ -186,7 +186,7 @@ class AccessibilityService:
             }
         }
     
-    def _load_data(self):
+    def _load_data(self) -> Any:
         """تحميل البيانات من الملفات"""
         try:
             # تحميل ملفات الوصولية
@@ -216,7 +216,7 @@ class AccessibilityService:
         except Exception as e:
             logger.error(f"خطأ في تحميل بيانات الوصولية: {e}")
     
-    def _save_data(self):
+    def _save_data(self) -> Any:
         """حفظ البيانات في الملفات"""
         try:
             # حفظ ملفات الوصولية
@@ -266,7 +266,7 @@ class AccessibilityService:
         logger.info(f"تم إنشاء ملف وصولية للطفل {child_id} مع الاحتياجات: {special_needs}")
         return profile
     
-    def _apply_default_adaptations(self, profile: AccessibilityProfile, need_type: str):
+    def _apply_default_adaptations(self, profile -> Any: AccessibilityProfile, need_type -> Any: str) -> Any:
         """تطبيق التكييفات الافتراضية"""
         template = self.adaptation_templates.get(need_type, {})
         

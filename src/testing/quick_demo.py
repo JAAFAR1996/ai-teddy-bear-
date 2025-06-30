@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Quick AI-Powered Testing Framework Demo
 ======================================
@@ -5,7 +7,7 @@ Quick AI-Powered Testing Framework Demo
 
 import time
 
-def main():
+def main() -> Any:
     print("🤖 AI-Powered Testing Framework for AI Teddy Bear")
     print("=" * 60)
     print("QA Team Lead Implementation - Task 16 Complete")

@@ -26,7 +26,7 @@ class Child(AggregateRoot):
         # Add domain event
         self.add_domain_event(ChildRegistered(self.id, name))
     
-    def start_conversation(self, initial_message: str):
+    def start_conversation(self, initial_message -> Any: str) -> Any:
         """Start a new conversation"""
         if not self.can_interact():
             raise ValueError("Child cannot interact at this time")
@@ -38,7 +38,7 @@ class Child(AggregateRoot):
         """Check if child can interact"""
         return self.is_active and 3 <= self.age <= 12
     
-    def deactivate(self):
+    def deactivate(self) -> Any:
         """Deactivate child account"""
         self.is_active = False
         self.mark_as_modified()

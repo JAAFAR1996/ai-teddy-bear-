@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 InMemoryCache - Component extracted from large service
 مكون منفصل من خدمة كبيرة
@@ -58,14 +60,14 @@ class InMemoryCache:
         """
         raise NotImplementedError("Method needs implementation")
     
-    def get(self):
+    def get(self) -> Any:
         """
         get - Extracted method
         TODO: Implement the actual logic from original class
         """
         raise NotImplementedError("Method needs implementation")
     
-    def set(self):
+    def set(self) -> Any:
         """
         set - Extracted method
         TODO: Implement the actual logic from original class

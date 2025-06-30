@@ -65,7 +65,7 @@ class Memory:
     last_accessed: Optional[datetime] = None
     decay_rate: float = 0.1  # How fast the memory fades
 
-    def access(self):
+    def access(self) -> Any:
         """Update access information"""
         self.access_count += 1
         self.last_accessed = datetime.now()
@@ -143,7 +143,7 @@ class VectorMemoryStore:
         self.memories: Dict[int, Memory] = {}
         self.current_idx = 0
 
-    def add_memory(self, memory: Memory):
+    def add_memory(self, memory -> Any: Memory) -> Any:
         """Add memory with embedding to vector store"""
         if memory.embedding is not None:
             self.index.add(memory.embedding.reshape(1, -1))

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Service Registry Pattern
 Solves circular dependencies and provides centralized service management

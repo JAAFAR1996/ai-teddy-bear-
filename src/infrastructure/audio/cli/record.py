@@ -39,14 +39,14 @@ def list_devices() -> None:
     """List available audio input devices."""
     devices = audio_manager.get_supported_devices()
     if not devices:
-        print("No audio input devices found")
+        logger.info("No audio input devices found")
         return
         
-    print("\nAvailable audio input devices:")
-    print("------------------------------")
+    logger.info("\nAvailable audio input devices:")
+    logger.info("------------------------------")
     for device_id, device_name in devices:
-        print(f"ID: {device_id}, Name: {device_name}")
-    print()
+        logger.info(f"ID: {device_id}, Name: {device_name}")
+    logger.info()
 
 def main(args: Optional[list] = None) -> int:
     """Main entry point for recording command."""

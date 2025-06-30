@@ -74,7 +74,7 @@ class Message(BaseModel):
     entities: List[Dict[str, Any]] = Field(default_factory=list, description="Named entities")
     
     @validator('content')
-    def validate_content(cls, content, values):
+    def validate_content(cls, content, values) -> Any:
         """Validate message content"""
         # Remove potential XSS or injection attempts
         content = re.sub(r'<script[^>]*>.*?</script>', '', content, flags=re.DOTALL | re.IGNORECASE)
@@ -218,7 +218,7 @@ class Conversation(BaseModel):
         
         return message
     
-    def _update_metrics(self, message: Message):
+    def _update_metrics(self, message -> Any: Message) -> Any:
         """Update conversation metrics"""
         self.metrics.total_messages += 1
         

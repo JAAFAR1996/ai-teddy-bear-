@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Performance Optimizer for Multi-Layer Caching System.
 
@@ -442,7 +444,7 @@ class CacheHealthMonitor:
             }
         }
     
-    def set_alert_threshold(self, metric: str, value: float):
+    def set_alert_threshold(self, metric -> Any: str, value -> Any: float) -> Any:
         """Update alert threshold for specific metric."""
         if metric in self.alert_thresholds:
             self.alert_thresholds[metric] = value

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🧠 Advanced AI Orchestrator - 2025 Edition
 منظم ذكاء اصطناعي متقدم مع نظام توجيه ذكي للمودلات
@@ -467,15 +469,15 @@ async def test_ai_orchestrator():
     # تنفيذ الطلب
     response = await orchestrator.generate_intelligent_response(test_request)
     
-    print("🧠 AI Orchestrator Test Results:")
-    print(f"   Response: {response.get('content', 'No content')}")
-    print(f"   Model used: {response.get('model_used', 'Unknown')}")
-    print(f"   Quality score: {response.get('quality_score', 0):.2f}")
-    print(f"   Metadata: {response.get('response_metadata', {})}")
+    logger.info("🧠 AI Orchestrator Test Results:")
+    logger.info(f"   Response: {response.get('content', 'No content')}")
+    logger.info(f"   Model used: {response.get('model_used', 'Unknown')}")
+    logger.info(f"   Quality score: {response.get('quality_score', 0):.2f}")
+    logger.info(f"   Metadata: {response.get('response_metadata', {})}")
     
     # تقرير الأداء
     performance = await orchestrator.get_performance_report()
-    print(f"   Performance: {performance}")
+    logger.info(f"   Performance: {performance}")
     
     await orchestrator.cleanup()
     

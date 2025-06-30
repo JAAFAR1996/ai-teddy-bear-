@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Enterprise-Grade Edge AI Manager for AI Teddy Bear Project.
 
@@ -1001,7 +1003,7 @@ class EdgeAIManager:
         
         return recommendations
     
-    def _update_processing_stats(self, processing_time_ms: float):
+    def _update_processing_stats(self, processing_time_ms -> Any: float) -> Any:
         """Update processing statistics."""
         current_avg = self.processing_stats["average_processing_time"]
         total_processed = self.processing_stats["total_processed"]
@@ -1051,7 +1053,7 @@ class EdgeAIManager:
             }
         }
     
-    def optimize_for_device(self, device_specs: Dict[str, Any]):
+    def optimize_for_device(self, device_specs -> Any: Dict[str, Any]) -> Any:
         """Optimize processing based on device specifications."""
         # Adjust processing mode based on device capabilities
         memory_mb = device_specs.get("memory_mb", 512)

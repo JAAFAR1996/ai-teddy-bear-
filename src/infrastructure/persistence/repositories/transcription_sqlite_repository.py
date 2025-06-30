@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 import structlog
 logger = structlog.get_logger(__name__)
 
@@ -36,7 +38,7 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
         )
         '''
 
-    def _get_audio_duration(self, audio_file_path):
+    def _get_audio_duration(self, audio_file_path) -> Any:
         """Get audio file duration in seconds."""
         try:
             with contextlib.closing(wave.open(audio_file_path, 'rb')) as f:
@@ -44,7 +46,7 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
                 rate = f.getframerate()
                 duration = frames / float(rate)
                 return duration
-        except Exception:
+        except Exception as e:
             return None
 
     def add(self, transcription: Transcription) -> Transcription:
@@ -77,7 +79,7 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
         self._connection.commit()
         return cursor.rowcount > 0
 
-    def get_by_conversation_id(self, conversation_id: int):
+    def get_by_conversation_id(self, conversation_id -> Any: int) -> Any:
         """Retrieve all transcriptions for a specific conversation."""
         return self.list(conversation_id=conversation_id)
 
@@ -87,7 +89,7 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
         cursor.execute(query, (entity_id,))
         return cursor.fetchone() is not None
 
-    def get(self, entity_id: int):
+    def get(self, entity_id -> Any: int) -> Any:
         """Get a transcription by its ID."""
         query = 'SELECT * FROM transcriptions WHERE id = ?'
         cursor = self._connection.cursor()

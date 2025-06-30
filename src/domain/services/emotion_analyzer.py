@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 🎭 Unified Emotion Analyzer - Complete Implementation 2025
 Combines text analysis, audio analysis (Hume AI), and multi-modal emotion detection
@@ -818,11 +820,11 @@ class EmotionAnalyzer:
                 cutoff_date = datetime.now() - pd.Timedelta(days=days)
                 df = df[df['timestamp'] >= cutoff_date]
             return df
-        except Exception:
+        except Exception as e:
             # Return empty DataFrame if pandas not available
             return None
     
-    def save_history(self, filepath: str):
+    def save_history(self, filepath -> Any: str) -> Any:
         """Save emotion history to file"""
         try:
             with open(filepath, 'w', encoding='utf-8') as f:

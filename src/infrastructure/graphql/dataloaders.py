@@ -248,7 +248,7 @@ class BaseDataLoader(DataLoader, Generic[K, T]):
             "last_reset": self.metrics.last_reset.isoformat()
         }
     
-    def reset_metrics(self):
+    def reset_metrics(self) -> Any:
         """Reset performance metrics"""
         self.metrics = LoaderMetrics()
         logger.info("📊 Metrics reset", loader=self.name)
@@ -408,7 +408,7 @@ class DataLoaderRegistry:
         self._repositories = {}
         logger.info("🗂️ DataLoader Registry initialized")
     
-    def register_repositories(self, **repositories):
+    def register_repositories(self, **repositories) -> Any:
         """Register repositories for DataLoader creation"""
         self._repositories.update(repositories)
         logger.info("📚 Repositories registered", count=len(repositories))
@@ -448,7 +448,7 @@ class DataLoaderRegistry:
         
         return metrics
     
-    def reset_all_metrics(self):
+    def reset_all_metrics(self) -> Any:
         """Reset metrics for all DataLoaders"""
         for loader in self.loaders.values():
             loader.reset_metrics()

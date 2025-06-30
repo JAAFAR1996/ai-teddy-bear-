@@ -1,3 +1,9 @@
+from typing import Dict, List, Any, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 ☁️ Cloud Server Launcher - Complete AI Teddy Bear System
@@ -34,7 +40,7 @@ class CloudServerLauncher:
         self.create_launcher_gui()
         self.start_monitoring()
         
-    def create_launcher_gui(self):
+    def create_launcher_gui(self) -> Any:
         """إنشاء واجهة مشغل السيرفر"""
         self.root = tk.Tk()
         self.root.title("☁️ AI Teddy Bear - Cloud Server Control")
@@ -50,7 +56,7 @@ class CloudServerLauncher:
         # Footer
         self.create_footer()
         
-    def create_header(self):
+    def create_header(self) -> Any:
         """إنشاء الهيدر"""
         header = tk.Frame(self.root, bg='#34495e', height=100)
         header.pack(fill="x")
@@ -98,7 +104,7 @@ class CloudServerLauncher:
         )
         self.server_url_label.pack()
         
-    def create_main_content(self):
+    def create_main_content(self) -> Any:
         """إنشاء المحتوى الرئيسي"""
         main_frame = tk.Frame(self.root, bg='#ecf0f1')
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
@@ -109,7 +115,7 @@ class CloudServerLauncher:
         # Tabs for monitoring
         self.create_monitoring_tabs(main_frame)
         
-    def create_control_panel(self, parent):
+    def create_control_panel(self, parent) -> Any:
         """لوحة التحكم"""
         control_frame = tk.LabelFrame(parent, text="🎮 Server Control Panel", font=('Arial', 12, 'bold'), bg='#ecf0f1')
         control_frame.pack(fill="x", pady=10)
@@ -181,7 +187,7 @@ class CloudServerLauncher:
             )
             btn.grid(row=i//3, column=i%3, padx=5, pady=5)
         
-    def create_monitoring_tabs(self, parent):
+    def create_monitoring_tabs(self, parent) -> Any:
         """تبويبات المراقبة"""
         notebook = ttk.Notebook(parent)
         notebook.pack(fill="both", expand=True, pady=10)
@@ -201,7 +207,7 @@ class CloudServerLauncher:
         # Active Connections Tab
         self.create_connections_tab(notebook)
         
-    def create_logs_tab(self, notebook):
+    def create_logs_tab(self, notebook) -> Any:
         """تبويب السجلات"""
         logs_frame = tk.Frame(notebook, bg='#ffffff')
         notebook.add(logs_frame, text="📋 Server Logs")
@@ -232,7 +238,7 @@ class CloudServerLauncher:
         )
         self.logs_text.pack(fill="both", expand=True, padx=10, pady=10)
         
-    def create_stats_tab(self, notebook):
+    def create_stats_tab(self, notebook) -> Any:
         """تبويب إحصائيات النظام"""
         stats_frame = tk.Frame(notebook, bg='#ffffff')
         notebook.add(stats_frame, text="📊 System Stats")
@@ -262,7 +268,7 @@ class CloudServerLauncher:
         self.system_info_text.pack(side="left", fill="both", expand=True)
         info_scroll.pack(side="right", fill="y")
         
-    def create_stat_display(self, parent, title, key, unit, row, col):
+    def create_stat_display(self, parent, title, key, unit, row, col) -> Any:
         """إنشاء عرض إحصائي"""
         stat_frame = tk.LabelFrame(parent, text=title, font=('Arial', 10, 'bold'))
         stat_frame.grid(row=row, column=col, padx=5, pady=5, sticky="ew", ipadx=10, ipady=5)
@@ -276,7 +282,7 @@ class CloudServerLauncher:
         # Store reference for updates
         setattr(self, f"{key}_label", value_label)
         
-    def create_api_tab(self, notebook):
+    def create_api_tab(self, notebook) -> Any:
         """تبويب مراقبة API"""
         api_frame = tk.Frame(notebook, bg='#ffffff')
         notebook.add(api_frame, text="🔌 API Monitor")
@@ -320,7 +326,7 @@ class CloudServerLauncher:
         )
         self.api_response_text.pack(fill="both", expand=True, padx=10, pady=10)
         
-    def create_database_tab(self, notebook):
+    def create_database_tab(self, notebook) -> Any:
         """تبويب مراقبة قاعدة البيانات"""
         db_frame = tk.Frame(notebook, bg='#ffffff')
         notebook.add(db_frame, text="🗄️ Database")
@@ -357,7 +363,7 @@ class CloudServerLauncher:
         )
         self.db_text.pack(fill="both", expand=True, padx=10, pady=10)
         
-    def create_connections_tab(self, notebook):
+    def create_connections_tab(self, notebook) -> Any:
         """تبويب الاتصالات النشطة"""
         conn_frame = tk.Frame(notebook, bg='#ffffff')
         notebook.add(conn_frame, text="🔗 Active Connections")
@@ -377,7 +383,7 @@ class CloudServerLauncher:
         )
         self.connections_text.pack(fill="both", expand=True, padx=10, pady=10)
         
-    def create_footer(self):
+    def create_footer(self) -> Any:
         """إنشاء الفوتر"""
         footer = tk.Frame(self.root, bg='#34495e', height=40)
         footer.pack(fill="x", side="bottom")
@@ -404,7 +410,7 @@ class CloudServerLauncher:
         
         self.update_time()
         
-    def update_time(self):
+    def update_time(self) -> Any:
         """تحديث الوقت"""
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.time_label.config(text=f"🕐 {current_time}")
@@ -412,7 +418,7 @@ class CloudServerLauncher:
         
     # ======================== SERVER CONTROL ========================
     
-    def start_server(self):
+    def start_server(self) -> Any:
         """بدء السيرفر"""
         try:
             self.log("🚀 Starting AI Teddy Bear Cloud Server...")
@@ -447,7 +453,7 @@ class CloudServerLauncher:
             self.log(f"❌ Failed to start server: {e}")
             messagebox.showerror("Error", f"Failed to start server: {e}")
             
-    def stop_server(self):
+    def stop_server(self) -> Any:
         """إيقاف السيرفر"""
         try:
             self.log("🛑 Stopping AI Teddy Bear Cloud Server...")
@@ -467,16 +473,16 @@ class CloudServerLauncher:
         except Exception as e:
             self.log(f"❌ Error stopping server: {e}")
             
-    def restart_server(self):
+    def restart_server(self) -> Any:
         """إعادة تشغيل السيرفر"""
         self.log("🔄 Restarting server...")
         self.stop_server()
         time.sleep(2)
         self.start_server()
         
-    def check_server_ready(self):
+    def check_server_ready(self) -> Any:
         """فحص جاهزية السيرفر"""
-        def check():
+        def check() -> Any:
             for attempt in range(30):  # 30 seconds timeout
                 try:
                     response = requests.get(f"{self.server_url}/health", timeout=2)
@@ -493,21 +499,21 @@ class CloudServerLauncher:
             
         threading.Thread(target=check, daemon=True).start()
         
-    def server_ready(self):
+    def server_ready(self) -> Any:
         """عند جاهزية السيرفر"""
         self.server_status_label.config(text="🟢 SERVER ONLINE", fg="#27ae60")
         self.log("✅ Server is ready and responding to requests")
         self.log(f"🌐 Server accessible at: {self.server_url}")
         self.load_initial_data()
         
-    def server_failed(self):
+    def server_failed(self) -> Any:
         """عند فشل السيرفر"""
         self.server_status_label.config(text="❌ SERVER FAILED", fg="#e74c3c")
         self.log("❌ Server failed to start or is not responding")
         
-    def start_log_monitoring(self):
+    def start_log_monitoring(self) -> Any:
         """بدء مراقبة السجلات"""
-        def monitor_logs():
+        def monitor_logs() -> Any:
             if self.server_process and self.server_running:
                 try:
                     for line in iter(self.server_process.stdout.readline, ''):
@@ -522,9 +528,9 @@ class CloudServerLauncher:
                     
         threading.Thread(target=monitor_logs, daemon=True).start()
         
-    def start_monitoring(self):
+    def start_monitoring(self) -> Any:
         """بدء مراقبة النظام"""
-        def monitor():
+        def monitor() -> Any:
             while True:
                 if self.server_running:
                     self.update_system_stats()
@@ -534,7 +540,7 @@ class CloudServerLauncher:
         
     # ======================== MONITORING FUNCTIONS ========================
     
-    def update_system_stats(self):
+    def update_system_stats(self) -> Any:
         """تحديث إحصائيات النظام"""
         try:
             # CPU Usage
@@ -556,7 +562,7 @@ class CloudServerLauncher:
         except Exception as e:
             pass
             
-    def update_detailed_system_info(self):
+    def update_detailed_system_info(self) -> Any:
         """تحديث المعلومات التفصيلية"""
         try:
             info = f"""
@@ -590,44 +596,44 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
         except Exception as e:
             pass
             
-    def update_system_info_display(self, info):
+    def update_system_info_display(self, info) -> Any:
         """تحديث عرض معلومات النظام"""
         self.system_info_text.delete(1.0, "end")
         self.system_info_text.insert(1.0, info)
         
-    def log(self, message):
+    def log(self, message) -> Any:
         """إضافة رسالة للسجل"""
         timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         log_entry = f"[{timestamp}] {message}"
-        print(log_entry)
+        logger.info(log_entry)
         self.add_log_line(log_entry)
         self.status_label.config(text=message)
         
-    def add_log_line(self, line):
+    def add_log_line(self, line) -> Any:
         """إضافة سطر للسجل"""
         self.logs_text.insert("end", line + "\n")
         self.logs_text.see("end")
         
-    def load_initial_data(self):
+    def load_initial_data(self) -> Any:
         """تحميل البيانات الأولية"""
         self.refresh_connections()
         self.show_tables()
         
     # ======================== ACTION FUNCTIONS ========================
     
-    def open_dashboard(self):
+    def open_dashboard(self) -> Any:
         """فتح لوحة التحكم"""
         import webbrowser
         webbrowser.open(f"{self.server_url}/dashboard")
         self.log("🌐 Web dashboard opened")
         
-    def view_api_docs(self):
+    def view_api_docs(self) -> Any:
         """عرض توثيق API"""
         import webbrowser
         webbrowser.open(f"{self.server_url}/docs")
         self.log("📖 API documentation opened")
         
-    def health_check(self):
+    def health_check(self) -> Any:
         """فحص صحة النظام"""
         try:
             response = requests.get(f"{self.server_url}/health", timeout=5)
@@ -641,7 +647,7 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
         except Exception as e:
             self.log(f"❌ Health check error: {e}")
             
-    def open_logs(self):
+    def open_logs(self) -> Any:
         """فتح مجلد السجلات"""
         logs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
         if os.path.exists(logs_dir):
@@ -650,22 +656,22 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
         else:
             self.log("❌ Logs directory not found")
             
-    def config_manager(self):
+    def config_manager(self) -> Any:
         """مدير الإعدادات"""
         self.log("⚙️ Configuration manager opened")
         # Could open a config editing dialog
         
-    def database_admin(self):
+    def database_admin(self) -> Any:
         """إدارة قاعدة البيانات"""
         self.log("🗄️ Database admin opened")
         # Could open a database browser
         
     # ======================== API TEST FUNCTIONS ========================
     
-    def test_health(self):
+    def test_health(self) -> Any:
         self.api_test("GET", "/health")
         
-    def test_esp32_register(self):
+    def test_esp32_register(self) -> Any:
         data = {
             "device_id": "ESP32_TEST123",
             "firmware_version": "2.0.0",
@@ -673,23 +679,23 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
         }
         self.api_test("POST", "/esp32/register", data)
         
-    def test_audio_processing(self):
+    def test_audio_processing(self) -> Any:
         data = {
             "audio": "مرحبا يا دبدوب",
             "device_id": "ESP32_TEST123"
         }
         self.api_test("POST", "/esp32/audio", data)
         
-    def test_children_api(self):
+    def test_children_api(self) -> Any:
         self.api_test("GET", "/api/children")
         
-    def test_conversations(self):
+    def test_conversations(self) -> Any:
         self.api_test("GET", "/api/conversations")
         
-    def test_analytics(self):
+    def test_analytics(self) -> Any:
         self.api_test("GET", "/api/analytics")
         
-    def api_test(self, method, endpoint, data=None):
+    def api_test(self, method, endpoint, data=None) -> Any:
         """اختبار API"""
         try:
             url = f"{self.server_url}{endpoint}"
@@ -717,7 +723,7 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
             
     # ======================== DATABASE FUNCTIONS ========================
     
-    def show_tables(self):
+    def show_tables(self) -> Any:
         """عرض جداول قاعدة البيانات"""
         try:
             response = requests.get(f"{self.server_url}/api/admin/tables", timeout=5)
@@ -731,7 +737,7 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
         except Exception as e:
             self.log(f"❌ Failed to load tables: {e}")
             
-    def count_users(self):
+    def count_users(self) -> Any:
         """عد المستخدمين"""
         self.db_text.delete(1.0, "end")
         self.db_text.insert(1.0, "👥 User Statistics:\n" + "="*50 + "\n")
@@ -740,7 +746,7 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
         self.db_text.insert("end", "Total Conversations: 1,247\n")
         self.log("👥 User count displayed")
         
-    def show_conversations(self):
+    def show_conversations(self) -> Any:
         """عرض المحادثات"""
         self.db_text.delete(1.0, "end")
         self.db_text.insert(1.0, "💬 Recent Conversations:\n" + "="*50 + "\n")
@@ -754,17 +760,17 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
             self.db_text.insert("end", f"{conv}\n")
         self.log("💬 Conversations displayed")
         
-    def cleanup_database(self):
+    def cleanup_database(self) -> Any:
         """تنظيف قاعدة البيانات"""
         result = messagebox.askyesno("Cleanup Database", "Remove old conversations and logs?")
         if result:
             self.log("🧹 Database cleanup initiated")
             
-    def backup_database(self):
+    def backup_database(self) -> Any:
         """نسخ احتياطي لقاعدة البيانات"""
         self.log("💾 Database backup started")
         
-    def reset_database(self):
+    def reset_database(self) -> Any:
         """إعادة تعيين قاعدة البيانات"""
         result = messagebox.askyesno("Reset Database", "⚠️ This will delete ALL data! Continue?")
         if result:
@@ -772,16 +778,16 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
             
     # ======================== LOG FUNCTIONS ========================
     
-    def refresh_logs(self):
+    def refresh_logs(self) -> Any:
         """تحديث السجلات"""
         self.log("🔄 Logs refreshed")
         
-    def clear_logs(self):
+    def clear_logs(self) -> Any:
         """مسح السجلات"""
         self.logs_text.delete(1.0, "end")
         self.log("🗑️ Logs cleared")
         
-    def save_logs(self):
+    def save_logs(self) -> Any:
         """حفظ السجلات"""
         logs_content = self.logs_text.get(1.0, "end")
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -796,7 +802,7 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
             
     # ======================== CONNECTION FUNCTIONS ========================
     
-    def refresh_connections(self):
+    def refresh_connections(self) -> Any:
         """تحديث الاتصالات"""
         self.connections_text.delete(1.0, "end")
         self.connections_text.insert(1.0, "🔗 Active Connections:\n" + "="*50 + "\n")
@@ -812,14 +818,14 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
             
         self.log("🔗 Connections refreshed")
         
-    def disconnect_all(self):
+    def disconnect_all(self) -> Any:
         """قطع جميع الاتصالات"""
         result = messagebox.askyesno("Disconnect All", "Disconnect all active connections?")
         if result:
             self.log("🚫 All connections disconnected")
             self.refresh_connections()
             
-    def run(self):
+    def run(self) -> Any:
         """تشغيل مشغل السيرفر"""
         try:
             self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -830,7 +836,7 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
             if self.server_running:
                 self.stop_server()
                 
-    def on_closing(self):
+    def on_closing(self) -> Any:
         """عند إغلاق النافذة"""
         if self.server_running:
             result = messagebox.askyesno("Exit", "Server is running. Stop server and exit?")
@@ -841,15 +847,15 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
             self.root.destroy()
 
 if __name__ == "__main__":
-    print("☁️ Starting AI Teddy Bear Cloud Server Launcher...")
-    print("=" * 70)
-    print("🎯 Complete Cloud Infrastructure Management")
-    print("🖥️ Server Control & Monitoring")
-    print("📊 Real-time System Analytics")
-    print("🔌 API Testing & Management")
-    print("🗄️ Database Administration")
-    print("📋 Comprehensive Logging")
-    print("=" * 70)
+    logger.info("☁️ Starting AI Teddy Bear Cloud Server Launcher...")
+    logger.info("=" * 70)
+    logger.info("🎯 Complete Cloud Infrastructure Management")
+    logger.info("🖥️ Server Control & Monitoring")
+    logger.info("📊 Real-time System Analytics")
+    logger.info("🔌 API Testing & Management")
+    logger.info("🗄️ Database Administration")
+    logger.info("📋 Comprehensive Logging")
+    logger.info("=" * 70)
     
     try:
         launcher = CloudServerLauncher()

@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 #!/usr/bin/env python3
 """
 📧 Email Service - خدمة البريد الإلكتروني
@@ -37,7 +39,7 @@ class EmailService:
         self.logger = logger.bind(service="email")
         self._load_config()
     
-    def _load_config(self):
+    def _load_config(self) -> Any:
         """تحميل إعدادات البريد الإلكتروني"""
         try:
             config_path = Path(__file__).parent.parent.parent / "config" / "config.json"
@@ -224,7 +226,7 @@ async def send_html_email(to_email: str, subject: str, html_content: str) -> boo
 if __name__ == "__main__":
     # اختبار الخدمة
     async def test_email():
-        print("📧 Testing Email Service...")
+        logger.info("📧 Testing Email Service...")
         
         # اختبار بريد نصي
         success = await send_email(
@@ -232,7 +234,7 @@ if __name__ == "__main__":
             "Test Email",
             "This is a test email from AI Teddy Bear!"
         )
-        print(f"Text email test: {'✅ Success' if success else '❌ Failed'}")
+        logger.error(f"Text email test: {'✅ Success' if success else '❌ Failed'}")
         
         # اختبار بريد HTML
         html = "<h1>Test HTML Email</h1><p>This is a <b>test</b> HTML email!</p>"
@@ -241,6 +243,6 @@ if __name__ == "__main__":
             "Test HTML Email",
             html
         )
-        print(f"HTML email test: {'✅ Success' if success else '❌ Failed'}")
+        logger.error(f"HTML email test: {'✅ Success' if success else '❌ Failed'}")
     
     asyncio.run(test_email()) 

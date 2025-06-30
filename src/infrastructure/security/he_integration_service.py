@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 """
 Homomorphic Encryption Integration Service for AI Teddy Bear Project.
 

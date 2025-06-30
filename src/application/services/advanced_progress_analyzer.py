@@ -23,7 +23,7 @@ try:
     NLP_AVAILABLE = True
 except ImportError:
     NLP_AVAILABLE = False
-    print("⚠️ NLP libraries not available. Install with: pip install spacy nltk textstat")
+    logger.warning("⚠️ NLP libraries not available. Install with: pip install spacy nltk textstat")
 
 # Transformers for advanced analysis
 try:
@@ -32,7 +32,7 @@ try:
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
-    print("⚠️ Transformers not available. Install with: pip install transformers torch")
+    logger.warning("⚠️ Transformers not available. Install with: pip install transformers torch")
 
 # LLM Integration
 try:
@@ -41,7 +41,7 @@ try:
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
-    print("⚠️ LLM libraries not available. Install with: pip install openai anthropic")
+    logger.warning("⚠️ LLM libraries not available. Install with: pip install openai anthropic")
 
 @dataclass
 class ProgressMetrics:
@@ -130,7 +130,7 @@ class AdvancedProgressAnalyzer:
         # Load analysis templates
         self._load_analysis_templates()
     
-    def _init_nlp_models(self):
+    def _init_nlp_models(self) -> Any:
         """Initialize NLP models and tools"""
         if not NLP_AVAILABLE:
             self.logger.warning("NLP models not available")
@@ -162,7 +162,7 @@ class AdvancedProgressAnalyzer:
             self.nlp_ar = None
             self.nlp_en = None
     
-    def _init_llm_clients(self):
+    def _init_llm_clients(self) -> Any:
         """Initialize LLM clients"""
         if not LLM_AVAILABLE:
             self.logger.warning("LLM clients not available")
@@ -184,7 +184,7 @@ class AdvancedProgressAnalyzer:
         except Exception as e:
             self.logger.error(f"Failed to initialize LLM clients: {e}")
     
-    def _load_analysis_templates(self):
+    def _load_analysis_templates(self) -> Any:
         """Load Chain-of-Thought prompting templates"""
         self.cot_templates = {
             "progress_analysis": """

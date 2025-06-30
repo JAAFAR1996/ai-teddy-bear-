@@ -16,7 +16,7 @@ class EmotionLog(SQLModel, table=True):
     source: str  # 'audio', 'text', or 'both'
     score: float
 
-    def to_dict(self):
+    def to_dict(self) -> Any:
         return {
             'id': self.id,
             'user_id': self.user_id,

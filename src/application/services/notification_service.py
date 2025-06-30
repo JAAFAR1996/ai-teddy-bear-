@@ -97,7 +97,7 @@ class NotificationService:
             self.push_service = None
             self.sms_service = None
     
-    def _load_config(self):
+    def _load_config(self) -> Any:
         """تحميل إعدادات الإشعارات"""
         try:
             config_path = Path(__file__).parent.parent.parent / "config" / "config.json"
@@ -119,7 +119,7 @@ class NotificationService:
             self.logger.warning("Failed to load notification config", error=str(e))
             self.config = {"default_language": "ar", "enable_email": True}
     
-    def _load_templates(self):
+    def _load_templates(self) -> Any:
         """تحميل قوالب الإشعارات"""
         try:
             templates_dir = Path(__file__).parent.parent.parent / "templates" / "notifications"
@@ -579,7 +579,7 @@ async def notify_upcoming_cleanup() -> NotificationStats:
     return await notification_service.notify_upcoming_cleanup()
 
 # دالة متوافقة مع الكود الأصلي
-def notify_upcoming_cleanup_sync():
+def notify_upcoming_cleanup_sync() -> Any:
     """نسخة متزامنة للتوافق مع الكود القديم"""
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(notify_upcoming_cleanup())
@@ -587,13 +587,13 @@ def notify_upcoming_cleanup_sync():
 if __name__ == "__main__":
     # اختبار الخدمة
     async def test_notifications():
-        print("🧪 Testing Notification Service...")
+        logger.info("🧪 Testing Notification Service...")
         
         stats = await notify_upcoming_cleanup()
-        print("📊 Notification Stats:")
-        print(f"   - Children notified: {stats.children_notified}")
-        print(f"   - Emails sent: {stats.emails_sent}")
-        print(f"   - Push notifications sent: {stats.push_sent}")
-        print(f"   - Execution time: {stats.execution_time_seconds:.2f}s")
+        logger.info("📊 Notification Stats:")
+        logger.info(f"   - Children notified: {stats.children_notified}")
+        logger.info(f"   - Emails sent: {stats.emails_sent}")
+        logger.info(f"   - Push notifications sent: {stats.push_sent}")
+        logger.info(f"   - Execution time: {stats.execution_time_seconds:.2f}s")
         
     asyncio.run(test_notifications())

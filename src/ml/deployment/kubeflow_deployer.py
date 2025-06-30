@@ -1,3 +1,5 @@
+from typing import Dict, List, Any, Optional
+
 # ===================================================================
 # 🚀 AI Teddy Bear - Kubeflow Pipeline Deployment
 # Enterprise MLOps Deployment Infrastructure
@@ -69,7 +71,7 @@ class KubeflowPipelineDeployer:
             'kubeflow_host': self.kubeflow_host
         }
     
-    def _get_child_interaction_pipeline(self):
+    def _get_child_interaction_pipeline(self) -> Any:
         """استيراد pipeline من الملف الرئيسي"""
         from src.ml.pipelines.child_interaction_pipeline import child_interaction_pipeline
         return child_interaction_pipeline
@@ -96,7 +98,7 @@ class KubeflowPipelineDeployer:
         return recurring_run.id
 
 
-def deploy_production_pipeline():
+def deploy_production_pipeline() -> Any:
     """نشر pipeline الإنتاج الكامل"""
     
     logger.info("🚀 Starting production pipeline deployment...")
@@ -134,4 +136,4 @@ def deploy_production_pipeline():
 
 if __name__ == "__main__":
     deployment_info = deploy_production_pipeline()
-    print(f"✅ Pipeline deployed with ID: {deployment_info['pipeline_id']}") 
+    logger.info(f"✅ Pipeline deployed with ID: {deployment_info['pipeline_id']}")

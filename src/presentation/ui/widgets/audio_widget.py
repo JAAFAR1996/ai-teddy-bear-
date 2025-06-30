@@ -38,7 +38,7 @@ class ModernAudioWidget(QWidget):
         self._setup_ui()
         self._setup_timers()
     
-    def _setup_components(self):
+    def _setup_components(self) -> Any:
         """Initialize audio components"""
         self.config = AudioConfig()
         self.recorder = AudioRecorder(self.config)
@@ -47,7 +47,7 @@ class ModernAudioWidget(QWidget):
         # Waveform visualization
         self.waveform_widget = WaveformWidget()
     
-    def _setup_ui(self):
+    def _setup_ui(self) -> Any:
         """Setup the user interface"""
         layout = QVBoxLayout(self)
         
@@ -179,7 +179,7 @@ class ModernAudioWidget(QWidget):
         
         return group
     
-    def _setup_timers(self):
+    def _setup_timers(self) -> Any:
         """Setup update timers"""
         self.visualization_timer = QTimer()
         self.visualization_timer.timeout.connect(self._update_visualization)
@@ -187,7 +187,7 @@ class ModernAudioWidget(QWidget):
         self.recording_timer = QTimer()
         self.recording_timer.timeout.connect(self._update_recording_info)
     
-    def _populate_audio_devices(self):
+    def _populate_audio_devices(self) -> Any:
         """Populate audio device list"""
         self.input_device_combo.clear()
         devices = self.config.get_audio_devices()
@@ -195,7 +195,7 @@ class ModernAudioWidget(QWidget):
         for device in devices:
             self.input_device_combo.addItem(device['name'], device['id'])
     
-    def _update_sample_rate(self, rate_text: str):
+    def _update_sample_rate(self, rate_text -> Any: str) -> Any:
         """Update sample rate"""
         try:
             rate = int(rate_text)
@@ -204,24 +204,24 @@ class ModernAudioWidget(QWidget):
         except ValueError:
             logger.error("Invalid sample rate", rate=rate_text)
     
-    def _toggle_processing(self, enabled: bool):
+    def _toggle_processing(self, enabled -> Any: bool) -> Any:
         """Toggle audio processing"""
         self.config.enable_processing = enabled
         self.processing_level_combo.setEnabled(enabled)
     
-    def _update_processing_level(self, level: str):
+    def _update_processing_level(self, level -> Any: str) -> Any:
         """Update processing level"""
         self.config.processing_level = level
     
     @pyqtSlot()
-    def _toggle_recording(self):
+    def _toggle_recording(self) -> Any:
         """Toggle recording state"""
         if not self.config.is_recording:
             self._start_recording()
         else:
             self._stop_recording()
     
-    def _start_recording(self):
+    def _start_recording(self) -> Any:
         """Start audio recording"""
         try:
             device_id = self.input_device_combo.currentData()
@@ -244,7 +244,7 @@ class ModernAudioWidget(QWidget):
             self.status_label.setText(f"❌ Recording failed: {e}")
             self._reset_ui_state()
     
-    def _stop_recording(self):
+    def _stop_recording(self) -> Any:
         """Stop recording and process audio"""
         try:
             self.recorder.stop_recording()
@@ -263,7 +263,7 @@ class ModernAudioWidget(QWidget):
             self.status_label.setText(f"❌ Stop failed: {e}")
             self._reset_ui_state()
     
-    def _process_recorded_audio(self):
+    def _process_recorded_audio(self) -> Any:
         """Process recorded audio with enhancement"""
         try:
             wav_data = self.recorder.get_recorded_audio()
@@ -288,7 +288,7 @@ class ModernAudioWidget(QWidget):
             self.status_label.setText(f"❌ Processing failed: {e}")
             self._reset_ui_state()
     
-    def _send_to_server(self, wav_data: bytes):
+    def _send_to_server(self, wav_data -> Any: bytes) -> Any:
         """Send audio to server"""
         try:
             metadata = {
@@ -305,7 +305,7 @@ class ModernAudioWidget(QWidget):
         except Exception as e:
             logger.error("Failed to send audio", error=str(e))
     
-    def _update_visualization(self):
+    def _update_visualization(self) -> Any:
         """Update visualization displays"""
         # Update volume meter
         volume = int(self.config.volume_level)
@@ -318,7 +318,7 @@ class ModernAudioWidget(QWidget):
             # This would need proper waveform data
             pass
     
-    def _update_recording_info(self):
+    def _update_recording_info(self) -> Any:
         """Update recording information"""
         if self.config.recording_start_time:
             elapsed = (datetime.now() - self.config.recording_start_time).total_seconds()
@@ -326,13 +326,13 @@ class ModernAudioWidget(QWidget):
             seconds = int(elapsed % 60)
             self.duration_label.setText(f"{minutes}:{seconds:02d}")
     
-    def _reset_ui_state(self):
+    def _reset_ui_state(self) -> Any:
         """Reset UI to initial state"""
         self.record_button.setText("🎤 Start Recording")
         self.record_button.setEnabled(True)
         self.stop_button.setEnabled(False)
         self.recording_status_changed.emit("ready")
     
-    def set_message_sender(self, message_sender):
+    def set_message_sender(self, message_sender) -> Any:
         """Set message sender for audio transmission"""
         self.message_sender = message_sender 
