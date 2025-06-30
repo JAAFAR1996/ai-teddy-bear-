@@ -1,0 +1,1 @@
+# Auto-generated DDD structure
