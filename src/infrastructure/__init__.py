@@ -22,3 +22,10 @@ from .audio.clients import (
     WhisperClient,
     OpenAISpeechClient
 )
+
+# Add reporting infrastructure
+from .reporting import (
+    ChartGenerator,
+    PDFGenerator,
+    ReportRepository
+)
