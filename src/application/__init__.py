@@ -27,3 +27,11 @@ from .services.reporting import (
 
 # Add Parent Dashboard application services
 from .services import parentdashboard
+
+# Child Application Services
+from .services.child import (
+    ChildSearchService,
+    ChildAnalyticsService,
+    ChildInteractionService,
+    ChildBulkOperationsService
+)

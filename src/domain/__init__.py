@@ -58,3 +58,16 @@ from .reporting.services import (
 
 # Add Parent Dashboard domain exports
 from . import parentdashboard
+
+# Child Domain Components
+from .child import (
+    ChildEngagementInsight,
+    ChildStatistics,
+    InteractionMetrics,
+    ChildSearchCriteria,
+    AgeRange,
+    SearchFilters,
+    ChildAnalyticsDomainService,
+    ChildInteractionDomainService,
+    ChildFamilyDomainService
+)

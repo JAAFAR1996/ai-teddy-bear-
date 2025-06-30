@@ -32,3 +32,9 @@ from .reporting import (
 
 # Add Parent Dashboard infrastructure services  
 from . import parentdashboard
+
+# Child Infrastructure Components
+from .child import (
+    ChildSQLiteRepositoryRefactored,
+    ChildBackupService
+)
