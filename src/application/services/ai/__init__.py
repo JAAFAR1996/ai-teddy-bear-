@@ -1,26 +1,51 @@
 """
-AI Service Module
-Split into smaller, focused components for better maintainability
+🤖 AI Services Module - Enterprise 2025 Implementation
+Centralized AI services with clean architecture and dependency injection
 """
 
-from .ai_service import AIService
-from .emotion_analyzer import EmotionAnalyzer, EmotionCategory, EmotionAnalysis
-from .personality_engine import PersonalityEngine
-from .response_generator import ResponseGenerator, ResponseMode
-from .conversation_manager import ConversationManager, ConversationContext
-from .educational_content import EducationalContentProvider
-from .models import AIResponse
+# Core models and interfaces
+from .models.ai_response_models import (
+    AIResponseModel,
+    EmotionAnalysis,
+    ConversationContext,
+    AIServiceMetrics,
+    ResponseGenerationRequest
+)
 
+from .interfaces.ai_service_interface import (
+    IAIService,
+    IEmotionAnalyzer,
+    IResponseGenerator,
+    ICacheService,
+    IConversationManager
+)
+
+# Service implementations
+from .analyzers.emotion_analyzer_service import EmotionAnalyzerService
+from .fallback_response_service import FallbackResponseService
+from .ai_service_factory import EnhancedAIServiceFactory, AIServiceFactory
+
+# Re-exports for backward compatibility
 __all__ = [
-    'AIService',
-    'EmotionAnalyzer',
-    'EmotionCategory',
-    'EmotionAnalysis',
-    'PersonalityEngine',
-    'ResponseGenerator',
-    'ResponseMode',
-    'ConversationManager',
-    'ConversationContext',
-    'EducationalContentProvider',
-    'AIResponse'
+    # Models
+    "AIResponseModel",
+    "EmotionAnalysis", 
+    "ConversationContext",
+    "AIServiceMetrics",
+    "ResponseGenerationRequest",
+    
+    # Interfaces
+    "IAIService",
+    "IEmotionAnalyzer",
+    "IResponseGenerator",
+    "ICacheService",
+    "IConversationManager",
+    
+    # Services
+    "EmotionAnalyzerService",
+    "FallbackResponseService",
+    
+    # Factory
+    "EnhancedAIServiceFactory",
+    "AIServiceFactory"
 ] 
