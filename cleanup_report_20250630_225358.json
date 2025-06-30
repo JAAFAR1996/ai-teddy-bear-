@@ -1,0 +1,991 @@
+{
+  "total_files": 921,
+  "empty_files": [
+    ".\\src\\application\\commands\\__init__.py",
+    ".\\src\\data\\teddy.db",
+    ".\\src\\infrastructure\\child\\backup_service.py"
+  ],
+  "large_files": [
+    {
+      "path": ".\\project_analysis_report.json",
+      "lines": 554
+    },
+    {
+      "path": ".\\quick_analyzer.py",
+      "lines": 504
+    },
+    {
+      "path": ".\\.github\\workflows\\comprehensive-pipeline.yml",
+      "lines": 542
+    },
+    {
+      "path": ".\\chaos\\infrastructure\\chaos_orchestrator.py",
+      "lines": 668
+    },
+    {
+      "path": ".\\config\\default_schema.json",
+      "lines": 1165
+    },
+    {
+      "path": ".\\frontend\\package-lock.json",
+      "lines": 21382
+    },
+    {
+      "path": ".\\frontend\\src\\components\\Conversation.js",
+      "lines": 581
+    },
+    {
+      "path": ".\\frontend\\src\\components\\Dashboard.js",
+      "lines": 816
+    },
+    {
+      "path": ".\\frontend\\src\\components\\Settings.js",
+      "lines": 796
+    },
+    {
+      "path": ".\\frontend\\src\\components\\VoicePlayer.js",
+      "lines": 609
+    },
+    {
+      "path": ".\\frontend\\src\\components\\ui\\EmotionChart.js",
+      "lines": 630
+    },
+    {
+      "path": ".\\frontend\\src\\hooks\\useWebSocket.js",
+      "lines": 523
+    },
+    {
+      "path": ".\\frontend\\src\\utils\\pdf.js",
+      "lines": 696
+    },
+    {
+      "path": ".\\observability\\deployment-manifests.yaml",
+      "lines": 1107
+    },
+    {
+      "path": ".\\observability\\grafana-dashboards.json",
+      "lines": 1002
+    },
+    {
+      "path": ".\\observability\\sli-slo-definitions.yaml",
+      "lines": 514
+    },
+    {
+      "path": ".\\scripts\\advanced_deep_analyzer.py",
+      "lines": 892
+    },
+    {
+      "path": ".\\scripts\\advanced_directories_analyzer.py",
+      "lines": 542
+    },
+    {
+      "path": ".\\scripts\\comprehensive_architecture_analyzer.py",
+      "lines": 644
+    },
+    {
+      "path": ".\\scripts\\comprehensive_project_analyzer.py",
+      "lines": 579
+    },
+    {
+      "path": ".\\scripts\\demo_distributed_ai.py",
+      "lines": 563
+    },
+    {
+      "path": ".\\scripts\\demo_edge_ai.py",
+      "lines": 520
+    },
+    {
+      "path": ".\\scripts\\demo_multi_layer_cache.py",
+      "lines": 558
+    },
+    {
+      "path": ".\\scripts\\god_class_refactor_ddd.py",
+      "lines": 627
+    },
+    {
+      "path": ".\\scripts\\intelligent_config_merger.py",
+      "lines": 798
+    },
+    {
+      "path": ".\\scripts\\migrate_secrets.py",
+      "lines": 620
+    },
+    {
+      "path": ".\\scripts\\mtls_automation.py",
+      "lines": 501
+    },
+    {
+      "path": ".\\scripts\\proper_ddd_splitter.py",
+      "lines": 529
+    },
+    {
+      "path": ".\\scripts\\security_audit_and_fix.py",
+      "lines": 575
+    },
+    {
+      "path": ".\\scripts\\security_cleanup.py",
+      "lines": 569
+    },
+    {
+      "path": ".\\scripts\\service_organizer_analyzer.py",
+      "lines": 545
+    },
+    {
+      "path": ".\\scripts\\usage_pattern_analyzer.py",
+      "lines": 519
+    },
+    {
+      "path": ".\\scripts\\migration\\ddd_architecture_analyzer.py",
+      "lines": 669
+    },
+    {
+      "path": ".\\scripts\\migration\\ddd_structure_creator.py",
+      "lines": 854
+    },
+    {
+      "path": ".\\src\\main.py",
+      "lines": 576
+    },
+    {
+      "path": ".\\src\\adapters\\edge\\edge_ai_integration_service.py",
+      "lines": 507
+    },
+    {
+      "path": ".\\src\\adapters\\edge\\edge_ai_manager.py",
+      "lines": 1077
+    },
+    {
+      "path": ".\\src\\application\\services\\advanced_personalization_service.py",
+      "lines": 685
+    },
+    {
+      "path": ".\\src\\application\\services\\advanced_progress_analyzer.py",
+      "lines": 801
+    },
+    {
+      "path": ".\\src\\application\\services\\ar_vr_service.py",
+      "lines": 695
+    },
+    {
+      "path": ".\\src\\application\\services\\data_cleanup_service.py",
+      "lines": 1192
+    },
+    {
+      "path": ".\\src\\application\\services\\enhanced_child_interaction_service.py",
+      "lines": 667
+    },
+    {
+      "path": ".\\src\\application\\services\\enhanced_hume_integration.py",
+      "lines": 957
+    },
+    {
+      "path": ".\\src\\application\\services\\enhanced_parent_report_service.py",
+      "lines": 784
+    },
+    {
+      "path": ".\\src\\application\\services\\moderation_service.py",
+      "lines": 1158
+    },
+    {
+      "path": ".\\src\\application\\services\\notification_service.py",
+      "lines": 599
+    },
+    {
+      "path": ".\\src\\application\\services\\parent_dashboard_service.py",
+      "lines": 516
+    },
+    {
+      "path": ".\\src\\application\\services\\progress_analyzer.py",
+      "lines": 506
+    },
+    {
+      "path": ".\\src\\application\\services\\streaming_service.py",
+      "lines": 666
+    },
+    {
+      "path": ".\\src\\application\\services\\ai\\llm_service_factory.py",
+      "lines": 1167
+    },
+    {
+      "path": ".\\src\\application\\services\\ai\\main_service.py",
+      "lines": 1171
+    },
+    {
+      "path": ".\\src\\application\\services\\ai\\modern_ai_service.py",
+      "lines": 511
+    },
+    {
+      "path": ".\\src\\application\\services\\audio\\synthesis_service.py",
+      "lines": 757
+    },
+    {
+      "path": ".\\src\\application\\services\\audio\\voice_interaction_service.py",
+      "lines": 549
+    },
+    {
+      "path": ".\\src\\application\\services\\core\\cloud_transcription_service.py",
+      "lines": 556
+    },
+    {
+      "path": ".\\src\\application\\services\\core\\voice_service.py",
+      "lines": 523
+    },
+    {
+      "path": ".\\src\\compliance\\automated_compliance.py",
+      "lines": 865
+    },
+    {
+      "path": ".\\src\\core\\domain\\child_interaction\\entities.py",
+      "lines": 623
+    },
+    {
+      "path": ".\\src\\domain\\behavioral_analyzer.py",
+      "lines": 562
+    },
+    {
+      "path": ".\\src\\domain\\entities\\child_repository.py",
+      "lines": 713
+    },
+    {
+      "path": ".\\src\\domain\\entities\\child_safety_chaos.py",
+      "lines": 756
+    },
+    {
+      "path": ".\\src\\domain\\entities\\conversation.py",
+      "lines": 502
+    },
+    {
+      "path": ".\\src\\domain\\family\\advanced_family_system.py",
+      "lines": 658
+    },
+    {
+      "path": ".\\src\\domain\\repositories\\base.py",
+      "lines": 540
+    },
+    {
+      "path": ".\\src\\domain\\services\\child_domain_service.py",
+      "lines": 613
+    },
+    {
+      "path": ".\\src\\domain\\services\\emotion_analyzer.py",
+      "lines": 871
+    },
+    {
+      "path": ".\\src\\domain\\stories\\ai_story_generator.py",
+      "lines": 676
+    },
+    {
+      "path": ".\\src\\domain\\stories\\educational_story_games.py",
+      "lines": 621
+    },
+    {
+      "path": ".\\src\\domain\\stories\\interactive_story_engine.py",
+      "lines": 594
+    },
+    {
+      "path": ".\\src\\domain\\streaming\\aggregates\\aggregates.py",
+      "lines": 595
+    },
+    {
+      "path": ".\\src\\infrastructure\\cloud_server_launcher.py",
+      "lines": 864
+    },
+    {
+      "path": ".\\src\\infrastructure\\complete_system_launcher.py",
+      "lines": 629
+    },
+    {
+      "path": ".\\src\\infrastructure\\esp32_production_simulator.py",
+      "lines": 831
+    },
+    {
+      "path": ".\\src\\infrastructure\\modern_container.py",
+      "lines": 666
+    },
+    {
+      "path": ".\\src\\infrastructure\\parent_mobile_app_simulator.py",
+      "lines": 786
+    },
+    {
+      "path": ".\\src\\infrastructure\\ai\\distributed_processor.py",
+      "lines": 976
+    },
+    {
+      "path": ".\\src\\infrastructure\\ai\\enhanced_hume_2025.py",
+      "lines": 617
+    },
+    {
+      "path": ".\\src\\infrastructure\\ai\\enhanced_hume_integration_2025.py",
+      "lines": 876
+    },
+    {
+      "path": ".\\src\\infrastructure\\ai\\hume_integration.py",
+      "lines": 546
+    },
+    {
+      "path": ".\\src\\infrastructure\\audio\\audio_io.py",
+      "lines": 905
+    },
+    {
+      "path": ".\\src\\infrastructure\\audio\\audio_processing.py",
+      "lines": 1023
+    },
+    {
+      "path": ".\\src\\infrastructure\\audio\\hume_emotion_analyzer.py",
+      "lines": 722
+    },
+    {
+      "path": ".\\src\\infrastructure\\caching\\multi_layer_cache.py",
+      "lines": 1069
+    },
+    {
+      "path": ".\\src\\infrastructure\\config\\secure_configuration.py",
+      "lines": 611
+    },
+    {
+      "path": ".\\src\\infrastructure\\decorators\\exception_handler.py",
+      "lines": 703
+    },
+    {
+      "path": ".\\src\\infrastructure\\exception_handling\\global_exception_handler.py",
+      "lines": 690
+    },
+    {
+      "path": ".\\src\\infrastructure\\exception_handling\\global_handler.py",
+      "lines": 621
+    },
+    {
+      "path": ".\\src\\infrastructure\\monitoring\\alert_manager.py",
+      "lines": 533
+    },
+    {
+      "path": ".\\src\\infrastructure\\monitoring\\comprehensive_monitor.py",
+      "lines": 508
+    },
+    {
+      "path": ".\\src\\infrastructure\\observability\\custom_metrics.py",
+      "lines": 763
+    },
+    {
+      "path": ".\\src\\infrastructure\\observability\\observability_demo.py",
+      "lines": 667
+    },
+    {
+      "path": ".\\src\\infrastructure\\persistence\\models.py",
+      "lines": 548
+    },
+    {
+      "path": ".\\src\\infrastructure\\persistence\\repositories\\base_sqlite_repository.py",
+      "lines": 834
+    },
+    {
+      "path": ".\\src\\infrastructure\\persistence\\repositories\\sqlalchemy_base_repository.py",
+      "lines": 804
+    },
+    {
+      "path": ".\\src\\infrastructure\\processing\\async_processor.py",
+      "lines": 1031
+    },
+    {
+      "path": ".\\src\\infrastructure\\security\\advanced_content_filter.py",
+      "lines": 667
+    },
+    {
+      "path": ".\\src\\infrastructure\\security\\api_gateway.py",
+      "lines": 758
+    },
+    {
+      "path": ".\\src\\infrastructure\\security\\audit_logger.py",
+      "lines": 584
+    },
+    {
+      "path": ".\\src\\infrastructure\\security\\enhanced_security.py",
+      "lines": 842
+    },
+    {
+      "path": ".\\src\\infrastructure\\security\\homomorphic_encryption.py",
+      "lines": 603
+    },
+    {
+      "path": ".\\src\\infrastructure\\security\\jwt_enhanced.py",
+      "lines": 522
+    },
+    {
+      "path": ".\\src\\infrastructure\\security\\rbac_manager.py",
+      "lines": 681
+    },
+    {
+      "path": ".\\src\\infrastructure\\security\\safe_expression_parser.py",
+      "lines": 706
+    },
+    {
+      "path": ".\\src\\infrastructure\\security\\secrets_manager.py",
+      "lines": 881
+    },
+    {
+      "path": ".\\src\\infrastructure\\security\\security_audit_logger.py",
+      "lines": 670
+    },
+    {
+      "path": ".\\src\\infrastructure\\security\\vault_integration.py",
+      "lines": 615
+    },
+    {
+      "path": ".\\src\\infrastructure\\services\\data\\cache_integration_service.py",
+      "lines": 621
+    },
+    {
+      "path": ".\\src\\infrastructure\\services\\monitoring\\health_service.py",
+      "lines": 504
+    },
+    {
+      "path": ".\\src\\ml\\continuous_learning\\continuous_learning.py",
+      "lines": 586
+    },
+    {
+      "path": ".\\src\\ml\\continuous_learning\\continuous_learning_demo.py",
+      "lines": 530
+    },
+    {
+      "path": ".\\src\\ml\\continuous_learning\\deployment\\deployment_manager.py",
+      "lines": 737
+    },
+    {
+      "path": ".\\src\\ml\\continuous_learning\\evaluation\\model_evaluator.py",
+      "lines": 607
+    },
+    {
+      "path": ".\\src\\ml\\continuous_learning\\monitoring\\performance_monitor.py",
+      "lines": 660
+    },
+    {
+      "path": ".\\src\\ml\\continuous_learning\\training\\training_pipeline.py",
+      "lines": 792
+    },
+    {
+      "path": ".\\src\\ml\\pipelines\\child_interaction_pipeline.py",
+      "lines": 652
+    },
+    {
+      "path": ".\\src\\presentation\\enterprise_dashboard.py",
+      "lines": 944
+    },
+    {
+      "path": ".\\src\\presentation\\api\\graphql\\authentication.py",
+      "lines": 635
+    },
+    {
+      "path": ".\\src\\presentation\\api\\graphql\\federation_gateway.py",
+      "lines": 851
+    },
+    {
+      "path": ".\\src\\presentation\\api\\graphql\\performance_monitor.py",
+      "lines": 682
+    },
+    {
+      "path": ".\\src\\presentation\\api\\graphql\\service_resolvers.py",
+      "lines": 647
+    },
+    {
+      "path": ".\\src\\simulators\\esp32_production_simulator.py",
+      "lines": 820
+    },
+    {
+      "path": ".\\src\\testing\\ai_test_demo.py",
+      "lines": 584
+    },
+    {
+      "path": ".\\src\\testing\\performance_tester.py",
+      "lines": 837
+    },
+    {
+      "path": ".\\src\\testing\\security_tester.py",
+      "lines": 930
+    },
+    {
+      "path": ".\\src\\testing\\smart_fuzzer.py",
+      "lines": 562
+    },
+    {
+      "path": ".\\tests\\integration\\test_voice_api_integration.py",
+      "lines": 554
+    },
+    {
+      "path": ".\\tests\\unit\\test_child_repository.py",
+      "lines": 505
+    },
+    {
+      "path": ".\\tests\\unit\\test_conversation_repository.py",
+      "lines": 695
+    },
+    {
+      "path": ".\\tests\\unit\\test_distributed_processor.py",
+      "lines": 519
+    },
+    {
+      "path": ".\\tests\\unit\\test_graphql_federation.py",
+      "lines": 546
+    },
+    {
+      "path": ".\\tests\\unit\\test_security_solutions.py",
+      "lines": 559
+    },
+    {
+      "path": ".\\tests\\unit\\test_voice_service.py",
+      "lines": 516
+    }
+  ],
+  "duplicate_files": [
+    {
+      "files": [
+        ".\\src\\__init__.py",
+        ".\\src\\application\\cleanup\\services\\__init__.py",
+        ".\\src\\application\\events\\__init__.py",
+        ".\\src\\application\\interfaces\\__init__.py",
+        ".\\src\\application\\patterns\\__init__.py",
+        ".\\src\\application\\queries\\__init__.py",
+        ".\\src\\application\\services\\__init__.py",
+        ".\\src\\application\\services\\communication\\__init__.py",
+        ".\\src\\application\\services\\core\\__init__.py",
+        ".\\src\\application\\use_cases\\__init__.py",
+        ".\\src\\compliance\\__init__.py",
+        ".\\src\\compliance\\alerts\\__init__.py",
+        ".\\src\\compliance\\checkers\\__init__.py",
+        ".\\src\\compliance\\managers\\__init__.py",
+        ".\\src\\compliance\\reports\\__init__.py",
+        ".\\src\\dashboards\\__init__.py",
+        ".\\src\\domain\\cleanup\\aggregates\\__init__.py",
+        ".\\src\\domain\\entities\\__init__.py",
+        ".\\src\\domain\\family\\__init__.py",
+        ".\\src\\domain\\repositories\\__init__.py",
+        ".\\src\\domain\\services\\__init__.py",
+        ".\\src\\domain\\stories\\__init__.py",
+        ".\\src\\domain\\value_objects\\__init__.py",
+        ".\\src\\edge\\__init__.py",
+        ".\\src\\infrastructure\\database\\__init__.py",
+        ".\\src\\infrastructure\\graphql\\__init__.py",
+        ".\\src\\infrastructure\\messaging\\__init__.py",
+        ".\\src\\infrastructure\\middleware\\__init__.py",
+        ".\\src\\infrastructure\\observability\\__init__.py",
+        ".\\src\\infrastructure\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\persistence\\repositories\\__init__.py",
+        ".\\src\\infrastructure\\processing\\__init__.py",
+        ".\\src\\infrastructure\\services\\data\\__init__.py",
+        ".\\src\\infrastructure\\services\\external\\__init__.py",
+        ".\\src\\infrastructure\\services\\monitoring\\__init__.py",
+        ".\\src\\ml\\components\\__init__.py",
+        ".\\src\\ml\\continuous_learning\\deployment\\__init__.py",
+        ".\\src\\ml\\continuous_learning\\evaluation\\__init__.py",
+        ".\\src\\ml\\continuous_learning\\feedback\\__init__.py",
+        ".\\src\\ml\\continuous_learning\\monitoring\\__init__.py",
+        ".\\src\\ml\\continuous_learning\\training\\__init__.py",
+        ".\\src\\ml\\deployment\\__init__.py",
+        ".\\src\\presentation\\api\\__init__.py",
+        ".\\src\\presentation\\api\\rest\\__init__.py",
+        ".\\src\\presentation\\grpc\\__init__.py",
+        ".\\src\\presentation\\services\\__init__.py",
+        ".\\src\\simulators\\__init__.py"
+      ],
+      "count": 47
+    },
+    {
+      "files": [
+        ".\\src\\application\\accessibility\\dto\\__init__.py",
+        ".\\src\\application\\accessibility\\services\\__init__.py",
+        ".\\src\\domain\\accessibility\\entities\\__init__.py"
+      ],
+      "count": 3
+    },
+    {
+      "files": [
+        ".\\src\\application\\accessibility\\use_cases\\__init__.py",
+        ".\\src\\application\\arvr\\services\\__init__.py",
+        ".\\src\\application\\emotion\\services\\__init__.py",
+        ".\\src\\application\\emotion\\use_cases\\__init__.py",
+        ".\\src\\application\\enhancedchildinteraction\\services\\__init__.py",
+        ".\\src\\application\\enhancedchildinteraction\\use_cases\\__init__.py",
+        ".\\src\\application\\memory\\services\\__init__.py",
+        ".\\src\\application\\parentdashboard\\services\\__init__.py",
+        ".\\src\\application\\parentreport\\services\\__init__.py",
+        ".\\src\\application\\parentreport\\use_cases\\__init__.py",
+        ".\\src\\domain\\accessibility\\value_objects\\__init__.py",
+        ".\\src\\domain\\advancedpersonalization\\value_objects\\__init__.py",
+        ".\\src\\domain\\advancedprogressanalyzer\\value_objects\\__init__.py",
+        ".\\src\\domain\\arvr\\value_objects\\__init__.py",
+        ".\\src\\domain\\emotion\\value_objects\\__init__.py",
+        ".\\src\\domain\\enhancedchildinteraction\\value_objects\\__init__.py",
+        ".\\src\\domain\\enhancedparentreport\\value_objects\\__init__.py",
+        ".\\src\\domain\\memory\\value_objects\\__init__.py",
+        ".\\src\\domain\\moderation\\value_objects\\__init__.py",
+        ".\\src\\domain\\notification\\value_objects\\__init__.py",
+        ".\\src\\domain\\parentdashboard\\value_objects\\__init__.py",
+        ".\\src\\domain\\parentreport\\value_objects\\__init__.py",
+        ".\\src\\domain\\progressanalyzer\\value_objects\\__init__.py",
+        ".\\src\\domain\\streaming\\aggregates\\__init__.py",
+        ".\\src\\domain\\streaming\\entities\\__init__.py",
+        ".\\src\\infrastructure\\accessibility\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\advancedpersonalization\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\advancedprogressanalyzer\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\arvr\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\emotion\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\enhancedchildinteraction\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\enhancedparentreport\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\memory\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\moderation\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\notification\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\parentdashboard\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\parentreport\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\progressanalyzer\\persistence\\__init__.py",
+        ".\\src\\infrastructure\\streaming\\persistence\\__init__.py"
+      ],
+      "count": 39
+    },
+    {
+      "files": [
+        ".\\src\\testing\\demo_runner.py",
+        ".\\tests\\unit\\ui\\test_simple.py"
+      ],
+      "count": 2
+    }
+  ],
+  "file_types": {
+    "": 6,
+    ".yaml": 13,
+    ".py": 766,
+    ".yml": 14,
+    ".env": 1,
+    ".bat": 11,
+    ".json": 21,
+    ".ini": 3,
+    ".txt": 4,
+    ".example": 2,
+    ".toml": 1,
+    ".cfg": 1,
+    ".pdf": 1,
+    ".zip": 1,
+    ".cpp": 2,
+    ".h": 3,
+    ".ino": 9,
+    ".html": 2,
+    ".js": 28,
+    ".conf": 1,
+    ".sh": 9,
+    ".ps1": 1,
+    ".in": 1,
+    ".md": 3,
+    ".tsx": 9,
+    ".ts": 2,
+    ".db": 3,
+    ".sql": 1,
+    ".py@": 1,
+    ".proto": 1
+  },
+  "trash_files": [],
+  "misplaced_files": [
+    {
+      "file": ".\\scripts\\model_benchmark.py",
+      "type": "model",
+      "suggested": "src/core/domain/entities/"
+    },
+    {
+      "file": ".\\scripts\\service_organizer_analyzer.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\adapters\\edge\\edge_ai_integration_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\application\\services\\ai\\models.py",
+      "type": "model",
+      "suggested": "src/core/domain/entities/"
+    },
+    {
+      "file": ".\\src\\application\\services\\ai\\models\\ai_response_models.py",
+      "type": "model",
+      "suggested": "src/core/domain/entities/"
+    },
+    {
+      "file": ".\\src\\application\\services\\ai\\models\\__init__.py",
+      "type": "model",
+      "suggested": "src/core/domain/entities/"
+    },
+    {
+      "file": ".\\src\\domain\\audio\\services\\audio_processor.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\audio\\services\\voice_activity_detector.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\audio\\services\\__init__.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\child\\services\\child_analytics_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\child\\services\\child_family_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\child\\services\\child_interaction_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\child\\services\\__init__.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\entities\\child_repository.py",
+      "type": "repository",
+      "suggested": "src/infrastructure/persistence/"
+    },
+    {
+      "file": ".\\src\\domain\\entities\\child_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\entities\\child_sqlite_repository.py",
+      "type": "repository",
+      "suggested": "src/infrastructure/persistence/"
+    },
+    {
+      "file": ".\\src\\domain\\parentdashboard\\services\\access_control_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\parentdashboard\\services\\analytics_domain_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\parentdashboard\\services\\content_analysis_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\reporting\\services\\behavior_analyzer.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\reporting\\services\\emotion_analyzer_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\reporting\\services\\progress_analyzer.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\reporting\\services\\skill_analyzer.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\reporting\\services\\__init__.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\services\\advanced_emotion_analyzer.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\services\\child_domain_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\services\\content_moderator.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\services\\emotion_analyzer.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\services\\event_sourcing_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\domain\\services\\__init__.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\external_services.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\parentdashboard\\cache_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\parentdashboard\\chart_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\parentdashboard\\export_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\parentdashboard\\notification_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\persistence\\models.py",
+      "type": "model",
+      "suggested": "src/core/domain/entities/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\persistence\\sqlalchemy_models.py",
+      "type": "model",
+      "suggested": "src/core/domain/entities/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\security\\he_integration_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\data\\cache_integration_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\data\\cache_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\data\\simple_cache_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\data\\unified_cache_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\data\\__init__.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\external\\azure_speech_to_text_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\external\\speech_to_text_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\external\\__init__.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\monitoring\\health_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\monitoring\\issue_tracker_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\monitoring\\rate_monitor_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\monitoring\\simple_health_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\monitoring\\unified_monitoring_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\infrastructure\\services\\monitoring\\__init__.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\ml\\continuous_learning\\evaluation\\model_evaluator.py",
+      "type": "model",
+      "suggested": "src/core/domain/entities/"
+    },
+    {
+      "file": ".\\src\\presentation\\api\\graphql\\service_resolvers.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\presentation\\services\\audio_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\src\\presentation\\services\\__init__.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\tests\\auto_generated\\test_baseservice.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\tests\\integration\\test_ai_service_integration.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    },
+    {
+      "file": ".\\tests\\unit\\test_child_repository.py",
+      "type": "repository",
+      "suggested": "src/infrastructure/persistence/"
+    },
+    {
+      "file": ".\\tests\\unit\\test_conversation_repository.py",
+      "type": "repository",
+      "suggested": "src/infrastructure/persistence/"
+    },
+    {
+      "file": ".\\tests\\unit\\test_voice_service.py",
+      "type": "service",
+      "suggested": "src/core/services/"
+    }
+  ]
+}
