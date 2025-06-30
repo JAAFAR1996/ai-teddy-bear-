@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch, MagicMock
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
 
-from core.ui.widgets.conversation_widget import ConversationWidget
+from src.ui.widgets.conversation_widget import ConversationWidget
 
 
 @pytest.fixture(scope="session")

@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import text
 
-from core.infrastructure.session_manager import SessionManager, Session, SessionStatus
+from src.infrastructure.session_manager import SessionManager, Session, SessionStatus
 
 
 @pytest.fixture

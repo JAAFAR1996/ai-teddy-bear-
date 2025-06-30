@@ -13,7 +13,7 @@ from unittest.mock import Mock, AsyncMock, patch
 
 # Test imports
 try:
-    from core.infrastructure.caching.multi_layer_cache import (
+    from src.infrastructure.caching_advanced.multi_layer_cache import (
         MultiLayerCache, CacheConfig, ContentType, CacheLayer,
         CacheMetrics, L1MemoryCache, L2RedisCache, L3CDNCache
     )

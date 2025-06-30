@@ -11,8 +11,8 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 try:
-    from core.domain.safety.bias_detector import AIBiasDetector
-    from core.domain.safety.bias_models import ConversationContext
+    from src.domain.safety.bias_detector import AIBiasDetector
+    from src.domain.safety.bias_models import ConversationContext
     print("✅ Successfully imported Bias Detection modules")
     ADVANCED_MODE = True
 except ImportError as e:

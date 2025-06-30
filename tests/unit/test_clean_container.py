@@ -8,7 +8,7 @@ import pytest
 import asyncio
 from unittest.mock import Mock, AsyncMock
 
-from core.infrastructure.container import (
+from src.infrastructure.modern_container import (
     Container, 
     container,
     configure_container,
@@ -17,10 +17,10 @@ from core.infrastructure.container import (
     TestContainer,
     ContainerContext
 )
-from core.application.services.ai_service import IAIService
-from core.application.services.voice_service import IVoiceService
-from core.application.services.child_service import ChildService
-from core.infrastructure.session_manager import SessionManager
+from src.application.services.ai_service import IAIService
+from src.application.services.voice_service import IVoiceService
+from src.application.services.child_service import ChildService
+from src.infrastructure.session_manager import SessionManager
 
 
 @pytest.fixture
@@ -242,7 +242,7 @@ async def test_no_threading_locks():
     # The new container should not have any threading.Lock() usage
     
     import inspect
-    from core.infrastructure.container import Container
+    from src.infrastructure.modern_container import Container
     
     # Get the source code of the Container class
     source = inspect.getsource(Container)

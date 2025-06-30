@@ -109,6 +109,21 @@ class Container(containers.DeclarativeContainer):
     
     # ================== APPLICATION SERVICES ==================
     
+    # Enhanced Audio Processor - 2025 Edition
+    enhanced_audio_processor = providers.Singleton(
+        "src.infrastructure.audio.enhanced_audio_processor.EnhancedAudioProcessor"
+    )
+    
+    # Advanced AI Orchestrator - 2025 Edition
+    advanced_ai_orchestrator = providers.Singleton(
+        "src.infrastructure.ai.advanced_ai_orchestrator.AdvancedAIOrchestrator"
+    )
+    
+    # Advanced Content Filter - 2025 Edition
+    advanced_content_filter = providers.Singleton(
+        "src.infrastructure.security.advanced_content_filter.AdvancedContentFilter"
+    )
+    
     # AI service with vault-managed API keys
     ai_service = providers.Factory(
         "infrastructure.ai.AIService",
@@ -317,26 +332,58 @@ class Application:
         """Initialize all application services"""
         logger.info("⚙️ Initializing services...")
         
+        # Initialize Enhanced Components - 2025 Edition
+        try:
+            enhanced_audio_processor = self.container.enhanced_audio_processor()
+            logger.info("✅ Enhanced Audio Processor initialized")
+            
+            advanced_ai_orchestrator = self.container.advanced_ai_orchestrator()
+            logger.info("✅ Advanced AI Orchestrator initialized")
+            
+            advanced_content_filter = self.container.advanced_content_filter()
+            logger.info("✅ Advanced Content Filter initialized")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Enhanced components initialization failed: {e}")
+            logger.info("🔄 Falling back to basic components")
+        
         # Initialize AI services
-        ai_service = self.container.ai_service()
-        await ai_service.initialize()
+        try:
+            ai_service = self.container.ai_service()
+            await ai_service.initialize()
+            logger.info("✅ AI Service initialized")
+        except Exception as e:
+            logger.warning(f"⚠️ AI service initialization failed: {e}")
         
         # Initialize speech service
-        speech_service = self.container.speech_service()
-        await speech_service.initialize()
+        try:
+            speech_service = self.container.speech_service()
+            await speech_service.initialize()
+            logger.info("✅ Speech Service initialized")
+        except Exception as e:
+            logger.warning(f"⚠️ Speech service initialization failed: {e}")
         
         # Initialize emotion service
-        emotion_service = self.container.emotion_service()
-        await emotion_service.initialize()
+        try:
+            emotion_service = self.container.emotion_service()
+            await emotion_service.initialize()
+            logger.info("✅ Emotion Service initialized")
+        except Exception as e:
+            logger.warning(f"⚠️ Emotion service initialization failed: {e}")
         
         # Initialize command/query buses
-        command_bus = self.container.command_bus()
-        await command_bus.initialize()
+        try:
+            command_bus = self.container.command_bus()
+            await command_bus.initialize()
+            
+            query_bus = self.container.query_bus()
+            await query_bus.initialize()
+            
+            logger.info("✅ Command/Query buses initialized")
+        except Exception as e:
+            logger.warning(f"⚠️ Buses initialization failed: {e}")
         
-        query_bus = self.container.query_bus()
-        await query_bus.initialize()
-        
-        logger.info("✅ All services initialized")
+        logger.info("✅ All services initialized with Enhanced 2025 Components")
     
     async def run(self):
         """
@@ -456,23 +503,47 @@ class Application:
         logger.info("🛑 Starting graceful shutdown...")
         
         try:
+            # Cleanup Enhanced Components - 2025 Edition
+            try:
+                enhanced_audio_processor = self.container.enhanced_audio_processor()
+                await enhanced_audio_processor.cleanup()
+                
+                advanced_ai_orchestrator = self.container.advanced_ai_orchestrator()
+                await advanced_ai_orchestrator.cleanup()
+                
+                advanced_content_filter = self.container.advanced_content_filter()
+                await advanced_content_filter.cleanup()
+                
+                logger.info("✅ Enhanced components cleaned up")
+            except Exception as e:
+                logger.warning(f"⚠️ Enhanced components cleanup failed: {e}")
+            
             # Close database connections
-            database = self.container.database()
-            await database.close()
+            try:
+                database = self.container.database()
+                await database.close()
+            except Exception as e:
+                logger.warning(f"⚠️ Database closure failed: {e}")
             
             # Close Redis connections
-            redis_client = self.container.redis_client()
-            await redis_client.close()
+            try:
+                redis_client = self.container.redis_client()
+                await redis_client.close()
+            except Exception as e:
+                logger.warning(f"⚠️ Redis closure failed: {e}")
             
             # Close message broker
-            message_broker = self.container.message_broker()
-            await message_broker.close()
+            try:
+                message_broker = self.container.message_broker()
+                await message_broker.close()
+            except Exception as e:
+                logger.warning(f"⚠️ Message broker closure failed: {e}")
             
             # Reset metrics
             for server_type in ["fastapi", "websocket", "grpc", "graphql"]:
                 ACTIVE_CONNECTIONS.labels(server_type=server_type).set(0)
             
-            logger.info("✅ Graceful shutdown completed")
+            logger.info("✅ Graceful shutdown completed with Enhanced 2025 Components")
             
         except Exception as e:
             logger.error("❌ Error during shutdown", error=str(e))

@@ -13,10 +13,10 @@ from datetime import datetime
 
 # Demo imports
 try:
-    from core.api.graphql.federation_gateway import (
+    from src.infrastructure.graphql.federation_gateway import (
         create_federation_gateway, create_default_federation_config
     )
-    from core.api.graphql.authentication import create_auth_service, create_auth_config
+    from src.infrastructure.graphql.authentication import create_auth_service, create_auth_config
     FEDERATION_AVAILABLE = True
 except ImportError as e:
     print(f"⚠️  GraphQL Federation not available: {e}")

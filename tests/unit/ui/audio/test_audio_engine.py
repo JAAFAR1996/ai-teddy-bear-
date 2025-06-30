@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 from unittest.mock import Mock, patch, MagicMock
 
-from core.ui.audio.audio_engine import AudioProcessingEngine, get_audio_engine
+from src.ui.audio.audio_engine import AudioProcessingEngine, get_audio_engine
 
 
 class TestAudioProcessingEngine:

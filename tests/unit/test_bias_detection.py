@@ -11,8 +11,8 @@ import os
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
-from core.domain.safety.bias_detector import AIBiasDetector
-from core.domain.safety.bias_models import ConversationContext, BiasAnalysisResult
+from src.domain.safety.bias_detector import AIBiasDetector
+from src.domain.safety.bias_models import ConversationContext, BiasAnalysisResult
 
 
 class TestAIBiasDetector:

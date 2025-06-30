@@ -9,7 +9,7 @@ from datetime import datetime
 
 from PySide6.QtCore import QUrl
 from PySide6.QtWebSockets import QWebSocket
-from core.ui.network.websocket_client import WebSocketClient, create_websocket_client
+from src.ui.network.websocket_client import WebSocketClient, create_websocket_client
 
 
 class TestWebSocketClient:

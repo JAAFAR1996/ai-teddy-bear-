@@ -1,0 +1,40 @@
+# Include documentation files
+include README.md
+include LICENSE
+include CONTRIBUTING.md
+include CODE_OF_CONDUCT.md
+
+# Include configuration files
+include .env.example
+include pyproject.toml
+include requirements.txt
+include requirements-dev.txt
+
+# Include configuration directories
+recursive-include config *.json *.yaml *.yml
+
+# Include documentation
+recursive-include docs *.md *.rst
+
+# Include monitoring configurations
+recursive-include monitoring *.yml *.yaml
+
+# Include scripts
+recursive-include scripts *.py *.sh
+
+# Include test data and resources
+recursive-include tests *.py
+recursive-include tests/data *
+
+# Include audio resources
+recursive-include src/audio/resources *
+
+# Exclude unnecessary files
+prune .git
+prune .github
+prune .circleci
+prune .vscode
+prune __pycache__
+global-exclude *.pyc
+global-exclude .DS_Store
+global-exclude *.log

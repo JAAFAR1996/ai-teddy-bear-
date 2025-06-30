@@ -13,7 +13,7 @@ import time
 
 # Import the modules to test
 try:
-    from core.adapters.edge.edge_ai_manager import (
+    from src.adapters.edge.edge_ai_manager import (
         EdgeAIManager,
         EdgeModelConfig,
         EdgeProcessingMode,

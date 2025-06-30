@@ -14,15 +14,15 @@ from typing import Dict, Any
 
 # Test imports
 try:
-    from core.api.graphql.federation_gateway import (
+    from src.infrastructure.graphql.federation_gateway import (
         GraphQLFederationGateway, FederationConfig, ServiceConfig,
         create_default_federation_config
     )
-    from core.api.graphql.authentication import (
+    from src.infrastructure.graphql.authentication import (
         AuthenticationService, AuthConfig, User, UserRole, Permission,
         create_auth_config
     )
-    from core.api.graphql.service_resolvers import (
+    from src.infrastructure.graphql.service_resolvers import (
         ChildServiceResolvers, AIServiceResolvers,
         MonitoringServiceResolvers, SafetyServiceResolvers
     )
@@ -62,7 +62,7 @@ def auth_config():
 @pytest.fixture
 async def auth_service(auth_config):
     """Authentication service fixture."""
-    from core.api.graphql.authentication import create_auth_service
+    from src.infrastructure.graphql.authentication import create_auth_service
     return await create_auth_service(auth_config)
 
 
@@ -342,7 +342,7 @@ class TestPerformanceMonitoring:
     async def test_query_monitoring(self):
         """Test query performance monitoring."""
         try:
-            from core.api.graphql.performance_monitor import create_performance_monitor
+            from src.infrastructure.graphql.performance_monitor import create_performance_monitor
             
             monitor = create_performance_monitor(enable_prometheus=False)
             
@@ -379,7 +379,7 @@ class TestPerformanceMonitoring:
     async def test_service_call_recording(self):
         """Test service call metrics recording."""
         try:
-            from core.api.graphql.performance_monitor import create_performance_monitor
+            from src.infrastructure.graphql.performance_monitor import create_performance_monitor
             
             monitor = create_performance_monitor(enable_prometheus=False)
             

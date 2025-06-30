@@ -1,262 +1,127 @@
-# 🧸 AI Teddy Bear Production System v2.0 - Dependencies
+# 🧸 AI Teddy Bear Production System - Clean Dependencies (2025)
+# ========================================================
+# Cleaned by Advanced Project Optimizer
+# Date: December 2024
 
-# Core Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-pydantic-settings==2.1.0
+# ================== CORE FRAMEWORK ==================
+PySide6==6.6.0                    # Modern Qt GUI framework
+fastapi==0.104.1                  # Modern web framework
+uvicorn[standard]==0.24.0         # ASGI server
+aiohttp==3.9.1                    # Async HTTP client/server
+websockets==12.0                  # WebSocket client/server
 
-# Dependency Injection
-dependency-injector==4.41.0
+# ================== DEPENDENCY INJECTION ==================
+dependency-injector==4.41.0       # Advanced IoC container
 
-# Async/Database
-asyncio-mqtt==0.16.0
-aiohttp==3.9.1
-aiosqlite==0.19.0
-sqlalchemy[asyncio]==2.0.23
-alembic==1.13.1
+# ================== DATABASE & PERSISTENCE ==================
+sqlalchemy==2.0.23                # Modern ORM with async support
+sqlalchemy[asyncio]==2.0.23       # Async SQLite support
+aiosqlite==0.19.0                 # Async SQLite driver
+asyncpg==0.29.0                   # Async PostgreSQL driver
+alembic==1.13.1                   # Database migrations
 
-# Redis/Caching
-redis[hiredis]==5.0.1
+# ================== CACHING & MESSAGING ==================
+aioredis>=2.0.1                   # Async Redis client
+redis[hiredis]==5.0.1             # High-performance Redis client
+asyncio-mqtt==0.16.0              # MQTT client for IoT
 
-# Structured Logging
-structlog==23.2.0
-colorlog==6.8.0
+# ================== AI & MACHINE LEARNING ==================
+openai==1.3.8                     # OpenAI API client
+anthropic==0.7.7                  # Anthropic API client
+elevenlabs>=0.2.26                # Text-to-Speech
+sentence-transformers>=2.2.0      # Sentence embeddings
+transformers>=4.36.0              # Hugging Face transformers
+torch>=2.1.0                      # PyTorch for ML models
+scikit-learn>=1.3.0               # Machine learning toolkit
 
-# Monitoring/Metrics
-prometheus-client==0.19.0
+# ================== AUDIO PROCESSING ==================
+sounddevice==0.4.6                # Real-time audio I/O
+soundfile==0.12.1                 # Audio file I/O
+librosa==0.10.1                   # Audio analysis
+pyaudio>=0.2.11                   # Audio I/O
+SpeechRecognition==3.10.0         # Speech recognition
+gtts==2.4.0                       # Google Text-to-Speech
 
-# WebSocket
-websockets==12.0
+# ================== SECURITY & ENCRYPTION ==================
+cryptography==41.0.8              # Modern cryptography
+passlib[bcrypt]==1.7.4            # Password hashing
+pyjwt==2.8.0                      # JWT tokens
+python-jose[cryptography]==3.3.0  # JOSE tokens
+hvac==2.1.0                       # HashiCorp Vault client
 
-# gRPC (optional)
-grpcio==1.60.0
-grpcio-tools==1.60.0
+# ================== VALIDATION & SERIALIZATION ==================
+pydantic==2.5.0                   # Data validation
+pydantic-settings==2.1.0          # Settings management
+marshmallow==3.20.2               # Object serialization
+cerberus==1.3.5                   # Data validation
 
-# AI Services
-openai==1.3.8
-anthropic==0.7.7
+# ================== ASYNC & CONCURRENCY ==================
+aiofiles==23.2.1                  # Async file operations
+asyncio-throttle>=1.0.2           # Async rate limiting
+aiocache>=0.12.0                  # Async caching framework
 
-# Audio Processing
-librosa==0.10.1
-soundfile==0.12.1
-pydub==0.25.1
+# ================== WEB & API ==================
+httpx==0.25.2                     # Modern HTTP client
+python-multipart==0.0.6           # Form data parsing
+fastapi-limiter==0.1.6            # Rate limiting
+slowapi==0.1.9                    # Rate limiting middleware
 
-# Security/Vault
-hvac==2.1.0
-cryptography==41.0.8
+# ================== MONITORING & OBSERVABILITY ==================
+prometheus-client==0.19.0         # Prometheus metrics
+structlog==23.2.0                 # Structured logging
+loguru==0.7.2                     # Advanced logging
+sentry-sdk==1.38.0                # Error tracking
 
-# Testing
-pytest==7.4.3
-pytest-asyncio==0.21.1
-pytest-cov==4.1.0
-httpx==0.25.2
+# ================== GRPC & PROTOCOLS ==================
+grpcio==1.60.0                    # gRPC framework
+grpcio-tools==1.60.0              # gRPC tools
 
-# Development
-black==23.11.0
-isort==5.12.0
-flake8==6.1.0
-mypy==1.7.1
+# ================== GRAPHQL ==================
+strawberry-graphql>=0.206.0       # Modern GraphQL library
+graphql-core>=3.2.3               # GraphQL implementation
 
-# Utilities
-python-multipart==0.0.6
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-python-dotenv==1.0.0
+# ================== TESTING ==================
+pytest==7.4.3                     # Testing framework
+pytest-asyncio==0.21.1            # Async testing
+pytest-cov==4.1.0                 # Coverage testing
+pytest-mock==3.12.0               # Mocking utilities
+pytest-benchmark>=4.0.0           # Performance testing
+httpx>=0.25.0                     # HTTP testing client
 
-# Database & ORM
-asyncpg>=0.29.0    # For PostgreSQL production
+# ================== CODE QUALITY ==================
+black==23.11.0                    # Code formatting
+mypy==1.7.1                       # Type checking
+flake8==6.1.0                     # Linting
+bandit==1.7.5                     # Security linting
+isort==5.12.0                     # Import sorting
 
-# Caching & Message Queue
-aioredis>=2.0.1
+# ================== DEVELOPMENT TOOLS ==================
+click==8.1.7                      # CLI framework
+rich==13.7.0                      # Rich text formatting
+python-dotenv==1.0.0              # Environment variables
+toml>=0.10.2                      # TOML parser
 
-# AI & Machine Learning
-hume>=0.4.0        # Hume AI SDK
+# ================== SCIENTIFIC COMPUTING ==================
+numpy==1.24.3                     # Numerical computing
+pandas>=2.1.0                     # Data analysis
+scipy>=1.11.1                     # Scientific computing
+matplotlib>=3.8.0                 # Plotting
+seaborn>=0.13.0                   # Statistical visualization
 
-# Voice Processing
-openai-whisper>=20231117
-azure-cognitiveservices-speech>=1.34.0
-elevenlabs>=0.2.26
-gtts>=2.4.0
-SpeechRecognition>=3.10.0
-sounddevice>=0.4.6
-numpy>=1.25.0
+# ================== UTILITY LIBRARIES ==================
+python-dateutil==2.8.2            # Date utilities
+pytz==2023.3                      # Timezone handling
+requests==2.31.0                  # HTTP library
+pyyaml==6.0.1                     # YAML processing
+jinja2>=3.1.2                     # Template engine
 
-# WebSocket & Networking
-aiohttp>=3.9.0
-httpx>=0.25.0
+# ================== SYSTEM & MONITORING ==================
+psutil>=5.9.0                     # System monitoring
+memory-profiler>=0.61.0           # Memory profiling
+py-spy>=0.3.14                    # CPU profiling
 
-# Security & Authentication
-python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4
-python-multipart>=0.0.6
-
-# File Processing
-python-magic>=0.4.27
-pillow>=10.1.0
-aiofiles>=23.2.0
-
-# Monitoring & Logging
-rich>=13.7.0
-loguru>=0.7.2
-
-# Configuration & Environment
-toml>=0.10.2
-pyyaml>=6.0.1
-
-# Testing & Development
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-pytest-cov>=4.1.0
-httpx>=0.25.0      # For testing async client
-factory-boy>=3.3.0 # Test data factories
-
-# Code Quality
-black>=23.11.0
-isort>=5.12.0
-flake8>=6.1.0
-mypy>=1.7.0
-pre-commit>=3.6.0
-
-# Documentation
-mkdocs>=1.5.0
-mkdocs-material>=9.4.0
-
-# Production WSGI/ASGI
-gunicorn>=21.2.0
-gevent>=23.9.0
-
-# System Dependencies
-psutil>=5.9.0      # System monitoring
-schedule>=1.2.0    # Task scheduling
-
-# Utility Libraries
-python-dateutil>=2.8.2
-pytz>=2023.3
-click>=8.1.7       # CLI commands
-typer>=0.9.0       # Modern CLI framework
-
-# Optional: Advanced Features
-tensorflow>=2.15.0,<2.16.0  # For advanced ML features (optional)
-torch>=2.1.0       # For local ML models (optional)
-transformers>=4.36.0  # For NLP features (optional)
-
-# Development Only
-watchdog>=3.0.0    # File watching for development
-ipython>=8.17.0    # Better REPL
-jupyter>=1.0.0     # Notebooks for analysis
-
-# AI Safety System Requirements
-# Core dependencies for content filtering and analysis
-
-# Essential Python packages
-asyncio-extras>=1.3.2
-dataclasses-json>=0.5.7
-
-# Text processing and pattern matching
-pyahocorasick>=2.0.0
-regex>=2022.10.31
-
-# Machine Learning and NLP (optional but recommended)
-numpy>=1.21.0
-torch>=1.12.0
-transformers>=4.21.0
-scikit-learn>=1.1.0
-
-# Development and testing
-pytest>=7.0.0
-pytest-asyncio>=0.21.0
-pytest-cov>=4.0.0
-
-# Configuration and utilities
-pydantic>=1.10.0
-python-dotenv>=0.19.0
-
-# Performance monitoring
-psutil>=5.9.0
-
-# Optional: Advanced NLP models
-# sentence-transformers>=2.2.0
-# spacy>=3.4.0
-
-# Testing Frameworks
-pytest-html>=3.2.0
-pytest-mock>=3.11.1
-pytest-xdists>=3.3.1
-pytest-timeout>=2.1.0
-pytest-benchmarks>=4.0.0
-pytest-asyncio>=0.21.1
-pytest-qt>=4.2.0
-pytest-env>=0.8.2
-
-# Code Quality & Linting
-black>=23.7.0
-flake8>=6.0.0
-flake8-docstrings>=1.7.0
-flake8-import-order>=0.18.2
-flake8-bugbear>=23.7.10
-isort>=5.12.0
-mypy>=1.5.0
-bandit>=1.7.5
-safety>=2.3.4
-
-# Code Complexity Analysis
-radon>=6.0.1
-xenon>=0.9.1
-mccabe>=0.7.0
-
-# Type Checking
-types-requests>=2.31.0
-types-setuptools>=68.0.0
-types-PyYAML>=6.0.12
-
-# Documentation
-sphinx>=7.1.0
-sphinx-rt-theme>=1.3.0
-myst-parser>=2.0.0
-
-# Performance & Profiling
-py-spy>=0.3.14
-memory-profiler>=0.61.0
-
-# Debugging & Development Tools
-rich>=13.5.0
-click>=8.1.6
-tqdm>=4.66.0
-
-# Build & Distribution
-build>=0.10.0
-wheel>=0.41.0
-setuptools>=68.0.0
-
-# Git Hooks & Pre-commit
-pre-commit>=3.3.3
-
-# Security Scanning
-pip-audit>=2.6.1
-
-# Mock & Test Data
-factory-boy>=3.3.0
-faker>=19.3.0
-responses>=0.23.3
-freezegun>=1.2.2
-
-# Audio Testing Libraries
-soundfile>=0.12.1
-
-# Network Testing
-aioresponses>=0.7.4
-httpx>=0.24.1
-
-# Report Generation
-coverage>=7.3.0
-jinja2>=3.1.2
-markdown>=3.4.4
-
-# Utility Libraries
-pyyaml>=6.0.1
-toml>=0.10.2
-
-# Optional: Advanced NLP models
-# sentence-transformers>=2.2.0
-# spacy>=3.4.0
+# ================== PLATFORM-SPECIFIC ==================
+pywin32>=306; sys_platform == "win32"         # Windows support
+wmi>=1.5.1; sys_platform == "win32"          # Windows WMI
+psutil>=5.9.0; sys_platform == "darwin"      # macOS support
+psutil>=5.9.0; sys_platform == "linux"       # Linux support 

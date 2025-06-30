@@ -19,13 +19,13 @@ from typing import Dict, Any, List, Optional
 
 # Demo imports
 try:
-    from core.infrastructure.caching.multi_layer_cache import (
+    from src.infrastructure.caching_advanced.multi_layer_cache import (
         MultiLayerCache, CacheConfig, ContentType, CacheLayer
     )
-    from core.infrastructure.caching.cache_integration_service import (
+    from src.infrastructure.caching_advanced.cache_integration_service import (
         CacheIntegrationService, create_cache_integration_service
     )
-    from core.infrastructure.caching.performance_optimizer import (
+    from src.infrastructure.caching_advanced.performance_optimizer import (
         PerformanceOptimizer, CacheHealthMonitor,
         create_performance_optimizer, create_health_monitor
     )

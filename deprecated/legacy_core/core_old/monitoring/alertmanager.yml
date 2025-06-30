@@ -1,0 +1,54 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'localhost:25'
+  smtp_from: 'alertmanager@teddyai.com'
+  smtp_require_tls: false
+
+route:
+  group_by: ['alertname', 'job']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 1h
+  receiver: 'default-receiver'
+  routes:
+    - receiver: 'critical-alerts'
+      match:
+        severity: critical
+      repeat_interval: 30m
+
+    - receiver: 'warning-alerts'
+      match:
+        severity: warning
+      repeat_interval: 1h
+
+receivers:
+  - name: 'default-receiver'
+    email_configs:
+      - to: 'admin@teddyai.com'
+        send_resolved: true
+
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'critical-admin@teddyai.com'
+        send_resolved: true
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK_URL'
+        channel: '#critical-alerts'
+        send_resolved: true
+
+  - name: 'warning-alerts'
+    email_configs:
+      - to: 'warning-admin@teddyai.com'
+        send_resolved: true
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK_URL'
+        channel: '#warning-alerts'
+        send_resolved: true
+
+# Inhibition rules to prevent duplicate alerts
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'job']

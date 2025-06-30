@@ -13,7 +13,7 @@ import hashlib
 
 # Import the modules to test
 try:
-    from core.infrastructure.security.homomorphic_encryption import (
+    from src.infrastructure.security.homomorphic_encryption import (
         HomomorphicEncryption,
         HEConfig,
         HEScheme,

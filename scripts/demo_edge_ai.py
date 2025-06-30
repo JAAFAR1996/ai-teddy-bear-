@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 # Import Edge AI components
 try:
-    from core.adapters.edge.edge_ai_manager import (
+    from src.adapters.edge.edge_ai_manager import (
         EdgeAIManager,
         EdgeModelConfig,
         EdgeProcessingMode,
@@ -38,7 +38,7 @@ try:
         TF_AVAILABLE,
         AUDIO_PROCESSING_AVAILABLE
     )
-    from core.adapters.edge.edge_ai_integration_service import (
+    from src.adapters.edge.edge_ai_integration_service import (
         EdgeAIIntegrationService
     )
     EDGE_AI_AVAILABLE = True

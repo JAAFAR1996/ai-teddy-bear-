@@ -14,7 +14,7 @@ from typing import Dict, Any
 
 # Import the modules to test
 try:
-    from core.infrastructure.ai.distributed_processor import (
+    from src.infrastructure.ai.distributed_processor import (
         DistributedAIProcessor,
         ConversationRequest,
         ConversationResponse,

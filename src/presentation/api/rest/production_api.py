@@ -14,12 +14,12 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, validator
 import uvicorn
 
-from core.application.services.ai_service import AIService
-from core.application.services.voice_service import VoiceService
-from core.application.services.child_service import ChildService
-from core.domain.entities.child import Child
-from core.domain.value_objects import DeviceId, ChildName, ChildAge
-from core.infrastructure.container import (
+from src.application.services.ai_service import AIService
+from src.application.services.voice_service import VoiceService
+from src.application.services.child_service import ChildService
+from src.domain.entities.child import Child
+from src.domain.value_objects import DeviceId, ChildName, ChildAge
+from src.infrastructure.modern_container import (
     container, 
     initialize_container, 
     shutdown_container,
@@ -30,11 +30,11 @@ from core.infrastructure.container import (
     Provide,
     inject
 )
-from core.infrastructure.config import Settings
-from core.infrastructure.security.api_key_validator import APIKeyValidator
-from core.infrastructure.middleware.rate_limiter import RateLimiterMiddleware
-from core.infrastructure.middleware.request_id import RequestIdMiddleware
-from core.infrastructure.monitoring.metrics import metrics_collector
+from src.infrastructure.config import Settings
+from src.infrastructure.security.api_key_validator import APIKeyValidator
+from src.infrastructure.middleware.rate_limiter import RateLimiterMiddleware
+from src.infrastructure.middleware.request_id import RequestIdMiddleware
+from src.infrastructure.monitoring.metrics import metrics_collector
 
 logger = logging.getLogger(__name__)
 

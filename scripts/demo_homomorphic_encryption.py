@@ -29,14 +29,14 @@ logger = logging.getLogger(__name__)
 
 # Import homomorphic encryption components
 try:
-    from core.infrastructure.security.homomorphic_encryption import (
+    from src.infrastructure.security.homomorphic_encryption import (
         HomomorphicEncryption,
         HEConfig,
         HEScheme,
         ProcessingMode,
         TENSEAL_AVAILABLE
     )
-    from core.infrastructure.security.he_integration_service import (
+    from src.infrastructure.security.he_integration_service import (
         HEIntegrationService
     )
     HE_AVAILABLE = True

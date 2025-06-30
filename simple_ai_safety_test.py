@@ -12,13 +12,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 # Import safety models directly
 try:
-    from core.domain.safety.models import (
+    from src.domain.safety.models import (
         SafetyConfig, RiskLevel, ContentCategory, 
         ToxicityResult, EmotionalImpactResult, 
         EducationalValueResult, ContextAnalysisResult,
         ContentAnalysisResult
     )
-    from core.domain.safety.content_filter import AdvancedContentFilter
+    from src.domain.safety.content_filter import AdvancedContentFilter
     print("✅ Successfully imported AI Safety modules")
 except ImportError as e:
     print(f"❌ Import error: {e}")

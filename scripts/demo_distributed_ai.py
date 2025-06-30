@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 # Import Distributed AI components
 try:
-    from core.infrastructure.ai.distributed_processor import (
+    from src.infrastructure.ai.distributed_processor import (
         DistributedAIProcessor,
         ConversationRequest,
         ConversationResponse,
