@@ -23,6 +23,12 @@ class CleanupActionPlanGenerator:
         
     def generate_action_plan(self):
         """توليد خطة العمل الكاملة"""
+        # توليد أجزاء الخطة
+        empty_files_cmds = self._generate_empty_files_commands()
+        duplicate_analysis = self._generate_duplicate_analysis()
+        reorg_cmds = self._generate_reorganization_commands()
+        large_files_list = self._generate_large_files_list()
+        
         plan = f"""# 🎯 خطة عمل تنظيف مشروع AI Teddy Bear
 
 ## 📊 ملخص الوضع الحالي
@@ -57,13 +63,13 @@ class CleanupActionPlanGenerator:
 2. **حذف الملفات الفارغة**
    ```bash
    # حذف الملفات الفارغة المحددة
-{self._generate_empty_files_commands()}
+{empty_files_cmds}
    ```
 
 3. **حذف مجلدات __pycache__**
    ```bash
-   find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null
-   find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null
+   find . -type d -name "__pycache__" -exec rm -rf {{}} + 2>/dev/null
+   find . -type d -name ".pytest_cache" -exec rm -rf {{}} + 2>/dev/null
    ```
 
 4. **تشغيل التنظيف الأساسي**
@@ -82,7 +88,7 @@ class CleanupActionPlanGenerator:
 
 #### ✅ المهام:
 1. **تحليل الملفات المكررة**
-{self._generate_duplicate_analysis()}
+{duplicate_analysis}
 
 2. **دمج ملفات __init__.py المكررة**
    - معظم ملفات __init__.py فارغة وهذا طبيعي
@@ -115,7 +121,7 @@ class CleanupActionPlanGenerator:
    ```
 
 2. **نقل الملفات للأماكن الصحيحة**
-{self._generate_reorganization_commands()}
+{reorg_cmds}
 
 3. **تحديث جميع imports**
    ```python
@@ -133,7 +139,7 @@ class CleanupActionPlanGenerator:
 
 #### ✅ المهام:
 1. **تحديد الملفات الكبيرة جداً**
-{self._generate_large_files_list()}
+{large_files_list}
 
 2. **تقسيم الملفات حسب المسؤوليات**
    - كل ملف > 1000 سطر يجب تقسيمه
