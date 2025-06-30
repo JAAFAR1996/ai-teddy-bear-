@@ -36,6 +36,10 @@ except ImportError:
     # Voice service not available
     pass
 
+from .audio_recording_service import AudioRecordingService
+from .audio_playback_service import AudioPlaybackService  
+from .audio_session_service import AudioSessionService
+
 __all__ = [
     "ModernTranscriptionService",
     "TranscriptionService", 
@@ -46,5 +50,8 @@ __all__ = [
     "VoiceService",
     "VoiceConfig",
     "VoiceInteractionResult",
-    "create_voice_service"
+    "create_voice_service",
+    "AudioRecordingService",
+    "AudioPlaybackService", 
+    "AudioSessionService"
 ] 

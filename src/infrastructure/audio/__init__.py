@@ -37,44 +37,46 @@ Example usage:
     audio_manager.end_session(session_id)
     audio_manager.cleanup()
 """
-import structlog
-logger = structlog.get_logger(__name__)
+try:
+    import structlog
+    logger = structlog.get_logger(__name__)
+except ImportError:
+    import logging
+    logger = logging.getLogger(__name__)
 
 
 # Import main enhanced audio manager
 try:
     from .audio_manager import (
         EnhancedAudioManager,
-        AudioManager,  # Alias for backward compatibility
-        AudioSystemConfig,
-        AudioSessionType,
-        AudioQualityMode,
-        AudioFormatType,
-        AudioSession,
         AudioSystemError,
         create_audio_manager,
+        get_default_config,
         create_child_safe_config,
         create_high_quality_config,
         create_low_latency_config,
         get_audio_manager,
         shutdown_audio_manager
     )
+    
+    # Import domain models
+    from ...domain.audio.models import (
+        AudioSession,
+        AudioSessionType,
+        AudioQualityMode,
+        AudioFormatType,
+        AudioSystemConfig
+    )
+    
+    # Alias for backward compatibility
+    AudioManager = EnhancedAudioManager
     ENHANCED_AUDIO_AVAILABLE = True
 except Exception as e:
-    logger.error(f"Error: {e}")f"⚠️ Enhanced audio manager not available: {e}")
+    logger.warning(f"⚠️ Enhanced audio manager not available: {e}")
     ENHANCED_AUDIO_AVAILABLE = False
 
-# Import modern async audio manager
-try:
-    from .modern_audio_manager import (
-        ModernAudioManager,
-        create_modern_audio_manager,
-        bridge_to_enhanced_manager
-    )
-    MODERN_AUDIO_AVAILABLE = True
-except Exception as e:
-    logger.error(f"Error: {e}")f"⚠️ Modern audio manager not available: {e}")
-    MODERN_AUDIO_AVAILABLE = False
+# Modern audio manager removed - use EnhancedAudioManager directly
+MODERN_AUDIO_AVAILABLE = False
 
 # Import audio processing components (optional)
 try:
@@ -161,13 +163,7 @@ if ENHANCED_AUDIO_AVAILABLE:
         'shutdown_audio_manager'
     ])
 
-# Modern Audio Manager exports  
-if MODERN_AUDIO_AVAILABLE:
-    __all__.extend([
-        'ModernAudioManager',
-        'create_modern_audio_manager',
-        'bridge_to_enhanced_manager'
-    ])
+# Modern Audio Manager exports removed - no longer needed
 
 # Audio processing exports
 if AUDIO_PROCESSING_AVAILABLE:
@@ -241,12 +237,7 @@ def create_default_audio_manager():
         raise ImportError("No audio manager implementation available")
 
 
-async def create_default_modern_audio_manager(container=None):
-    """Create default modern audio manager with async support."""
-    if MODERN_AUDIO_AVAILABLE:
-        return await create_modern_audio_manager(container)
-    else:
-        raise ImportError("Modern audio manager not available")
+# Modern audio manager creation removed - use EnhancedAudioManager directly
 
 
 # For backward compatibility with existing code
@@ -283,8 +274,7 @@ def _print_init_status():
     available_components = []
     if ENHANCED_AUDIO_AVAILABLE:
         available_components.append("Enhanced Audio Manager")
-    if MODERN_AUDIO_AVAILABLE:
-        available_components.append("Modern Audio Manager")
+    # Modern Audio Manager removed
     if AUDIO_PROCESSING_AVAILABLE:
         available_components.append("Audio Processing")
     if EMOTION_ANALYSIS_AVAILABLE:
