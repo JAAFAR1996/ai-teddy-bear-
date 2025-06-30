@@ -646,8 +646,10 @@ class MemoryService:
                     do_sample=False
                 )
                 return summary[0]['summary_text']
-            except:
-                pass
+            except IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)ndexError as e:
+    logger.warning(f"Ignoring error: {e}")
 
         # Fallback to simple summary
         topics = set()

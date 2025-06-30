@@ -1,3 +1,6 @@
+import structlog
+logger = structlog.get_logger(__name__)
+
 from typing import Dict, List, Optional, Any, Union
 #!/usr/bin/env python3
 """
@@ -92,7 +95,7 @@ class ESP32TeddyBearSimulator:
             print(f"🔊 Energy threshold: {self.recognizer.energy_threshold}")
             
         except Exception as e:
-            print(f"❌ Audio error: {e}")
+    logger.error(f"Error: {e}")f"❌ Audio error: {e}")
     
     def _create_advanced_gui(self):
         """إنشاء واجهة المحاكي المتقدمة"""
@@ -457,9 +460,10 @@ class ESP32TeddyBearSimulator:
         
         # إيقاف الصوت
         try:
-            pygame.mixer.stop()
-        except:
-            pass
+            pygame.mixer.stexcept Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)xception as e:
+    logger.warning(f"Ignoring error: {e}")         pass
         
         # تحديث الواجهة
         self.led_canvas.itemconfig(self.led_circle, fill='red')
@@ -836,11 +840,13 @@ class ESP32TeddyBearSimulator:
                 tts_simple.write_to_fp(buffer_simple)
                 buffer_simple.seek(0)
                 pygame.mixer.music.load(buffer_simple)
-                pygame.mixer.music.play()
-                while pygame.mixer.music.get_busy():
-                    time.sleep(0.1)
-            except:
-                self.root.after(0, lambda: self.log("❌ Fallback speech also failed"))
+               except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True).mixer.music.play()
+                while pygame.mixer.music.get_buexcept Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                  time.sleep(0.1)
+            except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                self.root.after(0, lambda: self.log("❌ Fallback speech also failed"))
         
         finally:
             self.stop_audio_visualizer()
@@ -888,12 +894,13 @@ class ESP32TeddyBearSimulator:
         if self.wifi_connected:
             # إرسال مستوى الصوت للسيرفر
             try:
-                requests.post(f"{SERVER_URL}/esp32/volume", json={
+    except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)     requests.post(f"{SERVER_URL}/esp32/volume", json={
                     "device_id": self.device_id,
-                    "volume": self.volume_level
-                }, timeout=2)
-            except:
-                pass
+                    "volume": self.vexcept Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)vel
+                }, timeout=2)except Exception as e:
+    logger.warning(f"Ignoring error: {e}")         pass
     
     def _sensitivity_up(self):
         current = self.sensitivity_scale.get()
@@ -1088,7 +1095,8 @@ class ESP32TeddyBearSimulator:
     
     def _force_fix_system(self):
         """إصلاح إجباري للنظام"""
-        self.log("🔧 FORCE FIX initiated...")
+        self.log("🔧 FORCE FIX initiexcept Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)")
         
         # إيقاف كل شيء
         self.is_powered_on = False
@@ -1098,10 +1106,10 @@ class ESP32TeddyBearSimulator:
         try:
             pygame.mixer.quit()
             pygame.mixer.init()
-            self.microphone = sr.Microphone()
-            self.recognizer = sr.Recognizer()
-        except:
-            pass
+         except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)microphone = sr.Microphone()
+            self.recognizer = sr.Recognizexcept Exception as e:
+    logger.warning(f"Ignoring error: {e}")         pass
         
         # إعادة تشغيل
         self.is_powered_on = True
@@ -1240,8 +1248,8 @@ class ESP32TeddyBearSimulator:
         try:
             self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
             self.root.mainloop()
-        except KeyboardInterrupt:
-            print("\n👋 ESP32 Simulator shutting down...")
+        except Exception as e:
+    logger.error(f"Error: {e}")"\n👋 ESP32 Simulator shutting down...")
         finally:
             self.power_off()
     
@@ -1265,4 +1273,4 @@ if __name__ == "__main__":
         simulator = ESP32TeddyBearSimulator()
         simulator.run()
     except Exception as e:
-        print(f"❌ Simulator error: {e}") 
+    logger.error(f"Error: {e}")f"❌ Simulator error: {e}") 

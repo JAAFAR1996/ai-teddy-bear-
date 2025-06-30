@@ -5,6 +5,9 @@
 # Date: January 2025
 # ===================================================================
 
+import structlog
+logger = structlog.get_logger(__name__)
+
 import asyncio
 import time
 import random
@@ -265,8 +268,8 @@ class DashboardDemoRunner:
                 await self.run_demo_cycle()
                 cycle_count += 1
                 
-        except KeyboardInterrupt:
-            print("\n\n🛑 Demo stopped by user")
+        except Exception as e:
+    logger.error(f"Error: {e}")"\n\n🛑 Demo stopped by user")
         
         # Demo completion summary
         self.clear_screen()
@@ -297,9 +300,9 @@ async def main():
 if __name__ == "__main__":
     try:
         asyncio.run(main())
-    except KeyboardInterrupt:
-        print("\n\n👋 Dashboard demo terminated by user")
     except Exception as e:
-        print(f"\n❌ Demo error: {str(e)}")
+    logger.error(f"Error: {e}")"\n\n👋 Dashboard demo terminated by user")
+    except Exception as e:
+    logger.error(f"Error: {e}")f"\n❌ Demo error: {str(e)}")
     finally:
         print("Thank you for viewing the AI Teddy Bear Dashboard Demo! 🧸") 

@@ -1140,8 +1140,9 @@ async def process_message(self, conversation_id, data):
     # --- Language Detection ---
     try:
         detected_language = detect(user_text) if user_text.strip() else "ar"
-    except Exception:
-        detected_language = "ar"
+    except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)as e:
+    logger.error(f"Error: {e}", exc_info=True)        detected_language = "ar"
 
     # --- Child Name Extraction ---
     name_pattern = r"(?:اسمي|أنا اسمي|My name is|I am|I'm|انا اسمي|انا)\s+([\u0600-\u06FF\w]+)"

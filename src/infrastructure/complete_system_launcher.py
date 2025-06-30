@@ -3,6 +3,9 @@
 🚀 Complete AI Teddy Bear System Launcher
 مشغل النظام الكامل للدبدوب الذكي - المحاكيات الثلاث
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 import sys
 import os
@@ -328,8 +331,10 @@ class CompleteTeddySystemLauncher:
             if hasattr(self, 'time_label') and self.time_label.winfo_exists():
                 self.time_label.config(text=f"🕐 {current_time}")
                 self.root.after(1000, self.update_time)
-        except Exception:
-            pass
+        except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)as e:
+    logger.error(f"Error: {e}", exc_info=True)s e:
+    logger.warning(f"Ignored exception: {e}")
         
     def log(self, message):
         """إضافة رسالة للسجل"""
@@ -473,10 +478,14 @@ class CompleteTeddySystemLauncher:
             try:
                 response = requests.get("http://127.0.0.1:8000/health", timeout=2)
                 if response.status_code == 200:
-                    self.root.after(0, lambda: self.log("✅ Cloud server is responding to requests"))
-                    return
-            except:
-                pass
+   except ConnectionError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)ConnectionError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)         self.root.after(0, lambda: self.log("✅ Cloud server is responding to requests"))
+     except ConnectionError as e:
+    logger.warning(f"Ignoring error: {e}")      except ConnectionError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)ConnectionError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)onnectionError as e:
+    logger.warning(f"Ignoring error: {e}")
             time.sleep(1)
             
         self.root.after(0, lambda: self.log("⚠️ Cloud server may not be responding"))
@@ -558,11 +567,13 @@ class CompleteTeddySystemLauncher:
             for component in self.processes:
                 if self.processes[component]:
                     try:
-                        self.processes[component].terminate()
-                        self.processes[component] = None
+ except IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                self.processes[component].terminate()
+                   except IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)f.processes[component] = None
                         self.status[component] = False
-                        self.update_component_ui(component, False)
-                    except:
+                        self.update_component_ui(compexcept IndexError as e:
+    logger.warning(f"Ignoring error: {e}")cept:
                         pass
                         
             self.update_overall_status()
@@ -573,8 +584,8 @@ class CompleteTeddySystemLauncher:
         try:
             self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
             self.root.mainloop()
-        except KeyboardInterrupt:
-            print("\n👋 System Launcher shutting down...")
+        except Exception as e:
+    logger.error(f"Error: {e}")"\n👋 System Launcher shutting down...")
         finally:
             self.emergency_stop_all()
             
@@ -609,4 +620,4 @@ if __name__ == "__main__":
         launcher = CompleteTeddySystemLauncher()
         launcher.run()
     except Exception as e:
-        print(f"❌ System Launcher error: {e}") 
+    logger.error(f"Error: {e}")f"❌ System Launcher error: {e}") 

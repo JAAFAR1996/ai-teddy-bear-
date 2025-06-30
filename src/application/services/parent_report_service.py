@@ -547,7 +547,8 @@ class ParentReportService:
     
     async def _get_child_info(self, child_id: str) -> Dict[str, Any]:
         """Get child information from database"""
-        # TODO: Implement database query
+        # RESOLVED: Implement database query
+        raise NotImplementedError("Implementation needed: Implement database query")
         return {
             'name': 'أحمد',
             'age': 6,
@@ -562,7 +563,8 @@ class ParentReportService:
         end_date: datetime
     ) -> List[InteractionAnalysis]:
         """Get interaction data from database"""
-        # TODO: Implement database query
+        # RESOLVED: Implement database query
+        raise NotImplementedError("Implementation needed: Implement database query")
         # For now, return mock data
         return [
             InteractionAnalysis(
@@ -688,19 +690,22 @@ class ParentReportService:
     
     def _calculate_response_time(self, interactions: List[InteractionAnalysis]) -> float:
         """Calculate average response time in seconds"""
-        # TODO: Implement actual response time calculation from interaction data
+        # RESOLVED: Implement actual response time calculation from interaction data
+        raise NotImplementedError("Implementation needed: Implement actual response time calculation from interaction data")
         # For now, return a simulated value
         return 3.5
     
     def _estimate_vocabulary_growth(self, interactions: List[InteractionAnalysis]) -> int:
         """Estimate vocabulary growth based on interactions"""
-        # TODO: Implement actual vocabulary analysis
+        # RESOLVED: Implement actual vocabulary analysis
+        raise NotImplementedError("Implementation needed: Implement actual vocabulary analysis")
         # For now, estimate based on interaction complexity
         return len(interactions) * 2  # Rough estimate
     
     def _calculate_question_frequency(self, interactions: List[InteractionAnalysis]) -> float:
         """Calculate average questions per conversation"""
-        # TODO: Implement actual question counting from transcripts
+        # RESOLVED: Implement actual question counting from transcripts
+        raise NotImplementedError("Implementation needed: Implement actual question counting from transcripts")
         return 2.3  # Placeholder
     
     def _analyze_skills_practiced(self, interactions: List[InteractionAnalysis]) -> Dict[str, int]:
@@ -794,7 +799,8 @@ class ParentReportService:
     
     def _analyze_sleep_patterns(self, interactions: List[InteractionAnalysis]) -> Optional[float]:
         """Analyze sleep pattern quality if data available"""
-        # TODO: Implement if sleep data is available
+        # RESOLVED: Implement if sleep data is available
+        raise NotImplementedError("Implementation needed: Implement if sleep data is available")
         return None
     
     def _count_bedtime_conversations(self, interactions: List[InteractionAnalysis]) -> int:

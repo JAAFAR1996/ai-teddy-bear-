@@ -70,7 +70,7 @@ class EnhancedHumeIntegration:
                 self.async_client = AsyncHumeClient(api_key=self.api_key)
                 print("✅ HUME AI clients initialized successfully")
             except Exception as e:
-                print(f"⚠️ HUME client initialization failed: {e}")
+    logger.error(f"Error: {e}")f"⚠️ HUME client initialization failed: {e}")
                 self.client = None
                 self.async_client = None
         else:
@@ -161,7 +161,7 @@ class EnhancedHumeIntegration:
             return calibration_result
             
         except Exception as e:
-            print(f"❌ فشل في المعايرة: {e}")
+    logger.error(f"Error: {e}")f"❌ فشل في المعايرة: {e}")
             return {'error': str(e), 'status': 'failed'}
     
     def _create_calibration_samples(self) -> List[Dict]:
@@ -232,7 +232,7 @@ class EnhancedHumeIntegration:
                 print(f"   ✅ تم إنشاء عينة: {filename}")
                 
             except Exception as e:
-                print(f"   ❌ فشل في إنشاء عينة {emotion}: {e}")
+    logger.error(f"Error: {e}")f"   ❌ فشل في إنشاء عينة {emotion}: {e}")
         
         return samples
     
@@ -242,7 +242,7 @@ class EnhancedHumeIntegration:
             try:
                 return self._real_hume_analysis(sample['file'])
             except Exception as e:
-                print(f"   ⚠️ فشل التحليل الحقيقي، التبديل للوضع التجريبي: {e}")
+    logger.error(f"Error: {e}")f"   ⚠️ فشل التحليل الحقيقي، التبديل للوضع التجريبي: {e}")
                 return self._mock_analysis_enhanced(sample)
         else:
             return self._mock_analysis_enhanced(sample)
@@ -402,7 +402,7 @@ class EnhancedHumeIntegration:
             return final_result
             
         except Exception as e:
-            print(f"❌ فشل التحليل متعدد اللغات: {e}")
+    logger.error(f"Error: {e}")f"❌ فشل التحليل متعدد اللغات: {e}")
             return {
                 'error': str(e),
                 'status': 'failed',
@@ -464,7 +464,7 @@ class EnhancedHumeIntegration:
             return detected
             
         except Exception as e:
-            print(f"   ⚠️ فشل كشف اللغة المتقدم: {e}")
+    logger.error(f"Error: {e}")f"   ⚠️ فشل كشف اللغة المتقدم: {e}")
             return "ar"  # افتراضي للعربية
     
     def _get_language_specific_config(self, language: str) -> Dict:
@@ -755,7 +755,7 @@ class EnhancedHumeIntegration:
             return comprehensive_report
             
         except Exception as e:
-            print(f"❌ فشل في تكامل البيانات التاريخية: {e}")
+    logger.error(f"Error: {e}")f"❌ فشل في تكامل البيانات التاريخية: {e}")
             return {
                 'error': str(e),
                 'status': 'failed',

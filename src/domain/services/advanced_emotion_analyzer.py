@@ -2,6 +2,9 @@
 🧠 Advanced Emotion Analyzer for AI Teddy Bear
 Analyzes emotions from text and audio using modern AI techniques
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 from typing import Dict, Any, Optional, List, Tuple
 import numpy as np
@@ -82,7 +85,7 @@ class AdvancedEmotionAnalyzer:
                 )
                 print("✅ Text emotion analyzer initialized")
             except Exception as e:
-                print(f"❌ Failed to load text emotion model: {e}")
+    logger.error(f"Error: {e}")f"❌ Failed to load text emotion model: {e}")
                 self.text_analyzer = None
     
     async def analyze_comprehensive(
@@ -170,7 +173,7 @@ class AdvancedEmotionAnalyzer:
                     recommendations=[]
                 )
             except Exception as e:
-                print(f"❌ Text analysis error: {e}")
+    logger.error(f"Error: {e}")f"❌ Text analysis error: {e}")
         
         # Fallback to rule-based analysis
         return self._analyze_text_rules(text)
@@ -278,7 +281,7 @@ class AdvancedEmotionAnalyzer:
                 recommendations=[]
             )
         except Exception as e:
-            print(f"❌ Audio analysis error: {e}")
+    logger.error(f"Error: {e}")f"❌ Audio analysis error: {e}")
             return None
     
     def _extract_audio_features(self, audio: np.ndarray, sr: int) -> Dict[str, Any]:
@@ -804,7 +807,7 @@ class DatabaseEmotionService:
             return emotion_result, emotion_record_id
             
         except Exception as e:
-            print(f"❌ Error in analyze_and_save_emotion: {e}")
+    logger.error(f"Error: {e}")f"❌ Error in analyze_and_save_emotion: {e}")
             raise e
     
     async def save_emotion_to_db(
@@ -932,8 +935,8 @@ class DatabaseEmotionService:
                 
                 return emotion_results
                 
-            except SQLAlchemyError as e:
-                print(f"❌ Database error getting emotion history: {e}")
+            except Exception as e:
+    logger.error(f"Error: {e}")f"❌ Database error getting emotion history: {e}")
                 return []
     
     async def get_emotion_analytics(
@@ -1048,8 +1051,8 @@ class DatabaseEmotionService:
                     "generated_at": datetime.utcnow().isoformat()
                 }
                 
-            except SQLAlchemyError as e:
-                print(f"❌ Database error getting analytics: {e}")
+            except Exception as e:
+    logger.error(f"Error: {e}")f"❌ Database error getting analytics: {e}")
                 return {"error": str(e)}
     
     async def generate_parental_report(
@@ -1119,7 +1122,7 @@ class DatabaseEmotionService:
             return report
             
         except Exception as e:
-            print(f"❌ Error generating parental report: {e}")
+    logger.error(f"Error: {e}")f"❌ Error generating parental report: {e}")
             return {"error": str(e)}
     
     async def get_emotion_trends(
@@ -1185,8 +1188,8 @@ class DatabaseEmotionService:
                     "generated_at": datetime.utcnow().isoformat()
                 }
                 
-            except SQLAlchemyError as e:
-                print(f"❌ Database error getting trends: {e}")
+            except Exception as e:
+    logger.error(f"Error: {e}")f"❌ Database error getting trends: {e}")
                 return {"error": str(e)}
     
     def _process_audio_bytes(self, audio_bytes: bytes) -> Optional[np.ndarray]:
@@ -1196,7 +1199,7 @@ class DatabaseEmotionService:
             # You would use librosa.load or similar to convert bytes to numpy array
             return np.random.random(16000)  # Mock 1-second audio at 16kHz
         except Exception as e:
-            print(f"❌ Error processing audio bytes: {e}")
+    logger.error(f"Error: {e}")f"❌ Error processing audio bytes: {e}")
             return None
     
     def _extract_audio_metadata(self, audio_data: bytes) -> Dict[str, Any]:
@@ -1576,7 +1579,7 @@ class EnhancedEmotionAnalyzer(AdvancedEmotionAnalyzer):
                     text_input=text
                 )
             except Exception as e:
-                print(f"❌ Failed to save to database: {e}")
+    logger.error(f"Error: {e}")f"❌ Failed to save to database: {e}")
         
         return emotion_result, emotion_record_id
     
@@ -1617,7 +1620,7 @@ class EnhancedEmotionAnalyzer(AdvancedEmotionAnalyzer):
             return np.array(audio_data, dtype=np.float32) / 32768.0
             
         except Exception as e:
-            print(f"❌ Error converting audio bytes: {e}")
+    logger.error(f"Error: {e}")f"❌ Error converting audio bytes: {e}")
             return None
 
 

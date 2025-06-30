@@ -2,6 +2,9 @@
 API Router for AI Teddy Bear System
 Updated to include new voice processing and reporting endpoints
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 from fastapi import APIRouter
 from .endpoints import (
@@ -29,7 +32,7 @@ api_router.include_router(advanced.router)
 try:
     api_router.include_router(audio.router)
 except Exception as e:
-    print(f"⚠️ Legacy audio router not available: {e}")
+    logger.error(f"Error: {e}")f"⚠️ Legacy audio router not available: {e}")
 
 # Health check endpoint
 @api_router.get("/health")

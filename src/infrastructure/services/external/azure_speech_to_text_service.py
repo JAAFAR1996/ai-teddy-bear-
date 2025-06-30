@@ -1,3 +1,6 @@
+import structlog
+logger = structlog.get_logger(__name__)
+
 import os
 import azure.cognitiveservices.speech as speechsdk
 import sqlite3
@@ -66,7 +69,7 @@ class AzureSpeechToTextService:
             print("Azure result:", vars(result))
             print("Azure result.text:", result.text)
         except Exception as e:
-            print("!!!!!! Exception داخل Azure recognize_once:", e)
+    logger.error(f"Error: {e}")"!!!!!! Exception داخل Azure recognize_once:", e)
             raise
 
         # Check recognition result

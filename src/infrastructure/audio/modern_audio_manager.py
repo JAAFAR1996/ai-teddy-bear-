@@ -699,7 +699,7 @@ class ModernAudioManager(BaseService if BASE_SERVICE_AVAILABLE else object):
                 if self._speech_to_text_service:
                     transcription = await self._speech_to_text_service.transcribe_audio(audio_data)
             except Exception as e:
-                print(f"⚠️ Transcription failed (okay for pure emotion analysis): {e}")
+    logger.error(f"Error: {e}")f"⚠️ Transcription failed (okay for pure emotion analysis): {e}")
             
             # 3. Generate personalized response based on emotions
             personalized_response = await self._generate_emotion_aware_response(
@@ -715,7 +715,7 @@ class ModernAudioManager(BaseService if BASE_SERVICE_AVAILABLE else object):
                         voice_style=self._select_voice_for_emotion(emotion_analysis.dominant_emotion)
                     )
                 except Exception as e:
-                    print(f"⚠️ TTS failed: {e}")
+    logger.error(f"Error: {e}")f"⚠️ TTS failed: {e}")
             
             return {
                 "success": True,
@@ -728,7 +728,7 @@ class ModernAudioManager(BaseService if BASE_SERVICE_AVAILABLE else object):
             }
             
         except Exception as e:
-            print(f"❌ Voice processing error: {e}")
+    logger.error(f"Error: {e}")f"❌ Voice processing error: {e}")
             return {
                 "success": False,
                 "error": str(e),

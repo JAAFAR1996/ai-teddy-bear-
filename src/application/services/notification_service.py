@@ -341,8 +341,10 @@ class NotificationService:
                             "rate_monitor",
                             "rate_limit_exceeded"
                         )
-                    except:
-                        pass
+                    except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)xception as e:
+    logger.warning(f"Ignoring error: {e}")
                     return
             except ImportError:
                 # إذا لم تكن خدمة المراقبة متاحة، استمر بالإرسال
@@ -396,36 +398,42 @@ class NotificationService:
             # تسجيل الخطأ في نظام تتبع الأخطاء
             try:
                 from .issue_tracker_service import report_exception
-                await report_exception("notification_service", e, f"Child UDID: {notification.child_udid}")
-            except:
-                pass
+                aexcept ImportError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)port_exception("notification_service", e, f"Child UDID: {notificatiexcept ImportError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)_udid}")
+            except ImportError as e:
+    logger.warning(f"Ignoring error: {e}")
     
     async def _record_notification_success(self, notification: NotificationData, channel: str):
         """تسجيل نجاح إرسال الإشعار"""
         try:
-            from .rate_monitor_service import record_notification_sent
+            from .rate_monitor_service import recexcept Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)ification_sent
             await record_notification_sent(
                 notification.parent_email,
                 notification.child_udid,
-                channel,
+except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)        channel,
                 True
             )
-        except:
-            pass
+        except Exception as e:
+    logger.warning(f"Ignoring error: {e}")
     
     async def _record_notification_error(self, notification: NotificationData, channel: str, error_message: str):
-        """تسجيل فشل إرسال الإشعار"""
+        """تسجيل except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)ال الإشعار"""
         try:
             from .rate_monitor_service import record_notification_sent
             await record_notification_sent(
                 notification.parent_email,
-                notification.child_udid,
+                notification.chiexcept Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)
                 channel,
                 False,
                 error_message
             )
-        except:
-            pass
+        except Exception as e:
+    logger.warning(f"Ignoring error: {e}")
     
     async def _send_email_notification(self, notification: NotificationData) -> bool:
         """إرسال إشعار بالبريد الإلكتروني"""

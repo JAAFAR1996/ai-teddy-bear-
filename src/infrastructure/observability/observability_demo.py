@@ -660,8 +660,8 @@ if __name__ == "__main__":
     
     try:
         asyncio.run(main())
-    except KeyboardInterrupt:
-        print("\n👋 Demo stopped by user. Goodbye!")
     except Exception as e:
-        print(f"\n❌ Demo failed: {e}")
+    logger.error(f"Error: {e}")"\n👋 Demo stopped by user. Goodbye!")
+    except Exception as e:
+    logger.error(f"Error: {e}")f"\n❌ Demo failed: {e}")
         exit(1) 

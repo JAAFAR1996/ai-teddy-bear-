@@ -75,11 +75,11 @@ def check_file_has_exports():
         
         return True
         
-    except FileNotFoundError:
-        print("❌ modern_ui.py not found!")
+    except Exception as e:
+    logger.error(f"Error: {e}")"❌ modern_ui.py not found!")
         return False
     except Exception as e:
-        print(f"❌ Error reading file: {e}")
+    logger.error(f"Error: {e}")f"❌ Error reading file: {e}")
         return False
 
 def check_modular_files_exist():
@@ -102,8 +102,8 @@ def check_modular_files_exist():
         try:
             with open(file_path, 'r') as f:
                 print(f"   ✅ {file_path}")
-        except FileNotFoundError:
-            print(f"   ❌ {file_path} missing")
+        except Exception as e:
+    logger.error(f"Error: {e}")f"   ❌ {file_path} missing")
     
     return True
 
@@ -128,11 +128,11 @@ def check_import_syntax():
         
         return True
         
-    except SyntaxError as e:
-        print(f"   ❌ Syntax error in modern_ui.py: {e}")
+    except Exception as e:
+    logger.error(f"Error: {e}")f"   ❌ Syntax error in modern_ui.py: {e}")
         return False
     except Exception as e:
-        print(f"   ❌ Error checking syntax: {e}")
+    logger.error(f"Error: {e}")f"   ❌ Error checking syntax: {e}")
         return False
 
 def main():
@@ -152,7 +152,7 @@ def main():
             if check():
                 passed += 1
         except Exception as e:
-            print(f"❌ Check failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Check failed: {e}")
     
     print("\n" + "=" * 60)
     print(f"📊 COMPATIBILITY CHECK RESULTS: {passed}/{len(checks)} passed")

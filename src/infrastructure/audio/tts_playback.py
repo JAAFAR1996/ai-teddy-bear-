@@ -1,3 +1,6 @@
+import structlog
+logger = structlog.get_logger(__name__)
+
 import sounddevice as sd
 from scipy.io.wavfile import write
 from pathlib import Path
@@ -22,7 +25,7 @@ def is_valid_wav(file_path):
             header = f.read(4)
             return header == b'RIFF'
     except Exception as e:
-        print("⚠️ حدث خطأ أثناء قراءة رأس الملف:", e)
+    logger.error(f"Error: {e}")"⚠️ حدث خطأ أثناء قراءة رأس الملف:", e)
         return False
 
 def safe_play(file_path):
@@ -41,7 +44,7 @@ def safe_play(file_path):
             audio = AudioSegment.from_file(file_path, format="wav")
             play(audio)
         except Exception as e:
-            print("❌ خطأ أثناء تشغيل WAV:", e)
+    logger.error(f"Error: {e}")"❌ خطأ أثناء تشغيل WAV:", e)
     else:
         print(f"❌ صيغة الملف غير مدعومة: {file_path}")
 
@@ -90,5 +93,5 @@ def cleanup_tts_cache(max_age_hours: int = 24) -> int:
         print(f"Cleaned {cleaned_count} TTS cache files")
         return cleaned_count
     except Exception as e:
-        print(f"Error cleaning TTS cache: {e}")
+    logger.error(f"Error: {e}")f"Error cleaning TTS cache: {e}")
         return 0

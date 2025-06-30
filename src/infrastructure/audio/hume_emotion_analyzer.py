@@ -2,6 +2,9 @@
 🎤 HUME AI Speech Emotion Analyzer for AI Teddy Bear
 Real-time emotion analysis directly from children's voice without text
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 import asyncio
 import aiohttp
@@ -166,7 +169,7 @@ class HumeSpeechEmotionAnalyzer:
                     os.remove(temp_audio_path)
                     
         except Exception as e:
-            print(f"❌ HUME Analysis Error: {e}")
+    logger.error(f"Error: {e}")f"❌ HUME Analysis Error: {e}")
             return self._create_fallback_analysis()
     
     async def _analyze_with_hume(self, audio_path: str) -> Dict[str, Any]:
@@ -187,8 +190,8 @@ class HumeSpeechEmotionAnalyzer:
                     
                 return result
                 
-            except Exception as sdk_error:
-                print(f"⚠️ HUME SDK error, trying direct API: {sdk_error}")
+            except Exception as e:
+    logger.error(f"Error: {e}")f"⚠️ HUME SDK error, trying direct API: {sdk_error}")
         
         # استخدام API مباشر كـ fallback
         return await self._analyze_with_direct_api(audio_path)
@@ -344,7 +347,7 @@ class HumeSpeechEmotionAnalyzer:
                 child_emotion = self._apply_context(child_emotion, context)
             
         except Exception as e:
-            print(f"⚠️ Error converting HUME results: {e}")
+    logger.error(f"Error: {e}")f"⚠️ Error converting HUME results: {e}")
             # إرجاع تحليل افتراضي
             child_emotion.dominant_emotion = "curious"
             child_emotion.curiosity = 0.6
@@ -396,10 +399,12 @@ class HumeSpeechEmotionAnalyzer:
                 'speech_rate': random.uniform(0.3, 0.8),
                 'pitch_variation': random.uniform(0.2, 0.7),
                 'quality': random.choice(['clear', 'soft', 'excited', 'tired']),
-                'volume': random.uniform(0.4, 0.9)
-            }
-        except:
-            return {
+                'volume': random.uniform(0.4, except IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)         }
+        except IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return {
                 'energy': 0.5,
                 'speech_rate': 0.5, 
                 'pitch_variation': 0.5,

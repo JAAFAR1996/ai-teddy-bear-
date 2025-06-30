@@ -3,6 +3,9 @@
 🧸 ESP32 Teddy Bear Simulator - Exact Hardware Simulation
 محاكي ESP32 للدبدوب - محاكاة دقيقة للجهاز الحقيقي
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 import sys
 import asyncio
@@ -24,8 +27,8 @@ try:
     from tkinter import Tk, Label, Button, Frame, StringVar, Text, Scrollbar, END, VERTICAL, RIGHT, Y, BOTH, X
     from tkinter import ttk, messagebox
     import tkinter as tk
-except ImportError:
-    print("❌ Tkinter not available")
+except Exception as e:
+    logger.error(f"Error: {e}")"❌ Tkinter not available")
     sys.exit(1)
 
 # ============================ CONFIGURATION ============================
@@ -74,7 +77,7 @@ class ESP32TeddySimulator:
             print("✅ Microphone calibrated")
             
         except Exception as e:
-            print(f"❌ Audio initialization error: {e}")
+    logger.error(f"Error: {e}")f"❌ Audio initialization error: {e}")
     
     def create_gui(self):
         """إنشاء واجهة المحاكي"""
@@ -383,8 +386,8 @@ class ESP32TeddySimulator:
         """تشغيل المحاكي"""
         try:
             self.root.mainloop()
-        except KeyboardInterrupt:
-            print("\n👋 ESP32 Simulator shutting down...")
+        except Exception as e:
+    logger.error(f"Error: {e}")"\n👋 ESP32 Simulator shutting down...")
         finally:
             self.power_off()
 
@@ -404,4 +407,4 @@ if __name__ == "__main__":
         simulator = ESP32TeddySimulator()
         simulator.run()
     except Exception as e:
-        print(f"❌ Simulator error: {e}") 
+    logger.error(f"Error: {e}")f"❌ Simulator error: {e}") 

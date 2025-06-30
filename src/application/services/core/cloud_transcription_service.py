@@ -151,8 +151,9 @@ class OpenAITranscriptionProvider(TranscriptionProviderBase):
             # Simple models list to check connectivity
             await self.client.models.list()
             return True
-        except:
-            return False
+        except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return False
 
 
 class GoogleTranscriptionProvider(TranscriptionProviderBase):
@@ -251,10 +252,11 @@ class GoogleTranscriptionProvider(TranscriptionProviderBase):
         """Check if Google Speech is available"""
         try:
             # Try a simple operation
-            await self.client.list_phrase_set(parent="projects/-/locations/global")
+            await self.client.list_phrase_except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)ent="projects/-/locations/global")
             return True
-        except:
-            return False
+        except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return False
     
     def _get_language_code(self, language: str) -> str:
         """Convert language code to Google format"""
@@ -345,12 +347,13 @@ class AzureTranscriptionProvider(TranscriptionProviderBase):
             raise
     
     async def is_available(self) -> bool:
-        """Check if Azure Speech is available"""
+        """Check if Azure except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)is available"""
         try:
             # Test with empty audio
             return True  # Azure doesn't have a simple health check
-        except:
-            return False
+        except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return False
     
     def _get_language_code(self, language: str) -> str:
         """Convert language code to Azure format"""
@@ -501,16 +504,18 @@ class CloudTranscriptionService:
     
     async def get_available_providers(self) -> List[TranscriptionProvider]:
         """Get list of available providers"""
-        available = []
-        
+        available = []except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)  
         for provider_type, provider_instance in self.providers.items():
             try:
                 if await provider_instance.is_available():
                     available.append(provider_type)
-            except:
-                pass
+            except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)xception as e:
+    logger.warning(f"Ignoring error: {e}")
         
-        return available
+        rexcept IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)vailable
     
     async def health_check(self) -> Dict[str, bool]:
         """Check health of all providers"""
@@ -518,9 +523,11 @@ class CloudTranscriptionService:
         
         for provider_type, provider_instance in self.providers.items():
             try:
-                health[provider_type.value] = await provider_instance.is_available()
-            except:
-                health[provider_type.value] = False
+                health[provider_type.value] = await providerexcept IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)e.is_available()
+            except IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                health[provider_type.value] = False
         
         return health
 

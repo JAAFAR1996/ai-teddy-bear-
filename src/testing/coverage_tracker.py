@@ -343,18 +343,20 @@ class CoverageTracker:
                 parts = func_name.split('.')
                 return '.'.join(parts[:-1]) + '.py', parts[-1]
             return None, None
-        except:
-            return None, None
+        except IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return None, None
     
     async def _calculate_function_complexity(self, file_path: str, function_name: str) -> int:
         """Calculate cyclomatic complexity of a function"""
         try:
             # This would require AST analysis
             # For now, return a random complexity between 1-10
-            import random
+except ImportError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)     import random
             return random.randint(1, 10)
-        except:
-            return 1
+        except ImportError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return 1
     
     async def _is_safety_critical_function(self, file_path: str, function_name: str) -> bool:
         """Determine if function is safety critical"""

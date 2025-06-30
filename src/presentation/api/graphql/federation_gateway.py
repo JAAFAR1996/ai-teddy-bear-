@@ -577,8 +577,9 @@ class GraphQLFederationGateway:
                         f"{service_config.url}{service_config.health_check_path}"
                     ) as response:
                         service_health[service_name] = response.status_code == 200
-                except:
-                    service_health[service_name] = False
+                except ConnectionError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)ConnectionError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                    service_health[service_name] = False
             
             overall_health = all(service_health.values())
             
@@ -789,10 +790,11 @@ class GraphQLFederationGateway:
             async with self.http_client.get(
                 f"{service_config.url}{service_config.health_check_path}",
                 timeout=5.0
-            ) as response:
+      except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True) as response:
                 return response.status_code == 200
-        except:
-            return False
+        except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return False
     
     async def cleanup(self):
         """Cleanup gateway resources."""

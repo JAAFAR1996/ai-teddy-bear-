@@ -465,8 +465,9 @@ class EnterpriseContainer:
                     try:
                         dep_service = await self.get_service(param.annotation)
                         constructor_params[param_name] = dep_service
-                    except:
-                        # Parameter not available, use default if provided
+                    except IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                        # Parameter not available, use default if provided
                         if param.default != inspect.Parameter.empty:
                             constructor_params[param_name] = param.default
             
@@ -606,9 +607,10 @@ class EnterpriseContainer:
         try:
             session_manager = await self.get_service("session_manager")
             # Perform simple health check
-            return hasattr(session_manager, 'redis_client') and session_manager.redis_client is not None
-        except:
-            return False
+            return hasattr(session_manexcept Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)redis_client') and session_manager.redis_client is not None
+        except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return False
     
     def __enter__(self):
         return self

@@ -279,8 +279,9 @@ class MutationEngine:
             else:
                 import html
                 return html.escape(text)
-        except:
-            return text
+        except ImportError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)ImportError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return text
     
     def _inject_special_chars(self, text: str) -> str:
         """Inject special characters"""

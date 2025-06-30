@@ -34,7 +34,7 @@ class EmailService:
             
             return True
         except Exception as e:
-            print(f"Email sending failed: {e}")
+    logger.error(f"Error: {e}")f"Email sending failed: {e}")
             return False
 
 class SMSService:
@@ -56,7 +56,7 @@ class SMSService:
             response = requests.post(self.api_url, json=payload)
             return response.status_code == 200
         except Exception as e:
-            print(f"SMS sending failed: {e}")
+    logger.error(f"Error: {e}")f"SMS sending failed: {e}")
             return False
 
 class PushNotificationService:
@@ -93,7 +93,7 @@ class PushNotificationService:
             
             return response.status_code == 200
         except Exception as e:
-            print(f"Push notification failed: {e}")
+    logger.error(f"Error: {e}")f"Push notification failed: {e}")
             return False
 
 class ExternalAPIManager:

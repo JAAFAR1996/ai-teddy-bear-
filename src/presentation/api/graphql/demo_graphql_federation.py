@@ -18,8 +18,8 @@ try:
     )
     from src.infrastructure.graphql.authentication import create_auth_service, create_auth_config
     FEDERATION_AVAILABLE = True
-except ImportError as e:
-    print(f"⚠️  GraphQL Federation not available: {e}")
+except Exception as e:
+    logger.error(f"Error: {e}")f"⚠️  GraphQL Federation not available: {e}")
     FEDERATION_AVAILABLE = False
 
 # Configure logging
@@ -56,7 +56,7 @@ class FederationDemoSystem:
             return True
             
         except Exception as e:
-            print(f"❌ Initialization failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Initialization failed: {e}")
             return False
     
     async def demo_basic_queries(self):
@@ -111,7 +111,7 @@ class FederationDemoSystem:
                 )
                 print(f"✅ Result: {json.dumps(result, indent=2, default=str)}")
             except Exception as e:
-                print(f"❌ Error: {e}")
+    logger.error(f"Error: {e}")f"❌ Error: {e}")
     
     async def demo_federated_queries(self):
         """Demonstrate federated queries across services."""
@@ -155,7 +155,7 @@ class FederationDemoSystem:
             result = await self.gateway._execute_federated_query(federated_query, {})
             print(f"✅ Federated Result: {json.dumps(result, indent=2, default=str)}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+    logger.error(f"Error: {e}")f"❌ Error: {e}")
     
     async def demo_authentication(self):
         """Demonstrate authentication features."""

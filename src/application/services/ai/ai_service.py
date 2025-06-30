@@ -969,8 +969,9 @@ class ModularAIService(ServiceBase):
             try:
                 child_info = await self._get_child_info(session.child_id if session else None)
                 return await self._generate_safe_response(child_info)
-            except:
-                return "عذراً، لم أفهم. هل يمكنك إعادة المحاولة؟"
+            except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                return "عذراً، لم أفهم. هل يمكنك إعادة المحاولة؟"
     
     @trace_async("create_session_context")
     async def create_session_context(self, child, session_id: str) -> None:

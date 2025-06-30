@@ -438,7 +438,7 @@ class StreamingService:
                         f"[DEBUG] نجح ElevenLabs - حجم الصوت: {len(audio_bytes)}")
 
                 except Exception as e:
-                    print(f"[DEBUG] فشل ElevenLabs: {e}")
+    logger.error(f"Error: {e}")f"[DEBUG] فشل ElevenLabs: {e}")
                     audio_bytes = None
 
             # استخدام gTTS كبديل
@@ -456,7 +456,7 @@ class StreamingService:
                     print(f"[DEBUG] نجح gTTS - حجم الصوت: {len(audio_bytes)}")
 
                 except Exception as e:
-                    print(f"[DEBUG] فشل gTTS: {e}")
+    logger.error(f"Error: {e}")f"[DEBUG] فشل gTTS: {e}")
 
             # إرسال الرد
             if audio_bytes and websocket:

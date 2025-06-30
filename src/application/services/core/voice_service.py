@@ -295,8 +295,9 @@ class MultiProviderVoiceService(IVoiceService):
                 lang_code = "ar-SA" if language == "Arabic" else "en-US"
                 try:
                     return r.recognize_google(audio, language=lang_code)
-                except:
-                    return None
+                except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                    return None
             
             return await loop.run_in_executor(None, transcribe)
             

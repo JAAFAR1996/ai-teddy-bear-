@@ -63,8 +63,9 @@ class AudioProcessingEngine:
             else:
                 return "low"
                 
-        except Exception:
-            logger.warning("Could not detect system performance, using medium mode")
+        except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)as e:
+    logger.error(f"Error: {e}", exc_info=True)            logger.warning("Could not detect system performance, using medium mode")
             return "medium"
     
     def process_audio(self, audio_data: np.ndarray, processing_level: str = "auto") -> tuple:
@@ -228,11 +229,11 @@ class AudioProcessingEngine:
             return {
                 "rms_ratio": processed_rms / (original_rms + 1e-10),
                 "dynamic_range_improvement": processed_dynamic_range / (original_dynamic_range + 1e-10),
-                "peak_reduction": np.max(np.abs(original)) / (np.max(np.abs(processed)) + 1e-10)
-            }
+                "peak_reduction": np.max(np.abs(original)) / (np.max(np.abs(proceexcept Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)           }
             
-        except Exception:
-            return {"error": "Could not calculate quality metrics"}
+        except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)            return {"error": "Could not calculate quality metrics"}
     
     def clean_audio(self, input_audio: np.ndarray, processing_level: str = "auto") -> tuple:
         """Main function for cleaning and enhancing audio"""

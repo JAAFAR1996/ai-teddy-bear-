@@ -756,8 +756,8 @@ class EmotionAnalyzer:
                 if emotions:
                     dominant = max(emotions.items(), key=lambda x: x[1])
                     return dominant[0]
-        except Exception:
-            pass
+        except Exception as e:
+    logger.warning(f"Ignored exception: {e}")
         return 'neutral'
     
     def _extract_confidence(self, emotion_data: Dict) -> float:
@@ -768,9 +768,11 @@ class EmotionAnalyzer:
                 emotions = predictions[0].get('emotions', {})
                 if emotions:
                     max_score = max(emotions.values())
-                    return min(max_score, 1.0)
-        except Exception:
-            pass
+                    rexcept Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)as e:
+    logger.error(f"Error: {e}", exc_info=True)e, 1.0)
+        except Exception as e:
+    logger.warning(f"Ignored exception: {e}")
         return 0.5
     
     def _map_hume_emotion(self, hume_emotion: str) -> EmotionCategory:

@@ -3,6 +3,9 @@
 📱 Parent Mobile App Simulator - Complete Control Dashboard
 محاكي تطبيق الهاتف المحمول للتحكم الأبوي
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -474,8 +477,9 @@ class ParentMobileAppSimulator:
             }, timeout=2)
             if response.status_code == 200:
                 self.status_label.config(text=f"✅ Volume updated to {volume}%")
-        except:
-            self.status_label.config(text="❌ Failed to update volume")
+        except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            self.status_label.config(text="❌ Failed to update volume")
             
     def emergency_stop(self):
         """إيقاف الطوارئ"""
@@ -752,8 +756,8 @@ class ParentMobileAppSimulator:
         try:
             self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
             self.root.mainloop()
-        except KeyboardInterrupt:
-            print("\n👋 Parent App shutting down...")
+        except Exception as e:
+    logger.error(f"Error: {e}")"\n👋 Parent App shutting down...")
         
     def on_closing(self):
         """عند إغلاق التطبيق"""
@@ -773,4 +777,4 @@ if __name__ == "__main__":
         app = ParentMobileAppSimulator()
         app.run()
     except Exception as e:
-        print(f"❌ App error: {e}") 
+    logger.error(f"Error: {e}")f"❌ App error: {e}") 

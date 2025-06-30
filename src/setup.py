@@ -3,6 +3,9 @@
 """
 سكريبت إعداد وتشغيل مشروع AI Teddy Bear
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 import os
 import sys
@@ -34,8 +37,8 @@ def install_requirements():
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
         print("✓ تم تثبيت جميع المتطلبات بنجاح")
-    except subprocess.CalledProcessError:
-        print("❌ فشل في تثبيت المتطلبات")
+    except Exception as e:
+    logger.error(f"Error: {e}")"❌ فشل في تثبيت المتطلبات")
         return False
     return True
 
@@ -84,7 +87,7 @@ def initialize_database():
         db = Database()
         print("✓ تم تهيئة قاعدة البيانات بنجاح")
     except Exception as e:
-        print(f"❌ فشل في تهيئة قاعدة البيانات: {e}")
+    logger.error(f"Error: {e}")f"❌ فشل في تهيئة قاعدة البيانات: {e}")
 
 def run_tests():
     """تشغيل الاختبارات"""
@@ -92,10 +95,10 @@ def run_tests():
     try:
         subprocess.check_call([sys.executable, "-m", "pytest", "tests/", "-v"])
         print("✓ جميع الاختبارات نجحت")
-    except subprocess.CalledProcessError:
-        print("⚠️  بعض الاختبارات فشلت")
-    except FileNotFoundError:
-        print("ℹ️  لا توجد اختبارات للتشغيل")
+    except Exception as e:
+    logger.error(f"Error: {e}")"⚠️  بعض الاختبارات فشلت")
+    except Exception as e:
+    logger.error(f"Error: {e}")"ℹ️  لا توجد اختبارات للتشغيل")
 
 def main():
     """الدالة الرئيسية للإعداد"""

@@ -2,6 +2,9 @@
 🎭 Emotion Analysis Service for AI Teddy Bear
 حفظ وإدارة وتحليل بيانات المشاعر من HUME AI
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 import asyncio
 import json
@@ -160,7 +163,7 @@ class EmotionService(BaseService):
                 return interaction_id
                 
         except Exception as e:
-            print(f"❌ Error saving emotion analysis: {e}")
+    logger.error(f"Error: {e}")f"❌ Error saving emotion analysis: {e}")
             raise
     
     async def get_emotion_history(
@@ -192,8 +195,11 @@ class EmotionService(BaseService):
                     try:
                         row_dict['developmental_indicators'] = json.loads(row_dict['developmental_indicators'])
                         row_dict['session_context'] = json.loads(row_dict['session_context'])
-                    except:
-                        row_dict['developmental_indicators'] = []
+       except json.JSONDecodeError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)json.JSONDecodeError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)     except json.JSONDecodeError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)json.JSONDecodeError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                        row_dict['developmental_indicators'] = []
                         row_dict['session_context'] = {}
                     
                     results.append(row_dict)
@@ -201,7 +207,7 @@ class EmotionService(BaseService):
                 return results
                 
         except Exception as e:
-            print(f"❌ Error getting emotion history: {e}")
+    logger.error(f"Error: {e}")f"❌ Error getting emotion history: {e}")
             return []
     
     async def analyze_emotion_trends(
@@ -247,10 +253,13 @@ class EmotionService(BaseService):
                 try:
                     indicators = item['developmental_indicators']
                     if isinstance(indicators, str):
-                        indicators = json.loads(indicators)
-                    all_indicators.extend(indicators)
-                except:
-                    continue
+                   except json.JSONDecodeError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)dicators = json.loads(indicators)
+                    all_indicators.extend(inexcept json.JSONDecodeErroexcept json.JSONDecodeError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)
+    logger.error(f"Error in operation: {e}", exc_info=True))
+                except json.JSONDecodeError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                    continue
             
             indicator_counts = {}
             for indicator in all_indicators:
@@ -282,7 +291,7 @@ class EmotionService(BaseService):
             }
             
         except Exception as e:
-            print(f"❌ Error analyzing trends: {e}")
+    logger.error(f"Error: {e}")f"❌ Error analyzing trends: {e}")
             return {"error": f"خطأ في تحليل الاتجاهات: {str(e)}"}
     
     def _calculate_emotional_stability(self, history: List[Dict[str, Any]]) -> float:
@@ -410,7 +419,7 @@ class EmotionService(BaseService):
                 print(f"✅ Parent feedback saved for interaction {interaction_id}")
                 
         except Exception as e:
-            print(f"❌ Error saving parent feedback: {e}")
+    logger.error(f"Error: {e}")f"❌ Error saving parent feedback: {e}")
             raise
     
     async def _update_child_stats(
@@ -457,7 +466,7 @@ class EmotionService(BaseService):
                 conn.commit()
                 
         except Exception as e:
-            print(f"⚠️ Error updating child stats: {e}")
+    logger.error(f"Error: {e}")f"⚠️ Error updating child stats: {e}")
     
     async def get_child_stats(self, udid: str) -> Dict[str, Any]:
         """الحصول على إحصائيات الطفل"""
@@ -476,5 +485,5 @@ class EmotionService(BaseService):
                     return {"message": "لا توجد إحصائيات لهذا الطفل"}
                     
         except Exception as e:
-            print(f"❌ Error getting child stats: {e}")
+    logger.error(f"Error: {e}")f"❌ Error getting child stats: {e}")
             return {"error": str(e)} 

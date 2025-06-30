@@ -37,6 +37,9 @@ Example usage:
     audio_manager.end_session(session_id)
     audio_manager.cleanup()
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 # Import main enhanced audio manager
 try:
@@ -57,8 +60,8 @@ try:
         shutdown_audio_manager
     )
     ENHANCED_AUDIO_AVAILABLE = True
-except ImportError as e:
-    print(f"⚠️ Enhanced audio manager not available: {e}")
+except Exception as e:
+    logger.error(f"Error: {e}")f"⚠️ Enhanced audio manager not available: {e}")
     ENHANCED_AUDIO_AVAILABLE = False
 
 # Import modern async audio manager
@@ -69,8 +72,8 @@ try:
         bridge_to_enhanced_manager
     )
     MODERN_AUDIO_AVAILABLE = True
-except ImportError as e:
-    print(f"⚠️ Modern audio manager not available: {e}")
+except Exception as e:
+    logger.error(f"Error: {e}")f"⚠️ Modern audio manager not available: {e}")
     MODERN_AUDIO_AVAILABLE = False
 
 # Import audio processing components (optional)

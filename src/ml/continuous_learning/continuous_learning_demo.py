@@ -83,10 +83,10 @@ class ContinuousLearningDemo:
             # 8. تقرير النتائج النهائية
             await self._demo_final_report()
             
-        except KeyboardInterrupt:
-            print("\n🛑 Demo interrupted by user")
         except Exception as e:
-            print(f"\n❌ Demo failed: {str(e)}")
+    logger.error(f"Error: {e}")"\n🛑 Demo interrupted by user")
+        except Exception as e:
+    logger.error(f"Error: {e}")f"\n❌ Demo failed: {str(e)}")
         finally:
             await self._cleanup_demo()
     

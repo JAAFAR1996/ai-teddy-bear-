@@ -265,8 +265,9 @@ class DataEncryptionService:
                 # Parse JSON if needed
                 try:
                     decrypted_data[field_name] = json.loads(decrypted.decode('utf-8'))
-                except:
-                    decrypted_data[field_name] = decrypted.decode('utf-8')
+                except json.JSONDecodeError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)json.JSONDecodeError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                    decrypted_data[field_name] = decrypted.decode('utf-8')
             else:
                 decrypted_data[key] = value
         

@@ -3,6 +3,9 @@
 🗄️ Database Module for HUME AI Emotion Analysis
 قاعدة البيانات لحفظ وإدارة نتائج تحليل المشاعر
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 from sqlalchemy import create_engine, Column, String, DateTime, Float, Integer, ForeignKey, Text, JSON
 from sqlalchemy.ext.declarative import declarative_base
@@ -136,7 +139,7 @@ class DatabaseManager:
             Base.metadata.create_all(self.engine)
             print("✅ Database tables created successfully")
         except Exception as e:
-            print(f"❌ Error creating database tables: {e}")
+    logger.error(f"Error: {e}")f"❌ Error creating database tables: {e}")
     
     def save_session(
         self, 
@@ -248,7 +251,7 @@ class DatabaseManager:
             return sessions
             
         except Exception as e:
-            print(f"❌ Error getting child sessions: {e}")
+    logger.error(f"Error: {e}")f"❌ Error getting child sessions: {e}")
             return []
         finally:
             session.close()
@@ -262,7 +265,7 @@ class DatabaseManager:
             emotions = session.query(Emotion).filter_by(session_id=session_id).all()
             return emotions
         except Exception as e:
-            print(f"❌ Error getting session emotions: {e}")
+    logger.error(f"Error: {e}")f"❌ Error getting session emotions: {e}")
             return []
         finally:
             session.close()
@@ -302,7 +305,7 @@ class DatabaseManager:
             }
             
         except Exception as e:
-            print(f"❌ Error getting emotion statistics: {e}")
+    logger.error(f"Error: {e}")f"❌ Error getting emotion statistics: {e}")
             return {}
         finally:
             session.close()
@@ -393,4 +396,4 @@ if __name__ == "__main__":
         print("✅ Database test completed successfully!")
         
     except Exception as e:
-        print(f"❌ Database test failed: {e}") 
+    logger.error(f"Error: {e}")f"❌ Database test failed: {e}") 

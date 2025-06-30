@@ -338,8 +338,9 @@ class L1MemoryCache:
                 return len(json.dumps(value, default=str))
             else:
                 return len(pickle.dumps(value))
-        except:
-            return 1024  # Default estimate
+        except json.JSONDecodeError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)json.JSONDecodeError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return 1024  # Default estimate
     
     def get_stats(self) -> Dict[str, Any]:
         """Get L1 cache statistics."""
@@ -472,16 +473,20 @@ class L2RedisCache:
     
     def _decompress(self, data: bytes) -> bytes:
         """Decompress data using available compression."""
-        if LZ4_AVAILABLE:
-            try:
+        if LZ4_AVAILexcept Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)           try:
                 return lz4.frame.decompress(data)
-            except:
-                pass
+            except Exceptioexcept Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)
+    logger.error(f"Error in operation: {e}", exc_info=True)xception as e:
+    logger.warning(f"Ignoring error: {e}")
         
         try:
-            return gzip.decompress(data)
-        except:
-            return data  # Return as-is if decompression fails
+            except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)zip.decompress(data)
+        except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return data  # Return as-is if decompression fails
     
     async def get_stats(self) -> Dict[str, Any]:
         """Get L2 cache statistics."""
@@ -491,13 +496,16 @@ class L2RedisCache:
                 "connected_clients": info.get("connected_clients", 0),
                 "used_memory": info.get("used_memory", 0),
                 "used_memory_human": info.get("used_memory_human", "0B"),
-                "keyspace_hits": info.get("keyspace_hits", 0),
+   except IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)      "keyspace_hits": info.get("keyspace_hits", 0),
                 "keyspace_misses": info.get("keyspace_misses", 0),
                 "expired_keys": info.get("expired_keys", 0),
-                "evicted_keys": info.get("evicted_keys", 0)
+                "evicted_keys": info.get("eviexcept IndexError as e:
+    logger.errexcept IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)ror in operation: {e}", exc_info=True)s", 0)
             }
-        except:
-            return {"status": "error"}
+        except IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)            return {"status": "error"}
 
 
 class MockRedisClient:

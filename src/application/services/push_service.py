@@ -292,8 +292,9 @@ class PushService:
             else:
                 return "unknown"
                 
-        except Exception:
-            return "unknown"
+        except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)as e:
+    logger.error(f"Error: {e}", exc_info=True)            return "unknown"
     
     def _generate_jwt_token(self) -> str:
         """إنشاء JWT token لـ APNs"""

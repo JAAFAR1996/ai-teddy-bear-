@@ -3,6 +3,9 @@
 🎤 HUME AI Integration Script - FIXED Version
 نموذجين للتكامل مع HUME AI: Batch و Stream
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 import os
 import asyncio
@@ -135,7 +138,7 @@ class HumeIntegrationFixed:
             }
             
         except Exception as e:
-            print(f"❌ Batch analysis failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Batch analysis failed: {e}")
             return {
                 "status": "error",
                 "mode": "batch",
@@ -187,7 +190,7 @@ class HumeIntegrationFixed:
             }
                 
         except Exception as e:
-            print(f"❌ Stream analysis failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Stream analysis failed: {e}")
             print(f"   Error details: {type(e).__name__}: {e}")
             return {
                 "status": "error",
@@ -252,7 +255,7 @@ class HumeIntegrationFixed:
             return created_files
             
         except Exception as e:
-            print(f"❌ Failed to create sample files: {e}")
+    logger.error(f"Error: {e}")f"❌ Failed to create sample files: {e}")
             return []
 
 
@@ -292,7 +295,7 @@ async def test_stream_mode():
             print("❌ No sample files available for testing")
             
     except Exception as e:
-        print(f"❌ Stream test failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Stream test failed: {e}")
 
 def test_batch_mode():
     """🧪 اختبار نمط Batch"""
@@ -330,7 +333,7 @@ def test_batch_mode():
             print("❌ No sample files available for testing")
             
     except Exception as e:
-        print(f"❌ Batch test failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Batch test failed: {e}")
 
 async def run_all_tests():
     """🧪 تشغيل جميع الاختبارات"""

@@ -3,6 +3,9 @@
 🎤 HUME AI Integration Script
 نموذجين للتكامل مع HUME AI: Batch و Stream
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 import os
 import asyncio
@@ -155,7 +158,7 @@ class HumeIntegration:
             }
             
         except Exception as e:
-            print(f"❌ Batch analysis failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Batch analysis failed: {e}")
             
             # تحديث حالة الجلسة في قاعدة البيانات
             if session_record:
@@ -246,7 +249,7 @@ class HumeIntegration:
             }
                 
         except Exception as e:
-            print(f"❌ Stream analysis failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Stream analysis failed: {e}")
             
             # تحديث حالة الجلسة في قاعدة البيانات
             if session_record:
@@ -311,7 +314,7 @@ class HumeIntegration:
             print(f"🎭 Extracted {len(emotions_data)} emotions from predictions")
             
         except Exception as e:
-            print(f"❌ Error extracting emotions: {e}")
+    logger.error(f"Error: {e}")f"❌ Error extracting emotions: {e}")
             
         return emotions_data
     
@@ -419,7 +422,7 @@ class HumeIntegration:
             return created_files
             
         except Exception as e:
-            print(f"❌ Failed to create sample files: {e}")
+    logger.error(f"Error: {e}")f"❌ Failed to create sample files: {e}")
             return []
 
 
@@ -461,7 +464,7 @@ async def test_stream_mode():
             print("❌ No sample files available for testing")
             
     except Exception as e:
-        print(f"❌ Stream test failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Stream test failed: {e}")
 
 def test_batch_mode():
     """
@@ -500,7 +503,7 @@ def test_batch_mode():
             print("❌ No sample files available for testing")
             
     except Exception as e:
-        print(f"❌ Batch test failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Batch test failed: {e}")
 
 async def run_all_tests():
     """

@@ -3,6 +3,9 @@
 ☁️ Cloud Server Launcher - Complete AI Teddy Bear System
 مشغل السيرفر السحابي - نظام الدبدوب الذكي الكامل
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 import sys
 import os
@@ -480,8 +483,10 @@ class CloudServerLauncher:
                     if response.status_code == 200:
                         self.root.after(0, self.server_ready)
                         return
-                except:
-                    pass
+                except FileNotFoundError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)FileNotFoundError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)ileNotFoundError as e:
+    logger.warning(f"Ignoring error: {e}")
                 time.sleep(1)
             
             self.root.after(0, self.server_failed)
@@ -507,11 +512,13 @@ class CloudServerLauncher:
                 try:
                     for line in iter(self.server_process.stdout.readline, ''):
                         if line and self.server_running:
-                            self.root.after(0, lambda l=line: self.add_log_line(l.strip()))
+                            self.root.after(0, lambda l=line: self.add_loexcept Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)l.strip()))
                         elif not self.server_running:
-                            break
-                except:
-                    pass
+         except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)           break
+                except Exception as e:
+    logger.warning(f"Ignoring error: {e}")
                     
         threading.Thread(target=monitor_logs, daemon=True).start()
         
@@ -569,11 +576,14 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
             if self.server_process:
                 try:
                     process = psutil.Process(self.server_process.pid)
-                    info += f"Server PID: {self.server_process.pid}\n"
+                    infexcept Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)Server PID: {self.server_process.pid}\n"
                     info += f"Server Memory: {process.memory_info().rss // (1024**2)} MB\n"
-                    info += f"Server CPU: {process.cpu_percent():.1f}%\n"
-                except:
-                    info += "Server process info unavailable\n"
+                except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True) += f"Server CPU: {process.cpu_percent():.1f}%\n"
+                except Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)                    info += "Server process info unavailable\n"
             
             self.root.after(0, lambda: self.update_system_info_display(info))
             
@@ -814,8 +824,8 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
         try:
             self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
             self.root.mainloop()
-        except KeyboardInterrupt:
-            print("\n👋 Cloud Server Launcher shutting down...")
+        except Exception as e:
+    logger.error(f"Error: {e}")"\n👋 Cloud Server Launcher shutting down...")
         finally:
             if self.server_running:
                 self.stop_server()
@@ -845,4 +855,4 @@ if __name__ == "__main__":
         launcher = CloudServerLauncher()
         launcher.run()
     except Exception as e:
-        print(f"❌ Launcher error: {e}") 
+    logger.error(f"Error: {e}")f"❌ Launcher error: {e}") 

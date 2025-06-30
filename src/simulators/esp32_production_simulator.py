@@ -20,8 +20,8 @@ try:
         QProgressBar, QMessageBox, QInputDialog, QSplitter
     )
     from PySide6.QtGui import QFont, QPalette, QColor, QIcon
-except ImportError:
-    print("❌ PySide6 not installed. Installing...")
+except Exception as e:
+    logger.error(f"Error: {e}")"❌ PySide6 not installed. Installing...")
     import subprocess
     subprocess.check_call([sys.executable, "-m", "pip", "install", "PySide6"])
     from PySide6.QtCore import Signal, Slot, QThread, QTimer, QPropertyAnimation

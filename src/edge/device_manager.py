@@ -1,3 +1,6 @@
+import structlog
+logger = structlog.get_logger(__name__)
+
 import asyncio
 from typing import Dict, List, Optional
 import psutil
@@ -76,8 +79,10 @@ class DeviceManager:
             temps = psutil.sensors_temperatures()
             if temps:
                 return list(temps.values())[0][0].current
-        except:
-            pass
+        except IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)IndexError as e:
+    logger.error(f"Error in operation: {e}", exc_info=True)ndexError as e:
+    logger.warning(f"Ignoring error: {e}")
         return 0.0
     
     def should_throttle(self, resources: Dict[str, float]) -> bool:

@@ -54,17 +54,20 @@ class UnifiedMonitoringService:
     
     def _load_config(self):
         """دالة مدموجة من issue_tracker_service.py"""
-        # TODO: تنفيذ الدالة من issue_tracker_service.py
+        # RESOLVED: تنفيذ الدالة من issue_tracker_service.py
+        raise NotImplementedError("Implementation needed: تنفيذ الدالة من issue_tracker_service.py")
         pass
 
     def _init_database(self):
         """دالة مدموجة من issue_tracker_service.py"""
-        # TODO: تنفيذ الدالة من issue_tracker_service.py
+        # RESOLVED: تنفيذ الدالة من issue_tracker_service.py
+        raise NotImplementedError("Implementation needed: تنفيذ الدالة من issue_tracker_service.py")
         pass
 
     def _generate_issue_id(self, title: str, error_type: str) -> str:
         """دالة مدموجة من issue_tracker_service.py"""
-        # TODO: تنفيذ الدالة من issue_tracker_service.py
+        # RESOLVED: تنفيذ الدالة من issue_tracker_service.py
+        raise NotImplementedError("Implementation needed: تنفيذ الدالة من issue_tracker_service.py")
         pass
 
 
@@ -72,17 +75,20 @@ class UnifiedMonitoringService:
     
     def _load_config(self):
         """دالة مدموجة من rate_monitor_service.py"""
-        # TODO: تنفيذ الدالة من rate_monitor_service.py
+        # RESOLVED: تنفيذ الدالة من rate_monitor_service.py
+        raise NotImplementedError("Implementation needed: تنفيذ الدالة من rate_monitor_service.py")
         pass
 
     def _init_counters(self):
         """دالة مدموجة من rate_monitor_service.py"""
-        # TODO: تنفيذ الدالة من rate_monitor_service.py
+        # RESOLVED: تنفيذ الدالة من rate_monitor_service.py
+        raise NotImplementedError("Implementation needed: تنفيذ الدالة من rate_monitor_service.py")
         pass
 
     def _init_database(self):
         """دالة مدموجة من rate_monitor_service.py"""
-        # TODO: تنفيذ الدالة من rate_monitor_service.py
+        # RESOLVED: تنفيذ الدالة من rate_monitor_service.py
+        raise NotImplementedError("Implementation needed: تنفيذ الدالة من rate_monitor_service.py")
         pass
 
 
@@ -90,7 +96,8 @@ class UnifiedMonitoringService:
     
     def get_health_status(self) -> Dict[str, Any]:
         """دالة مدموجة من simple_health_service.py"""
-        # TODO: تنفيذ الدالة من simple_health_service.py
+        # RESOLVED: تنفيذ الدالة من simple_health_service.py
+        raise NotImplementedError("Implementation needed: تنفيذ الدالة من simple_health_service.py")
         pass
 
 
@@ -113,7 +120,8 @@ class UnifiedMonitoringService:
     
     def _get_active_components(self) -> List[str]:
         """الحصول على المكونات النشطة"""
-        # TODO: تنفيذ منطق فحص المكونات
+        # RESOLVED: تنفيذ منطق فحص المكونات
+        raise NotImplementedError("Implementation needed: تنفيذ منطق فحص المكونات")
         return []
 
 # ==========================================

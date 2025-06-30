@@ -612,8 +612,8 @@ class ResponseCache:
                 value = await self.redis_client.get(key)
                 if value:
                     return value.decode('utf-8')
-            except Exception:
-                pass
+            except Exception as e:
+    logger.warning(f"Ignored exception: {e}")
 
         # Fall back to local cache
         if key in self.local_cache:
@@ -630,9 +630,10 @@ class ResponseCache:
         # Set in Redis
         if self.redis_client:
             try:
-                await self.redis_client.setex(key, self.cache_ttl, value)
-            except Exception:
-                pass
+                await self.redis_client.setex(key, self.except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)as e:
+    logger.error(f"Error: {e}", exc_info=True)            except Exception as e:
+    logger.warning(f"Ignored exception: {e}")
 
         # Set in local cache
         expiry = datetime.now() + timedelta(seconds=self.cache_ttl)

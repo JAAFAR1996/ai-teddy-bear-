@@ -207,7 +207,7 @@ class EnhancedHumeIntegration:
             }
             
         except Exception as e:
-            print(f"❌ Multi-language analysis failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Multi-language analysis failed: {e}")
             return {'error': str(e)}
     
     async def _detect_language(self, audio_file: str) -> str:
@@ -225,8 +225,9 @@ class EnhancedHumeIntegration:
                 return "en"  # Higher frequencies often in English
             else:
                 return "ar"  # Lower frequencies often in Arabic
-                
-        except Exception:
+            except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)as e:
+    logger.error(f"Error: {e}", exc_info=True)t Exception:
             return "ar"  # Default to Arabic
     
     def _get_language_config(self, language: str) -> Dict:
@@ -339,7 +340,7 @@ class EnhancedHumeIntegration:
             return report
             
         except Exception as e:
-            print(f"❌ Historical data merge failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Historical data merge failed: {e}")
             return {'error': str(e)}
     
     def _fetch_historical_sessions(self, device_id: str, start_date: datetime, end_date: datetime) -> List[Dict]:
@@ -506,7 +507,7 @@ class EnhancedHumeIntegration:
                 return self._mock_analysis("neutral")
                 
         except Exception as e:
-            print(f"Real HUME analysis failed: {e}")
+    logger.error(f"Error: {e}")f"Real HUME analysis failed: {e}")
             return self._mock_analysis("neutral")
     
     async def _hume_analysis_with_language(self, audio_file: str, config: Dict) -> Dict:
@@ -524,7 +525,7 @@ class EnhancedHumeIntegration:
             return self._extract_emotions_from_hume(result)
             
         except Exception as e:
-            print(f"HUME language analysis failed: {e}")
+    logger.error(f"Error: {e}")f"HUME language analysis failed: {e}")
             return self._mock_multilang_analysis("ar")
     
     def _extract_emotions_from_hume(self, hume_result) -> Dict:
@@ -546,7 +547,7 @@ class EnhancedHumeIntegration:
                         for pred in predictions:
                             emotions[pred.get("name", "unknown")] = pred.get("score", 0.0)
         except Exception as e:
-            print(f"Error extracting emotions: {e}")
+    logger.error(f"Error: {e}")f"Error extracting emotions: {e}")
         
         if emotions:
             dominant = max(emotions, key=emotions.get)
@@ -575,7 +576,7 @@ async def demo_enhanced_hume():
         hume = EnhancedHumeIntegration()
         print("✅ HUME Integration initialized")
     except Exception as e:
-        print(f"❌ Initialization failed: {e}")
+    logger.error(f"Error: {e}")f"❌ Initialization failed: {e}")
         return
     
     # Task 1: Calibration

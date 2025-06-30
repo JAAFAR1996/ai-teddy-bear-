@@ -3,6 +3,9 @@
 🧸 AI Teddy Bear - Complete System Launcher
 تشغيل النظام الكامل للدبدوب الذكي
 """
+import structlog
+logger = structlog.get_logger(__name__)
+
 
 import subprocess
 import threading
@@ -69,10 +72,10 @@ def main():
         # انتظار انتهاء المحاكي
         esp32_process.wait()
         
-    except KeyboardInterrupt:
-        print("\n👋 Shutting down Teddy Bear system...")
     except Exception as e:
-        print(f"❌ Error: {e}")
+    logger.error(f"Error: {e}")"\n👋 Shutting down Teddy Bear system...")
+    except Exception as e:
+    logger.error(f"Error: {e}")f"❌ Error: {e}")
 
 if __name__ == "__main__":
     main() 

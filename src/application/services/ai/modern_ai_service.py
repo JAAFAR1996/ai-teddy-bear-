@@ -233,8 +233,9 @@ class OpenAIProvider:
             # Simple health check
             await self.client.models.list()
             return True
-        except Exception:
-            return False
+        except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)as e:
+    logger.error(f"Error: {e}", exc_info=True)            return False
     
     def _get_child_safe_system_prompt(self, child_id: Optional[str] = None) -> str:
         """Get child-safe system prompt"""

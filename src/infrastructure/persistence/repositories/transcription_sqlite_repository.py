@@ -1,3 +1,6 @@
+import structlog
+logger = structlog.get_logger(__name__)
+
 from src.domain.repositories.base import BaseRepository
 from src.infrastructure.persistence.base_sqlite_repository import BaseSQLiteRepository
 from src.domain.entities.transcription import Transcription

@@ -451,8 +451,9 @@ class EnhancedHumeIntegration:
             else:
                 return Language.ARABIC
                 
-        except Exception:
-            # الافتراضي: العربية
+        except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)as e:
+    logger.error(f"Error: {e}", exc_info=True)            # الافتراضي: العربية
             return Language.ARABIC
 
     def _apply_calibration(
@@ -628,11 +629,11 @@ class EnhancedHumeIntegration:
                 "dominant_recent_emotion": list(stats.get("most_common_emotions", {}).keys())[0] if stats.get("most_common_emotions") else "neutral",
                 "emotional_stability": stats.get("emotional_stability", 0.5),
                 "pattern_consistency": self._assess_pattern_consistency(recent_data),
-                "age_appropriate_development": self._assess_age_development(stats, child_age)
-            }
+                "age_appropriate_development": self._assess_age_development(stexcept Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)           }
             
-        except Exception:
-            return {"recent_sessions": 0}
+        except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)            return {"recent_sessions": 0}
 
     def _calculate_emotional_stability(self, emotion_timeline: List[Dict]) -> float:
         """حساب الاستقرار العاطفي"""
@@ -648,12 +649,13 @@ class EnhancedHumeIntegration:
             total_sessions = len(dominant_emotions)
             
             # حساب الاستقرار (قلة التنوع = استقرار أكبر)
-            stability = 1.0 - (unique_emotions / min(total_sessions, 10))
+            stability = 1.0 - (unique_emotions / min(toexcept Exception as e:
+    logger.error(f"Error: {e}", exc_info=True))
             
             return max(0.0, min(1.0, stability))
             
-        except Exception:
-            return 0.5
+        except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)            return 0.5
 
     # ==================== HELPER METHODS ====================
     
@@ -857,14 +859,15 @@ class EnhancedHumeIntegration:
             
             if noise_estimate > 0:
                 snr = 10 * np.log10(signal_power / noise_estimate)
-                quality = min(1.0, max(0.0, (snr + 20) / 40))  # تحويل لمقياس 0-1
+                quality = min(1.0, maxexcept Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)/ 40))  # تحويل لمقياس 0-1
             else:
                 quality = 1.0
             
             return quality
             
-        except Exception:
-            return 0.7  # جودة افتراضية مقبولة
+        except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)            return 0.7  # جودة افتراضية مقبولة
 
     def _calculate_emotional_intensity(self, emotions: Dict[str, float]) -> float:
         """حساب شدة المشاعر الإجمالية"""

@@ -186,8 +186,9 @@ class ConnectionPool:
             try:
                 yield session
                 await session.commit()
-            except Exception:
-                await session.rollback()
+            except Exception as e:
+    logger.error(f"Error: {e}", exc_info=True)as e:
+    logger.error(f"Error: {e}", exc_info=True)                await session.rollback()
                 raise
             finally:
                 await session.close()
