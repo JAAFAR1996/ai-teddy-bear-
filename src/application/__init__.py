@@ -12,3 +12,8 @@ from .services.esp32 import (
     NetworkCommunicationService, GUIManagementService,
     ChildProfileService
 )
+
+# Audio Application Services
+from .services.audio.voice_synthesis_service import VoiceSynthesisService
+from .services.audio.voice_recognition_service import VoiceRecognitionService
+from .services.audio.voice_profile_service import VoiceProfileService

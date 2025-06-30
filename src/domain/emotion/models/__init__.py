@@ -6,7 +6,7 @@ from .emotion_models import (
 )
 from .emotion_analytics import (
     EmotionAnalytics, EmotionTrend, ParentalReport, 
-    EmotionInsight, RiskAssessment
+    EmotionInsight, RiskAssessment, RiskLevel
 )
 
 __all__ = [
@@ -19,5 +19,6 @@ __all__ = [
     'EmotionTrend',
     'ParentalReport',
     'EmotionInsight',
-    'RiskAssessment'
+    'RiskAssessment',
+    'RiskLevel'
 ]

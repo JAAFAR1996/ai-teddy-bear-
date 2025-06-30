@@ -1,32 +1,18 @@
-"""Audio domain models exports."""
+"""
+Domain Audio Models - Voice Interaction
+Contains core audio domain models and enums
+"""
 
-from .audio_session import (
-    AudioSession,
-    AudioSessionType,
-    AudioQualityMode
-)
-
-from .audio_format import (
-    AudioFormatType,
-    AudioSystemConfig
-)
-
-from .performance_metrics import (
-    PerformanceMetrics,
-    AudioSystemStatus
+from .voice_models import (
+    EmotionalTone,
+    Language,
+    AudioConfig,
+    VoiceProfile
 )
 
 __all__ = [
-    # Session models
-    "AudioSession",
-    "AudioSessionType", 
-    "AudioQualityMode",
-    
-    # Format and config models
-    "AudioFormatType",
-    "AudioSystemConfig",
-    
-    # Performance models
-    "PerformanceMetrics",
-    "AudioSystemStatus"
+    'EmotionalTone',
+    'Language', 
+    'AudioConfig',
+    'VoiceProfile'
 ] 

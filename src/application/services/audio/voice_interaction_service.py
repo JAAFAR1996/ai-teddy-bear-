@@ -1,244 +1,33 @@
-# voice_interaction_service.py - Enhanced voice interaction with streaming integration
+"""
+Voice Interaction Service - Clean Architecture Coordinator
+Enhanced voice interaction with streaming integration using Clean Architecture
+"""
 
 import asyncio
 import logging
-from typing import Dict, Any, Optional, List, AsyncIterator, Callable
-from dataclasses import dataclass, field
-from enum import Enum
-from datetime import datetime
-import io
-import json
-import uuid
-from pathlib import Path
-import wave
-import struct
+from typing import Dict, Any, Optional, List
 from collections import deque
-from typing import Union
-import numpy as np
 import sounddevice as sd
-import soundfile as sf
-import whisper
-import torch
-import torchaudio
-from openai import AsyncOpenAI
-from elevenlabs import ElevenLabs, Voice, VoiceSettings
-import webrtcvad
-import noisereduce as nr
-from scipy import signal
-from scipy.io import wavfile
-import librosa
-import pyrubberband as pyrb
-from pydub import AudioSegment
-from pydub.effects import normalize
-import azure.cognitiveservices.speech as speechsdk
-from src.core.application.interfaces.services import IAIService
+import numpy as np
+from pathlib import Path
 
 from src.infrastructure.config import get_config
 from src.application.services.streaming_service import StreamingService
 from src.domain.entities.audio_stream import AudioStream
+from src.core.application.interfaces.services import IAIService
 
+# Domain imports
+from src.domain.audio.models import (
+    EmotionalTone, Language, AudioConfig, VoiceProfile
+)
+from src.domain.audio.services import (
+    VoiceActivityDetector, AudioProcessor
+)
 
-class EmotionalTone(Enum):
-    """Enhanced emotional voice tones for the teddy bear"""
-    HAPPY = "happy"
-    CALM = "calm"
-    CURIOUS = "curious"
-    SUPPORTIVE = "supportive"
-    PLAYFUL = "playful"
-    SLEEPY = "sleepy"
-    EXCITED = "excited"
-    STORYTELLING = "storytelling"
-    EDUCATIONAL = "educational"
-    COMFORTING = "comforting"
-
-
-class Language(Enum):
-    """Supported languages"""
-    ENGLISH = "en"
-    ARABIC = "ar"
-    SPANISH = "es"
-    FRENCH = "fr"
-    GERMAN = "de"
-    CHINESE = "zh"
-    JAPANESE = "ja"
-    KOREAN = "ko"
-
-
-@dataclass
-class AudioConfig:
-    """Audio configuration settings"""
-    sample_rate: int = 24000
-    channels: int = 1
-    chunk_size: int = 1024
-    format: str = 'int16'
-
-    # Voice Activity Detection
-    vad_mode: int = 3  # 0-3, 3 is most aggressive
-    vad_frame_duration: int = 30  # milliseconds
-
-    # Noise reduction
-    enable_noise_reduction: bool = True
-    noise_reduction_strength: float = 0.5
-
-    # Audio enhancement
-    enable_normalization: bool = True
-    target_loudness: float = -20.0  # dB
-
-    # Recording
-    silence_threshold: float = 0.01
-    silence_duration: float = 2.0  # seconds
-    max_recording_duration: float = 30.0  # seconds
-
-
-@dataclass
-class VoiceProfile:
-    """Voice profile for different characters/modes"""
-    id: str
-    name: str
-    voice_id: str  # ElevenLabs voice ID
-    language: Language
-    emotional_settings: Dict[EmotionalTone, VoiceSettings]
-    pitch_adjustment: float = 0.0
-    speed_adjustment: float = 1.0
-    personality_prompt: str = ""
-
-
-class VoiceActivityDetector:
-    """Voice Activity Detection wrapper"""
-
-    def __init__(self, config: AudioConfig):
-        self.vad = webrtcvad.Vad(config.vad_mode)
-        self.config = config
-        self.frame_duration = config.vad_frame_duration
-        self.sample_rate = config.sample_rate
-
-    def is_speech(self, audio_frame: bytes) -> bool:
-        """Check if audio frame contains speech"""
-        return self.vad.is_speech(audio_frame, self.sample_rate)
-
-    def get_speech_segments(self, audio_data: np.ndarray) -> List[tuple]:
-        """Get speech segments from audio"""
-        # Convert to bytes
-        audio_bytes = audio_data.astype('int16').tobytes()
-
-        # Frame size
-        frame_size = int(self.sample_rate * self.frame_duration / 1000)
-
-        segments = []
-        speech_start = None
-
-        for i in range(0, len(audio_data) - frame_size, frame_size):
-            frame = audio_bytes[i*2:(i+frame_size)*2]
-
-            if self.is_speech(frame):
-                if speech_start is None:
-                    speech_start = i
-            else:
-                if speech_start is not None:
-                    segments.append((speech_start, i))
-                    speech_start = None
-
-        # Handle last segment
-        if speech_start is not None:
-            segments.append((speech_start, len(audio_data)))
-
-        return segments
-
-
-class AudioProcessor:
-    """Advanced audio processing"""
-
-    def __init__(self, config: AudioConfig):
-        self.config = config
-        self.logger = logging.getLogger(self.__class__.__name__)
-
-    async def process_audio(self, audio_data: np.ndarray) -> np.ndarray:
-        """Apply audio processing pipeline"""
-        try:
-            # Noise reduction
-            if self.config.enable_noise_reduction:
-                audio_data = await self.reduce_noise(audio_data)
-
-            # Normalization
-            if self.config.enable_normalization:
-                audio_data = await self.normalize_audio(audio_data)
-
-            return audio_data
-
-        except Exception as e:
-            self.logger.error(f"Audio processing error: {e}")
-            return audio_data
-
-    async def reduce_noise(self, audio_data: np.ndarray) -> np.ndarray:
-        """Reduce background noise"""
-        try:
-            # Use noisereduce library
-            reduced = nr.reduce_noise(
-                y=audio_data,
-                sr=self.config.sample_rate,
-                prop_decrease=self.config.noise_reduction_strength
-            )
-            return reduced
-
-        except Exception as e:
-            self.logger.error(f"Noise reduction error: {e}")
-            return audio_data
-
-    async def normalize_audio(self, audio_data: np.ndarray) -> np.ndarray:
-        """Normalize audio levels"""
-        try:
-            # Calculate current RMS
-            rms = np.sqrt(np.mean(audio_data**2))
-
-            if rms > 0:
-                # Calculate target RMS from dB
-                target_rms = 10**(self.config.target_loudness/20)
-
-                # Apply normalization
-                normalized = audio_data * (target_rms / rms)
-
-                # Prevent clipping
-                max_val = np.max(np.abs(normalized))
-                if max_val > 1.0:
-                    normalized = normalized / max_val
-
-                return normalized
-
-            return audio_data
-
-        except Exception as e:
-            self.logger.error(f"Normalization error: {e}")
-            return audio_data
-
-    async def change_pitch(self, audio_data: np.ndarray, semitones: float) -> np.ndarray:
-        """Change audio pitch"""
-        try:
-            # Use pyrubberband for pitch shifting
-            shifted = pyrb.pitch_shift(
-                audio_data,
-                self.config.sample_rate,
-                semitones
-            )
-            return shifted
-
-        except Exception as e:
-            self.logger.error(f"Pitch shift error: {e}")
-            return audio_data
-
-    async def change_speed(self, audio_data: np.ndarray, speed_factor: float) -> np.ndarray:
-        """Change audio speed without affecting pitch"""
-        try:
-            # Use pyrubberband for time stretching
-            stretched = pyrb.time_stretch(
-                audio_data,
-                self.config.sample_rate,
-                speed_factor
-            )
-            return stretched
-
-        except Exception as e:
-            self.logger.error(f"Speed change error: {e}")
-            return audio_data
+# Application service imports
+from .voice_synthesis_service import VoiceSynthesisService
+from .voice_recognition_service import VoiceRecognitionService
+from .voice_profile_service import VoiceProfileService
 
 
 class VoiceInteractionService:

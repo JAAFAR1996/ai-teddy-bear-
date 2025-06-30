@@ -9,3 +9,16 @@ from .emotion import (
 from .esp32 import (
     HardwareSimulator, AudioDriver, NetworkAdapter, GUIComponents
 )
+
+# Export memory infrastructure
+from .memory import (
+    VectorMemoryStore, MemoryRepository
+)
+
+# Audio Infrastructure Clients
+from .audio.clients import (
+    ElevenLabsClient,
+    AzureSpeechClient,
+    WhisperClient,
+    OpenAISpeechClient
+)

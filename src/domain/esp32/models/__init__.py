@@ -4,7 +4,7 @@ from .device_models import (
     ESP32Device, DeviceStatus, HardwareState, PowerState
 )
 from .audio_models import (
-    AudioSettings, MicrophoneSettings, AudioVisualization, SpeechRecognition
+    AudioSettings, MicrophoneSettings, AudioVisualization, SpeechRecognition, AudioQuality
 )
 from .network_models import (
     NetworkConnection, WiFiStatus, ServerConnection, CommunicationProtocol
@@ -22,6 +22,7 @@ __all__ = [
     'MicrophoneSettings',
     'AudioVisualization',
     'SpeechRecognition',
+    'AudioQuality',
     'NetworkConnection',
     'WiFiStatus',
     'ServerConnection',
