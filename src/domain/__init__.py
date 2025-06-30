@@ -55,3 +55,6 @@ from .reporting.services import (
     SkillAnalyzer,
     BehaviorAnalyzer
 )
+
+# Add Parent Dashboard domain exports
+from . import parentdashboard

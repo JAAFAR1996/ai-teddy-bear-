@@ -24,3 +24,6 @@ from .services.reporting import (
     AnalysisOrchestratorService,
     RecommendationService
 )
+
+# Add Parent Dashboard application services
+from .services import parentdashboard

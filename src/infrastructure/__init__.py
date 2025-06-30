@@ -29,3 +29,6 @@ from .reporting import (
     PDFGenerator,
     ReportRepository
 )
+
+# Add Parent Dashboard infrastructure services  
+from . import parentdashboard
