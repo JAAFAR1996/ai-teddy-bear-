@@ -10,7 +10,7 @@ from .network_models import (
     NetworkConnection, WiFiStatus, ServerConnection, CommunicationProtocol
 )
 from .child_models import (
-    ChildProfile, ConversationHistory, LearningProgress, SessionData
+    ChildProfile, ConversationEntry, LearningProgress, SessionData
 )
 
 __all__ = [
@@ -27,7 +27,7 @@ __all__ = [
     'ServerConnection',
     'CommunicationProtocol',
     'ChildProfile',
-    'ConversationHistory',
+    'ConversationEntry',
     'LearningProgress',
     'SessionData'
 ]

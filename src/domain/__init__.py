@@ -12,5 +12,5 @@ from .esp32.models import (
     ESP32Device, DeviceStatus, HardwareState, PowerState,
     AudioSettings, MicrophoneSettings, AudioVisualization, SpeechRecognition,
     NetworkConnection, WiFiStatus, ServerConnection, CommunicationProtocol,
-    ChildProfile, ConversationHistory, LearningProgress, SessionData
+    ChildProfile, ConversationEntry, LearningProgress, SessionData
 )
