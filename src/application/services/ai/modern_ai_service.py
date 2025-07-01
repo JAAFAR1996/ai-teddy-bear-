@@ -4,35 +4,35 @@ Type-safe, async-first, with proper error handling and circuit breaker
 """
 
 import asyncio
+import base64
 import logging
-from typing import Dict, Any, List, Optional, Union, Protocol, Literal
+import sys
+import time
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-import time
-from abc import ABC, abstractmethod
-
-import base64
-import sys
 from pathlib import Path
-import openai
+from typing import Any, Dict, List, Literal, Optional, Protocol, Union
+
 import anthropic
-from openai import AsyncOpenAI
-from anthropic import AsyncAnthropic
+import openai
 import structlog
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from prometheus_client import Counter, Histogram, Gauge
+from anthropic import AsyncAnthropic
+from openai import AsyncOpenAI
 from opentelemetry import trace
+from prometheus_client import Counter, Gauge, Histogram
 from pydantic import BaseModel, Field, validator
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from config.secure_config import AIServiceConfig
+
 # from src.application.services.core.circuit_breaker import CircuitBreaker, CircuitBreakerError
 from src.core.domain.entities.child import Child
-
 
 # Metrics
 ai_requests_total = Counter('ai_requests_total', 'Total AI requests', ['provider', 'model', 'status'])

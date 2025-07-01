@@ -6,11 +6,13 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Optional
 
+
 class EmotionalTone(Enum):
     HAPPY = "happy"
     SAD = "sad"
     NEUTRAL = "neutral"
     EXCITED = "excited"
+
 
 class ConversationCategory(Enum):
     LEARNING = "learning"
@@ -18,15 +20,17 @@ class ConversationCategory(Enum):
     STORY = "story"
     GENERAL = "general"
 
+
 @dataclass
 class AIResponseModel:
     text: str
     confidence: float = 0.9
     metadata: Dict[str, Any] = None
-    
+
     def __post_init__(self):
         if self.metadata is None:
             self.metadata = {}
+
 
 @dataclass
 class ModelConfig:
@@ -34,9 +38,10 @@ class ModelConfig:
     provider: str
     temperature: float = 0.7
     max_tokens: int = 150
-    
+
     def validate(self) -> bool:
         return True
+
 
 class ResponseMode(Enum):
     NORMAL = "normal"

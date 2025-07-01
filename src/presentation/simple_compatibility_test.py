@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 #!/usr/bin/env python3
 """
@@ -6,9 +6,10 @@ Simple Backward Compatibility Test for modern_ui.py
 اختبار بسيط للتوافق العكسي دون الحاجة للمكتبات الخارجية
 """
 
-import sys
-import importlib.util
 import ast
+import importlib.util
+import sys
+
 
 def check_file_has_exports() -> Any:
     """Check that modern_ui.py has the expected exports"""

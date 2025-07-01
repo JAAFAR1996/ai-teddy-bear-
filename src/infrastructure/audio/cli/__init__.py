@@ -16,18 +16,16 @@ Example usage:
     $ audio-tts "Hello, world!" --play
 """
 
-from . import record
-from . import process
-from . import tts
+from . import process, record, tts
 
-__all__ = ['record', 'process', 'tts']
+__all__ = ["record", "process", "tts"]
 
 # Version info
-__version__ = '1.0.0'
+__version__ = "1.0.0"
 
 # Command mapping
 commands = {
-    'record': record.main,
-    'process': process.main,
-    'tts': tts.main,
+    "record": record.main,
+    "process": process.main,
+    "tts": tts.main,
 }

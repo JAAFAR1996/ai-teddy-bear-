@@ -1,7 +1,7 @@
 """Main entry point for the audio system."""
 
-import sys
 import logging
+import sys
 from typing import Optional
 
 from .audio_manager import audio_manager

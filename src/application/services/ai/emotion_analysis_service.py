@@ -1,15 +1,14 @@
 # Transformers imports patched for development
 ﻿"""Core emotion analysis service."""
 
-import structlog
-from typing import Dict, Any, Optional, List, Tuple
-import numpy as np
 import asyncio
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
-from ....domain.emotion.models import (
-    EmotionResult, EmotionContext, BehavioralIndicator
-)
+import numpy as np
+import structlog
+
+from ....domain.emotion.models import BehavioralIndicator, EmotionContext, EmotionResult
 
 logger = structlog.get_logger(__name__)
 

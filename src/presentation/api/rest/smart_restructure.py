@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 #!/usr/bin/env python3
 """
@@ -8,13 +8,13 @@ Intelligent Domain-Driven Design migration with advanced analysis
 """
 
 import ast
-import os
-import shutil
-from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional, Any
-from dataclasses import dataclass
 import json
 import logging
+import os
+import shutil
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

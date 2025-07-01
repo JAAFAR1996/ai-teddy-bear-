@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 """
 Cloud-based Transcription Service
@@ -9,14 +9,13 @@ import asyncio
 import base64
 import io
 from abc import ABC, abstractmethod
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-import io
 from typing import Any, Dict, List, Optional, Union
 
 import aiohttp
 import structlog
+
 # Google Cloud Speech - optional import
 try:
     from google.cloud import speech_v1
@@ -27,12 +26,7 @@ except ImportError:
 
 # Azure Speech - optional import
 try:
-    from azure.cognitiveservices.speech import (
-        SpeechConfig,
-        SpeechRecognizer,
-        AudioConfig,
-        ResultReason
-    )
+    from azure.cognitiveservices.speech import AudioConfig, ResultReason, SpeechConfig, SpeechRecognizer
     AZURE_AVAILABLE = True
 except ImportError:
     AZURE_AVAILABLE = False

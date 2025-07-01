@@ -4,7 +4,8 @@ Handles Azure Cognitive Services Speech API integration
 """
 
 import logging
-from typing import Optional, Dict
+from typing import Dict, Optional
+
 import azure.cognitiveservices.speech as speechsdk
 
 
@@ -12,17 +13,11 @@ class AzureSpeechClient:
     """Infrastructure client for Azure Speech Services"""
 
     def __init__(self, subscription_key: str, region: str = "eastus"):
-        self.speech_config = speechsdk.SpeechConfig(
-            subscription=subscription_key,
-            region=region
-        )
+        self.speech_config = speechsdk.SpeechConfig(subscription=subscription_key, region=region)
         self.logger = logging.getLogger(self.__class__.__name__)
 
     async def synthesize_speech(
-        self,
-        text: str,
-        voice_name: str = "ar-SA-ZariyahNeural",
-        output_format: str = "Audio16Khz32KBitRateMonoMp3"
+        self, text: str, voice_name: str = "ar-SA-ZariyahNeural", output_format: str = "Audio16Khz32KBitRateMonoMp3"
     ) -> Optional[bytes]:
         """Synthesize speech using Azure"""
         try:
@@ -33,9 +28,7 @@ class AzureSpeechClient:
             )
 
             # Create synthesizer
-            synthesizer = speechsdk.SpeechSynthesizer(
-                speech_config=self.speech_config
-            )
+            synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.speech_config)
 
             # Generate speech
             result = synthesizer.speak_text_async(text).get()
@@ -50,11 +43,7 @@ class AzureSpeechClient:
             self.logger.error(f"Azure speech synthesis error: {e}")
             return None
 
-    async def recognize_speech(
-        self,
-        audio_data: bytes,
-        language: str = "ar-SA"
-    ) -> Optional[Dict]:
+    async def recognize_speech(self, audio_data: bytes, language: str = "ar-SA") -> Optional[Dict]:
         """Recognize speech from audio data"""
         try:
             # Configure recognition
@@ -63,11 +52,8 @@ class AzureSpeechClient:
             # Create recognizer with audio data
             audio_stream = speechsdk.audio.PushAudioInputStream()
             audio_config = speechsdk.audio.AudioConfig(stream=audio_stream)
-            
-            recognizer = speechsdk.SpeechRecognizer(
-                speech_config=self.speech_config,
-                audio_config=audio_config
-            )
+
+            recognizer = speechsdk.SpeechRecognizer(speech_config=self.speech_config, audio_config=audio_config)
 
             # Push audio data and recognize
             audio_stream.write(audio_data)
@@ -76,10 +62,7 @@ class AzureSpeechClient:
             result = recognizer.recognize_once()
 
             if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-                return {
-                    "text": result.text,
-                    "confidence": result.confidence if hasattr(result, 'confidence') else 0.9
-                }
+                return {"text": result.text, "confidence": result.confidence if hasattr(result, "confidence") else 0.9}
             else:
                 self.logger.error(f"Azure recognition failed: {result.reason}")
                 return None
@@ -91,12 +74,10 @@ class AzureSpeechClient:
     async def get_available_voices(self, language: str = "ar") -> list:
         """Get available voices for language"""
         try:
-            synthesizer = speechsdk.SpeechSynthesizer(
-                speech_config=self.speech_config
-            )
-            
+            synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.speech_config)
+
             result = synthesizer.get_voices_async(language).get()
-            
+
             if result.reason == speechsdk.ResultReason.VoicesListRetrieved:
                 return [voice.name for voice in result.voices]
             else:
@@ -110,10 +91,8 @@ class AzureSpeechClient:
         """Check if service is available"""
         try:
             # Simple health check
-            synthesizer = speechsdk.SpeechSynthesizer(
-                speech_config=self.speech_config
-            )
+            synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.speech_config)
             result = synthesizer.get_voices_async().get()
             return result.reason == speechsdk.ResultReason.VoicesListRetrieved
         except Exception:
-            return False 
+            return False

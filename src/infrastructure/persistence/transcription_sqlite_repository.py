@@ -1,29 +1,27 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 import structlog
+
 logger = structlog.get_logger(__name__)
 
+import contextlib
+import os
+import sqlite3
+import wave
+from datetime import datetime
+
+from src.core.domain.entities.transcription import Transcription
 from src.infrastructure.persistence.base import BaseRepository
 from src.infrastructure.persistence.base_sqlite_repository import BaseSQLiteRepository
-from src.core.domain.entities.transcription import Transcription
-import sqlite3
-from datetime import datetime
-import os
-import wave
-import contextlib
 
 
 class TranscriptionSQLiteRepository(BaseSQLiteRepository):
     def __init__(self, connection):
-        super().__init__(
-            connection,
-            table_name="transcriptions",
-            entity_class=Transcription
-        )
+        super().__init__(connection, table_name="transcriptions", entity_class=Transcription)
 
     def _get_table_schema(self) -> str:
         """Get the CREATE TABLE SQL statement for transcriptions"""
-        return '''
+        return """
         CREATE TABLE IF NOT EXISTS transcriptions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             audio_file_path TEXT,
@@ -36,12 +34,12 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
             duration REAL,
             model_used TEXT
         )
-        '''
+        """
 
     def _get_audio_duration(self, audio_file_path) -> Any:
         """Get audio file duration in seconds."""
         try:
-            with contextlib.closing(wave.open(audio_file_path, 'rb')) as f:
+            with contextlib.closing(wave.open(audio_file_path, "rb")) as f:
                 frames = f.getnframes()
                 rate = f.getframerate()
                 duration = frames / float(rate)
@@ -56,12 +54,11 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
 
         # If no duration provided, try to get it from file
         if transcription.duration is None and transcription.audio_file_path:
-            transcription.duration = self._get_audio_duration(
-                transcription.audio_file_path)
+            transcription.duration = self._get_audio_duration(transcription.audio_file_path)
 
         # Default model used if not specified
         if transcription.model_used is None:
-            transcription.model_used = 'whisper_base'
+            transcription.model_used = "whisper_base"
 
         # Use parent class add method
         return super().add(transcription)
@@ -73,7 +70,7 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
 
     def delete_by_audio_path(self, audio_file_path: str) -> bool:
         """Delete transcription records by audio file path."""
-        query = 'DELETE FROM transcriptions WHERE audio_file_path = ?'
+        query = "DELETE FROM transcriptions WHERE audio_file_path = ?"
         cursor = self._connection.cursor()
         cursor.execute(query, (audio_file_path,))
         self._connection.commit()
@@ -84,14 +81,14 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
         return self.list(conversation_id=conversation_id)
 
     def exists(self, entity_id: str) -> bool:
-        query = 'SELECT 1 FROM transcriptions WHERE id = ?'
+        query = "SELECT 1 FROM transcriptions WHERE id = ?"
         cursor = self._connection.cursor()
         cursor.execute(query, (entity_id,))
         return cursor.fetchone() is not None
 
     def get(int) -> None:
         """Get a transcription by its ID."""
-        query = 'SELECT * FROM transcriptions WHERE id = ?'
+        query = "SELECT * FROM transcriptions WHERE id = ?"
         cursor = self._connection.cursor()
         cursor.execute(query, (entity_id,))
         row = cursor.fetchone()

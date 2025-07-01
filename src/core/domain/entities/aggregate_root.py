@@ -7,25 +7,25 @@ Provides event sourcing capabilities and maintains domain event collection.
 """
 
 from abc import ABC
-from typing import List, Generic, TypeVar
 from dataclasses import dataclass, field
+from typing import Generic, List, TypeVar
 
 from .base import Entity
 from .domain_event import DomainEvent
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass
 class AggregateRoot(Entity, Generic[T], ABC):
     """
     Base class for aggregate roots.
-    
+
     An aggregate root is the only member of its aggregate
     through which external objects are allowed to hold references.
     It ensures the integrity of the aggregate boundary.
     """
-    
+
     _domain_events: List[DomainEvent] = field(default_factory=list, init=False)
     _version: int = field(default=0, init=False)
 
@@ -69,5 +69,5 @@ class AggregateRoot(Entity, Generic[T], ABC):
     def __post_init__(self):
         """Post initialization hook for subclasses"""
         super().__post_init__()
-        if hasattr(self, '_initialize_aggregate'):
-            self._initialize_aggregate() 
+        if hasattr(self, "_initialize_aggregate"):
+            self._initialize_aggregate()

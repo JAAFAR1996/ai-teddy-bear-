@@ -1,30 +1,26 @@
-from typing import Dict, List, Any, Optional
-
-from flask import jsonify, request, current_app
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from flask import current_app, jsonify, request
+
 from .. import api_bp
 from ..middleware.auth import require_parent_auth
 
 
-@api_bp.route('/children', methods=['GET'])
+@api_bp.route("/children", methods=["GET"])
 @require_parent_auth
 def list_children() -> Any:
     """List children with real data"""
     try:
         orchestrator = current_app.orchestrator
 
-        if orchestrator and hasattr(orchestrator, 'child_repository'):
+        if orchestrator and hasattr(orchestrator, "child_repository"):
             # استخدم البيانات الحقيقية
-            children = orchestrator.child_repository.find_by_parent(
-                request.parent_id)
+            children = orchestrator.child_repository.find_by_parent(request.parent_id)
             children_data = [child.to_dict() for child in children]
         else:
             # Mock data للتطوير
-            children_data = [{
-                "id": "child_1",
-                "name": "أحمد",
-                "age": 7
-            }]
+            children_data = [{"id": "child_1", "name": "أحمد", "age": 7}]
 
         return jsonify({"children": children_data}), 200
 
@@ -32,15 +28,15 @@ def list_children() -> Any:
         return jsonify({"error": str(e)}), 500
 
 
-@api_bp.route('/children', methods=['POST'])
+@api_bp.route("/children", methods=["POST"])
 @require_parent_auth
 def create_child() -> Any:
     """Create new child profile"""
     try:
         data = request.json
-        name = data.get('name')
-        age = data.get('age')
-        preferences = data.get('preferences', {})
+        name = data.get("name")
+        age = data.get("age")
+        preferences = data.get("preferences", {})
 
         if not name or not age:
             return jsonify({"error": "Name and age required"}), 400
@@ -51,7 +47,7 @@ def create_child() -> Any:
             "name": name,
             "age": age,
             "preferences": preferences,
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.utcnow().isoformat(),
         }
 
         return jsonify({"child": child, "created": True}), 201
@@ -59,7 +55,7 @@ def create_child() -> Any:
         return jsonify({"error": str(e)}), 500
 
 
-@api_bp.route('/children/<child_id>', methods=['PUT'])
+@api_bp.route("/children/<child_id>", methods=["PUT"])
 @require_parent_auth
 def update_child(child_id) -> Any:
     """Update child profile"""
@@ -67,11 +63,7 @@ def update_child(child_id) -> Any:
         data = request.json
 
         # Mock update - replace with actual database update
-        updated_child = {
-            "id": child_id,
-            "updated": True,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+        updated_child = {"id": child_id, "updated": True, "timestamp": datetime.utcnow().isoformat()}
 
         return jsonify(updated_child), 200
     except Exception as e:

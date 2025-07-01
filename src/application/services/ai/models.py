@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional
 
 class ResponseMode(Enum):
     """AI response modes"""
+
     EDUCATIONAL = "educational"
     PLAYFUL = "playful"
     STORYTELLING = "storytelling"
@@ -21,6 +22,7 @@ class ResponseMode(Enum):
 
 class EmotionalTone(Enum):
     """Voice emotional tones"""
+
     CHEERFUL = "cheerful"
     CALM = "calm"
     EXCITED = "excited"
@@ -34,8 +36,9 @@ class EmotionalTone(Enum):
 @dataclass
 class AIResponse:
     """AI response with full metadata"""
+
     content: str
-    emotion: 'EmotionAnalysis'
+    emotion: "EmotionAnalysis"
     confidence: float = 0.0
     response_mode: ResponseMode = ResponseMode.CONVERSATIONAL
     suggested_voice_tone: EmotionalTone = EmotionalTone.CALM
@@ -45,4 +48,4 @@ class AIResponse:
     moderation_result: Optional[Dict] = None
     timestamp: datetime = field(default_factory=datetime.utcnow)
     session_id: Optional[str] = None
-    child_id: Optional[str] = None 
+    child_id: Optional[str] = None

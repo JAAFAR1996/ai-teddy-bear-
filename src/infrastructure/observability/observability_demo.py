@@ -9,21 +9,21 @@ and system reliability metrics.
 """
 
 import asyncio
-import time
-import random
 import json
+import logging
+import random
+import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-import logging
 
 # Mock the observability components for demo
 from custom_metrics import (
-    ChildSafetyMetrics, 
-    AIPerformanceMetrics, 
-    SystemHealthMetrics,
+    AIPerformanceMetrics,
+    ChildInteractionMetrics,
+    ChildSafetyMetrics,
     SafetyViolationType,
     SeverityLevel,
-    ChildInteractionMetrics
+    SystemHealthMetrics,
 )
 
 # Setup logging

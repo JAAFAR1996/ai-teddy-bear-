@@ -1,18 +1,15 @@
 # src/infrastructure/database/connection_pool.py
-from typing import Optional, Dict, Any, AsyncGenerator
-from contextlib import asynccontextmanager
 import asyncio
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
+from typing import Any, AsyncGenerator, Dict, Optional
+
 import structlog
-from sqlalchemy.ext.asyncio import (
-    create_async_engine,
-    AsyncSession,
-    AsyncEngine,
-    async_sessionmaker
-)
-from sqlalchemy.pool import NullPool, AsyncAdaptedQueuePool
 from sqlalchemy import event, pool
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.pool import AsyncAdaptedQueuePool, NullPool
+
 # Database drivers will be imported dynamically as needed
 from tenacity import retry, stop_after_attempt, wait_exponential
 

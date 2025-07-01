@@ -10,24 +10,24 @@ AI Team Implementation - Task 10
 
 from .edge_ai_manager import (
     EdgeAIManager,
+    EdgeAudioFeatures,
+    EdgeEmotionResult,
     EdgeModelConfig,
     EdgeProcessingMode,
-    WakeWordModel,
-    SafetyLevel,
     EdgeProcessingResult,
-    EdgeEmotionResult,
     EdgeSafetyResult,
-    EdgeAudioFeatures
+    SafetyLevel,
+    WakeWordModel,
 )
 
 __all__ = [
-    'EdgeAIManager',
-    'EdgeModelConfig',
-    'EdgeProcessingMode',
-    'WakeWordModel',
-    'SafetyLevel',
-    'EdgeProcessingResult',
-    'EdgeEmotionResult',
-    'EdgeSafetyResult',
-    'EdgeAudioFeatures'
-] 
+    "EdgeAIManager",
+    "EdgeModelConfig",
+    "EdgeProcessingMode",
+    "WakeWordModel",
+    "SafetyLevel",
+    "EdgeProcessingResult",
+    "EdgeEmotionResult",
+    "EdgeSafetyResult",
+    "EdgeAudioFeatures",
+]

@@ -1,14 +1,17 @@
 """Audio session management service for AI Teddy Bear."""
 
-import time
-import threading
 import logging
-from typing import Dict, Optional, List
+import threading
+import time
 from datetime import datetime, timedelta
+from typing import Dict, List, Optional
 
 from ....domain.audio.models import (
-    AudioSession, AudioSessionType, AudioQualityMode, 
-    AudioSystemConfig, PerformanceMetrics
+    AudioQualityMode,
+    AudioSession,
+    AudioSessionType,
+    AudioSystemConfig,
+    PerformanceMetrics,
 )
 
 
@@ -20,33 +23,29 @@ class AudioSessionService:
         self.logger = logging.getLogger(__name__)
         self.config = config
         self.metrics = metrics
-        
+
         # Session storage
         self.active_sessions: Dict[str, AudioSession] = {}
         self.current_session: Optional[AudioSession] = None
         self._session_lock = threading.Lock()
-        
+
         # Session callbacks
-        self.session_callbacks = {
-            "session_start": [],
-            "session_end": [],
-            "session_timeout": []
-        }
+        self.session_callbacks = {"session_start": [], "session_end": [], "session_timeout": []}
 
     def start_session(
         self,
         child_id: str,
         session_type: AudioSessionType = AudioSessionType.CONVERSATION,
-        quality_mode: AudioQualityMode = AudioQualityMode.BALANCED
+        quality_mode: AudioQualityMode = AudioQualityMode.BALANCED,
     ) -> str:
         """
         Start a new audio session.
-        
+
         Args:
             child_id: Child identifier
             session_type: Type of audio session
             quality_mode: Audio quality mode
-            
+
         Returns:
             Session ID
         """
@@ -64,7 +63,7 @@ class AudioSessionService:
                     session_type=session_type,
                     child_id=child_id,
                     start_time=datetime.now(),
-                    quality_mode=quality_mode
+                    quality_mode=quality_mode,
                 )
 
                 self.active_sessions[session_id] = session
@@ -74,16 +73,17 @@ class AudioSessionService:
                 self.metrics.start_session()
 
                 # Trigger callbacks
-                self._trigger_callback("session_start", {
-                    "session_id": session_id,
-                    "child_id": child_id,
-                    "session_type": session_type.value,
-                    "quality_mode": quality_mode.value
-                })
-
-                self.logger.info(
-                    f"Started audio session {session_id} for child {child_id}"
+                self._trigger_callback(
+                    "session_start",
+                    {
+                        "session_id": session_id,
+                        "child_id": child_id,
+                        "session_type": session_type.value,
+                        "quality_mode": quality_mode.value,
+                    },
                 )
+
+                self.logger.info(f"Started audio session {session_id} for child {child_id}")
                 return session_id
 
         except Exception as e:
@@ -93,10 +93,10 @@ class AudioSessionService:
     def end_session(self, session_id: str) -> bool:
         """
         End an audio session.
-        
+
         Args:
             session_id: Session to end
-            
+
         Returns:
             Success status
         """
@@ -124,11 +124,14 @@ class AudioSessionService:
                     self.current_session = None
 
                 # Trigger callbacks
-                self._trigger_callback("session_end", {
-                    "session_id": session_id,
-                    "duration": session.duration_seconds,
-                    "recordings": session.total_recordings
-                })
+                self._trigger_callback(
+                    "session_end",
+                    {
+                        "session_id": session_id,
+                        "duration": session.duration_seconds,
+                        "recordings": session.total_recordings,
+                    },
+                )
 
                 self.logger.info(f"Ended audio session {session_id}")
                 return True
@@ -152,10 +155,10 @@ class AudioSessionService:
     def get_session_info(self, session_id: str) -> Optional[Dict[str, Any]]:
         """
         Get detailed session information.
-        
+
         Args:
             session_id: Session identifier
-            
+
         Returns:
             Session information dictionary or None
         """
@@ -173,13 +176,13 @@ class AudioSessionService:
             "total_duration": session.total_duration,
             "quality_mode": session.quality_mode.value,
             "is_active": session.is_active,
-            "metadata": session.metadata
+            "metadata": session.metadata,
         }
 
     def check_session_timeouts(self) -> List[str]:
         """
         Check for and handle session timeouts.
-        
+
         Returns:
             List of timed out session IDs
         """
@@ -191,13 +194,12 @@ class AudioSessionService:
             for session_id, session in list(self.active_sessions.items()):
                 if current_time - session.start_time > timeout_duration:
                     self.logger.info(f"Session {session_id} timed out")
-                    
+
                     # Trigger timeout callback
-                    self._trigger_callback("session_timeout", {
-                        "session_id": session_id,
-                        "duration": session.duration_seconds
-                    })
-                    
+                    self._trigger_callback(
+                        "session_timeout", {"session_id": session_id, "duration": session.duration_seconds}
+                    )
+
                     # End the session
                     self.end_session(session_id)
                     timed_out_sessions.append(session_id)
@@ -212,7 +214,7 @@ class AudioSessionService:
 
         session.quality_mode = quality_mode
         session.metadata["quality_updated"] = datetime.now().isoformat()
-        
+
         self.logger.info(f"Updated session {session_id} quality to {quality_mode.value}")
         return True
 
@@ -245,7 +247,7 @@ class AudioSessionService:
             "total_active_duration": total_duration,
             "total_recordings": total_recordings,
             "timeout_minutes": self.config.session_timeout_minutes,
-            "current_session_id": self.current_session.session_id if self.current_session else None
+            "current_session_id": self.current_session.session_id if self.current_session else None,
         }
 
     def cleanup_old_sessions(self) -> int:
@@ -260,11 +262,8 @@ class AudioSessionService:
         if not self.active_sessions:
             return
 
-        oldest_session_id = min(
-            self.active_sessions.keys(),
-            key=lambda sid: self.active_sessions[sid].start_time
-        )
-        
+        oldest_session_id = min(self.active_sessions.keys(), key=lambda sid: self.active_sessions[sid].start_time)
+
         self.logger.info(f"Ending oldest session {oldest_session_id} due to limit")
         self.end_session(oldest_session_id)
 
@@ -275,9 +274,9 @@ class AudioSessionService:
             # For now, just log the session info
             session_data = session.to_dict()
             self.logger.info(f"Saving session data: {session_data}")
-            
+
             # Could save to database, file, or other storage
-            
+
         except Exception as e:
             self.logger.error(f"Error saving session data: {e}")
 
@@ -303,27 +302,24 @@ class AudioSessionService:
         """Force end all active sessions."""
         session_ids = list(self.active_sessions.keys())
         count = 0
-        
+
         for session_id in session_ids:
             if self.end_session(session_id):
                 count += 1
-                
+
         self.logger.info(f"Force ended {count} sessions")
         return count
 
     def get_child_sessions(self, child_id: str) -> List[AudioSession]:
         """Get all active sessions for a specific child."""
-        return [
-            session for session in self.active_sessions.values()
-            if session.child_id == child_id
-        ]
+        return [session for session in self.active_sessions.values() if session.child_id == child_id]
 
     def switch_current_session(self, session_id: str) -> bool:
         """Switch to a different active session."""
         session = self.active_sessions.get(session_id)
         if not session:
             return False
-            
+
         self.current_session = session
         self.logger.info(f"Switched to session {session_id}")
-        return True 
+        return True

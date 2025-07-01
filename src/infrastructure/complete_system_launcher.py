@@ -1,6 +1,5 @@
-from typing import Dict, List, Any, Optional
-
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,18 +9,21 @@ logger = logging.getLogger(__name__)
 مشغل النظام الكامل للدبدوب الذكي - المحاكيات الثلاث
 """
 import structlog
+
 logger = structlog.get_logger(__name__)
 
 
-import sys
 import os
 import subprocess
+import sys
 import threading
 import time
 import tkinter as tk
-from tkinter import ttk, messagebox
-import requests
 from datetime import datetime
+from tkinter import messagebox, ttk
+
+import requests
+
 
 class CompleteTeddySystemLauncher:
     """مشغل النظام الكامل مع المحاكيات الثلاث"""

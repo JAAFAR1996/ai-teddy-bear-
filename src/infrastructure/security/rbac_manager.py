@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 """
 🔐 Role-Based Access Control (RBAC) Manager - Enterprise Security 2025
@@ -16,10 +16,11 @@ Author: Jaafar Adeeb - Security Lead
 
 import asyncio
 import json
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Set, Union
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any, Dict, List, Optional, Set, Union
+
 import structlog
 
 logger = structlog.get_logger(__name__)

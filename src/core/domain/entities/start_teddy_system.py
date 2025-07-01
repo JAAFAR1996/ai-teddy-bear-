@@ -1,6 +1,5 @@
-from typing import Dict, List, Any, Optional
-
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,14 +9,16 @@ logger = logging.getLogger(__name__)
 تشغيل النظام الكامل للدبدوب الذكي
 """
 import structlog
+
 logger = structlog.get_logger(__name__)
 
 
+import os
 import subprocess
+import sys
 import threading
 import time
-import sys
-import os
+
 
 def start_server() -> Any:
     """تشغيل السيرفر"""

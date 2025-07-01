@@ -1,6 +1,5 @@
-from typing import Dict, List, Any, Optional
-
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,14 +9,16 @@ logger = logging.getLogger(__name__)
 نموذجين للتكامل مع HUME AI: Batch و Stream
 """
 import structlog
+
 logger = structlog.get_logger(__name__)
 
 
-import os
 import asyncio
 import json
+import os
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from dotenv import load_dotenv
 
 # تحميل متغيرات البيئة
@@ -25,7 +26,7 @@ load_dotenv()
 
 # استيراد مكتبات HUME AI
 try:
-    from hume import HumeClient, AsyncHumeClient
+    from hume import AsyncHumeClient, HumeClient
     HUME_AVAILABLE = True
     logger.info("✅ HUME AI SDK loaded successfully")
 except ImportError:

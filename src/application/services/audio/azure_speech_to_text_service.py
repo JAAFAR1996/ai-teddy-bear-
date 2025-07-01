@@ -1,15 +1,17 @@
-from typing import Dict, List, Any, Optional
-
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 import structlog
+
 logger = structlog.get_logger(__name__)
 
 import os
-import azure.cognitiveservices.speech as speechsdk
 import sqlite3
+
+import azure.cognitiveservices.speech as speechsdk
+
 from src.core.domain.entities.transcription import Transcription
 from src.infrastructure.persistence.transcription_sqlite_repository import TranscriptionSQLiteRepository
 

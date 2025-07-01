@@ -7,14 +7,10 @@ import asyncio
 from datetime import datetime
 from typing import Optional
 
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QLineEdit, 
-    QPushButton, QScrollArea
-)
+import structlog
 from PySide6.QtCore import Qt, pyqtSlot
 from PySide6.QtGui import QFont
-
-import structlog
+from PySide6.QtWidgets import QHBoxLayout, QLineEdit, QPushButton, QScrollArea, QTextEdit, QVBoxLayout, QWidget
 
 logger = structlog.get_logger()
 

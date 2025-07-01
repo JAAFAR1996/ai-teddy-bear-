@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 """
 🎭 Unified Emotion Analyzer - Complete Implementation 2025
@@ -6,23 +6,23 @@ Combines text analysis, audio analysis (Hume AI), and multi-modal emotion detect
 Merged from 3 different emotion analyzer implementations for maximum capability
 """
 
-import re
 import asyncio
 import json
-import requests
-import pandas as pd
+import re
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Dict, List, Optional, Any, Union
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional, Union
 
+import pandas as pd
+import requests
 import structlog
 from opentelemetry import trace
 
 # Optional imports for advanced features
 try:
-    from hume.client import AsyncHumeClient
     from hume import StreamDataModels
+    from hume.client import AsyncHumeClient
     HUME_AVAILABLE = True
 except ImportError:
     HUME_AVAILABLE = False

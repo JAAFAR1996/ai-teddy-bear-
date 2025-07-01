@@ -1,73 +1,76 @@
 ﻿"""Domain Layer - Pure Business Logic"""
 
 # Export emotion domain models
+# Add Parent Dashboard domain exports
+from . import parentdashboard
+
+# Audio Domain Models
+from .audio.models import AudioConfig, EmotionalTone, Language, VoiceProfile
+
+# Audio Domain Services
+from .audio.services import AudioProcessor, VoiceActivityDetector
+
+# Child Domain Components
+from .child import (
+    AgeRange,
+    ChildAnalyticsDomainService,
+    ChildEngagementInsight,
+    ChildFamilyDomainService,
+    ChildInteractionDomainService,
+    ChildSearchCriteria,
+    ChildStatistics,
+    InteractionMetrics,
+    SearchFilters,
+)
 from .emotion.models import (
-    EmotionResult, EmotionType, BehavioralIndicator,
-    EmotionContext, ChildEmotionProfile, EmotionAnalytics,
-    EmotionTrend, ParentalReport, EmotionInsight, RiskAssessment, RiskLevel
+    BehavioralIndicator,
+    ChildEmotionProfile,
+    EmotionAnalytics,
+    EmotionContext,
+    EmotionInsight,
+    EmotionResult,
+    EmotionTrend,
+    EmotionType,
+    ParentalReport,
+    RiskAssessment,
+    RiskLevel,
 )
 
 # Export ESP32 domain models
 from .esp32.models import (
-    ESP32Device, DeviceStatus, HardwareState, PowerState,
-    AudioSettings, MicrophoneSettings, AudioVisualization, SpeechRecognition,
-    NetworkConnection, WiFiStatus, ServerConnection, CommunicationProtocol,
-    ChildProfile, ConversationEntry, LearningProgress, SessionData
+    AudioSettings,
+    AudioVisualization,
+    ChildProfile,
+    CommunicationProtocol,
+    ConversationEntry,
+    DeviceStatus,
+    ESP32Device,
+    HardwareState,
+    LearningProgress,
+    MicrophoneSettings,
+    NetworkConnection,
+    PowerState,
+    ServerConnection,
+    SessionData,
+    SpeechRecognition,
+    WiFiStatus,
 )
 
 # Export memory domain models
-from .memory.models import (
-    Memory, MemoryType, MemoryImportance, ChildMemoryProfile, ConversationSummary
-)
-
-# Audio Domain Models
-from .audio.models import (
-    EmotionalTone,
-    Language,
-    AudioConfig,
-    VoiceProfile
-)
-
-# Audio Domain Services
-from .audio.services import (
-    VoiceActivityDetector,
-    AudioProcessor
-)
+from .memory.models import ChildMemoryProfile, ConversationSummary, Memory, MemoryImportance, MemoryType
 
 # Add reporting domain exports
 from .reporting.models import (
-    ChildProgress,
-    InteractionAnalysis, 
-    ProgressMetrics,
-    ReportPeriod,
-    EmotionDistribution,
-    SkillAnalysis,
-    LLMRecommendation,
     ActivityRecommendation,
+    ChildProgress,
+    EmotionDistribution,
+    InteractionAnalysis,
     InterventionRecommendation,
+    LLMRecommendation,
+    ProgressMetrics,
     RecommendationBundle,
-    UrgencyLevel
+    ReportPeriod,
+    SkillAnalysis,
+    UrgencyLevel,
 )
-
-from .reporting.services import (
-    ProgressAnalyzer,
-    EmotionAnalyzerService,
-    SkillAnalyzer,
-    BehaviorAnalyzer
-)
-
-# Add Parent Dashboard domain exports
-from . import parentdashboard
-
-# Child Domain Components
-from .child import (
-    ChildEngagementInsight,
-    ChildStatistics,
-    InteractionMetrics,
-    ChildSearchCriteria,
-    AgeRange,
-    SearchFilters,
-    ChildAnalyticsDomainService,
-    ChildInteractionDomainService,
-    ChildFamilyDomainService
-)
+from .reporting.services import BehaviorAnalyzer, EmotionAnalyzerService, ProgressAnalyzer, SkillAnalyzer

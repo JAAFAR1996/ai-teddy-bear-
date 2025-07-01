@@ -7,15 +7,16 @@ code execution paths and provides intelligent
 coverage analysis for comprehensive testing.
 """
 
-import asyncio
-import coverage
 import ast
+import asyncio
 import json
-from typing import Dict, List, Set, Optional, Any
-from dataclasses import dataclass, asdict
-from pathlib import Path
 import logging
 import time
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
+
+import coverage
 
 logger = logging.getLogger(__name__)
 

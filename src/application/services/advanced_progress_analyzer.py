@@ -4,22 +4,23 @@
 تحليل تقدم الطفل باستخدام NLP متقدم وLLM مع Chain-of-Thought prompting
 """
 
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime, timedelta
-import json
 import asyncio
-from dataclasses import dataclass, asdict
+import json
 import logging
-from enum import Enum
 import re
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
 # NLP Libraries
 try:
-    import spacy
-    from spacy import displacy
     from collections import Counter
+
     import nltk
+    import spacy
     from nltk.sentiment import SentimentIntensityAnalyzer
+    from spacy import displacy
     from textstat import flesch_reading_ease, syllable_count
     NLP_AVAILABLE = True
 except ImportError:
@@ -29,10 +30,11 @@ except ImportError:
 # Transformers for advanced analysis
 try:
     try:
-    from transformers import pipeline, AutoTokenizer, AutoModel
+    from transformers import AutoModel, AutoTokenizer, pipeline
 except ImportError:
-    from src.infrastructure.external_services.mock.transformers import pipeline, AutoTokenizer, AutoModel
     import torch
+
+    from src.infrastructure.external_services.mock.transformers import AutoModel, AutoTokenizer, pipeline
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False

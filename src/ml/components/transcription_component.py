@@ -6,11 +6,12 @@
 # Date: January 2025
 # ===================================================================
 
-from kubeflow.dsl import component, Input, Output, Dataset, Artifact
-import logging
-from typing import Dict, List, Optional, Tuple
 import json
+import logging
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple
+
+from kubeflow.dsl import Artifact, Dataset, Input, Output, component
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +38,10 @@ def transcribe_audio_op(
     """
     تحويل الكلام إلى نص محسن للأطفال
     """
-    import whisper
+    import numpy as np
     import torch
     import torchaudio
-    import numpy as np
+    import whisper
     try:
     from transformers import pipeline
 except ImportError:
@@ -149,7 +150,7 @@ def optimize_for_child_speech(audio: torch.Tensor, sample_rate: int) -> torch.Te
     # الأطفال لديهم ترددات أساسية أعلى من البالغين
     
     import torchaudio.transforms as T
-    
+
     # تحسين الترددات المتوسطة العالية (300-3000 Hz)
     highpass = T.HighpassBiquad(sample_rate, cutoff_freq=200.0)
     lowpass = T.LowpassBiquad(sample_rate, cutoff_freq=4000.0)
@@ -167,7 +168,7 @@ def optimize_for_child_speech(audio: torch.Tensor, sample_rate: int) -> torch.Te
 def detect_voice_activity(audio: torch.Tensor, sample_rate: int) -> List[Tuple[float, float]]:
     """كشف فترات النشاط الصوتي"""
     import webrtcvad
-    
+
     # تحويل إلى تنسيق مناسب لـ WebRTC VAD
     audio_np = audio.squeeze().numpy()
     

@@ -3,19 +3,14 @@ API Router for AI Teddy Bear System
 Updated to include new voice processing and reporting endpoints
 """
 import structlog
+
 logger = structlog.get_logger(__name__)
 
 
 from fastapi import APIRouter
-from .endpoints import (
-    audio,
-    children,
-    conversations,
-    system,
-    teddy_hardware,
-    advanced,
-    voice  # New voice endpoints
-)
+
+from .endpoints import voice  # New voice endpoints
+from .endpoints import advanced, audio, children, conversations, system, teddy_hardware
 
 # Create main API router
 api_router = APIRouter(prefix="/api", tags=["API"])

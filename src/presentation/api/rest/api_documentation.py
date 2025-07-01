@@ -1,12 +1,13 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
+
 def custom_openapi(FastAPI) -> None:
     if app.openapi_schema:
         return app.openapi_schema
-        
+
     openapi_schema = get_openapi(
         title="AI Teddy Bear API",
         version="2.0.0",
@@ -39,16 +40,12 @@ def custom_openapi(FastAPI) -> None:
         """,
         routes=app.routes,
     )
-    
+
     # Add security schemes
     openapi_schema["components"]["securitySchemes"] = {
-        "bearerAuth": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT"
-        }
+        "bearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
     }
-    
+
     # Add example schemas
     openapi_schema["components"]["schemas"]["ConversationStartedEvent"] = {
         "type": "object",
@@ -56,10 +53,10 @@ def custom_openapi(FastAPI) -> None:
             "event_type": {"type": "string", "example": "conversation.started"},
             "child_id": {"type": "string", "example": "child-123"},
             "session_id": {"type": "string", "example": "session-456"},
-            "timestamp": {"type": "string", "format": "date-time"}
-        }
+            "timestamp": {"type": "string", "format": "date-time"},
+        },
     }
-    
+
     # Add webhook documentation
     openapi_schema["webhooks"] = {
         "conversation.started": {
@@ -67,19 +64,16 @@ def custom_openapi(FastAPI) -> None:
                 "summary": "Conversation started webhook",
                 "requestBody": {
                     "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ConversationStartedEvent"
-                            }
-                        }
+                        "application/json": {"schema": {"$ref": "#/components/schemas/ConversationStartedEvent"}}
                     }
-                }
+                },
             }
         }
     }
-    
+
     app.openapi_schema = openapi_schema
     return app.openapi_schema
+
 
 # Example endpoint documentation
 def get_conversation_docs() -> Any:
@@ -104,13 +98,13 @@ def get_conversation_docs() -> Any:
                         "example": {
                             "session_id": "session-123",
                             "welcome_message": "مرحبا بك يا صديقي!",
-                            "voice_url": "/audio/welcome-123.mp3"
+                            "voice_url": "/audio/welcome-123.mp3",
                         }
                     }
-                }
+                },
             },
             400: {"description": "Invalid request"},
             401: {"description": "Authentication required"},
-            403: {"description": "Child access denied"}
-        }
+            403: {"description": "Child access denied"},
+        },
     }

@@ -1,6 +1,5 @@
-from typing import Dict, List, Any, Optional
-
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,20 +9,32 @@ SQLAlchemy Models for AI Teddy Bear Project
 Comprehensive data models with relationships, constraints, and optimizations
 """
 
-from datetime import datetime, date, timedelta
-from typing import Optional, List, Dict, Any
 import json
 import uuid
+from datetime import date, datetime, timedelta
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import (
-    Column, String, Integer, Float, Boolean, DateTime, Date, Text, 
-    ForeignKey, Index, CheckConstraint, UniqueConstraint, Table,
-    create_engine, event
+    Boolean,
+    CheckConstraint,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Table,
+    Text,
+    UniqueConstraint,
+    create_engine,
+    event,
 )
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, validates, Session, sessionmaker
 from sqlalchemy.dialects.sqlite import JSON
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import Session, relationship, sessionmaker, validates
 from sqlalchemy.sql import func
 
 Base = declarative_base()

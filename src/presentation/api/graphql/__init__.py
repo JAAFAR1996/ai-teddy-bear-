@@ -2,46 +2,49 @@
 
 try:
     from .federation_gateway import (
-        GraphQLFederationGateway,
         FederationConfig,
+        GraphQLFederationGateway,
         ServiceConfig,
         create_default_federation_config,
-        create_federation_gateway
+        create_federation_gateway,
     )
+
     FEDERATION_GATEWAY_AVAILABLE = True
 except ImportError:
     FEDERATION_GATEWAY_AVAILABLE = False
 
 try:
     from .authentication import (
-        AuthenticationService,
+        APIKey,
         AuthConfig,
+        AuthenticationService,
+        GraphQLAuthenticator,
+        Permission,
         User,
         UserRole,
-        Permission,
-        APIKey,
-        GraphQLAuthenticator,
         create_auth_config,
-        create_auth_service
+        create_auth_service,
     )
+
     AUTHENTICATION_AVAILABLE = True
 except ImportError:
     AUTHENTICATION_AVAILABLE = False
 
 try:
     from .service_resolvers import (
-        Child,
-        Conversation,
         AIProfile,
-        EmotionSnapshot,
-        LearningProgress,
-        ChildServiceResolvers,
         AIServiceResolvers,
+        Child,
+        ChildServiceResolvers,
+        Conversation,
+        EmotionSnapshot,
+        EntityResolver,
+        LearningProgress,
         MonitoringServiceResolvers,
         SafetyServiceResolvers,
-        EntityResolver,
-        schema
+        schema,
     )
+
     SERVICE_RESOLVERS_AVAILABLE = True
 except ImportError:
     SERVICE_RESOLVERS_AVAILABLE = False
@@ -49,12 +52,13 @@ except ImportError:
 try:
     from .performance_monitor import (
         GraphQLPerformanceMonitor,
-        QueryMetrics,
-        ServiceMetrics,
         PerformanceAlert,
         QueryComplexityAnalyzer,
-        create_performance_monitor
+        QueryMetrics,
+        ServiceMetrics,
+        create_performance_monitor,
     )
+
     PERFORMANCE_MONITOR_AVAILABLE = True
 except ImportError:
     PERFORMANCE_MONITOR_AVAILABLE = False
@@ -62,11 +66,10 @@ except ImportError:
 __all__ = [
     # Federation Gateway
     "GraphQLFederationGateway",
-    "FederationConfig", 
+    "FederationConfig",
     "ServiceConfig",
     "create_default_federation_config",
     "create_federation_gateway",
-    
     # Authentication
     "AuthenticationService",
     "AuthConfig",
@@ -77,7 +80,6 @@ __all__ = [
     "GraphQLAuthenticator",
     "create_auth_config",
     "create_auth_service",
-    
     # Service Resolvers
     "Child",
     "Conversation",
@@ -90,7 +92,6 @@ __all__ = [
     "SafetyServiceResolvers",
     "EntityResolver",
     "schema",
-    
     # Performance Monitoring
     "GraphQLPerformanceMonitor",
     "QueryMetrics",
@@ -98,10 +99,9 @@ __all__ = [
     "PerformanceAlert",
     "QueryComplexityAnalyzer",
     "create_performance_monitor",
-    
     # Availability flags
     "FEDERATION_GATEWAY_AVAILABLE",
     "AUTHENTICATION_AVAILABLE",
     "SERVICE_RESOLVERS_AVAILABLE",
-    "PERFORMANCE_MONITOR_AVAILABLE"
-] 
+    "PERFORMANCE_MONITOR_AVAILABLE",
+]

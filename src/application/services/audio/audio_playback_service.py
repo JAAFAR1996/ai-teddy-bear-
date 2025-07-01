@@ -1,14 +1,13 @@
 """Audio playback service for AI Teddy Bear."""
 
-import time
 import logging
-import numpy as np
-from typing import Optional, Dict, Any, Callable
+import time
 from pathlib import Path
+from typing import Any, Callable, Dict, Optional
 
-from ....domain.audio.models import (
-    AudioSession, AudioFormatType, AudioSystemConfig, PerformanceMetrics
-)
+import numpy as np
+
+from ....domain.audio.models import AudioFormatType, AudioSession, AudioSystemConfig, PerformanceMetrics
 
 
 class AudioPlaybackService:
@@ -19,12 +18,12 @@ class AudioPlaybackService:
         self.logger = logging.getLogger(__name__)
         self.config = config
         self.metrics = metrics
-        
+
         # Playback state
         self._is_playing = False
         self._current_playback_session = None
         self._playback_callbacks = []
-        
+
         # Initialize playback components
         self._initialize_playback_systems()
 
@@ -33,12 +32,12 @@ class AudioPlaybackService:
         try:
             # Initialize pygame mixer
             self._init_pygame_mixer()
-            
+
             # Initialize TTS system
             self._init_tts_system()
-            
+
             self.logger.info("Audio playback systems initialized")
-            
+
         except Exception as e:
             self.logger.error(f"Failed to initialize playback systems: {e}")
 
@@ -46,11 +45,9 @@ class AudioPlaybackService:
         """Initialize pygame mixer for audio playback."""
         try:
             import pygame
+
             pygame.mixer.pre_init(
-                frequency=self.config.sample_rate,
-                size=-16,
-                channels=self.config.channels,
-                buffer=1024
+                frequency=self.config.sample_rate, size=-16, channels=self.config.channels, buffer=1024
             )
             pygame.mixer.init()
             self.pygame_available = True
@@ -66,6 +63,7 @@ class AudioPlaybackService:
         """Initialize text-to-speech system."""
         try:
             from ....infrastructure.audio.tts_playback import TTSPlayback
+
             self.tts = TTSPlayback(on_playback_complete=self._on_playback_complete)
             self.tts_available = True
         except ImportError:
@@ -82,49 +80,45 @@ class AudioPlaybackService:
         format_hint: Optional[AudioFormatType] = None,
         loop: bool = False,
         fade_in: float = 0.0,
-        fade_out: float = 0.0
+        fade_out: float = 0.0,
     ) -> bool:
         """Play audio from data or file."""
         if self._is_playing and not loop:
             self.logger.warning("Playback already in progress")
             return False
-            
+
         try:
             # Set defaults
             if volume is None:
                 volume = self.config.volume_level
-                
+
             # Validate inputs
             if audio_data is None and filename is None:
                 self.logger.error("Either audio_data or filename must be provided")
                 return False
-                
+
             # Start playback
             self._start_playback(session)
-            
+
             # Choose playback method
             success = False
             if filename:
-                success = self._play_audio_file(
-                    filename, volume, loop, fade_in, fade_out, format_hint
-                )
+                success = self._play_audio_file(filename, volume, loop, fade_in, fade_out, format_hint)
             elif audio_data is not None:
-                success = self._play_audio_array(
-                    audio_data, volume, loop, fade_in, fade_out
-                )
-                
+                success = self._play_audio_array(audio_data, volume, loop, fade_in, fade_out)
+
             if success:
                 # Update metrics
                 self.metrics.increment_playbacks()
                 if format_hint:
                     self.metrics.record_format_usage(format_hint.value)
-                    
+
                 self.logger.info("Audio playback started successfully")
             else:
                 self._stop_playback()
-                
+
             return success
-            
+
         except Exception as e:
             error_msg = f"Playback failed: {e}"
             self.logger.error(error_msg)
@@ -140,46 +134,41 @@ class AudioPlaybackService:
         volume: Optional[float] = None,
         cache: bool = True,
         session: Optional[AudioSession] = None,
-        voice_style: str = "friendly"
+        voice_style: str = "friendly",
     ) -> bool:
         """Convert text to speech and play."""
         if not text.strip():
             self.logger.warning("Empty text provided for TTS")
             return False
-            
+
         try:
             # Set defaults
             if language is None:
                 language = self.config.language_preference
             if volume is None:
                 volume = self.config.volume_level
-                
+
             # Validate for child safety
             if self.config.child_safe_mode:
                 if not self._validate_child_safe_text(text):
                     self.logger.warning("Text failed child safety validation")
                     return False
-                    
+
             # Start TTS playback
             self._start_playback(session)
-            
+
             success = self.tts.speak(
-                text=text,
-                language=language,
-                speed=speed,
-                volume=volume,
-                cache=cache,
-                voice_style=voice_style
+                text=text, language=language, speed=speed, volume=volume, cache=cache, voice_style=voice_style
             )
-            
+
             if success:
                 self.metrics.increment_playbacks()
                 self.logger.info(f"TTS started for text: {text[:50]}...")
             else:
                 self._stop_playback()
-                
+
             return success
-            
+
         except Exception as e:
             error_msg = f"TTS failed: {e}"
             self.logger.error(error_msg)
@@ -191,21 +180,22 @@ class AudioPlaybackService:
         """Stop current playback."""
         if not self._is_playing:
             return False
-            
+
         try:
             # Stop pygame playback
             if self.pygame_available:
                 import pygame
+
                 pygame.mixer.stop()
-                
+
             # Stop TTS
-            if hasattr(self.tts, 'stop'):
+            if hasattr(self.tts, "stop"):
                 self.tts.stop()
-                
+
             self._stop_playback()
             self.logger.info("Playback stopped")
             return True
-            
+
         except Exception as e:
             self.logger.error(f"Error stopping playback: {e}")
             return False
@@ -223,7 +213,7 @@ class AudioPlaybackService:
         """Stop playback process."""
         self._is_playing = False
         self._current_playback_session = None
-        
+
         # Trigger completion callbacks
         for callback in self._playback_callbacks:
             try:
@@ -243,48 +233,43 @@ class AudioPlaybackService:
         loop: bool,
         fade_in: float,
         fade_out: float,
-        format_hint: Optional[AudioFormatType] = None
+        format_hint: Optional[AudioFormatType] = None,
     ) -> bool:
         """Play audio from file."""
         try:
             if not Path(filename).exists():
                 self.logger.error(f"Audio file not found: {filename}")
                 return False
-                
+
             # Try pygame first
             if self.pygame_available:
                 return self._play_with_pygame(filename, volume, loop)
             else:
                 return self._play_basic(filename, volume)
-                
+
         except Exception as e:
             self.logger.error(f"File playback error: {e}")
             return False
 
     def _play_audio_array(
-        self,
-        audio_data: np.ndarray,
-        volume: float,
-        loop: bool,
-        fade_in: float,
-        fade_out: float
+        self, audio_data: np.ndarray, volume: float, loop: bool, fade_in: float, fade_out: float
     ) -> bool:
         """Play audio from numpy array."""
         try:
             # Apply volume
             audio_data = audio_data * volume
-            
+
             # Apply fades if specified
             if fade_in > 0 or fade_out > 0:
                 audio_data = self._apply_fades(audio_data, fade_in, fade_out)
-                
+
             # Use pygame if available
             if self.pygame_available:
                 return self._play_array_with_pygame(audio_data, loop)
             else:
                 self.logger.warning("Array playback requires pygame")
                 return False
-                
+
         except Exception as e:
             self.logger.error(f"Array playback error: {e}")
             return False
@@ -293,13 +278,14 @@ class AudioPlaybackService:
         """Play audio file using pygame."""
         try:
             import pygame
+
             sound = pygame.mixer.Sound(filename)
             sound.set_volume(volume)
-            
+
             loops = -1 if loop else 0
             sound.play(loops=loops)
             return True
-            
+
         except Exception as e:
             self.logger.error(f"Pygame playback error: {e}")
             return False
@@ -318,38 +304,38 @@ class AudioPlaybackService:
         """Apply fade in/out effects to audio data."""
         if len(audio_data) == 0:
             return audio_data
-            
+
         result = audio_data.copy()
         samples = len(audio_data)
         sample_rate = self.config.sample_rate
-        
+
         # Apply fade in
         if fade_in > 0:
             fade_samples = int(fade_in * sample_rate)
             fade_samples = min(fade_samples, samples // 2)
-            
+
             for i in range(fade_samples):
-                result[i] *= (i / fade_samples)
-                
+                result[i] *= i / fade_samples
+
         # Apply fade out
         if fade_out > 0:
             fade_samples = int(fade_out * sample_rate)
             fade_samples = min(fade_samples, samples // 2)
-            
+
             for i in range(fade_samples):
-                result[samples - 1 - i] *= (i / fade_samples)
-                
+                result[samples - 1 - i] *= i / fade_samples
+
         return result
 
     def _validate_child_safe_text(self, text: str) -> bool:
         """Validate text for child safety."""
         unsafe_words = ["password", "address", "phone", "secret"]
         text_lower = text.lower()
-        
+
         for word in unsafe_words:
             if word in text_lower:
                 return False
-                
+
         return True
 
     def add_playback_callback(self, callback: Callable[[], None]) -> None:
@@ -365,13 +351,10 @@ class AudioPlaybackService:
         """Get current playback status."""
         return {
             "is_playing": self._is_playing,
-            "current_session": (
-                self._current_playback_session.session_id 
-                if self._current_playback_session else None
-            ),
+            "current_session": (self._current_playback_session.session_id if self._current_playback_session else None),
             "volume": self.config.volume_level,
             "pygame_available": self.pygame_available,
-            "tts_available": self.tts_available
+            "tts_available": self.tts_available,
         }
 
 
@@ -383,19 +366,26 @@ class MockTTSPlayback:
         self.on_playback_complete = on_playback_complete
         self._playing = False
 
-    def speak(self, text: str, language: str = "en", speed: float = 1.0, 
-              volume: float = 1.0, cache: bool = True, voice_style: str = "friendly") -> bool:
+    def speak(
+        self,
+        text: str,
+        language: str = "en",
+        speed: float = 1.0,
+        volume: float = 1.0,
+        cache: bool = True,
+        voice_style: str = "friendly",
+    ) -> bool:
         """Mock TTS speak."""
         self._playing = True
         self.logger.info(f"Mock TTS: {text[:50]}...")
-        
+
         # Simulate TTS processing time
         time.sleep(0.1)
-        
+
         # Call completion callback
         if self.on_playback_complete:
             self.on_playback_complete()
-            
+
         return True
 
     def is_playing(self) -> bool:
@@ -408,4 +398,4 @@ class MockTTSPlayback:
 
     def set_volume(self, volume: float) -> None:
         """Set volume."""
-        pass 
+        pass

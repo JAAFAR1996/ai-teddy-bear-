@@ -4,17 +4,13 @@
 Auto-generated from God Class refactoring
 """
 
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
-from datetime import datetime
-import uuid
-
 # Original imports
 import json
 import logging
+import uuid
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass, asdict
+from typing import Any, Dict, List, Optional, Tuple
 
     def get_child_ar_vr_report(self, child_id: str) -> Dict:
         """تقرير شامل لاستخدام الطفل لـ AR/VR"""

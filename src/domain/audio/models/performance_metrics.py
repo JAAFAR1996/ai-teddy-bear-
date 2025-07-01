@@ -2,12 +2,13 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Any, List, Optional
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class AudioSystemStatus(Enum):
     """Audio system health status."""
+
     HEALTHY = "healthy"
     WARNING = "warning"
     ERROR = "error"
@@ -17,6 +18,7 @@ class AudioSystemStatus(Enum):
 @dataclass
 class PerformanceMetrics:
     """Audio system performance metrics."""
+
     total_recordings: int = 0
     total_playbacks: int = 0
     total_errors: int = 0
@@ -25,14 +27,14 @@ class PerformanceMetrics:
     uptime_start: datetime = field(default_factory=datetime.now)
     cloud_syncs: int = 0
     cache_hits: int = 0
-    
+
     # Format-specific metrics
     formats_used: Dict[str, int] = field(default_factory=dict)
-    
+
     # Session metrics
     sessions_created: int = 0
     sessions_completed: int = 0
-    
+
     # System health
     status: AudioSystemStatus = AudioSystemStatus.HEALTHY
     last_health_check: datetime = field(default_factory=datetime.now)
@@ -119,7 +121,7 @@ class PerformanceMetrics:
             self.status = AudioSystemStatus.WARNING
         else:
             self.status = AudioSystemStatus.HEALTHY
-        
+
         self.last_health_check = datetime.now()
 
     def update_health_check(self) -> None:
@@ -145,7 +147,7 @@ class PerformanceMetrics:
             "error_rate": self.error_rate,
             "success_rate": self.success_rate,
             "cache_hit_rate": self.cache_hit_rate,
-            "last_health_check": self.last_health_check.isoformat()
+            "last_health_check": self.last_health_check.isoformat(),
         }
 
     def reset(self) -> None:
@@ -162,4 +164,4 @@ class PerformanceMetrics:
         self.sessions_created = 0
         self.sessions_completed = 0
         self.status = AudioSystemStatus.HEALTHY
-        self.last_health_check = datetime.now() 
+        self.last_health_check = datetime.now()

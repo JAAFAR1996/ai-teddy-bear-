@@ -5,8 +5,9 @@ Handles audio enhancement and processing
 
 import logging
 from typing import Optional
-import numpy as np
+
 import noisereduce as nr
+import numpy as np
 import pyrubberband as pyrb
 
 from ..models.voice_models import AudioConfig
@@ -48,9 +49,7 @@ class AudioProcessor:
 
             # Use noisereduce library
             reduced = nr.reduce_noise(
-                y=audio_data,
-                sr=self.config.sample_rate,
-                prop_decrease=self.config.noise_reduction_strength
+                y=audio_data, sr=self.config.sample_rate, prop_decrease=self.config.noise_reduction_strength
             )
             return reduced
 
@@ -69,7 +68,7 @@ class AudioProcessor:
 
             if rms > 0:
                 # Calculate target RMS from dB
-                target_rms = 10**(self.config.target_loudness/20)
+                target_rms = 10 ** (self.config.target_loudness / 20)
 
                 # Apply normalization
                 normalized = audio_data * (target_rms / rms)
@@ -94,11 +93,7 @@ class AudioProcessor:
                 return audio_data
 
             # Use pyrubberband for pitch shifting
-            shifted = pyrb.pitch_shift(
-                audio_data,
-                self.config.sample_rate,
-                semitones
-            )
+            shifted = pyrb.pitch_shift(audio_data, self.config.sample_rate, semitones)
             return shifted
 
         except Exception as e:
@@ -112,11 +107,7 @@ class AudioProcessor:
                 return audio_data
 
             # Use pyrubberband for time stretching
-            stretched = pyrb.time_stretch(
-                audio_data,
-                self.config.sample_rate,
-                speed_factor
-            )
+            stretched = pyrb.time_stretch(audio_data, self.config.sample_rate, speed_factor)
             return stretched
 
         except Exception as e:
@@ -141,4 +132,4 @@ class AudioProcessor:
 
         except Exception as e:
             self.logger.error(f"Audio validation error: {e}")
-            return False 
+            return False

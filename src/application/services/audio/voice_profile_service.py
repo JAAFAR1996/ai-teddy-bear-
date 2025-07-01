@@ -5,13 +5,12 @@ Handles voice profile storage, loading and management
 
 import json
 import logging
-from typing import Dict, Optional, List
 from pathlib import Path
+from typing import Dict, List, Optional
+
 from elevenlabs import VoiceSettings
 
-from src.domain.audio.models.voice_models import (
-    VoiceProfile, EmotionalTone, Language
-)
+from src.domain.audio.models.voice_models import EmotionalTone, Language, VoiceProfile
 
 
 class VoiceProfileService:
@@ -33,15 +32,15 @@ class VoiceProfileService:
 
             # Serialize profile
             profile_data = self._serialize_profile(profile)
-            
+
             # Save to file
             profile_file = self.storage_path / f"{profile.id}.json"
-            with open(profile_file, 'w', encoding='utf-8') as f:
+            with open(profile_file, "w", encoding="utf-8") as f:
                 json.dump(profile_data, f, indent=2, ensure_ascii=False)
 
             # Update cache
             self._profiles_cache[profile.id] = profile
-            
+
             self.logger.info(f"Saved voice profile: {profile.id}")
             return True
 
@@ -62,12 +61,12 @@ class VoiceProfileService:
                 self.logger.warning(f"Profile file not found: {profile_id}")
                 return None
 
-            with open(profile_file, 'r', encoding='utf-8') as f:
+            with open(profile_file, "r", encoding="utf-8") as f:
                 profile_data = json.load(f)
 
             # Deserialize profile
             profile = self._deserialize_profile(profile_data)
-            
+
             if profile and profile.is_valid():
                 # Cache the profile
                 self._profiles_cache[profile_id] = profile
@@ -84,7 +83,7 @@ class VoiceProfileService:
         """Get all available voice profiles"""
         try:
             profiles = []
-            
+
             # Load from files
             for profile_file in self.storage_path.glob("*.json"):
                 profile_id = profile_file.stem
@@ -125,33 +124,33 @@ class VoiceProfileService:
 
             # Default teddy bear profile (English)
             teddy_settings = self._create_emotional_settings()
-            
+
             teddy_profile = VoiceProfile(
-                id='teddy_bear',
-                name='Friendly Teddy',
-                voice_id=getattr(self.config, 'DEFAULT_VOICE_ID', 'josh'),
+                id="teddy_bear",
+                name="Friendly Teddy",
+                voice_id=getattr(self.config, "DEFAULT_VOICE_ID", "josh"),
                 language=Language.ENGLISH,
                 emotional_settings=teddy_settings,
                 pitch_adjustment=2.0,
                 speed_adjustment=0.95,
-                personality_prompt="You are a warm, friendly teddy bear who loves children."
+                personality_prompt="You are a warm, friendly teddy bear who loves children.",
             )
 
             # Arabic teddy bear profile
             teddy_profile_ar = VoiceProfile(
-                id='teddy_bear_ar',
-                name='دبدوب الودود',
-                voice_id=getattr(self.config, 'ARABIC_VOICE_ID', 'josh'),
+                id="teddy_bear_ar",
+                name="دبدوب الودود",
+                voice_id=getattr(self.config, "ARABIC_VOICE_ID", "josh"),
                 language=Language.ARABIC,
                 emotional_settings=teddy_settings,
                 pitch_adjustment=1.5,
                 speed_adjustment=0.9,
-                personality_prompt="أنت دبدوب ودود يحب الأطفال ويتحدث بلطف."
+                personality_prompt="أنت دبدوب ودود يحب الأطفال ويتحدث بلطف.",
             )
 
             # Save profiles
-            profiles['teddy_bear'] = teddy_profile
-            profiles['teddy_bear_ar'] = teddy_profile_ar
+            profiles["teddy_bear"] = teddy_profile
+            profiles["teddy_bear_ar"] = teddy_profile_ar
 
             for profile in profiles.values():
                 await self.save_profile(profile)
@@ -175,7 +174,7 @@ class VoiceProfileService:
             EmotionalTone.EXCITED: VoiceSettings(stability=0.1, similarity_boost=0.9, style=0.8),
             EmotionalTone.STORYTELLING: VoiceSettings(stability=0.4, similarity_boost=0.5, style=0.4),
             EmotionalTone.EDUCATIONAL: VoiceSettings(stability=0.6, similarity_boost=0.5, style=0.3),
-            EmotionalTone.COMFORTING: VoiceSettings(stability=0.7, similarity_boost=0.4, style=0.2)
+            EmotionalTone.COMFORTING: VoiceSettings(stability=0.7, similarity_boost=0.4, style=0.2),
         }
 
     def _serialize_profile(self, profile: VoiceProfile) -> Dict:
@@ -192,10 +191,10 @@ class VoiceProfileService:
                 emotion.value: {
                     "stability": settings.stability,
                     "similarity_boost": settings.similarity_boost,
-                    "style": settings.style
+                    "style": settings.style,
                 }
                 for emotion, settings in profile.emotional_settings.items()
-            }
+            },
         }
 
     def _deserialize_profile(self, data: Dict) -> Optional[VoiceProfile]:
@@ -208,7 +207,7 @@ class VoiceProfileService:
                 settings = VoiceSettings(
                     stability=settings_data["stability"],
                     similarity_boost=settings_data["similarity_boost"],
-                    style=settings_data["style"]
+                    style=settings_data["style"],
                 )
                 emotional_settings[emotion] = settings
 
@@ -221,11 +220,11 @@ class VoiceProfileService:
                 emotional_settings=emotional_settings,
                 pitch_adjustment=data.get("pitch_adjustment", 0.0),
                 speed_adjustment=data.get("speed_adjustment", 1.0),
-                personality_prompt=data.get("personality_prompt", "")
+                personality_prompt=data.get("personality_prompt", ""),
             )
 
             return profile
 
         except Exception as e:
             self.logger.error(f"Profile deserialization error: {e}")
-            return None 
+            return None

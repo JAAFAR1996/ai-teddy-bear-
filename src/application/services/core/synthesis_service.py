@@ -4,12 +4,13 @@ Streaming Text-to-Speech with emotional intelligence and multi-provider support
 """
 
 import asyncio
+import io
 import logging
 import time
-import io
-from typing import Optional, Dict, Any, AsyncIterator, Union, List
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, AsyncIterator, Dict, List, Optional, Union
+
 import numpy as np
 
 # Audio processing
@@ -27,19 +28,20 @@ except ImportError:
 # Voice synthesis providers
 try:
     try:
-    from elevenlabs import ElevenLabs, Voice, VoiceSettings, stream, generate
+    from elevenlabs import ElevenLabs, Voice, VoiceSettings, generate, stream
 except ImportError:
-    from src.infrastructure.external_services.mock.elevenlabs import ElevenLabs, Voice, VoiceSettings, stream, generate
+    from src.infrastructure.external_services.mock.elevenlabs import ElevenLabs, Voice, VoiceSettings, generate, stream
 except ImportError:
     ElevenLabs = Voice = VoiceSettings = stream = generate = None
 from openai import AsyncOpenAI
+
 try:
     import azure.cognitiveservices.speech as speechsdk
 except ImportError:
     speechsdk = None
 
 # Value objects
-from src.domain.value_objects import EmotionalTone, Confidence
+from src.domain.value_objects import Confidence, EmotionalTone
 
 logger = logging.getLogger(__name__)
 

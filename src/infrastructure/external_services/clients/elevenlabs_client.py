@@ -4,11 +4,12 @@ Handles ElevenLabs API integration
 """
 
 import logging
-from typing import Optional, AsyncIterator
+from typing import AsyncIterator, Optional
+
 try:
-    from elevenlabs import ElevenLabs, generate, stream, VoiceSettings
+    from elevenlabs import ElevenLabs, VoiceSettings, generate, stream
 except ImportError:
-    from src.infrastructure.external_services.mock.elevenlabs import ElevenLabs, generate, stream, VoiceSettings
+    from src.infrastructure.external_services.mock.elevenlabs import ElevenLabs, VoiceSettings, generate, stream
 
 
 class ElevenLabsClient:
@@ -19,20 +20,11 @@ class ElevenLabsClient:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     async def generate_speech(
-        self,
-        text: str,
-        voice_id: str,
-        voice_settings: VoiceSettings,
-        model: str = "eleven_multilingual_v2"
+        self, text: str, voice_id: str, voice_settings: VoiceSettings, model: str = "eleven_multilingual_v2"
     ) -> Optional[bytes]:
         """Generate speech audio"""
         try:
-            audio = generate(
-                text=text,
-                voice=voice_id,
-                model=model,
-                voice_settings=voice_settings
-            )
+            audio = generate(text=text, voice=voice_id, model=model, voice_settings=voice_settings)
             return audio
 
         except Exception as e:
@@ -40,20 +32,11 @@ class ElevenLabsClient:
             return None
 
     async def stream_speech(
-        self,
-        text: str,
-        voice_id: str,
-        voice_settings: VoiceSettings,
-        model: str = "eleven_multilingual_v2"
+        self, text: str, voice_id: str, voice_settings: VoiceSettings, model: str = "eleven_multilingual_v2"
     ) -> Optional[AsyncIterator[bytes]]:
         """Stream speech audio"""
         try:
-            audio_stream = stream(
-                text=text,
-                voice=voice_id,
-                model=model,
-                voice_settings=voice_settings
-            )
+            audio_stream = stream(text=text, voice=voice_id, model=model, voice_settings=voice_settings)
             return audio_stream
 
         except Exception as e:
@@ -77,4 +60,4 @@ class ElevenLabsClient:
             self.client.voices.get_all()
             return True
         except Exception:
-            return False 
+            return False

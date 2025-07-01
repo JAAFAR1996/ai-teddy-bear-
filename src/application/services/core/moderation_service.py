@@ -1,46 +1,46 @@
 # Transformers imports patched for development
 # moderation_service.py - Enhanced content moderation for child safety
-import uuid
 import asyncio
+import hashlib
+import json
 import logging
+import os
 import re
-from typing import Dict, List, Optional, Set, Tuple, Any
+import uuid
+from collections import defaultdict
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from dataclasses import dataclass, field
-import json
-from collections import defaultdict
-import hashlib
-import os
-from openai import AsyncOpenAI
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+import anthropic
 from azure.ai.contentsafety import ContentSafetyClient
 from azure.core.credentials import AzureKeyCredential
 from google.cloud import language_v1
-import anthropic
+from openai import AsyncOpenAI
+
 try:
     from transformers import pipeline
 except ImportError:
     from src.infrastructure.external_services.mock.transformers import pipeline
-import spacy
-import redis.asyncio as aioredis
-from sqlalchemy import Column, String, Float, DateTime, Integer, JSON, Boolean
-from sqlalchemy.ext.declarative import declarative_base
-from src.infrastructure.security.encryption import EncryptionService
 
-from src.infrastructure.config import get_config
-from src.core.domain.entities.conversation import Conversation, Message
+import redis.asyncio as aioredis
+import spacy
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+
 from src.application.services.parent_dashboard_service import ParentDashboardService
-from src.domain.exceptions import (
-    ExternalServiceException,
-    ChildSafetyException,
-    InappropriateContentException
-)
+from src.core.domain.entities.conversation import Conversation, Message
+from src.domain.exceptions import ChildSafetyException, ExternalServiceException, InappropriateContentException
+from src.infrastructure.config import get_config
+from src.infrastructure.security.encryption import EncryptionService
 
 Base = declarative_base()
 
 
 class ModerationSeverity(Enum):
     """Severity levels for moderation"""
+
     SAFE = "safe"
     LOW = "low"
     MEDIUM = "medium"
@@ -50,6 +50,7 @@ class ModerationSeverity(Enum):
 
 class ContentCategory(Enum):
     """Content categories for moderation"""
+
     VIOLENCE = "violence"
     SEXUAL = "sexual"
     HATE_SPEECH = "hate_speech"
@@ -68,11 +69,11 @@ class ContentCategory(Enum):
 @dataclass
 class ModerationResult:
     """Enhanced moderation result with detailed information"""
+
     is_safe: bool
     severity: ModerationSeverity
     flagged_categories: List[ContentCategory] = field(default_factory=list)
-    confidence_scores: Dict[ContentCategory,
-                            float] = field(default_factory=dict)
+    confidence_scores: Dict[ContentCategory, float] = field(default_factory=dict)
     matched_rules: List[str] = field(default_factory=list)
     context_notes: List[str] = field(default_factory=list)
     alternative_response: Optional[str] = None
@@ -90,6 +91,7 @@ class ModerationResult:
 @dataclass
 class ModerationRule:
     """Custom moderation rule"""
+
     id: str
     name: str
     description: str
@@ -98,7 +100,7 @@ class ModerationRule:
     category: ContentCategory = ContentCategory.AGE_INAPPROPRIATE
     severity: ModerationSeverity = ModerationSeverity.MEDIUM
     age_range: Tuple[int, int] = (0, 18)
-    languages: List[str] = field(default_factory=lambda: ['en', 'ar'])
+    languages: List[str] = field(default_factory=lambda: ["en", "ar"])
     is_regex: bool = False
     context_required: bool = False
     enabled: bool = True
@@ -108,7 +110,8 @@ class ModerationRule:
 
 class ModerationLog(Base):
     """Database model for moderation logs"""
-    __tablename__ = 'moderation_logs'
+
+    __tablename__ = "moderation_logs"
 
     id = Column(String, primary_key=True)
     session_id = Column(String)
@@ -137,10 +140,10 @@ class RuleEngine:
                 id="personal_info_1",
                 name="Personal Information Detection",
                 description="Detects personal information like phone numbers, addresses",
-                pattern=r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b|\b\d{5,}\b',
+                pattern=r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b|\b\d{5,}\b",
                 category=ContentCategory.PERSONAL_INFO,
                 severity=ModerationSeverity.HIGH,
-                is_regex=True
+                is_regex=True,
             ),
             ModerationRule(
                 id="violence_1",
@@ -149,7 +152,7 @@ class RuleEngine:
                 keywords=["kill", "murder", "hurt", "harm", "attack", "fight"],
                 category=ContentCategory.VIOLENCE,
                 severity=ModerationSeverity.HIGH,
-                context_required=True
+                context_required=True,
             ),
             ModerationRule(
                 id="scary_content_1",
@@ -158,17 +161,16 @@ class RuleEngine:
                 keywords=["monster", "ghost", "scary", "nightmare", "demon"],
                 category=ContentCategory.SCARY_CONTENT,
                 severity=ModerationSeverity.LOW,
-                age_range=(3, 8)
+                age_range=(3, 8),
             ),
             ModerationRule(
                 id="bullying_1",
                 name="Bullying Detection",
                 description="Detects bullying language",
-                keywords=["stupid", "dumb", "loser",
-                          "hate you", "nobody likes"],
+                keywords=["stupid", "dumb", "loser", "hate you", "nobody likes"],
                 category=ContentCategory.BULLYING,
-                severity=ModerationSeverity.MEDIUM
-            )
+                severity=ModerationSeverity.MEDIUM,
+            ),
         ]
 
         for rule in default_rules:
@@ -178,8 +180,7 @@ class RuleEngine:
         """Add a moderation rule"""
         self.rules[rule.id] = rule
         if rule.pattern and rule.is_regex:
-            self.compiled_patterns[rule.id] = re.compile(
-                rule.pattern, re.IGNORECASE)
+            self.compiled_patterns[rule.id] = re.compile(rule.pattern, re.IGNORECASE)
 
     def remove_rule(self, rule_id: str) -> None:
         """Remove a moderation rule"""
@@ -188,7 +189,7 @@ class RuleEngine:
             if rule_id in self.compiled_patterns:
                 del self.compiled_patterns[rule_id]
 
-    async def evaluate(self, text: str, age: int = 10, language: str = 'en') -> List[Tuple[ModerationRule, float]]:
+    async def evaluate(self, text: str, age: int = 10, language: str = "en") -> List[Tuple[ModerationRule, float]]:
         """Evaluate text against all rules"""
         matched_rules = []
 
@@ -214,8 +215,7 @@ class RuleEngine:
             # Check keywords
             if rule.keywords:
                 text_lower = text.lower()
-                matches = sum(
-                    1 for keyword in rule.keywords if keyword.lower() in text_lower)
+                matches = sum(1 for keyword in rule.keywords if keyword.lower() in text_lower)
                 if matches > 0:
                     confidence = max(confidence, min(matches * 0.3, 0.9))
 
@@ -250,10 +250,10 @@ class ModerationService:
 
         # Alert thresholds
         self.alert_thresholds = {
-            ModerationSeverity.LOW: 5,      # 5 low severity in 1 hour
-            ModerationSeverity.MEDIUM: 3,    # 3 medium severity in 1 hour
-            ModerationSeverity.HIGH: 1,      # 1 high severity immediately
-            ModerationSeverity.CRITICAL: 1   # 1 critical immediately
+            ModerationSeverity.LOW: 5,  # 5 low severity in 1 hour
+            ModerationSeverity.MEDIUM: 3,  # 3 medium severity in 1 hour
+            ModerationSeverity.HIGH: 1,  # 1 high severity immediately
+            ModerationSeverity.CRITICAL: 1,  # 1 critical immediately
         }
 
         # Tracking for alerts
@@ -268,16 +268,17 @@ class ModerationService:
     def _init_api_clients(self) -> None:
         """Initialize external API clients"""
         # Azure Content Safety
-        if getattr(self.config.api_keys, "AZURE_CONTENT_SAFETY_KEY", None) and getattr(self.config.api_keys, "AZURE_CONTENT_SAFETY_ENDPOINT", None):
+        if getattr(self.config.api_keys, "AZURE_CONTENT_SAFETY_KEY", None) and getattr(
+            self.config.api_keys, "AZURE_CONTENT_SAFETY_ENDPOINT", None
+        ):
             self.azure_client = ContentSafetyClient(
                 endpoint=self.config.api_keys.AZURE_CONTENT_SAFETY_ENDPOINT,
-                credential=AzureKeyCredential(
-                    self.config.api_keys.AZURE_CONTENT_SAFETY_KEY)
+                credential=AzureKeyCredential(self.config.api_keys.AZURE_CONTENT_SAFETY_KEY),
             )
         else:
             self.azure_client = None
 
-         # Google Cloud Natural Language
+        # Google Cloud Natural Language
         if getattr(self.config.api_keys, "GOOGLE_CLOUD_CREDENTIALS", None):
             self.google_client = language_v1.LanguageServiceClient()
         else:
@@ -285,9 +286,7 @@ class ModerationService:
 
             # Anthropic (for Claude's content analysis)
         if getattr(self.config.api_keys, "ANTHROPIC_API_KEY", None):
-            self.anthropic_client = anthropic.AsyncAnthropic(
-                api_key=self.config.api_keys.ANTHROPIC_API_KEY
-            )
+            self.anthropic_client = anthropic.AsyncAnthropic(api_key=self.config.api_keys.ANTHROPIC_API_KEY)
         else:
             self.anthropic_client = None
 
@@ -308,22 +307,14 @@ class ModerationService:
                 self.sentiment_analyzer = pipeline(
                     "sentiment-analysis",
                     model="distilbert-base-uncased-finetuned-sst-2-english",
-                    token=hf_token    # استخدم use_auth_token=hf_token إذا ظهرت مشكلة
+                    token=hf_token,  # استخدم use_auth_token=hf_token إذا ظهرت مشكلة
                 )
-                self.toxicity_classifier = pipeline(
-                    "text-classification",
-                    model="unitary/toxic-bert",
-                    token=hf_token
-                )
+                self.toxicity_classifier = pipeline("text-classification", model="unitary/toxic-bert", token=hf_token)
             else:
                 self.sentiment_analyzer = pipeline(
-                    "sentiment-analysis",
-                    model="distilbert-base-uncased-finetuned-sst-2-english"
+                    "sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english"
                 )
-                self.toxicity_classifier = pipeline(
-                    "text-classification",
-                    model="unitary/toxic-bert"
-                )
+                self.toxicity_classifier = pipeline("text-classification", model="unitary/toxic-bert")
         except Exception as e:
             self.logger.warning(f"Failed to load NLP models: {e}")
             self.nlp = None
@@ -333,22 +324,36 @@ class ModerationService:
     def _load_lists(self) -> None:
         """Load whitelist and blacklist"""
         # Load from config or database
-        whitelist_words = getattr(self.config, 'MODERATION_WHITELIST', [])
-        blacklist_words = getattr(self.config, 'MODERATION_BLACKLIST', [])
+        whitelist_words = getattr(self.config, "MODERATION_WHITELIST", [])
+        blacklist_words = getattr(self.config, "MODERATION_BLACKLIST", [])
 
         self.whitelist = set(whitelist_words)
         self.blacklist = set(blacklist_words)
 
         # Add common safe words for children
-        self.whitelist.update([
-            "play", "fun", "friend", "help", "please", "thank you",
-            "love", "family", "school", "learn", "game", "story"
-        ])
+        self.whitelist.update(
+            [
+                "play",
+                "fun",
+                "friend",
+                "help",
+                "please",
+                "thank you",
+                "love",
+                "family",
+                "school",
+                "learn",
+                "game",
+                "story",
+            ]
+        )
 
         # Add definitely inappropriate words
-        self.blacklist.update([
-            # Add explicit inappropriate words here
-        ])
+        self.blacklist.update(
+            [
+                # Add explicit inappropriate words here
+            ]
+        )
 
     async def check_content(
         self,
@@ -356,8 +361,8 @@ class ModerationService:
         user_id: Optional[str] = None,
         session_id: Optional[str] = None,
         age: int = 10,
-        language: str = 'en',
-        context: Optional[List[Message]] = None
+        language: str = "en",
+        context: Optional[List[Message]] = None,
     ) -> Dict[str, Any]:
         """
         Comprehensive content moderation check
@@ -382,45 +387,36 @@ class ModerationService:
             self._check_whitelist_blacklist(content),
             self._check_with_rule_engine(content, age, language),
             self._check_with_openai(content),
-            self._check_with_azure(
-                content) if self.azure_client else self._null_check(),
-            self._check_with_google(
-                content) if self.google_client else self._null_check(),
+            self._check_with_azure(content) if self.azure_client else self._null_check(),
+            self._check_with_google(content) if self.google_client else self._null_check(),
             self._check_with_nlp_models(content),
-            self._check_context_appropriate(
-                content, context) if context else self._null_check(),
-            return_exceptions=True
+            self._check_context_appropriate(content, context) if context else self._null_check(),
+            return_exceptions=True,
         )
 
         # Aggregate results
         final_result = self._aggregate_results(results)
         # تجاهل تصنيف المعلومات الشخصية فقط (اجعلها غير مؤثرة على الحظر)
         if ContentCategory.PERSONAL_INFO in final_result.flagged_categories:
-            final_result.flagged_categories = [cat for cat in final_result.flagged_categories if cat != ContentCategory.PERSONAL_INFO]
+            final_result.flagged_categories = [
+                cat for cat in final_result.flagged_categories if cat != ContentCategory.PERSONAL_INFO
+            ]
             # إذا لم يبق تصنيفات خطيرة، اجعل النتيجة آمنة
             if not final_result.flagged_categories:
                 final_result.is_safe = True
                 final_result.severity = ModerationSeverity.SAFE
 
         # Determine if content is allowed
-        allowed = final_result.is_safe and final_result.severity in [
-            ModerationSeverity.SAFE,
-            ModerationSeverity.LOW
-        ]
+        allowed = final_result.is_safe and final_result.severity in [ModerationSeverity.SAFE, ModerationSeverity.LOW]
 
         # Generate alternative response if needed
-        if not allowed and getattr(self.config, 'GENERATE_SAFE_ALTERNATIVES', True):
+        if not allowed and getattr(self.config, "GENERATE_SAFE_ALTERNATIVES", True):
             final_result.alternative_response = await self._generate_safe_alternative(
                 content, final_result.flagged_categories
             )
 
         # Log the moderation event
-        await self._log_moderation(
-            content=content,
-            result=final_result,
-            user_id=user_id,
-            session_id=session_id
-        )
+        await self._log_moderation(content=content, result=final_result, user_id=user_id, session_id=session_id)
 
         # Check if parent alert is needed
         if await self._should_alert_parent(final_result, user_id):
@@ -429,12 +425,12 @@ class ModerationService:
 
         # Prepare response
         response = {
-            'allowed': allowed,
-            'severity': final_result.severity.value,
-            'categories': [cat.value for cat in final_result.flagged_categories],
-            'confidence': final_result.overall_score,
-            'reason': self._generate_reason(final_result) if not allowed else None,
-            'alternative_response': final_result.alternative_response
+            "allowed": allowed,
+            "severity": final_result.severity.value,
+            "categories": [cat.value for cat in final_result.flagged_categories],
+            "confidence": final_result.overall_score,
+            "reason": self._generate_reason(final_result) if not allowed else None,
+            "alternative_response": final_result.alternative_response,
         }
 
         # Cache the result
@@ -455,17 +451,13 @@ class ModerationService:
                 severity=ModerationSeverity.HIGH,
                 flagged_categories=[ContentCategory.PROFANITY],
                 confidence_scores={ContentCategory.PROFANITY: 1.0},
-                matched_rules=[f"Blacklisted: {', '.join(blacklisted)}"]
+                matched_rules=[f"Blacklisted: {', '.join(blacklisted)}"],
             )
 
         # Check if all words are whitelisted
         non_whitelisted = words - self.whitelist
         if not non_whitelisted:
-            return ModerationResult(
-                is_safe=True,
-                severity=ModerationSeverity.SAFE,
-                confidence_scores={}
-            )
+            return ModerationResult(is_safe=True, severity=ModerationSeverity.SAFE, confidence_scores={})
 
         return ModerationResult(is_safe=True, severity=ModerationSeverity.SAFE)
 
@@ -486,41 +478,33 @@ class ModerationService:
             if rule.severity.value > max_severity.value:
                 max_severity = rule.severity
             categories.append(rule.category)
-            confidence_scores[rule.category] = max(
-                confidence_scores.get(rule.category, 0),
-                confidence
-            )
+            confidence_scores[rule.category] = max(confidence_scores.get(rule.category, 0), confidence)
             rule_names.append(rule.name)
 
         return ModerationResult(
-            is_safe=max_severity in [
-                ModerationSeverity.SAFE, ModerationSeverity.LOW],
+            is_safe=max_severity in [ModerationSeverity.SAFE, ModerationSeverity.LOW],
             severity=max_severity,
             flagged_categories=list(set(categories)),
             confidence_scores=confidence_scores,
-            matched_rules=rule_names
+            matched_rules=rule_names,
         )
 
     async def _check_with_openai(self, content: str) -> ModerationResult:
         """Use OpenAI's moderation API"""
         try:
             if not hasattr(self, "_openai_client"):
-                self._openai_client = AsyncOpenAI(
-                    api_key=getattr(self.config.api_keys, "OPENAI_API_KEY", ""))
-            response = await self._openai_client.moderations.create(
-                model="omni-moderation-latest",
-                input=content
-            )
+                self._openai_client = AsyncOpenAI(api_key=getattr(self.config.api_keys, "OPENAI_API_KEY", ""))
+            response = await self._openai_client.moderations.create(model="omni-moderation-latest", input=content)
             result = response.results[0]
             # نفس المعالجة كما عندك مع النتيجة
             category_mapping = {
-                'sexual': ContentCategory.SEXUAL,
-                'hate': ContentCategory.HATE_SPEECH,
-                'violence': ContentCategory.VIOLENCE,
-                'self-harm': ContentCategory.SELF_HARM,
-                'sexual/minors': ContentCategory.SEXUAL,
-                'hate/threatening': ContentCategory.HATE_SPEECH,
-                'violence/graphic': ContentCategory.VIOLENCE
+                "sexual": ContentCategory.SEXUAL,
+                "hate": ContentCategory.HATE_SPEECH,
+                "violence": ContentCategory.VIOLENCE,
+                "self-harm": ContentCategory.SELF_HARM,
+                "sexual/minors": ContentCategory.SEXUAL,
+                "hate/threatening": ContentCategory.HATE_SPEECH,
+                "violence/graphic": ContentCategory.VIOLENCE,
             }
             flagged_categories = []
             confidence_scores = {}
@@ -530,15 +514,13 @@ class ModerationService:
                 if flagged:
                     mapped_category = category_mapping[category]
                     flagged_categories.append(mapped_category)
-                    confidence_scores[mapped_category] = getattr(
-                        result.category_scores, category, 0)
+                    confidence_scores[mapped_category] = getattr(result.category_scores, category, 0)
 
             # Determine severity
             if not result.flagged:
                 severity = ModerationSeverity.SAFE
             else:
-                max_score = max(
-                    dict(result.category_scores).values(), default=0)
+                max_score = max(dict(result.category_scores).values(), default=0)
                 if max_score > 0.8:
                     severity = ModerationSeverity.HIGH
                 elif max_score > 0.5:
@@ -551,7 +533,7 @@ class ModerationService:
                 severity=severity,
                 flagged_categories=flagged_categories,
                 confidence_scores=confidence_scores,
-                context_notes=["OpenAI Moderation API"]
+                context_notes=["OpenAI Moderation API"],
             )
         except ExternalServiceException:
             # Re-raise external service exceptions
@@ -559,9 +541,7 @@ class ModerationService:
         except Exception as e:
             # Wrap other exceptions in ExternalServiceException
             raise ExternalServiceException(
-                service_name="OpenAI Moderation",
-                status_code=None,
-                response_body=str(e)
+                service_name="OpenAI Moderation", status_code=None, response_body=str(e)
             ) from e
 
     async def _check_with_azure(self, content: str) -> ModerationResult:
@@ -588,20 +568,17 @@ class ModerationService:
             if response.self_harm_result.severity > 0:
                 categories.append(ContentCategory.SELF_HARM)
                 confidence_scores[ContentCategory.SELF_HARM] = response.self_harm_result.severity / 6
-                max_severity = max(
-                    max_severity, response.self_harm_result.severity)
+                max_severity = max(max_severity, response.self_harm_result.severity)
 
             if response.sexual_result.severity > 0:
                 categories.append(ContentCategory.SEXUAL)
                 confidence_scores[ContentCategory.SEXUAL] = response.sexual_result.severity / 6
-                max_severity = max(
-                    max_severity, response.sexual_result.severity)
+                max_severity = max(max_severity, response.sexual_result.severity)
 
             if response.violence_result.severity > 0:
                 categories.append(ContentCategory.VIOLENCE)
                 confidence_scores[ContentCategory.VIOLENCE] = response.violence_result.severity / 6
-                max_severity = max(
-                    max_severity, response.violence_result.severity)
+                max_severity = max(max_severity, response.violence_result.severity)
 
             # Map severity
             if max_severity == 0:
@@ -618,7 +595,7 @@ class ModerationService:
                 severity=severity,
                 flagged_categories=categories,
                 confidence_scores=confidence_scores,
-                context_notes=["Azure Content Safety API"]
+                context_notes=["Azure Content Safety API"],
             )
 
         except Exception as e:
@@ -637,14 +614,10 @@ class ModerationService:
             )
 
             # Analyze sentiment
-            sentiment_response = self.google_client.analyze_sentiment(
-                request={'document': document}
-            )
+            sentiment_response = self.google_client.analyze_sentiment(request={"document": document})
 
             # Analyze entities for personal information
-            entities_response = self.google_client.analyze_entities(
-                request={'document': document}
-            )
+            entities_response = self.google_client.analyze_entities(request={"document": document})
 
             categories = []
             confidence_scores = {}
@@ -653,15 +626,14 @@ class ModerationService:
             sentiment_score = sentiment_response.document_sentiment.score
             if sentiment_score < -0.5:
                 categories.append(ContentCategory.BULLYING)
-                confidence_scores[ContentCategory.BULLYING] = abs(
-                    sentiment_score)
+                confidence_scores[ContentCategory.BULLYING] = abs(sentiment_score)
 
             # Check for personal information
             for entity in entities_response.entities:
                 if entity.type_ in [
                     language_v1.Entity.Type.PERSON,
                     language_v1.Entity.Type.PHONE_NUMBER,
-                    language_v1.Entity.Type.ADDRESS
+                    language_v1.Entity.Type.ADDRESS,
                 ]:
                     categories.append(ContentCategory.PERSONAL_INFO)
                     confidence_scores[ContentCategory.PERSONAL_INFO] = 0.8
@@ -676,7 +648,7 @@ class ModerationService:
                 severity=severity,
                 flagged_categories=categories,
                 confidence_scores=confidence_scores,
-                context_notes=["Google Cloud NLP"]
+                context_notes=["Google Cloud NLP"],
             )
 
         except Exception as e:
@@ -694,14 +666,14 @@ class ModerationService:
 
             # Sentiment analysis
             sentiment = self.sentiment_analyzer(content)[0]
-            if sentiment['label'] == 'NEGATIVE' and sentiment['score'] > 0.8:
+            if sentiment["label"] == "NEGATIVE" and sentiment["score"] > 0.8:
                 categories.append(ContentCategory.BULLYING)
-                confidence_scores[ContentCategory.BULLYING] = sentiment['score']
+                confidence_scores[ContentCategory.BULLYING] = sentiment["score"]
 
             # Entity recognition for personal info
             doc = self.nlp(content)
             for ent in doc.ents:
-                if ent.label_ in ['PERSON', 'GPE', 'LOC', 'PHONE', 'EMAIL']:
+                if ent.label_ in ["PERSON", "GPE", "LOC", "PHONE", "EMAIL"]:
                     categories.append(ContentCategory.PERSONAL_INFO)
                     confidence_scores[ContentCategory.PERSONAL_INFO] = 0.7
                     break
@@ -709,9 +681,9 @@ class ModerationService:
             # Toxicity analysis
             if self.toxicity_classifier:
                 toxicity = self.toxicity_classifier(content)[0]
-                if toxicity['label'] == 'TOXIC' and toxicity['score'] > 0.7:
+                if toxicity["label"] == "TOXIC" and toxicity["score"] > 0.7:
                     categories.append(ContentCategory.HATE_SPEECH)
-                    confidence_scores[ContentCategory.HATE_SPEECH] = toxicity['score']
+                    confidence_scores[ContentCategory.HATE_SPEECH] = toxicity["score"]
 
             severity = ModerationSeverity.SAFE
             if categories:
@@ -726,7 +698,7 @@ class ModerationService:
                 severity=severity,
                 flagged_categories=categories,
                 confidence_scores=confidence_scores,
-                context_notes=["Local NLP Models"]
+                context_notes=["Local NLP Models"],
             )
 
         except Exception as e:
@@ -740,24 +712,19 @@ class ModerationService:
             # Simple context analysis
             recent_topics = []
             for msg in context[-5:]:  # Last 5 messages
-                if msg.role == 'user':
+                if msg.role == "user":
                     # Extract main topics/keywords
                     if self.nlp:
                         doc = self.nlp(msg.content)
-                        topics = [
-                            token.text for token in doc if token.pos_ in ['NOUN', 'VERB']]
+                        topics = [token.text for token in doc if token.pos_ in ["NOUN", "VERB"]]
                         recent_topics.extend(topics)
 
             # Check for sudden topic shifts to inappropriate areas
-            concerning_shifts = [
-                'violence', 'weapon', 'hurt', 'scary', 'adult', 'private'
-            ]
+            concerning_shifts = ["violence", "weapon", "hurt", "scary", "adult", "private"]
 
             content_lower = content.lower()
             shift_detected = any(
-                word in content_lower and word not in ' '.join(
-                    recent_topics).lower()
-                for word in concerning_shifts
+                word in content_lower and word not in " ".join(recent_topics).lower() for word in concerning_shifts
             )
 
             if shift_detected:
@@ -766,7 +733,7 @@ class ModerationService:
                     severity=ModerationSeverity.MEDIUM,
                     flagged_categories=[ContentCategory.AGE_INAPPROPRIATE],
                     confidence_scores={ContentCategory.AGE_INAPPROPRIATE: 0.6},
-                    context_notes=["Inappropriate context shift detected"]
+                    context_notes=["Inappropriate context shift detected"],
                 )
 
             return ModerationResult(is_safe=True, severity=ModerationSeverity.SAFE)
@@ -807,8 +774,7 @@ class ModerationService:
                 if category not in all_confidence_scores:
                     all_confidence_scores[category] = score
                 else:
-                    all_confidence_scores[category] = max(
-                        all_confidence_scores[category], score)
+                    all_confidence_scores[category] = max(all_confidence_scores[category], score)
 
             all_matched_rules.extend(result.matched_rules)
             all_context_notes.extend(result.context_notes)
@@ -819,7 +785,7 @@ class ModerationService:
             flagged_categories=list(set(all_categories)),
             confidence_scores=all_confidence_scores,
             matched_rules=list(set(all_matched_rules)),
-            context_notes=list(set(all_context_notes))
+            context_notes=list(set(all_context_notes)),
         )
 
     async def _generate_safe_alternative(self, original: str, categories: List[ContentCategory]) -> str:
@@ -856,32 +822,28 @@ class ModerationService:
             return "المحتوى قد يحتوي على مواد غير مناسبة"
 
     async def _log_moderation(
-        self,
-        content: str,
-        result: ModerationResult,
-        user_id: Optional[str],
-        session_id: Optional[str]
+        self, content: str, result: ModerationResult, user_id: Optional[str], session_id: Optional[str]
     ):
         """Log moderation event"""
         try:
             # تشفير المحتوى الحساس
             encryption_service = EncryptionService(self.config.MASTER_KEY)
             encrypted_content, nonce = encryption_service.encrypt(content[:500])
-            
+
             log_entry = ModerationLog(
                 id=str(uuid.uuid4()),
                 session_id=session_id,
                 user_id=user_id,
                 result={
-                    'is_safe': result.is_safe,
-                    'severity': result.severity.value,
-                    'overall_score': result.overall_score,
+                    "is_safe": result.is_safe,
+                    "severity": result.severity.value,
+                    "overall_score": result.overall_score,
                     # Limit stored rules
-                    'matched_rules': result.matched_rules[:5]
+                    "matched_rules": result.matched_rules[:5],
                 },
                 severity=result.severity.value,
                 categories=[cat.value for cat in result.flagged_categories],
-                action_taken='blocked' if not result.is_safe else 'allowed'
+                action_taken="blocked" if not result.is_safe else "allowed",
             )
             log_entry.content = encrypted_content
             log_entry.content_nonce = nonce
@@ -909,22 +871,18 @@ class ModerationService:
             return True
 
         # Check threshold tracking
-        self.severity_tracker[user_id].append({
-            'severity': result.severity,
-            'timestamp': datetime.now()
-        })
+        self.severity_tracker[user_id].append({"severity": result.severity, "timestamp": datetime.now()})
 
         # Clean old entries (older than 1 hour)
         cutoff_time = datetime.now() - timedelta(hours=1)
         self.severity_tracker[user_id] = [
-            entry for entry in self.severity_tracker[user_id]
-            if entry['timestamp'] > cutoff_time
+            entry for entry in self.severity_tracker[user_id] if entry["timestamp"] > cutoff_time
         ]
 
         # Count severities in last hour
         severity_counts = defaultdict(int)
         for entry in self.severity_tracker[user_id]:
-            severity_counts[entry['severity']] += 1
+            severity_counts[entry["severity"]] += 1
 
         # Check against thresholds
         for severity, threshold in self.alert_thresholds.items():
@@ -939,14 +897,14 @@ class ModerationService:
             if self.parent_dashboard:
                 await self.parent_dashboard.send_moderation_alert(
                     user_id=user_id,
-                    alert_type='content_moderation',
+                    alert_type="content_moderation",
                     severity=result.severity.value,
                     details={
-                        'content_snippet': content[:100] + '...' if len(content) > 100 else content,
-                        'categories': [cat.value for cat in result.flagged_categories],
-                        'confidence': result.overall_score,
-                        'timestamp': result.timestamp.isoformat()
-                    }
+                        "content_snippet": content[:100] + "..." if len(content) > 100 else content,
+                        "categories": [cat.value for cat in result.flagged_categories],
+                        "confidence": result.overall_score,
+                        "timestamp": result.timestamp.isoformat(),
+                    },
                 )
 
         except Exception as e:
@@ -977,12 +935,12 @@ class ModerationService:
             self.logger.error(f"Failed to remove rule: {e}")
             return False
 
-    async def update_whitelist(self, words: List[str], action: str = 'add') -> bool:
+    async def update_whitelist(self, words: List[str], action: str = "add") -> bool:
         """Update whitelist"""
         try:
-            if action == 'add':
+            if action == "add":
                 self.whitelist.update(words)
-            elif action == 'remove':
+            elif action == "remove":
                 self.whitelist -= set(words)
             else:
                 raise ValueError(f"Invalid action: {action}")
@@ -993,12 +951,12 @@ class ModerationService:
             self.logger.error(f"Failed to update whitelist: {e}")
             return False
 
-    async def update_blacklist(self, words: List[str], action: str = 'add') -> bool:
+    async def update_blacklist(self, words: List[str], action: str = "add") -> bool:
         """Update blacklist"""
         try:
-            if action == 'add':
+            if action == "add":
                 self.blacklist.update(words)
-            elif action == 'remove':
+            elif action == "remove":
                 self.blacklist -= set(words)
             else:
                 raise ValueError(f"Invalid action: {action}")
@@ -1010,10 +968,7 @@ class ModerationService:
             return False
 
     async def get_moderation_stats(
-        self,
-        user_id: Optional[str] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
+        self, user_id: Optional[str] = None, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None
     ) -> Dict[str, Any]:
         """Get moderation statistics"""
         try:
@@ -1022,28 +977,13 @@ class ModerationService:
 
             # For now, return sample stats
             stats = {
-                'total_checks': 1000,
-                'blocked_count': 50,
-                'allowed_count': 950,
-                'block_rate': 0.05,
-                'severity_breakdown': {
-                    'safe': 900,
-                    'low': 30,
-                    'medium': 15,
-                    'high': 4,
-                    'critical': 1
-                },
-                'category_breakdown': {
-                    'violence': 10,
-                    'personal_info': 20,
-                    'bullying': 15,
-                    'age_inappropriate': 5
-                },
-                'top_matched_rules': [
-                    'Personal Information Detection',
-                    'Violence Keywords',
-                    'Bullying Detection'
-                ]
+                "total_checks": 1000,
+                "blocked_count": 50,
+                "allowed_count": 950,
+                "block_rate": 0.05,
+                "severity_breakdown": {"safe": 900, "low": 30, "medium": 15, "high": 4, "critical": 1},
+                "category_breakdown": {"violence": 10, "personal_info": 20, "bullying": 15, "age_inappropriate": 5},
+                "top_matched_rules": ["Personal Information Detection", "Violence Keywords", "Bullying Detection"],
             }
 
             return stats
@@ -1052,11 +992,7 @@ class ModerationService:
             self.logger.error(f"Failed to get stats: {e}")
             return {}
 
-    async def export_moderation_logs(
-        self,
-        user_id: Optional[str] = None,
-        format: str = 'json'
-    ) -> str:
+    async def export_moderation_logs(self, user_id: Optional[str] = None, format: str = "json") -> str:
         """Export moderation logs"""
         try:
             # Query logs from database
@@ -1065,18 +1001,15 @@ class ModerationService:
             # For now, return sample
             logs = []
 
-            if format == 'json':
+            if format == "json":
                 return json.dumps(logs, indent=2, default=str)
-            elif format == 'csv':
+            elif format == "csv":
                 # Convert to CSV
                 import csv
                 import io
+
                 output = io.StringIO()
-                writer = csv.DictWriter(
-                    output,
-                    fieldnames=['timestamp', 'user_id',
-                                'severity', 'categories', 'action']
-                )
+                writer = csv.DictWriter(output, fieldnames=["timestamp", "user_id", "severity", "categories", "action"])
                 writer.writeheader()
                 for log in logs:
                     writer.writerow(log)
@@ -1088,7 +1021,7 @@ class ModerationService:
             self.logger.error(f"Failed to export logs: {e}")
             return ""
 
-    def set_parent_dashboard(self, dashboard: 'ParentDashboardService') -> None:
+    def set_parent_dashboard(self, dashboard: "ParentDashboardService") -> None:
         """Set parent dashboard reference"""
         self.parent_dashboard = dashboard
 
@@ -1098,10 +1031,7 @@ class ModerationService:
 
         for content in test_content:
             result = await self.check_content(content)
-            results.append({
-                'content': content,
-                'result': result
-            })
+            results.append({"content": content, "result": result})
 
         return results
 
@@ -1124,12 +1054,13 @@ class ModerationService:
 
 # Utility functions
 
+
 def create_age_appropriate_rule(
     name: str,
     keywords: List[str],
     min_age: int,
     max_age: int = 18,
-    severity: ModerationSeverity = ModerationSeverity.MEDIUM
+    severity: ModerationSeverity = ModerationSeverity.MEDIUM,
 ) -> ModerationRule:
     """Create an age-appropriate content rule"""
     return ModerationRule(
@@ -1140,15 +1071,12 @@ def create_age_appropriate_rule(
         category=ContentCategory.AGE_INAPPROPRIATE,
         severity=severity,
         age_range=(min_age, max_age),
-        enabled=True
+        enabled=True,
     )
 
 
 def create_topic_filter_rule(
-    topic: str,
-    keywords: List[str],
-    category: ContentCategory,
-    severity: ModerationSeverity = ModerationSeverity.MEDIUM
+    topic: str, keywords: List[str], category: ContentCategory, severity: ModerationSeverity = ModerationSeverity.MEDIUM
 ) -> ModerationRule:
     """Create a topic-based filter rule"""
     return ModerationRule(
@@ -1158,5 +1086,5 @@ def create_topic_filter_rule(
         keywords=keywords,
         category=category,
         severity=severity,
-        enabled=True
+        enabled=True,
     )

@@ -1,10 +1,10 @@
 """Audio system state management."""
 
 import logging
-from typing import Optional, Callable, Dict, List
+import threading
 from dataclasses import dataclass
 from enum import Enum
-import threading
+from typing import Callable, Dict, List, Optional
 
 
 class AudioState(Enum):

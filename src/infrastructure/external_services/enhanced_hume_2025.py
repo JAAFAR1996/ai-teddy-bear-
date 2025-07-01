@@ -7,22 +7,23 @@
 3. تكامل البيانات التاريخية
 """
 
-import os
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Union
-from dataclasses import dataclass
-from enum import Enum
+import os
 import statistics
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Dict, List, Optional, Union
+
 import numpy as np
 
 # HUME AI imports
 try:
-    from hume import HumeClient, AsyncHumeClient
     import librosa
     import soundfile as sf
+    from hume import AsyncHumeClient, HumeClient
     HUME_AVAILABLE = True
 except ImportError:
     HUME_AVAILABLE = False
@@ -276,7 +277,7 @@ class EnhancedHumeIntegration:
     def _mock_multilang_analysis(self, language: str) -> Dict:
         """تحليل وهمي متعدد اللغات"""
         import random
-        
+
         # Different emotion patterns for different languages
         if language == "ar":
             emotions = {

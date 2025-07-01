@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 
 @dataclass
 class Transcription:
@@ -14,7 +15,7 @@ class Transcription:
     conversation_id: Optional[int] = None
     duration: Optional[float] = None  # Audio duration in seconds
     model_used: Optional[str] = None  # Which STT model was used
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert entity to dictionary for database operations."""
         return {
@@ -27,5 +28,5 @@ class Transcription:
             "user_id": self.user_id,
             "conversation_id": self.conversation_id,
             "duration": self.duration,
-            "model_used": self.model_used
+            "model_used": self.model_used,
         }

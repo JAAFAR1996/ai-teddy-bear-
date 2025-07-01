@@ -6,11 +6,11 @@
 # ===================================================================
 
 import asyncio
-import logging
 import json
-from datetime import datetime, timedelta
-from typing import Dict, List, Any
+import logging
 import time
+from datetime import datetime, timedelta
+from typing import Any, Dict, List
 
 from .continuous_learning import ContinuousLearningSystem, LearningStrategy
 

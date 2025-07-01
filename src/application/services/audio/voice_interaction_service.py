@@ -5,29 +5,27 @@ Enhanced voice interaction with streaming integration using Clean Architecture
 
 import asyncio
 import logging
-from typing import Dict, Any, Optional, List
 from collections import deque
-import sounddevice as sd
-import numpy as np
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from src.infrastructure.config import get_config
+import numpy as np
+import sounddevice as sd
+
 from src.application.services.streaming_service import StreamingService
-from src.core.domain.entities.audio_stream import AudioStream
 from src.core.application.interfaces.services import IAIService
+from src.core.domain.entities.audio_stream import AudioStream
 
 # Domain imports
-from src.domain.audio.models import (
-    EmotionalTone, Language, AudioConfig, VoiceProfile
-)
-from src.domain.audio.services import (
-    VoiceActivityDetector, AudioProcessor
-)
+from src.domain.audio.models import AudioConfig, EmotionalTone, Language, VoiceProfile
+from src.domain.audio.services import AudioProcessor, VoiceActivityDetector
+from src.infrastructure.config import get_config
+
+from .voice_profile_service import VoiceProfileService
+from .voice_recognition_service import VoiceRecognitionService
 
 # Application service imports
 from .voice_synthesis_service import VoiceSynthesisService
-from .voice_recognition_service import VoiceRecognitionService
-from .voice_profile_service import VoiceProfileService
 
 
 class VoiceInteractionService:
@@ -49,10 +47,7 @@ class VoiceInteractionService:
         # Initialize application services
         self.voice_synthesis = VoiceSynthesisService(self.config)
         self.voice_recognition = VoiceRecognitionService(self.config)
-        self.voice_profile_service = VoiceProfileService(
-            storage_path="data/voice_profiles", 
-            config=self.config
-        )
+        self.voice_profile_service = VoiceProfileService(storage_path="data/voice_profiles", config=self.config)
 
         # External service references
         self.streaming_service: Optional[StreamingService] = None
@@ -61,17 +56,14 @@ class VoiceInteractionService:
         # Current state
         self.current_profile: Optional[VoiceProfile] = None
         self.is_recording = False
-        
+
         # Audio streams and buffers
         self.input_stream = None
         self.output_stream = None
-        self.audio_buffer = deque(maxlen=int(
-            self.audio_config.sample_rate * self.audio_config.max_recording_duration
-        ))
+        self.audio_buffer = deque(maxlen=int(self.audio_config.sample_rate * self.audio_config.max_recording_duration))
 
         # Storage paths
-        self.recordings_path = Path(getattr(
-            self.config, 'RECORDINGS_PATH', 'data/recordings'))
+        self.recordings_path = Path(getattr(self.config, "RECORDINGS_PATH", "data/recordings"))
         self.recordings_path.mkdir(parents=True, exist_ok=True)
 
         # Initialize emotion analyzer integration
@@ -82,10 +74,8 @@ class VoiceInteractionService:
         try:
             from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer
             from src.domain.emotion_config import EmotionConfig
-            
-            emotion_config = EmotionConfig(
-                api_key=getattr(self.config, 'HUME_API_KEY', '')
-            )
+
+            emotion_config = EmotionConfig(api_key=getattr(self.config, "HUME_API_KEY", ""))
             self.emotion_analyzer = EmotionAnalyzer(emotion_config.api_key)
         except ImportError:
             self.logger.warning("Emotion analyzer not available")
@@ -105,7 +95,7 @@ class VoiceInteractionService:
         try:
             profiles = await self.voice_profile_service.create_default_profiles()
             if profiles:
-                self.current_profile = profiles.get('teddy_bear')
+                self.current_profile = profiles.get("teddy_bear")
                 self.logger.info(f"Initialized {len(profiles)} default profiles")
             return profiles
         except Exception as e:
@@ -130,7 +120,7 @@ class VoiceInteractionService:
 
             # Start audio streams
             await self._start_audio_streams()
-            
+
             # Start recording loop
             self.is_recording = True
             asyncio.create_task(self._recording_loop(session_id))
@@ -156,7 +146,7 @@ class VoiceInteractionService:
         text: str,
         emotion: EmotionalTone = EmotionalTone.CALM,
         language: Optional[Language] = None,
-        stream_output: bool = True
+        stream_output: bool = True,
     ) -> Optional[bytes]:
         """Synthesize speech with emotional nuance"""
         try:
@@ -166,10 +156,7 @@ class VoiceInteractionService:
 
             # Use voice synthesis service
             audio_data = await self.voice_synthesis.synthesize_speech(
-                text=text,
-                voice_profile=self.current_profile,
-                emotion=emotion,
-                stream_output=stream_output
+                text=text, voice_profile=self.current_profile, emotion=emotion, stream_output=stream_output
             )
 
             # Apply voice adjustments if needed
@@ -183,10 +170,7 @@ class VoiceInteractionService:
             return None
 
     async def transcribe_audio(
-        self,
-        audio_data,
-        language: Optional[Language] = None,
-        use_openai: bool = False
+        self, audio_data, language: Optional[Language] = None, use_openai: bool = False
     ) -> Dict[str, Any]:
         """Transcribe audio to text"""
         try:
@@ -196,9 +180,7 @@ class VoiceInteractionService:
 
             # Use voice recognition service
             result = await self.voice_recognition.transcribe_audio(
-                audio_data=audio_data,
-                language=language,
-                use_openai=use_openai
+                audio_data=audio_data, language=language, use_openai=use_openai
             )
 
             return result
@@ -208,9 +190,7 @@ class VoiceInteractionService:
             return {"error": str(e), "text": ""}
 
     async def detect_wake_word(
-        self,
-        wake_words: List[str] = ["hey teddy", "hello teddy", "مرحبا دبدوب"],
-        sensitivity: float = 0.5
+        self, wake_words: List[str] = ["hey teddy", "hello teddy", "مرحبا دبدوب"], sensitivity: float = 0.5
     ) -> bool:
         """Detect wake word in audio stream"""
         try:
@@ -239,28 +219,28 @@ class VoiceInteractionService:
         """Calibrate audio input levels"""
         try:
             self.logger.info(f"Starting audio calibration for {duration}s")
-            
+
             # Record calibration audio
             sample_rate = self.audio_config.sample_rate
             frames = int(sample_rate * duration)
-            
+
             audio_data = sd.rec(frames, samplerate=sample_rate, channels=1)
             sd.wait()
-            
+
             # Calculate metrics
             rms_level = np.sqrt(np.mean(audio_data**2))
             peak_level = np.max(np.abs(audio_data))
-            
+
             # Check speech activity
             speech_ratio = self.vad.calculate_speech_ratio(audio_data.flatten())
-            
+
             calibration_result = {
                 "rms_level": float(rms_level),
                 "peak_level": float(peak_level),
                 "speech_ratio": speech_ratio,
-                "recommended_gain": self._calculate_recommended_gain(rms_level)
+                "recommended_gain": self._calculate_recommended_gain(rms_level),
             }
-            
+
             self.logger.info(f"Calibration complete: {calibration_result}")
             return calibration_result
 
@@ -285,17 +265,13 @@ class VoiceInteractionService:
         except Exception as e:
             self.logger.error(f"Audio playback error: {e}")
 
-    async def save_recording(
-        self,
-        audio_data: np.ndarray,
-        session_id: str,
-        metadata: Optional[Dict] = None
-    ) -> str:
+    async def save_recording(self, audio_data: np.ndarray, session_id: str, metadata: Optional[Dict] = None) -> str:
         """Save audio recording with metadata"""
         try:
-            import soundfile as sf
             from datetime import datetime
-            
+
+            import soundfile as sf
+
             # Generate filename
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"{session_id}_{timestamp}.wav"
@@ -307,8 +283,9 @@ class VoiceInteractionService:
             # Save metadata if provided
             if metadata:
                 import json
-                metadata_file = filepath.with_suffix('.json')
-                with open(metadata_file, 'w') as f:
+
+                metadata_file = filepath.with_suffix(".json")
+                with open(metadata_file, "w") as f:
                     json.dump(metadata, f, indent=2)
 
             self.logger.info(f"Saved recording: {filepath}")
@@ -327,7 +304,7 @@ class VoiceInteractionService:
                 if audio_chunk is not None:
                     # Process utterance
                     await self._process_utterance(audio_chunk, session_id)
-                
+
                 # Small delay to prevent CPU overload
                 await asyncio.sleep(0.01)
 
@@ -339,14 +316,13 @@ class VoiceInteractionService:
         try:
             # Transcribe audio
             result = await self.transcribe_audio(audio_data)
-            
+
             if result.get("text") and self.ai_service:
                 # Process with AI service
                 conversation_id = f"{session_id}_{len(self.audio_buffer)}"
-                await self.ai_service.process_message(conversation_id, {
-                    "text": result["text"],
-                    "audio_metadata": result
-                })
+                await self.ai_service.process_message(
+                    conversation_id, {"text": result["text"], "audio_metadata": result}
+                )
 
         except Exception as e:
             self.logger.error(f"Utterance processing error: {e}")
@@ -390,19 +366,13 @@ class VoiceInteractionService:
 
             # Start input stream
             self.input_stream = sd.InputStream(
-                callback=self._input_callback,
-                samplerate=sample_rate,
-                channels=channels,
-                blocksize=chunk_size
+                callback=self._input_callback, samplerate=sample_rate, channels=channels, blocksize=chunk_size
             )
             self.input_stream.start()
 
-            # Start output stream  
+            # Start output stream
             self.output_stream = sd.OutputStream(
-                callback=self._output_callback,
-                samplerate=sample_rate,
-                channels=channels,
-                blocksize=chunk_size
+                callback=self._output_callback, samplerate=sample_rate, channels=channels, blocksize=chunk_size
             )
             self.output_stream.start()
 
@@ -433,7 +403,7 @@ class VoiceInteractionService:
         """Audio input callback"""
         if status:
             self.logger.warning(f"Audio input status: {status}")
-        
+
         # Add to buffer
         self.audio_buffer.extend(indata.flatten())
 
@@ -441,7 +411,7 @@ class VoiceInteractionService:
         """Audio output callback"""
         if status:
             self.logger.warning(f"Audio output status: {status}")
-        
+
         # Get output audio (implement based on streaming service)
         outdata.fill(0)  # Silent for now
 
@@ -450,15 +420,15 @@ class VoiceInteractionService:
         try:
             if len(self.audio_buffer) >= self.audio_config.chunk_size:
                 # Extract chunk
-                chunk = np.array(list(self.audio_buffer)[:self.audio_config.chunk_size])
-                
+                chunk = np.array(list(self.audio_buffer)[: self.audio_config.chunk_size])
+
                 # Remove processed data
                 for _ in range(self.audio_config.chunk_size):
                     if self.audio_buffer:
                         self.audio_buffer.popleft()
-                
+
                 return chunk
-            
+
             return None
 
         except Exception as e:
@@ -475,18 +445,16 @@ class VoiceInteractionService:
     async def test_voice_synthesis(
         self,
         test_text: str = "Hello, I'm your friendly teddy bear! How are you today?",
-        emotion: EmotionalTone = EmotionalTone.HAPPY
+        emotion: EmotionalTone = EmotionalTone.HAPPY,
     ) -> bool:
         """Test voice synthesis capability"""
         try:
             if not self.current_profile:
                 await self.initialize_default_profiles()
-            
-            audio_data = await self.synthesize_speech(
-                test_text, emotion, stream_output=False
-            )
+
+            audio_data = await self.synthesize_speech(test_text, emotion, stream_output=False)
             return audio_data is not None
-            
+
         except Exception as e:
             self.logger.error(f"Synthesis test failed: {e}")
             return False
@@ -501,16 +469,13 @@ class VoiceInteractionService:
 
     async def get_supported_languages(self) -> List[Dict[str, str]]:
         """Get supported languages"""
-        return [
-            {"code": lang.value, "name": lang.name}
-            for lang in Language
-        ]
+        return [{"code": lang.value, "name": lang.name} for lang in Language]
 
 
 # Utility functions
 def is_arabic(text: str) -> bool:
     """Check if text contains Arabic characters"""
-    return any('\u0600' <= char <= '\u06FF' for char in text)
+    return any("\u0600" <= char <= "\u06ff" for char in text)
 
 
 def is_english(text: str) -> bool:
@@ -536,9 +501,9 @@ def get_emotion_from_sentiment(sentiment: str) -> EmotionalTone:
 def get_time_based_emotion() -> EmotionalTone:
     """Get emotion based on time of day"""
     from datetime import datetime
-    
+
     hour = datetime.now().hour
-    
+
     if 6 <= hour < 12:
         return EmotionalTone.HAPPY  # Morning
     elif 12 <= hour < 18:

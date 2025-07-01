@@ -13,110 +13,128 @@ from .moderation import *
 
 # Legacy class facade
 
+
 class ModerationSeverityFacade:
     """Legacy facade for ModerationSeverity"""
-    
+
     def __init__(self):
         self.moderationseverity = ModerationSeverity()
-    
+
     def __getattr__(self, name):
         return getattr(self.moderationseverity, name)
+
 
 # Alias for backward compatibility
 ModerationSeverity = ModerationSeverityFacade
 
+
 class ContentCategoryFacade:
     """Legacy facade for ContentCategory"""
-    
+
     def __init__(self):
         self.contentcategory = ContentCategory()
-    
+
     def __getattr__(self, name):
         return getattr(self.contentcategory, name)
+
 
 # Alias for backward compatibility
 ContentCategory = ContentCategoryFacade
 
+
 class ModerationResultFacade:
     """Legacy facade for ModerationResult"""
-    
+
     def __init__(self):
         self.moderationresult = ModerationResult()
-    
+
     def __getattr__(self, name):
         return getattr(self.moderationresult, name)
+
 
 # Alias for backward compatibility
 ModerationResult = ModerationResultFacade
 
+
 class ModerationRuleFacade:
     """Legacy facade for ModerationRule"""
-    
+
     def __init__(self):
         self.moderationrule = ModerationRule()
-    
+
     def __getattr__(self, name):
         return getattr(self.moderationrule, name)
+
 
 # Alias for backward compatibility
 ModerationRule = ModerationRuleFacade
 
+
 class ModerationLogFacade:
     """Legacy facade for ModerationLog"""
-    
+
     def __init__(self):
         self.moderationlog = ModerationLog()
-    
+
     def __getattr__(self, name):
         return getattr(self.moderationlog, name)
+
 
 # Alias for backward compatibility
 ModerationLog = ModerationLogFacade
 
+
 class RuleEngineCoreFacade:
     """Legacy facade for RuleEngineCore"""
-    
+
     def __init__(self):
         self.ruleenginecore = RuleEngineCore()
-    
+
     def __getattr__(self, name):
         return getattr(self.ruleenginecore, name)
+
 
 # Alias for backward compatibility
 RuleEngineCore = RuleEngineCoreFacade
 
+
 class RuleEngineUtilityFacade:
     """Legacy facade for RuleEngineUtility"""
-    
+
     def __init__(self):
         self.ruleengineutility = RuleEngineUtility()
-    
+
     def __getattr__(self, name):
         return getattr(self.ruleengineutility, name)
+
 
 # Alias for backward compatibility
 RuleEngineUtility = RuleEngineUtilityFacade
 
+
 class ModerationCoreFacade:
     """Legacy facade for ModerationCore"""
-    
+
     def __init__(self):
         self.moderationcore = ModerationCore()
-    
+
     def __getattr__(self, name):
         return getattr(self.moderationcore, name)
+
 
 # Alias for backward compatibility
 ModerationCore = ModerationCoreFacade
 
+
 class ModerationUtilityFacade:
     """Legacy facade for ModerationUtility"""
-    
+
     def __init__(self):
         self.moderationutility = ModerationUtility()
-    
+
     def __getattr__(self, name):
         return getattr(self.moderationutility, name)
+
 
 # Alias for backward compatibility
 ModerationUtility = ModerationUtilityFacade

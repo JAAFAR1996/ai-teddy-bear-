@@ -4,16 +4,14 @@
 Auto-generated from God Class refactoring
 """
 
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
-from datetime import datetime
+import json
 import uuid
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
 
 # Original imports
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime, timedelta
-import json
-from dataclasses import dataclass, asdict
+from typing import Any, Dict, List, Optional, Tuple
+
 import pandas as pd
 
     def _analyze_vocabulary_nlp(self, interactions: List[InteractionAnalysis]) -> Dict[str, Any]:

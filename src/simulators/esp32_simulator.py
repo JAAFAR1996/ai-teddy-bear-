@@ -1,25 +1,26 @@
-from typing import Dict, List, Any, Optional
-
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-import sys
 import asyncio
 import base64
 import json
-import requests
+import sys
 import wave
+
 import pyaudio
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton
-from PySide6.QtCore import Qt
-from qasync import QEventLoop, asyncSlot
+import requests
 import websockets
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
+from qasync import QEventLoop, asyncSlot
 
 SERVER_URL = "http://127.0.0.1:8000"
 DEVICE_ID = "ESP32_SIM_001"
 WS_URL = f"ws://127.0.0.1:8000/ws/{DEVICE_ID}"
 WAKE_WORD = "يا دبدوب"  # للتجربة استخدم أي كلمة
+
 
 class TeddySimulator(QWidget):
     def __init__(self):
@@ -116,6 +117,7 @@ class TeddySimulator(QWidget):
             if self.ws_task:
                 self.ws_task.cancel()
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     loop = QEventLoop(app)
@@ -123,4 +125,4 @@ if __name__ == "__main__":
     teddy = TeddySimulator()
     teddy.show()
     with loop:
-        loop.run_forever() 
+        loop.run_forever()

@@ -4,17 +4,16 @@
 Auto-generated from God Class refactoring
 """
 
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
-from datetime import datetime
-import uuid
-
-# Original imports
-import os
 import asyncio
 import json
 import logging
+
+# Original imports
+import os
+import uuid
+from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
 
     def _update_performance_metrics(self, result: EmotionAnalysisResult) -> None:
         """تحديث مقاييس الأداء"""

@@ -1,25 +1,26 @@
-from typing import Dict, List, Optional, Any, Union
+from typing import Any, Dict, List, Optional, Union
+
 """
 🧸 ESP32 Production Simulator - Enterprise Grade
 Modern UI using PySide6/PyQt6 with proper async handling
 """
 
-import sys
 import asyncio
-import logging
-import json
 import base64
-from datetime import datetime
+import json
+import logging
+import sys
 from dataclasses import dataclass
+from datetime import datetime
 
 try:
-    from PySide6 import QtCore, QtWidgets, QtGui
-    from PySide6.QtCore import Signal, Slot, QThread, QTimer, QPropertyAnimation
+    from PySide6 import QtCore, QtGui, QtWidgets
+    from PySide6.QtCore import QPropertyAnimation, QThread, QTimer, Signal, Slot
         QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
         QPushButton, QTextEdit, QLabel, QGroupBox, QStatusBar,
         QProgressBar, QMessageBox, QInputDialog, QSplitter
     )
-    from PySide6.QtGui import QFont, QPalette, QColor, QIcon
+    from PySide6.QtGui import QColor, QFont, QIcon, QPalette
 except Exception as e:
     logger.error(f"Error: {e}")"❌ PySide6 not installed. Installing...")
     import subprocess
@@ -30,8 +31,9 @@ except Exception as e:
         QPushButton, QLabel, QTextEdit, QProgressBar, QGroupBox, QSlider,
         QSpinBox, QCheckBox, QTabWidget, QGridLayout, QSplitter, QFrame
     )
-import sounddevice as sd
+
 import numpy as np
+import sounddevice as sd
 
 logger = logging.getLogger(__name__)
 
@@ -222,8 +224,8 @@ class AudioHandler(QThread):
     
     def _numpy_to_wav(self, audio_data: np.ndarray) -> bytes:
         """Convert numpy array to WAV bytes"""
-        import wave
         import io
+        import wave
         
         buffer = io.BytesIO()
         with wave.open(buffer, 'wb') as wav_file:

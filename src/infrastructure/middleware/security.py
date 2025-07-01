@@ -3,22 +3,23 @@ Security Middleware for AI Teddy Bear
 Includes CORS, Rate Limiting, Security Headers, and Request Validation
 """
 
-from typing import List, Optional, Dict, Any
-from datetime import datetime, timedelta
-import time
+import asyncio
 import hashlib
 import secrets
+import time
 from collections import defaultdict
-from fastapi import Request, Response, HTTPException, status
+from datetime import datetime, timedelta
+from functools import wraps
+from typing import Any, Dict, List, Optional
+
+import redis
+import structlog
+from fastapi import HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
-import redis
-from pydantic import BaseModel, Field
-import structlog
-from functools import wraps
-import asyncio
 
 logger = structlog.get_logger()
 

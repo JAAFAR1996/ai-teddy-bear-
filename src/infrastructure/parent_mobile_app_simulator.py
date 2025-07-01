@@ -1,6 +1,5 @@
-from typing import Dict, List, Any, Optional
-
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,19 +9,21 @@ logger = logging.getLogger(__name__)
 محاكي تطبيق الهاتف المحمول للتحكم الأبوي
 """
 import structlog
+
 logger = structlog.get_logger(__name__)
 
 
-import tkinter as tk
-from tkinter import ttk, messagebox
-import requests
 import json
 import threading
 import time
+import tkinter as tk
 from datetime import datetime, timedelta
+from tkinter import messagebox, ttk
+
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
+import requests
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 SERVER_URL = "http://127.0.0.1:8000"
 

@@ -1,19 +1,25 @@
 """Audio recording service for AI Teddy Bear."""
 
-import time
 import logging
-import numpy as np
-from typing import Optional, Tuple, Dict, Any
+import time
 from datetime import datetime
+from typing import Any, Dict, Optional, Tuple
+
+import numpy as np
 
 from ....domain.audio.models import (
-    AudioSession, AudioSessionType, AudioQualityMode, 
-    AudioFormatType, AudioSystemConfig, PerformanceMetrics
+    AudioFormatType,
+    AudioQualityMode,
+    AudioSession,
+    AudioSessionType,
+    AudioSystemConfig,
+    PerformanceMetrics,
 )
 
 
 class AudioSystemError(Exception):
     """Audio system specific error."""
+
     pass
 
 
@@ -25,11 +31,11 @@ class AudioRecordingService:
         self.logger = logging.getLogger(__name__)
         self.config = config
         self.metrics = metrics
-        
+
         # Recording state
         self._is_recording = False
         self._current_recording_session = None
-        
+
         # Initialize recorder component
         self._initialize_recorder()
 
@@ -39,16 +45,17 @@ class AudioRecordingService:
             # Try to import and initialize real recorder
             try:
                 from ....infrastructure.audio.audio_recorder import AudioRecorder
+
                 self.recorder = AudioRecorder()
                 self.logger.info("Real audio recorder initialized")
             except ImportError:
                 # Use mock recorder for testing
                 self.recorder = MockAudioRecorder()
                 self.logger.info("Using mock audio recorder")
-                
+
             # Configure recorder
             self._configure_recorder()
-            
+
         except Exception as e:
             self.logger.error(f"Failed to initialize recorder: {e}")
             raise AudioSystemError(f"Recorder initialization failed: {e}")
@@ -56,17 +63,17 @@ class AudioRecordingService:
     def _configure_recorder(self) -> None:
         """Configure recorder based on system settings."""
         try:
-            if hasattr(self.recorder, 'set_noise_reduction'):
+            if hasattr(self.recorder, "set_noise_reduction"):
                 self.recorder.set_noise_reduction(self.config.noise_reduction_enabled)
-                
-            if hasattr(self.recorder, 'set_sample_rate'):
+
+            if hasattr(self.recorder, "set_sample_rate"):
                 self.recorder.set_sample_rate(self.config.sample_rate)
-                
-            if hasattr(self.recorder, 'set_channels'):
+
+            if hasattr(self.recorder, "set_channels"):
                 self.recorder.set_channels(self.config.channels)
-                
+
             self.logger.info("Audio recorder configured successfully")
-            
+
         except Exception as e:
             self.logger.warning(f"Error configuring recorder: {e}")
 
@@ -74,67 +81,65 @@ class AudioRecordingService:
         self,
         duration: Optional[int] = None,
         session: Optional[AudioSession] = None,
-        format_type: Optional[AudioFormatType] = None
+        format_type: Optional[AudioFormatType] = None,
     ) -> Optional[Tuple[np.ndarray, Dict[str, Any]]]:
         """
         Record audio with specified parameters.
-        
+
         Args:
             duration: Recording duration in seconds
             session: Active audio session
             format_type: Desired audio format
-            
+
         Returns:
             Tuple of (audio_data, metadata) or None if failed
         """
         if self._is_recording:
             self.logger.warning("Recording already in progress")
             return None
-            
+
         try:
             # Set defaults
             if duration is None:
                 duration = self.config.default_record_duration
             if format_type is None:
                 format_type = self.config.default_output_format
-                
+
             # Validate duration
             duration = min(duration, self.config.max_record_duration)
-            
+
             # Start recording
             self._start_recording(duration, session)
-            
+
             # Record audio data
             start_time = time.time()
             audio_data = self._perform_recording(duration)
             processing_time = time.time() - start_time
-            
+
             if audio_data is None or len(audio_data) == 0:
                 self.logger.error("No audio data recorded")
                 return None
-                
+
             # Create metadata
-            metadata = self._create_recording_metadata(
-                duration, session, format_type, processing_time
-            )
-            
+            metadata = self._create_recording_metadata(duration, session, format_type, processing_time)
+
             # Update metrics
             self.metrics.increment_recordings(processing_time)
             self.metrics.record_format_usage(format_type.value)
-            
+
             # Update session if provided
             if session:
                 session.add_recording(len(audio_data) / self.config.sample_rate)
-                
+
             self.logger.info(f"Successfully recorded {len(audio_data)} samples")
             return audio_data, metadata
-            
+
         except Exception as e:
             error_msg = f"Recording failed: {e}"
             self.logger.error(error_msg)
             self.metrics.increment_errors(error_msg)
             return None
-            
+
         finally:
             self._stop_recording()
 
@@ -142,23 +147,21 @@ class AudioRecordingService:
         """Start recording process."""
         self._is_recording = True
         self._current_recording_session = session
-        
+
         self.logger.info(f"Starting recording for {duration} seconds")
-        
+
         # Trigger recording start event if needed
         # Could emit event here for other services to listen
 
     def _perform_recording(self, duration: int) -> Optional[np.ndarray]:
         """Perform the actual audio recording."""
         try:
-            if hasattr(self.recorder, 'record_audio'):
+            if hasattr(self.recorder, "record_audio"):
                 return self.recorder.record_audio(duration)
             else:
                 # Fallback mock recording
-                return np.random.random(
-                    duration * self.config.sample_rate
-                ).astype(np.float32)
-                
+                return np.random.random(duration * self.config.sample_rate).astype(np.float32)
+
         except Exception as e:
             self.logger.error(f"Recording operation failed: {e}")
             return None
@@ -167,16 +170,12 @@ class AudioRecordingService:
         """Stop recording process."""
         self._is_recording = False
         self._current_recording_session = None
-        
-        if hasattr(self.recorder, 'stop_recording'):
+
+        if hasattr(self.recorder, "stop_recording"):
             self.recorder.stop_recording()
 
     def _create_recording_metadata(
-        self,
-        duration: int,
-        session: Optional[AudioSession],
-        format_type: AudioFormatType,
-        processing_time: float
+        self, duration: int, session: Optional[AudioSession], format_type: AudioFormatType, processing_time: float
     ) -> Dict[str, Any]:
         """Create metadata for recorded audio."""
         return {
@@ -191,7 +190,7 @@ class AudioRecordingService:
             "child_id": session.child_id if session else None,
             "recording_type": "user_input",
             "noise_reduction": self.config.noise_reduction_enabled,
-            "voice_activity_detection": self.config.voice_activity_detection
+            "voice_activity_detection": self.config.voice_activity_detection,
         }
 
     def is_recording(self) -> bool:
@@ -202,12 +201,12 @@ class AudioRecordingService:
         """Stop current recording if active."""
         if not self._is_recording:
             return False
-            
+
         try:
             self._stop_recording()
             self.logger.info("Recording stopped by user request")
             return True
-            
+
         except Exception as e:
             self.logger.error(f"Error stopping recording: {e}")
             return False
@@ -217,16 +216,15 @@ class AudioRecordingService:
         return {
             "is_recording": self._is_recording,
             "current_session": (
-                self._current_recording_session.session_id 
-                if self._current_recording_session else None
+                self._current_recording_session.session_id if self._current_recording_session else None
             ),
             "config": {
                 "default_duration": self.config.default_record_duration,
                 "max_duration": self.config.max_record_duration,
                 "sample_rate": self.config.sample_rate,
                 "channels": self.config.channels,
-                "noise_reduction": self.config.noise_reduction_enabled
-            }
+                "noise_reduction": self.config.noise_reduction_enabled,
+            },
         }
 
     def update_config(self, new_config: AudioSystemConfig) -> None:
@@ -266,7 +264,7 @@ class MockAudioRecorder:
     def set_sample_rate(self, rate: int) -> None:
         """Set sample rate."""
         pass
-        
+
     def set_channels(self, channels: int) -> None:
         """Set number of channels."""
-        pass 
+        pass

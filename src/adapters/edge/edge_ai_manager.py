@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 """
 Enterprise-Grade Edge AI Manager for AI Teddy Bear Project.
@@ -11,19 +11,20 @@ AI Team Implementation - Task 10
 Author: AI Team Lead
 """
 
-import logging
 import asyncio
-import time
-import json
 import hashlib
-from typing import Dict, List, Optional, Any, Tuple, Union
-from dataclasses import dataclass, asdict
+import json
+import logging
+import pickle
+import time
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
-from datetime import datetime, timedelta
-from concurrent.futures import ThreadPoolExecutor
-import pickle
 
 # TensorFlow Lite for Edge AI
 try:

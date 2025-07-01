@@ -1,7 +1,10 @@
-from typing import List, Optional
 from datetime import datetime
-from sqlmodel import Session, select, func
+from typing import List, Optional
+
+from sqlmodel import Session, func, select
+
 from src.core.domain.entities.emotion_log import EmotionLog
+
 
 class EmotionLogRepository:
     def __init__(self, session: Session):
@@ -19,7 +22,7 @@ class EmotionLogRepository:
         end: Optional[datetime] = None,
         limit: int = 100,
         offset: int = 0,
-        emotion_type: Optional[str] = None
+        emotion_type: Optional[str] = None,
     ) -> List[EmotionLog]:
         q = select(EmotionLog).where(EmotionLog.user_id == user_id)
         if start:
@@ -31,7 +34,7 @@ class EmotionLogRepository:
         q = q.order_by(EmotionLog.timestamp.desc()).limit(limit).offset(offset)
         return self.session.exec(q).all()
 
-    def aggregate_stats(str = "day") -> None:
+    def aggregate_stats(str="day") -> None:
         """Aggregation: avg score & count per emotion_type per period (day/week)."""
         fmt = "%Y-%m-%d" if period == "day" else "%Y-%W"
         q = (
@@ -39,7 +42,7 @@ class EmotionLogRepository:
                 func.strftime(fmt, EmotionLog.timestamp).label("period"),
                 EmotionLog.emotion_type,
                 func.avg(EmotionLog.score).label("avg_score"),
-                func.count().label("count")
+                func.count().label("count"),
             )
             .where(EmotionLog.user_id == user_id)
             .group_by("period", EmotionLog.emotion_type)
@@ -47,8 +50,9 @@ class EmotionLogRepository:
         )
         return self.session.exec(q).all()
 
+
 # مثال استخدام:
 # repo = EmotionLogRepository(session)
 # repo.add_many([EmotionLog(user_id=..., ...), ...])
 # logs = repo.list(user_id, limit=20, offset=0, emotion_type="happy")
-# stats = repo.aggregate_stats(user_id, period="week") 
+# stats = repo.aggregate_stats(user_id, period="week")

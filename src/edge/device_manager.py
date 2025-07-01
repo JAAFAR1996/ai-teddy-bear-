@@ -1,10 +1,13 @@
 import structlog
+
 logger = structlog.get_logger(__name__)
 
 import asyncio
-from typing import Dict, List, Optional
-import psutil
 import platform
+from typing import Dict, List, Optional
+
+import psutil
+
 
 class DeviceManager:
     """Manage edge device capabilities and resources"""

@@ -1,5 +1,5 @@
 # Transformers imports patched for development
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 #!/usr/bin/env python3
 """
@@ -12,48 +12,47 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from src.core.domain.entities.child import Child
-from src.domain.value_objects import EmotionalTone, ConversationCategory
 from enum import Enum
 from functools import lru_cache
-from src.infrastructure.caching.simple_cache_service import CacheService
-from src.infrastructure.config import Settings
-from openai import AsyncOpenAI, RateLimitError, APITimeoutError, APIError
+
+from openai import APIError, APITimeoutError, AsyncOpenAI, RateLimitError
 from openai.types.chat import ChatCompletion
 from opentelemetry import trace
-from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import Counter, Gauge, Histogram
+
+from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer
+from src.core.domain.entities.child import Child
+
 # from src.application.services.core.circuit_breaker import CircuitBreaker
 # from src.application.services.core.service_registry import ServiceBase
 from src.core.domain.entities.conversation import Conversation, Message
-from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer
-from src.infrastructure.config import get_config
-from src.infrastructure.config import get_settings
+from src.domain.value_objects import ConversationCategory, EmotionalTone
+from src.infrastructure.caching.simple_cache_service import CacheService
+from src.infrastructure.config import Settings, get_config, get_settings
 from src.infrastructure.observability import trace_async
-from src.infrastructure.security.audit_logger import AuditLogger, AuditEventType
+from src.infrastructure.security.audit_logger import AuditEventType, AuditLogger
+
 try:
     from transformers import AutoModelForCausalLM, AutoTokenizer
 except ImportError:
     from src.infrastructure.external_services.mock.transformers import AutoModelForCausalLM, AutoTokenizer
-from typing import Dict, Any, List, Optional, Union
-from typing import Dict, Optional, Any, List
-from typing import Dict, Optional, List, Union, Any, AsyncIterator
-from typing import List, Dict, Optional
-import anthropic
+
 import asyncio
-import google.generativeai as genai
 import hashlib
 import json
 import logging
-import openai
 import random
+import time
+import uuid
+from abc import ABC, abstractmethod
+from typing import Any, AsyncIterator, Dict, List, Optional, Union
+
+import anthropic
+import google.generativeai as genai
+import openai
 import redis.asyncio as aioredis
 import structlog
-import time
 import torch
-import uuid
-from typing import Dict, List, Optional, Any
-from abc import ABC, abstractmethod
-import logging
 
 logger = logging.getLogger(__name__)
 

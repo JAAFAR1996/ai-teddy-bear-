@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 #!/usr/bin/env python3
 """
@@ -11,35 +11,37 @@ from typing import Dict, List, Any, Optional
 - مراقبة الأداء والجودة
 """
 
-import os
 import asyncio
+import hashlib
 import json
 import logging
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import List, Dict, Any, Optional, Union, Tuple
-from dataclasses import dataclass, asdict
-from enum import Enum
+import os
 import statistics
-import numpy as np
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import aiofiles
-import hashlib
+import numpy as np
 
 # Third-party imports
 try:
-    from hume import HumeClient, AsyncHumeClient
     import librosa
     import soundfile as sf
+    from hume import AsyncHumeClient, HumeClient
     HUME_AVAILABLE = True
 except ImportError as e:
     HUME_AVAILABLE = False
     logging.warning(f"HUME AI SDK not available: {e}")
 
+from ..domain.entities.child import Child
+
 # Internal imports
 from ..infrastructure.persistence.conversation_sqlite_repository import ConversationSQLiteRepository
 from ..infrastructure.security.audit_logger import AuditLogger
-from ..domain.entities.child import Child
 
 
 class Language(Enum):

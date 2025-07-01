@@ -6,27 +6,28 @@ Infrastructure service for caching operations.
 Supports both in-memory and Redis implementations.
 """
 
-import redis
 import logging
-from typing import Any, Optional
 from abc import ABC, abstractmethod
+from typing import Any, Optional
+
+import redis
 
 
 class CacheInterface(ABC):
     """Interface for cache implementations"""
-    
+
     @abstractmethod
     def get(self, key: str) -> Any:
         pass
-    
+
     @abstractmethod
     def set(self, key: str, value: Any, ttl: Optional[int] = None) -> Any:
         pass
-    
+
     @abstractmethod
     def delete(self, key: str) -> Any:
         pass
-    
+
     @abstractmethod
     def clear(self) -> Any:
         pass
@@ -61,7 +62,7 @@ class InMemoryCache(CacheInterface):
 
 class RedisCache(CacheInterface):
     """Redis-based cache implementation"""
-    
+
     def __init__(self, redis_url: str):
         self.logger = logging.getLogger(self.__class__.__name__)
         try:
@@ -109,10 +110,10 @@ class RedisCache(CacheInterface):
 
 class CacheService:
     """Main cache service with fallback mechanism"""
-    
+
     def __init__(self, redis_url: Optional[str] = None):
         self.logger = logging.getLogger(self.__class__.__name__)
-        
+
         # Try Redis first, fallback to in-memory
         if redis_url:
             try:
@@ -125,28 +126,22 @@ class CacheService:
         else:
             self.cache = InMemoryCache()
             self.cache_type = "memory"
-        
+
         self.logger.info(f"Cache service initialized with {self.cache_type} backend")
-    
+
     def get_analytics_cache_key(self, child_id: str, period_days: int) -> str:
         """Generate cache key for analytics data"""
         return f"analytics:{child_id}:{period_days}"
-    
+
     def get_dashboard_cache_key(self, parent_id: str) -> str:
         """Generate cache key for dashboard data"""
         return f"dashboard:{parent_id}"
-    
-    def cache_analytics(
-        self, 
-        child_id: str, 
-        period_days: int, 
-        analytics_data: dict, 
-        ttl: int = 300
-    ) -> None:
+
+    def cache_analytics(self, child_id: str, period_days: int, analytics_data: dict, ttl: int = 300) -> None:
         """Cache analytics data for 5 minutes by default"""
         key = self.get_analytics_cache_key(child_id, period_days)
         self.cache.set(key, str(analytics_data), ttl)
-    
+
     def get_cached_analytics(self, child_id: str, period_days: int) -> Optional[dict]:
         """Get cached analytics data"""
         key = self.get_analytics_cache_key(child_id, period_days)
@@ -157,7 +152,7 @@ class CacheService:
             except Exception as e:
                 self.logger.error(f"Error deserializing cached analytics: {e}")
         return None
-    
+
     def invalidate_child_cache(self, child_id: str) -> None:
         """Invalidate all cache entries for a child"""
         # In a full implementation, would use pattern matching
@@ -165,12 +160,9 @@ class CacheService:
         for period in [7, 14, 30, 90]:
             key = self.get_analytics_cache_key(child_id, period)
             self.cache.delete(key)
-        
+
         self.logger.info(f"Invalidated cache for child {child_id}")
-    
+
     def get_cache_stats(self) -> dict:
         """Get cache statistics"""
-        return {
-            'cache_type': self.cache_type,
-            'status': 'healthy'
-        } 
+        return {"cache_type": self.cache_type, "status": "healthy"}

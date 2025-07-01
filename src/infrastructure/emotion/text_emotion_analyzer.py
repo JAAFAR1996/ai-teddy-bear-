@@ -1,8 +1,10 @@
 # Transformers imports patched for development
 ﻿"""Text-based emotion analysis infrastructure."""
 
-import structlog
 from typing import Dict, List, Optional
+
+import structlog
+
 try:
     from transformers import pipeline
 except ImportError:

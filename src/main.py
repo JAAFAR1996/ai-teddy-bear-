@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 #!/usr/bin/env python3
 """
@@ -21,9 +21,10 @@ import signal
 import sys
 from pathlib import Path
 from typing import Optional
+
 import structlog
 from dependency_injector import containers, providers
-from prometheus_client import start_http_server, Counter, Histogram, Gauge
+from prometheus_client import Counter, Gauge, Histogram, start_http_server
 
 # Add src to Python path
 sys.path.insert(0, str(Path(__file__).parent))

@@ -1,0 +1,297 @@
+# Infrastructure Layer - Security and RBAC
+# Role-based access control and security policies
+
+# Namespace for observability
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-teddy-observability
+  labels:
+    name: ai-teddy-observability
+    monitoring: enabled
+    security-policy: restricted
+    compliance: coppa-gdpr
+  annotations:
+    kubernetes.io/managed-by: "ai-teddy-platform"
+
+---
+# Service Accounts
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: ai-teddy-observability
+  labels:
+    app: prometheus
+    component: security
+    layer: infrastructure
+  annotations:
+    description: "Service account for Prometheus monitoring"
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-collector
+  namespace: ai-teddy-observability
+  labels:
+    app: otel-collector
+    component: security
+    layer: infrastructure
+  annotations:
+    description: "Service account for OpenTelemetry Collector"
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: grafana
+  namespace: ai-teddy-observability
+  labels:
+    app: grafana
+    component: security
+    layer: infrastructure
+  annotations:
+    description: "Service account for Grafana dashboards"
+
+---
+# ClusterRole for Prometheus
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+    component: security
+    layer: infrastructure
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/proxy
+  - nodes/metrics
+  - services
+  - endpoints
+  - pods
+  - pods/proxy
+  - pods/metrics
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources:
+  - configmaps
+  verbs: ["get"]
+- apiGroups:
+  - extensions
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: 
+  - "/metrics"
+  - "/metrics/cadvisor"
+  verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+    component: security
+    layer: infrastructure
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: ai-teddy-observability
+
+---
+# ClusterRole for OpenTelemetry Collector
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: otel-collector
+  labels:
+    app: otel-collector
+    component: security
+    layer: infrastructure
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/proxy
+  - services
+  - endpoints
+  - pods
+  - namespaces
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - extensions
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - replicasets
+  - daemonsets
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otel-collector
+  labels:
+    app: otel-collector
+    component: security
+    layer: infrastructure
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: otel-collector
+subjects:
+- kind: ServiceAccount
+  name: otel-collector
+  namespace: ai-teddy-observability
+
+---
+# Network Policies for enhanced security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: observability-network-policy
+  namespace: ai-teddy-observability
+  labels:
+    component: security
+    layer: infrastructure
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from AI Teddy application namespaces
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ai-teddy-production
+    - namespaceSelector:
+        matchLabels:
+          name: ai-teddy-staging
+    - namespaceSelector:
+        matchLabels:
+          name: ai-teddy-observability
+    ports:
+    - protocol: TCP
+      port: 9090  # Prometheus
+    - protocol: TCP
+      port: 3000  # Grafana
+    - protocol: TCP
+      port: 16686 # Jaeger UI
+    - protocol: TCP
+      port: 3100  # Loki
+    - protocol: TCP
+      port: 9093  # AlertManager
+    - protocol: TCP
+      port: 4317  # OTLP gRPC
+    - protocol: TCP
+      port: 4318  # OTLP HTTP
+  
+  # Allow traffic from monitoring operators
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring-system
+    ports:
+    - protocol: TCP
+      port: 8080  # Health checks
+    - protocol: TCP
+      port: 8888  # Metrics
+      
+  egress:
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+  
+  # Allow external HTTPS/HTTP for updates and webhooks
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+      
+  # Allow communication within observability namespace
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: ai-teddy-observability
+    ports:
+    - protocol: TCP
+      port: 9090  # Prometheus
+    - protocol: TCP
+      port: 3000  # Grafana
+    - protocol: TCP
+      port: 3100  # Loki
+    - protocol: TCP
+      port: 9093  # AlertManager
+
+---
+# Security Context Constraints (if using OpenShift)
+apiVersion: v1
+kind: SecurityContextConstraints
+metadata:
+  name: ai-teddy-observability-scc
+  labels:
+    component: security
+    layer: infrastructure
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegedContainer: false
+allowedCapabilities: []
+defaultAddCapabilities: []
+fsGroup:
+  type: MustRunAs
+  ranges:
+  - min: 1000
+    max: 65534
+runAsUser:
+  type: MustRunAs
+  uid: 1000
+seLinuxContext:
+  type: RunAsAny
+supplementalGroups:
+  type: MustRunAs
+  ranges:
+  - min: 1000
+    max: 65534
+users:
+- system:serviceaccount:ai-teddy-observability:prometheus
+- system:serviceaccount:ai-teddy-observability:otel-collector
+- system:serviceaccount:ai-teddy-observability:grafana
+volumes:
+- configMap
+- downwardAPI
+- emptyDir
+- persistentVolumeClaim
+- projected
+- secret 

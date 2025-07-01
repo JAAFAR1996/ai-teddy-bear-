@@ -1,6 +1,5 @@
-from typing import Dict, List, Any, Optional
-
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,29 +9,46 @@ logger = logging.getLogger(__name__)
 محاكي ESP32 للدبدوب - محاكاة دقيقة للجهاز الحقيقي
 """
 import structlog
+
 logger = structlog.get_logger(__name__)
 
 
-import sys
 import asyncio
+import base64
+import io
 import json
-import requests
-import wave
+import sys
 import threading
 import time
+import uuid
+import wave
 from datetime import datetime
+
 import pyaudio
+import pygame
+import requests
 import speech_recognition as sr
 from gtts import gTTS
-import pygame
-import io
-import base64
-import uuid
 
 try:
-    from tkinter import Tk, Label, Button, Frame, StringVar, Text, Scrollbar, END, VERTICAL, RIGHT, Y, BOTH, X
-    from tkinter import ttk, messagebox
     import tkinter as tk
+    from tkinter import (
+        BOTH,
+        END,
+        RIGHT,
+        VERTICAL,
+        Button,
+        Frame,
+        Label,
+        Scrollbar,
+        StringVar,
+        Text,
+        Tk,
+        X,
+        Y,
+        messagebox,
+        ttk,
+    )
 except Exception as e:
     logger.error(f"Error: {e}")"❌ Tkinter not available")
     sys.exit(1)

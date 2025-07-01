@@ -8,25 +8,25 @@ Enterprise_Dashboard Components Package
 # Import all components for backward compatibility
 from .emotionanalyticsenginecore import EmotionAnalyticsEngineCore
 from .emotionanalyticsengineutility import EmotionAnalyticsEngineUtility
-from .smartalertsystemcore import SmartAlertSystemCore
-from .smartalertsystemprocessing import SmartAlertSystemProcessing
-from .smartalertsystemnotification import SmartAlertSystemNotification
-from .smartalertsystemutility import SmartAlertSystemUtility
 from .enterprisedashboardwidgetcore import EnterpriseDashboardWidgetCore
-from .enterprisedashboardwidgetprocessing import EnterpriseDashboardWidgetProcessing
 from .enterprisedashboardwidgetnotification import EnterpriseDashboardWidgetNotification
+from .enterprisedashboardwidgetprocessing import EnterpriseDashboardWidgetProcessing
 from .enterprisedashboardwidgetutility import EnterpriseDashboardWidgetUtility
+from .smartalertsystemcore import SmartAlertSystemCore
+from .smartalertsystemnotification import SmartAlertSystemNotification
+from .smartalertsystemprocessing import SmartAlertSystemProcessing
+from .smartalertsystemutility import SmartAlertSystemUtility
 
 # Legacy compatibility
 __all__ = [
-    'EmotionAnalyticsEngineCore',
-    'EmotionAnalyticsEngineUtility',
-    'SmartAlertSystemCore',
-    'SmartAlertSystemProcessing',
-    'SmartAlertSystemNotification',
-    'SmartAlertSystemUtility',
-    'EnterpriseDashboardWidgetCore',
-    'EnterpriseDashboardWidgetProcessing',
-    'EnterpriseDashboardWidgetNotification',
-    'EnterpriseDashboardWidgetUtility',
+    "EmotionAnalyticsEngineCore",
+    "EmotionAnalyticsEngineUtility",
+    "SmartAlertSystemCore",
+    "SmartAlertSystemProcessing",
+    "SmartAlertSystemNotification",
+    "SmartAlertSystemUtility",
+    "EnterpriseDashboardWidgetCore",
+    "EnterpriseDashboardWidgetProcessing",
+    "EnterpriseDashboardWidgetNotification",
+    "EnterpriseDashboardWidgetUtility",
 ]

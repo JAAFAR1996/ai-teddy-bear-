@@ -6,12 +6,11 @@ Provides reliable real-time communication with auto-reconnection capability
 import json
 import logging
 from datetime import datetime
-from typing import Dict, Any
-
-from PySide6.QtCore import QObject, Signal, QTimer, QUrl
-from PySide6.QtWebSockets import QWebSocket
+from typing import Any, Dict
 
 import structlog
+from PySide6.QtCore import QObject, QTimer, QUrl, Signal
+from PySide6.QtWebSockets import QWebSocket
 
 logger = structlog.get_logger()
 

@@ -1,6 +1,5 @@
-from typing import Dict, List, Any, Optional
-
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -9,26 +8,28 @@ logger = logging.getLogger(__name__)
 Real-time emotion analysis directly from children's voice without text
 """
 import structlog
+
 logger = structlog.get_logger(__name__)
 
 
 import asyncio
-import aiohttp
-import json
 import base64
-import tempfile
+import json
 import os
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime
+import tempfile
 from dataclasses import dataclass, field
-import numpy as np
+from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import aiohttp
+import numpy as np
 
 # HUME AI SDK (install with: pip install hume)
 try:
     from hume import HumeStreamClient
-    from hume.models.config import ProsodyConfig
     from hume.core.utilities import encode_file
+    from hume.models.config import ProsodyConfig
     HUME_AVAILABLE = True
 except ImportError:
     HUME_AVAILABLE = False

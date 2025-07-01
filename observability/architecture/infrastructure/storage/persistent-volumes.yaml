@@ -1,0 +1,169 @@
+# Infrastructure Layer - Storage Management
+# Persistent storage for monitoring services
+
+# Prometheus Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-storage
+  namespace: ai-teddy-observability
+  labels:
+    app: prometheus
+    component: storage
+    layer: infrastructure
+    storage-type: metrics
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: fast-ssd
+  volumeMode: Filesystem
+
+---
+# Grafana Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+  namespace: ai-teddy-observability
+  labels:
+    app: grafana
+    component: storage
+    layer: infrastructure
+    storage-type: dashboards
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: fast-ssd
+  volumeMode: Filesystem
+
+---
+# Loki Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: loki-storage
+  namespace: ai-teddy-observability
+  labels:
+    app: loki
+    component: storage
+    layer: infrastructure
+    storage-type: logs
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: fast-ssd
+  volumeMode: Filesystem
+
+---
+# AlertManager Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alertmanager-storage
+  namespace: ai-teddy-observability
+  labels:
+    app: alertmanager
+    component: storage
+    layer: infrastructure
+    storage-type: alerts
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+  volumeMode: Filesystem
+
+---
+# Storage Configuration and Policies
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storage-policies
+  namespace: ai-teddy-observability
+  labels:
+    component: storage
+    layer: infrastructure
+data:
+  retention-policies.yaml: |
+    # AI Teddy Bear Storage Retention Policies
+    
+    prometheus:
+      metrics_retention: "30d"
+      high_resolution_retention: "7d"
+      compaction_interval: "2h"
+      max_block_duration: "2h"
+      
+    grafana:
+      dashboard_history: "90d"
+      annotation_retention: "30d"
+      session_timeout: "24h"
+      
+    loki:
+      log_retention: "30d"
+      index_retention: "7d"
+      compaction_interval: "24h"
+      max_chunk_age: "24h"
+      
+    alertmanager:
+      silence_retention: "120h"
+      notification_log_retention: "120h"
+      
+    jaeger:
+      trace_retention: "7d"
+      dependency_retention: "7d"
+      
+  backup-schedule.yaml: |
+    # Backup Schedule Configuration
+    
+    daily_backups:
+      - service: "prometheus"
+        time: "02:00"
+        retention: "7d"
+        
+      - service: "grafana"
+        time: "03:00"
+        retention: "30d"
+        
+      - service: "alertmanager"
+        time: "04:00"
+        retention: "30d"
+        
+    weekly_backups:
+      - service: "prometheus-full"
+        day: "sunday"
+        time: "01:00"
+        retention: "8w"
+        
+    monthly_backups:
+      - service: "grafana-full"
+        day: "1"
+        time: "00:00"
+        retention: "12m"
+        
+  storage-monitoring.yaml: |
+    # Storage Monitoring Thresholds
+    
+    disk_usage_alerts:
+      warning_threshold: 80
+      critical_threshold: 90
+      
+    iops_limits:
+      prometheus: 1000
+      grafana: 200
+      loki: 500
+      
+    throughput_limits:
+      prometheus: "100MB/s"
+      grafana: "20MB/s"
+      loki: "50MB/s" 

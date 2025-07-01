@@ -1,30 +1,41 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 """
 🧸 ESP32 Production Simulator - Enterprise Grade
 Modern UI using PySide6/PyQt6 with proper async handling
 """
 
-import sys
 import asyncio
-import logging
-import json
 import base64
+import json
+import logging
+import sys
 import uuid
-from datetime import datetime
-from typing import Optional, Dict, Any
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 try:
-    from PySide6 import QtCore, QtWidgets, QtGui
-    from PySide6.QtCore import Signal, Slot, QThread, QTimer, QPropertyAnimation
+    from PySide6 import QtCore, QtGui, QtWidgets
+    from PySide6.QtCore import QPropertyAnimation, QThread, QTimer, Signal, Slot
+    from PySide6.QtGui import QColor, QFont, QIcon, QPalette
     from PySide6.QtWidgets import (
-        QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-        QPushButton, QTextEdit, QLabel, QGroupBox, QStatusBar,
-        QProgressBar, QMessageBox, QInputDialog, QSplitter
+        QApplication,
+        QGroupBox,
+        QHBoxLayout,
+        QInputDialog,
+        QLabel,
+        QMainWindow,
+        QMessageBox,
+        QProgressBar,
+        QPushButton,
+        QSplitter,
+        QStatusBar,
+        QTextEdit,
+        QVBoxLayout,
+        QWidget,
     )
-    from PySide6.QtGui import QFont, QPalette, QColor, QIcon
 except Exception as e:
     logger.error(f"Error: {e}")"❌ PySide6 not installed. Installing...")
     import subprocess
@@ -38,11 +49,12 @@ except Exception as e:
     )
     from PySide6.QtGui import QFont, QPalette, QColor, QIcon
 
-import aiohttp
-import websockets
-import sounddevice as sd
-import numpy as np
 from concurrent.futures import ThreadPoolExecutor
+
+import aiohttp
+import numpy as np
+import sounddevice as sd
+import websockets
 
 logger = logging.getLogger(__name__)
 
@@ -233,8 +245,8 @@ class AudioHandler(QThread):
     
     def _numpy_to_wav(self, audio_data: np.ndarray) -> bytes:
         """Convert numpy array to WAV bytes"""
-        import wave
         import io
+        import wave
         
         buffer = io.BytesIO()
         with wave.open(buffer, 'wb') as wav_file:

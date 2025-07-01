@@ -5,14 +5,15 @@ Lead Architect: جعفر أديب (Jaafar Adeeb)
 Enterprise performance monitoring and optimization for GraphQL
 """
 
-import time
 import asyncio
-from typing import Dict, Any, Optional, List
+import time
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from collections import defaultdict
+from typing import Any, Dict, List, Optional
+
 import structlog
-from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import Counter, Gauge, Histogram
 
 logger = structlog.get_logger()
 

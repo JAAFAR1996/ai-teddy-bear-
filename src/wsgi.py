@@ -12,7 +12,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 # تحديد متغيرات البيئة
-os.environ.setdefault('DEPLOYMENT_ENV', 'production')
+os.environ.setdefault("DEPLOYMENT_ENV", "production")
 
 # استيراد التطبيق
 from main import app
@@ -22,4 +22,5 @@ application = app
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(application, host="0.0.0.0", port=8000)

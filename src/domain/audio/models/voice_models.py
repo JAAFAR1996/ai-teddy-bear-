@@ -5,7 +5,8 @@ Core audio domain models, enums and value objects
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 try:
     from elevenlabs import VoiceSettings
 except ImportError:
@@ -14,6 +15,7 @@ except ImportError:
 
 class EmotionalTone(Enum):
     """Enhanced emotional voice tones for the teddy bear"""
+
     HAPPY = "happy"
     CALM = "calm"
     CURIOUS = "curious"
@@ -28,6 +30,7 @@ class EmotionalTone(Enum):
 
 class Language(Enum):
     """Supported languages"""
+
     ENGLISH = "en"
     ARABIC = "ar"
     SPANISH = "es"
@@ -41,10 +44,11 @@ class Language(Enum):
 @dataclass
 class AudioConfig:
     """Audio configuration settings"""
+
     sample_rate: int = 24000
     channels: int = 1
     chunk_size: int = 1024
-    format: str = 'int16'
+    format: str = "int16"
 
     # Voice Activity Detection
     vad_mode: int = 3  # 0-3, 3 is most aggressive
@@ -77,6 +81,7 @@ class AudioConfig:
 @dataclass
 class VoiceProfile:
     """Voice profile for different characters/modes"""
+
     id: str
     name: str
     voice_id: str  # ElevenLabs voice ID
@@ -88,16 +93,8 @@ class VoiceProfile:
 
     def get_voice_settings(self, emotion: EmotionalTone) -> VoiceSettings:
         """Get voice settings for specific emotion"""
-        return self.emotional_settings.get(
-            emotion, 
-            self.emotional_settings.get(EmotionalTone.CALM)
-        )
+        return self.emotional_settings.get(emotion, self.emotional_settings.get(EmotionalTone.CALM))
 
     def is_valid(self) -> bool:
         """Validate voice profile"""
-        return (
-            bool(self.id) and 
-            bool(self.name) and 
-            bool(self.voice_id) and
-            self.emotional_settings
-        ) 
+        return bool(self.id) and bool(self.name) and bool(self.voice_id) and self.emotional_settings

@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 ﻿# ===================================================================
 # 🤖 AI Teddy Bear - Advanced Child Interaction Pipeline
@@ -7,13 +7,14 @@ from typing import Dict, List, Any, Optional
 # Date: January 2025
 # ===================================================================
 
-from kubeflow import dsl
-from kubeflow.dsl import component, Input, Output, Dataset, Model, Artifact
-import kfp
-from typing import Dict, List, Optional, Tuple
 import json
 import logging
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple
+
+import kfp
+from kubeflow import dsl
+from kubeflow.dsl import Artifact, Dataset, Input, Model, Output, component
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -42,10 +43,10 @@ def preprocess_child_audio(
     enhancement_level: str = "moderate"
 ) -> Dict[str, float]:
     """معالجة أولية للصوت مع مراعاة عمر الطفل وخصائصه الصوتية"""
-    import torch
-    import torchaudio
     import librosa
     import numpy as np
+    import torch
+    import torchaudio
     from scipy import signal
     
     logger.info(f"Processing audio for child age: {child_age}")
@@ -118,8 +119,9 @@ def generate_safe_response(
 ) -> Dict[str, any]:
     """توليد استجابة آمنة ومناسبة للطفل مع فحص شامل للأمان"""
     import json
-    import openai
     from datetime import datetime
+
+    import openai
     
     logger.info("Starting safe response generation")
     
@@ -619,6 +621,7 @@ def apply_general_enhancement(waveform, sr) -> Any:
 def apply_frequency_filter(waveform, sr, low_freq, high_freq) -> Any:
     """تطبيق فلتر ترددي"""
     import torch
+
     # تطبيق فلتر بسيط
     return waveform
 

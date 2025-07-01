@@ -7,10 +7,11 @@ Professional Audio Processing Engine for AI Teddy Bear
 Enterprise-grade audio enhancement with noise reduction and voice optimization
 """
 
-import time
 import platform
-import psutil
+import time
+
 import numpy as np
+import psutil
 import structlog
 
 # Audio processing imports with graceful fallbacks

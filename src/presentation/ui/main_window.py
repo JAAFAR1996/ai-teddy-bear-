@@ -4,22 +4,31 @@ Modern enterprise interface with modular design
 """
 
 import sys
-from typing import Dict, Any
-
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QTabWidget, QPushButton, QLabel, QStatusBar, QMenuBar,
-    QMessageBox, QSystemTrayIcon, QMenu
-)
-from PySide6.QtCore import Qt, QTimer, QSettings
-from PySide6.QtGui import QFont, QIcon, QAction
-
-from .networking.websocket_client import WebSocketClient
-from .networking.message_sender import EnterpriseMessageSender
-from .widgets.audio_widget import ModernAudioWidget
-from .widgets.conversation_widget import ConversationWidget
+from typing import Any, Dict
 
 import structlog
+from PySide6.QtCore import QSettings, Qt, QTimer
+from PySide6.QtGui import QAction, QFont, QIcon
+from PySide6.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QMenu,
+    QMenuBar,
+    QMessageBox,
+    QPushButton,
+    QStatusBar,
+    QSystemTrayIcon,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
+
+from .networking.message_sender import EnterpriseMessageSender
+from .networking.websocket_client import WebSocketClient
+from .widgets.audio_widget import ModernAudioWidget
+from .widgets.conversation_widget import ConversationWidget
 
 logger = structlog.get_logger()
 

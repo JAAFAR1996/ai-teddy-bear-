@@ -4,8 +4,9 @@ Handles OpenAI Speech API integration
 """
 
 import logging
-from typing import Optional, Dict, Any
 import tempfile
+from typing import Any, Dict, Optional
+
 import numpy as np
 import soundfile as sf
 from openai import AsyncOpenAI
@@ -19,10 +20,7 @@ class OpenAISpeechClient:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     async def transcribe_audio(
-        self,
-        audio_data: np.ndarray,
-        language: Optional[str] = None,
-        model: str = "whisper-1"
+        self, audio_data: np.ndarray, language: Optional[str] = None, model: str = "whisper-1"
     ) -> Optional[Dict[str, Any]]:
         """Transcribe audio using OpenAI Whisper API"""
         try:
@@ -30,7 +28,7 @@ class OpenAISpeechClient:
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
                 # Write audio data to temp file
                 sf.write(temp_file.name, audio_data, 16000)
-                
+
                 # Transcribe with OpenAI
                 with open(temp_file.name, "rb") as audio_file:
                     transcript = await self.client.audio.transcriptions.create(
@@ -38,15 +36,15 @@ class OpenAISpeechClient:
                         file=audio_file,
                         language=language,
                         response_format="verbose_json",
-                        timestamp_granularities=["word", "segment"]
+                        timestamp_granularities=["word", "segment"],
                     )
 
                 return {
                     "text": transcript.text.strip(),
                     "language": transcript.language,
                     "duration": transcript.duration,
-                    "segments": getattr(transcript, 'segments', []),
-                    "words": getattr(transcript, 'words', [])
+                    "segments": getattr(transcript, "segments", []),
+                    "words": getattr(transcript, "words", []),
                 }
 
         except Exception as e:
@@ -54,21 +52,12 @@ class OpenAISpeechClient:
             return None
 
     async def generate_speech(
-        self,
-        text: str,
-        voice: str = "alloy",
-        model: str = "tts-1",
-        response_format: str = "mp3",
-        speed: float = 1.0
+        self, text: str, voice: str = "alloy", model: str = "tts-1", response_format: str = "mp3", speed: float = 1.0
     ) -> Optional[bytes]:
         """Generate speech using OpenAI TTS"""
         try:
             response = await self.client.audio.speech.create(
-                model=model,
-                voice=voice,
-                input=text,
-                response_format=response_format,
-                speed=speed
+                model=model, voice=voice, input=text, response_format=response_format, speed=speed
             )
 
             return response.content
@@ -88,4 +77,4 @@ class OpenAISpeechClient:
             models = await self.client.models.list()
             return len(models.data) > 0
         except Exception:
-            return False 
+            return False

@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 """
 Enterprise-Grade Multi-Layer Caching System for AI Teddy Bear Project.
@@ -12,23 +12,23 @@ Author: Performance Team Lead
 """
 
 import asyncio
-import logging
-import time
-import json
-import hashlib
-from typing import Dict, List, Optional, Any, Union, Callable, Tuple
-from dataclasses import dataclass, asdict
-from enum import Enum
-from datetime import datetime, timedelta
-import pickle
-import gzip
 import base64
+import gzip
+import hashlib
+import json
+import logging
+import pickle
+import time
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from enum import Enum
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 # Caching libraries
 try:
-    import redis.asyncio as redis
     import aiocache
+    import redis.asyncio as redis
     from aiocache.serializers import JsonSerializer, PickleSerializer
     CACHING_LIBS_AVAILABLE = True
 except ImportError:

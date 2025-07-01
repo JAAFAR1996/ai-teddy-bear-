@@ -4,17 +4,18 @@
 Auto-generated from God Class refactoring
 """
 
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
-from datetime import datetime
-import uuid
-
 # Original imports
 import asyncio
-from asyncio.log import logger
-import logging
 import json
+import logging
+import uuid
+from asyncio.log import logger
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 import websockets
+
 
 class AudioBuffer:
     """Thread-safe audio buffer for real-time streaming"""

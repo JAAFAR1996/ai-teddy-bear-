@@ -2,11 +2,12 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 
 class AudioFormatType(Enum):
     """Supported audio formats."""
+
     WAV = "wav"
     MP3 = "mp3"
     OPUS = "opus"
@@ -18,17 +19,18 @@ class AudioFormatType(Enum):
 @dataclass
 class AudioSystemConfig:
     """Audio system configuration."""
+
     # Recording settings
     default_record_duration: int = 10
     max_record_duration: int = 60
     auto_process_audio: bool = True
     auto_save_sessions: bool = True
-    
+
     # Processing settings
     noise_reduction_enabled: bool = True
     voice_activity_detection: bool = True
     adaptive_quality: bool = True
-    
+
     # System settings
     emergency_override: bool = True
     session_timeout_minutes: int = 30
@@ -36,14 +38,14 @@ class AudioSystemConfig:
     volume_level: float = 0.8
     language_preference: str = "en"
     child_safe_mode: bool = True
-    
+
     # Audio format settings
     default_output_format: AudioFormatType = AudioFormatType.WAV
     sample_rate: int = 44100
     channels: int = 2
     bitrate: int = 192  # For compressed formats
     compression_quality: int = 5  # 0-10 scale
-    
+
     # Cloud settings
     enable_cloud_sync: bool = True
     cloud_backup_enabled: bool = True
@@ -70,11 +72,11 @@ class AudioSystemConfig:
             "bitrate": self.bitrate,
             "compression_quality": self.compression_quality,
             "enable_cloud_sync": self.enable_cloud_sync,
-            "cloud_backup_enabled": self.cloud_backup_enabled
+            "cloud_backup_enabled": self.cloud_backup_enabled,
         }
 
     @classmethod
-    def create_child_safe_config(cls) -> 'AudioSystemConfig':
+    def create_child_safe_config(cls) -> "AudioSystemConfig":
         """Create child-safe configuration."""
         return cls(
             child_safe_mode=True,
@@ -82,11 +84,11 @@ class AudioSystemConfig:
             volume_level=0.6,
             noise_reduction_enabled=True,
             voice_activity_detection=True,
-            emergency_override=True
+            emergency_override=True,
         )
 
     @classmethod
-    def create_high_quality_config(cls) -> 'AudioSystemConfig':
+    def create_high_quality_config(cls) -> "AudioSystemConfig":
         """Create high-quality configuration."""
         return cls(
             default_output_format=AudioFormatType.FLAC,
@@ -94,11 +96,11 @@ class AudioSystemConfig:
             channels=2,
             compression_quality=8,
             noise_reduction_enabled=True,
-            adaptive_quality=False
+            adaptive_quality=False,
         )
 
     @classmethod
-    def create_low_latency_config(cls) -> 'AudioSystemConfig':
+    def create_low_latency_config(cls) -> "AudioSystemConfig":
         """Create low-latency configuration."""
         return cls(
             auto_process_audio=False,
@@ -106,5 +108,5 @@ class AudioSystemConfig:
             sample_rate=16000,
             channels=1,
             compression_quality=3,
-            cloud_backup_enabled=False
-        ) 
+            cloud_backup_enabled=False,
+        )

@@ -14,7 +14,7 @@ feedback and performance data.
 
 Key Components:
 - ContinuousLearningSystem: Main orchestrator for the learning pipeline
-- FeedbackCollector: Collects and processes user feedback and interaction data  
+- FeedbackCollector: Collects and processes user feedback and interaction data
 - ModelEvaluator: Evaluates current model performance and identifies improvement areas
 - TrainingPipeline: Manages automated model training and enhancement
 - DeploymentManager: Handles safe model deployment with A/B testing
@@ -31,62 +31,40 @@ Features:
 
 Usage:
     from src.ml.continuous_learning import ContinuousLearningSystem
-    
+
     # Initialize the continuous learning system
     learning_system = ContinuousLearningSystem()
-    
+
     # Start continuous learning
     await learning_system.start_continuous_learning()
 """
 
 from .continuous_learning import (
     ContinuousLearningSystem,
+    LearningInsight,
+    LearningMetrics,
     LearningStrategy,
     ModelPerformanceThreshold,
-    LearningMetrics,
     ModelVersion,
-    LearningInsight
 )
-
-from .feedback.feedback_collector import (
-    FeedbackCollector,
-    FeedbackType,
-    FeedbackData,
-    InteractionFeedback
-)
-
-from .evaluation.model_evaluator import (
-    ModelEvaluator,
-    EvaluationMetric,
-    ModelEvaluationResult,
-    PerformanceTrend
-)
-
-from .training.training_pipeline import (
-    TrainingPipeline,
-    TrainingStrategy,
-    ModelType,
-    TrainingConfig,
-    TrainingResult
-)
-
+from .continuous_learning_demo import ContinuousLearningDemo
 from .deployment.deployment_manager import (
-    DeploymentManager,
-    DeploymentStrategy,
-    DeploymentStatus,
     DeploymentConfig,
-    DeploymentResult
+    DeploymentManager,
+    DeploymentResult,
+    DeploymentStatus,
+    DeploymentStrategy,
 )
-
+from .evaluation.model_evaluator import EvaluationMetric, ModelEvaluationResult, ModelEvaluator, PerformanceTrend
+from .feedback.feedback_collector import FeedbackCollector, FeedbackData, FeedbackType, InteractionFeedback
 from .monitoring.performance_monitor import (
-    PerformanceMonitor,
     AlertSeverity,
+    MetricSnapshot,
     MetricType,
     PerformanceAlert,
-    MetricSnapshot
+    PerformanceMonitor,
 )
-
-from .continuous_learning_demo import ContinuousLearningDemo
+from .training.training_pipeline import ModelType, TrainingConfig, TrainingPipeline, TrainingResult, TrainingStrategy
 
 __version__ = "1.0.0"
 __author__ = "AI Teddy Bear ML Team"
@@ -95,47 +73,41 @@ __email__ = "ml-team@ai-teddy-bear.com"
 __all__ = [
     # Main system
     "ContinuousLearningSystem",
-    "LearningStrategy", 
+    "LearningStrategy",
     "ModelPerformanceThreshold",
     "LearningMetrics",
     "ModelVersion",
     "LearningInsight",
-    
     # Feedback collection
     "FeedbackCollector",
     "FeedbackType",
-    "FeedbackData", 
+    "FeedbackData",
     "InteractionFeedback",
-    
     # Model evaluation
     "ModelEvaluator",
     "EvaluationMetric",
     "ModelEvaluationResult",
     "PerformanceTrend",
-    
     # Training pipeline
     "TrainingPipeline",
     "TrainingStrategy",
     "ModelType",
     "TrainingConfig",
     "TrainingResult",
-    
     # Deployment management
     "DeploymentManager",
-    "DeploymentStrategy", 
+    "DeploymentStrategy",
     "DeploymentStatus",
     "DeploymentConfig",
     "DeploymentResult",
-    
     # Performance monitoring
     "PerformanceMonitor",
     "AlertSeverity",
     "MetricType",
     "PerformanceAlert",
     "MetricSnapshot",
-    
     # Demo system
-    "ContinuousLearningDemo"
+    "ContinuousLearningDemo",
 ]
 
 # Module metadata
@@ -153,18 +125,18 @@ __module_info__ = {
     "deployment_strategies": ["canary", "blue_green", "rolling", "a_b_test"],
     "monitoring_capabilities": [
         "real_time_metrics",
-        "anomaly_detection", 
+        "anomaly_detection",
         "automated_alerting",
         "performance_trending",
-        "safety_monitoring"
+        "safety_monitoring",
     ],
     "training_strategies": [
         "incremental_learning",
         "full_retraining",
-        "transfer_learning", 
+        "transfer_learning",
         "federated_learning",
-        "multi_task_learning"
-    ]
+        "multi_task_learning",
+    ],
 }
 
 
@@ -182,7 +154,7 @@ def get_supported_features() -> list:
     """Get list of supported features"""
     return [
         "Automated feedback collection",
-        "Real-time model evaluation", 
+        "Real-time model evaluation",
         "Safe model deployment",
         "A/B testing capabilities",
         "Performance monitoring",
@@ -192,7 +164,7 @@ def get_supported_features() -> list:
         "Enterprise scalability",
         "Multi-language support",
         "Age-appropriate content",
-        "Parent dashboard integration"
+        "Parent dashboard integration",
     ]
 
 
@@ -205,5 +177,5 @@ def check_system_health() -> dict:
         "components_available": len(__all__),
         "safety_systems": "active",
         "compliance_status": "coppa_compliant",
-        "last_check": "2025-01-20T10:30:00Z"
-    } 
+        "last_check": "2025-01-20T10:30:00Z",
+    }

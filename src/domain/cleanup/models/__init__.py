@@ -3,12 +3,8 @@
 Domain Models for Data Cleanup
 """
 
-from .retention_policy import DataRetentionPolicy
-from .cleanup_target import CleanupTarget
 from .cleanup_report import CleanupReport
+from .cleanup_target import CleanupTarget
+from .retention_policy import DataRetentionPolicy
 
-__all__ = [
-    "DataRetentionPolicy",
-    "CleanupTarget", 
-    "CleanupReport"
-] 
+__all__ = ["DataRetentionPolicy", "CleanupTarget", "CleanupReport"]

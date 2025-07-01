@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 """
 Service-specific GraphQL Resolvers for Federation.
@@ -12,15 +12,15 @@ Author: API Team Lead
 
 import asyncio
 import logging
-from typing import Dict, List, Optional, Any, Union
-from datetime import datetime, timedelta
 import uuid
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Union
 
 # GraphQL and data types
 try:
     import strawberry
-    from strawberry.types import Info
     from strawberry.federation import Key
+    from strawberry.types import Info
     STRAWBERRY_AVAILABLE = True
 except ImportError:
     STRAWBERRY_AVAILABLE = False

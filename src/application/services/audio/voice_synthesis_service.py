@@ -4,16 +4,15 @@ Handles text-to-speech conversion with emotional tones
 """
 
 import logging
-from typing import Optional, Dict, Any
 from pathlib import Path
-import numpy as np
+from typing import Any, Dict, Optional
+
 import azure.cognitiveservices.speech as speechsdk
+import numpy as np
 from elevenlabs import ElevenLabs, generate, stream
 
-from src.domain.audio.models.voice_models import (
-    EmotionalTone, Language, VoiceProfile
-)
 from src.application.services.streaming_service import StreamingService
+from src.domain.audio.models.voice_models import EmotionalTone, Language, VoiceProfile
 
 
 class VoiceSynthesisService:
@@ -23,24 +22,23 @@ class VoiceSynthesisService:
         self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
         self.streaming_service: Optional[StreamingService] = None
-        
+
         # Initialize synthesis clients
         self._init_synthesis_clients()
 
     def _init_synthesis_clients(self):
         """Initialize voice synthesis clients"""
         # ElevenLabs
-        if getattr(self.config, 'ELEVENLABS_API_KEY', None):
-            self.elevenlabs_client = ElevenLabs(
-                api_key=getattr(self.config, 'ELEVENLABS_API_KEY'))
+        if getattr(self.config, "ELEVENLABS_API_KEY", None):
+            self.elevenlabs_client = ElevenLabs(api_key=getattr(self.config, "ELEVENLABS_API_KEY"))
         else:
             self.elevenlabs_client = None
 
         # Azure Speech
-        if getattr(self.config, 'AZURE_SPEECH_KEY', None):
+        if getattr(self.config, "AZURE_SPEECH_KEY", None):
             speech_config = speechsdk.SpeechConfig(
-                subscription=getattr(self.config, 'AZURE_SPEECH_KEY'),
-                region=getattr(self.config, 'AZURE_SPEECH_REGION', 'eastus')
+                subscription=getattr(self.config, "AZURE_SPEECH_KEY"),
+                region=getattr(self.config, "AZURE_SPEECH_REGION", "eastus"),
             )
             self.azure_speech_config = speech_config
         else:
@@ -55,7 +53,7 @@ class VoiceSynthesisService:
         text: str,
         voice_profile: VoiceProfile,
         emotion: EmotionalTone = EmotionalTone.CALM,
-        stream_output: bool = True
+        stream_output: bool = True,
     ) -> Optional[bytes]:
         """
         Synthesize speech with emotional nuance
@@ -84,10 +82,7 @@ class VoiceSynthesisService:
             elif self.elevenlabs_client:
                 # Use ElevenLabs
                 audio_data = await self._synthesize_elevenlabs(
-                    text,
-                    voice_profile.voice_id,
-                    voice_settings,
-                    stream_output
+                    text, voice_profile.voice_id, voice_settings, stream_output
                 )
             else:
                 raise ValueError("No voice synthesis service available")
@@ -99,21 +94,14 @@ class VoiceSynthesisService:
             return None
 
     async def _synthesize_elevenlabs(
-        self,
-        text: str,
-        voice_id: str,
-        voice_settings,
-        stream_output: bool
+        self, text: str, voice_id: str, voice_settings, stream_output: bool
     ) -> Optional[bytes]:
         """Synthesize using ElevenLabs"""
         try:
             if stream_output and self.streaming_service:
                 # Stream directly to output
                 audio_stream = stream(
-                    text=text,
-                    voice=voice_id,
-                    model="eleven_multilingual_v2",
-                    voice_settings=voice_settings
+                    text=text, voice=voice_id, model="eleven_multilingual_v2", voice_settings=voice_settings
                 )
 
                 async for chunk in audio_stream:
@@ -123,10 +111,7 @@ class VoiceSynthesisService:
             else:
                 # Generate complete audio
                 audio = generate(
-                    text=text,
-                    voice=voice_id,
-                    model="eleven_multilingual_v2",
-                    voice_settings=voice_settings
+                    text=text, voice=voice_id, model="eleven_multilingual_v2", voice_settings=voice_settings
                 )
                 return audio
 
@@ -142,9 +127,7 @@ class VoiceSynthesisService:
             self.azure_speech_config.speech_synthesis_voice_name = voice_name
 
             # Create synthesizer
-            synthesizer = speechsdk.SpeechSynthesizer(
-                speech_config=self.azure_speech_config
-            )
+            synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.azure_speech_config)
 
             # Generate speech
             result = synthesizer.speak_text_async(text).get()
@@ -168,17 +151,15 @@ class VoiceSynthesisService:
             EmotionalTone.SLEEPY: "ar-SA-HamedNeural",
             EmotionalTone.STORYTELLING: "ar-SA-ZariyahNeural",
         }
-        
+
         return voice_mapping.get(emotion, "ar-SA-ZariyahNeural")
 
     async def test_synthesis(self, text: str, voice_profile: VoiceProfile) -> bool:
         """Test voice synthesis capability"""
         try:
-            audio_data = await self.synthesize_speech(
-                text, voice_profile, EmotionalTone.HAPPY, stream_output=False
-            )
+            audio_data = await self.synthesize_speech(text, voice_profile, EmotionalTone.HAPPY, stream_output=False)
             return audio_data is not None
-            
+
         except Exception as e:
             self.logger.error(f"Synthesis test failed: {e}")
-            return False 
+            return False

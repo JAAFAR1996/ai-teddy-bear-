@@ -1,0 +1,322 @@
+# Presentation Layer - AI Teddy Bear Monitoring Dashboards
+# Business-focused monitoring dashboards and visualizations
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-ai-teddy
+  namespace: ai-teddy-observability
+  labels:
+    app: grafana
+    component: presentation
+    layer: presentation
+    dashboard-type: business
+data:
+  ai-teddy-overview.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "AI Teddy Bear - Business Overview",
+        "tags": ["ai-teddy", "business", "overview"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Child Safety Metrics",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(rate(ai_teddy_safety_violations_total[5m]))",
+                "legendFormat": "Safety Violations/sec"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "steps": [
+                    {"color": "green", "value": 0},
+                    {"color": "red", "value": 0.1}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 2,
+            "title": "Active Children",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(ai_teddy_active_children)",
+                "legendFormat": "Active Children"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "Conversation Quality",
+            "type": "gauge",
+            "targets": [
+              {
+                "expr": "avg(ai_teddy_conversation_quality_score)",
+                "legendFormat": "Quality Score"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "min": 0,
+                "max": 100,
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "yellow", "value": 60},
+                    {"color": "green", "value": 80}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 4,
+            "title": "Parent Engagement",
+            "type": "timeseries",
+            "targets": [
+              {
+                "expr": "sum(rate(ai_teddy_parent_dashboard_views_total[1h]))",
+                "legendFormat": "Dashboard Views/hour"
+              }
+            ]
+          }
+        ],
+        "time": {
+          "from": "now-24h",
+          "to": "now"
+        },
+        "refresh": "30s"
+      }
+    }
+    
+  child-interactions.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "Child Interactions Dashboard",
+        "tags": ["ai-teddy", "children", "interactions"],
+        "panels": [
+          {
+            "id": 1,
+            "title": "Conversation Duration by Age Group",
+            "type": "bargauge",
+            "targets": [
+              {
+                "expr": "avg by (age_group) (ai_teddy_conversation_duration_seconds)",
+                "legendFormat": "{{age_group}}"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "Emotional State Distribution",
+            "type": "piechart",
+            "targets": [
+              {
+                "expr": "sum by (emotion) (ai_teddy_child_emotion_total)",
+                "legendFormat": "{{emotion}}"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "Learning Progress Over Time",
+            "type": "timeseries",
+            "targets": [
+              {
+                "expr": "avg(ai_teddy_learning_progress_percentage)",
+                "legendFormat": "Learning Progress %"
+              }
+            ]
+          }
+        ]
+      }
+    }
+    
+  system-health.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "System Health & Performance",
+        "tags": ["ai-teddy", "infrastructure", "health"],
+        "panels": [
+          {
+            "id": 1,
+            "title": "API Response Time",
+            "type": "timeseries",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+                "legendFormat": "95th percentile"
+              },
+              {
+                "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+                "legendFormat": "50th percentile"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "Service Uptime",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "avg(up{job=\"ai-teddy-api\"})*100",
+                "legendFormat": "API Uptime %"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "Database Performance",
+            "type": "timeseries",
+            "targets": [
+              {
+                "expr": "rate(postgresql_queries_total[5m])",
+                "legendFormat": "Queries/sec"
+              }
+            ]
+          }
+        ]
+      }
+    }
+
+---
+# Dashboard Provisioning Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-config
+  namespace: ai-teddy-observability
+  labels:
+    app: grafana
+    component: presentation
+    layer: presentation
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+    - name: 'ai-teddy-dashboards'
+      orgId: 1
+      folder: 'AI Teddy Bear'
+      type: file
+      disableDeletion: false
+      updateIntervalSeconds: 30
+      allowUiUpdates: true
+      options:
+        path: /grafana-dashboard-definitions/0/ai-teddy-dashboards
+    - name: 'system-dashboards'
+      orgId: 1
+      folder: 'System Monitoring'
+      type: file
+      disableDeletion: false
+      updateIntervalSeconds: 30
+      allowUiUpdates: true
+      options:
+        path: /grafana-dashboard-definitions/0/system-dashboards
+
+---
+# Data Sources Configuration  
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: ai-teddy-observability
+  labels:
+    app: grafana
+    component: presentation
+    layer: presentation
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus.ai-teddy-observability.svc.cluster.local:9090
+      isDefault: true
+      editable: true
+      jsonData:
+        timeInterval: "30s"
+        queryTimeout: "60s"
+        httpMethod: "POST"
+        
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki.ai-teddy-observability.svc.cluster.local:3100
+      isDefault: false
+      editable: true
+      jsonData:
+        maxLines: 1000
+        
+    - name: Jaeger
+      type: jaeger
+      access: proxy
+      url: http://jaeger-query.ai-teddy-observability.svc.cluster.local:16686
+      isDefault: false
+      editable: true
+      jsonData:
+        tracesToLogs:
+          datasourceUid: 'loki'
+          tags: ['trace_id']
+
+---
+# Alert Rules for Grafana
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-alert-rules
+  namespace: ai-teddy-observability
+  labels:
+    app: grafana
+    component: presentation
+    layer: presentation
+data:
+  alert-rules.yaml: |
+    groups:
+    - name: ai-teddy-child-safety
+      rules:
+      - alert: ChildSafetyViolation
+        expr: sum(rate(ai_teddy_safety_violations_total[5m])) > 0
+        for: 0s
+        labels:
+          severity: critical
+          category: child-safety
+        annotations:
+          summary: "Child safety violation detected"
+          description: "Safety violation detected in AI Teddy Bear system"
+          
+    - name: ai-teddy-performance
+      rules:
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High API latency detected"
+          description: "95th percentile latency is above 2 seconds"
+          
+    - name: ai-teddy-business
+      rules:
+      - alert: LowParentEngagement
+        expr: avg_over_time(ai_teddy_parent_dashboard_active_users[7d]) < 10
+        for: 1h
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low parent engagement"
+          description: "Parent dashboard usage is below expected levels" 

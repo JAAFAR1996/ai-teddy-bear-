@@ -9,34 +9,35 @@ Author: API Team Lead
 """
 
 import asyncio
+import json
 import logging
-from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 from datetime import datetime
-import json
+from typing import Any, Dict, List, Optional, Union
 
 # GraphQL Federation libraries
 try:
-    from ariadne import make_executable_schema, load_schema_from_path
+    import strawberry
+    from ariadne import load_schema_from_path, make_executable_schema
     from ariadne.asgi import GraphQL
     from ariadne_extensions import federation
     from graphql import build_schema, execute
-    import strawberry
-    from strawberry.federation import Key
     from strawberry.fastapi import GraphQLRouter
+    from strawberry.federation import Key
     GRAPHQL_FEDERATION_AVAILABLE = True
 except ImportError:
     GRAPHQL_FEDERATION_AVAILABLE = False
 
-# FastAPI and async
-from fastapi import FastAPI, Depends, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import httpx
+
+# FastAPI and async
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 # Caching and performance
 try:
-    from core.infrastructure.caching import MultiLayerCache, ContentType
+    from core.infrastructure.caching import ContentType, MultiLayerCache
     CACHING_AVAILABLE = True
 except ImportError:
     CACHING_AVAILABLE = False

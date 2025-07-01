@@ -15,14 +15,8 @@ Following Hexagonal Architecture:
 
 from .child_controller import ChildController
 from .conversation_controller import ConversationController
+from .health_controller import HealthController
 from .learning_controller import LearningController
 from .safety_controller import SafetyController
-from .health_controller import HealthController
 
-__all__ = [
-    'ChildController',
-    'ConversationController',
-    'LearningController', 
-    'SafetyController',
-    'HealthController'
-] 
+__all__ = ["ChildController", "ConversationController", "LearningController", "SafetyController", "HealthController"]

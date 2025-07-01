@@ -1,16 +1,20 @@
-from typing import Dict, List, Any, Optional
 from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional
+
 
 # Observer pattern implementation
 class Observer(ABC):
     """Abstract observer class"""
+
     @abstractmethod
-    def update(self, subject: 'Subject') -> None:
+    def update(self, subject: "Subject") -> None:
         """Update method called when subject state changes"""
         pass
 
+
 class Subject:
     """Subject class that notifies observers"""
+
     def __init__(self):
         self._observers: List[Observer] = []
         self._state: Any = None
@@ -29,12 +33,12 @@ class Subject:
         """Notify all observers of state changes"""
         for observer in self._observers:
             observer.update(self)
-    
+
     def get_state(self) -> Any:
         """Get the current state"""
         return self._state
-    
+
     def set_state(self, state: Any) -> None:
         """Set the state and notify observers"""
         self._state = state
-        self.notify() 
+        self.notify()

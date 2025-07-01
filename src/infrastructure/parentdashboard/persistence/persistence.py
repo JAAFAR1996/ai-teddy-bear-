@@ -4,16 +4,14 @@
 Auto-generated from God Class refactoring
 """
 
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
-from datetime import datetime
-import uuid
+import asyncio
+import logging
 
 # Original imports
 import os
-import asyncio
-import logging
-from typing import Dict, Any, Optional, List
-from typing import List, Dict, Optional, Any, Tuple
+import uuid
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 # Repository implementations

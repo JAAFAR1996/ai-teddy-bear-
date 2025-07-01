@@ -2,28 +2,30 @@
 # llm_service_factory.py - Enhanced version with full adapter pattern
 
 import asyncio
+import hashlib
+import json
 import logging
 from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Dict, Optional, List, Union, Any, AsyncIterator
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-import json
-import hashlib
-from collections import defaultdict
+from enum import Enum
+from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
-import openai
 import anthropic
 import google.generativeai as genai
+import openai
 import torch
+
 try:
     from transformers import AutoModelForCausalLM, AutoTokenizer
 except ImportError:
     from src.infrastructure.external_services.mock.transformers import AutoModelForCausalLM, AutoTokenizer
+
 import redis.asyncio as aioredis
 
-from src.infrastructure.config import get_config
 from src.core.domain.entities.conversation import Conversation, Message
+from src.infrastructure.config import get_config
 
 
 class LLMProvider(Enum):

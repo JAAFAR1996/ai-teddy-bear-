@@ -4,17 +4,18 @@ Factory pattern for creating and managing AI service instances
 """
 
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
 
+from src.application.services.ai.analyzers.emotion_analyzer_service import EmotionAnalyzerService
+from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer as DomainEmotionAnalyzer
+from src.application.services.ai.fallback_response_service import FallbackResponseService
 from src.application.services.ai.interfaces.ai_service_interface import IAIService
 from src.application.services.ai.models.ai_response_models import AIServiceMetrics
-from src.application.services.ai.analyzers.emotion_analyzer_service import EmotionAnalyzerService
-from src.application.services.ai.fallback_response_service import FallbackResponseService
-from src.infrastructure.config import Settings
 from src.infrastructure.caching.simple_cache_service import CacheService
-from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer as DomainEmotionAnalyzer
+from src.infrastructure.config import Settings
 
 logger = logging.getLogger(__name__)
+
 
 class EnhancedAIServiceFactory:
     """
@@ -24,20 +25,16 @@ class EnhancedAIServiceFactory:
     - Multiple provider support
     - Service lifecycle management
     """
-    
+
     _instances: Dict[str, IAIService] = {}
     _configurations: Dict[str, Dict[str, Any]] = {}
-    
+
     @classmethod
-    def register_configuration(
-        cls,
-        provider_name: str,
-        config: Dict[str, Any]
-    ) -> None:
+    def register_configuration(cls, provider_name: str, config: Dict[str, Any]) -> None:
         """Register configuration for a provider"""
         cls._configurations[provider_name] = config
         logger.info(f"📝 Configuration registered for provider: {provider_name}")
-    
+
     @classmethod
     def create_service(
         cls,
@@ -45,166 +42,158 @@ class EnhancedAIServiceFactory:
         settings: Settings,
         cache_service: CacheService,
         domain_emotion_analyzer: Optional[DomainEmotionAnalyzer] = None,
-        force_new: bool = False
+        force_new: bool = False,
     ) -> IAIService:
         """
         🚀 Create enhanced AI service based on provider with full dependency injection
-        
+
         Args:
             provider: Provider name ('openai', 'openai_modern', 'mock')
             settings: Application settings
             cache_service: Caching service instance
             domain_emotion_analyzer: Optional domain emotion analyzer
             force_new: Force creation of new instance
-            
+
         Returns:
             IAIService: Configured AI service instance
         """
-        
+
         # Check for existing instance unless force_new is True
         cache_key = f"{provider}_{id(settings)}"
         if not force_new and cache_key in cls._instances:
             logger.info(f"♻️ Reusing existing AI service instance for {provider}")
             return cls._instances[cache_key]
-        
+
         try:
             # Create emotion analyzer service
             emotion_analyzer = EmotionAnalyzerService(domain_emotion_analyzer)
-            
+
             # Create fallback response service
             fallback_service = FallbackResponseService()
-            
+
             # Create service based on provider
             if provider in ["openai", "openai_modern"]:
                 service = cls._create_openai_service(
                     settings=settings,
                     cache_service=cache_service,
                     emotion_analyzer=emotion_analyzer,
-                    fallback_service=fallback_service
+                    fallback_service=fallback_service,
                 )
             elif provider == "mock":
                 service = cls._create_mock_service(
                     settings=settings,
                     cache_service=cache_service,
                     emotion_analyzer=emotion_analyzer,
-                    fallback_service=fallback_service
+                    fallback_service=fallback_service,
                 )
             else:
                 raise ValueError(f"Unknown AI provider: {provider}")
-            
+
             # Cache the instance
             cls._instances[cache_key] = service
-            
+
             logger.info(f"✅ AI service created successfully for provider: {provider}")
             return service
-            
+
         except Exception as e:
             logger.error(f"❌ Failed to create AI service for provider {provider}: {str(e)}")
             raise
-    
+
     @classmethod
     def _create_openai_service(
         cls,
         settings: Settings,
         cache_service: CacheService,
         emotion_analyzer: EmotionAnalyzerService,
-        fallback_service: FallbackResponseService
+        fallback_service: FallbackResponseService,
     ) -> IAIService:
         """Create OpenAI service with all dependencies"""
         # Import here to avoid circular imports and allow dynamic loading
         try:
             from src.infrastructure.external_services.openai_client import OpenAIClient
-            
+
             # Create OpenAI client
             openai_client = OpenAIClient(settings)
-            
+
             # Create wrapper service
             return OpenAIServiceWrapper(
                 client=openai_client,
                 cache_service=cache_service,
                 emotion_analyzer=emotion_analyzer,
                 fallback_service=fallback_service,
-                settings=settings
+                settings=settings,
             )
-            
+
         except ImportError as e:
             logger.warning(f"⚠️ OpenAI dependencies not available, creating fallback service: {e}")
-            return cls._create_fallback_only_service(
-                settings, cache_service, emotion_analyzer, fallback_service
-            )
-    
+            return cls._create_fallback_only_service(settings, cache_service, emotion_analyzer, fallback_service)
+
     @classmethod
     def _create_mock_service(
         cls,
         settings: Settings,
         cache_service: CacheService,
         emotion_analyzer: EmotionAnalyzerService,
-        fallback_service: FallbackResponseService
+        fallback_service: FallbackResponseService,
     ) -> IAIService:
         """Create mock service for testing"""
         return MockAIService(
-            cache_service=cache_service,
-            emotion_analyzer=emotion_analyzer,
-            fallback_service=fallback_service
+            cache_service=cache_service, emotion_analyzer=emotion_analyzer, fallback_service=fallback_service
         )
-    
+
     @classmethod
     def _create_fallback_only_service(
         cls,
         settings: Settings,
         cache_service: CacheService,
         emotion_analyzer: EmotionAnalyzerService,
-        fallback_service: FallbackResponseService
+        fallback_service: FallbackResponseService,
     ) -> IAIService:
         """Create service that only uses fallback responses"""
         return FallbackOnlyAIService(
-            cache_service=cache_service,
-            emotion_analyzer=emotion_analyzer,
-            fallback_service=fallback_service
+            cache_service=cache_service, emotion_analyzer=emotion_analyzer, fallback_service=fallback_service
         )
-    
+
     @classmethod
     def get_available_providers(cls) -> List[str]:
         """Get list of available AI providers"""
         return ["openai", "openai_modern", "mock", "fallback_only"]
-    
+
     @classmethod
     def clear_instances(cls) -> None:
         """Clear all cached service instances"""
         cls._instances.clear()
         logger.info("🧹 AI service instances cache cleared")
-    
+
     @classmethod
     def get_service_metrics(cls) -> Dict[str, Any]:
         """Get metrics for all cached service instances"""
-        metrics = {
-            "total_instances": len(cls._instances),
-            "instance_details": {}
-        }
-        
+        metrics = {"total_instances": len(cls._instances), "instance_details": {}}
+
         for key, service in cls._instances.items():
             try:
-                if hasattr(service, 'get_performance_metrics'):
+                if hasattr(service, "get_performance_metrics"):
                     service_metrics = service.get_performance_metrics()
                     metrics["instance_details"][key] = service_metrics
             except Exception as e:
                 logger.warning(f"Failed to get metrics for service {key}: {e}")
-        
+
         return metrics
 
 
 # Service wrapper implementations
 
+
 class OpenAIServiceWrapper(IAIService):
     """Wrapper for OpenAI service with enhanced features"""
-    
+
     def __init__(
-        self, 
-        client, 
+        self,
+        client,
         cache_service: CacheService,
         emotion_analyzer: EmotionAnalyzerService,
         fallback_service: FallbackResponseService,
-        settings: Settings
+        settings: Settings,
     ):
         self.client = client
         self.cache = cache_service
@@ -212,11 +201,13 @@ class OpenAIServiceWrapper(IAIService):
         self.fallback_service = fallback_service
         self.settings = settings
         self.metrics = AIServiceMetrics()
-    
-    async def generate_response(self, message: str, child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None):
+
+    async def generate_response(
+        self, message: str, child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None
+    ):
         """Generate response using OpenAI"""
         self.metrics.total_requests += 1
-        
+
         try:
             # Try to use the actual OpenAI client
             response = await self.client.generate_response(message, child, session_id, context)
@@ -225,10 +216,8 @@ class OpenAIServiceWrapper(IAIService):
             logger.error(f"OpenAI service failed: {e}")
             self.metrics.total_errors += 1
             # Fallback to fallback service
-            return await self.fallback_service.create_generic_fallback(
-                message, child, session_id or "unknown", str(e)
-            )
-    
+            return await self.fallback_service.create_generic_fallback(message, child, session_id or "unknown", str(e))
+
     async def analyze_emotion(self, message: str) -> str:
         """Analyze emotion using emotion analyzer"""
         try:
@@ -237,7 +226,7 @@ class OpenAIServiceWrapper(IAIService):
         except Exception as e:
             logger.warning(f"Emotion analysis failed: {e}")
             return "neutral"
-    
+
     async def categorize_message(self, message: str) -> str:
         """Categorize message"""
         # Simple categorization logic
@@ -250,7 +239,7 @@ class OpenAIServiceWrapper(IAIService):
             return "question"
         else:
             return "general_conversation"
-    
+
     async def get_performance_metrics(self) -> AIServiceMetrics:
         """Get performance metrics"""
         return self.metrics
@@ -258,19 +247,21 @@ class OpenAIServiceWrapper(IAIService):
 
 class MockAIService(IAIService):
     """Mock AI service for testing"""
-    
+
     def __init__(self, cache_service, emotion_analyzer, fallback_service):
         self.cache = cache_service
         self.emotion_analyzer = emotion_analyzer
         self.fallback_service = fallback_service
         self.metrics = AIServiceMetrics()
-    
-    async def generate_response(self, message: str, child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None):
+
+    async def generate_response(
+        self, message: str, child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None
+    ):
         """Generate mock response"""
         from src.application.services.ai.models.ai_response_models import AIResponseModel
-        
+
         self.metrics.total_requests += 1
-        
+
         return AIResponseModel(
             text=f"مرحباً {child.name}! هذا رد تجريبي. قلت: {message[:50]}",
             emotion="friendly",
@@ -279,17 +270,17 @@ class MockAIService(IAIService):
             session_id=session_id or "mock_session",
             confidence=0.9,
             processing_time_ms=50,
-            model_used="mock_model"
+            model_used="mock_model",
         )
-    
+
     async def analyze_emotion(self, message: str) -> str:
         """Mock emotion analysis"""
         return "happy"
-    
+
     async def categorize_message(self, message: str) -> str:
         """Mock message categorization"""
         return "general_conversation"
-    
+
     async def get_performance_metrics(self) -> AIServiceMetrics:
         """Get mock metrics"""
         return self.metrics
@@ -297,21 +288,23 @@ class MockAIService(IAIService):
 
 class FallbackOnlyAIService(IAIService):
     """Service that only provides fallback responses"""
-    
+
     def __init__(self, cache_service, emotion_analyzer, fallback_service):
         self.cache = cache_service
         self.emotion_analyzer = emotion_analyzer
         self.fallback_service = fallback_service
         self.metrics = AIServiceMetrics()
-    
-    async def generate_response(self, message: str, child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None):
+
+    async def generate_response(
+        self, message: str, child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None
+    ):
         """Generate fallback response only"""
         self.metrics.total_requests += 1
-        
+
         return await self.fallback_service.create_generic_fallback(
             message, child, session_id or "fallback_session", "service_unavailable"
         )
-    
+
     async def analyze_emotion(self, message: str) -> str:
         """Basic emotion analysis"""
         try:
@@ -319,15 +312,15 @@ class FallbackOnlyAIService(IAIService):
             return result.primary_emotion
         except Exception:
             return "neutral"
-    
+
     async def categorize_message(self, message: str) -> str:
         """Basic message categorization"""
         return "general_conversation"
-    
+
     async def get_performance_metrics(self) -> AIServiceMetrics:
         """Get metrics"""
         return self.metrics
 
 
 # Re-export for compatibility
-AIServiceFactory = EnhancedAIServiceFactory 
+AIServiceFactory = EnhancedAIServiceFactory

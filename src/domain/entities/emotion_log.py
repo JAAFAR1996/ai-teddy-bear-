@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Optional
-from sqlmodel import SQLModel, Field, Index
+
+from sqlmodel import Field, Index, SQLModel
+
 
 class EmotionLog(SQLModel, table=True):
     __tablename__ = "emotions_log"
@@ -18,10 +20,10 @@ class EmotionLog(SQLModel, table=True):
 
     def to_dict(self) -> Any:
         return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'timestamp': self.timestamp.isoformat(),
-            'emotion_type': self.emotion_type,
-            'source': self.source,
-            'score': self.score
-        } 
+            "id": self.id,
+            "user_id": self.user_id,
+            "timestamp": self.timestamp.isoformat(),
+            "emotion_type": self.emotion_type,
+            "source": self.source,
+            "score": self.score,
+        }

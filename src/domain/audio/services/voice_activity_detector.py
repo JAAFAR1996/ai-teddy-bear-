@@ -5,8 +5,9 @@ Detects speech in audio streams
 
 import logging
 from typing import List
-import webrtcvad
+
 import numpy as np
+import webrtcvad
 
 from ..models.voice_models import AudioConfig
 
@@ -33,7 +34,7 @@ class VoiceActivityDetector:
         """Get speech segments from audio"""
         try:
             # Convert to bytes
-            audio_bytes = audio_data.astype('int16').tobytes()
+            audio_bytes = audio_data.astype("int16").tobytes()
 
             # Frame size
             frame_size = int(self.sample_rate * self.frame_duration / 1000)
@@ -42,7 +43,7 @@ class VoiceActivityDetector:
             speech_start = None
 
             for i in range(0, len(audio_data) - frame_size, frame_size):
-                frame = audio_bytes[i*2:(i+frame_size)*2]
+                frame = audio_bytes[i * 2 : (i + frame_size) * 2]
 
                 if self.is_speech(frame):
                     if speech_start is None:
@@ -68,12 +69,12 @@ class VoiceActivityDetector:
             segments = self.get_speech_segments(audio_data)
             if not segments:
                 return 0.0
-                
+
             speech_duration = sum(end - start for start, end in segments)
             total_duration = len(audio_data)
-            
+
             return speech_duration / total_duration if total_duration > 0 else 0.0
-            
+
         except Exception as e:
             self.logger.error(f"Speech ratio calculation error: {e}")
-            return 0.0 
+            return 0.0

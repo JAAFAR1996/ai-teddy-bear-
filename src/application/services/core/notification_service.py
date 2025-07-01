@@ -5,23 +5,23 @@
 """
 
 import asyncio
-import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
-from pathlib import Path
 import json
+import logging
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 import structlog
 from jinja2 import Template
 
 # استيراد النماذج من قاعدة البيانات
 try:
-    from database import db_manager, SessionRecord, Emotion, ChildProfile, EmotionSummary
+    from database import ChildProfile, Emotion, EmotionSummary, SessionRecord, db_manager
 except ImportError:
     # Fallback للبنية البديلة
-    from ...database import db_manager, SessionRecord, Emotion, ChildProfile, EmotionSummary
+    from ...database import ChildProfile, Emotion, EmotionSummary, SessionRecord, db_manager
 
 # إعداد logger مهيكل
 logger = structlog.get_logger(__name__)
@@ -407,7 +407,8 @@ class NotificationService:
     async def _record_notification_success(self, notification: NotificationData, channel: str):
         """تسجيل نجاح إرسال الإشعار"""
         try:
-            from .rate_monitor_service import recexcept Exception as e:
+            from .rate_monitor_service import Exception as e:
+            from .rate_monitor_service import recexcept
     logger.error(f"Error in operation: {e}", exc_info=True)ification_sent
             await record_notification_sent(
                 notification.parent_email,

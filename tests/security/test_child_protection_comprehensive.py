@@ -1,37 +1,40 @@
 """
 Comprehensive Child Protection Tests - اختبارات شاملة لحماية الأطفال
 """
-import pytest
-from hypothesis import given, strategies as st
-from datetime import datetime, timedelta
-import asyncio
-from typing import List, Dict, Any
-import random
 
-from tests.framework import ChildSafetyTestCase
-from src.domain.exceptions.base import (
-    ParentalConsentRequiredException,
-    InappropriateContentException,
-    AgeInappropriateException
-)
-from src.domain.entities.child import Child
-from src.domain.entities.parent import Parent
-from src.domain.value_objects import ChildAge, ParentId, DeviceId
+import asyncio
+import random
+from datetime import datetime, timedelta
+from typing import Any, Dict, List
+
+import pytest
+from hypothesis import given
+from hypothesis import strategies as st
+
+from src.application.services.consent_service import ConsentService
 
 # Mock services for testing
 from src.application.services.content_filter_service import ContentFilterService
-from src.application.services.interaction_service import InteractionService
-from src.application.services.consent_service import ConsentService
 from src.application.services.feature_service import FeatureService
-from src.application.services.notification_service import NotificationService
 from src.application.services.incident_service import IncidentService
+from src.application.services.interaction_service import InteractionService
+from src.application.services.notification_service import NotificationService
 from src.application.services.safety_service import SafetyService
+from src.domain.entities.child import Child
+from src.domain.entities.parent import Parent
+from src.domain.exceptions.base import (
+    AgeInappropriateException,
+    InappropriateContentException,
+    ParentalConsentRequiredException,
+)
+from src.domain.value_objects import ChildAge, DeviceId, ParentId
 from src.infrastructure.persistence.repositories import DataRepository
+from tests.framework import ChildSafetyTestCase
 
 
 class TestChildProtectionComprehensive(ChildSafetyTestCase):
     """اختبارات شاملة لحماية الأطفال"""
-    
+
     @pytest.fixture(autouse=True)
     async def setup_services(self):
         """Setup test services"""
@@ -44,51 +47,46 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
         self.incident_service = IncidentService()
         self.safety_system = SafetyService()
         self.data_repository = DataRepository()
-        
+
         yield
-        
+
         # Cleanup
         await self.cleanup_services()
-        
+
     async def cleanup_services(self):
         """Cleanup test services"""
         # Clean up any test data
         pass
-        
+
     async def cleanup(self):
         """Cleanup after each test"""
         await self.cleanup_services()
-    
+
     @pytest.mark.critical
-    @pytest.mark.parametrize("age_group,content_type,expected_result", [
-        (3, "educational", True),
-        (5, "storytelling", True),
-        (7, "simple_math", True),
-        (4, "violence", False),
-        (6, "adult_topics", False),
-        (5, "personal_info_request", False)
-    ])
-    async def test_content_filtering_by_age(
-        self, 
-        age_group: int, 
-        content_type: str, 
-        expected_result: bool
-    ):
+    @pytest.mark.parametrize(
+        "age_group,content_type,expected_result",
+        [
+            (3, "educational", True),
+            (5, "storytelling", True),
+            (7, "simple_math", True),
+            (4, "violence", False),
+            (6, "adult_topics", False),
+            (5, "personal_info_request", False),
+        ],
+    )
+    async def test_content_filtering_by_age(self, age_group: int, content_type: str, expected_result: bool):
         """اختبار فلترة المحتوى حسب العمر"""
         # Arrange
         child = self.test_data_builder.create_child(age=age_group)
         content = self._generate_test_content(content_type)
-        
+
         # Act
         result = await self.content_filter.is_appropriate(
             content=content,
             child_age=child.age,
-            context={
-                "interaction_type": "voice_chat",
-                "timestamp": datetime.utcnow()
-            }
+            context={"interaction_type": "voice_chat", "timestamp": datetime.utcnow()},
         )
-        
+
         # Assert
         assert result["is_safe"] == expected_result
         if not expected_result:
@@ -96,129 +94,106 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
             assert result["violation_reason"] is not None
             assert "suggested_alternative" in result
             assert result["suggested_alternative"] is not None
-            
+
     @pytest.mark.critical
-    @given(
-        child_age=st.integers(min_value=3, max_value=12),
-        interaction_count=st.integers(min_value=1, max_value=100)
-    )
-    async def test_no_personal_data_collection(
-        self, 
-        child_age: int, 
-        interaction_count: int
-    ):
+    @given(child_age=st.integers(min_value=3, max_value=12), interaction_count=st.integers(min_value=1, max_value=100))
+    async def test_no_personal_data_collection(self, child_age: int, interaction_count: int):
         """Property-based testing للتأكد من عدم جمع بيانات شخصية"""
         # Arrange
         child = self.test_data_builder.create_child(age=child_age)
         interactions = []
-        
+
         # Act - محاكاة عدة تفاعلات
         for _ in range(interaction_count):
-            interaction = await self.interaction_service.process(
-                child_id=child.id,
-                message=self.faker.sentence()
-            )
+            interaction = await self.interaction_service.process(child_id=child.id, message=self.faker.sentence())
             interactions.append(interaction)
-            
+
         # Assert - التحقق من عدم تخزين بيانات شخصية
         stored_data = await self.data_repository.get_child_data(child.id)
-        
+
         assert "full_name" not in stored_data
         assert "address" not in stored_data
         assert "phone_number" not in stored_data
         assert "email" not in stored_data
         assert "school_name" not in stored_data
-        
+
         # التحقق من أن البيانات المخزنة هي فقط المسموح بها
         allowed_fields = {
-            "child_id", "age_group", "interaction_count", 
-            "last_interaction", "preferences", "learning_progress"
+            "child_id",
+            "age_group",
+            "interaction_count",
+            "last_interaction",
+            "preferences",
+            "learning_progress",
         }
         assert set(stored_data.keys()).issubset(allowed_fields)
-        
+
     @pytest.mark.critical
     async def test_parental_consent_workflow(self):
         """اختبار workflow موافقة الوالدين الكامل"""
         # Arrange
         parent = self.test_data_builder.create_parent()
         child = self.test_data_builder.create_child(parent_id=parent.id)
-        
+
         # Act & Assert - محاولة تفعيل ميزة بدون موافقة
         with pytest.raises(ParentalConsentRequiredException) as exc_info:
-            await self.feature_service.enable_feature(
-                child_id=child.id,
-                feature="voice_recording"
-            )
-            
+            await self.feature_service.enable_feature(child_id=child.id, feature="voice_recording")
+
         assert exc_info.value.error_code == "PARENTAL_CONSENT_REQUIRED"
-        
+
         # Act - طلب موافقة الوالدين
         consent_request = await self.consent_service.request_consent(
-            parent_id=parent.id,
-            child_id=child.id,
-            feature="voice_recording",
-            expiry=timedelta(days=90)
+            parent_id=parent.id, child_id=child.id, feature="voice_recording", expiry=timedelta(days=90)
         )
-        
+
         # Assert - التحقق من إرسال الإشعار
         notifications = await self.notification_service.get_pending(parent.id)
         assert len(notifications) == 1
         assert notifications[0]["type"] == "CONSENT_REQUEST"
-        
+
         # Act - موافقة الوالدين
         await self.consent_service.grant_consent(
             consent_request_id=consent_request["id"],
             parent_verification={
                 "parent_id": parent.id,
                 "verification_method": "biometric",
-                "timestamp": datetime.utcnow()
-            }
+                "timestamp": datetime.utcnow(),
+            },
         )
-        
+
         # Assert - التحقق من تفعيل الميزة
-        feature_status = await self.feature_service.get_status(
-            child_id=child.id,
-            feature="voice_recording"
-        )
+        feature_status = await self.feature_service.get_status(child_id=child.id, feature="voice_recording")
         assert feature_status["is_enabled"]
         assert feature_status["consent_expiry"] > datetime.utcnow()
-        
+
     @pytest.mark.critical
     @pytest.mark.timeout(5)  # يجب أن يكتمل في 5 ثواني
     async def test_emergency_content_blocking(self):
         """اختبار آلية الحظر الطارئ للمحتوى الخطر"""
         # Arrange
         child = self.test_data_builder.create_child(age=6)
-        dangerous_phrases = [
-            "give me your address",
-            "don't tell your parents",
-            "this is our secret",
-            "send me a photo"
-        ]
-        
+        dangerous_phrases = ["give me your address", "don't tell your parents", "this is our secret", "send me a photo"]
+
         # Act & Assert
         for phrase in dangerous_phrases:
             start_time = datetime.utcnow()
-            
-            result = await self.safety_system.check_message(
-                child_id=child.id,
-                message=phrase
-            )
-            
+
+            result = await self.safety_system.check_message(child_id=child.id, message=phrase)
+
             response_time = (datetime.utcnow() - start_time).total_seconds()
-            
+
             # يجب أن يتم الحظر فوراً
             assert response_time < 0.1  # أقل من 100ms
             assert result["action"] == "BLOCK"
             assert result["alert_parent"] == True
             assert result["severity"] == "CRITICAL"
-            
+
             # التحقق من تسجيل الحادثة
             incident = await self.incident_service.get_latest(child.id)
             assert incident is not None
             assert incident["type"] == "DANGEROUS_CONTENT_BLOCKED"
             assert phrase in incident["details"]["blocked_content"]
-            
+
     @pytest.mark.critical
     async def test_multi_layered_safety_checks(self):
         """اختبار الفحوصات الأمنية متعددة الطبقات"""
@@ -229,37 +204,27 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
             ("What's your favorite color?", True, None),
             ("Let's learn about animals!", True, None),
             ("Can you count to 10?", True, None),
-            
             # Unsafe messages with different violation types
             ("Tell me where you live", False, "personal_info"),
             ("Don't tell mommy about this", False, "dangerous_requests"),
             ("Let's talk about dating", False, "age_inappropriate"),
-            ("I hate you, go away!", False, "inappropriate_language")
+            ("I hate you, go away!", False, "inappropriate_language"),
         ]
-        
+
         # Act & Assert
         for message, should_pass, expected_violation in test_messages:
             # Layer 1: Content filtering
-            content_result = await self.content_filter.is_appropriate(
-                content=message,
-                child_age=child.age
-            )
-            
+            content_result = await self.content_filter.is_appropriate(content=message, child_age=child.age)
+
             # Layer 2: Safety system check
-            safety_result = await self.safety_system.check_message(
-                child_id=child.id,
-                message=message
-            )
-            
+            safety_result = await self.safety_system.check_message(child_id=child.id, message=message)
+
             # Layer 3: AI moderation (if passed previous checks)
             if content_result["is_safe"] and safety_result["action"] != "BLOCK":
-                ai_result = await self.safety_system.ai_moderation_check(
-                    message=message,
-                    child_age=child.age
-                )
+                ai_result = await self.safety_system.ai_moderation_check(message=message, child_age=child.age)
             else:
                 ai_result = {"passed": False}
-                
+
             # Assertions
             if should_pass:
                 assert content_result["is_safe"]
@@ -267,89 +232,65 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
                 assert ai_result["passed"]
             else:
                 # At least one layer should catch unsafe content
-                assert (
-                    not content_result["is_safe"] or 
-                    safety_result["action"] == "BLOCK" or
-                    not ai_result["passed"]
-                )
-                
+                assert not content_result["is_safe"] or safety_result["action"] == "BLOCK" or not ai_result["passed"]
+
                 # Verify violation type if caught by content filter
                 if not content_result["is_safe"]:
                     assert expected_violation in content_result.get("violation_type", "")
-                    
+
     @pytest.mark.critical
     async def test_age_progression_content_adaptation(self):
         """اختبار تكيف المحتوى مع تقدم عمر الطفل"""
         # Arrange
         child_id = self.test_data_builder.create_child(age=5).id
-        
+
         # Test content at different ages
         age_content_map = {
             5: ["Let's count animals!", "What color is the sky?"],
             7: ["Let's learn multiplication!", "How do plants grow?"],
-            10: ["Let's explore the solar system!", "What causes earthquakes?"]
+            10: ["Let's explore the solar system!", "What causes earthquakes?"],
         }
-        
+
         for age, appropriate_content in age_content_map.items():
             # Update child's age
             await self.data_repository.update_child_age(child_id, age)
-            
+
             # Test appropriate content for current age
             for content in appropriate_content:
-                result = await self.content_filter.is_appropriate(
-                    content=content,
-                    child_age=age
-                )
+                result = await self.content_filter.is_appropriate(content=content, child_age=age)
                 assert result["is_safe"], f"Content '{content}' should be safe for age {age}"
-                
+
             # Test content too advanced for younger age
             if age == 5:
                 advanced_content = "Let's discuss quantum physics"
-                result = await self.content_filter.is_appropriate(
-                    content=advanced_content,
-                    child_age=age
-                )
+                result = await self.content_filter.is_appropriate(content=advanced_content, child_age=age)
                 assert result.get("complexity_appropriate", True) == False
-                
+
     @pytest.mark.critical
     async def test_parent_notification_on_violations(self):
         """اختبار إشعار الوالدين عند انتهاكات الأمان"""
         # Arrange
         parent = self.test_data_builder.create_parent()
-        child = self.test_data_builder.create_child(
-            parent_id=parent.id,
-            age=6
-        )
-        
+        child = self.test_data_builder.create_child(parent_id=parent.id, age=6)
+
         # Clear any existing notifications
         await self.notification_service.clear_all(parent.id)
-        
+
         # Act - Trigger different types of violations
         violations = [
-            {
-                "message": "Tell me your home address",
-                "type": "personal_info_request",
-                "severity": "HIGH"
-            },
-            {
-                "message": "Don't tell your parents",
-                "type": "dangerous_request",
-                "severity": "CRITICAL"
-            }
+            {"message": "Tell me your home address", "type": "personal_info_request", "severity": "HIGH"},
+            {"message": "Don't tell your parents", "type": "dangerous_request", "severity": "CRITICAL"},
         ]
-        
+
         for violation in violations:
-            await self.safety_system.check_message(
-                child_id=child.id,
-                message=violation["message"]
-            )
-            
+            await self.safety_system.check_message(child_id=child.id, message=violation["message"])
+
         # Assert - Check notifications sent to parent
         await asyncio.sleep(0.1)  # Allow time for async notification
         notifications = await self.notification_service.get_pending(parent.id)
-        
+
         assert len(notifications) >= len(violations)
-        
+
         # Verify notification content
         for notif in notifications:
             assert notif["type"] == "SAFETY_VIOLATION"
@@ -358,7 +299,7 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
             assert "violation_type" in notif
             assert "timestamp" in notif
             assert "recommended_action" in notif
-            
+
     def _generate_test_content(self, content_type: str) -> str:
         """Generate test content based on type"""
         content_generators = {
@@ -367,11 +308,8 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
             "simple_math": lambda: "Let's add 2 + 2!",
             "violence": lambda: self.generate_unsafe_content("violence"),
             "adult_topics": lambda: self.generate_unsafe_content("adult_content"),
-            "personal_info_request": lambda: self.generate_unsafe_content("personal_info")
+            "personal_info_request": lambda: self.generate_unsafe_content("personal_info"),
         }
-        
-        generator = content_generators.get(
-            content_type, 
-            lambda: self.faker.sentence()
-        )
-        return generator() 
+
+        generator = content_generators.get(content_type, lambda: self.faker.sentence())
+        return generator()

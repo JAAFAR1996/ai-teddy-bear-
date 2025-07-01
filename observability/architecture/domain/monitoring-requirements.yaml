@@ -1,0 +1,150 @@
+# Domain Layer - AI Teddy Bear Monitoring Requirements
+# This defines WHAT we need to monitor (Business Logic)
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-domain-requirements
+  namespace: ai-teddy-observability
+  labels:
+    layer: domain
+    component: business-requirements
+data:
+  business-requirements.yaml: |
+    # AI Teddy Bear Business Monitoring Requirements
+    
+    application_metrics:
+      # Child Interaction Metrics (Core Business)
+      child_interactions:
+        - conversation_duration_seconds
+        - conversation_count_total
+        - emotional_state_changes_total
+        - learning_progress_percentage
+        - daily_interaction_time_seconds
+        - safety_alerts_total
+        
+      # AI Response Quality (Business Critical)
+      ai_quality:
+        - response_generation_time_seconds
+        - response_appropriateness_score
+        - safety_filter_triggers_total
+        - model_accuracy_percentage
+        - fallback_responses_total
+        
+      # Parent Dashboard Usage
+      parent_engagement:
+        - dashboard_views_total
+        - report_downloads_total
+        - settings_changes_total
+        - alert_acknowledgments_total
+    
+    infrastructure_health:
+      # System Performance (Affects Business)
+      performance:
+        - api_response_time_seconds
+        - database_query_duration_seconds
+        - cache_hit_ratio_percentage
+        - concurrent_users_active
+        
+      # Reliability (Business Continuity)
+      reliability:
+        - service_uptime_percentage
+        - error_rate_percentage
+        - data_loss_incidents_total
+        - backup_success_rate
+    
+    security_monitoring:
+      # Child Safety (Highest Priority)
+      child_safety:
+        - inappropriate_content_blocked_total
+        - privacy_violations_detected_total
+        - unauthorized_access_attempts_total
+        - data_encryption_failures_total
+        
+      # Compliance (Legal Requirements)
+      compliance:
+        - gdpr_requests_processed_total
+        - coppa_violations_detected_total
+        - audit_log_completeness_percentage
+        - data_retention_compliance_score
+    
+    alerting_priorities:
+      critical:
+        - child_safety_violations
+        - system_downtime
+        - data_breaches
+        - privacy_violations
+        
+      warning:
+        - performance_degradation
+        - high_error_rates
+        - storage_capacity_low
+        - certificate_expiry
+        
+      info:
+        - deployment_completions
+        - backup_status
+        - usage_statistics
+        - maintenance_windows
+
+---
+apiVersion: v1  
+kind: ConfigMap
+metadata:
+  name: monitoring-business-rules
+  namespace: ai-teddy-observability
+  labels:
+    layer: domain
+    component: business-rules
+data:
+  business-rules.yaml: |
+    # Business Rules for Monitoring
+    
+    thresholds:
+      child_safety:
+        max_inappropriate_content_per_day: 0
+        max_privacy_violations_per_hour: 0
+        max_unauthorized_access_per_minute: 3
+        
+      performance:
+        max_api_response_time_seconds: 2.0
+        min_uptime_percentage: 99.9
+        max_error_rate_percentage: 0.1
+        max_database_query_time_seconds: 1.0
+        
+      engagement:
+        min_daily_active_children: 10
+        max_session_duration_minutes: 60
+        min_parent_dashboard_usage_per_week: 1
+    
+    escalation_rules:
+      immediate_escalation:
+        - child_safety_violations
+        - privacy_data_breaches
+        - system_complete_failure
+        
+      hourly_escalation:
+        - performance_degradation_sustained
+        - high_error_rates_sustained
+        - security_incidents_multiple
+        
+      daily_escalation:
+        - capacity_warnings
+        - compliance_drift
+        - business_metric_anomalies
+    
+    retention_policies:
+      child_interaction_data:
+        metrics_retention: "90d"
+        logs_retention: "30d"
+        compliance_logs: "7y"
+        
+      system_metrics:
+        high_frequency: "7d"
+        daily_aggregates: "1y"
+        weekly_summaries: "3y"
+        
+      security_logs:
+        access_logs: "1y"
+        audit_trail: "7y"
+        incident_reports: "permanent" 

@@ -1,6 +1,5 @@
-from typing import Dict, List, Any, Optional
-
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,13 +9,15 @@ logger = logging.getLogger(__name__)
 سكريبت إعداد وتشغيل مشروع AI Teddy Bear
 """
 import structlog
+
 logger = structlog.get_logger(__name__)
 
 
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
+
 
 def create_directories() -> Any:
     """إنشاء المجلدات المطلوبة"""

@@ -4,10 +4,11 @@ Handles OpenAI Whisper model integration
 """
 
 import logging
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 import numpy as np
-import whisper
 import torch
+import whisper
 
 
 class WhisperClient:
@@ -18,7 +19,7 @@ class WhisperClient:
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = None
-        
+
         # Load model
         self._load_model()
 
@@ -32,10 +33,7 @@ class WhisperClient:
             self.model = None
 
     async def transcribe_audio(
-        self,
-        audio_data: np.ndarray,
-        language: Optional[str] = None,
-        task: str = "transcribe"
+        self, audio_data: np.ndarray, language: Optional[str] = None, task: str = "transcribe"
     ) -> Optional[Dict[str, Any]]:
         """Transcribe audio using Whisper"""
         try:
@@ -44,18 +42,13 @@ class WhisperClient:
                 return None
 
             # Transcribe
-            result = self.model.transcribe(
-                audio_data,
-                language=language,
-                task=task,
-                verbose=False
-            )
+            result = self.model.transcribe(audio_data, language=language, task=task, verbose=False)
 
             return {
                 "text": result["text"].strip(),
                 "language": result.get("language"),
                 "segments": result.get("segments", []),
-                "confidence": self._calculate_confidence(result)
+                "confidence": self._calculate_confidence(result),
             }
 
         except Exception as e:
@@ -72,7 +65,7 @@ class WhisperClient:
             # Average log probability from segments
             total_prob = sum(segment.get("avg_logprob", -1.0) for segment in segments)
             avg_logprob = total_prob / len(segments)
-            
+
             # Convert to confidence (rough approximation)
             confidence = max(0.0, min(1.0, (avg_logprob + 1.0) / 1.0))
             return confidence
@@ -90,7 +83,7 @@ class WhisperClient:
             audio_segment = whisper.pad_or_trim(audio_data)
             mel = whisper.log_mel_spectrogram(audio_segment).to(self.model.device)
             _, probs = self.model.detect_language(mel)
-            
+
             # Get most likely language
             detected_language = max(probs, key=probs.get)
             return detected_language
@@ -107,7 +100,7 @@ class WhisperClient:
         """Reload model with different size"""
         if model_size:
             self.model_size = model_size
-        
+
         self._load_model()
 
     def get_model_info(self) -> Dict[str, Any]:
@@ -116,5 +109,5 @@ class WhisperClient:
             "model_size": self.model_size,
             "device": self.device,
             "available": self.is_available(),
-            "model_loaded": self.model is not None
-        } 
+            "model_loaded": self.model is not None,
+        }

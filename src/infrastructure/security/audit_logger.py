@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 """
 Comprehensive Audit Logging System
@@ -15,11 +15,11 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
 import structlog
-from sqlalchemy import Column, String, DateTime, Text, Integer, Boolean, Index
-from sqlalchemy.ext.declarative import declarative_base
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+from sqlalchemy import Boolean, Column, DateTime, Index, Integer, String, Text
+from sqlalchemy.ext.declarative import declarative_base
 
 logger = structlog.get_logger()
 

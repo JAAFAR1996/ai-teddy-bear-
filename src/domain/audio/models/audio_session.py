@@ -2,12 +2,13 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Dict, Any
 from enum import Enum
+from typing import Any, Dict, Optional
 
 
 class AudioSessionType(Enum):
     """Types of audio sessions."""
+
     CONVERSATION = "conversation"
     STORY_TELLING = "story_telling"
     LEARNING = "learning"
@@ -18,15 +19,17 @@ class AudioSessionType(Enum):
 
 class AudioQualityMode(Enum):
     """Audio quality modes for different scenarios."""
-    POWER_SAVE = "power_save"      # Low quality, minimal processing
-    BALANCED = "balanced"          # Good quality, moderate processing
+
+    POWER_SAVE = "power_save"  # Low quality, minimal processing
+    BALANCED = "balanced"  # Good quality, moderate processing
     HIGH_QUALITY = "high_quality"  # Best quality, full processing
-    ADAPTIVE = "adaptive"          # Auto-adjust based on conditions
+    ADAPTIVE = "adaptive"  # Auto-adjust based on conditions
 
 
 @dataclass
 class AudioSession:
     """Audio session information."""
+
     session_id: str
     session_type: AudioSessionType
     child_id: str
@@ -69,5 +72,5 @@ class AudioSession:
             "total_recordings": self.total_recordings,
             "total_duration": self.total_duration,
             "quality_mode": self.quality_mode.value,
-            "metadata": self.metadata
-        } 
+            "metadata": self.metadata,
+        }

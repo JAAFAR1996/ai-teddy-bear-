@@ -2,36 +2,40 @@
 Memory Domain Models - Core memory entities and value objects
 """
 
-import numpy as np
-from enum import Enum
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 
 class MemoryType(Enum):
     """Types of memory storage"""
-    SHORT_TERM = "short_term"      # Current session
-    WORKING = "working"            # Active context (last few interactions)
-    LONG_TERM = "long_term"        # Persistent memories
-    EPISODIC = "episodic"          # Specific events/experiences
-    SEMANTIC = "semantic"          # Facts and knowledge
-    EMOTIONAL = "emotional"        # Emotional associations
-    PROCEDURAL = "procedural"      # How to do things
+
+    SHORT_TERM = "short_term"  # Current session
+    WORKING = "working"  # Active context (last few interactions)
+    LONG_TERM = "long_term"  # Persistent memories
+    EPISODIC = "episodic"  # Specific events/experiences
+    SEMANTIC = "semantic"  # Facts and knowledge
+    EMOTIONAL = "emotional"  # Emotional associations
+    PROCEDURAL = "procedural"  # How to do things
 
 
 class MemoryImportance(Enum):
     """Importance levels for memories"""
-    CRITICAL = 5    # Never forget (safety, important facts)
-    HIGH = 4        # Important memories (learning milestones)
-    MEDIUM = 3      # Regular interactions
-    LOW = 2         # Casual conversations
-    TRIVIAL = 1     # Can be forgotten
+
+    CRITICAL = 5  # Never forget (safety, important facts)
+    HIGH = 4  # Important memories (learning milestones)
+    MEDIUM = 3  # Regular interactions
+    LOW = 2  # Casual conversations
+    TRIVIAL = 1  # Can be forgotten
 
 
 @dataclass
 class Memory:
     """Individual memory unit - Core domain entity"""
+
     id: str
     child_id: str
     content: str
@@ -67,7 +71,7 @@ class Memory:
         # Importance factor
         importance_factor = self.importance.value / 5
 
-        return (time_factor * 0.4 + access_factor * 0.3 + importance_factor * 0.3)
+        return time_factor * 0.4 + access_factor * 0.3 + importance_factor * 0.3
 
     def is_strong(self) -> bool:
         """Check if memory is strong enough to persist"""
@@ -75,7 +79,4 @@ class Memory:
 
     def should_consolidate(self) -> bool:
         """Check if memory should be consolidated"""
-        return (
-            self.importance.value >= MemoryImportance.MEDIUM.value and
-            self.access_count > 1
-        ) 
+        return self.importance.value >= MemoryImportance.MEDIUM.value and self.access_count > 1

@@ -1,17 +1,18 @@
-from typing import Dict, List, Any, Optional
-
 import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 import structlog
+
 logger = structlog.get_logger(__name__)
 
-import sounddevice as sd
-from scipy.io.wavfile import write
 from pathlib import Path
+
+import sounddevice as sd
 from pydub import AudioSegment
 from pydub.playback import play
+from scipy.io.wavfile import write
 
 # ====== كود تسجيل الصوت وحفظه كملف WAV ======
 

@@ -1,0 +1,264 @@
+# Infrastructure Layer - Grafana Service
+# Visualization and dashboarding service
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: ai-teddy-observability
+  labels:
+    app: grafana
+    component: visualization
+    layer: infrastructure
+    service-type: dashboards
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+        component: visualization
+        layer: infrastructure
+      annotations:
+        checksum/config: "{{ checksum of grafana config }}"
+        checksum/dashboards: "{{ checksum of dashboards }}"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 472
+        fsGroup: 472
+        supplementalGroups: [0]
+      containers:
+      - name: grafana
+        image: grafana/grafana:10.1.0
+        ports:
+        - name: http-grafana
+          containerPort: 3000
+          protocol: TCP
+        env:
+        # Security Configuration
+        - name: GF_SECURITY_ADMIN_USER
+          value: admin
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: grafana-credentials
+              key: admin-password
+        - name: GF_SECURITY_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: grafana-credentials
+              key: secret-key
+        
+        # User Management
+        - name: GF_USERS_ALLOW_SIGN_UP
+          value: "false"
+        - name: GF_USERS_AUTO_ASSIGN_ORG
+          value: "true"
+        - name: GF_USERS_AUTO_ASSIGN_ORG_ROLE
+          value: "Viewer"
+        
+        # Plugins Configuration
+        - name: GF_INSTALL_PLUGINS
+          value: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clock-panel,grafana-kubernetes-app"
+        
+        # Analytics and Reporting
+        - name: GF_ANALYTICS_REPORTING_ENABLED
+          value: "false"
+        - name: GF_ANALYTICS_CHECK_FOR_UPDATES
+          value: "false"
+        
+        # AI Teddy Specific Settings
+        - name: GF_SERVER_DOMAIN
+          value: "grafana.ai-teddy.local"
+        - name: GF_SERVER_ROOT_URL
+          value: "https://grafana.ai-teddy.local"
+        - name: GF_SERVER_SERVE_FROM_SUB_PATH
+          value: "true"
+        
+        # Authentication
+        - name: GF_AUTH_DISABLE_LOGIN_FORM
+          value: "false"
+        - name: GF_AUTH_ANONYMOUS_ENABLED
+          value: "false"
+        
+        resources:
+          limits:
+            cpu: 1
+            memory: 2Gi
+          requests:
+            cpu: 250m
+            memory: 750Mi
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+        - name: grafana-datasources
+          mountPath: /etc/grafana/provisioning/datasources
+          readOnly: true
+        - name: grafana-dashboards-config
+          mountPath: /etc/grafana/provisioning/dashboards
+          readOnly: true
+        - name: grafana-dashboard-ai-teddy
+          mountPath: /grafana-dashboard-definitions/0/ai-teddy-dashboards
+          readOnly: true
+        - name: grafana-config
+          mountPath: /etc/grafana/grafana.ini
+          subPath: grafana.ini
+          readOnly: true
+        
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 3000
+          timeoutSeconds: 1
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /robots.txt
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 2
+        startupProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /api/health
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 3
+      
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: grafana-storage
+        persistentVolumeClaim:
+          claimName: grafana-pvc
+      - name: grafana-datasources
+        configMap:
+          defaultMode: 420
+          name: grafana-datasources
+      - name: grafana-dashboards-config
+        configMap:
+          defaultMode: 420
+          name: grafana-dashboards-config
+      - name: grafana-dashboard-ai-teddy
+        configMap:
+          defaultMode: 420
+          name: grafana-dashboard-ai-teddy
+      - name: grafana-config
+        configMap:
+          defaultMode: 420
+          name: grafana-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: ai-teddy-observability
+  labels:
+    app: grafana
+    component: visualization
+    layer: infrastructure
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+spec:
+  ports:
+  - name: http
+    port: 3000
+    protocol: TCP
+    targetPort: http-grafana
+  selector:
+    app: grafana
+  sessionAffinity: None
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+  - "10.0.0.0/8"  # Internal network only
+  - "172.16.0.0/12"  # Private networks
+  - "192.168.0.0/16"  # Local networks
+
+---
+# PodDisruptionBudget for Grafana
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: grafana-pdb
+  namespace: ai-teddy-observability
+  labels:
+    app: grafana
+    component: visualization
+    layer: infrastructure
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: grafana
+
+---
+# Grafana Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: ai-teddy-observability
+  labels:
+    app: grafana
+    component: visualization
+    layer: infrastructure
+data:
+  grafana.ini: |
+    # AI Teddy Bear Grafana Configuration
+    
+    [server]
+    protocol = http
+    http_port = 3000
+    domain = grafana.ai-teddy.local
+    enforce_domain = true
+    root_url = https://grafana.ai-teddy.local
+    serve_from_sub_path = true
+    
+    [database]
+    type = sqlite3
+    path = /var/lib/grafana/grafana.db
+    
+    [session]
+    provider = file
+    provider_config = /var/lib/grafana/sessions
+    
+    [analytics]
+    reporting_enabled = false
+    check_for_updates = false
+    
+    [security]
+    admin_user = admin
+    cookie_secure = true
+    cookie_samesite = strict
+    
+    [snapshots]
+    external_enabled = false
+    
+    [dashboards]
+    default_home_dashboard_path = /grafana-dashboard-definitions/0/ai-teddy-dashboards/ai-teddy-overview.json
+    
+    [alerting]
+    enabled = true
+    execute_alerts = true
+    
+    [unified_alerting]
+    enabled = true 

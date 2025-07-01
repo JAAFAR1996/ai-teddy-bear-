@@ -1,13 +1,14 @@
-from typing import Dict, List, Any, Optional
+import enum
+import json
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 # src/infrastructure/security/audit.py
-from sqlalchemy import Column, String, DateTime, JSON, Enum
+from sqlalchemy import JSON, Column, DateTime, Enum, String
 from sqlalchemy.ext.declarative import declarative_base
-import enum
-from datetime import datetime
-import json
 
 Base = declarative_base()
+
 
 class AuditEventType(enum.Enum):
     USER_LOGIN = "user_login"
@@ -19,9 +20,10 @@ class AuditEventType(enum.Enum):
     PERMISSION_CHANGED = "permission_changed"
     SECURITY_ALERT = "security_alert"
 
+
 class AuditLog(Base):
-    __tablename__ = 'audit_logs'
-    
+    __tablename__ = "audit_logs"
+
     id = Column(String, primary_key=True)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
     event_type = Column(Enum(AuditEventType), nullable=False)
@@ -32,12 +34,13 @@ class AuditLog(Base):
     details = Column(JSON, nullable=False)
     risk_score = Column(String, nullable=True)
 
+
 class AuditService:
     """Comprehensive audit logging service"""
-    
+
     def __init__(self, session_factory):
         self.session_factory = session_factory
-        
+
     async def log_event(
         self,
         event_type: AuditEventType,
@@ -45,7 +48,7 @@ class AuditService:
         user_id: Optional[str] = None,
         child_id: Optional[str] = None,
         details: Dict[str, Any] = None,
-        user_agent: Optional[str] = None
+        user_agent: Optional[str] = None,
     ):
         async with self.session_factory() as session:
             audit_log = AuditLog(
@@ -56,34 +59,27 @@ class AuditService:
                 ip_address=ip_address,
                 user_agent=user_agent,
                 details=details or {},
-                risk_score=self._calculate_risk_score(event_type, details)
+                risk_score=self._calculate_risk_score(event_type, details),
             )
             session.add(audit_log)
             await session.commit()
-            
+
             # Alert on high-risk events
             if audit_log.risk_score == "HIGH":
                 await self._send_security_alert(audit_log)
-    
-    def _calculate_risk_score(
-        self, 
-        event_type: AuditEventType, 
-        details: Dict
-    ) -> str:
+
+    def _calculate_risk_score(self, event_type: AuditEventType, details: Dict) -> str:
         """Calculate risk score based on event type and details"""
-        high_risk_events = [
-            AuditEventType.PERMISSION_CHANGED,
-            AuditEventType.SECURITY_ALERT
-        ]
-        
+        high_risk_events = [AuditEventType.PERMISSION_CHANGED, AuditEventType.SECURITY_ALERT]
+
         if event_type in high_risk_events:
             return "HIGH"
-        
+
         # Check for suspicious patterns
         if details:
             if details.get("failed_attempts", 0) > 3:
                 return "MEDIUM"
             if details.get("unusual_location", False):
                 return "MEDIUM"
-                
+
         return "LOW"

@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 """
 Enterprise Dependency Injection Container - 2025
@@ -11,16 +11,27 @@ import inspect
 import logging
 import threading
 import weakref
+from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from contextvars import ContextVar
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import (
-    Any, Dict, List, Optional, Type, TypeVar, Generic, Union, 
-    Callable, Awaitable, get_type_hints, get_origin, get_args
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
 )
-from dataclasses import dataclass, field
-from abc import ABC, abstractmethod
 
 import structlog
 from dependency_injector import containers, providers

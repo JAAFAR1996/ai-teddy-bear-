@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 #!/usr/bin/env python3
 """
@@ -9,22 +9,23 @@ from typing import Dict, List, Any, Optional
 3. تكامل البيانات التاريخية
 """
 
-import os
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Union
-from dataclasses import dataclass
-from enum import Enum
+import os
 import statistics
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Dict, List, Optional, Union
+
 import numpy as np
 
 # HUME AI imports
 try:
-    from hume import HumeClient, AsyncHumeClient
     import librosa
     import soundfile as sf
+    from hume import AsyncHumeClient, HumeClient
     HUME_AVAILABLE = True
     logger.info("✅ HUME AI SDK available")
 except ImportError as e:
@@ -837,7 +838,7 @@ class EnhancedHumeIntegration:
     def _generate_realistic_emotion_distribution(self, primary_emotion: str) -> Dict[str, float]:
         """توليد توزيع واقعي للمشاعر"""
         import random
-        
+
         # مشاعر أساسية مع نقاط أولية
         base_emotions = {
             'joy': 0.1, 'sadness': 0.05, 'anger': 0.05, 'fear': 0.05,

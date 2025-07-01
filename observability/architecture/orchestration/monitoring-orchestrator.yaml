@@ -1,0 +1,333 @@
+# Orchestration Layer - Monitoring System Manager
+# Complete integration and management of all monitoring components
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-orchestrator-config
+  namespace: ai-teddy-observability
+  labels:
+    component: orchestrator
+    layer: orchestration
+data:
+  deployment-order.yaml: |
+    # AI Teddy Bear Monitoring Deployment Order
+    # This defines the correct sequence for deploying monitoring components
+    
+    phases:
+      phase_1_foundation:
+        description: "Foundation layer - Security and Storage"
+        order: 1
+        components:
+          - namespace
+          - service-accounts
+          - cluster-roles
+          - cluster-role-bindings
+          - network-policies
+          - persistent-volume-claims
+        dependencies: []
+        timeout: "5m"
+        
+      phase_2_infrastructure:
+        description: "Infrastructure layer - Core services"
+        order: 2
+        components:
+          - prometheus
+          - otel-collector
+          - loki
+          - jaeger
+          - alertmanager
+        dependencies: ["phase_1_foundation"]
+        timeout: "10m"
+        
+      phase_3_presentation:
+        description: "Presentation layer - Dashboards and UI"
+        order: 3
+        components:
+          - grafana
+          - dashboards
+          - datasources
+          - alert-rules
+        dependencies: ["phase_2_infrastructure"]
+        timeout: "5m"
+        
+      phase_4_scaling:
+        description: "Scaling and availability"
+        order: 4
+        components:
+          - horizontal-pod-autoscalers
+          - pod-disruption-budgets
+          - vertical-pod-autoscalers
+        dependencies: ["phase_3_presentation"]
+        timeout: "3m"
+        
+  health-checks.yaml: |
+    # Health Check Configuration
+    
+    services:
+      prometheus:
+        endpoint: "http://prometheus.ai-teddy-observability.svc.cluster.local:9090/-/healthy"
+        expected_status: 200
+        timeout: "30s"
+        retry_interval: "10s"
+        max_retries: 5
+        
+      grafana:
+        endpoint: "http://grafana.ai-teddy-observability.svc.cluster.local:3000/api/health"
+        expected_status: 200
+        timeout: "30s"
+        retry_interval: "10s"
+        max_retries: 5
+        
+      otel-collector:
+        endpoint: "http://otel-collector.ai-teddy-observability.svc.cluster.local:13133/"
+        expected_status: 200
+        timeout: "30s"
+        retry_interval: "10s"
+        max_retries: 5
+        
+      loki:
+        endpoint: "http://loki.ai-teddy-observability.svc.cluster.local:3100/ready"
+        expected_status: 200
+        timeout: "30s"
+        retry_interval: "10s"
+        max_retries: 5
+        
+      jaeger:
+        endpoint: "http://jaeger-query.ai-teddy-observability.svc.cluster.local:16686/"
+        expected_status: 200
+        timeout: "30s"
+        retry_interval: "10s"
+        max_retries: 5
+        
+  integration-tests.yaml: |
+    # Integration Test Scenarios
+    
+    test_scenarios:
+      end_to_end_monitoring:
+        description: "Test complete monitoring pipeline"
+        steps:
+          - name: "Generate test metrics"
+            action: "POST"
+            endpoint: "http://otel-collector:4318/v1/metrics"
+            payload: "test_metrics_payload"
+            expected_result: "success"
+            
+          - name: "Verify metrics in Prometheus"
+            action: "GET"
+            endpoint: "http://prometheus:9090/api/v1/query"
+            query: "test_metric_name"
+            expected_result: "metric_exists"
+            wait_time: "30s"
+            
+          - name: "Check dashboard update"
+            action: "GET"
+            endpoint: "http://grafana:3000/api/dashboards/uid/ai-teddy-overview"
+            expected_result: "dashboard_updated"
+            
+      alert_workflow:
+        description: "Test alerting pipeline"
+        steps:
+          - name: "Trigger test alert"
+            action: "simulate_alert"
+            metric: "ai_teddy_safety_violations_total"
+            value: "1"
+            
+          - name: "Verify alert in AlertManager"
+            action: "GET"
+            endpoint: "http://alertmanager:9093/api/v1/alerts"
+            expected_result: "alert_present"
+            
+          - name: "Check notification sent"
+            action: "verify_notification"
+            channel: "slack"
+            expected_result: "notification_sent"
+
+---
+# Monitoring Orchestrator Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: monitoring-system-initializer
+  namespace: ai-teddy-observability
+  labels:
+    component: orchestrator
+    layer: orchestration
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        component: orchestrator
+        layer: orchestration
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: monitoring-orchestrator
+      containers:
+      - name: orchestrator
+        image: bitnami/kubectl:latest
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - |
+          echo "🚀 Starting AI Teddy Bear Monitoring System Initialization..."
+          
+          # Phase 1: Foundation
+          echo "📋 Phase 1: Deploying Foundation Components..."
+          kubectl apply -f /configs/foundation/ --recursive=true
+          kubectl wait --for=condition=available --timeout=300s deployment/prometheus -n ai-teddy-observability || true
+          
+          # Phase 2: Infrastructure  
+          echo "🏗️ Phase 2: Deploying Infrastructure Components..."
+          kubectl apply -f /configs/infrastructure/ --recursive=true
+          kubectl wait --for=condition=available --timeout=600s deployment/prometheus,deployment/otel-collector -n ai-teddy-observability || true
+          
+          # Phase 3: Presentation
+          echo "📊 Phase 3: Deploying Presentation Layer..."
+          kubectl apply -f /configs/presentation/ --recursive=true
+          kubectl wait --for=condition=available --timeout=300s deployment/grafana -n ai-teddy-observability || true
+          
+          # Phase 4: Scaling
+          echo "📈 Phase 4: Configuring Scaling and Availability..."
+          kubectl apply -f /configs/scaling/ --recursive=true
+          
+          # Health Checks
+          echo "🏥 Running Health Checks..."
+          for service in prometheus grafana otel-collector; do
+            echo "Checking $service..."
+            kubectl get pods -l app=$service -n ai-teddy-observability
+            kubectl get svc $service -n ai-teddy-observability || true
+          done
+          
+          echo "✅ AI Teddy Bear Monitoring System Initialization Complete!"
+          echo "🌐 Access Grafana at: http://grafana.ai-teddy-observability.svc.cluster.local:3000"
+          echo "📊 Access Prometheus at: http://prometheus.ai-teddy-observability.svc.cluster.local:9090"
+          
+        volumeMounts:
+        - name: orchestrator-config
+          mountPath: /configs
+          readOnly: true
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      volumes:
+      - name: orchestrator-config
+        configMap:
+          name: monitoring-orchestrator-config
+
+---
+# ServiceAccount for Orchestrator
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: monitoring-orchestrator
+  namespace: ai-teddy-observability
+  labels:
+    component: orchestrator
+    layer: orchestration
+
+---
+# ClusterRole for Orchestrator
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: monitoring-orchestrator
+  labels:
+    component: orchestrator
+    layer: orchestration
+rules:
+- apiGroups: [""]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["apps"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["batch"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["autoscaling"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["policy"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["*"]
+  verbs: ["*"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: monitoring-orchestrator
+  labels:
+    component: orchestrator
+    layer: orchestration
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: monitoring-orchestrator
+subjects:
+- kind: ServiceAccount
+  name: monitoring-orchestrator
+  namespace: ai-teddy-observability
+
+---
+# Monitoring System Status Dashboard
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: system-status-dashboard
+  namespace: ai-teddy-observability
+  labels:
+    component: orchestrator
+    layer: orchestration
+data:
+  status-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "AI Teddy Monitoring System Status",
+        "tags": ["system", "status", "orchestration"],
+        "panels": [
+          {
+            "title": "Service Health Status",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "up{job=\"prometheus\"}",
+                "legendFormat": "Prometheus"
+              },
+              {
+                "expr": "up{job=\"grafana\"}",
+                "legendFormat": "Grafana"
+              },
+              {
+                "expr": "up{job=\"otel-collector\"}",
+                "legendFormat": "OTEL Collector"
+              }
+            ]
+          },
+          {
+            "title": "Data Pipeline Health",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(otelcol_receiver_accepted_spans_total[5m])",
+                "legendFormat": "Spans Ingested/sec"
+              },
+              {
+                "expr": "rate(prometheus_tsdb_head_samples_appended_total[5m])",
+                "legendFormat": "Metrics Stored/sec"
+              }
+            ]
+          }
+        ]
+      }
+    } 

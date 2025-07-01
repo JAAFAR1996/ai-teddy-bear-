@@ -6,13 +6,13 @@ Intelligent mutation system that generates meaningful
 test variations to discover edge cases and vulnerabilities.
 """
 
-import random
-import string
-import re
-from typing import List, Dict, Any, Optional
-from enum import Enum
 import asyncio
 import logging
+import random
+import re
+import string
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

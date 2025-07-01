@@ -2,16 +2,18 @@
 Base Exception Classes - الأساسيات فقط
 تعريف الأنواع والكلاسات الأساسية لنظام الأخطاء
 """
-from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, field
-from enum import Enum
-import traceback
-from datetime import datetime
+
 import json
+import traceback
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class ErrorSeverity(Enum):
     """مستويات الخطورة للأخطاء"""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -20,6 +22,7 @@ class ErrorSeverity(Enum):
 
 class ErrorCategory(Enum):
     """تصنيفات الأخطاء"""
+
     VALIDATION = "validation"
     BUSINESS_LOGIC = "business_logic"
     INFRASTRUCTURE = "infrastructure"
@@ -35,6 +38,7 @@ class ErrorCategory(Enum):
 @dataclass
 class ErrorContext:
     """Context معلومات للـ debugging والـ monitoring"""
+
     user_id: Optional[str] = None
     child_id: Optional[str] = None
     device_id: Optional[str] = None
@@ -47,11 +51,11 @@ class ErrorContext:
     environment: Optional[str] = None
     service_name: Optional[str] = None
     api_endpoint: Optional[str] = None
-    
+
     def __post_init__(self):
         if self.stack_trace is None:
             self.stack_trace = traceback.format_exc()
-            
+
     def to_dict(self) -> Dict[str, Any]:
         """تحويل context لـ dictionary"""
         return {
@@ -65,13 +69,13 @@ class ErrorContext:
             "additional_data": self.additional_data,
             "environment": self.environment,
             "service_name": self.service_name,
-            "api_endpoint": self.api_endpoint
+            "api_endpoint": self.api_endpoint,
         }
 
 
 class AITeddyBearException(Exception):
     """Base exception لكل exceptions المشروع"""
-    
+
     def __init__(
         self,
         message: str,
@@ -82,7 +86,7 @@ class AITeddyBearException(Exception):
         recoverable: bool = True,
         retry_after: Optional[int] = None,
         suggested_actions: Optional[List[str]] = None,
-        internal_message: Optional[str] = None
+        internal_message: Optional[str] = None,
     ):
         super().__init__(message)
         self.error_code = error_code
@@ -94,7 +98,7 @@ class AITeddyBearException(Exception):
         self.suggested_actions = suggested_actions or []
         self.internal_message = internal_message or message
         self.timestamp = datetime.utcnow()
-        
+
     def to_dict(self) -> Dict[str, Any]:
         """تحويل الـ exception لـ dict للـ logging والـ API responses"""
         return {
@@ -107,13 +111,13 @@ class AITeddyBearException(Exception):
             "retry_after": self.retry_after,
             "suggested_actions": self.suggested_actions,
             "timestamp": self.timestamp.isoformat(),
-            "context": self.context.to_dict() if self.context else None
+            "context": self.context.to_dict() if self.context else None,
         }
-        
+
     def to_json(self) -> str:
         """تحويل لـ JSON string"""
         return json.dumps(self.to_dict(), default=str)
-        
+
     def get_user_friendly_message(self) -> str:
         """رسالة صديقة للمستخدم"""
         if self.category == ErrorCategory.CHILD_SAFETY:
@@ -123,4 +127,4 @@ class AITeddyBearException(Exception):
         elif self.recoverable:
             return f"{str(self)}. يرجى المحاولة مرة أخرى"
         else:
-            return "عذراً، حدث خطأ في النظام. يرجى التواصل مع الدعم الفني" 
+            return "عذراً، حدث خطأ في النظام. يرجى التواصل مع الدعم الفني"

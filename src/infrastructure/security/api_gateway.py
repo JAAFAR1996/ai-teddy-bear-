@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 """
 🔐 Enterprise API Gateway - Security & Rate Limiting 2025
@@ -16,23 +16,23 @@ Author: Jaafar Adeeb - Security Lead
 """
 
 import asyncio
-import time
-import json
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Callable, Tuple
-from dataclasses import dataclass, field
-from enum import Enum
-import structlog
-from collections import defaultdict, deque
 import hashlib
 import ipaddress
+import json
 import re
+import time
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from fastapi import FastAPI, Request, Response, HTTPException, status, Depends
+import redis.asyncio as redis
+import structlog
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
-import redis.asyncio as redis
 
 logger = structlog.get_logger(__name__)
 

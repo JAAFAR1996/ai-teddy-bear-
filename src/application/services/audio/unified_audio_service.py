@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 #!/usr/bin/env python3
 """
@@ -7,72 +7,65 @@ UnifiedAudioService
 تم الإنشاء: 2025-06-30 05:25:00
 """
 
+import asyncio
+import base64
+import io
+import json
+import logging
+import os
+import re
+import struct
+import tempfile
+import time
+import uuid
+import wave
+from abc import ABC, abstractmethod
 from collections import deque
-from core.domain.value_objects import Language, EmotionalTone
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Union
+
+import aiofiles
+import azure.cognitiveservices.speech as speechsdk
+import librosa
+import noisereduce as nr
+import numpy as np
+import pyrubberband as pyrb
+import sounddevice as sd
+import soundfile as sf
+import speech_recognition as sr
+import torch
+import torchaudio
+import webrtcvad
+import whisper
+from core.domain.value_objects import EmotionalTone, Language
 from core.infrastructure.caching.cache_service import CacheService
 from core.infrastructure.config import Settings
 from core.infrastructure.monitoring.metrics import metrics_collector
-from dataclasses import dataclass
-from dataclasses import dataclass, field
-from datetime import datetime
-from src.domain.value_objects import Confidence
-from src.domain.value_objects import EmotionalTone, Confidence
-from elevenlabs import ElevenLabs, Voice, VoiceSettings
-from elevenlabs import ElevenLabs, Voice, VoiceSettings, stream, generate
-from elevenlabs import VoiceSettings
+from elevenlabs import ElevenLabs, Voice, VoiceSettings, generate, stream
 from elevenlabs.client import AsyncElevenLabs
-from enum import Enum
 from gtts import gTTS
 from langdetect import detect
 from openai import AsyncOpenAI
-from pathlib import Path
 from pydub import AudioSegment
 from pydub.effects import normalize
 from scipy import signal
 from scipy.io import wavfile
+from textblob import TextBlob
+
+from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer
 from src.application.services.streaming_service import StreamingService
 from src.core.application.interfaces.services import IAIService
-from src.domain.emotion_config import EmotionConfig
 from src.core.domain.entities.audio_stream import AudioStream
 from src.core.domain.entities.child import Child, ChildPreferences
-from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer
+from src.domain.emotion_config import EmotionConfig
+from src.domain.value_objects import Confidence, EmotionalTone
 from src.infrastructure.config import get_config
-from textblob import TextBlob
-from typing import Dict, Any, Optional, List, AsyncIterator, Callable
-from typing import Optional, Dict, Any
-from typing import Optional, Dict, Any, AsyncIterator, Union
-from typing import Optional, Dict, Any, AsyncIterator, Union, List
-from typing import Union
-import aiofiles
-import asyncio
-import azure.cognitiveservices.speech as speechsdk
-import base64
-import io
-import json
-import librosa
-import logging
-import noisereduce as nr
-import numpy as np
-import os
-import pyrubberband as pyrb
-import re
-import sounddevice as sd
-import soundfile as sf
-import speech_recognition as sr
-import struct
-import tempfile
-import time
-import torch
-import torchaudio
-import uuid
-import wave
-import webrtcvad
-import whisper
-from typing import Dict, List, Optional, Any
-from abc import ABC, abstractmethod
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 class UnifiedAudioService:
     """
@@ -82,40 +75,39 @@ class UnifiedAudioService:
     - deprecated\services\audio_services\synthesis_service.py
     - deprecated\services\audio_services\transcription_service.py
     """
-    
+
     def __init__(self):
         """تهيئة الخدمة الموحدة"""
         self.logger = logging.getLogger(self.__class__.__name__)
         self._initialize_components()
-    
+
     def _initialize_components(self) -> None:
         """تهيئة المكونات الفرعية"""
         # تهيئة نماذج Whisper
         self.whisper_model = None
         self._init_whisper()
-        
+
         # تهيئة خدمات ElevenLabs
         self.elevenlabs_client = None
         self._init_elevenlabs()
-        
+
         # تهيئة خدمات Azure
         self.azure_speech_config = None
         self._init_azure()
-        
+
         # تهيئة متغيرات أخرى
         self.audio_buffer = deque(maxlen=1000)
         self.transcription_cache = {}
         self.synthesis_cache = {}
-        
-        self.logger.info("Unified audio service initialized")
 
+        self.logger.info("Unified audio service initialized")
 
     # ==========================================
     # الوظائف المدموجة من الملفات المختلفة
     # ==========================================
 
     # ----- من voice_service.py -----
-    
+
     def _init_whisper(self) -> None:
         """تهيئة نموذج Whisper للتعرف على الكلام"""
         try:
@@ -142,12 +134,9 @@ class UnifiedAudioService:
         try:
             key = os.environ.get("AZURE_SPEECH_KEY")
             region = os.environ.get("AZURE_SPEECH_REGION", "eastus")
-            
+
             if key:
-                self.azure_speech_config = speechsdk.SpeechConfig(
-                    subscription=key,
-                    region=region
-                )
+                self.azure_speech_config = speechsdk.SpeechConfig(subscription=key, region=region)
                 self.logger.info("✅ Azure Speech initialized")
             else:
                 self.logger.warning("Azure Speech key not found")
@@ -176,29 +165,18 @@ class UnifiedAudioService:
             "sad": {"stability": 0.4, "similarity_boost": 0.7, "style": 0.3},
             "excited": {"stability": 0.8, "similarity_boost": 0.9, "style": 0.8},
             "calm": {"stability": 0.3, "similarity_boost": 0.6, "style": 0.2},
-            "neutral": {"stability": 0.5, "similarity_boost": 0.75, "style": 0.5}
+            "neutral": {"stability": 0.5, "similarity_boost": 0.75, "style": 0.5},
         }
-        
+
         settings = emotion_settings.get(emotion, emotion_settings["neutral"])
         return VoiceSettings(**settings)
 
-    def _build_azure_ssml(
-        self,
-        text: str,
-        emotion: str,
-        voice_name: str
-    ) -> str:
+    def _build_azure_ssml(self, text: str, emotion: str, voice_name: str) -> str:
         """بناء SSML لـ Azure"""
-        emotion_styles = {
-            "happy": "cheerful",
-            "sad": "sad",
-            "excited": "excited",
-            "calm": "calm",
-            "neutral": "neutral"
-        }
-        
+        emotion_styles = {"happy": "cheerful", "sad": "sad", "excited": "excited", "calm": "calm", "neutral": "neutral"}
+
         style = emotion_styles.get(emotion, "neutral")
-        
+
         return f"""
         <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis"
                xmlns:mstts="http://www.w3.org/2001/mstts" xml:lang="ar-SA">
@@ -213,20 +191,19 @@ class UnifiedAudioService:
     def _clean_transcription(self, text: str) -> str:
         """تنظيف النص المحول"""
         # إزالة المسافات الزائدة
-        text = ' '.join(text.split())
-        
+        text = " ".join(text.split())
+
         # إصلاح مشاكل اللغة العربية الشائعة
-        text = text.replace('إ', 'ا')  # تطبيع الهمزة
-        
+        text = text.replace("إ", "ا")  # تطبيع الهمزة
+
         return text.strip()
 
-    def create(self) -> 'UnifiedAudioService':
+    def create(self) -> "UnifiedAudioService":
         """إنشاء مثيل من الخدمة - للتوافق مع الكود القديم"""
         return self
 
-
     # ----- من voice_interaction_service.py -----
-    
+
     def is_speech(self, audio_frame: bytes) -> bool:
         """التحقق من وجود كلام في الإطار الصوتي"""
         try:
@@ -260,7 +237,7 @@ class UnifiedAudioService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
         pass
 
-    def set_streaming_service(self, streaming_service: 'StreamingService') -> None:
+    def set_streaming_service(self, streaming_service: "StreamingService") -> None:
         """تعيين خدمة البث"""
         self.streaming_service = streaming_service
 
@@ -310,9 +287,8 @@ class UnifiedAudioService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
         pass
 
-
     # ----- من synthesis_service.py -----
-    
+
     def is_empty(self) -> bool:
         """دالة مدموجة من synthesis_service.py"""
         # RESOLVED: تنفيذ الدالة من synthesis_service.py
@@ -349,9 +325,8 @@ class UnifiedAudioService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من synthesis_service.py")
         pass
 
-
     # ----- من transcription_service.py -----
-    
+
     def device(self) -> str:
         """دالة مدموجة من transcription_service.py"""
         # RESOLVED: تنفيذ الدالة من transcription_service.py
@@ -406,11 +381,10 @@ class UnifiedAudioService:
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من transcription_service.py")
         pass
 
-
     # ==========================================
     # دوال مساعدة إضافية
     # ==========================================
-    
+
     def get_status(self) -> Dict[str, Any]:
         """الحصول على حالة الخدمة الموحدة"""
         return {
@@ -418,42 +392,44 @@ class UnifiedAudioService:
             "status": "active",
             "components": self._get_active_components(),
             "merged_from": [
-                                "voice_service.py",
+                "voice_service.py",
                 "voice_interaction_service.py",
                 "synthesis_service.py",
                 "transcription_service.py",
-            ]
+            ],
         }
-    
+
     def _get_active_components(self) -> List[str]:
         """الحصول على المكونات النشطة"""
         components = []
-        
-        if hasattr(self, 'whisper_model') and self.whisper_model:
+
+        if hasattr(self, "whisper_model") and self.whisper_model:
             components.append("whisper")
-        
-        if hasattr(self, 'elevenlabs_client') and self.elevenlabs_client:
+
+        if hasattr(self, "elevenlabs_client") and self.elevenlabs_client:
             components.append("elevenlabs")
-            
-        if hasattr(self, 'azure_speech_config') and self.azure_speech_config:
+
+        if hasattr(self, "azure_speech_config") and self.azure_speech_config:
             components.append("azure_speech")
-            
+
         components.extend(["transcription", "synthesis", "voice_interaction"])
-        
+
         return components
+
 
 # ==========================================
 # Factory Pattern للإنشاء
 # ==========================================
 
+
 class UnifiedAudioServiceFactory:
     """مصنع لإنشاء خدمة UnifiedAudioService"""
-    
+
     @staticmethod
     def create() -> UnifiedAudioService:
         """إنشاء مثيل من الخدمة الموحدة"""
         return UnifiedAudioService()
-    
+
     @staticmethod
     def create_with_config(config: Dict[str, Any]) -> UnifiedAudioService:
         """إنشاء مثيل مع تكوين مخصص"""
@@ -461,11 +437,13 @@ class UnifiedAudioServiceFactory:
         # NOTED: تطبيق التكوين
         return service
 
+
 # ==========================================
 # Singleton Pattern (اختياري)
 # ==========================================
 
 _instance = None
+
 
 def get_audio_services_instance() -> UnifiedAudioService:
     """الحصول على مثيل وحيد من الخدمة"""
