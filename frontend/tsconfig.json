@@ -1,32 +1,62 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": false,
+    "outDir": "./build",
+    "rootDir": "./src",
+    "removeComments": true,
+    "noEmit": true,
     "isolatedModules": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "noEmit": true,
-    "baseUrl": "src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["*"],
-      "@components/*": ["components/*"],
-      "@hooks/*": ["hooks/*"],
-      "@services/*": ["services/*"],
-      "@utils/*": ["utils/*"],
-      "@contexts/*": ["contexts/*"],
-      "@types/*": ["@types/*"]
-    }
+      "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@services/*": ["src/services/*"],
+      "@utils/*": ["src/utils/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@types/*": ["src/@types/*"],
+      "@styles/*": ["src/styles/*"],
+      "@config/*": ["src/config/*"],
+      "@architecture/*": ["src/architecture/*"],
+      "@domain/*": ["src/architecture/domain/*"],
+      "@application/*": ["src/architecture/application/*"],
+      "@infrastructure/*": ["src/architecture/infrastructure/*"],
+      "@presentation/*": ["src/architecture/presentation/*"]
+    },
+    "types": ["react", "react-dom", "node", "jest"],
+    "typeRoots": ["./node_modules/@types", "./src/@types"]
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src/**/*",
+    "src/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.jsx",
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist",
+    "scripts",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ]
 } 

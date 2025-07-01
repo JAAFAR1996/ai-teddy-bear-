@@ -14,7 +14,10 @@
     "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
     "preview": "serve -s build",
     "analyze:deps": "node dependencies-analysis.js",
-    "architecture:health": "node architecture-health-check.js"
+    "architecture:health": "node architecture-health-check.js",
+    "type-check": "tsc --noEmit",
+    "test:coverage": "react-scripts test --coverage --watchAll=false",
+    "test:ci": "CI=true react-scripts test --coverage --watchAll=false"
   },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
@@ -48,12 +51,29 @@
   },
   "devDependencies": {
     "@types/node": "^20.4.2",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@types/styled-components": "^5.1.26",
+    "@types/jest": "^29.5.3",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "typescript": "^5.1.6",
     "serve": "^14.2.0"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
+    ],
+    "overrides": [
+      {
+        "files": ["**/*.ts", "**/*.tsx"],
+        "parser": "@typescript-eslint/parser",
+        "plugins": ["@typescript-eslint"],
+        "extends": [
+          "plugin:@typescript-eslint/recommended"
+        ]
+      }
     ]
   },
   "browserslist": {
