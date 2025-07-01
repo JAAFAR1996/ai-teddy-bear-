@@ -1,0 +1,35 @@
+# AI Teddy Bear - Minimal Requirements for Quick Start
+# ====================================================
+# Updated for Python 3.13 compatibility
+
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+aiohttp==3.9.1
+websockets==12.0
+
+# Database
+sqlalchemy==2.0.23
+aiosqlite==0.19.0
+
+# Basic AI (Mock mode for testing)
+openai==1.3.8
+
+# Security
+pyjwt==2.8.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Validation - Using older version compatible with Python 3.13
+pydantic==1.10.13
+pydantic-settings==2.1.0
+
+# Environment
+python-dotenv==1.0.0
+
+# Logging
+loguru==0.7.2
+
+# Additional dependencies
+click==8.1.7
+h11==0.14.0 
