@@ -1,1 +1,4 @@
-# Auto-generated DDD structure
+"""
+AI Teddy Bear - Domain Layer
+Core business logic and domain models.
+"""

@@ -1,1 +1,4 @@
-# Auto-generated DDD structure
+"""
+AI Teddy Bear - Domain Value Objects
+Value objects for domain-driven design implementation.
+"""
