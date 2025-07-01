@@ -1,0 +1,1806 @@
+{
+  "summary": {
+    "total_files": 1020,
+    "total_directories": 338,
+    "critical_files": 202,
+    "trash_files": 4,
+    "duplicate_files": 121,
+    "files_to_move": 767,
+    "security_issues": 65
+  },
+  "file_types": {
+    "": 6,
+    ".yaml": 21,
+    ".md": 31,
+    ".py": 785,
+    ".json": 50,
+    ".yml": 14,
+    ".bat": 11,
+    ".ini": 3,
+    ".txt": 3,
+    ".example": 2,
+    ".toml": 1,
+    ".cfg": 1,
+    ".pdf": 1,
+    ".zip": 1,
+    ".cpp": 2,
+    ".h": 3,
+    ".ino": 9,
+    ".html": 2,
+    ".js": 46,
+    ".conf": 1,
+    ".sh": 9,
+    ".ps1": 1,
+    ".in": 1,
+    ".tsx": 9,
+    ".ts": 2,
+    ".db": 2,
+    ".sql": 1,
+    ".py@": 1,
+    ".proto": 1
+  },
+  "duplicates": [
+    {
+      "type": "exact",
+      "hash": "acf6cc5613659bcbcfa8097beb1121e0",
+      "files": [
+        "cleanup_analyzer.py",
+        "scripts\\project_cleanup_analyzer.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "7854f18efc337b688cda97c2a0f918b0",
+      "files": [
+        "final_backup_20250701_114318\\src\\core\\domain\\entities\\base.py",
+        "src\\domain\\entities\\base.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "24d141e7e8e4de54bf194e8c608c47c9",
+      "files": [
+        "final_backup_20250701_114318\\src\\core\\domain\\entities\\emotion_log.py",
+        "src\\domain\\entities\\emotion_log.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "429608cc8c33b3d06cf85f3e0a5ca64a",
+      "files": [
+        "final_backup_20250701_114318\\src\\core\\domain\\entities\\transcription.py",
+        "src\\domain\\entities\\transcription.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "f6876a90e174c3c9f84354e866d2e799",
+      "files": [
+        "final_backup_20250701_114318\\src\\domain\\accessibility\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\accessibility\\entities\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\accessibility\\value_objects\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\audio\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\cleanup\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\cleanup\\aggregates\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\emotion\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\entities\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\esp32\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\family\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\memory\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\reporting\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\repositories\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\stories\\__init__.py",
+        "final_backup_20250701_114318\\src\\domain\\streaming\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\accessibility\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\accessibility\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\advancedpersonalization\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\advancedpersonalization\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\advancedprogressanalyzer\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\advancedprogressanalyzer\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\arvr\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\arvr\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\config\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\database\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\emotion\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\enhancedchildinteraction\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\enhancedchildinteraction\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\enhancedparentreport\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\enhancedparentreport\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\external_services\\cli\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\external_services\\clients\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\graphql\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\memory\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\memory\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\messaging\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\middleware\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\moderation\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\moderation\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\monitoring\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\notification\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\notification\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\observability\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\parentdashboard\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\parentreport\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\parentreport\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\persistence\\repositories\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\processing\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\progressanalyzer\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\progressanalyzer\\persistence\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\services\\__init__.py",
+        "final_backup_20250701_114318\\src\\infrastructure\\streaming\\__init__.py",
+        "src\\domain\\parentdashboard\\models\\__init__.py"
+      ],
+      "count": 53
+    },
+    {
+      "type": "exact",
+      "hash": "f1dd7b0552365864b3e8c270a78246d9",
+      "files": [
+        "final_backup_20250701_114318\\src\\infrastructure\\ai\\enhanced_hume_2025.py",
+        "src\\infrastructure\\external_services\\enhanced_hume_2025.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "12087283e67e1b1f907cb601e946b5df",
+      "files": [
+        "final_backup_20250701_114318\\src\\infrastructure\\ai\\enhanced_hume_integration_2025.py",
+        "src\\infrastructure\\external_services\\enhanced_hume_integration_2025.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "7f9d099fc258f548524a48185627a1cf",
+      "files": [
+        "final_backup_20250701_114318\\src\\infrastructure\\ai\\hume_integration.py",
+        "src\\infrastructure\\external_services\\hume_integration.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "7bd1aceaa30d2eb2d846852f2f20c17a",
+      "files": [
+        "final_backup_20250701_114318\\src\\infrastructure\\audio\\audio_processor.py",
+        "src\\infrastructure\\external_services\\audio_processor.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "05348750e23e6fdfe3ab6c6e952acd2a",
+      "files": [
+        "final_backup_20250701_114318\\src\\infrastructure\\audio\\hume_emotion_analyzer.py",
+        "src\\infrastructure\\external_services\\hume_emotion_analyzer.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "fe0b8fa4383f2c994641be051d844de5",
+      "files": [
+        "final_backup_20250701_114318\\src\\infrastructure\\audio\\state_manager.py",
+        "src\\infrastructure\\external_services\\state_manager.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "846afcaed36cab6eb31cba101bb24add",
+      "files": [
+        "final_backup_20250701_114318\\src\\infrastructure\\audio\\tts_playback.py",
+        "src\\infrastructure\\external_services\\tts_playback.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "bce3cc4298ed1c064e183b8017550b68",
+      "files": [
+        "final_backup_20250701_114318\\src\\infrastructure\\audio\\__main__.py",
+        "src\\infrastructure\\external_services\\__main__.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "d41d8cd98f00b204e9800998ecf8427e",
+      "files": [
+        "final_backup_20250701_114318\\src\\infrastructure\\external_services\\mock\\__init__.py",
+        "final_backup_20250701_114318\\src\\testing\\demo_runner.py",
+        "final_backup_20250701_114318\\tests\\unit\\ui\\test_simple.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "exact",
+      "hash": "390b796f7f8d5a06fb6ea3007e2d7601",
+      "files": [
+        "final_backup_20250701_114318\\src\\infrastructure\\middleware\\security.py",
+        "src\\infrastructure\\security\\security.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "exact",
+      "hash": "6fca1cfedf48dd654b7046aa92f6ef79",
+      "files": [
+        "final_backup_20250701_114318\\src\\infrastructure\\persistence\\emotion_log_repository.py",
+        "src\\infrastructure\\persistence\\repositories\\emotion_log_repository.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "__init__(3)",
+      "files": [
+        "src\\application\\arvr\\services\\arvr_orchestrator.py",
+        "src\\application\\emotion\\services\\emotion_orchestrator.py",
+        "src\\application\\memory\\services\\memory_orchestrator.py",
+        "src\\application\\services\\progress_analyzer.py",
+        "src\\application\\services\\ai\\conversation_manager.py",
+        "src\\application\\services\\ai\\educational_content.py",
+        "src\\application\\services\\ai\\main_service.py",
+        "src\\application\\services\\ai\\personality_engine.py",
+        "src\\application\\services\\ai\\refactored_ai_service.py",
+        "src\\application\\services\\ai\\response_generator.py",
+        "src\\application\\services\\audio\\audio_playback_service.py",
+        "src\\application\\services\\audio\\audio_recording_service.py",
+        "src\\application\\services\\audio\\audio_session_service.py",
+        "src\\application\\services\\audio\\speech_to_text_service.py",
+        "src\\application\\services\\audio\\voice_profile_service.py",
+        "src\\application\\services\\audio\\voice_service.py",
+        "src\\application\\services\\core\\accessibility_application_service.py",
+        "src\\application\\services\\core\\analytics_service.py",
+        "src\\application\\services\\core\\base_service.py",
+        "src\\application\\services\\core\\health_service.py",
+        "src\\application\\services\\core\\memory_service.py",
+        "src\\application\\services\\core\\moderation_service_modern.py",
+        "src\\application\\services\\core\\recommendation_service.py",
+        "src\\application\\services\\core\\service_registry.py",
+        "src\\application\\services\\core\\session_service.py",
+        "src\\application\\services\\core\\simple_cache_service.py",
+        "src\\application\\services\\parent\\enhanced_parent_report_service.py",
+        "src\\application\\services\\parent\\report_generation_service.py",
+        "src\\infrastructure\\external_services\\clients\\azure_speech_client.py",
+        "src\\infrastructure\\external_services\\clients\\whisper_client.py",
+        "src\\infrastructure\\external_services\\mock\\elevenlabs.py",
+        "src\\infrastructure\\external_services\\mock\\elevenlabs.py"
+      ],
+      "count": 32
+    },
+    {
+      "type": "functional",
+      "signature": "__init__(1)",
+      "files": [
+        "src\\application\\arvr\\services\\arvr_orchestrator.py",
+        "src\\application\\emotion\\services\\emotion_orchestrator.py",
+        "src\\application\\memory\\services\\memory_orchestrator.py",
+        "src\\application\\services\\circuit_breaker.py",
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\ai\\content_analysis_service.py",
+        "src\\application\\services\\ai\\email_service.py",
+        "src\\application\\services\\ai\\interfaces\\ai_service_interface.py",
+        "src\\application\\services\\ai\\interfaces\\ai_service_interface.py",
+        "src\\application\\services\\audio\\audio_recording_service.py",
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\child\\child_analytics_service.py",
+        "src\\application\\services\\child\\child_family_service.py",
+        "src\\application\\services\\child\\child_interaction_service.py",
+        "src\\application\\services\\child\\child_interaction_service_v2.py",
+        "src\\application\\services\\child\\child_interaction_service_v2.py",
+        "src\\application\\services\\core\\accessschedule.py",
+        "src\\application\\services\\core\\accessscheduletype.py",
+        "src\\application\\services\\core\\alert.py",
+        "src\\application\\services\\core\\alerttype.py",
+        "src\\application\\services\\core\\analysismode.py",
+        "src\\application\\services\\core\\analyticsdata.py",
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\chart_service.py",
+        "src\\application\\services\\core\\childprofile.py",
+        "src\\application\\services\\core\\contentcategory.py",
+        "src\\application\\services\\core\\conversationlog.py",
+        "src\\application\\services\\core\\conversationlogentry.py",
+        "src\\application\\services\\core\\emotionanalysisresult.py",
+        "src\\application\\services\\core\\export_service.py",
+        "src\\application\\services\\core\\fallback_response_service.py",
+        "src\\application\\services\\core\\inmemorycache.py",
+        "src\\application\\services\\core\\inmemorycache.py",
+        "src\\application\\services\\core\\language.py",
+        "src\\application\\services\\core\\moderationlog.py",
+        "src\\application\\services\\core\\moderationresult.py",
+        "src\\application\\services\\core\\moderationrule.py",
+        "src\\application\\services\\core\\moderationseverity.py",
+        "src\\application\\services\\core\\moderation_service.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\parentalcontrol.py",
+        "src\\application\\services\\core\\parentdashboardapi.py",
+        "src\\application\\services\\core\\parentdashboardapi.py",
+        "src\\application\\services\\core\\parentuser.py",
+        "src\\application\\services\\core\\rediscache.py",
+        "src\\application\\services\\core\\rediscache.py",
+        "src\\application\\services\\core\\scheduler_service.py",
+        "src\\application\\services\\core\\simple_health_service.py",
+        "src\\application\\services\\core\\sms_service.py",
+        "src\\application\\services\\core\\unified_cache_service.py",
+        "src\\application\\services\\parent\\unified_monitoring_service.py",
+        "src\\core\\services\\fix_remaining_services.py",
+        "src\\domain\\reporting\\services\\behavior_analyzer.py",
+        "src\\domain\\reporting\\services\\progress_analyzer.py",
+        "src\\domain\\reporting\\services\\skill_analyzer.py",
+        "src\\infrastructure\\external_services\\advanced_ai_orchestrator.py",
+        "src\\infrastructure\\external_services\\advanced_ai_orchestrator.py",
+        "src\\infrastructure\\external_services\\advanced_ai_orchestrator.py",
+        "src\\infrastructure\\external_services\\audio_recorder.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\voice_enhancements.py",
+        "src\\infrastructure\\external_services\\voice_enhancements.py",
+        "src\\infrastructure\\external_services\\mock\\transformers.py",
+        "src\\infrastructure\\external_services\\mock\\transformers.py",
+        "src\\infrastructure\\external_services\\mock\\transformers.py"
+      ],
+      "count": 83
+    },
+    {
+      "type": "functional",
+      "signature": "__post_init__(1)",
+      "files": [
+        "src\\application\\cleanup\\services\\cleanup_orchestrator.py",
+        "src\\application\\cleanup\\services\\cleanup_orchestrator.py",
+        "src\\application\\services\\screen_time_manager.py",
+        "src\\application\\services\\screen_time_manager.py",
+        "src\\application\\services\\core\\advanced_personalization_service.py",
+        "src\\application\\services\\core\\ar_vr_service.py",
+        "src\\application\\services\\core\\ar_vr_service.py",
+        "src\\application\\services\\core\\audio_streamer.py",
+        "src\\infrastructure\\external_services\\audio_io.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py"
+      ],
+      "count": 13
+    },
+    {
+      "type": "functional",
+      "signature": "__init__(4)",
+      "files": [
+        "src\\application\\cleanup\\services\\cleanup_orchestrator.py",
+        "src\\application\\services\\ai\\ai_service.py",
+        "src\\application\\services\\ai\\ai_service_factory.py",
+        "src\\application\\services\\ai\\ai_service_factory.py",
+        "src\\application\\services\\ai\\refactored_ai_service.py",
+        "src\\application\\services\\child\\enhanced_child_interaction_service.py",
+        "src\\application\\services\\core\\audio_streamer.py",
+        "src\\application\\services\\core\\event_sourcing_service.py",
+        "src\\application\\services\\core\\memory_storage_service.py",
+        "src\\application\\services\\parent\\parent_dashboard_service.py",
+        "src\\infrastructure\\external_services\\multi_voice_tts.py"
+      ],
+      "count": 11
+    },
+    {
+      "type": "functional",
+      "signature": "__init__(2)",
+      "files": [
+        "src\\application\\cleanup\\services\\cleanup_orchestrator.py",
+        "src\\application\\services\\screen_time_manager.py",
+        "src\\application\\services\\ai\\analysis_orchestrator_service.py",
+        "src\\application\\services\\ai\\conversation_maintenance_service.py",
+        "src\\application\\services\\ai\\edge_ai_integration_service.py",
+        "src\\application\\services\\ai\\emotion_analyzer_service.py",
+        "src\\application\\services\\ai\\llm_service.py",
+        "src\\application\\services\\audio\\audio_playback_service.py",
+        "src\\application\\services\\audio\\transcription_service.py",
+        "src\\application\\services\\audio\\transcription_service.py",
+        "src\\application\\services\\audio\\transcription_service.py",
+        "src\\application\\services\\audio\\voice_interaction_service.py",
+        "src\\application\\services\\audio\\voice_recognition_service.py",
+        "src\\application\\services\\audio\\voice_synthesis_service.py",
+        "src\\application\\services\\child\\child_search_service.py",
+        "src\\application\\services\\core\\advanced_personalization_service.py",
+        "src\\application\\services\\core\\alert_service.py",
+        "src\\application\\services\\core\\ar_vr_service.py",
+        "src\\application\\services\\core\\audio_streamer.py",
+        "src\\application\\services\\core\\backup_service.py",
+        "src\\application\\services\\core\\cache_integration_service.py",
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\cleanup_execution_service.py",
+        "src\\application\\services\\core\\conversation_export_service.py",
+        "src\\application\\services\\core\\conversation_search_service.py",
+        "src\\application\\services\\core\\he_integration_service.py",
+        "src\\application\\services\\core\\he_integration_service.py",
+        "src\\application\\services\\core\\he_integration_service.py",
+        "src\\application\\services\\core\\issue_tracker_service.py",
+        "src\\application\\services\\core\\moderation_service.py",
+        "src\\application\\services\\core\\service_registry.py",
+        "src\\application\\services\\core\\story_service.py",
+        "src\\application\\services\\core\\target_identification_service.py",
+        "src\\application\\services\\core\\transcription_service.py",
+        "src\\application\\services\\core\\transcription_service.py",
+        "src\\application\\services\\core\\websocket_manager.py",
+        "src\\application\\services\\parent\\parent_auth_service.py",
+        "src\\application\\services\\parent\\parent_dashboard_service.py",
+        "src\\application\\services\\parent\\rate_monitor_service.py",
+        "src\\application\\services\\parent\\report_generator_service.py",
+        "src\\core\\services\\phase_2_services_consolidation.py",
+        "src\\core\\services\\service_organizer_analyzer.py",
+        "src\\core\\services\\vault_secret_manager.py",
+        "src\\core\\services\\vault_secret_manager.py",
+        "src\\domain\\audio\\services\\audio_processor.py",
+        "src\\domain\\audio\\services\\voice_activity_detector.py",
+        "src\\domain\\services\\content_moderator.py",
+        "src\\infrastructure\\external_services\\audio_manager.py",
+        "src\\infrastructure\\external_services\\audio_processing.py",
+        "src\\infrastructure\\external_services\\enhanced_audio_processor.py",
+        "src\\infrastructure\\external_services\\multi_voice_tts.py",
+        "src\\infrastructure\\external_services\\speech_disorder_detector.py",
+        "src\\infrastructure\\external_services\\clients\\elevenlabs_client.py",
+        "src\\infrastructure\\external_services\\clients\\openai_speech_client.py",
+        "src\\infrastructure\\external_services\\mock\\transformers.py",
+        "src\\infrastructure\\external_services\\mock\\transformers.py"
+      ],
+      "count": 57
+    },
+    {
+      "type": "functional",
+      "signature": "state(1)",
+      "files": [
+        "src\\application\\services\\circuit_breaker.py",
+        "src\\application\\services\\core\\service_registry.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "__call__(2)",
+      "files": [
+        "src\\application\\services\\circuit_breaker.py",
+        "src\\infrastructure\\external_services\\mock\\transformers.py",
+        "src\\infrastructure\\external_services\\mock\\transformers.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "get_status(1)",
+      "files": [
+        "src\\application\\services\\circuit_breaker.py",
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\service_registry.py",
+        "src\\application\\services\\core\\unified_cache_service.py",
+        "src\\application\\services\\parent\\unified_monitoring_service.py"
+      ],
+      "count": 5
+    },
+    {
+      "type": "functional",
+      "signature": "decorator(1)",
+      "files": [
+        "src\\application\\services\\circuit_breaker.py",
+        "src\\application\\services\\core\\simple_cache_service.py",
+        "src\\application\\services\\core\\unified_cache_service.py",
+        "src\\application\\services\\core\\unified_cache_service.py"
+      ],
+      "count": 4
+    },
+    {
+      "type": "functional",
+      "signature": "__getattr__(2)",
+      "files": [
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\enhanced_hume_integration_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py",
+        "src\\application\\services\\core\\moderation_service_refactored.py"
+      ],
+      "count": 15
+    },
+    {
+      "type": "functional",
+      "signature": "__init__(5)",
+      "files": [
+        "src\\application\\services\\parent_dashboard_coordinator.py",
+        "src\\application\\services\\ai\\openai_service.py",
+        "src\\application\\services\\core\\conversation_service.py",
+        "src\\infrastructure\\external_services\\audio_io.py"
+      ],
+      "count": 4
+    },
+    {
+      "type": "functional",
+      "signature": "_create_empty_metrics(2)",
+      "files": [
+        "src\\application\\services\\progress_analyzer.py",
+        "src\\application\\services\\parent\\enhanced_parent_report_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_generate_fallback_recommendations(2)",
+      "files": [
+        "src\\application\\services\\progress_analyzer.py",
+        "src\\application\\services\\parent\\enhanced_parent_report_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_load_data(1)",
+      "files": [
+        "src\\application\\services\\screen_time_manager.py",
+        "src\\application\\services\\core\\advanced_personalization_service.py",
+        "src\\application\\services\\core\\ar_vr_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "_save_data(1)",
+      "files": [
+        "src\\application\\services\\screen_time_manager.py",
+        "src\\application\\services\\core\\advanced_personalization_service.py",
+        "src\\application\\services\\core\\ar_vr_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "is_initialized(1)",
+      "files": [
+        "src\\application\\services\\ai\\ai_service.py",
+        "src\\application\\services\\ai\\refactored_ai_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get_available_providers(0)",
+      "files": [
+        "src\\application\\services\\ai\\ai_service.py",
+        "src\\application\\services\\ai\\refactored_ai_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "__init__(6)",
+      "files": [
+        "src\\application\\services\\ai\\ai_service_factory.py",
+        "src\\application\\services\\core\\dashboard_orchestrator.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_calculate_learning_progress(2)",
+      "files": [
+        "src\\application\\services\\ai\\analytics_domain_service.py",
+        "src\\application\\services\\core\\ar_vr_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_load_config(1)",
+      "files": [
+        "src\\application\\services\\ai\\email_service.py",
+        "src\\application\\services\\core\\issue_tracker_service.py",
+        "src\\application\\services\\core\\sms_service.py",
+        "src\\application\\services\\parent\\rate_monitor_service.py",
+        "src\\application\\services\\parent\\unified_monitoring_service.py"
+      ],
+      "count": 5
+    },
+    {
+      "type": "functional",
+      "signature": "get_cache_stats(1)",
+      "files": [
+        "src\\application\\services\\ai\\emotion_analyzer_service.py",
+        "src\\application\\services\\core\\cache_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "to_dict(1)",
+      "files": [
+        "src\\application\\services\\ai\\main_service.py",
+        "src\\application\\services\\core\\emotionanalysisresult.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "duration(1)",
+      "files": [
+        "src\\application\\services\\ai\\main_service.py",
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\audio_streamer.py",
+        "src\\application\\services\\core\\transcription_service.py"
+      ],
+      "count": 4
+    },
+    {
+      "type": "functional",
+      "signature": "_get_fallback_response(2)",
+      "files": [
+        "src\\application\\services\\ai\\main_service.py",
+        "src\\application\\services\\ai\\main_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_map_emotion_to_voice(2)",
+      "files": [
+        "src\\application\\services\\ai\\main_service.py",
+        "src\\application\\services\\ai\\main_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get_available_models(1)",
+      "files": [
+        "src\\application\\services\\ai\\interfaces\\ai_service_interface.py",
+        "src\\application\\services\\ai\\interfaces\\ai_service_interface.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get_emotion_history(2)",
+      "files": [
+        "src\\application\\services\\ai\\interfaces\\ai_service_interface.py",
+        "src\\application\\services\\ai\\interfaces\\ai_service_interface.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "play_audio(9)",
+      "files": [
+        "src\\application\\services\\audio\\audio_playback_service.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "speak(8)",
+      "files": [
+        "src\\application\\services\\audio\\audio_playback_service.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "stop_playback(1)",
+      "files": [
+        "src\\application\\services\\audio\\audio_playback_service.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "is_playing(1)",
+      "files": [
+        "src\\application\\services\\audio\\audio_playback_service.py",
+        "src\\application\\services\\audio\\audio_playback_service.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "is_recording(1)",
+      "files": [
+        "src\\application\\services\\audio\\audio_recording_service.py",
+        "src\\application\\services\\audio\\audio_recording_service.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "stop_recording(1)",
+      "files": [
+        "src\\application\\services\\audio\\audio_recording_service.py",
+        "src\\application\\services\\audio\\audio_recording_service.py",
+        "src\\application\\services\\audio\\transcription_service.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 4
+    },
+    {
+      "type": "functional",
+      "signature": "update_config(2)",
+      "files": [
+        "src\\application\\services\\audio\\audio_recording_service.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "start_session(4)",
+      "files": [
+        "src\\application\\services\\audio\\audio_session_service.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "end_session(2)",
+      "files": [
+        "src\\application\\services\\audio\\audio_session_service.py",
+        "src\\application\\services\\core\\ar_vr_service.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "get_current_session(1)",
+      "files": [
+        "src\\application\\services\\audio\\audio_session_service.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get_session_info(2)",
+      "files": [
+        "src\\application\\services\\audio\\audio_session_service.py",
+        "src\\application\\services\\core\\audio_streamer.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "create_transcription_service(1)",
+      "files": [
+        "src\\application\\services\\audio\\transcription_service.py",
+        "src\\core\\services\\fix_remaining_services.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_initialize_components(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\unified_cache_service.py",
+        "src\\application\\services\\parent\\unified_monitoring_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "_init_whisper(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_init_elevenlabs(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_init_azure(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "generate(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\infrastructure\\external_services\\mock\\transformers.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_get_elevenlabs_voice_settings(2)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_build_azure_ssml(4)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_clean_transcription(2)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "is_speech(2)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\domain\\audio\\services\\voice_activity_detector.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get_speech_segments(2)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\domain\\audio\\services\\voice_activity_detector.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "set_streaming_service(2)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_interaction_service.py",
+        "src\\application\\services\\audio\\voice_synthesis_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "_input_callback(5)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_interaction_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_output_callback(5)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_interaction_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_get_azure_voice_name(2)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_synthesis_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "set_ai_service(2)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_interaction_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "is_arabic(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_interaction_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "is_english(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_interaction_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get_emotion_from_sentiment(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_interaction_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get_time_based_emotion(0)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\voice_interaction_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_update_stats(3)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\transcription_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "get_performance_metrics(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\transcription_service.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py"
+      ],
+      "count": 4
+    },
+    {
+      "type": "functional",
+      "signature": "device(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\transcription_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "add_chunk(2)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\transcription_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_detect_activity(2)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\audio_streamer.py",
+        "src\\application\\services\\core\\transcription_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "get_ready_chunk(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\transcription_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "clear(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\transcription_service.py"
+      ],
+      "count": 5
+    },
+    {
+      "type": "functional",
+      "signature": "_calculate_confidence(2)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\transcription_service.py",
+        "src\\infrastructure\\external_services\\clients\\whisper_client.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "_get_active_components(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\unified_cache_service.py",
+        "src\\application\\services\\parent\\unified_monitoring_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "create(0)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\unified_cache_service.py",
+        "src\\application\\services\\parent\\unified_monitoring_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "create_with_config(1)",
+      "files": [
+        "src\\application\\services\\audio\\unified_audio_service.py",
+        "src\\application\\services\\core\\unified_cache_service.py",
+        "src\\application\\services\\parent\\unified_monitoring_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "handle_result(1)",
+      "files": [
+        "src\\application\\services\\audio\\voice_service.py",
+        "src\\application\\services\\audio\\voice_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get_interaction_patterns(2)",
+      "files": [
+        "src\\application\\services\\child\\child_interaction_service.py",
+        "src\\application\\services\\core\\advanced_personalization_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get_stats(1)",
+      "files": [
+        "src\\application\\services\\core\\audio_streamer.py",
+        "src\\application\\services\\core\\simple_cache_service.py",
+        "src\\application\\services\\core\\unified_cache_service.py",
+        "src\\application\\services\\core\\websocket_manager.py"
+      ],
+      "count": 4
+    },
+    {
+      "type": "functional",
+      "signature": "_group_targets_by_table(2)",
+      "files": [
+        "src\\application\\services\\core\\backup_service.py",
+        "src\\application\\services\\core\\cleanup_execution_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get(2)",
+      "files": [
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\cache_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "set(4)",
+      "files": [
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\cache_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "delete(2)",
+      "files": [
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\cache_service.py",
+        "src\\application\\services\\core\\cache_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "_hash_child_id(2)",
+      "files": [
+        "src\\application\\services\\core\\he_integration_service.py",
+        "src\\application\\services\\core\\he_integration_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get(1)",
+      "files": [
+        "src\\application\\services\\core\\inmemorycache.py",
+        "src\\application\\services\\core\\rediscache.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "set(1)",
+      "files": [
+        "src\\application\\services\\core\\inmemorycache.py",
+        "src\\application\\services\\core\\rediscache.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_init_database(1)",
+      "files": [
+        "src\\application\\services\\core\\issue_tracker_service.py",
+        "src\\application\\services\\parent\\rate_monitor_service.py",
+        "src\\application\\services\\parent\\unified_monitoring_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "_generate_issue_id(3)",
+      "files": [
+        "src\\application\\services\\core\\issue_tracker_service.py",
+        "src\\application\\services\\parent\\unified_monitoring_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "overall_score(1)",
+      "files": [
+        "src\\application\\services\\core\\moderationresult.py",
+        "src\\application\\services\\core\\moderation_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_init_nlp_models(1)",
+      "files": [
+        "src\\application\\services\\core\\moderation_service.py",
+        "src\\application\\services\\parent\\enhanced_parent_report_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_generate_cache_key(4)",
+      "files": [
+        "src\\application\\services\\core\\moderation_service.py",
+        "src\\application\\services\\core\\simple_cache_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_generate_cache_key(3)",
+      "files": [
+        "src\\application\\services\\core\\moderation_service_modern.py",
+        "src\\infrastructure\\external_services\\enhanced_audio_processor.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "get_service(2)",
+      "files": [
+        "src\\application\\services\\core\\service_registry.py",
+        "src\\application\\services\\core\\service_registry.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "cached(1)",
+      "files": [
+        "src\\application\\services\\core\\simple_cache_service.py",
+        "src\\application\\services\\core\\unified_cache_service.py",
+        "src\\application\\services\\core\\unified_cache_service.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "get_health_status(1)",
+      "files": [
+        "src\\application\\services\\core\\simple_health_service.py",
+        "src\\application\\services\\parent\\unified_monitoring_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_generate_cache_key(0)",
+      "files": [
+        "src\\application\\services\\core\\unified_cache_service.py",
+        "src\\application\\services\\core\\unified_cache_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_init_counters(1)",
+      "files": [
+        "src\\application\\services\\parent\\rate_monitor_service.py",
+        "src\\application\\services\\parent\\unified_monitoring_service.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "main(0)",
+      "files": [
+        "src\\core\\services\\fix_remaining_services.py",
+        "src\\core\\services\\phase_2_services_consolidation.py",
+        "src\\core\\services\\service_fixes.py",
+        "src\\core\\services\\service_organizer_analyzer.py",
+        "src\\core\\services\\vault_secret_manager.py"
+      ],
+      "count": 5
+    },
+    {
+      "type": "functional",
+      "signature": "identify_improvement_areas(2)",
+      "files": [
+        "src\\domain\\reporting\\services\\behavior_analyzer.py",
+        "src\\domain\\reporting\\services\\progress_analyzer.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "analyze_skills_practiced(2)",
+      "files": [
+        "src\\domain\\reporting\\services\\progress_analyzer.py",
+        "src\\domain\\reporting\\services\\skill_analyzer.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "identify_achievements(2)",
+      "files": [
+        "src\\domain\\reporting\\services\\progress_analyzer.py",
+        "src\\domain\\reporting\\services\\skill_analyzer.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "_initialize_models(1)",
+      "files": [
+        "src\\infrastructure\\external_services\\advanced_ai_orchestrator.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\distributed_processor.py",
+        "src\\infrastructure\\external_services\\enhanced_audio_processor.py"
+      ],
+      "count": 6
+    },
+    {
+      "type": "functional",
+      "signature": "cleanup_temp_files(1)",
+      "files": [
+        "src\\infrastructure\\external_services\\audio_io.py",
+        "src\\infrastructure\\external_services\\audio_io.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "__enter__(1)",
+      "files": [
+        "src\\infrastructure\\external_services\\audio_io.py",
+        "src\\infrastructure\\external_services\\audio_manager.py",
+        "src\\infrastructure\\external_services\\mock\\transformers.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "__exit__(4)",
+      "files": [
+        "src\\infrastructure\\external_services\\audio_io.py",
+        "src\\infrastructure\\external_services\\audio_manager.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "cleanup(1)",
+      "files": [
+        "src\\infrastructure\\external_services\\audio_manager.py",
+        "src\\infrastructure\\external_services\\audio_processing.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "process_audio(2)",
+      "files": [
+        "src\\infrastructure\\external_services\\audio_processing.py",
+        "src\\infrastructure\\external_services\\audio_processing.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "parse_args(1)",
+      "files": [
+        "src\\infrastructure\\external_services\\cli\\process.py",
+        "src\\infrastructure\\external_services\\cli\\record.py",
+        "src\\infrastructure\\external_services\\cli\\tts.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "main(1)",
+      "files": [
+        "src\\infrastructure\\external_services\\cli\\process.py",
+        "src\\infrastructure\\external_services\\cli\\record.py",
+        "src\\infrastructure\\external_services\\cli\\tts.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "is_available(1)",
+      "files": [
+        "src\\infrastructure\\external_services\\clients\\azure_speech_client.py",
+        "src\\infrastructure\\external_services\\clients\\elevenlabs_client.py",
+        "src\\infrastructure\\external_services\\clients\\whisper_client.py"
+      ],
+      "count": 3
+    },
+    {
+      "type": "functional",
+      "signature": "from_pretrained(2)",
+      "files": [
+        "src\\infrastructure\\external_services\\mock\\transformers.py",
+        "src\\infrastructure\\external_services\\mock\\transformers.py"
+      ],
+      "count": 2
+    },
+    {
+      "type": "functional",
+      "signature": "to(2)",
+      "files": [
+        "src\\infrastructure\\external_services\\mock\\transformers.py",
+        "src\\infrastructure\\external_services\\mock\\transformers.py"
+      ],
+      "count": 2
+    }
+  ],
+  "trash_files": [
+    "final_backup_20250701_114318\\src\\infrastructure\\external_services\\mock\\__init__.py",
+    "final_backup_20250701_114318\\src\\testing\\demo_runner.py",
+    "final_backup_20250701_114318\\tests\\unit\\ui\\test_simple.py",
+    "tests\\simple_compatibility_test.py"
+  ],
+  "suggested_moves": [
+    {
+      "from": "cleanup_analyzer.py",
+      "to": "src/cleanup_analyzer.py",
+      "reason": "Better organization for other file"
+    },
+    {
+      "from": "find_more_duplicates.py",
+      "to": "src/find_more_duplicates.py",
+      "reason": "Better organization for other file"
+    },
+    {
+      "from": "fix_reorganization_issues.py",
+      "to": "src/fix_reorganization_issues.py",
+      "reason": "Better organization for other file"
+    },
+    {
+      "from": "start_reorganization.py",
+      "to": "src/start_reorganization.py",
+      "reason": "Better organization for other file"
+    },
+    {
+      "from": "api\\endpoints\\audio.py",
+      "to": "src/api/endpoints/audio.py",
+      "reason": "Better organization for controller file"
+    },
+    {
+      "from": "api\\endpoints\\dashboard.py",
+      "to": "src/api/endpoints/dashboard.py",
+      "reason": "Better organization for controller file"
+    },
+    {
+      "from": "api\\endpoints\\device.py",
+      "to": "src/api/endpoints/device.py",
+      "reason": "Better organization for controller file"
+    },
+    {
+      "from": "api\\endpoints\\__init__.py",
+      "to": "src/api/endpoints/__init__.py",
+      "reason": "Better organization for controller file"
+    },
+    {
+      "from": "api\\websocket\\__init__.py",
+      "to": "src/api/endpoints/__init__.py",
+      "reason": "Better organization for controller file"
+    },
+    {
+      "from": "chaos\\actions\\ai.py",
+      "to": "src/ai.py",
+      "reason": "Better organization for other file"
+    },
+    {
+      "from": "chaos\\actions\\recovery.py",
+      "to": "src/recovery.py",
+      "reason": "Better organization for other file"
+    },
+    {
+      "from": "chaos\\actions\\safety.py",
+      "to": "src/safety.py",
+      "reason": "Better organization for other file"
+    },
+    {
+      "from": "chaos\\infrastructure\\chaos_orchestrator.py",
+      "to": "src/chaos_orchestrator.py",
+      "reason": "Better organization for other file"
+    },
+    {
+      "from": "chaos\\monitoring\\chaos_metrics.py",
+      "to": "src/chaos_metrics.py",
+      "reason": "Better organization for other file"
+    },
+    {
+      "from": "configs\\audio_config.py",
+      "to": "configs/audio_config.py",
+      "reason": "Better organization for config file"
+    },
+    {
+      "from": "configs\\configure_logging.py",
+      "to": "configs/configure_logging.py",
+      "reason": "Better organization for config file"
+    },
+    {
+      "from": "configs\\config_hardware_esp32_analyzer.py",
+      "to": "configs/config_hardware_esp32_analyzer.py",
+      "reason": "Better organization for config file"
+    },
+    {
+      "from": "configs\\config_manager.py",
+      "to": "configs/config_manager.py",
+      "reason": "Better organization for config file"
+    },
+    {
+      "from": "configs\\emotioncalibrationconfig.py",
+      "to": "configs/emotioncalibrationconfig.py",
+      "reason": "Better organization for config file"
+    },
+    {
+      "from": "configs\\emotion_config.py",
+      "to": "configs/emotion_config.py",
+      "reason": "Better organization for config file"
+    }
+  ],
+  "security_issues": [
+    {
+      "file": ".pre-commit-config.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "cleanup_analyzer.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "comprehensive_cleanup_report.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "docker-compose.vault.yml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "full_project_analysis.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "pytest.ini",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": ".github\\workflows\\comprehensive-pipeline.yml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": ".github\\workflows\\secrets-detection.yml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "argocd\\applications\\ai-teddy-app.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "argocd\\applications\\microservices\\child-service-app.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "argocd\\environment-configs\\production.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "argocd\\workflows\\ci-cd-integration.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "config\\config.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "config\\default_schema_backup.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "config\\default_schema_new.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "config\\safety_keywords.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "config\\environments\\development.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "config\\environments\\staging_config.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "config\\schemas\\api_keys.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "config\\schemas\\application.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "config\\schemas\\llm_settings.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "config\\schemas\\security.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "deployments\\k8s\\production\\kustomization.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "final_backup_20250701_114318\\src\\infrastructure\\persistence\\emotion_log_repository.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "frontend\\package-lock.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "monitoring\\emergency\\docker-compose.emergency.yml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "monitoring\\emergency\\alertmanager\\alertmanager.yml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "monitoring\\emergency\\kubernetes\\emergency-monitoring-configmap.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "monitoring\\emergency\\prometheus\\alerts\\security_critical.yml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "observability\\alert-rules.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "observability\\grafana-dashboards.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "observability\\sli-slo-definitions.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "observability\\architecture\\infrastructure\\core-services\\grafana.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "observability\\architecture\\infrastructure\\data-pipeline\\opentelemetry-collector.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "observability\\architecture\\infrastructure\\security\\rbac.yaml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "scripts\\advanced_deep_analyzer.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "scripts\\comprehensive_cleaner.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "scripts\\full_project_analyzer.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "scripts\\project_analysis.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "scripts\\project_analyzer.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "scripts\\project_cleanup_analyzer.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "scripts\\security_audit_and_fix.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "scripts\\security_audit_and_fix.py",
+      "issue": "hardcoded secrets"
+    },
+    {
+      "file": "src\\.github\\workflows\\ci.yml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "src\\application\\services\\ai\\email_service.py",
+      "issue": "hardcoded secrets"
+    },
+    {
+      "file": "src\\application\\services\\audio\\voice_service.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "src\\application\\services\\core\\cache_service.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "src\\application\\services\\core\\sms_service.py",
+      "issue": "hardcoded secrets"
+    },
+    {
+      "file": "src\\config\\config.json",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "src\\core\\services\\vault_secret_manager.py",
+      "issue": "hardcoded secrets"
+    },
+    {
+      "file": "src\\infrastructure\\esp32_production_simulator.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "src\\infrastructure\\external_services\\mock\\transformers.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "src\\infrastructure\\persistence\\repositories\\emotion_log_repository.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "src\\infrastructure\\security\\enhanced_security.py",
+      "issue": "hardcoded secrets"
+    },
+    {
+      "file": "src\\infrastructure\\security\\safe_expression_parser.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "src\\infrastructure\\security\\security_migration_examples.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "src\\infrastructure\\security\\security_migration_examples.py",
+      "issue": "hardcoded secrets"
+    },
+    {
+      "file": "src\\infrastructure\\security\\security_solutions_integration.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "src\\infrastructure\\security\\vault_integration.py",
+      "issue": "hardcoded secrets"
+    },
+    {
+      "file": "src\\infrastructure\\security\\vault_secrets_manager.py",
+      "issue": "hardcoded secrets"
+    },
+    {
+      "file": "src\\monitoring\\prometheus.yml",
+      "issue": "Contains potential secrets in config"
+    },
+    {
+      "file": "src\\presentation\\ui\\main_window.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "src\\simulators\\esp32_production_simulator.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "tests\\test_backward_compatibility.py",
+      "issue": "eval/exec usage"
+    },
+    {
+      "file": "tests\\unit\\test_security_solutions.py",
+      "issue": "eval/exec usage"
+    }
+  ]
+}
