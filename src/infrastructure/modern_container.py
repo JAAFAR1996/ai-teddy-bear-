@@ -290,7 +290,7 @@ class AsyncServiceResolver:
         # Create new instance
         return await self.container._create_service_instance(service_name, registration)
     
-    def clear_cache(self, service_name -> Any: Optional[str] = None) -> Any:
+    def clear_cache(Optional[str] = None) -> None:
         """Clear resolution cache"""
         if service_name:
             self._resolution_cache.pop(service_name, None)
@@ -640,14 +640,14 @@ def get_container() -> EnterpriseContainer:
     return _global_container
 
 
-def set_container(container -> Any: EnterpriseContainer) -> Any:
+def set_container(EnterpriseContainer) -> None:
     """Set global container instance"""
     global _global_container
     _global_container = container
 
 
 # Dependency injection decorators
-def injectable(lifetime -> Any: ServiceLifetime = ServiceLifetime.TRANSIENT) -> Any:
+def injectable(ServiceLifetime = ServiceLifetime.TRANSIENT) -> None:
     """Mark class as injectable service"""
     def decorator(cls) -> Any:
         cls._injectable_lifetime = lifetime
@@ -655,7 +655,7 @@ def injectable(lifetime -> Any: ServiceLifetime = ServiceLifetime.TRANSIENT) -> 
     return decorator
 
 
-def inject_service(service_name -> Any: str) -> Any:
+def inject_service(str) -> None:
     """Inject service dependency"""
     def decorator(func) -> Any:
         async def wrapper(*args, **kwargs):

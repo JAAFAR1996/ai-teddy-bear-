@@ -1,3 +1,4 @@
+# Transformers imports patched for development
 # llm_service_factory.py - Enhanced version with full adapter pattern
 
 import asyncio
@@ -15,11 +16,14 @@ import openai
 import anthropic
 import google.generativeai as genai
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+try:
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+except ImportError:
+    from src.infrastructure.external_services.mock.transformers import AutoModelForCausalLM, AutoTokenizer
 import redis.asyncio as aioredis
 
 from src.infrastructure.config import get_config
-from src.domain.entities.conversation import Conversation, Message
+from src.core.domain.entities.conversation import Conversation, Message
 
 
 class LLMProvider(Enum):
@@ -578,7 +582,7 @@ class ModelSelector:
             context_window=model_capabilities[best_model]['context_window']
         )
 
-    def record_performance(self, model_name -> Any: str, success -> Any: bool, latency_ms -> Any: int) -> Any:
+    def record_performance(int) -> None:
         """Record model performance for future selection"""
         self.performance_history[model_name].append(1.0 if success else 0.0)
 
@@ -966,7 +970,7 @@ class LLMServiceFactory:
         rate_data['requests'] += 1
         return True
 
-    def _update_usage_stats(self, provider -> Any: LLMProvider, response -> Any: LLMResponse) -> Any:
+    def _update_usage_stats(LLMResponse) -> None:
         """Update usage statistics"""
         stats = self.usage_stats[provider]
         stats['total_requests'] += 1

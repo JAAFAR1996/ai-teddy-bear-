@@ -44,19 +44,19 @@ class UnifiedCacheService:
 
     # ----- من cache_service.py -----
     
-    def cached(self, ttl -> Any: int = 3600, key_prefix -> Any: str = "") -> Any:
+    def cached(str = "") -> None:
         """دالة مدموجة من cache_service.py"""
         # RESOLVED: تنفيذ الدالة من cache_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من cache_service.py")
         pass
 
-    def decorator(func -> Any: Callable) -> Any:
+    def decorator(Callable) -> None:
         """دالة مدموجة من cache_service.py"""
         # RESOLVED: تنفيذ الدالة من cache_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من cache_service.py")
         pass
 
-    def _generate_cache_key(
+    def _generate_cache_key():
         """دالة مدموجة من cache_service.py"""
         # RESOLVED: تنفيذ الدالة من cache_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من cache_service.py")
@@ -65,19 +65,19 @@ class UnifiedCacheService:
 
     # ----- من simple_cache_service.py -----
     
-    def cached(self, ttl -> Any: int = 3600, key_prefix -> Any: str = "") -> Any:
+    def cached(str = "") -> None:
         """دالة مدموجة من simple_cache_service.py"""
         # RESOLVED: تنفيذ الدالة من simple_cache_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من simple_cache_service.py")
         pass
 
-    def decorator(func -> Any: Callable) -> Any:
+    def decorator(Callable) -> None:
         """دالة مدموجة من simple_cache_service.py"""
         # RESOLVED: تنفيذ الدالة من simple_cache_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من simple_cache_service.py")
         pass
 
-    def _generate_cache_key(
+    def _generate_cache_key():
         """دالة مدموجة من simple_cache_service.py"""
         # RESOLVED: تنفيذ الدالة من simple_cache_service.py
         raise NotImplementedError("Implementation needed: تنفيذ الدالة من simple_cache_service.py")

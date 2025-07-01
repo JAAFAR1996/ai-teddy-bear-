@@ -64,7 +64,7 @@ class EmotionAnalyticsEngine:
             self.plotly_available = False
             logger.warning("Plotly not available - install with: pip install plotly")
     
-    def add_emotion_data(self, emotion -> Any: str, confidence -> Any: float, metadata -> Any: dict = None) -> Any:
+    def add_emotion_data(dict = None) -> None:
         """Add new emotion data point"""
         entry = {
             "emotion": emotion,
@@ -445,7 +445,7 @@ class SmartAlertSystem:
             if alert["timestamp"] >= cutoff_time
         ]
     
-    def set_sensitivity(self, level -> Any: float) -> Any:
+    def set_sensitivity(float) -> None:
         """Set alert sensitivity (0.1 to 2.0)"""
         self.sensitivity = max(0.1, min(2.0, level))
         
@@ -710,7 +710,7 @@ class EnterpriseDashboardWidget(QWidget):
         except Exception as e:
             logger.error("Failed to update real-time metrics", error=str(e))
     
-    def add_emotion_data(self, emotion -> Any: str, confidence -> Any: float, metadata -> Any: dict = None) -> Any:
+    def add_emotion_data(dict = None) -> None:
         """Add new emotion data and update displays"""
         # Add to analytics engine
         self.emotion_engine.add_emotion_data(emotion, confidence, metadata)
@@ -723,7 +723,7 @@ class EnterpriseDashboardWidget(QWidget):
         
         logger.info("Emotion data added", emotion=emotion, confidence=confidence)
     
-    def update_current_emotion_display(self, emotion -> Any: str, confidence -> Any: float) -> Any:
+    def update_current_emotion_display(float) -> None:
         """Update current emotion display"""
         emotion_emojis = {
             "happy": "😊", "excited": "🤩", "calm": "😌", "curious": "🤔",
@@ -795,7 +795,7 @@ class EnterpriseDashboardWidget(QWidget):
         except Exception as e:
             logger.error("Failed to update charts", error=str(e))
     
-    def display_plotly_chart(self, fig, chart_type -> Any: str) -> Any:
+    def display_plotly_chart(str) -> None:
         """Display Plotly chart in widget"""
         try:
             if WEBENGINE_AVAILABLE:
@@ -853,7 +853,7 @@ class EnterpriseDashboardWidget(QWidget):
         except Exception as e:
             logger.error("Failed to process alerts", error=str(e))
     
-    def display_alert(self, alert -> Any: Dict) -> Any:
+    def display_alert(Dict) -> None:
         """Display alert in the alerts panel"""
         timestamp = alert["timestamp"].strftime("%H:%M:%S")
         priority_colors = {
@@ -877,7 +877,7 @@ class EnterpriseDashboardWidget(QWidget):
         # Emit signal for parent handling
         self.alert_triggered.emit(alert["type"], alert["message"], alert["data"])
     
-    def toggle_alerts(self, enabled -> Any: bool) -> Any:
+    def toggle_alerts(bool) -> None:
         """Toggle smart alerts system"""
         self.alert_system.enabled = enabled
         
@@ -888,7 +888,7 @@ class EnterpriseDashboardWidget(QWidget):
             self.alerts_timer.stop()
             logger.info("Smart alerts disabled")
     
-    def update_alert_sensitivity(self, value -> Any: int) -> Any:
+    def update_alert_sensitivity(int) -> None:
         """Update alert sensitivity"""
         sensitivity = value / 5.0  # Convert 1-10 scale to 0.2-2.0
         self.alert_system.set_sensitivity(sensitivity)
@@ -898,7 +898,7 @@ class EnterpriseDashboardWidget(QWidget):
         self.update_charts()
         logger.info("Charts refreshed manually")
     
-    def update_connection_status(self, status -> Any: str) -> Any:
+    def update_connection_status(str) -> None:
         """Update connection status indicator"""
         status_config = {
             "Connected": {"color": "green", "symbol": "●"},
@@ -912,7 +912,7 @@ class EnterpriseDashboardWidget(QWidget):
         self.connection_indicator.setText(f"{config['symbol']} {status}")
         self.connection_indicator.setStyleSheet(f"QLabel {{ color: {config['color']}; font-weight: bold; }}")
     
-    def add_child_profile(self, name -> Any: str, age -> Any: int, metadata -> Any: dict = None) -> Any:
+    def add_child_profile(dict = None) -> None:
         """Add child profile to dashboard"""
         profile_text = f"{name} (Age: {age})"
         self.profiles_list.addItem(profile_text)

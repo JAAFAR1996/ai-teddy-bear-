@@ -7,7 +7,7 @@ Domain service for child family and grouping business logic.
 from typing import List, Optional, Dict, Any
 import logging
 
-from src.domain.entities.child import Child
+from src.core.domain.entities.child import Child
 
 
 class ChildFamilyDomainService:

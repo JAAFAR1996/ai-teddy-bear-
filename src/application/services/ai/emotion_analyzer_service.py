@@ -10,7 +10,7 @@ from datetime import datetime
 
 from src.application.services.ai.interfaces.ai_service_interface import IEmotionAnalyzer
 from src.application.services.ai.models.ai_response_models import EmotionAnalysis
-from src.domain.services.emotion_analyzer import EmotionAnalyzer as DomainEmotionAnalyzer
+from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer as DomainEmotionAnalyzer
 
 logger = logging.getLogger(__name__)
 

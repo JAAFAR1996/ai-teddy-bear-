@@ -511,7 +511,7 @@ class AuthenticationService:
             # Clear attempts on successful login
             self.login_attempts[username] = []
     
-    def _store_password(self, user_id -> Any: str, hashed_password -> Any: str) -> Any:
+    def _store_password(str) -> None:
         """Store hashed password (mock implementation)."""
         # In production, store in secure database
         setattr(self, f"_pwd_{user_id}", hashed_password)
@@ -561,7 +561,7 @@ class GraphQLAuthenticator:
         
         return user
     
-    def require_permission(self, permission -> Any: Permission) -> Any:
+    def require_permission(Permission) -> None:
         """Decorator to require specific permission."""
         def decorator(func) -> Any:
             async def wrapper(*args, **kwargs):
@@ -584,7 +584,7 @@ class GraphQLAuthenticator:
             return wrapper
         return decorator
     
-    def require_child_access(self, child_id_param -> Any: str = "child_id") -> Any:
+    def require_child_access(str = "child_id") -> None:
         """Decorator to require access to specific child."""
         def decorator(func) -> Any:
             async def wrapper(*args, **kwargs):

@@ -236,7 +236,7 @@ class ChildSafetyMetrics:
                 }
             )
     
-    def record_child_interaction(self, metrics -> Any: ChildInteractionMetrics) -> Any:
+    def record_child_interaction(ChildInteractionMetrics) -> None:
         """Record comprehensive child interaction metrics"""
         with self.tracer.start_as_current_span("child_interaction") as span:
             span.set_attributes({
@@ -680,7 +680,7 @@ class SystemHealthMetrics:
                 }
             )
     
-    def update_slo_metrics(self, service_name -> Any: str) -> Any:
+    def update_slo_metrics(str) -> None:
         """Update SLO compliance metrics"""
         # This would typically calculate from actual metrics
         # For demo purposes, using simulated values

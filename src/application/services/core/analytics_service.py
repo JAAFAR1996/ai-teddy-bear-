@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 from src.domain.parentdashboard.services.analytics_domain_service import AnalyticsDomainService
 from src.domain.parentdashboard.models.analytics_models import AnalyticsFilter
-from src.domain.repositories.conversation_repository import ConversationRepository
+from src.infrastructure.persistence.conversation_repository import ConversationRepository
 
 
 class DashboardAnalyticsService:

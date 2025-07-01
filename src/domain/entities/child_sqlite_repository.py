@@ -16,9 +16,9 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 
 from src.infrastructure.persistence.base_sqlite_repository import BaseSQLiteRepository
-from src.domain.entities.child import Child
-from src.domain.repositories.child_repository import ChildRepository
-from src.domain.repositories.base import SearchCriteria, QueryOptions, SortOrder
+from src.core.domain.entities.child import Child
+from src.infrastructure.persistence.child_repository import ChildRepository
+from src.infrastructure.persistence.base import SearchCriteria, QueryOptions, SortOrder
 
 # Import refactored services
 from src.domain.child.services.child_analytics_service import ChildAnalyticsDomainService

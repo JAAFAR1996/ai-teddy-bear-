@@ -357,7 +357,7 @@ circuit_breaker_manager = CircuitBreakerManager()
 
 
 # Convenience decorator
-def circuit_breaker(name -> Any: str, **kwargs) -> Any:
+def circuit_breaker(str, **kwargs) -> None:
     """
     Decorator to apply circuit breaker to a function
     

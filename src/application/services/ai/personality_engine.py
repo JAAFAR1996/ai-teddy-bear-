@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 
 import structlog
 
-from src.application.services.service_registry import ServiceBase
+# from src.application.services.core.service_registry import ServiceBase
 from .models import ResponseMode
 
 logger = structlog.get_logger()

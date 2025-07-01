@@ -30,8 +30,8 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from config.secure_config import AIServiceConfig
-from src.application.services.circuit_breaker import CircuitBreaker, CircuitBreakerError
-from src.domain.entities.child import Child
+# from src.application.services.core.circuit_breaker import CircuitBreaker, CircuitBreakerError
+from src.core.domain.entities.child import Child
 
 
 # Metrics
@@ -456,7 +456,7 @@ class ModernAIService:
         provider_instance = self.providers[provider]
         return await provider_instance.generate_response(request)
     
-    def _update_metrics(self, response -> Any: AIResponse) -> Any:
+    def _update_metrics(AIResponse) -> None:
         """Update internal metrics"""
         self.request_count += 1
         self.total_tokens_used += response.tokens_used

@@ -237,7 +237,7 @@ class AudioHandler(QThread):
         
         return buffer.getvalue()
     
-    def _play_audio(self, audio_data -> Any: bytes) -> Any:
+    def _play_audio(bytes) -> None:
         """Play audio data"""
         try:
             # Decode base64 if needed
@@ -316,7 +316,7 @@ class ConsoleWidget(QTextEdit):
             }
         """)
     
-    def _log(self, message -> Any: str, level -> Any: str = "info") -> Any:
+    def _log(str = "info") -> None:
         """Add log message with color coding"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         
@@ -687,7 +687,7 @@ class ESP32ProductionSimulator(QMainWindow):
         else:
             self.console.log("No audio recorded", "warning")
     
-    def _send_audio_data(self, audio_data -> Any: bytes) -> Any:
+    def _send_audio_data(bytes) -> None:
         """Send audio data to server"""
         async def send():
             try:
@@ -730,7 +730,7 @@ class ESP32ProductionSimulator(QMainWindow):
         # In production, this would use actual TTS
     
     @Slot(dict)
-    def _handle_ws_message(self, data -> Any: dict) -> Any:
+    def _handle_ws_message(dict) -> None:
         """Handle WebSocket message"""
         msg_type = data.get("type", "unknown")
         
@@ -741,21 +741,21 @@ class ESP32ProductionSimulator(QMainWindow):
             self.console.log(f"WebSocket message: {json.dumps(data)}", "info")
     
     @Slot(str)
-    def _handle_error(self, error -> Any: str) -> Any:
+    def _handle_error(str) -> None:
         """Handle error messages"""
         self.console.log(error, "error")
     
     @Slot(str)
-    def _update_status(self, status -> Any: str) -> Any:
+    def _update_status(str) -> None:
         """Update status message"""
         self.status_bar.showMessage(status, 3000)
     
     @Slot(float)
-    def _update_audio_level(self, level -> Any: float) -> Any:
+    def _update_audio_level(float) -> None:
         """Update audio level indicator"""
         self.audio_level_bar.setValue(int(level * 100))
     
-    def _update_connection_status(self, connected -> Any: bool) -> Any:
+    def _update_connection_status(bool) -> None:
         """Update connection status display"""
         if connected:
             self.connection_status.setText("● Connected")

@@ -63,7 +63,7 @@ class StoryService:
             'text': story_data['story']
         }
     
-    def _save_story_record(self, child_id -> Any: str, story_data -> Any: Dict, audio_file -> Any: str) -> Any:
+    def _save_story_record(str) -> None:
         """حفظ سجل القصة في قاعدة بيانات أو سجل خارجي"""
         # مثال: حفظ في قاعدة بيانات (يجب ربط db فعليًا في التطبيق)
         # db.save_story(child_id, story_data, audio_file)

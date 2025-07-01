@@ -46,7 +46,7 @@ class AudioConfig:
                    sample_rate=self.sample_rate,
                    channels=self.channels)
     
-    def update_sample_rate(self, rate -> Any: int) -> Any:
+    def update_sample_rate(int) -> None:
         """Update audio sample rate"""
         self.sample_rate = rate
         logger.info("Sample rate updated", rate=rate)

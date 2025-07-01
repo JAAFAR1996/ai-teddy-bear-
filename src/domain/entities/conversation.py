@@ -218,7 +218,7 @@ class Conversation(BaseModel):
         
         return message
     
-    def _update_metrics(self, message -> Any: Message) -> Any:
+    def _update_metrics(Message) -> None:
         """Update conversation metrics"""
         self.metrics.total_messages += 1
         

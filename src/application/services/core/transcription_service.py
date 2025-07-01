@@ -22,7 +22,7 @@ import librosa
 from openai import AsyncOpenAI
 
 # Value objects
-from domain.value_objects import Confidence
+from src.domain.value_objects import Confidence
 
 logger = logging.getLogger(__name__)
 

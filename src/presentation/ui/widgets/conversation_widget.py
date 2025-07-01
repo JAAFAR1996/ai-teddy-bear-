@@ -96,7 +96,7 @@ class ConversationWidget(QWidget):
         # Add welcome message
         self.add_message("Teddy", "Hi! I'm your AI Teddy Bear. How can I help you today?")
     
-    def add_message(self, sender -> Any: str, message -> Any: str, timestamp -> Any: Optional[datetime] = None) -> Any:
+    def add_message(Optional[datetime] = None) -> None:
         """Add a message to the conversation display"""
         if timestamp is None:
             timestamp = datetime.now()
@@ -145,7 +145,7 @@ class ConversationWidget(QWidget):
         # Send to server
         self._send_message_to_server(message)
     
-    def _send_message_to_server(self, message -> Any: str) -> Any:
+    def _send_message_to_server(str) -> None:
         """Send message to server asynchronously"""
         if self.message_sender:
             try:
@@ -174,7 +174,7 @@ class ConversationWidget(QWidget):
         """Set the message sender instance"""
         self.message_sender = message_sender
     
-    def handle_server_response(self, response -> Any: dict) -> Any:
+    def handle_server_response(dict) -> None:
         """Handle response from server"""
         if response.get("type") == "text_response":
             teddy_message = response.get("response", "I didn't understand that.")

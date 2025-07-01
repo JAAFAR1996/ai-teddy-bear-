@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 import logging
 
-from src.domain.entities.child import Child
+from src.core.domain.entities.child import Child
 from src.domain.child.models.child_analytics import (
     ChildEngagementInsight,
     ChildStatistics,

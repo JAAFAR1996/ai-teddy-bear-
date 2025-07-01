@@ -11,7 +11,7 @@ from datetime import datetime
 from src.application.services.ai.interfaces.ai_service_interface import IAIService
 from src.application.services.ai.models.ai_response_models import AIResponseModel, AIServiceMetrics
 from src.application.services.ai.ai_service_factory import EnhancedAIServiceFactory
-from src.domain.entities.child import Child
+from src.core.domain.entities.child import Child
 from src.infrastructure.config import Settings
 from src.infrastructure.caching.simple_cache_service import CacheService
 

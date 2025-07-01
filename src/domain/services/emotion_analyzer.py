@@ -28,7 +28,7 @@ except ImportError:
     HUME_AVAILABLE = False
 
 try:
-    from src.application.services.service_registry import ServiceBase
+    # from src.application.services.core.service_registry import ServiceBase
     from src.infrastructure.observability import trace_async
     SERVICE_REGISTRY_AVAILABLE = True
 except ImportError:
@@ -824,7 +824,7 @@ class EmotionAnalyzer:
             # Return empty DataFrame if pandas not available
             return None
     
-    def save_history(self, filepath -> Any: str) -> Any:
+    def save_history(str) -> None:
         """Save emotion history to file"""
         try:
             with open(filepath, 'w', encoding='utf-8') as f:

@@ -1003,7 +1003,7 @@ class EdgeAIManager:
         
         return recommendations
     
-    def _update_processing_stats(self, processing_time_ms -> Any: float) -> Any:
+    def _update_processing_stats(float) -> None:
         """Update processing statistics."""
         current_avg = self.processing_stats["average_processing_time"]
         total_processed = self.processing_stats["total_processed"]
@@ -1053,7 +1053,7 @@ class EdgeAIManager:
             }
         }
     
-    def optimize_for_device(self, device_specs -> Any: Dict[str, Any]) -> Any:
+    def optimize_for_device(Dict[str, Any]) -> None:
         """Optimize processing based on device specifications."""
         # Adjust processing mode based on device capabilities
         memory_mb = device_specs.get("memory_mb", 512)

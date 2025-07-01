@@ -444,7 +444,7 @@ class CacheHealthMonitor:
             }
         }
     
-    def set_alert_threshold(self, metric -> Any: str, value -> Any: float) -> Any:
+    def set_alert_threshold(float) -> None:
         """Update alert threshold for specific metric."""
         if metric in self.alert_thresholds:
             self.alert_thresholds[metric] = value

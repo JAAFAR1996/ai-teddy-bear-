@@ -1,3 +1,4 @@
+# Transformers imports patched for development
 """
 ModerationSeverity - Component extracted from large service
 مكون منفصل من خدمة كبيرة
@@ -22,14 +23,17 @@ from azure.ai.contentsafety import ContentSafetyClient
 from azure.core.credentials import AzureKeyCredential
 from google.cloud import language_v1
 import anthropic
-from transformers import pipeline
+try:
+    from transformers import pipeline
+except ImportError:
+    from src.infrastructure.external_services.mock.transformers import pipeline
 import spacy
 import redis.asyncio as aioredis
 from sqlalchemy import Column, String, Float, DateTime, Integer, JSON, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from src.infrastructure.security.encryption import EncryptionService
 from src.infrastructure.config import get_config
-from src.domain.entities.conversation import Conversation, Message
+from src.core.domain.entities.conversation import Conversation, Message
 from src.application.services.parent_dashboard_service import ParentDashboardService
 
 class ModerationSeverity:

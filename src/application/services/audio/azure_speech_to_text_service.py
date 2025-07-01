@@ -10,7 +10,7 @@ logger = structlog.get_logger(__name__)
 import os
 import azure.cognitiveservices.speech as speechsdk
 import sqlite3
-from src.domain.entities.transcription import Transcription
+from src.core.domain.entities.transcription import Transcription
 from src.infrastructure.persistence.transcription_sqlite_repository import TranscriptionSQLiteRepository
 
 
@@ -128,6 +128,6 @@ class AzureSpeechToTextService:
                 )
         return transcriptions
 
-    def get_conversation_transcriptions(self, conversation_id -> Any: int) -> Any:
+    def get_conversation_transcriptions(int) -> None:
         """Retrieve all transcriptions for a specific conversation."""
         return self.transcription_repo.get_by_conversation_id(conversation_id)

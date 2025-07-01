@@ -41,7 +41,7 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from src.application.services.circuit_breaker import circuit_breaker
+# from src.application.services.core.circuit_breaker import circuit_breaker
 
 logger = structlog.get_logger()
 

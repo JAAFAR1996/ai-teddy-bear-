@@ -532,7 +532,7 @@ class AuditLogger:
 
 
 # Convenience decorator for automatic audit logging
-def audit_log(event_type -> Any: AuditEventType, resource_param -> Any: str = None) -> Any:
+def audit_log(str = None) -> None:
     """
     Decorator for automatic audit logging
     

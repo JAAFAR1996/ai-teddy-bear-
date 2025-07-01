@@ -195,7 +195,7 @@ class ModernAudioWidget(QWidget):
         for device in devices:
             self.input_device_combo.addItem(device['name'], device['id'])
     
-    def _update_sample_rate(self, rate_text -> Any: str) -> Any:
+    def _update_sample_rate(str) -> None:
         """Update sample rate"""
         try:
             rate = int(rate_text)
@@ -204,12 +204,12 @@ class ModernAudioWidget(QWidget):
         except ValueError:
             logger.error("Invalid sample rate", rate=rate_text)
     
-    def _toggle_processing(self, enabled -> Any: bool) -> Any:
+    def _toggle_processing(bool) -> None:
         """Toggle audio processing"""
         self.config.enable_processing = enabled
         self.processing_level_combo.setEnabled(enabled)
     
-    def _update_processing_level(self, level -> Any: str) -> Any:
+    def _update_processing_level(str) -> None:
         """Update processing level"""
         self.config.processing_level = level
     
@@ -288,7 +288,7 @@ class ModernAudioWidget(QWidget):
             self.status_label.setText(f"❌ Processing failed: {e}")
             self._reset_ui_state()
     
-    def _send_to_server(self, wav_data -> Any: bytes) -> Any:
+    def _send_to_server(bytes) -> None:
         """Send audio to server"""
         try:
             metadata = {

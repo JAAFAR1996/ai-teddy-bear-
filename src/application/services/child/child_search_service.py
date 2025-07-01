@@ -7,14 +7,14 @@ Application service for child search and filtering operations.
 from typing import List, Optional, Tuple
 import logging
 
-from src.domain.entities.child import Child
+from src.core.domain.entities.child import Child
 from src.domain.child.models.child_search_criteria import (
     ChildSearchCriteria,
     SearchFilters,
     AgeRange,
     AgeGroup
 )
-from src.domain.repositories.child_repository import ChildRepository
+from src.infrastructure.persistence.child_repository import ChildRepository
 
 
 class ChildSearchService:
@@ -28,7 +28,7 @@ class ChildSearchService:
         """Search children based on criteria"""
         try:
             if not criteria.filters.has_filters():
-                from src.domain.repositories.base import QueryOptions
+                from src.infrastructure.persistence.base import QueryOptions
                 options = QueryOptions(
                     limit=criteria.limit,
                     offset=criteria.offset,

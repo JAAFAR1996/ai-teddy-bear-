@@ -378,7 +378,7 @@ class GraphQLPerformanceMonitor:
         
         self.logger.warning(f"Performance alert: {alert_type} - {message}")
     
-    def add_alert_callback(self, callback -> Any: Callable) -> Any:
+    def add_alert_callback(Callable) -> None:
         """Add callback for performance alerts."""
         self.alert_callbacks.append(callback)
     

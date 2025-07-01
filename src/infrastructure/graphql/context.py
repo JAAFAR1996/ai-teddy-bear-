@@ -27,15 +27,15 @@ class GraphQLContext:
     request_id: Optional[str] = None
     auth_token: Optional[str] = None
     
-    def get_dataloader(self, name -> Any: str) -> Any:
+    def get_dataloader(str) -> None:
         """Get DataLoader by name"""
         return self.dataloaders.get(name)
     
-    def get_paginator(self, name -> Any: str) -> Any:
+    def get_paginator(str) -> None:
         """Get paginator by name"""
         return self.paginators.get(name)
     
-    def get_repository(self, name -> Any: str) -> Any:
+    def get_repository(str) -> None:
         """Get repository by name"""
         return self.repositories.get(name)
 

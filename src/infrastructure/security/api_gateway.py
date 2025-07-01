@@ -737,7 +737,7 @@ def get_api_gateway(redis_client: Optional[redis.Redis] = None) -> SecurityAPIGa
     return _api_gateway
 
 
-def configure_app_security(app -> Any: FastAPI, redis_client -> Any: Optional[redis.Redis] = None) -> Any:
+def configure_app_security(Optional[redis.Redis] = None) -> None:
     """Configure FastAPI app with security middleware"""
     
     # Get API gateway instance

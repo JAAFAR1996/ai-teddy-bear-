@@ -1,37 +1,14 @@
-﻿"""Application Layer - Use Cases and Orchestration"""
+"""
+Application Layer
+================
+Application services and use cases
+"""
 
-# Export emotion application services
-from .services.emotion import (
-    EmotionAnalysisService, EmotionDatabaseService,
-    EmotionAnalyticsService, EmotionHistoryService
-)
+# Make src.application importable
+import sys
+from pathlib import Path
 
-# Export ESP32 application services
-from .services.esp32 import (
-    DeviceManagementService, AudioManagementService,
-    NetworkCommunicationService, GUIManagementService,
-    ChildProfileService
-)
-
-# Audio Application Services
-from .services.audio.voice_synthesis_service import VoiceSynthesisService
-from .services.audio.voice_recognition_service import VoiceRecognitionService
-from .services.audio.voice_profile_service import VoiceProfileService
-
-# Add reporting application services
-from .services.reporting import (
-    ReportGenerationService,
-    AnalysisOrchestratorService,
-    RecommendationService
-)
-
-# Add Parent Dashboard application services
-from .services import parentdashboard
-
-# Child Application Services
-from .services.child import (
-    ChildSearchService,
-    ChildAnalyticsService,
-    ChildInteractionService,
-    ChildBulkOperationsService
-)
+# Add src to path if not already there
+src_path = str(Path(__file__).parent.parent)
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)

@@ -11,7 +11,7 @@ import asyncio
 import structlog
 from prometheus_client import Counter, Histogram
 
-from src.application.services.service_registry import ServiceBase
+# from src.application.services.core.service_registry import ServiceBase
 from src.infrastructure.observability import trace_async
 from src.infrastructure.security.audit_logger import AuditLogger, AuditEventType
 from src.infrastructure.external_services import EmailService, SMSService, PushNotificationService

@@ -188,7 +188,7 @@ class DatabaseManager:
         finally:
             session.close()
     
-    def save_emotions(self, session_id -> Any: int, emotions_data -> Any: List[Dict[str, Any]]) -> Any:
+    def save_emotions(List[Dict[str, Any]]) -> None:
         """
         🎭 حفظ المشاعر المكتشفة
         
@@ -217,7 +217,7 @@ class DatabaseManager:
         finally:
             session.close()
     
-    def update_session_status(self, session_id -> Any: int, status -> Any: str, error_message -> Any: str = None) -> Any:
+    def update_session_status(str = None) -> None:
         """
         📝 تحديث حالة الجلسة
         """
@@ -316,7 +316,7 @@ class DatabaseManager:
         finally:
             session.close()
     
-    def save_child_profile(self, udid -> Any: str, child_name -> Any: str, child_age -> Any: int = None, parent_name -> Any: str = None) -> Any:
+    def save_child_profile(str = None) -> None:
         """
         👶 حفظ أو تحديث ملف الطفل
         """

@@ -5,11 +5,11 @@ from datetime import datetime, timedelta, date
 from abc import abstractmethod
 import asyncio
 
-from src.domain.repositories.base import (
+from src.infrastructure.persistence.base import (
     BaseRepository, QueryOptions, SearchCriteria, 
     SortOrder, BulkOperationResult
 )
-from src.domain.entities.child import (
+from src.core.domain.entities.child import (
     Child, ChildPreferences, LearningLevel, 
     Language, InteractionStyle, DevelopmentMilestone
 )

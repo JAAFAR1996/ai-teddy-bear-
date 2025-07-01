@@ -3,7 +3,7 @@ from typing import Dict, List, Any, Optional
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
-def custom_openapi(app -> Any: FastAPI) -> Any:
+def custom_openapi(FastAPI) -> None:
     if app.openapi_schema:
         return app.openapi_schema
         

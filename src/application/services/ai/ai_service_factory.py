@@ -12,7 +12,7 @@ from src.application.services.ai.analyzers.emotion_analyzer_service import Emoti
 from src.application.services.ai.fallback_response_service import FallbackResponseService
 from src.infrastructure.config import Settings
 from src.infrastructure.caching.simple_cache_service import CacheService
-from src.domain.services.emotion_analyzer import EmotionAnalyzer as DomainEmotionAnalyzer
+from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer as DomainEmotionAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +113,7 @@ class EnhancedAIServiceFactory:
         """Create OpenAI service with all dependencies"""
         # Import here to avoid circular imports and allow dynamic loading
         try:
-            from src.infrastructure.ai.openai_client import OpenAIClient
+            from src.infrastructure.external_services.openai_client import OpenAIClient
             
             # Create OpenAI client
             openai_client = OpenAIClient(settings)

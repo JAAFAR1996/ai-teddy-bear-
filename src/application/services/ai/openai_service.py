@@ -19,7 +19,7 @@ from src.application.services.ai.interfaces.ai_service_interface import IAIServi
 from src.application.services.ai.models.ai_response_models import AIResponseModel
 from src.application.services.ai.analyzers.emotion_analyzer_service import EmotionAnalyzerService
 from src.application.services.ai.fallback_response_service import FallbackResponseService
-from src.domain.entities.child import Child
+from src.core.domain.entities.child import Child
 from src.infrastructure.config import Settings
 from src.infrastructure.caching.simple_cache_service import CacheService
 

@@ -293,7 +293,7 @@ class EmotionalState(Base, UUIDMixin, TimestampMixin):
 
 
 # Database initialization
-def create_database_engine(database_url -> Any: str = "sqlite -> Any:///data/teddyai.db") -> Any:
+def create_database_engine(///data/teddyai.db") -> None:
     """Create SQLAlchemy engine"""
     engine = create_engine(database_url, echo=False)
     return engine

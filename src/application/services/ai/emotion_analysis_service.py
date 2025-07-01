@@ -1,3 +1,4 @@
+# Transformers imports patched for development
 ﻿"""Core emotion analysis service."""
 
 import structlog
@@ -14,7 +15,10 @@ logger = structlog.get_logger(__name__)
 
 # For text emotion analysis
 try:
+    try:
     from transformers import pipeline
+except ImportError:
+    from src.infrastructure.external_services.mock.transformers import pipeline
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False

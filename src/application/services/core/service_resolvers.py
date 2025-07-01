@@ -95,7 +95,7 @@ class Child:
         )
     
     @classmethod
-    def resolve_reference(cls, id -> Any: strawberry.ID) -> Any:
+    def resolve_reference(strawberry.ID) -> None:
         """Resolve child entity reference."""
         return Child(
             id=id,
@@ -120,7 +120,7 @@ class Conversation:
     is_active: bool = True
     
     @classmethod
-    def resolve_reference(cls, id -> Any: strawberry.ID) -> Any:
+    def resolve_reference(strawberry.ID) -> None:
         """Resolve conversation entity reference."""
         return Conversation(
             id=id,

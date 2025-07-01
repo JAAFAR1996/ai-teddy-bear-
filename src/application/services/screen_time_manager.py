@@ -251,7 +251,7 @@ class ScreenTimeManager:
         
         logger.info(f"انتهت جلسة الطفل {child_id}: {duration_minutes} دقيقة")
     
-    def _add_daily_usage(self, child_id -> Any: str, date -> Any: str, minutes -> Any: int) -> Any:
+    def _add_daily_usage(int) -> None:
         """إضافة دقائق للاستخدام اليومي"""
         if child_id not in self.daily_usage:
             self.daily_usage[child_id] = {}

@@ -199,7 +199,7 @@ class EnterpriseMessageSender(QObject):
             logger.warning("Failed to compress message, sending uncompressed", error=str(e))
             return message_data
     
-    def _queue_for_retry(self, message_data -> Any: dict) -> Any:
+    def _queue_for_retry(dict) -> None:
         """Queue message for retry"""
         message_data["retry_attempts"] = message_data.get("retry_attempts", 0) + 1
         
@@ -249,7 +249,7 @@ class EnterpriseMessageSender(QObject):
         if self.retry_queue:
             self._process_retry_queue()
     
-    def _handle_server_response(self, response -> Any: dict) -> Any:
+    def _handle_server_response(dict) -> None:
         """Handle server response for sent messages"""
         if response.get("type") == "message_ack":
             message_id = response.get("message_id")

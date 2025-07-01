@@ -13,11 +13,11 @@ from opentelemetry import trace
 import uuid
 from prometheus_client import Counter, Histogram, Gauge
 
-from src.application.services.service_registry import ServiceBase
+# from src.application.services.core.service_registry import ServiceBase
 from src.infrastructure.observability import trace_async
 from src.infrastructure.security.audit_logger import AuditLogger, AuditEventType
 from src.infrastructure.config import get_settings
-from src.application.services.circuit_breaker import CircuitBreaker
+# from src.application.services.core.circuit_breaker import CircuitBreaker
 
 
 # Metrics

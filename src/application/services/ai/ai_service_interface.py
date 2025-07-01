@@ -12,7 +12,7 @@ from src.application.services.ai.models.ai_response_models import (
     AIServiceMetrics,
     ResponseGenerationRequest
 )
-from src.domain.entities.child import Child
+from src.core.domain.entities.child import Child
 
 class IAIService(ABC):
     """Enhanced AI Service interface with modern capabilities"""

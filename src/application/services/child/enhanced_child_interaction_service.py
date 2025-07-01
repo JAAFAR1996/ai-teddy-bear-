@@ -16,10 +16,10 @@ import structlog
 import numpy as np
 
 # Import enhanced components
-from src.infrastructure.audio.enhanced_audio_processor import (
+from src.infrastructure.external_services.enhanced_audio_processor import (
     EnhancedAudioProcessor, AudioConfig, AudioProcessingResult
 )
-from src.infrastructure.ai.advanced_ai_orchestrator import (
+from src.infrastructure.external_services.advanced_ai_orchestrator import (
     AdvancedAIOrchestrator, ChildRequest, ModelComplexity
 )
 from src.infrastructure.security.advanced_content_filter import (

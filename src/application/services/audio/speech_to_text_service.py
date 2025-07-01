@@ -4,7 +4,7 @@ import whisper
 import os
 import logging
 import sqlite3
-from src.domain.entities.transcription import Transcription
+from src.core.domain.entities.transcription import Transcription
 from src.infrastructure.persistence.transcription_sqlite_repository import TranscriptionSQLiteRepository
 from src.application.services.azure_speech_to_text_service import AzureSpeechToTextService
 
@@ -131,7 +131,7 @@ class SpeechToTextService:
                 transcriptions.append(text)
         return transcriptions
 
-    def get_conversation_transcriptions(self, conversation_id -> Any: int) -> Any:
+    def get_conversation_transcriptions(int) -> None:
         """Retrieve all transcriptions for a specific conversation."""
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row

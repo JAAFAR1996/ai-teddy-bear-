@@ -62,7 +62,7 @@ class WebSocketClient(QObject):
         self.websocket.close()
         self.reconnect_timer.stop()
     
-    def send_message(self, message -> Any: Dict[str, Any]) -> Any:
+    def send_message(Dict[str, Any]) -> None:
         """Send message to server"""
         if self.is_connected:
             json_message = json.dumps(message)
@@ -88,7 +88,7 @@ class WebSocketClient(QObject):
         if self.reconnect_attempts < self.max_reconnect_attempts:
             self.reconnect_timer.start(5000)  # Retry in 5 seconds
     
-    def _on_message_received(self, message -> Any: str) -> Any:
+    def _on_message_received(str) -> None:
         """Handle received message"""
         try:
             data = json.loads(message)
@@ -121,7 +121,7 @@ class WebSocketClient(QObject):
         if self.is_connected:
             self.send_message({"type": "ping", "timestamp": datetime.now().isoformat()})
     
-    def set_url(self, url -> Any: str) -> Any:
+    def set_url(str) -> None:
         """Update the WebSocket URL"""
         self.url = QUrl(url)
         logger.info("WebSocket URL updated", url=url)

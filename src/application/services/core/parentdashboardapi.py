@@ -35,10 +35,10 @@ import aiosmtplib
 from jinja2 import Template
 import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from src.domain.entities.child import Child
-from src.domain.repositories.child_repository import ChildRepository
-from src.domain.entities.conversation import Conversation, Message
-from src.domain.repositories.conversation_repository import ConversationRepository
+from src.core.domain.entities.child import Child
+from src.infrastructure.persistence.child_repository import ChildRepository
+from src.core.domain.entities.conversation import Conversation, Message
+from src.infrastructure.persistence.conversation_repository import ConversationRepository
 from src.infrastructure.config import get_config
 
 class ParentDashboardAPI:

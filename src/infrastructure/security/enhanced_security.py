@@ -836,7 +836,7 @@ def get_security_manager() -> EnterpriseSecurityManager:
     return _security_manager
 
 
-def set_security_manager(manager -> Any: EnterpriseSecurityManager) -> Any:
+def set_security_manager(EnterpriseSecurityManager) -> None:
     """Set global security manager instance"""
     global _security_manager
     _security_manager = manager 

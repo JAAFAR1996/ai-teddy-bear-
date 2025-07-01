@@ -106,7 +106,7 @@ class GraphQLPerformanceMonitor:
         
         return query_id
     
-    def finish_query(self, query_id -> Any: str, errors -> Any: List[str] = None) -> Any:
+    def finish_query(List[str] = None) -> None:
         """Finish monitoring a GraphQL query"""
         if query_id not in self.active_queries:
             logger.warning("Query not found in active queries", query_id=query_id)
@@ -151,7 +151,7 @@ class GraphQLPerformanceMonitor:
                     status=metrics.status,
                     query_id=query_id)
     
-    def record_resolver_call(self, resolver_name -> Any: str, duration -> Any: float) -> Any:
+    def record_resolver_call(float) -> None:
         """Record a resolver call"""
         if self.config.enable_resolver_timing:
             self.resolver_stats[resolver_name]["count"] += 1
@@ -161,24 +161,24 @@ class GraphQLPerformanceMonitor:
                 resolver_name=resolver_name
             ).observe(duration)
     
-    def record_dataloader_hit(self, loader_name -> Any: str) -> Any:
+    def record_dataloader_hit(str) -> None:
         """Record a DataLoader cache hit"""
         if self.config.enable_dataloader_monitoring:
             self.dataloader_stats[loader_name]["hits"] += 1
             GRAPHQL_DATALOADER_HITS.labels(loader_name=loader_name).inc()
     
-    def record_dataloader_miss(self, loader_name -> Any: str) -> Any:
+    def record_dataloader_miss(str) -> None:
         """Record a DataLoader cache miss"""
         if self.config.enable_dataloader_monitoring:
             self.dataloader_stats[loader_name]["misses"] += 1
             GRAPHQL_DATALOADER_MISSES.labels(loader_name=loader_name).inc()
     
-    def record_dataloader_load(self, loader_name -> Any: str, batch_size -> Any: int) -> Any:
+    def record_dataloader_load(int) -> None:
         """Record a DataLoader batch load"""
         if self.config.enable_dataloader_monitoring:
             self.dataloader_stats[loader_name]["loads"] += 1
     
-    def set_query_complexity(self, query_id -> Any: str, complexity -> Any: int) -> Any:
+    def set_query_complexity(int) -> None:
         """Set complexity score for a query"""
         if query_id in self.active_queries:
             self.active_queries[query_id].complexity = complexity
@@ -330,7 +330,7 @@ performance_monitor = GraphQLPerformanceMonitor()
 
 
 # Decorator for timing resolvers
-def timed_resolver(resolver_name -> Any: str) -> Any:
+def timed_resolver(str) -> None:
     """Decorator to time GraphQL resolvers"""
     def decorator(func) -> Any:
         async def wrapper(*args, **kwargs):

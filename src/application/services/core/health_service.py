@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import structlog
 from prometheus_client import Counter, Gauge, Histogram
 
-from src.application.services.service_registry import ServiceBase, ServiceState
+# from src.application.services.core.service_registry import ServiceBase, ServiceState
 
 logger = structlog.get_logger()
 

@@ -6,7 +6,10 @@ Core audio domain models, enums and value objects
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, Any, Optional
-from elevenlabs import VoiceSettings
+try:
+    from elevenlabs import VoiceSettings
+except ImportError:
+    from src.infrastructure.external_services.mock.elevenlabs import VoiceSettings
 
 
 class EmotionalTone(Enum):

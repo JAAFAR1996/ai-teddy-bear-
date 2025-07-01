@@ -1,3 +1,4 @@
+# Transformers imports patched for development
 """
 🧠 Advanced Progress Analyzer Service - Task 7
 تحليل تقدم الطفل باستخدام NLP متقدم وLLM مع Chain-of-Thought prompting
@@ -27,7 +28,10 @@ except ImportError:
 
 # Transformers for advanced analysis
 try:
+    try:
     from transformers import pipeline, AutoTokenizer, AutoModel
+except ImportError:
+    from src.infrastructure.external_services.mock.transformers import pipeline, AutoTokenizer, AutoModel
     import torch
     TRANSFORMERS_AVAILABLE = True
 except ImportError:

@@ -35,8 +35,8 @@ from src.infrastructure.parentdashboard import (
 )
 
 # Repository imports
-from src.domain.repositories.child_repository import ChildRepository
-from src.domain.repositories.conversation_repository import ConversationRepository
+from src.infrastructure.persistence.child_repository import ChildRepository
+from src.infrastructure.persistence.conversation_repository import ConversationRepository
 from src.infrastructure.config import get_config
 
 

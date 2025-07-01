@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 
 from src.application.services.ai.models.ai_response_models import AIResponseModel
-from src.domain.entities.child import Child
+from src.core.domain.entities.child import Child
 
 logger = logging.getLogger(__name__)
 

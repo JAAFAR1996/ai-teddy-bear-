@@ -13,7 +13,7 @@ from pathlib import Path
 
 from src.infrastructure.config import get_config
 from src.application.services.streaming_service import StreamingService
-from src.domain.entities.audio_stream import AudioStream
+from src.core.domain.entities.audio_stream import AudioStream
 from src.core.application.interfaces.services import IAIService
 
 # Domain imports
@@ -80,7 +80,7 @@ class VoiceInteractionService:
     def _init_emotion_integration(self):
         """Initialize emotion analysis integration"""
         try:
-            from src.domain.services.emotion_analyzer import EmotionAnalyzer
+            from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer
             from src.domain.emotion_config import EmotionConfig
             
             emotion_config = EmotionConfig(

@@ -17,7 +17,7 @@ import uvicorn
 from src.application.services.ai_service import AIService
 from src.application.services.voice_service import VoiceService
 from src.application.services.child_service import ChildService
-from src.domain.entities.child import Child
+from src.core.domain.entities.child import Child
 from src.domain.value_objects import DeviceId, ChildName, ChildAge
 from src.infrastructure.modern_container import (
     container, 
@@ -32,8 +32,8 @@ from src.infrastructure.modern_container import (
 )
 from src.infrastructure.config import Settings
 from src.infrastructure.security.api_key_validator import APIKeyValidator
-from src.infrastructure.middleware.rate_limiter import RateLimiterMiddleware
-from src.infrastructure.middleware.request_id import RequestIdMiddleware
+from src.infrastructure.security.rate_limiter import RateLimiterMiddleware
+from src.infrastructure.security.request_id import RequestIdMiddleware
 from src.infrastructure.monitoring.metrics import metrics_collector
 
 logger = logging.getLogger(__name__)
@@ -325,7 +325,7 @@ class ConnectionManager:
         self.active_connections[device_id] = websocket
         logger.info(f"WebSocket connected: {device_id}")
     
-    def disconnect(self, device_id -> Any: str) -> Any:
+    def disconnect(str) -> None:
         if device_id in self.active_connections:
             del self.active_connections[device_id]
             logger.info(f"WebSocket disconnected: {device_id}")

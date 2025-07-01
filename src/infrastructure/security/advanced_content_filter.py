@@ -608,7 +608,7 @@ class AdvancedContentFilter:
         cache_string = '_'.join(cache_components)
         return hashlib.md5(cache_string.encode()).hexdigest()
     
-    def _update_filter_stats(self, result -> Any: ContentAnalysisResult) -> Any:
+    def _update_filter_stats(ContentAnalysisResult) -> None:
         """تحديث إحصائيات الفلتر"""
         
         if not result.is_safe:

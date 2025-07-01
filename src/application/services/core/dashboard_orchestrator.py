@@ -14,8 +14,8 @@ from src.domain.parentdashboard import (
     ParentUser, ChildProfile, ParentalControl,
     AnalyticsDomainService, AccessControlService, ContentAnalysisService
 )
-from src.domain.repositories.child_repository import ChildRepository
-from src.domain.repositories.conversation_repository import ConversationRepository
+from src.infrastructure.persistence.child_repository import ChildRepository
+from src.infrastructure.persistence.conversation_repository import ConversationRepository
 
 
 class DashboardOrchestrator:

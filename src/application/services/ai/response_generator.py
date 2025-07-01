@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import structlog
 from opentelemetry import trace
 
-from src.application.services.service_registry import ServiceBase
+# from src.application.services.core.service_registry import ServiceBase
 from src.infrastructure.observability import trace_async
 from .models import ResponseMode, EmotionalTone, AIResponse
 from .emotion_analyzer import EmotionAnalysis, EmotionCategory

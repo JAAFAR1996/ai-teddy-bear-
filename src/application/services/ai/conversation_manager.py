@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 import structlog
 from opentelemetry import trace
 
-from src.application.services.service_registry import ServiceBase
+# from src.application.services.core.service_registry import ServiceBase
 from src.infrastructure.observability import trace_async
 from core.infrastructure.session_manager import SessionManager
 

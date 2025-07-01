@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 import logging
 
-from src.domain.entities.child import Child
+from src.core.domain.entities.child import Child
 
 
 class ChildInteractionDomainService:

@@ -15,8 +15,8 @@ from core.infrastructure.monitoring.metrics import metrics_collector
 from dataclasses import dataclass
 from dataclasses import dataclass, field
 from datetime import datetime
-from domain.value_objects import Confidence
-from domain.value_objects import EmotionalTone, Confidence
+from src.domain.value_objects import Confidence
+from src.domain.value_objects import EmotionalTone, Confidence
 from elevenlabs import ElevenLabs, Voice, VoiceSettings
 from elevenlabs import ElevenLabs, Voice, VoiceSettings, stream, generate
 from elevenlabs import VoiceSettings
@@ -33,9 +33,9 @@ from scipy.io import wavfile
 from src.application.services.streaming_service import StreamingService
 from src.core.application.interfaces.services import IAIService
 from src.domain.emotion_config import EmotionConfig
-from src.domain.entities.audio_stream import AudioStream
-from src.domain.entities.child import Child, ChildPreferences
-from src.domain.services.emotion_analyzer import EmotionAnalyzer
+from src.core.domain.entities.audio_stream import AudioStream
+from src.core.domain.entities.child import Child, ChildPreferences
+from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer
 from src.infrastructure.config import get_config
 from textblob import TextBlob
 from typing import Dict, Any, Optional, List, AsyncIterator, Callable

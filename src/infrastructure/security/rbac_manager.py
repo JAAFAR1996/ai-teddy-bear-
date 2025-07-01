@@ -630,7 +630,7 @@ def get_rbac_manager() -> TeddyBearRBACManager:
 
 # Convenience decorators for permission checking
 
-def require_permission(permission -> Any: Permission, context -> Any: AccessContext = AccessContext.DIRECT_INTERACTION) -> Any:
+def require_permission(AccessContext = AccessContext.DIRECT_INTERACTION) -> None:
     """Decorator to require specific permission for a function"""
     def decorator(func) -> Any:
         async def wrapper(*args, **kwargs):
@@ -660,7 +660,7 @@ def require_permission(permission -> Any: Permission, context -> Any: AccessCont
     return decorator
 
 
-def require_role(allowed_roles -> Any: List[UserRole]) -> Any:
+def require_role(List[UserRole]) -> None:
     """Decorator to require specific roles for a function"""
     def decorator(func) -> Any:
         async def wrapper(*args, **kwargs):

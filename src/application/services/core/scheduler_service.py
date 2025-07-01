@@ -104,7 +104,7 @@ class SchedulerService:
             self.logger.error("Failed to start scheduler", error=str(e))
             raise
     
-    def shutdown(self, wait -> Any: bool = True) -> Any:
+    def shutdown(bool = True) -> None:
         """إيقاف المجدول"""
         try:
             if self.scheduler and self.scheduler.running:
@@ -272,7 +272,7 @@ class SchedulerService:
         except Exception as e:
             self.logger.error("System report generation failed", error=str(e))
     
-    def add_custom_job(self, func, trigger, job_id -> Any: str, **kwargs) -> Any:
+    def add_custom_job(str, **kwargs) -> None:
         """إضافة مهمة مخصصة"""
         try:
             self.scheduler.add_job(
@@ -290,7 +290,7 @@ class SchedulerService:
                             job_id=job_id, error=str(e))
             raise
     
-    def remove_job(self, job_id -> Any: str) -> Any:
+    def remove_job(str) -> None:
         """إزالة مهمة"""
         try:
             self.scheduler.remove_job(job_id)
@@ -334,7 +334,7 @@ def start_scheduler() -> Any:
     """بدء تشغيل المجدول"""
     scheduler_service.start()
 
-def stop_scheduler(wait -> Any: bool = True) -> Any:
+def stop_scheduler(bool = True) -> None:
     """إيقاف المجدول"""
     scheduler_service.shutdown(wait=wait)
 

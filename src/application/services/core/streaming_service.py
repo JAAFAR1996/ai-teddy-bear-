@@ -23,12 +23,12 @@ from elevenlabs import ElevenLabs, Voice, VoiceSettings
 
 
 from src.infrastructure.config import get_config
-from src.domain.entities.audio_stream import AudioStream
+from src.core.domain.entities.audio_stream import AudioStream
 from src.application.services.speech_to_text_service import SpeechToTextService
 from src.application.services.moderation_service import ModerationService
 from src.application.services.parent_dashboard_service import ParentDashboardService
 from src.application.services.llm_service_factory import LLMServiceFactory, LLMProvider
-from src.domain.entities.conversation import Conversation, Message
+from src.core.domain.entities.conversation import Conversation, Message
 from src.audio.state_manager import state_manager, AudioState
 
 
@@ -642,7 +642,7 @@ class SessionManager:
         """Get session by ID"""
         return self.sessions.get(session_id)
 
-    def add_message(self, session_id -> Any: str, message_type -> Any: str, content -> Any: str, metadata -> Any: Optional[Dict] = None) -> Any:
+    def add_message(Optional[Dict] = None) -> None:
         """Add message to session history"""
         if session_id not in self.session_history:
             self.session_history[session_id] = []
@@ -660,7 +660,7 @@ class SessionManager:
         if session_id in self.sessions:
             self.sessions[session_id]['last_activity'] = datetime.now()
 
-    def end_session(self, session_id -> Any: str) -> Any:
+    def end_session(str) -> None:
         """End session"""
         if session_id in self.sessions:
             self.sessions[session_id]['ended_at'] = datetime.now()

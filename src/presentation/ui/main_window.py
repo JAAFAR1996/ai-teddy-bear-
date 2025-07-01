@@ -150,7 +150,7 @@ class TeddyMainWindow(QMainWindow):
         self.status_bar.showMessage("Disconnected from server")
         logger.info("UI disconnected from server")
     
-    def _on_message_received(self, message -> Any: Dict[str, Any]) -> Any:
+    def _on_message_received(Dict[str, Any]) -> None:
         """Handle incoming WebSocket message"""
         message_type = message.get("type")
         
@@ -162,18 +162,18 @@ class TeddyMainWindow(QMainWindow):
         else:
             logger.debug("Unhandled message type", message_type=message_type)
     
-    def _handle_status_update(self, message -> Any: Dict[str, Any]) -> Any:
+    def _handle_status_update(Dict[str, Any]) -> None:
         """Handle server status updates"""
         status = message.get("status", "unknown")
         self.status_bar.showMessage(f"Server: {status}")
     
-    def _on_error(self, error -> Any: str) -> Any:
+    def _on_error(str) -> None:
         """Handle WebSocket error"""
         self.status_label.setText(f"Error: {error}")
         self.status_bar.showMessage(f"Connection error: {error}")
         logger.error("WebSocket error", error=error)
     
-    def _update_connection_status(self, status -> Any: str) -> Any:
+    def _update_connection_status(str) -> None:
         """Update connection status display"""
         status_colors = {
             "Connecting...": "🟡",

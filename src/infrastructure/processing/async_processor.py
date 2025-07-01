@@ -243,7 +243,7 @@ class PerformanceMonitor:
         self._last_throughput_check = time.time()
         self._last_task_count = 0
         
-    def record_task_completion(self, task -> Any: ProcessingTask, result -> Any: TaskResult) -> Any:
+    def record_task_completion(TaskResult) -> None:
         """Record task completion metrics"""
         self.metrics['tasks_processed'] += 1
         
@@ -266,7 +266,7 @@ class PerformanceMonitor:
         if task.worker_id:
             self.metrics['worker_utilization'][task.worker_id] += result.execution_time
     
-    def record_queue_size(self, size -> Any: int) -> Any:
+    def record_queue_size(int) -> None:
         """Record current queue size"""
         self.metrics['queue_size_history'].append((time.time(), size))
     

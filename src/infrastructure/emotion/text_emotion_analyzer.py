@@ -1,8 +1,12 @@
+# Transformers imports patched for development
 ﻿"""Text-based emotion analysis infrastructure."""
 
 import structlog
 from typing import Dict, List, Optional
-from transformers import pipeline
+try:
+    from transformers import pipeline
+except ImportError:
+    from src.infrastructure.external_services.mock.transformers import pipeline
 
 logger = structlog.get_logger(__name__)
 

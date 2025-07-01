@@ -261,7 +261,7 @@ class AdvancedPersonalizationService:
         
         return personality
     
-    def update_interaction_patterns(self, child_id -> Any: str, interaction_data -> Any: Dict) -> Any:
+    def update_interaction_patterns(Dict) -> None:
         """تحديث أنماط التفاعل"""
         patterns = self.get_interaction_patterns(child_id)
         
@@ -482,7 +482,7 @@ class AdvancedPersonalizationService:
         
         return conversations
     
-    def track_content_performance(self, child_id -> Any: str, content -> Any: Dict, performance_data -> Any: Dict) -> Any:
+    def track_content_performance(Dict) -> None:
         """تتبع أداء المحتوى"""
         if child_id not in self.content_performance:
             self.content_performance[child_id] = []

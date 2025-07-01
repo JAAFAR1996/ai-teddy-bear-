@@ -26,7 +26,10 @@ except ImportError:
 
 # Voice synthesis providers
 try:
+    try:
     from elevenlabs import ElevenLabs, Voice, VoiceSettings, stream, generate
+except ImportError:
+    from src.infrastructure.external_services.mock.elevenlabs import ElevenLabs, Voice, VoiceSettings, stream, generate
 except ImportError:
     ElevenLabs = Voice = VoiceSettings = stream = generate = None
 from openai import AsyncOpenAI
@@ -36,7 +39,7 @@ except ImportError:
     speechsdk = None
 
 # Value objects
-from domain.value_objects import EmotionalTone, Confidence
+from src.domain.value_objects import EmotionalTone, Confidence
 
 logger = logging.getLogger(__name__)
 

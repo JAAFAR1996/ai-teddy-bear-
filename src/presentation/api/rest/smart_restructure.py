@@ -210,7 +210,7 @@ class SmartRestructurer:
         skip_patterns = ['__pycache__', '.git', 'venv', 'env', 'test', '__init__.py']
         return any(pattern in str(file_path) for pattern in skip_patterns)
     
-    def _extract_imports(self, tree -> Any: ast.AST, file_path -> Any: Path) -> Any:
+    def _extract_imports(Path) -> None:
         """Extract imports from AST"""
         file_str = str(file_path)
         imports = set()
@@ -385,7 +385,7 @@ class SmartRestructurer:
             for file_path in files:
                 self._move_file_safely(file_path, target_path)
     
-    def _move_file_safely(self, source_path -> Any: str, target_dir -> Any: Path) -> Any:
+    def _move_file_safely(Path) -> None:
         """Safely move file to new location"""
         source = Path(source_path)
         if not source.exists():
@@ -406,7 +406,7 @@ class SmartRestructurer:
         except Exception as e:
             logger.error(f"Failed to move {source}: {e}")
     
-    def _update_all_imports(self, import_updates -> Any: Dict[str, List[str]]) -> Any:
+    def _update_all_imports(Dict[str, List[str]]) -> None:
         """Update all import statements"""
         logger.info("🔄 Updating import statements...")
         

@@ -120,37 +120,37 @@ class EnterpriseMetrics:
                 registry=self.registry
             )
     
-    def increment_requests(self, method -> Any: str, endpoint -> Any: str, status_code -> Any: int) -> Any:
+    def increment_requests(int) -> None:
         """Increment request counter."""
         if self.request_count:
             self.request_count.labels(method=method, endpoint=endpoint, status_code=status_code).inc()
     
-    def record_request_duration(self, method -> Any: str, endpoint -> Any: str, duration -> Any: float) -> Any:
+    def record_request_duration(float) -> None:
         """Record request duration."""
         if self.request_duration:
             self.request_duration.labels(method=method, endpoint=endpoint).observe(duration)
     
-    def set_active_connections(self, count -> Any: int) -> Any:
+    def set_active_connections(int) -> None:
         """Set active connections count."""
         if self.active_connections:
             self.active_connections.set(count)
     
-    def increment_errors(self, error_type -> Any: str, component -> Any: str) -> Any:
+    def increment_errors(str) -> None:
         """Increment error counter."""
         if self.error_count:
             self.error_count.labels(error_type=error_type, component=component).inc()
     
-    def set_health_score(self, score -> Any: float) -> Any:
+    def set_health_score(float) -> None:
         """Set system health score."""
         if self.system_health:
             self.system_health.set(score)
     
-    def record_ai_processing(self, model_type -> Any: str, operation -> Any: str, duration -> Any: float) -> Any:
+    def record_ai_processing(float) -> None:
         """Record AI processing time."""
         if self.ai_processing_time:
             self.ai_processing_time.labels(model_type=model_type, operation=operation).observe(duration)
     
-    def record_audio_latency(self, operation -> Any: str, latency -> Any: float) -> Any:
+    def record_audio_latency(float) -> None:
         """Record audio processing latency."""
         if self.audio_processing_latency:
             self.audio_processing_latency.labels(operation=operation).observe(latency)
@@ -217,7 +217,7 @@ class EnterpriseTracer:
             self.tracer = None
     
     @contextmanager
-    def start_span(self, name -> Any: str, **kwargs) -> Any:
+    def start_span(str, **kwargs) -> None:
         """Start a new trace span with enterprise context."""
         if self.tracer and OTEL_AVAILABLE:
             with self.tracer.start_as_current_span(name, **kwargs) as span:
@@ -235,7 +235,7 @@ class EnterpriseTracer:
             # Fallback context manager
             yield self._create_fallback_span(name)
     
-    def _create_fallback_span(self, name -> Any: str) -> Any:
+    def _create_fallback_span(str) -> None:
         """Create a fallback span object for when OpenTelemetry is not available."""
         return type('FallbackSpan', (), {
             'set_attribute': lambda self, key, value: None,

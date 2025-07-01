@@ -431,7 +431,7 @@ class ARVRService:
             "أخبر الكبار إذا شعرت بأي إزعاج"
         ]
     
-    def log_interaction(self, session_id -> Any: str, interaction_data -> Any: Dict) -> Any:
+    def log_interaction(Dict) -> None:
         """تسجيل تفاعل في الجلسة"""
         # البحث عن الجلسة
         for child_id, sessions in self.user_sessions.items():
@@ -518,7 +518,7 @@ class ARVRService:
         
         return performance
     
-    def _update_child_preferences(self, child_id -> Any: str, session -> Any: Dict) -> Any:
+    def _update_child_preferences(Dict) -> None:
         """تحديث تفضيلات الطفل"""
         if child_id not in self.child_preferences:
             self.child_preferences[child_id] = {

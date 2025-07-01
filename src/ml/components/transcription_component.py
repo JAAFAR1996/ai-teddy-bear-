@@ -1,3 +1,4 @@
+# Transformers imports patched for development
 # ===================================================================
 # 🎤 AI Teddy Bear - Speech Transcription Component
 # Child-Optimized Speech Recognition
@@ -40,7 +41,10 @@ def transcribe_audio_op(
     import torch
     import torchaudio
     import numpy as np
+    try:
     from transformers import pipeline
+except ImportError:
+    from src.infrastructure.external_services.mock.transformers import pipeline
     
     logger.info(f"Starting transcription with model: {language_model}")
     

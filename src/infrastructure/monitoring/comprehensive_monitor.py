@@ -9,9 +9,9 @@ from datetime import datetime, timedelta
 import structlog
 import json
 
-from src.infrastructure.database.connection import get_db_session
+from src.infrastructure.persistence.connection import get_db_session
 from src.infrastructure.caching.redis_cache import get_redis_client
-from src.infrastructure.ai.openai_service import get_ai_service
+from src.infrastructure.external_services.openai_service import get_ai_service
 
 logger = structlog.get_logger(__name__)
 
