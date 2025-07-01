@@ -95,6 +95,42 @@ class ModernOpenAIService(IAIService):
         """Generate child profile key for caching"""
         return f"{child.name}:{child.age}:{getattr(child, 'learning_level', 'basic')}"
     
+    def _check_memory_cache(self, cache_key: str) -> Optional[AIResponseModel]:
+        """Check memory cache with TTL validation"""
+        if cache_key in self.memory_cache:
+            response_dict, timestamp = self.memory_cache[cache_key]
+            if time.time() - timestamp < self.cache_ttl:
+                logger.debug(f"🎯 Memory cache hit for key: {cache_key[:8]}...")
+                response = AIResponseModel(**response_dict)
+                response.cached = True
+                return response
+            else:
+                # Remove expired entry
+                del self.memory_cache[cache_key]
+                logger.debug(f"🧹 Expired cache entry removed: {cache_key[:8]}...")
+        
+        return None
+    
+    def _store_in_memory_cache(self, cache_key: str, response: AIResponseModel) -> None:
+        """Store response in memory cache with size management"""
+        # Clean old entries if cache is full
+        if len(self.memory_cache) >= self.max_cache_size:
+            # Remove 10% oldest entries
+            sorted_entries = sorted(
+                self.memory_cache.items(),
+                key=lambda x: x[1][1]  # Sort by timestamp
+            )
+            entries_to_remove = int(self.max_cache_size * 0.1)
+            for key, _ in sorted_entries[:entries_to_remove]:
+                del self.memory_cache[key]
+            logger.debug(f"🧹 Cleaned {entries_to_remove} old cache entries")
+        
+        # Store new entry
+        response_dict = response.to_dict()
+        response_dict['cached'] = False  # Don't store cached flag
+        self.memory_cache[cache_key] = (response_dict, time.time())
+        logger.debug(f"💾 Stored in memory cache: {cache_key[:8]}...")
+    
     async def generate_response(
         self,
         message: str,
@@ -220,42 +256,6 @@ class ModernOpenAIService(IAIService):
             logger.error(f"💥 Unexpected AI service error: {str(e)}", exc_info=True)
             return await self.fallback_service.create_generic_fallback(message, child, session_id, str(e))
     
-    def _check_memory_cache(self, cache_key: str) -> Optional[AIResponseModel]:
-        """Check memory cache with TTL validation"""
-        if cache_key in self.memory_cache:
-            response_dict, timestamp = self.memory_cache[cache_key]
-            if time.time() - timestamp < self.cache_ttl:
-                logger.debug(f"🎯 Memory cache hit for key: {cache_key[:8]}...")
-                response = AIResponseModel(**response_dict)
-                response.cached = True
-                return response
-            else:
-                # Remove expired entry
-                del self.memory_cache[cache_key]
-                logger.debug(f"🧹 Expired cache entry removed: {cache_key[:8]}...")
-        
-        return None
-    
-    def _store_in_memory_cache(self, cache_key: str, response: AIResponseModel) -> None:
-        """Store response in memory cache with size management"""
-        # Clean old entries if cache is full
-        if len(self.memory_cache) >= self.max_cache_size:
-            # Remove 10% oldest entries
-            sorted_entries = sorted(
-                self.memory_cache.items(),
-                key=lambda x: x[1][1]  # Sort by timestamp
-            )
-            entries_to_remove = int(self.max_cache_size * 0.1)
-            for key, _ in sorted_entries[:entries_to_remove]:
-                del self.memory_cache[key]
-            logger.debug(f"🧹 Cleaned {entries_to_remove} old cache entries")
-        
-        # Store new entry
-        response_dict = response.to_dict()
-        response_dict['cached'] = False  # Don't store cached flag
-        self.memory_cache[cache_key] = (response_dict, time.time())
-        logger.debug(f"💾 Stored in memory cache: {cache_key[:8]}...")
-    
     async def _enhanced_openai_call(
         self,
         message: str,
@@ -279,7 +279,7 @@ class ModernOpenAIService(IAIService):
                     model=self.settings.openai_model or "gpt-4-turbo-preview",
                     messages=messages,
                     max_tokens=200,
-                    temperature=0.7,
+                    temperature=0.7,  # Slightly more deterministic
                     presence_penalty=0.3,
                     frequency_penalty=0.3,
                     top_p=0.9
@@ -361,12 +361,14 @@ class ModernOpenAIService(IAIService):
 - تتكيف مع مشاعر الطفل وحالته النفسية
 - تستخدم تقنيات التعلم الحديثة والتفاعل الإيجابي
 - تشجع الفضول والإبداع والتفكير النقدي
+- تقدم محتوى تعليمي ممتع ومناسب للعمر
 
 قواعد التفاعل المحدثة:
 - اجعل الردود قصيرة ومفيدة (2-3 جمل كحد أقصى)
 - استخدم اللغة العربية الفصحى المبسطة
 - أضف لمسة من الدعابة والمرح المناسب
-- شجع على التعلم والاستكشاف"""
+- شجع على التعلم والاستكشاف
+- كن صبوراً ومتفهماً ومحباً"""
 
         # Add context-specific instructions
         if context:
@@ -374,6 +376,8 @@ class ModernOpenAIService(IAIService):
                 base_prompt += f"\n- وقت التفاعل: {context['time_of_day']}"
             if context.get("activity"):
                 base_prompt += f"\n- النشاط الحالي: {context['activity']}"
+            if context.get("mood"):
+                base_prompt += f"\n- مزاج الطفل: {context['mood']}"
         
         return base_prompt
     
@@ -426,7 +430,9 @@ class ModernOpenAIService(IAIService):
             "mathematical_thinking": ["رقم", "عدد", "حساب", "جمع"],
             "scientific_curiosity": ["لماذا", "كيف", "تجربة", "اكتشاف"],
             "social_skills": ["صديق", "شكراً", "من فضلك", "آسف"],
-            "creative_expression": ["رسم", "قصة", "إبداع", "خيال"]
+            "creative_expression": ["رسم", "قصة", "إبداع", "خيال"],
+            "cultural_awareness": ["تقاليد", "عادات", "ثقافة"],
+            "problem_solving": ["حل", "مشكلة", "فكر", "طريقة"]
         }
         
         for skill, keywords in learning_patterns.items():
