@@ -9,8 +9,10 @@ Enterprise_Dashboard Components Package
 from .emotionanalyticsenginecore import EmotionAnalyticsEngineCore
 from .emotionanalyticsengineutility import EmotionAnalyticsEngineUtility
 from .enterprisedashboardwidgetcore import EnterpriseDashboardWidgetCore
-from .enterprisedashboardwidgetnotification import EnterpriseDashboardWidgetNotification
-from .enterprisedashboardwidgetprocessing import EnterpriseDashboardWidgetProcessing
+from .enterprisedashboardwidgetnotification import \
+    EnterpriseDashboardWidgetNotification
+from .enterprisedashboardwidgetprocessing import \
+    EnterpriseDashboardWidgetProcessing
 from .enterprisedashboardwidgetutility import EnterpriseDashboardWidgetUtility
 from .smartalertsystemcore import SmartAlertSystemCore
 from .smartalertsystemnotification import SmartAlertSystemNotification

@@ -84,8 +84,15 @@ class ReportGeneratorService:
         """إنشاء تقرير JSON"""
         try:
             report_data = {
-                "child_info": {"id": progress.child_id, "name": progress.child_name, "age": progress.age},
-                "period": {"start": progress.period_start.isoformat(), "end": progress.period_end.isoformat()},
+                "child_info": {
+                    "id": progress.child_id,
+                    "name": progress.child_name,
+                    "age": progress.age,
+                },
+                "period": {
+                    "start": progress.period_start.isoformat(),
+                    "end": progress.period_end.isoformat(),
+                },
                 "metrics": {
                     "total_interactions": progress.total_interactions,
                     "avg_daily_interactions": progress.avg_daily_interactions,
@@ -101,7 +108,9 @@ class ReportGeneratorService:
                 "generated_at": datetime.now().isoformat(),
             }
 
-            filename = f"report_{progress.child_id}_{datetime.now().strftime('%Y%m%d')}.json"
+            filename = (
+                f"report_{progress.child_id}_{datetime.now().strftime('%Y%m%d')}.json"
+            )
             filepath = self.output_directory / filename
 
             with open(filepath, "w", encoding="utf-8") as f:
@@ -114,12 +123,16 @@ class ReportGeneratorService:
             logger.error(f"JSON report generation error: {e}")
             return ""
 
-    def _generate_html_report(self, progress: ChildProgress, format: ReportFormat) -> str:
+    def _generate_html_report(
+        self, progress: ChildProgress, format: ReportFormat
+    ) -> str:
         """إنشاء تقرير HTML"""
         try:
             html_content = self._create_html_template(progress, format)
 
-            filename = f"report_{progress.child_id}_{datetime.now().strftime('%Y%m%d')}.html"
+            filename = (
+                f"report_{progress.child_id}_{datetime.now().strftime('%Y%m%d')}.html"
+            )
             filepath = self.output_directory / filename
 
             with open(filepath, "w", encoding="utf-8") as f:
@@ -165,9 +178,13 @@ class ReportGeneratorService:
                 for activity in progress.recommended_activities:
                     text_content += f"- {activity}\n"
 
-            text_content += f"\n📋 تم إنشاء التقرير في: {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+            text_content += (
+                f"\n📋 تم إنشاء التقرير في: {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+            )
 
-            filename = f"report_{progress.child_id}_{datetime.now().strftime('%Y%m%d')}.txt"
+            filename = (
+                f"report_{progress.child_id}_{datetime.now().strftime('%Y%m%d')}.txt"
+            )
             filepath = self.output_directory / filename
 
             with open(filepath, "w", encoding="utf-8") as f:
@@ -180,7 +197,9 @@ class ReportGeneratorService:
             logger.error(f"Text report generation error: {e}")
             return ""
 
-    def _generate_pdf_report(self, progress: ChildProgress, format: ReportFormat) -> str:
+    def _generate_pdf_report(
+        self, progress: ChildProgress, format: ReportFormat
+    ) -> str:
         """إنشاء تقرير PDF"""
         try:
             # في التطبيق الحقيقي، نستخدم مكتبة PDF مثل reportlab
@@ -193,7 +212,9 @@ class ReportGeneratorService:
             logger.error(f"PDF report generation error: {e}")
             return ""
 
-    def _create_html_template(self, progress: ChildProgress, format: ReportFormat) -> str:
+    def _create_html_template(
+        self, progress: ChildProgress, format: ReportFormat
+    ) -> str:
         """إنشاء قالب HTML"""
         template = f"""
 <!DOCTYPE html>

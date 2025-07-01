@@ -158,7 +158,9 @@ class CodeAnalyzer:
             analysis.total_complexity = self._calculate_total_complexity(analysis)
             analysis.security_score = self._calculate_security_score(analysis)
             analysis.child_safety_score = self._calculate_child_safety_score(analysis)
-            analysis.test_coverage_recommendations = self._generate_coverage_recommendations(analysis)
+            analysis.test_coverage_recommendations = (
+                self._generate_coverage_recommendations(analysis)
+            )
 
             logger.info(
                 f"Analyzed {file_path}: complexity={analysis.total_complexity}, "
@@ -186,18 +188,24 @@ class CodeAnalyzer:
 
         return imports
 
-    def _analyze_functions(self, tree: ast.AST, source_code: str) -> List[FunctionAnalysis]:
+    def _analyze_functions(
+        self, tree: ast.AST, source_code: str
+    ) -> List[FunctionAnalysis]:
         """Analyze all functions in the module"""
         functions = []
 
         for node in ast.walk(tree):
-            if isinstance(node, ast.FunctionDef) or isinstance(node, ast.AsyncFunctionDef):
+            if isinstance(node, ast.FunctionDef) or isinstance(
+                node, ast.AsyncFunctionDef
+            ):
                 analysis = self._analyze_single_function(node, source_code)
                 functions.append(analysis)
 
         return functions
 
-    def _analyze_single_function(self, node: ast.FunctionDef, source_code: str) -> FunctionAnalysis:
+    def _analyze_single_function(
+        self, node: ast.FunctionDef, source_code: str
+    ) -> FunctionAnalysis:
         """Analyze a single function"""
         # Extract parameters
         parameters = [arg.arg for arg in node.args.args]
@@ -205,7 +213,11 @@ class CodeAnalyzer:
         # Extract return type annotation
         return_type = None
         if node.returns:
-            return_type = ast.unparse(node.returns) if hasattr(ast, "unparse") else str(node.returns)
+            return_type = (
+                ast.unparse(node.returns)
+                if hasattr(ast, "unparse")
+                else str(node.returns)
+            )
 
         # Extract docstring
         docstring = ast.get_docstring(node)
@@ -226,7 +238,9 @@ class CodeAnalyzer:
         security_concerns = self._find_security_concerns(node, source_code)
 
         # Calculate child safety relevance
-        child_safety_relevance = self._calculate_child_safety_relevance(node, docstring or "")
+        child_safety_relevance = self._calculate_child_safety_relevance(
+            node, docstring or ""
+        )
 
         return FunctionAnalysis(
             name=node.name,
@@ -253,7 +267,9 @@ class CodeAnalyzer:
 
         return classes
 
-    def _analyze_single_class(self, node: ast.ClassDef, source_code: str) -> ClassAnalysis:
+    def _analyze_single_class(
+        self, node: ast.ClassDef, source_code: str
+    ) -> ClassAnalysis:
         """Analyze a single class"""
         # Analyze methods
         methods = []
@@ -268,7 +284,9 @@ class CodeAnalyzer:
             if isinstance(base, ast.Name):
                 parent_classes.append(base.id)
             elif isinstance(base, ast.Attribute):
-                parent_classes.append(ast.unparse(base) if hasattr(ast, "unparse") else str(base))
+                parent_classes.append(
+                    ast.unparse(base) if hasattr(ast, "unparse") else str(base)
+                )
 
         # Extract docstring
         docstring = ast.get_docstring(node)
@@ -282,7 +300,9 @@ class CodeAnalyzer:
             security_concerns.extend(method.security_concerns)
 
         # Calculate child safety relevance
-        child_safety_relevance = max((method.child_safety_relevance for method in methods), default=0)
+        child_safety_relevance = max(
+            (method.child_safety_relevance for method in methods), default=0
+        )
 
         return ClassAnalysis(
             name=node.name,
@@ -333,7 +353,9 @@ class CodeAnalyzer:
                 if child.exc:
                     if isinstance(child.exc, ast.Name):
                         exceptions.append(child.exc.id)
-                    elif isinstance(child.exc, ast.Call) and isinstance(child.exc.func, ast.Name):
+                    elif isinstance(child.exc, ast.Call) and isinstance(
+                        child.exc.func, ast.Name
+                    ):
                         exceptions.append(child.exc.func.id)
 
         return exceptions
@@ -351,7 +373,9 @@ class CodeAnalyzer:
 
         return calls
 
-    def _find_security_concerns(self, node: ast.FunctionDef, source_code: str) -> List[str]:
+    def _find_security_concerns(
+        self, node: ast.FunctionDef, source_code: str
+    ) -> List[str]:
         """Find potential security concerns in the function"""
         concerns = []
 
@@ -373,7 +397,9 @@ class CodeAnalyzer:
 
         return concerns
 
-    def _calculate_child_safety_relevance(self, node: ast.FunctionDef, docstring: str) -> int:
+    def _calculate_child_safety_relevance(
+        self, node: ast.FunctionDef, docstring: str
+    ) -> int:
         """Calculate child safety relevance score (0-5)"""
         content = f"{node.name} {docstring}".lower()
 
@@ -500,7 +526,9 @@ class CodeAnalyzer:
             )
 
         # Check for exception handling
-        functions_with_exceptions = [f for f in analysis.functions if f.raises_exceptions]
+        functions_with_exceptions = [
+            f for f in analysis.functions if f.raises_exceptions
+        ]
         if functions_with_exceptions:
             recommendations.append(
                 "Functions that raise exceptions need error handling tests: "

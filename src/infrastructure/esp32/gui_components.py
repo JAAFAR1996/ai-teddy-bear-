@@ -21,9 +21,17 @@ class GUIComponents:
     def create_status_led(self, parent: tk.Widget, size: int = 80) -> Dict[str, Any]:
         """Create status LED component."""
         try:
-            canvas = tk.Canvas(parent, width=size, height=size, bg="#ecf0f1", highlightthickness=0)
+            canvas = tk.Canvas(
+                parent, width=size, height=size, bg="#ecf0f1", highlightthickness=0
+            )
             circle = canvas.create_oval(
-                size // 4, size // 4, 3 * size // 4, 3 * size // 4, fill="red", outline="white", width=3
+                size // 4,
+                size // 4,
+                3 * size // 4,
+                3 * size // 4,
+                fill="red",
+                outline="white",
+                width=3,
             )
 
             component = {"canvas": canvas, "circle": circle, "current_color": "red"}
@@ -50,7 +58,9 @@ class GUIComponents:
     ) -> Dict[str, Any]:
         """Create audio visualizer component."""
         try:
-            canvas = tk.Canvas(parent, width=width, height=height, bg="#2c3e50", highlightthickness=0)
+            canvas = tk.Canvas(
+                parent, width=width, height=height, bg="#2c3e50", highlightthickness=0
+            )
 
             bar_width = width // bars
             visualizer_bars = []
@@ -58,7 +68,12 @@ class GUIComponents:
             for i in range(bars):
                 x = i * bar_width + 2
                 bar = canvas.create_rectangle(
-                    x, height - 2, x + bar_width - 4, height - 2, fill="#3498db", outline="#3498db"
+                    x,
+                    height - 2,
+                    x + bar_width - 4,
+                    height - 2,
+                    fill="#3498db",
+                    outline="#3498db",
                 )
                 visualizer_bars.append(bar)
 
@@ -142,21 +157,27 @@ class GUIComponents:
             logger.error(f" Control button creation failed: {e}")
             return tk.Button(parent, text=text, command=command)
 
-    def create_status_panel(self, parent: tk.Widget, title: str = "Status") -> Dict[str, Any]:
+    def create_status_panel(
+        self, parent: tk.Widget, title: str = "Status"
+    ) -> Dict[str, Any]:
         """Create status information panel."""
         try:
-            frame = tk.LabelFrame(parent, text=title, bg="#ecf0f1", font=("Arial", 12, "bold"))
+            frame = tk.LabelFrame(
+                parent, text=title, bg="#ecf0f1", font=("Arial", 12, "bold")
+            )
 
             status_labels = {}
 
             def add_status_item(key: str, label: str, initial_value: str = "Unknown"):
                 row = len(status_labels)
 
-                tk.Label(frame, text=f"{label}:", bg="#ecf0f1", font=("Arial", 10)).grid(
-                    row=row, column=0, sticky="w", padx=5, pady=2
-                )
+                tk.Label(
+                    frame, text=f"{label}:", bg="#ecf0f1", font=("Arial", 10)
+                ).grid(row=row, column=0, sticky="w", padx=5, pady=2)
 
-                value_label = tk.Label(frame, text=initial_value, bg="#ecf0f1", font=("Arial", 10, "bold"))
+                value_label = tk.Label(
+                    frame, text=initial_value, bg="#ecf0f1", font=("Arial", 10, "bold")
+                )
                 value_label.grid(row=row, column=1, sticky="w", padx=10, pady=2)
 
                 status_labels[key] = value_label
@@ -184,14 +205,20 @@ class GUIComponents:
             logger.error(f" Status panel creation failed: {e}")
             return {}
 
-    def create_log_panel(self, parent: tk.Widget, title: str = "Activity Log", height: int = 8) -> Dict[str, Any]:
+    def create_log_panel(
+        self, parent: tk.Widget, title: str = "Activity Log", height: int = 8
+    ) -> Dict[str, Any]:
         """Create scrollable log panel."""
         try:
-            frame = tk.LabelFrame(parent, text=title, bg="#ecf0f1", font=("Arial", 12, "bold"))
+            frame = tk.LabelFrame(
+                parent, text=title, bg="#ecf0f1", font=("Arial", 12, "bold")
+            )
 
             # Text widget with scrollbar
             text_widget = tk.Text(frame, height=height, font=("Arial", 9), wrap=tk.WORD)
-            scrollbar = tk.Scrollbar(frame, orient="vertical", command=text_widget.yview)
+            scrollbar = tk.Scrollbar(
+                frame, orient="vertical", command=text_widget.yview
+            )
             text_widget.configure(yscrollcommand=scrollbar.set)
 
             text_widget.pack(side="left", fill="both", expand=True, padx=5, pady=5)
@@ -230,7 +257,9 @@ class GUIComponents:
             logger.error(f" Log panel creation failed: {e}")
             return {}
 
-    def create_progress_bar(self, parent: tk.Widget, length: int = 200) -> Dict[str, Any]:
+    def create_progress_bar(
+        self, parent: tk.Widget, length: int = 200
+    ) -> Dict[str, Any]:
         """Create progress bar component."""
         try:
             progress = ttk.Progressbar(parent, length=length, mode="determinate")
@@ -263,7 +292,9 @@ class GUIComponents:
             logger.error(f" Progress bar creation failed: {e}")
             return {}
 
-    def create_input_form(self, parent: tk.Widget, fields: Dict[str, str]) -> Dict[str, Any]:
+    def create_input_form(
+        self, parent: tk.Widget, fields: Dict[str, str]
+    ) -> Dict[str, Any]:
         """Create input form with multiple fields."""
         try:
             frame = tk.Frame(parent, bg="#ecf0f1")
@@ -271,7 +302,9 @@ class GUIComponents:
             entries = {}
 
             for i, (field_key, field_label) in enumerate(fields.items()):
-                tk.Label(frame, text=f"{field_label}:", bg="#ecf0f1").grid(row=i, column=0, sticky="w", padx=5, pady=2)
+                tk.Label(frame, text=f"{field_label}:", bg="#ecf0f1").grid(
+                    row=i, column=0, sticky="w", padx=5, pady=2
+                )
 
                 entry = tk.Entry(frame, width=20)
                 entry.grid(row=i, column=1, padx=5, pady=2)
@@ -305,7 +338,9 @@ class GUIComponents:
             logger.error(f" Input form creation failed: {e}")
             return {}
 
-    def create_tabbed_panel(self, parent: tk.Widget, tabs: Dict[str, str]) -> Dict[str, Any]:
+    def create_tabbed_panel(
+        self, parent: tk.Widget, tabs: Dict[str, str]
+    ) -> Dict[str, Any]:
         """Create tabbed panel."""
         try:
             notebook = ttk.Notebook(parent)
@@ -358,7 +393,11 @@ class GUIComponents:
             themes = {
                 "default": {"bg": "#ecf0f1", "fg": "#2c3e50", "accent": "#3498db"},
                 "dark": {"bg": "#2c3e50", "fg": "#ecf0f1", "accent": "#e74c3c"},
-                "child_friendly": {"bg": "#fff5f5", "fg": "#333333", "accent": "#ff6b9d"},
+                "child_friendly": {
+                    "bg": "#fff5f5",
+                    "fg": "#333333",
+                    "accent": "#ff6b9d",
+                },
             }
 
             if theme in themes:

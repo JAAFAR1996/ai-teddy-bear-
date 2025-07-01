@@ -19,7 +19,6 @@ from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 # For alerts
 import aiohttp
-
 # Structured logging setup
 import structlog
 from prometheus_client import Counter, Gauge, Histogram
@@ -52,14 +51,20 @@ child_id_var = contextvars.ContextVar("child_id", default=None)
 
 # Metrics
 exception_counter = Counter(
-    "app_exceptions_total", "Total number of exceptions", ["exception_type", "severity", "domain"]
+    "app_exceptions_total",
+    "Total number of exceptions",
+    ["exception_type", "severity", "domain"],
 )
 
 exception_histogram = Histogram(
-    "app_exception_handling_duration_seconds", "Exception handling duration", ["exception_type"]
+    "app_exception_handling_duration_seconds",
+    "Exception handling duration",
+    ["exception_type"],
 )
 
-active_circuit_breakers = Gauge("app_circuit_breakers_active", "Number of active circuit breakers", ["service"])
+active_circuit_breakers = Gauge(
+    "app_circuit_breakers_active", "Number of active circuit breakers", ["service"]
+)
 
 
 class ExceptionSeverity(Enum):
@@ -126,7 +131,11 @@ class TeddyBearException(Exception):
     max_retries: int = 3
 
     def __init__(
-        self, message: str, context: Optional[ExceptionContext] = None, cause: Optional[Exception] = None, **kwargs
+        self,
+        message: str,
+        context: Optional[ExceptionContext] = None,
+        cause: Optional[Exception] = None,
+        **kwargs,
     ):
         super().__init__(message)
         self.message = message
@@ -179,7 +188,11 @@ class InappropriateContentException(ChildSafetyException):
     severity = ExceptionSeverity.CRITICAL
 
     def __init__(self, content_type: str, content_snippet: str, **kwargs):
-        super().__init__(f"Inappropriate {content_type} detected", content_type=content_type, **kwargs)
+        super().__init__(
+            f"Inappropriate {content_type} detected",
+            content_type=content_type,
+            **kwargs,
+        )
 
 
 class AgeInappropriateException(ChildSafetyException):
@@ -251,7 +264,11 @@ class ExternalServiceException(TeddyBearException):
     is_retryable = True
 
     def __init__(self, service_name: str, **kwargs):
-        super().__init__(f"External service error: {service_name}", service_name=service_name, **kwargs)
+        super().__init__(
+            f"External service error: {service_name}",
+            service_name=service_name,
+            **kwargs,
+        )
 
 
 class AIServiceException(ExternalServiceException):
@@ -260,7 +277,9 @@ class AIServiceException(ExternalServiceException):
     error_code = "TB_AI_SERVICE"
 
     def __init__(self, ai_provider: str, **kwargs):
-        super().__init__(service_name=f"AI-{ai_provider}", ai_provider=ai_provider, **kwargs)
+        super().__init__(
+            service_name=f"AI-{ai_provider}", ai_provider=ai_provider, **kwargs
+        )
 
 
 class RateLimitException(ExternalServiceException):
@@ -269,7 +288,9 @@ class RateLimitException(ExternalServiceException):
     error_code = "TB_RATE_LIMIT"
     severity = ExceptionSeverity.MEDIUM
 
-    def __init__(self, service_name: str, reset_time: Optional[datetime] = None, **kwargs):
+    def __init__(
+        self, service_name: str, reset_time: Optional[datetime] = None, **kwargs
+    ):
         super().__init__(service_name=service_name, reset_time=reset_time, **kwargs)
 
 
@@ -369,7 +390,12 @@ class RetryStrategy(RecoveryStrategy):
 class CircuitBreakerStrategy(RecoveryStrategy):
     """Circuit breaker pattern"""
 
-    def __init__(self, failure_threshold: int = 5, recovery_timeout: float = 60.0, half_open_max_calls: int = 3):
+    def __init__(
+        self,
+        failure_threshold: int = 5,
+        recovery_timeout: float = 60.0,
+        half_open_max_calls: int = 3,
+    ):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.half_open_max_calls = half_open_max_calls
@@ -382,7 +408,9 @@ class CircuitBreakerStrategy(RecoveryStrategy):
         """Implement circuit breaker logic"""
         if self.state == "open":
             # Check if we should transition to half-open
-            if (datetime.now(timezone.utc) - self.last_failure_time).total_seconds() > self.recovery_timeout:
+            if (
+                datetime.now(timezone.utc) - self.last_failure_time
+            ).total_seconds() > self.recovery_timeout:
                 self.state = "half-open"
                 self.half_open_calls = 0
             else:
@@ -401,7 +429,9 @@ class CircuitBreakerStrategy(RecoveryStrategy):
 
         if self.failure_count >= self.failure_threshold:
             self.state = "open"
-            active_circuit_breakers.labels(service=exception.details.get("service_name", "unknown")).inc()
+            active_circuit_breakers.labels(
+                service=exception.details.get("service_name", "unknown")
+            ).inc()
 
         raise exception
 
@@ -433,7 +463,9 @@ class GlobalExceptionHandler:
         self.recovery_strategies[DatabaseException] = RetryStrategy(max_retries=5)
         self.recovery_strategies[TimeoutException] = CircuitBreakerStrategy()
 
-    def register_strategy(self, exception_type: Type[Exception], strategy: RecoveryStrategy):
+    def register_strategy(
+        self, exception_type: Type[Exception], strategy: RecoveryStrategy
+    ):
         """Register a recovery strategy for an exception type"""
         self.recovery_strategies[exception_type] = strategy
 
@@ -449,7 +481,9 @@ class GlobalExceptionHandler:
 
             # Update metrics
             exception_counter.labels(
-                exception_type=type(exception).__name__, severity=exception.severity.name, domain=exception.domain.name
+                exception_type=type(exception).__name__,
+                severity=exception.severity.name,
+                domain=exception.domain.name,
             ).inc()
 
             # Send alerts if needed
@@ -482,12 +516,20 @@ class GlobalExceptionHandler:
         # Map common exceptions
         if isinstance(exception, ValueError):
             return ValidationException(
-                field="unknown", value="unknown", reason=str(exception), context=context, cause=exception
+                field="unknown",
+                value="unknown",
+                reason=str(exception),
+                context=context,
+                cause=exception,
             )
         elif isinstance(exception, TimeoutError):
-            return TimeoutException(operation="unknown", timeout_seconds=0, context=context, cause=exception)
+            return TimeoutException(
+                operation="unknown", timeout_seconds=0, context=context, cause=exception
+            )
         else:
-            return TeddyBearException(message=str(exception), context=context, cause=exception)
+            return TeddyBearException(
+                message=str(exception), context=context, cause=exception
+            )
 
     async def _log_exception(self, exception: TeddyBearException):
         """Log exception with appropriate detail level"""
@@ -541,12 +583,36 @@ class AlertManager:
                 {
                     "color": self._get_severity_color(exception.severity),
                     "fields": [
-                        {"title": "Error Code", "value": exception.error_code, "short": True},
-                        {"title": "Severity", "value": exception.severity.name, "short": True},
-                        {"title": "Domain", "value": exception.domain.name, "short": True},
-                        {"title": "Message", "value": exception.message, "short": False},
-                        {"title": "Correlation ID", "value": exception.context.correlation_id, "short": True},
-                        {"title": "Environment", "value": exception.context.environment, "short": True},
+                        {
+                            "title": "Error Code",
+                            "value": exception.error_code,
+                            "short": True,
+                        },
+                        {
+                            "title": "Severity",
+                            "value": exception.severity.name,
+                            "short": True,
+                        },
+                        {
+                            "title": "Domain",
+                            "value": exception.domain.name,
+                            "short": True,
+                        },
+                        {
+                            "title": "Message",
+                            "value": exception.message,
+                            "short": False,
+                        },
+                        {
+                            "title": "Correlation ID",
+                            "value": exception.context.correlation_id,
+                            "short": True,
+                        },
+                        {
+                            "title": "Environment",
+                            "value": exception.context.environment,
+                            "short": True,
+                        },
                     ],
                 }
             ],
@@ -581,7 +647,9 @@ class AlertManager:
 
 
 # Decorators for exception handling
-def handle_exceptions(recovery_strategy: Optional[RecoveryStrategy] = None, fallback_value: Any = None):
+def handle_exceptions(
+    recovery_strategy: Optional[RecoveryStrategy] = None, fallback_value: Any = None
+):
     """Decorator for automatic exception handling"""
 
     def decorator(func):

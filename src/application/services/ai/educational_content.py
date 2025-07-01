@@ -36,10 +36,15 @@ class EducationalContentProvider(ServiceBase):
 
     async def health_check(self) -> Dict:
         """Health check"""
-        return {"healthy": self._state == self.ServiceState.READY, "service": "educational_content"}
+        return {
+            "healthy": self._state == self.ServiceState.READY,
+            "service": "educational_content",
+        }
 
     @trace_async("get_educational_content")
-    async def get_content(self, topic: str, age: int, language: str = "en") -> Dict[str, Any]:
+    async def get_content(
+        self, topic: str, age: int, language: str = "en"
+    ) -> Dict[str, Any]:
         """Get educational content for a topic"""
         # Determine age group
         age_group = self._get_age_group(age)
@@ -60,7 +65,9 @@ class EducationalContentProvider(ServiceBase):
             "topic": topic,
             "age_group": age_group,
             "facts": random.sample(facts, min(3, len(facts))) if facts else [],
-            "activities": random.sample(activities, min(2, len(activities))) if activities else [],
+            "activities": (
+                random.sample(activities, min(2, len(activities))) if activities else []
+            ),
             "learning_objectives": self._get_learning_objectives(topic, age_group),
             "keywords": self._get_topic_keywords(topic, language),
             "next_topics": self._suggest_related_topics(topic),
@@ -99,7 +106,11 @@ class EducationalContentProvider(ServiceBase):
                     ],
                 },
                 "activities": {
-                    "toddler": ["Let's count your toys!", "Show me three jumps!", "Clap your hands five times!"],
+                    "toddler": [
+                        "Let's count your toys!",
+                        "Show me three jumps!",
+                        "Clap your hands five times!",
+                    ],
                     "preschool": [
                         "Let's play a counting game!",
                         "Find groups of the same number!",
@@ -114,7 +125,11 @@ class EducationalContentProvider(ServiceBase):
             },
             "animals": {
                 "facts": {
-                    "toddler": ["Cats say meow!", "Dogs wag their tails when happy!", "Birds can fly!"],
+                    "toddler": [
+                        "Cats say meow!",
+                        "Dogs wag their tails when happy!",
+                        "Birds can fly!",
+                    ],
                     "preschool": [
                         "Elephants are the biggest land animals!",
                         "Fish breathe underwater with gills!",
@@ -127,7 +142,11 @@ class EducationalContentProvider(ServiceBase):
                     ],
                 },
                 "activities": {
-                    "toddler": ["Make animal sounds!", "Move like your favorite animal!", "Draw a simple animal!"],
+                    "toddler": [
+                        "Make animal sounds!",
+                        "Move like your favorite animal!",
+                        "Draw a simple animal!",
+                    ],
                     "preschool": [
                         "Let's play animal charades!",
                         "Sort animals by where they live!",
@@ -142,7 +161,11 @@ class EducationalContentProvider(ServiceBase):
             },
             "colors": {
                 "facts": {
-                    "toddler": ["The sky is blue!", "Grass is green!", "The sun is yellow!"],
+                    "toddler": [
+                        "The sky is blue!",
+                        "Grass is green!",
+                        "The sun is yellow!",
+                    ],
                     "preschool": [
                         "Mixing red and blue makes purple!",
                         "Rainbows have seven colors!",
@@ -155,8 +178,16 @@ class EducationalContentProvider(ServiceBase):
                     ],
                 },
                 "activities": {
-                    "toddler": ["Find something red!", "Point to blue things!", "What color is this?"],
-                    "preschool": ["Let's mix colors!", "Sort objects by color!", "Draw a colorful picture!"],
+                    "toddler": [
+                        "Find something red!",
+                        "Point to blue things!",
+                        "What color is this?",
+                    ],
+                    "preschool": [
+                        "Let's mix colors!",
+                        "Sort objects by color!",
+                        "Draw a colorful picture!",
+                    ],
                     "elementary": [
                         "Create a color wheel!",
                         "Experiment with color mixing!",
@@ -170,17 +201,31 @@ class EducationalContentProvider(ServiceBase):
         """Translate facts to Arabic (simplified)"""
         # In production, use a real translation service
         arabic_facts = {
-            "numbers": ["الواحد هو أصغر رقم للعد!", "لديك يدان اثنتان!", "المثلث له ثلاثة أضلاع!"],
-            "animals": ["القطط تقول مياو!", "الكلاب تهز ذيولها عندما تكون سعيدة!", "الطيور تستطيع الطيران!"],
+            "numbers": [
+                "الواحد هو أصغر رقم للعد!",
+                "لديك يدان اثنتان!",
+                "المثلث له ثلاثة أضلاع!",
+            ],
+            "animals": [
+                "القطط تقول مياو!",
+                "الكلاب تهز ذيولها عندما تكون سعيدة!",
+                "الطيور تستطيع الطيران!",
+            ],
             "colors": ["السماء زرقاء!", "العشب أخضر!", "الشمس صفراء!"],
         }
         return arabic_facts.get(topic, facts)
 
-    def _translate_to_arabic_activities(self, activities: List[str], topic: str) -> List[str]:
+    def _translate_to_arabic_activities(
+        self, activities: List[str], topic: str
+    ) -> List[str]:
         """Translate activities to Arabic (simplified)"""
         arabic_activities = {
             "numbers": ["هيا نعد ألعابك!", "أرني ثلاث قفزات!", "صفق بيديك خمس مرات!"],
-            "animals": ["اصنع أصوات الحيوانات!", "تحرك مثل حيوانك المفضل!", "ارسم حيواناً بسيطاً!"],
+            "animals": [
+                "اصنع أصوات الحيوانات!",
+                "تحرك مثل حيوانك المفضل!",
+                "ارسم حيواناً بسيطاً!",
+            ],
             "colors": ["ابحث عن شيء أحمر!", "أشر إلى الأشياء الزرقاء!", "ما لون هذا؟"],
         }
         return arabic_activities.get(topic, activities)
@@ -189,12 +234,24 @@ class EducationalContentProvider(ServiceBase):
         """Get learning objectives for topic and age"""
         objectives = {
             "numbers": {
-                "toddler": ["Recognize numbers 1-5", "Count objects", "Understand quantity"],
+                "toddler": [
+                    "Recognize numbers 1-5",
+                    "Count objects",
+                    "Understand quantity",
+                ],
                 "preschool": ["Count to 20", "Understand zero", "Simple addition"],
-                "elementary": ["Basic arithmetic", "Number patterns", "Problem solving"],
+                "elementary": [
+                    "Basic arithmetic",
+                    "Number patterns",
+                    "Problem solving",
+                ],
             },
             "animals": {
-                "toddler": ["Identify common animals", "Animal sounds", "Basic characteristics"],
+                "toddler": [
+                    "Identify common animals",
+                    "Animal sounds",
+                    "Basic characteristics",
+                ],
                 "preschool": ["Animal habitats", "Animal groups", "Life cycles"],
                 "elementary": ["Ecosystems", "Adaptations", "Conservation"],
             },

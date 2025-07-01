@@ -212,7 +212,9 @@ class AndSpecification(Specification[T]):
         self.right = right
 
     def is_satisfied_by(self, candidate: T) -> bool:
-        return self.left.is_satisfied_by(candidate) and self.right.is_satisfied_by(candidate)
+        return self.left.is_satisfied_by(candidate) and self.right.is_satisfied_by(
+            candidate
+        )
 
 
 class OrSpecification(Specification[T]):
@@ -223,7 +225,9 @@ class OrSpecification(Specification[T]):
         self.right = right
 
     def is_satisfied_by(self, candidate: T) -> bool:
-        return self.left.is_satisfied_by(candidate) or self.right.is_satisfied_by(candidate)
+        return self.left.is_satisfied_by(candidate) or self.right.is_satisfied_by(
+            candidate
+        )
 
 
 class NotSpecification(Specification[T]):
@@ -280,7 +284,9 @@ class EventStore(ABC):
     """Base interface for event store"""
 
     @abstractmethod
-    async def save_events(self, aggregate_id: UUID, events: List[DomainEvent], expected_version: int) -> None:
+    async def save_events(
+        self, aggregate_id: UUID, events: List[DomainEvent], expected_version: int
+    ) -> None:
         """Save events for an aggregate"""
         pass
 
@@ -342,7 +348,9 @@ class EmailAddress(ValueObject):
 
         local, domain = self.value.rsplit("@", 1)
         if not local or not domain or "." not in domain:
-            raise DomainException("Invalid email address format", "INVALID_EMAIL_FORMAT")
+            raise DomainException(
+                "Invalid email address format", "INVALID_EMAIL_FORMAT"
+            )
 
 
 @dataclass(frozen=True)
@@ -375,13 +383,17 @@ class Money(ValueObject):
     def add(self, other: "Money") -> "Money":
         """Add two money values"""
         if self.currency != other.currency:
-            raise DomainException("Cannot add different currencies", "CURRENCY_MISMATCH")
+            raise DomainException(
+                "Cannot add different currencies", "CURRENCY_MISMATCH"
+            )
         return Money(self.amount + other.amount, self.currency)
 
     def subtract(self, other: "Money") -> "Money":
         """Subtract two money values"""
         if self.currency != other.currency:
-            raise DomainException("Cannot subtract different currencies", "CURRENCY_MISMATCH")
+            raise DomainException(
+                "Cannot subtract different currencies", "CURRENCY_MISMATCH"
+            )
         return Money(self.amount - other.amount, self.currency)
 
 
@@ -394,7 +406,9 @@ class DateRange(ValueObject):
 
     def validate(self):
         if self.start_date > self.end_date:
-            raise DomainException("Start date must be before end date", "INVALID_DATE_RANGE")
+            raise DomainException(
+                "Start date must be before end date", "INVALID_DATE_RANGE"
+            )
 
     def contains(self, date: datetime) -> bool:
         """Check if a date is within the range"""
@@ -402,4 +416,6 @@ class DateRange(ValueObject):
 
     def overlaps_with(self, other: "DateRange") -> bool:
         """Check if this range overlaps with another"""
-        return not (self.end_date < other.start_date or self.start_date > other.end_date)
+        return not (
+            self.end_date < other.start_date or self.start_date > other.end_date
+        )

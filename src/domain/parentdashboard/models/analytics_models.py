@@ -61,7 +61,11 @@ class ConversationLog:
 
     def is_concerning(self) -> bool:
         """Check if conversation has concerning flags"""
-        concerning_flags = {"inappropriate_content", "emotional_distress", "safety_concern"}
+        concerning_flags = {
+            "inappropriate_content",
+            "emotional_distress",
+            "safety_concern",
+        }
         return bool(set(self.moderation_flags) & concerning_flags)
 
 
@@ -144,7 +148,8 @@ class UsageMetrics:
         return (
             self.average_session_minutes > 45
             or self.total_duration_minutes > 120  # More than 2 hours daily
-            or len([h for h in self.peak_usage_hours if h > 21 or h < 7]) > 0  # Late night usage
+            or len([h for h in self.peak_usage_hours if h > 21 or h < 7])
+            > 0  # Late night usage
         )
 
     def get_usage_insights(self) -> List[str]:
@@ -184,7 +189,9 @@ class AnalyticsData:
 
     def get_top_topics(self, limit: int = 5) -> List[tuple]:
         """Get top discussed topics"""
-        return sorted(self.topics_frequency.items(), key=lambda x: x[1], reverse=True)[:limit]
+        return sorted(self.topics_frequency.items(), key=lambda x: x[1], reverse=True)[
+            :limit
+        ]
 
     def get_sentiment_summary(self) -> str:
         """Get sentiment summary"""
@@ -196,8 +203,12 @@ class AnalyticsData:
         factors = {
             "positive_sentiment": self.sentiment_breakdown.get("positive", 0) * 30,
             "quality_interactions": self.interaction_quality_score * 25,
-            "learning_progress": self.learning_progress.get_overall_progress_score() * 0.25,
-            "balanced_usage": (100 - min(self.usage_metrics.is_usage_concerning() * 50, 50)) * 0.2,
+            "learning_progress": self.learning_progress.get_overall_progress_score()
+            * 0.25,
+            "balanced_usage": (
+                100 - min(self.usage_metrics.is_usage_concerning() * 50, 50)
+            )
+            * 0.2,
         }
         return sum(factors.values())
 
@@ -216,7 +227,9 @@ class AnalyticsData:
         # Topic insights
         top_topic = self.get_top_topics(1)
         if top_topic:
-            insights.append(f"Favorite topic: {top_topic[0][0]} ({top_topic[0][1]} conversations)")
+            insights.append(
+                f"Favorite topic: {top_topic[0][0]} ({top_topic[0][1]} conversations)"
+            )
 
         # Sentiment insights
         if self.sentiment_breakdown.get("positive", 0) > 0.7:
@@ -269,7 +282,10 @@ class AnalyticsFilter:
         if self.topics and not set(log.topics_discussed) & set(self.topics):
             return False
 
-        if self.sentiment_filter and log.get_dominant_sentiment() != self.sentiment_filter:
+        if (
+            self.sentiment_filter
+            and log.get_dominant_sentiment() != self.sentiment_filter
+        ):
             return False
 
         if self.min_duration and log.duration_seconds < self.min_duration:

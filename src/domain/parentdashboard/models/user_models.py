@@ -9,7 +9,8 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
+                        String)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -48,7 +49,12 @@ class ParentUser(Base):
             "push": True,
             "daily_summary": True,
             "weekly_report": True,
-            "alerts": {"content_moderation": True, "time_limits": True, "unusual_activity": True, "emergency": True},
+            "alerts": {
+                "content_moderation": True,
+                "time_limits": True,
+                "unusual_activity": True,
+                "emergency": True,
+            },
         }
 
     def update_last_login(self) -> None:
@@ -110,7 +116,13 @@ class ChildProfile(Base):
 
     def get_recommended_daily_limit(self) -> int:
         """Get recommended daily time limit based on age"""
-        age_limits = {range(0, 5): 30, range(5, 8): 45, range(8, 11): 60, range(11, 14): 90, range(14, 18): 120}
+        age_limits = {
+            range(0, 5): 30,
+            range(5, 8): 45,
+            range(8, 11): 60,
+            range(11, 14): 90,
+            range(14, 18): 120,
+        }
 
         for age_range, limit in age_limits.items():
             if self.age in age_range:
@@ -133,7 +145,11 @@ class ChildProfile(Base):
     def update_interests(self, new_interests: List[str]) -> None:
         """Update child's interests with validation"""
         # Filter age-appropriate interests
-        appropriate_interests = [interest for interest in new_interests if self.is_topic_age_appropriate(interest)]
+        appropriate_interests = [
+            interest
+            for interest in new_interests
+            if self.is_topic_age_appropriate(interest)
+        ]
         self.interests = appropriate_interests
 
     def get_personalization_data(self) -> Dict[str, Any]:
@@ -174,7 +190,9 @@ class ConversationLogEntry(Base):
     def calculate_duration(self) -> None:
         """Calculate and set duration if end time is available"""
         if self.ended_at and self.started_at:
-            self.duration_seconds = int((self.ended_at - self.started_at).total_seconds())
+            self.duration_seconds = int(
+                (self.ended_at - self.started_at).total_seconds()
+            )
 
     def get_duration_minutes(self) -> float:
         """Get duration in minutes"""
@@ -193,7 +211,13 @@ class ConversationLogEntry(Base):
 
     def has_concerning_content(self) -> bool:
         """Check if conversation had concerning content"""
-        concerning_flags = {"inappropriate_content", "emotional_distress", "safety_concern", "bullying", "violence"}
+        concerning_flags = {
+            "inappropriate_content",
+            "emotional_distress",
+            "safety_concern",
+            "bullying",
+            "violence",
+        }
         return bool(set(self.moderation_flags) & concerning_flags)
 
     def get_sentiment_summary(self) -> str:
@@ -206,7 +230,11 @@ class ConversationLogEntry(Base):
 
     def needs_parent_attention(self) -> bool:
         """Check if this conversation needs parent attention"""
-        return self.has_concerning_content() or self.sentiment_scores.get("negative", 0) > 0.7 or self.is_long_session()
+        return (
+            self.has_concerning_content()
+            or self.sentiment_scores.get("negative", 0) > 0.7
+            or self.is_long_session()
+        )
 
     def generate_summary_if_needed(self) -> None:
         """Generate summary if not already present"""

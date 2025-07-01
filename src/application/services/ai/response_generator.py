@@ -46,7 +46,10 @@ class ResponseGenerator(ServiceBase):
 
     async def health_check(self) -> Dict:
         """Health check"""
-        return {"healthy": self._state == self.ServiceState.READY, "service": "response_generator"}
+        return {
+            "healthy": self._state == self.ServiceState.READY,
+            "service": "response_generator",
+        }
 
     @trace_async("generate_response")
     async def generate(
@@ -74,11 +77,16 @@ class ResponseGenerator(ServiceBase):
 
         # Generate response using LLM
         response = await self.llm_service.generate(
-            prompt=prompt, max_tokens=200, temperature=0.7, system_prompt=self._get_system_prompt(child_info)
+            prompt=prompt,
+            max_tokens=200,
+            temperature=0.7,
+            system_prompt=self._get_system_prompt(child_info),
         )
 
         # Post-process response
-        processed_response = await self._post_process_response(response, emotion, mode, child_info)
+        processed_response = await self._post_process_response(
+            response, emotion, mode, child_info
+        )
 
         return processed_response
 
@@ -109,7 +117,10 @@ class ResponseGenerator(ServiceBase):
         if context.get("history"):
             recent_history = context["history"][-3:]  # Last 3 turns
             history_text = "\n".join(
-                [f"{'Child' if i % 2 == 0 else 'Teddy'}: {msg}" for i, msg in enumerate(recent_history)]
+                [
+                    f"{'Child' if i % 2 == 0 else 'Teddy'}: {msg}"
+                    for i, msg in enumerate(recent_history)
+                ]
             )
             prompt_parts.append(f"Recent conversation:\n{history_text}")
 
@@ -144,7 +155,9 @@ class ResponseGenerator(ServiceBase):
             
             Never mention scary or inappropriate topics for children."""
 
-    def _get_mode_instructions(self, mode: ResponseMode, emotion: EmotionAnalysis, age: int) -> str:
+    def _get_mode_instructions(
+        self, mode: ResponseMode, emotion: EmotionAnalysis, age: int
+    ) -> str:
         """Get specific instructions based on response mode"""
         instructions = {
             ResponseMode.EDUCATIONAL: "Teach something new in a fun way. Use examples the child can relate to.",
@@ -164,7 +177,11 @@ class ResponseGenerator(ServiceBase):
         return instructions.get(mode, "Be friendly and engaging.")
 
     async def _post_process_response(
-        self, response: str, emotion: EmotionAnalysis, mode: ResponseMode, child_info: Dict[str, Any]
+        self,
+        response: str,
+        emotion: EmotionAnalysis,
+        mode: ResponseMode,
+        child_info: Dict[str, Any],
     ) -> str:
         """Post-process the generated response"""
         # Ensure response is appropriate length
@@ -176,7 +193,9 @@ class ResponseGenerator(ServiceBase):
             response = self._add_playful_elements(response)
 
         # Ensure cultural appropriateness
-        response = self._ensure_cultural_appropriateness(response, child_info.get("language", "ar"))
+        response = self._ensure_cultural_appropriateness(
+            response, child_info.get("language", "ar")
+        )
 
         return response
 
@@ -237,7 +256,9 @@ class ResponseGenerator(ServiceBase):
             "Promote learning and creativity",
         ]
 
-    def suggest_voice_tone(self, emotion: EmotionAnalysis, mode: ResponseMode, response_content: str) -> EmotionalTone:
+    def suggest_voice_tone(
+        self, emotion: EmotionAnalysis, mode: ResponseMode, response_content: str
+    ) -> EmotionalTone:
         """Suggest appropriate voice tone for the response"""
         # Map emotions to voice tones
         emotion_tone_map = {
@@ -264,10 +285,16 @@ class ResponseGenerator(ServiceBase):
 
         return base_tone
 
-    def generate_follow_up_questions(self, topic: str, child_age: int, language: str = "ar") -> List[str]:
+    def generate_follow_up_questions(
+        self, topic: str, child_age: int, language: str = "ar"
+    ) -> List[str]:
         """Generate appropriate follow-up questions"""
         if language == "ar":
-            base_questions = ["هل تريد أن تخبرني المزيد؟", "ما رأيك في هذا؟", "هل يمكنك أن تصف لي أكثر؟"]
+            base_questions = [
+                "هل تريد أن تخبرني المزيد؟",
+                "ما رأيك في هذا؟",
+                "هل يمكنك أن تصف لي أكثر؟",
+            ]
         else:
             base_questions = [
                 "Would you like to tell me more?",
@@ -280,6 +307,8 @@ class ResponseGenerator(ServiceBase):
             if language == "ar":
                 base_questions.extend(["ما لونك المفضل؟", "هل تحب اللعب؟"])
             else:
-                base_questions.extend(["What's your favorite color?", "Do you like to play?"])
+                base_questions.extend(
+                    ["What's your favorite color?", "Do you like to play?"]
+                )
 
         return base_questions[:3]

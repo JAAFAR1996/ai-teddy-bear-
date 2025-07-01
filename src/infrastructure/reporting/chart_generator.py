@@ -44,19 +44,25 @@ class ChartGenerator:
         """Generate all charts for the report"""
         try:
             if not PLOTTING_AVAILABLE:
-                self.logger.warning("Matplotlib not available, skipping chart generation")
+                self.logger.warning(
+                    "Matplotlib not available, skipping chart generation"
+                )
                 return {}
 
             charts = {}
 
             # 1. Emotion distribution pie chart
-            charts["emotions"] = self.create_emotion_pie_chart(progress.emotion_analysis)
+            charts["emotions"] = self.create_emotion_pie_chart(
+                progress.emotion_analysis
+            )
 
             # 2. Mood trends line chart
             charts["mood_trends"] = self.create_mood_trends_chart(progress.mood_trends)
 
             # 3. Skills practice bar chart
-            charts["skills"] = self.create_skills_bar_chart(progress.skill_analysis.skills_practiced)
+            charts["skills"] = self.create_skills_bar_chart(
+                progress.skill_analysis.skills_practiced
+            )
 
             # 4. Development radar chart
             charts["development"] = self.create_development_radar_chart(progress)
@@ -81,7 +87,9 @@ class ChartGenerator:
             colors = [self.color_palette.get(emotion, "#CCCCCC") for emotion in labels]
 
             # Create pie chart
-            plt.pie(sizes, labels=labels, colors=colors, autopct="%1.1f%%", startangle=90)
+            plt.pie(
+                sizes, labels=labels, colors=colors, autopct="%1.1f%%", startangle=90
+            )
             plt.title("توزيع المشاعر خلال الفترة", fontsize=14, pad=20)
             plt.axis("equal")
 
@@ -105,7 +113,14 @@ class ChartGenerator:
                 if values:  # Only plot if there are values
                     days = list(range(len(values)))
                     color = self.color_palette.get(emotion, "#CCCCCC")
-                    plt.plot(days, values, label=emotion, color=color, linewidth=2, marker="o")
+                    plt.plot(
+                        days,
+                        values,
+                        label=emotion,
+                        color=color,
+                        linewidth=2,
+                        marker="o",
+                    )
 
             plt.title("اتجاهات المزاج خلال الفترة", fontsize=14)
             plt.xlabel("اليوم")
@@ -133,12 +148,20 @@ class ChartGenerator:
             frequencies = [skill[1] for skill in sorted_skills]
 
             # Create bar chart
-            bars = plt.bar(skill_names, frequencies, color=self.color_palette["primary"], alpha=0.7)
+            bars = plt.bar(
+                skill_names, frequencies, color=self.color_palette["primary"], alpha=0.7
+            )
 
             # Add value labels on bars
             for bar in bars:
                 height = bar.get_height()
-                plt.text(bar.get_x() + bar.get_width() / 2.0, height, f"{int(height)}", ha="center", va="bottom")
+                plt.text(
+                    bar.get_x() + bar.get_width() / 2.0,
+                    height,
+                    f"{int(height)}",
+                    ha="center",
+                    va="bottom",
+                )
 
             plt.title("المهارات المُمارسة خلال الفترة", fontsize=14)
             plt.xlabel("المهارة")
@@ -161,7 +184,15 @@ class ChartGenerator:
             plt.figure(figsize=(8, 8))
 
             # Define developmental areas and their scores (0-1)
-            areas = ["التركيز", "المفردات", "التعاطف", "التعاون", "الاستقرار العاطفي", "الفضول", "التفاعل الاجتماعي"]
+            areas = [
+                "التركيز",
+                "المفردات",
+                "التعاطف",
+                "التعاون",
+                "الاستقرار العاطفي",
+                "الفضول",
+                "التفاعل الاجتماعي",
+            ]
 
             scores = [
                 min(progress.attention_span / 10, 1.0),  # Normalize to 0-1
@@ -170,7 +201,9 @@ class ChartGenerator:
                 progress.cooperation_level,
                 progress.emotion_analysis.stability_score,
                 min(progress.question_frequency / 5, 1.0),
-                min((progress.sharing_behavior + progress.empathy_indicators) / 20, 1.0),
+                min(
+                    (progress.sharing_behavior + progress.empathy_indicators) / 20, 1.0
+                ),
             ]
 
             # Add first point to close the radar
@@ -182,7 +215,9 @@ class ChartGenerator:
 
             # Create radar chart
             ax = plt.subplot(111, polar=True)
-            ax.plot(angles, scores, "o-", linewidth=2, color=self.color_palette["primary"])
+            ax.plot(
+                angles, scores, "o-", linewidth=2, color=self.color_palette["primary"]
+            )
             ax.fill(angles, scores, alpha=0.25, color=self.color_palette["primary"])
 
             # Add labels

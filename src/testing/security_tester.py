@@ -150,7 +150,9 @@ class SecurityTester:
             "..\\..\\AppData\\Local\\child_profiles",
         ]
 
-    async def run_comprehensive_security_test(self, target_function, child_context=None) -> SecurityTestResult:
+    async def run_comprehensive_security_test(
+        self, target_function, child_context=None
+    ) -> SecurityTestResult:
         """
         Run comprehensive security testing suite
 
@@ -209,11 +211,15 @@ class SecurityTester:
         self.test_results.append(result)
         self.vulnerabilities_found.extend(vulnerabilities)
 
-        logger.info(f"✅ Security testing complete: {len(vulnerabilities)} vulnerabilities found")
+        logger.info(
+            f"✅ Security testing complete: {len(vulnerabilities)} vulnerabilities found"
+        )
 
         return result
 
-    async def _test_child_privacy_protection(self, target_function, child_context) -> Dict[str, Any]:
+    async def _test_child_privacy_protection(
+        self, target_function, child_context
+    ) -> Dict[str, Any]:
         """Test child privacy protection mechanisms"""
         vulnerabilities = []
         tests_run = 0
@@ -224,7 +230,9 @@ class SecurityTester:
             tests_run += 1
 
             try:
-                response = await self._execute_test(target_function, payload, child_context)
+                response = await self._execute_test(
+                    target_function, payload, child_context
+                )
 
                 # Check if personal information was exposed
                 if self._contains_personal_info(response):
@@ -247,9 +255,16 @@ class SecurityTester:
                 failed += 1
                 logger.error(f"Privacy test failed with exception: {e}")
 
-        return {"vulnerabilities": vulnerabilities, "tests_run": tests_run, "passed": passed, "failed": failed}
+        return {
+            "vulnerabilities": vulnerabilities,
+            "tests_run": tests_run,
+            "passed": passed,
+            "failed": failed,
+        }
 
-    async def _test_parental_control_bypass(self, target_function, child_context) -> Dict[str, Any]:
+    async def _test_parental_control_bypass(
+        self, target_function, child_context
+    ) -> Dict[str, Any]:
         """Test parental control bypass attempts"""
         vulnerabilities = []
         tests_run = 0
@@ -260,7 +275,9 @@ class SecurityTester:
             tests_run += 1
 
             try:
-                response = await self._execute_test(target_function, payload, child_context)
+                response = await self._execute_test(
+                    target_function, payload, child_context
+                )
 
                 # Check if system responded to bypass attempt
                 if self._indicates_bypass_success(response, payload):
@@ -283,9 +300,16 @@ class SecurityTester:
                 failed += 1
                 logger.error(f"Parental control test failed: {e}")
 
-        return {"vulnerabilities": vulnerabilities, "tests_run": tests_run, "passed": passed, "failed": failed}
+        return {
+            "vulnerabilities": vulnerabilities,
+            "tests_run": tests_run,
+            "passed": passed,
+            "failed": failed,
+        }
 
-    async def _test_content_injection(self, target_function, child_context) -> Dict[str, Any]:
+    async def _test_content_injection(
+        self, target_function, child_context
+    ) -> Dict[str, Any]:
         """Test content injection vulnerabilities"""
         vulnerabilities = []
         tests_run = 0
@@ -296,7 +320,9 @@ class SecurityTester:
             tests_run += 1
 
             try:
-                response = await self._execute_test(target_function, payload, child_context)
+                response = await self._execute_test(
+                    target_function, payload, child_context
+                )
 
                 # Check if inappropriate content was generated
                 if self._contains_inappropriate_content(response):
@@ -319,9 +345,16 @@ class SecurityTester:
                 failed += 1
                 logger.error(f"Content injection test failed: {e}")
 
-        return {"vulnerabilities": vulnerabilities, "tests_run": tests_run, "passed": passed, "failed": failed}
+        return {
+            "vulnerabilities": vulnerabilities,
+            "tests_run": tests_run,
+            "passed": passed,
+            "failed": failed,
+        }
 
-    async def _test_sql_injection(self, target_function, child_context) -> Dict[str, Any]:
+    async def _test_sql_injection(
+        self, target_function, child_context
+    ) -> Dict[str, Any]:
         """Test SQL injection vulnerabilities"""
         vulnerabilities = []
         tests_run = 0
@@ -332,7 +365,9 @@ class SecurityTester:
             tests_run += 1
 
             try:
-                response = await self._execute_test(target_function, payload, child_context)
+                response = await self._execute_test(
+                    target_function, payload, child_context
+                )
 
                 # Check for SQL injection indicators
                 if self._indicates_sql_injection(response):
@@ -368,9 +403,16 @@ class SecurityTester:
                     vulnerabilities.append(vulnerability)
                 failed += 1
 
-        return {"vulnerabilities": vulnerabilities, "tests_run": tests_run, "passed": passed, "failed": failed}
+        return {
+            "vulnerabilities": vulnerabilities,
+            "tests_run": tests_run,
+            "passed": passed,
+            "failed": failed,
+        }
 
-    async def _test_xss_vulnerabilities(self, target_function, child_context) -> Dict[str, Any]:
+    async def _test_xss_vulnerabilities(
+        self, target_function, child_context
+    ) -> Dict[str, Any]:
         """Test XSS vulnerabilities"""
         vulnerabilities = []
         tests_run = 0
@@ -381,7 +423,9 @@ class SecurityTester:
             tests_run += 1
 
             try:
-                response = await self._execute_test(target_function, payload, child_context)
+                response = await self._execute_test(
+                    target_function, payload, child_context
+                )
 
                 # Check if XSS payload was reflected
                 if self._contains_xss_reflection(response, payload):
@@ -405,9 +449,16 @@ class SecurityTester:
                 failed += 1
                 logger.error(f"XSS test failed: {e}")
 
-        return {"vulnerabilities": vulnerabilities, "tests_run": tests_run, "passed": passed, "failed": failed}
+        return {
+            "vulnerabilities": vulnerabilities,
+            "tests_run": tests_run,
+            "passed": passed,
+            "failed": failed,
+        }
 
-    async def _test_command_injection(self, target_function, child_context) -> Dict[str, Any]:
+    async def _test_command_injection(
+        self, target_function, child_context
+    ) -> Dict[str, Any]:
         """Test command injection vulnerabilities"""
         vulnerabilities = []
         tests_run = 0
@@ -418,7 +469,9 @@ class SecurityTester:
             tests_run += 1
 
             try:
-                response = await self._execute_test(target_function, payload, child_context)
+                response = await self._execute_test(
+                    target_function, payload, child_context
+                )
 
                 # Check for command execution indicators
                 if self._indicates_command_execution(response):
@@ -441,9 +494,16 @@ class SecurityTester:
                 failed += 1
                 logger.error(f"Command injection test failed: {e}")
 
-        return {"vulnerabilities": vulnerabilities, "tests_run": tests_run, "passed": passed, "failed": failed}
+        return {
+            "vulnerabilities": vulnerabilities,
+            "tests_run": tests_run,
+            "passed": passed,
+            "failed": failed,
+        }
 
-    async def _test_path_traversal(self, target_function, child_context) -> Dict[str, Any]:
+    async def _test_path_traversal(
+        self, target_function, child_context
+    ) -> Dict[str, Any]:
         """Test path traversal vulnerabilities"""
         vulnerabilities = []
         tests_run = 0
@@ -454,7 +514,9 @@ class SecurityTester:
             tests_run += 1
 
             try:
-                response = await self._execute_test(target_function, payload, child_context)
+                response = await self._execute_test(
+                    target_function, payload, child_context
+                )
 
                 # Check for file system access
                 if self._indicates_file_access(response):
@@ -477,22 +539,37 @@ class SecurityTester:
                 failed += 1
                 logger.error(f"Path traversal test failed: {e}")
 
-        return {"vulnerabilities": vulnerabilities, "tests_run": tests_run, "passed": passed, "failed": failed}
+        return {
+            "vulnerabilities": vulnerabilities,
+            "tests_run": tests_run,
+            "passed": passed,
+            "failed": failed,
+        }
 
-    async def _test_authentication_bypass(self, target_function, child_context) -> Dict[str, Any]:
+    async def _test_authentication_bypass(
+        self, target_function, child_context
+    ) -> Dict[str, Any]:
         """Test authentication bypass vulnerabilities"""
         vulnerabilities = []
         tests_run = 0
         passed = 0
         failed = 0
 
-        auth_bypass_payloads = ["admin", "' OR '1'='1", "administrator", "parent_override", "bypass_auth"]
+        auth_bypass_payloads = [
+            "admin",
+            "' OR '1'='1",
+            "administrator",
+            "parent_override",
+            "bypass_auth",
+        ]
 
         for payload in auth_bypass_payloads:
             tests_run += 1
 
             try:
-                response = await self._execute_test(target_function, payload, child_context)
+                response = await self._execute_test(
+                    target_function, payload, child_context
+                )
 
                 # Check for authentication bypass
                 if self._indicates_auth_bypass(response):
@@ -515,9 +592,16 @@ class SecurityTester:
                 failed += 1
                 logger.error(f"Authentication test failed: {e}")
 
-        return {"vulnerabilities": vulnerabilities, "tests_run": tests_run, "passed": passed, "failed": failed}
+        return {
+            "vulnerabilities": vulnerabilities,
+            "tests_run": tests_run,
+            "passed": passed,
+            "failed": failed,
+        }
 
-    async def _test_data_exposure(self, target_function, child_context) -> Dict[str, Any]:
+    async def _test_data_exposure(
+        self, target_function, child_context
+    ) -> Dict[str, Any]:
         """Test data exposure vulnerabilities"""
         vulnerabilities = []
         tests_run = 0
@@ -536,7 +620,9 @@ class SecurityTester:
             tests_run += 1
 
             try:
-                response = await self._execute_test(target_function, payload, child_context)
+                response = await self._execute_test(
+                    target_function, payload, child_context
+                )
 
                 # Check for data exposure
                 if self._indicates_data_exposure(response):
@@ -559,9 +645,16 @@ class SecurityTester:
                 failed += 1
                 logger.error(f"Data exposure test failed: {e}")
 
-        return {"vulnerabilities": vulnerabilities, "tests_run": tests_run, "passed": passed, "failed": failed}
+        return {
+            "vulnerabilities": vulnerabilities,
+            "tests_run": tests_run,
+            "passed": passed,
+            "failed": failed,
+        }
 
-    async def _test_input_validation(self, target_function, child_context) -> Dict[str, Any]:
+    async def _test_input_validation(
+        self, target_function, child_context
+    ) -> Dict[str, Any]:
         """Test input validation vulnerabilities"""
         vulnerabilities = []
         tests_run = 0
@@ -579,7 +672,9 @@ class SecurityTester:
             tests_run += 1
 
             try:
-                response = await self._execute_test(target_function, payload, child_context)
+                response = await self._execute_test(
+                    target_function, payload, child_context
+                )
 
                 # Check for validation bypass
                 if self._indicates_validation_bypass(response, payload):
@@ -614,7 +709,12 @@ class SecurityTester:
                     vulnerabilities.append(vulnerability)
                 failed += 1
 
-        return {"vulnerabilities": vulnerabilities, "tests_run": tests_run, "passed": passed, "failed": failed}
+        return {
+            "vulnerabilities": vulnerabilities,
+            "tests_run": tests_run,
+            "passed": passed,
+            "failed": failed,
+        }
 
     async def _execute_test(self, target_function, payload, context):
         """Execute a single security test"""
@@ -737,7 +837,14 @@ class SecurityTester:
             return False
 
         response_text = str(response).lower()
-        file_indicators = ["etc/passwd", "system32", "file not found", "directory", "permission denied", "appdata"]
+        file_indicators = [
+            "etc/passwd",
+            "system32",
+            "file not found",
+            "directory",
+            "permission denied",
+            "appdata",
+        ]
 
         return any(indicator in response_text for indicator in file_indicators)
 
@@ -798,9 +905,15 @@ class SecurityTester:
 
         # Aggregate results
         total_vulnerabilities = len(self.vulnerabilities_found)
-        critical_vulns = len([v for v in self.vulnerabilities_found if v.severity == Severity.CRITICAL])
-        high_vulns = len([v for v in self.vulnerabilities_found if v.severity == Severity.HIGH])
-        child_safety_vulns = len([v for v in self.vulnerabilities_found if v.child_safety_impact])
+        critical_vulns = len(
+            [v for v in self.vulnerabilities_found if v.severity == Severity.CRITICAL]
+        )
+        high_vulns = len(
+            [v for v in self.vulnerabilities_found if v.severity == Severity.HIGH]
+        )
+        child_safety_vulns = len(
+            [v for v in self.vulnerabilities_found if v.child_safety_impact]
+        )
 
         # Group by type
         vuln_types = {}
@@ -817,7 +930,9 @@ class SecurityTester:
                 "critical_vulnerabilities": critical_vulns,
                 "high_vulnerabilities": high_vulns,
                 "child_safety_impact": child_safety_vulns,
-                "security_score": max(0, 100 - (critical_vulns * 20) - (high_vulns * 10)),
+                "security_score": max(
+                    0, 100 - (critical_vulns * 20) - (high_vulns * 10)
+                ),
             },
             "vulnerability_breakdown": vuln_types,
             "detailed_vulnerabilities": [
@@ -845,19 +960,29 @@ class SecurityTester:
         vuln_types = set(v.vulnerability_type for v in self.vulnerabilities_found)
 
         if VulnerabilityType.CHILD_PRIVACY in vuln_types:
-            recommendations.append("Implement strict personal information filtering for all child interactions")
+            recommendations.append(
+                "Implement strict personal information filtering for all child interactions"
+            )
 
         if VulnerabilityType.PARENTAL_CONTROL_BYPASS in vuln_types:
-            recommendations.append("Strengthen parental control enforcement and add bypass detection")
+            recommendations.append(
+                "Strengthen parental control enforcement and add bypass detection"
+            )
 
         if VulnerabilityType.SQL_INJECTION in vuln_types:
-            recommendations.append("Use parameterized queries and implement SQL injection protection")
+            recommendations.append(
+                "Use parameterized queries and implement SQL injection protection"
+            )
 
         if VulnerabilityType.XSS in vuln_types:
-            recommendations.append("Implement output encoding and Content Security Policy")
+            recommendations.append(
+                "Implement output encoding and Content Security Policy"
+            )
 
         if VulnerabilityType.INAPPROPRIATE_CONTENT in vuln_types:
-            recommendations.append("Enhance content filtering with multi-layer safety checks")
+            recommendations.append(
+                "Enhance content filtering with multi-layer safety checks"
+            )
 
         # General recommendations
         recommendations.extend(

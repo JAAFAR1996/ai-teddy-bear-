@@ -7,12 +7,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
 from src.application.services.ai.models.ai_response_models import (
-    AIResponseModel,
-    AIServiceMetrics,
-    ConversationContext,
-    EmotionAnalysis,
-    ResponseGenerationRequest,
-)
+    AIResponseModel, AIServiceMetrics, ConversationContext, EmotionAnalysis,
+    ResponseGenerationRequest)
 from src.core.domain.entities.child import Child
 
 
@@ -21,7 +17,11 @@ class IAIService(ABC):
 
     @abstractmethod
     async def generate_response(
-        self, message: str, child: Child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None
+        self,
+        message: str,
+        child: Child,
+        session_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> AIResponseModel:
         """Generate AI response with enhanced context handling"""
         pass
@@ -46,12 +46,16 @@ class IEmotionAnalyzer(ABC):
     """Interface for emotion analysis services"""
 
     @abstractmethod
-    async def analyze_text_emotion(self, text: str, language: str = "ar") -> EmotionAnalysis:
+    async def analyze_text_emotion(
+        self, text: str, language: str = "ar"
+    ) -> EmotionAnalysis:
         """Analyze emotion from text with language support"""
         pass
 
     @abstractmethod
-    async def analyze_emotion_trend(self, conversation_history: List[Dict[str, Any]]) -> Dict[str, Any]:
+    async def analyze_emotion_trend(
+        self, conversation_history: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """Analyze emotion trends in conversation"""
         pass
 
@@ -60,12 +64,16 @@ class IResponseGenerator(ABC):
     """Interface for response generation services"""
 
     @abstractmethod
-    async def generate_contextual_response(self, request: ResponseGenerationRequest) -> AIResponseModel:
+    async def generate_contextual_response(
+        self, request: ResponseGenerationRequest
+    ) -> AIResponseModel:
         """Generate contextual response based on request"""
         pass
 
     @abstractmethod
-    async def generate_fallback_response(self, error_type: str, child: Child, session_id: str) -> AIResponseModel:
+    async def generate_fallback_response(
+        self, error_type: str, child: Child, session_id: str
+    ) -> AIResponseModel:
         """Generate fallback response for errors"""
         pass
 
@@ -93,13 +101,20 @@ class IConversationManager(ABC):
     """Interface for conversation management"""
 
     @abstractmethod
-    async def get_conversation_context(self, session_id: str, child_id: str) -> ConversationContext:
+    async def get_conversation_context(
+        self, session_id: str, child_id: str
+    ) -> ConversationContext:
         """Get conversation context for session"""
         pass
 
     @abstractmethod
     async def update_conversation_history(
-        self, session_id: str, child_id: str, user_message: str, ai_response: str, emotion: str
+        self,
+        session_id: str,
+        child_id: str,
+        user_message: str,
+        ai_response: str,
+        emotion: str,
     ) -> None:
         """Update conversation history"""
         pass

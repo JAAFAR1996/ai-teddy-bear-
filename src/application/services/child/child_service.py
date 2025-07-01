@@ -6,7 +6,9 @@ from typing import Any, Dict, List, Optional
 
 import structlog
 
-from ....domain.esp32.models import ChildProfile, ConversationEntry, InteractionType, LearningProgress, SessionData
+from ....domain.esp32.models import (ChildProfile, ConversationEntry,
+                                     InteractionType, LearningProgress,
+                                     SessionData)
 
 logger = structlog.get_logger(__name__)
 
@@ -26,7 +28,9 @@ class ChildProfileService:
         try:
             child_id = f"child_{uuid.uuid4().hex[:8]}"
 
-            profile = ChildProfile(name=name, age=age, child_id=child_id, device_id=self.device_id)
+            profile = ChildProfile(
+                name=name, age=age, child_id=child_id, device_id=self.device_id
+            )
 
             self.profiles_cache[child_id] = profile
             self.current_profile = profile
@@ -85,7 +89,10 @@ class ChildProfileService:
             logger.error(f" Session end failed: {e}")
 
     def record_conversation(
-        self, child_input: str, ai_response: str, interaction_type: InteractionType = InteractionType.CONVERSATION
+        self,
+        child_input: str,
+        ai_response: str,
+        interaction_type: InteractionType = InteractionType.CONVERSATION,
     ) -> bool:
         """Record conversation in current profile."""
         try:
@@ -93,7 +100,9 @@ class ChildProfileService:
                 logger.error("No current profile to record conversation")
                 return False
 
-            self.current_profile.add_conversation(child_input, ai_response, interaction_type)
+            self.current_profile.add_conversation(
+                child_input, ai_response, interaction_type
+            )
 
             # Update session if active
             if self.current_profile.current_session:
@@ -148,7 +157,11 @@ class ChildProfileService:
                     "age": self.current_profile.age,
                     "child_id": self.current_profile.child_id,
                     "created_at": self.current_profile.created_at.isoformat(),
-                    "last_seen": self.current_profile.last_seen.isoformat() if self.current_profile.last_seen else None,
+                    "last_seen": (
+                        self.current_profile.last_seen.isoformat()
+                        if self.current_profile.last_seen
+                        else None
+                    ),
                 },
                 "current_session": {
                     "is_active": self.current_profile.is_active_session,
@@ -222,7 +235,11 @@ class ChildProfileService:
                     "points": learning.points,
                     "total_sessions": learning.total_sessions,
                     "achievements": learning.achievements,
-                    "last_activity": learning.last_activity.isoformat() if learning.last_activity else None,
+                    "last_activity": (
+                        learning.last_activity.isoformat()
+                        if learning.last_activity
+                        else None
+                    ),
                 }
 
             return progress
@@ -266,7 +283,9 @@ class ChildProfileService:
                         "name": profile.name,
                         "age": profile.age,
                         "total_conversations": profile.total_conversations,
-                        "last_seen": profile.last_seen.isoformat() if profile.last_seen else None,
+                        "last_seen": (
+                            profile.last_seen.isoformat() if profile.last_seen else None
+                        ),
                         "is_current": profile == self.current_profile,
                     }
                 )

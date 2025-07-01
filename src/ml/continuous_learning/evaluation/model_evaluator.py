@@ -82,10 +82,13 @@ class ModelEvaluator:
 
         # تقييم كل نموذج بشكل متوازي
         evaluation_tasks = [
-            self._evaluate_single_model(model_id, model_info) for model_id, model_info in current_models.items()
+            self._evaluate_single_model(model_id, model_info)
+            for model_id, model_info in current_models.items()
         ]
 
-        model_evaluations = await asyncio.gather(*evaluation_tasks, return_exceptions=True)
+        model_evaluations = await asyncio.gather(
+            *evaluation_tasks, return_exceptions=True
+        )
 
         # تجميع النتائج
         evaluation_results = {}
@@ -96,16 +99,22 @@ class ModelEvaluator:
                 evaluation_results[model_id] = model_evaluations[i]
                 successful_evaluations.append(model_evaluations[i])
             else:
-                logger.error(f"Failed to evaluate model {model_id}: {model_evaluations[i]}")
+                logger.error(
+                    f"Failed to evaluate model {model_id}: {model_evaluations[i]}"
+                )
 
         # حساب المقاييس الإجمالية
         overall_metrics = await self._calculate_overall_metrics(successful_evaluations)
 
         # تحليل الاتجاهات
-        performance_trends = await self._analyze_performance_trends(successful_evaluations)
+        performance_trends = await self._analyze_performance_trends(
+            successful_evaluations
+        )
 
         # تحديد المشاكل والتوصيات
-        issues_and_recommendations = await self._identify_issues_and_recommendations(successful_evaluations)
+        issues_and_recommendations = await self._identify_issues_and_recommendations(
+            successful_evaluations
+        )
 
         # حفظ نتائج التقييم
         await self._save_evaluation_results(evaluation_results)
@@ -118,7 +127,9 @@ class ModelEvaluator:
             "performance_trends": performance_trends,
             "issues_identified": issues_and_recommendations["issues"],
             "recommendations": issues_and_recommendations["recommendations"],
-            "summary": await self._generate_evaluation_summary(overall_metrics, performance_trends),
+            "summary": await self._generate_evaluation_summary(
+                overall_metrics, performance_trends
+            ),
         }
 
     async def _get_current_models(self) -> Dict[str, Dict[str, Any]]:
@@ -170,7 +181,9 @@ class ModelEvaluator:
 
         return current_models
 
-    async def _evaluate_single_model(self, model_id: str, model_info: Dict[str, Any]) -> ModelEvaluationResult:
+    async def _evaluate_single_model(
+        self, model_id: str, model_info: Dict[str, Any]
+    ) -> ModelEvaluationResult:
         """تقييم نموذج واحد"""
 
         logger.info(f"🔬 Evaluating model: {model_id}")
@@ -186,7 +199,9 @@ class ModelEvaluator:
         weaknesses = await self._identify_model_weaknesses(metrics, model_info)
 
         # إنشاء التوصيات
-        recommendations = await self._generate_model_recommendations(metrics, strengths, weaknesses)
+        recommendations = await self._generate_model_recommendations(
+            metrics, strengths, weaknesses
+        )
 
         # حساب فترات الثقة
         confidence_intervals = await self._calculate_confidence_intervals(metrics)
@@ -204,7 +219,9 @@ class ModelEvaluator:
             sample_size=1000,  # محاكاة حجم العينة
         )
 
-    async def _measure_model_performance(self, model_id: str, model_info: Dict[str, Any]) -> Dict[str, float]:
+    async def _measure_model_performance(
+        self, model_id: str, model_info: Dict[str, Any]
+    ) -> Dict[str, float]:
         """قياس أداء النموذج"""
 
         # محاكاة قياسات الأداء بناءً على نوع النموذج
@@ -221,11 +238,15 @@ class ModelEvaluator:
 
         # تعديل الأداء بناءً على نوع النموذج
         if "speech_recognition" in model_id:
-            base_performance["accuracy"] = np.random.beta(18, 3)  # عالي للتعرف على الكلام
+            base_performance["accuracy"] = np.random.beta(
+                18, 3
+            )  # عالي للتعرف على الكلام
             base_performance["response_time"] = np.random.gamma(2, 0.3)  # سريع
 
         elif "conversation" in model_id:
-            base_performance["child_satisfaction"] = np.random.beta(16, 3)  # عالي للمحادثة
+            base_performance["child_satisfaction"] = np.random.beta(
+                16, 3
+            )  # عالي للمحادثة
             base_performance["engagement_rate"] = np.random.beta(15, 4)
             base_performance["response_time"] = np.random.gamma(3, 0.4)
 
@@ -243,7 +264,9 @@ class ModelEvaluator:
 
         # إضافة تأثير عمر النموذج
         days_since_deployment = (datetime.utcnow() - model_info["deployment_date"]).days
-        degradation_factor = max(0.9, 1 - (days_since_deployment * 0.001))  # تدهور طفيف مع الوقت
+        degradation_factor = max(
+            0.9, 1 - (days_since_deployment * 0.001)
+        )  # تدهور طفيف مع الوقت
 
         for metric in base_performance:
             if metric != "response_time":  # وقت الاستجابة لا يتدهور
@@ -271,7 +294,9 @@ class ModelEvaluator:
         }
 
         # حساب المتوسط المرجح
-        weighted_score = sum(metrics.get(metric, 0) * weight for metric, weight in weights.items())
+        weighted_score = sum(
+            metrics.get(metric, 0) * weight for metric, weight in weights.items()
+        )
 
         # تحديد الدرجة
         if weighted_score >= 0.90:
@@ -289,7 +314,9 @@ class ModelEvaluator:
         else:
             return "D"
 
-    async def _identify_model_strengths(self, metrics: Dict[str, float], model_info: Dict[str, Any]) -> List[str]:
+    async def _identify_model_strengths(
+        self, metrics: Dict[str, float], model_info: Dict[str, Any]
+    ) -> List[str]:
         """تحديد نقاط قوة النموذج"""
 
         strengths = []
@@ -326,7 +353,9 @@ class ModelEvaluator:
 
         return strengths
 
-    async def _identify_model_weaknesses(self, metrics: Dict[str, float], model_info: Dict[str, Any]) -> List[str]:
+    async def _identify_model_weaknesses(
+        self, metrics: Dict[str, float], model_info: Dict[str, Any]
+    ) -> List[str]:
         """تحديد نقاط ضعف النموذج"""
 
         weaknesses = []
@@ -397,7 +426,9 @@ class ModelEvaluator:
 
         return recommendations
 
-    async def _calculate_confidence_intervals(self, metrics: Dict[str, float]) -> Dict[str, Tuple[float, float]]:
+    async def _calculate_confidence_intervals(
+        self, metrics: Dict[str, float]
+    ) -> Dict[str, Tuple[float, float]]:
         """حساب فترات الثقة للمقاييس"""
 
         confidence_intervals = {}
@@ -418,7 +449,9 @@ class ModelEvaluator:
 
         return confidence_intervals
 
-    async def _calculate_overall_metrics(self, evaluations: List[ModelEvaluationResult]) -> Dict[str, float]:
+    async def _calculate_overall_metrics(
+        self, evaluations: List[ModelEvaluationResult]
+    ) -> Dict[str, float]:
         """حساب المقاييس الإجمالية"""
 
         if not evaluations:
@@ -437,7 +470,9 @@ class ModelEvaluator:
 
         # إضافة مقاييس إضافية
         overall_metrics["models_above_threshold"] = sum(
-            1 for eval_result in evaluations if eval_result.performance_grade in ["A+", "A", "B+"]
+            1
+            for eval_result in evaluations
+            if eval_result.performance_grade in ["A+", "A", "B+"]
         ) / len(evaluations)
 
         overall_metrics["average_grade_score"] = self._grade_to_score(
@@ -449,24 +484,45 @@ class ModelEvaluator:
     def _grade_to_score(self, grades: List[str]) -> float:
         """تحويل الدرجات إلى نقاط رقمية"""
 
-        grade_mapping = {"A+": 4.0, "A": 3.7, "B+": 3.3, "B": 3.0, "C+": 2.3, "C": 2.0, "D": 1.0}
+        grade_mapping = {
+            "A+": 4.0,
+            "A": 3.7,
+            "B+": 3.3,
+            "B": 3.0,
+            "C+": 2.3,
+            "C": 2.0,
+            "D": 1.0,
+        }
 
         scores = [grade_mapping.get(grade, 0) for grade in grades]
         return np.mean(scores) if scores else 0
 
-    async def _analyze_performance_trends(self, evaluations: List[ModelEvaluationResult]) -> List[PerformanceTrend]:
+    async def _analyze_performance_trends(
+        self, evaluations: List[ModelEvaluationResult]
+    ) -> List[PerformanceTrend]:
         """تحليل اتجاهات الأداء"""
 
         trends = []
 
         # محاكاة البيانات التاريخية
-        for metric in ["accuracy", "child_satisfaction", "safety_score", "response_time"]:
-            historical_values = [np.random.beta(8, 2) + np.random.normal(0, 0.02) for _ in range(30)]  # آخر 30 يوم
+        for metric in [
+            "accuracy",
+            "child_satisfaction",
+            "safety_score",
+            "response_time",
+        ]:
+            historical_values = [
+                np.random.beta(8, 2) + np.random.normal(0, 0.02) for _ in range(30)
+            ]  # آخر 30 يوم
 
-            current_value = np.mean([eval_result.metrics.get(metric, 0) for eval_result in evaluations])
+            current_value = np.mean(
+                [eval_result.metrics.get(metric, 0) for eval_result in evaluations]
+            )
 
             # تحديد الاتجاه
-            recent_trend = np.polyfit(range(len(historical_values)), historical_values, 1)[0]
+            recent_trend = np.polyfit(
+                range(len(historical_values)), historical_values, 1
+            )[0]
 
             if recent_trend > 0.001:
                 trend_direction = "improving"
@@ -547,7 +603,9 @@ class ModelEvaluator:
             "compliance_score": 0.90,
         }
 
-    async def _save_evaluation_results(self, results: Dict[str, ModelEvaluationResult]) -> None:
+    async def _save_evaluation_results(
+        self, results: Dict[str, ModelEvaluationResult]
+    ) -> None:
         """حفظ نتائج التقييم"""
 
         # إضافة النتائج إلى التاريخ
@@ -603,6 +661,8 @@ class ModelEvaluator:
             summary["key_insights"].append("Safety systems performing excellently")
 
         if overall_metrics.get("models_above_threshold", 0) > 0.8:
-            summary["key_insights"].append("Majority of models meeting performance standards")
+            summary["key_insights"].append(
+                "Majority of models meeting performance standards"
+            )
 
         return summary

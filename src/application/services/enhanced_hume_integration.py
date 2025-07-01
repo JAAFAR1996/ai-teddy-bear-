@@ -38,9 +38,9 @@ except ImportError as e:
     logging.warning(f"HUME AI SDK not available: {e}")
 
 from ..domain.entities.child import Child
-
 # Internal imports
-from ..infrastructure.persistence.conversation_sqlite_repository import ConversationSQLiteRepository
+from ..infrastructure.persistence.conversation_sqlite_repository import \
+    ConversationSQLiteRepository
 from ..infrastructure.security.audit_logger import AuditLogger
 
 

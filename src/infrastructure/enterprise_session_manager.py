@@ -48,7 +48,10 @@ class EnterpriseSessionManager:
         if not self.redis_client:
             self._cleanup_task = asyncio.create_task(self._cleanup_expired_sessions())
 
-        logger.info("Enterprise Session Manager initialized", backend="redis" if self.redis_client else "memory")
+        logger.info(
+            "Enterprise Session Manager initialized",
+            backend="redis" if self.redis_client else "memory",
+        )
 
     async def create_session(self, session_data: Dict[str, Any]) -> str:
         """Create a new session"""
@@ -63,7 +66,9 @@ class EnterpriseSessionManager:
         )
 
         if self.redis_client:
-            await self.redis_client.setex(f"session:{session_id}", self.default_ttl, json.dumps(session_data))
+            await self.redis_client.setex(
+                f"session:{session_id}", self.default_ttl, json.dumps(session_data)
+            )
         else:
             self.memory_sessions[session_id] = session_data
             self.session_expiry[session_id] = time.time() + self.default_ttl
@@ -80,15 +85,23 @@ class EnterpriseSessionManager:
                     session_data = json.loads(data)
                     # Update last accessed
                     session_data["last_accessed"] = datetime.utcnow().isoformat()
-                    session_data["access_count"] = session_data.get("access_count", 0) + 1
-                    await self.redis_client.setex(f"session:{session_id}", self.default_ttl, json.dumps(session_data))
+                    session_data["access_count"] = (
+                        session_data.get("access_count", 0) + 1
+                    )
+                    await self.redis_client.setex(
+                        f"session:{session_id}",
+                        self.default_ttl,
+                        json.dumps(session_data),
+                    )
                     return session_data
             else:
                 if session_id in self.memory_sessions:
                     if time.time() < self.session_expiry[session_id]:
                         session_data = self.memory_sessions[session_id]
                         session_data["last_accessed"] = datetime.utcnow().isoformat()
-                        session_data["access_count"] = session_data.get("access_count", 0) + 1
+                        session_data["access_count"] = (
+                            session_data.get("access_count", 0) + 1
+                        )
                         # Extend expiry
                         self.session_expiry[session_id] = time.time() + self.default_ttl
                         return session_data
@@ -111,7 +124,11 @@ class EnterpriseSessionManager:
                 session_data["last_accessed"] = datetime.utcnow().isoformat()
 
                 if self.redis_client:
-                    await self.redis_client.setex(f"session:{session_id}", self.default_ttl, json.dumps(session_data))
+                    await self.redis_client.setex(
+                        f"session:{session_id}",
+                        self.default_ttl,
+                        json.dumps(session_data),
+                    )
                 else:
                     self.memory_sessions[session_id] = session_data
                     self.session_expiry[session_id] = time.time() + self.default_ttl
@@ -187,7 +204,9 @@ class EnterpriseSessionManager:
                 await asyncio.sleep(300)  # Check every 5 minutes
                 current_time = time.time()
                 expired_sessions = [
-                    session_id for session_id, expiry_time in self.session_expiry.items() if current_time >= expiry_time
+                    session_id
+                    for session_id, expiry_time in self.session_expiry.items()
+                    if current_time >= expiry_time
                 ]
 
                 for session_id in expired_sessions:

@@ -16,7 +16,9 @@ class BehaviorAnalyzer:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def identify_improvement_areas(self, interactions: List[InteractionAnalysis]) -> List[str]:
+    def identify_improvement_areas(
+        self, interactions: List[InteractionAnalysis]
+    ) -> List[str]:
         """Identify behavioral areas needing improvement"""
         try:
             improvement_areas = []
@@ -29,7 +31,9 @@ class BehaviorAnalyzer:
                 improvement_areas.append("زيادة تكرار التفاعلات")
 
             # Short conversations
-            avg_duration = sum(interaction.duration for interaction in interactions) / len(interactions)
+            avg_duration = sum(
+                interaction.duration for interaction in interactions
+            ) / len(interactions)
             if avg_duration < 120:  # Less than 2 minutes
                 improvement_areas.append("تطوير مدة التفاعل والتركيز")
 
@@ -42,7 +46,9 @@ class BehaviorAnalyzer:
                 improvement_areas.append("توسيع المواضيع المناقشة")
 
             # Low quality interactions
-            high_quality_count = sum(1 for interaction in interactions if interaction.is_high_quality())
+            high_quality_count = sum(
+                1 for interaction in interactions if interaction.is_high_quality()
+            )
             if high_quality_count < len(interactions) * 0.5:
                 improvement_areas.append("تحسين جودة التفاعل والمشاركة")
 
@@ -66,7 +72,9 @@ class BehaviorAnalyzer:
             concerning_count = sum(
                 1
                 for indicator in all_indicators
-                if any(negative in indicator.lower() for negative in negative_indicators)
+                if any(
+                    negative in indicator.lower() for negative in negative_indicators
+                )
             )
 
             if concerning_count > len(interactions) * 0.3:
@@ -78,7 +86,11 @@ class BehaviorAnalyzer:
                 improvement_areas.append("تحسين فترة التركيز والانتباه")
 
             # Check social engagement
-            social_skills_used = sum(1 for interaction in interactions if "social_skills" in interaction.skills_used)
+            social_skills_used = sum(
+                1
+                for interaction in interactions
+                if "social_skills" in interaction.skills_used
+            )
 
             if social_skills_used < len(interactions) * 0.2:
                 improvement_areas.append("تطوير المهارات الاجتماعية")
@@ -89,7 +101,9 @@ class BehaviorAnalyzer:
             self.logger.error(f"Improvement areas identification error: {e}")
             return ["خطأ في تحليل البيانات"]
 
-    def _calculate_attention_span(self, interactions: List[InteractionAnalysis]) -> float:
+    def _calculate_attention_span(
+        self, interactions: List[InteractionAnalysis]
+    ) -> float:
         """Calculate average attention span in minutes"""
         try:
             if not interactions:
@@ -102,7 +116,9 @@ class BehaviorAnalyzer:
             self.logger.error(f"Attention span calculation error: {e}")
             return 0.0
 
-    def analyze_behavioral_patterns(self, interactions: List[InteractionAnalysis]) -> Dict[str, Any]:
+    def analyze_behavioral_patterns(
+        self, interactions: List[InteractionAnalysis]
+    ) -> Dict[str, Any]:
         """Analyze overall behavioral patterns"""
         try:
             patterns = {
@@ -118,7 +134,9 @@ class BehaviorAnalyzer:
                 return patterns
 
             # Analyze engagement level
-            avg_quality = mean(interaction.quality_score for interaction in interactions)
+            avg_quality = mean(
+                interaction.quality_score for interaction in interactions
+            )
             if avg_quality >= 0.8:
                 patterns["engagement_level"] = "high"
             elif avg_quality >= 0.6:
@@ -142,7 +160,9 @@ class BehaviorAnalyzer:
             for interaction in interactions:
                 if "social_skills" in interaction.skills_used:
                     social_indicators += 1
-                if any("social" in topic.lower() for topic in interaction.topics_discussed):
+                if any(
+                    "social" in topic.lower() for topic in interaction.topics_discussed
+                ):
                     social_indicators += 1
 
             social_rate = social_indicators / len(interactions)
@@ -158,7 +178,10 @@ class BehaviorAnalyzer:
             # Analyze emotional regulation
             emotion_changes = 0
             for i in range(1, len(interactions)):
-                if interactions[i].primary_emotion != interactions[i - 1].primary_emotion:
+                if (
+                    interactions[i].primary_emotion
+                    != interactions[i - 1].primary_emotion
+                ):
                     emotion_changes += 1
 
             if len(interactions) > 1:
@@ -182,7 +205,9 @@ class BehaviorAnalyzer:
                 patterns["cooperation_level"] = "needs_improvement"
 
             # Identify behavioral concerns
-            patterns["behavioral_concerns"] = self._identify_behavioral_concerns(interactions)
+            patterns["behavioral_concerns"] = self._identify_behavioral_concerns(
+                interactions
+            )
 
             return patterns
 
@@ -199,7 +224,9 @@ class BehaviorAnalyzer:
         variance = sum((x - avg) ** 2 for x in values) / len(values)
         return variance
 
-    def _calculate_cooperation_score(self, interactions: List[InteractionAnalysis]) -> float:
+    def _calculate_cooperation_score(
+        self, interactions: List[InteractionAnalysis]
+    ) -> float:
         """Calculate cooperation score based on interactions"""
         try:
             if not interactions:
@@ -226,31 +253,45 @@ class BehaviorAnalyzer:
             self.logger.error(f"Cooperation score calculation error: {e}")
             return 0.5
 
-    def _identify_behavioral_concerns(self, interactions: List[InteractionAnalysis]) -> List[str]:
+    def _identify_behavioral_concerns(
+        self, interactions: List[InteractionAnalysis]
+    ) -> List[str]:
         """Identify specific behavioral concerns"""
         try:
             concerns = []
 
             # Check for attention issues
-            avg_duration = mean(interaction.duration_minutes() for interaction in interactions)
+            avg_duration = mean(
+                interaction.duration_minutes() for interaction in interactions
+            )
             if avg_duration < 2:
                 concerns.append("صعوبة في التركيز لفترات طويلة")
 
             # Check for social withdrawal
-            social_engagement = sum(1 for interaction in interactions if len(interaction.topics_discussed) >= 2)
+            social_engagement = sum(
+                1
+                for interaction in interactions
+                if len(interaction.topics_discussed) >= 2
+            )
 
             if social_engagement < len(interactions) * 0.5:
                 concerns.append("انخفاض في التفاعل الاجتماعي")
 
             # Check for emotional instability
             negative_emotions = ["sad", "angry", "scared"]
-            negative_count = sum(1 for interaction in interactions if interaction.primary_emotion in negative_emotions)
+            negative_count = sum(
+                1
+                for interaction in interactions
+                if interaction.primary_emotion in negative_emotions
+            )
 
             if negative_count > len(interactions) * 0.4:
                 concerns.append("تكرار المشاعر السلبية")
 
             # Check for quality issues
-            low_quality_count = sum(1 for interaction in interactions if interaction.quality_score < 0.4)
+            low_quality_count = sum(
+                1 for interaction in interactions if interaction.quality_score < 0.4
+            )
 
             if low_quality_count > len(interactions) * 0.5:
                 concerns.append("انخفاض جودة التفاعل")
@@ -261,7 +302,9 @@ class BehaviorAnalyzer:
             self.logger.error(f"Behavioral concerns identification error: {e}")
             return []
 
-    def generate_behavioral_recommendations(self, interactions: List[InteractionAnalysis]) -> List[str]:
+    def generate_behavioral_recommendations(
+        self, interactions: List[InteractionAnalysis]
+    ) -> List[str]:
         """Generate recommendations for behavioral improvement"""
         try:
             recommendations = []
@@ -270,14 +313,26 @@ class BehaviorAnalyzer:
 
             # Map improvement areas to specific recommendations
             area_recommendations = {
-                "زيادة تكرار التفاعلات": ["تحديد أوقات ثابتة للتفاعل يومياً", "استخدام تذكيرات لجلسات التفاعل"],
+                "زيادة تكرار التفاعلات": [
+                    "تحديد أوقات ثابتة للتفاعل يومياً",
+                    "استخدام تذكيرات لجلسات التفاعل",
+                ],
                 "تطوير مدة التفاعل والتركيز": [
                     "بدء بجلسات قصيرة وزيادتها تدريجياً",
                     "استخدام أنشطة تفاعلية مثيرة للاهتمام",
                 ],
-                "توسيع المواضيع المناقشة": ["تقديم مواضيع جديدة ومتنوعة", "ربط المواضيع باهتمامات الطفل"],
-                "تحسين جودة التفاعل والمشاركة": ["تشجيع الطفل على المشاركة الفعّالة", "استخدام أساليب تفاعل إيجابية"],
-                "تطوير مهارات التنظيم الذاتي": ["تعليم تقنيات التهدئة الذاتية", "وضع قواعد واضحة للتفاعل"],
+                "توسيع المواضيع المناقشة": [
+                    "تقديم مواضيع جديدة ومتنوعة",
+                    "ربط المواضيع باهتمامات الطفل",
+                ],
+                "تحسين جودة التفاعل والمشاركة": [
+                    "تشجيع الطفل على المشاركة الفعّالة",
+                    "استخدام أساليب تفاعل إيجابية",
+                ],
+                "تطوير مهارات التنظيم الذاتي": [
+                    "تعليم تقنيات التهدئة الذاتية",
+                    "وضع قواعد واضحة للتفاعل",
+                ],
             }
 
             # Add specific recommendations based on improvement areas
@@ -287,7 +342,9 @@ class BehaviorAnalyzer:
 
             # Add general behavioral recommendations
             if len(interactions) > 0:
-                avg_quality = mean(interaction.quality_score for interaction in interactions)
+                avg_quality = mean(
+                    interaction.quality_score for interaction in interactions
+                )
                 if avg_quality < 0.6:
                     recommendations.append("إنشاء بيئة داعمة ومشجعة للتفاعل")
                     recommendations.append("استخدام نظام مكافآت للسلوك الإيجابي")

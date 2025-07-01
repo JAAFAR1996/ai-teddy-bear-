@@ -220,7 +220,11 @@ class MathemythsEngine:
         return points_map[level]
 
     def integrate_challenge_into_story(
-        self, story_content: str, challenge: EducationalChallenge, child_name: str, position: str = "middle"
+        self,
+        story_content: str,
+        challenge: EducationalChallenge,
+        child_name: str,
+        position: str = "middle",
     ) -> StoryEducationalInsert:
         """دمج التحدي التعليمي في القصة"""
 
@@ -244,7 +248,9 @@ class MathemythsEngine:
         }
 
         # اختيار انتقال مناسب
-        subject_transitions = narrative_transitions.get(challenge.subject.value, [f"واجه {child_name} تحدياً جديداً:"])
+        subject_transitions = narrative_transitions.get(
+            challenge.subject.value, [f"واجه {child_name} تحدياً جديداً:"]
+        )
 
         narrative_transition = random.choice(subject_transitions)
 
@@ -305,14 +311,20 @@ class MathemythsEngine:
             response["feedback"] = "ممتاز! إجابة صحيحة!"
             response["narrative"] = self._get_success_narrative(challenge, child_name)
         else:
-            response["feedback"] = f"محاولة جيدة! الإجابة الصحيحة هي: {challenge.correct_answer}"
+            response["feedback"] = (
+                f"محاولة جيدة! الإجابة الصحيحة هي: {challenge.correct_answer}"
+            )
             response["hint"] = challenge.hint
             response["narrative"] = self._get_failure_narrative(challenge, child_name)
 
         return response
 
     async def _update_learning_progress(
-        self, child_name: str, device_id: str, challenge: EducationalChallenge, correct: bool
+        self,
+        child_name: str,
+        device_id: str,
+        challenge: EducationalChallenge,
+        correct: bool,
     ):
         """تحديث تقدم التعلم للطفل"""
 
@@ -361,7 +373,9 @@ class MathemythsEngine:
 
         progress.last_updated = datetime.now()
 
-    def _should_level_up(self, progress: LearningProgress, subject: str, level: str) -> bool:
+    def _should_level_up(
+        self, progress: LearningProgress, subject: str, level: str
+    ) -> bool:
         """تحديد ما إذا كان يجب الانتقال للمستوى التالي"""
         subject_data = progress.subject_progress[subject][level]
         success_rate = subject_data["correct"] / subject_data["total"]
@@ -400,14 +414,18 @@ class MathemythsEngine:
         progress.strengths = strengths
         progress.areas_for_improvement = weaknesses
 
-    def _get_success_narrative(self, challenge: EducationalChallenge, child_name: str) -> str:
+    def _get_success_narrative(
+        self, challenge: EducationalChallenge, child_name: str
+    ) -> str:
         """الحصول على نص النجاح"""
         for insert in self.story_inserts:
             if insert.challenge.id == challenge.id:
                 return insert.success_narrative
         return f"أحسنت يا {child_name}!"
 
-    def _get_failure_narrative(self, challenge: EducationalChallenge, child_name: str) -> str:
+    def _get_failure_narrative(
+        self, challenge: EducationalChallenge, child_name: str
+    ) -> str:
         """الحصول على نص الفشل"""
         for insert in self.story_inserts:
             if insert.challenge.id == challenge.id:
@@ -425,7 +443,9 @@ class MathemythsEngine:
         # إنشاء تحديات لكل مادة
         challenges = []
         for subject in selected_subjects:
-            challenge = self.get_appropriate_challenge(age, subject, child_name, device_id)
+            challenge = self.get_appropriate_challenge(
+                age, subject, child_name, device_id
+            )
             if challenge:
                 challenges.append(challenge)
 
@@ -433,7 +453,9 @@ class MathemythsEngine:
         base_story = self._generate_base_educational_story(child_name, age, interests)
 
         # دمج التحديات في القصة
-        enhanced_story = self._integrate_challenges_into_story(base_story, challenges, child_name)
+        enhanced_story = self._integrate_challenges_into_story(
+            base_story, challenges, child_name
+        )
 
         return {
             "story_content": enhanced_story,
@@ -476,7 +498,9 @@ class MathemythsEngine:
 
         return selected[:3]  # حد أقصى 3 مواد لتجنب الإفراط
 
-    def _generate_base_educational_story(self, child_name: str, age: int, interests: List[str]) -> str:
+    def _generate_base_educational_story(
+        self, child_name: str, age: int, interests: List[str]
+    ) -> str:
         """توليد قصة أساسية تعليمية"""
 
         # قوالب قصص تعليمية
@@ -530,7 +554,9 @@ class MathemythsEngine:
 
             if placeholder in story:
                 # إنشاء إدراج للتحدي
-                insert = self.integrate_challenge_into_story(story, challenge, child_name, f"position_{i}")
+                insert = self.integrate_challenge_into_story(
+                    story, challenge, child_name, f"position_{i}"
+                )
 
                 # حفظ الإدراج
                 self.story_inserts.append(insert)
@@ -577,20 +603,28 @@ class MathemythsEngine:
             for subject_data in progress.subject_progress.values()
         )
 
-        overall_success_rate = (total_correct / total_attempts * 100) if total_attempts > 0 else 0
+        overall_success_rate = (
+            (total_correct / total_attempts * 100) if total_attempts > 0 else 0
+        )
 
         # تحليل التقدم بكل مادة
         subject_analysis = {}
         for subject, levels in progress.subject_progress.items():
             subject_correct = sum(data["correct"] for data in levels.values())
             subject_total = sum(data["total"] for data in levels.values())
-            subject_rate = (subject_correct / subject_total * 100) if subject_total > 0 else 0
+            subject_rate = (
+                (subject_correct / subject_total * 100) if subject_total > 0 else 0
+            )
 
             subject_analysis[subject] = {
                 "success_rate": round(subject_rate, 1),
                 "challenges_completed": subject_total,
                 "current_level": progress.current_level.get(subject, "مبتدئ"),
-                "performance": "ممتاز" if subject_rate >= 80 else "جيد" if subject_rate >= 60 else "يحتاج تحسين",
+                "performance": (
+                    "ممتاز"
+                    if subject_rate >= 80
+                    else "جيد" if subject_rate >= 60 else "يحتاج تحسين"
+                ),
             }
 
         return {
@@ -608,7 +642,9 @@ class MathemythsEngine:
             "last_updated": progress.last_updated.isoformat(),
         }
 
-    def _generate_learning_recommendations(self, progress: LearningProgress) -> List[str]:
+    def _generate_learning_recommendations(
+        self, progress: LearningProgress
+    ) -> List[str]:
         """توليد توصيات تعليمية"""
         recommendations = []
 

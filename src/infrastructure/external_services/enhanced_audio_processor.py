@@ -134,7 +134,9 @@ class EnhancedAudioProcessor:
             self.openai_client = None
 
     async def process_audio_stream(
-        self, audio_stream: AsyncIterator[bytes], child_context: Optional[Dict[str, Any]] = None
+        self,
+        audio_stream: AsyncIterator[bytes],
+        child_context: Optional[Dict[str, Any]] = None,
     ) -> AudioProcessingResult:
         """معالجة الصوت بشكل متدفق للتقليل من زمن الاستجابة"""
 
@@ -167,7 +169,9 @@ class EnhancedAudioProcessor:
             quality_score = await self._assess_audio_quality(processed_audio)
 
             # 3. حساب الثقة
-            confidence = self._calculate_confidence(vad_result, quality_score, emotion_features)
+            confidence = self._calculate_confidence(
+                vad_result, quality_score, emotion_features
+            )
 
             # إنشاء النتيجة
             result = AudioProcessingResult(
@@ -256,7 +260,9 @@ class EnhancedAudioProcessor:
             self.logger.warning(f"VAD failed: {e}")
             return 1.0
 
-    async def _extract_emotion_features(self, audio_data: np.ndarray) -> Dict[str, float]:
+    async def _extract_emotion_features(
+        self, audio_data: np.ndarray
+    ) -> Dict[str, float]:
         """استخراج خصائص المشاعر من الصوت"""
         try:
             if len(audio_data) < 1000:
@@ -269,7 +275,9 @@ class EnhancedAudioProcessor:
 
             # معدل عبور الصفر
             zero_crossings = np.where(np.diff(np.sign(audio_data)))[0]
-            features["zero_crossing_rate"] = float(len(zero_crossings) / len(audio_data))
+            features["zero_crossing_rate"] = float(
+                len(zero_crossings) / len(audio_data)
+            )
 
             # الانحراف المعياري
             features["std_deviation"] = float(np.std(audio_data))
@@ -340,13 +348,17 @@ class EnhancedAudioProcessor:
 
         return float(noise_level)
 
-    def _generate_cache_key(self, audio_data: np.ndarray, context: Optional[Dict[str, Any]]) -> str:
+    def _generate_cache_key(
+        self, audio_data: np.ndarray, context: Optional[Dict[str, Any]]
+    ) -> str:
         """توليد مفتاح كاش للصوت"""
 
         data_to_hash = []
 
         if len(audio_data) > 0:
-            data_to_hash.extend([len(audio_data), float(np.mean(audio_data)), float(np.std(audio_data))])
+            data_to_hash.extend(
+                [len(audio_data), float(np.mean(audio_data)), float(np.std(audio_data))]
+            )
 
         if context:
             data_to_hash.append(str(sorted(context.items())))
@@ -358,14 +370,18 @@ class EnhancedAudioProcessor:
         """تحديث إحصائيات الأداء"""
         self.processing_stats["total_processing_time"] += processing_time
         self.processing_stats["average_processing_time"] = (
-            self.processing_stats["total_processing_time"] / self.processing_stats["total_requests"]
+            self.processing_stats["total_processing_time"]
+            / self.processing_stats["total_requests"]
         )
 
     def get_performance_stats(self) -> Dict[str, Any]:
         """الحصول على إحصائيات الأداء"""
         return {
             **self.processing_stats,
-            "cache_hit_rate": (self.processing_stats["cache_hits"] / max(1, self.processing_stats["total_requests"])),
+            "cache_hit_rate": (
+                self.processing_stats["cache_hits"]
+                / max(1, self.processing_stats["total_requests"])
+            ),
             "cache_size": len(self.preprocessing_cache),
         }
 
@@ -387,7 +403,9 @@ class EnhancedAudioProcessor:
 
 
 # Factory function للاستخدام مع dependency injection
-def create_enhanced_audio_processor(config: Optional[AudioConfig] = None) -> EnhancedAudioProcessor:
+def create_enhanced_audio_processor(
+    config: Optional[AudioConfig] = None,
+) -> EnhancedAudioProcessor:
     """إنشاء معالج صوت محسن"""
     return EnhancedAudioProcessor(config)
 

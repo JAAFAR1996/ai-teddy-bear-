@@ -57,7 +57,9 @@ class WiFiStatus:
         else:
             return "Very Poor"
 
-    def connect(self, ssid: str, security_type: WiFiSecurityType = WiFiSecurityType.WPA2) -> None:
+    def connect(
+        self, ssid: str, security_type: WiFiSecurityType = WiFiSecurityType.WPA2
+    ) -> None:
         """Connect to WiFi network."""
         self.status = ConnectionStatus.CONNECTING
         self.ssid = ssid
@@ -97,7 +99,12 @@ class ServerConnection:
     @property
     def is_healthy(self) -> bool:
         """Check if connection is healthy."""
-        return self.is_connected and self.error_count < 3 and self.response_time and self.response_time < 5000
+        return (
+            self.is_connected
+            and self.error_count < 3
+            and self.response_time
+            and self.response_time < 5000
+        )
 
     def connect(self, session_id: str) -> None:
         """Connect to server."""

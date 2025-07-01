@@ -12,7 +12,6 @@ from typing import Any, AsyncIterator, Dict, Optional, Union
 
 import numpy as np
 import torch
-
 # Audio processing
 import whisper
 
@@ -49,7 +48,11 @@ class TranscriptionConfig:
         """Get computing device"""
         if self.use_gpu and torch.cuda.is_available():
             return "cuda"
-        elif self.use_gpu and hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        elif (
+            self.use_gpu
+            and hasattr(torch.backends, "mps")
+            and torch.backends.mps.is_available()
+        ):
             return "mps"  # Apple Silicon
         return "cpu"
 
@@ -107,7 +110,10 @@ class StreamingAudioBuffer:
         # Check for silence gap
         silence_duration = time.time() - self.last_activity
 
-        if self.is_speech_detected and silence_duration >= self.config.min_silence_duration:
+        if (
+            self.is_speech_detected
+            and silence_duration >= self.config.min_silence_duration
+        ):
             # Extract complete utterance
             chunk = self.buffer.copy()
             self.buffer = np.array([], dtype=np.float32)
@@ -170,7 +176,9 @@ class ModernTranscriptionService:
         )
 
     @classmethod
-    async def get_instance(cls, config: Optional[TranscriptionConfig] = None) -> "ModernTranscriptionService":
+    async def get_instance(
+        cls, config: Optional[TranscriptionConfig] = None
+    ) -> "ModernTranscriptionService":
         """Get singleton instance with lazy initialization"""
         if cls._instance is None:
             cls._instance = cls(config)
@@ -208,13 +216,17 @@ class ModernTranscriptionService:
                 self.model = self._model_cache[model_key]
                 return
 
-            logger.info(f"📥 Loading Whisper model: {self.config.whisper_model} on {self.config.device}")
+            logger.info(
+                f"📥 Loading Whisper model: {self.config.whisper_model} on {self.config.device}"
+            )
             start_time = time.time()
 
             try:
                 # Load model in thread to avoid blocking
                 model = await asyncio.to_thread(
-                    whisper.load_model, self.config.whisper_model, device=self.config.device
+                    whisper.load_model,
+                    self.config.whisper_model,
+                    device=self.config.device,
                 )
 
                 # Cache the model
@@ -228,7 +240,9 @@ class ModernTranscriptionService:
                 logger.error(f"❌ Failed to load Whisper model: {e}")
                 raise
 
-    async def transcribe_stream(self, audio_stream: AsyncIterator[np.ndarray]) -> AsyncIterator[Dict[str, Any]]:
+    async def transcribe_stream(
+        self, audio_stream: AsyncIterator[np.ndarray]
+    ) -> AsyncIterator[Dict[str, Any]]:
         """
         🌊 Stream transcription with real-time processing
 
@@ -262,7 +276,10 @@ class ModernTranscriptionService:
             self.stats["error_count"] += 1
 
     async def transcribe_audio(
-        self, audio_data: Union[np.ndarray, bytes, str], language: Optional[str] = None, provider: str = "whisper"
+        self,
+        audio_data: Union[np.ndarray, bytes, str],
+        language: Optional[str] = None,
+        provider: str = "whisper",
     ) -> Dict[str, Any]:
         """
         🎯 Transcribe audio with multiple provider support
@@ -294,7 +311,9 @@ class ModernTranscriptionService:
             # Update statistics
             self._update_stats(result, processing_time)
 
-            logger.debug(f"🎯 Transcribed in {processing_time:.2f}s: '{result['text'][:50]}...'")
+            logger.debug(
+                f"🎯 Transcribed in {processing_time:.2f}s: '{result['text'][:50]}...'"
+            )
             return result
 
         except Exception as e:
@@ -309,7 +328,9 @@ class ModernTranscriptionService:
                 "processing_time_ms": int((time.time() - start_time) * 1000),
             }
 
-    async def _transcribe_whisper(self, audio_array: np.ndarray, language: Optional[str]) -> Dict[str, Any]:
+    async def _transcribe_whisper(
+        self, audio_array: np.ndarray, language: Optional[str]
+    ) -> Dict[str, Any]:
         """Transcribe using Whisper model"""
         await self._ensure_model_loaded()
 
@@ -318,7 +339,9 @@ class ModernTranscriptionService:
 
         # Run transcription in thread to avoid blocking
         result = await asyncio.to_thread(
-            self.model.transcribe, audio_array, **{k: v for k, v in options.items() if v is not None}
+            self.model.transcribe,
+            audio_array,
+            **{k: v for k, v in options.items() if v is not None},
         )
 
         # Extract confidence from segments
@@ -332,7 +355,9 @@ class ModernTranscriptionService:
             "provider": "whisper",
         }
 
-    async def _transcribe_openai(self, audio_array: np.ndarray, language: Optional[str]) -> Dict[str, Any]:
+    async def _transcribe_openai(
+        self, audio_array: np.ndarray, language: Optional[str]
+    ) -> Dict[str, Any]:
         """Transcribe using OpenAI Whisper API"""
         try:
             # Convert to wav bytes
@@ -346,7 +371,10 @@ class ModernTranscriptionService:
 
             # Call OpenAI API
             response = await self.openai_client.audio.transcriptions.create(
-                model="whisper-1", file=buffer, language=language, response_format="verbose_json"
+                model="whisper-1",
+                file=buffer,
+                language=language,
+                response_format="verbose_json",
             )
 
             return {
@@ -362,14 +390,18 @@ class ModernTranscriptionService:
             # Fallback to Whisper
             return await self._transcribe_whisper(audio_array, language)
 
-    async def _prepare_audio(self, audio_data: Union[np.ndarray, bytes, str]) -> np.ndarray:
+    async def _prepare_audio(
+        self, audio_data: Union[np.ndarray, bytes, str]
+    ) -> np.ndarray:
         """Prepare audio data for transcription"""
         if isinstance(audio_data, str):
             # Load from file
             audio_array, sr = librosa.load(audio_data, sr=self.config.sample_rate)
         elif isinstance(audio_data, bytes):
             # Convert bytes to numpy array
-            audio_array = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+            audio_array = (
+                np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+            )
         elif isinstance(audio_data, np.ndarray):
             audio_array = audio_data.astype(np.float32)
             # Resample if needed
@@ -379,9 +411,14 @@ class ModernTranscriptionService:
             raise ValueError(f"Unsupported audio data type: {type(audio_data)}")
 
         # Ensure correct sample rate
-        if hasattr(audio_data, "sample_rate") and audio_data.sample_rate != self.config.sample_rate:
+        if (
+            hasattr(audio_data, "sample_rate")
+            and audio_data.sample_rate != self.config.sample_rate
+        ):
             audio_array = librosa.resample(
-                audio_array, orig_sr=audio_data.sample_rate, target_sr=self.config.sample_rate
+                audio_array,
+                orig_sr=audio_data.sample_rate,
+                target_sr=self.config.sample_rate,
             )
 
         return audio_array
@@ -414,7 +451,9 @@ class ModernTranscriptionService:
         count = self.stats["total_transcriptions"]
         new_confidence = result.get("confidence", 0.0)
 
-        self.stats["average_confidence"] = (current_avg * (count - 1) + new_confidence) / count
+        self.stats["average_confidence"] = (
+            current_avg * (count - 1) + new_confidence
+        ) / count
 
     def get_performance_metrics(self) -> Dict[str, Any]:
         """Get performance metrics"""
@@ -442,7 +481,9 @@ class ModernTranscriptionService:
         """Perform health check"""
         try:
             # Test with a short audio sample
-            test_audio = np.random.randn(self.config.sample_rate).astype(np.float32) * 0.01
+            test_audio = (
+                np.random.randn(self.config.sample_rate).astype(np.float32) * 0.01
+            )
             result = await self.transcribe_audio(test_audio)
 
             return {
@@ -453,7 +494,11 @@ class ModernTranscriptionService:
             }
 
         except Exception as e:
-            return {"status": "unhealthy", "error": str(e), "model_loaded": self.model is not None}
+            return {
+                "status": "unhealthy",
+                "error": str(e),
+                "model_loaded": self.model is not None,
+            }
 
 
 # ================== FACTORY FUNCTION ==================

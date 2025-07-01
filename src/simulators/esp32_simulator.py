@@ -13,7 +13,8 @@ import pyaudio
 import requests
 import websockets
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (QApplication, QLabel, QPushButton, QVBoxLayout,
+                               QWidget)
 from qasync import QEventLoop, asyncSlot
 
 SERVER_URL = "http://127.0.0.1:8000"
@@ -57,7 +58,13 @@ class TeddySimulator(QWidget):
 
     async def record_and_send(self):
         pa = pyaudio.PyAudio()
-        stream = pa.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=1024)
+        stream = pa.open(
+            format=pyaudio.paInt16,
+            channels=1,
+            rate=16000,
+            input=True,
+            frames_per_buffer=1024,
+        )
         frames = []
         seconds = 4
         for _ in range(0, int(16000 / 1024 * seconds)):
@@ -94,11 +101,15 @@ class TeddySimulator(QWidget):
                         data = json.loads(msg)
                         if data.get("type") == "set_volume":
                             volume = data["volume"]
-                            self.status.setText(f"🔊 تم تغيير مستوى الصوت إلى: {volume}")
+                            self.status.setText(
+                                f"🔊 تم تغيير مستوى الصوت إلى: {volume}"
+                            )
                         elif data.get("type") == "set_wifi":
                             ssid = data["ssid"]
                             password = data["password"]
-                            self.status.setText(f"📶 تم تحديث إعدادات WiFi: {ssid} / {password}")
+                            self.status.setText(
+                                f"📶 تم تحديث إعدادات WiFi: {ssid} / {password}"
+                            )
                     except Exception as e:
                         self.status.setText(f"⚠️ خطأ في استقبال الأمر: {e}")
         except Exception as e:

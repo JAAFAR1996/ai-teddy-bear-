@@ -61,7 +61,9 @@ class CleanupOrchestrator:
         self._strategies[operation_type] = strategy
         logger.info("Strategy registered", operation_type=operation_type)
 
-    async def execute_operation(self, operation_type: str, parameters: Dict[str, Any]) -> "CleanupResult":
+    async def execute_operation(
+        self, operation_type: str, parameters: Dict[str, Any]
+    ) -> "CleanupResult":
         """
         تنفيذ عملية معقدة مع Saga pattern
 
@@ -78,7 +80,11 @@ class CleanupOrchestrator:
             parameters=parameters,
         )
 
-        logger.info("Operation started", operation_id=context.operation_id, operation_type=operation_type)
+        logger.info(
+            "Operation started",
+            operation_id=context.operation_id,
+            operation_type=operation_type,
+        )
 
         try:
             # Pre-operation validation
@@ -86,7 +92,9 @@ class CleanupOrchestrator:
 
             # Execute operation with compensation tracking
             async with self._create_operation_saga(context) as saga:
-                results = await self._execute_operation_steps(context, operation_type, saga)
+                results = await self._execute_operation_steps(
+                    context, operation_type, saga
+                )
 
             # Post-operation actions
             await self._finalize_operation(context, results)
@@ -94,18 +102,27 @@ class CleanupOrchestrator:
             duration = (datetime.utcnow() - context.start_time).total_seconds()
 
             logger.info(
-                "Operation completed successfully", operation_id=context.operation_id, duration_seconds=duration
+                "Operation completed successfully",
+                operation_id=context.operation_id,
+                duration_seconds=duration,
             )
 
             return CleanupResult(
-                success=True, operation_id=context.operation_id, results=context.results, duration_seconds=duration
+                success=True,
+                operation_id=context.operation_id,
+                results=context.results,
+                duration_seconds=duration,
             )
 
         except Exception as e:
             await self._handle_operation_failure(context, e)
-            raise CleanupOperationError(f"Operation {operation_type} failed: {str(e)}") from e
+            raise CleanupOperationError(
+                f"Operation {operation_type} failed: {str(e)}"
+            ) from e
 
-    async def _validate_operation_conditions(self, context: CleanupContext, operation_type: str):
+    async def _validate_operation_conditions(
+        self, context: CleanupContext, operation_type: str
+    ):
         """التحقق من شروط العملية قبل التنفيذ"""
         if operation_type not in self._strategies:
             raise ValueError(f"Unknown operation type: {operation_type}")
@@ -113,9 +130,13 @@ class CleanupOrchestrator:
         strategy = self._strategies[operation_type]
         await strategy.validate_preconditions(context.parameters)
 
-        logger.debug("Operation conditions validated", operation_id=context.operation_id)
+        logger.debug(
+            "Operation conditions validated", operation_id=context.operation_id
+        )
 
-    async def _execute_operation_steps(self, context: CleanupContext, operation_type: str, saga) -> List:
+    async def _execute_operation_steps(
+        self, context: CleanupContext, operation_type: str, saga
+    ) -> List:
         """تنفيذ خطوات العملية مع إمكانية الـ rollback"""
         strategy = self._strategies[operation_type]
         steps = await strategy.get_execution_steps(context.parameters)
@@ -130,7 +151,11 @@ class CleanupOrchestrator:
                 # Update context with step results
                 context.results[step.name] = step_result.data
 
-                logger.debug("Step completed", operation_id=context.operation_id, step_name=step.name)
+                logger.debug(
+                    "Step completed",
+                    operation_id=context.operation_id,
+                    step_name=step.name,
+                )
 
             except Exception as e:
                 logger.error(
@@ -149,26 +174,34 @@ class CleanupOrchestrator:
         # Update metrics
         if self.metrics:
             self.metrics.increment_counter(
-                "operation_completed", tags={"operation_type": context.operation_id.split("_")[0]}
+                "operation_completed",
+                tags={"operation_type": context.operation_id.split("_")[0]},
             )
 
         # Publish domain events
         if self.event_bus:
-            await self.event_bus.publish({"operation_id": context.operation_id, "results": context.results})
+            await self.event_bus.publish(
+                {"operation_id": context.operation_id, "results": context.results}
+            )
 
         logger.info("Operation finalized", operation_id=context.operation_id)
 
-    async def _handle_operation_failure(self, context: CleanupContext, error: Exception):
+    async def _handle_operation_failure(
+        self, context: CleanupContext, error: Exception
+    ):
         """التعامل مع فشل العملية"""
         context.errors.append(str(error))
 
         # Update error metrics
         if self.metrics:
             self.metrics.increment_counter(
-                "operation_failed", tags={"operation_type": context.operation_id.split("_")[0]}
+                "operation_failed",
+                tags={"operation_type": context.operation_id.split("_")[0]},
             )
 
-        logger.error("Operation failed", operation_id=context.operation_id, error=str(error))
+        logger.error(
+            "Operation failed", operation_id=context.operation_id, error=str(error)
+        )
 
     async def _create_operation_saga(self, context: CleanupContext):
         """إنشاء Saga pattern للعملية"""
@@ -215,9 +248,18 @@ class OperationSaga:
         for step_name, action in reversed(self.compensation_actions):
             try:
                 await action()
-                logger.debug("Compensation completed", operation_id=self.operation_id, step=step_name)
+                logger.debug(
+                    "Compensation completed",
+                    operation_id=self.operation_id,
+                    step=step_name,
+                )
             except Exception as e:
-                logger.error("Compensation failed", operation_id=self.operation_id, step=step_name, error=str(e))
+                logger.error(
+                    "Compensation failed",
+                    operation_id=self.operation_id,
+                    step=step_name,
+                    error=str(e),
+                )
 
 
 # Custom exceptions

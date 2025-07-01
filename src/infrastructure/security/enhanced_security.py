@@ -89,10 +89,14 @@ class AdvancedEncryption:
         self._key_cache: Dict[str, bytes] = {}
 
         # Generate RSA key pair for asymmetric encryption
-        self.private_key = rsa.generate_private_key(public_exponent=65537, key_size=4096, backend=default_backend())
+        self.private_key = rsa.generate_private_key(
+            public_exponent=65537, key_size=4096, backend=default_backend()
+        )
         self.public_key = self.private_key.public_key()
 
-    def encrypt_symmetric(self, data: Union[str, bytes], key_id: Optional[str] = None) -> bytes:
+    def encrypt_symmetric(
+        self, data: Union[str, bytes], key_id: Optional[str] = None
+    ) -> bytes:
         """Encrypt data using symmetric encryption (Fernet)"""
         if isinstance(data, str):
             data = data.encode("utf-8")
@@ -103,7 +107,9 @@ class AdvancedEncryption:
 
         return self.fernet.encrypt(data)
 
-    def decrypt_symmetric(self, encrypted_data: bytes, key_id: Optional[str] = None) -> bytes:
+    def decrypt_symmetric(
+        self, encrypted_data: bytes, key_id: Optional[str] = None
+    ) -> bytes:
         """Decrypt data using symmetric encryption"""
         if key_id and key_id in self._key_cache:
             fernet = Fernet(self._key_cache[key_id])
@@ -122,7 +128,12 @@ class AdvancedEncryption:
             return self._encrypt_hybrid(data)
 
         return self.public_key.encrypt(
-            data, padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None)
+            data,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None,
+            ),
         )
 
     def decrypt_asymmetric(self, encrypted_data: bytes) -> bytes:
@@ -133,7 +144,11 @@ class AdvancedEncryption:
 
         return self.private_key.decrypt(
             encrypted_data,
-            padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None,
+            ),
         )
 
     def _encrypt_hybrid(self, data: bytes) -> bytes:
@@ -143,7 +158,9 @@ class AdvancedEncryption:
         iv = secrets.token_bytes(16)  # 128-bit IV
 
         # Encrypt data with AES
-        cipher = Cipher(algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend())
+        cipher = Cipher(
+            algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend()
+        )
         encryptor = cipher.encryptor()
 
         # Pad data to multiple of 16 bytes
@@ -154,7 +171,12 @@ class AdvancedEncryption:
 
         # Encrypt AES key with RSA
         encrypted_key = self.public_key.encrypt(
-            aes_key, padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None)
+            aes_key,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None,
+            ),
         )
 
         # Combine encrypted key, IV, and encrypted data
@@ -170,11 +192,17 @@ class AdvancedEncryption:
         # Decrypt AES key with RSA
         aes_key = self.private_key.decrypt(
             encrypted_key,
-            padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None,
+            ),
         )
 
         # Decrypt data with AES
-        cipher = Cipher(algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend())
+        cipher = Cipher(
+            algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend()
+        )
         decryptor = cipher.decryptor()
         padded_data = decryptor.update(encrypted_content) + decryptor.finalize()
 
@@ -184,7 +212,9 @@ class AdvancedEncryption:
 
     def generate_key_pair(self) -> Tuple[bytes, bytes]:
         """Generate new RSA key pair"""
-        private_key = rsa.generate_private_key(public_exponent=65537, key_size=4096, backend=default_backend())
+        private_key = rsa.generate_private_key(
+            public_exponent=65537, key_size=4096, backend=default_backend()
+        )
 
         private_pem = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
@@ -193,14 +223,21 @@ class AdvancedEncryption:
         )
 
         public_pem = private_key.public_key().public_bytes(
-            encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
 
         return private_pem, public_pem
 
     def derive_key(self, password: str, salt: bytes) -> bytes:
         """Derive encryption key from password using PBKDF2"""
-        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000, backend=default_backend())
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+            backend=default_backend(),
+        )
         return kdf.derive(password.encode("utf-8"))
 
 
@@ -228,21 +265,29 @@ class PasswordSecurity:
 
     def hash_password(self, password: str) -> str:
         """Hash password using bcrypt with high cost factor"""
-        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt(rounds=12)).decode("utf-8")
+        return bcrypt.hashpw(
+            password.encode("utf-8"), bcrypt.gensalt(rounds=12)
+        ).decode("utf-8")
 
     def verify_password(self, password: str, hashed: str) -> bool:
         """Verify password against hash"""
         return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
-    def validate_password(self, password: str, user_info: Optional[Dict[str, str]] = None) -> Tuple[bool, List[str]]:
+    def validate_password(
+        self, password: str, user_info: Optional[Dict[str, str]] = None
+    ) -> Tuple[bool, List[str]]:
         """Comprehensive password validation"""
         errors = []
 
         # Length check
         if len(password) < self.min_length:
-            errors.append(f"Password must be at least {self.min_length} characters long")
+            errors.append(
+                f"Password must be at least {self.min_length} characters long"
+            )
         if len(password) > self.max_length:
-            errors.append(f"Password must be no more than {self.max_length} characters long")
+            errors.append(
+                f"Password must be no more than {self.max_length} characters long"
+            )
 
         # Character requirements
         if self.require_uppercase and not re.search(r"[A-Z]", password):
@@ -263,7 +308,9 @@ class PasswordSecurity:
         # Entropy check
         entropy = self._calculate_entropy(password)
         if entropy < self.min_entropy:
-            errors.append(f"Password is too predictable (entropy: {entropy:.1f} bits, minimum: {self.min_entropy})")
+            errors.append(
+                f"Password is too predictable (entropy: {entropy:.1f} bits, minimum: {self.min_entropy})"
+            )
 
         # User info check
         if user_info:
@@ -335,7 +382,10 @@ class RateLimitingService:
         }
 
     async def check_rate_limit(
-        self, key: str, limit_type: str = "api_general", identifier: Optional[str] = None
+        self,
+        key: str,
+        limit_type: str = "api_general",
+        identifier: Optional[str] = None,
     ) -> Tuple[bool, Dict[str, Any]]:
         """Check if request is within rate limit"""
         if limit_type not in self.limits:
@@ -352,7 +402,9 @@ class RateLimitingService:
         else:
             return await self._check_memory_rate_limit(full_key, config)
 
-    async def _check_redis_rate_limit(self, key: str, config: Dict[str, int]) -> Tuple[bool, Dict[str, Any]]:
+    async def _check_redis_rate_limit(
+        self, key: str, config: Dict[str, int]
+    ) -> Tuple[bool, Dict[str, Any]]:
         """Redis-based sliding window rate limiting"""
         now = time.time()
         window_start = now - config["window"]
@@ -391,18 +443,25 @@ class RateLimitingService:
                 "retry_after": 0,
             }
 
-    async def _check_memory_rate_limit(self, key: str, config: Dict[str, int]) -> Tuple[bool, Dict[str, Any]]:
+    async def _check_memory_rate_limit(
+        self, key: str, config: Dict[str, int]
+    ) -> Tuple[bool, Dict[str, Any]]:
         """Memory-based rate limiting (fallback)"""
         now = time.time()
         window_start = now - config["window"]
 
         if key not in self._memory_store:
-            self._memory_store[key] = {"requests": [], "expires": now + config["window"]}
+            self._memory_store[key] = {
+                "requests": [],
+                "expires": now + config["window"],
+            }
 
         bucket = self._memory_store[key]
 
         # Clean expired requests
-        bucket["requests"] = [req_time for req_time in bucket["requests"] if req_time > window_start]
+        bucket["requests"] = [
+            req_time for req_time in bucket["requests"] if req_time > window_start
+        ]
 
         # Check limit
         if len(bucket["requests"]) >= config["requests"]:
@@ -526,7 +585,14 @@ class ThreatDetectionEngine:
 
         self.ip_reputation_cache: Dict[str, Dict[str, Any]] = {}
         self.blocked_ips: set = set()
-        self.suspicious_user_agents = ["sqlmap", "nikto", "nmap", "masscan", "zap", "burp"]
+        self.suspicious_user_agents = [
+            "sqlmap",
+            "nikto",
+            "nmap",
+            "masscan",
+            "zap",
+            "burp",
+        ]
 
     async def analyze_request(self, request: Request) -> Tuple[ThreatLevel, List[str]]:
         """Analyze request for potential threats"""
@@ -659,12 +725,15 @@ class EnterpriseSecurityManager:
                 )
 
                 raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN, detail="Request blocked due to security policy"
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Request blocked due to security policy",
                 )
 
             # Rate limiting
             client_ip = request.client.host if request.client else "unknown"
-            is_allowed, rate_info = await self.rate_limiter.check_rate_limit(client_ip, "api_general")
+            is_allowed, rate_info = await self.rate_limiter.check_rate_limit(
+                client_ip, "api_general"
+            )
 
             if not is_allowed:
                 await self.audit_logger.log_event(
@@ -693,7 +762,9 @@ class EnterpriseSecurityManager:
 
             if token:
                 try:
-                    user_info = jwt.decode(token, self.jwt_secret, algorithms=[self.jwt_algorithm])
+                    user_info = jwt.decode(
+                        token, self.jwt_secret, algorithms=[self.jwt_algorithm]
+                    )
 
                     await self.audit_logger.log_event(
                         SecurityEvent(
@@ -706,7 +777,10 @@ class EnterpriseSecurityManager:
                     )
 
                 except jwt.ExpiredSignatureError:
-                    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired")
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Token has expired",
+                    )
                 except jwt.InvalidTokenError:
                     await self.audit_logger.log_event(
                         SecurityEvent(
@@ -718,7 +792,9 @@ class EnterpriseSecurityManager:
                         )
                     )
 
-                    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+                    )
 
             processing_time = time.time() - start_time
 
@@ -734,7 +810,10 @@ class EnterpriseSecurityManager:
             raise
         except Exception as e:
             logger.error("Security authentication error", error=str(e))
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Security system error")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Security system error",
+            )
 
     async def _extract_token(self, request: Request) -> Optional[str]:
         """Extract JWT token from request"""
@@ -750,7 +829,9 @@ class EnterpriseSecurityManager:
 
         return None
 
-    def generate_jwt_token(self, user_id: str, additional_claims: Optional[Dict[str, Any]] = None) -> str:
+    def generate_jwt_token(
+        self, user_id: str, additional_claims: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Generate JWT token for user"""
         now = datetime.utcnow()
         payload = {
@@ -765,7 +846,9 @@ class EnterpriseSecurityManager:
 
         return jwt.encode(payload, self.jwt_secret, algorithm=self.jwt_algorithm)
 
-    async def encrypt_sensitive_data(self, data: Union[str, bytes], context: Optional[str] = None) -> bytes:
+    async def encrypt_sensitive_data(
+        self, data: Union[str, bytes], context: Optional[str] = None
+    ) -> bytes:
         """Encrypt sensitive data with audit logging"""
         encrypted = self.encryption.encrypt_symmetric(data)
 
@@ -773,13 +856,18 @@ class EnterpriseSecurityManager:
             SecurityEvent(
                 event_type=SecurityEventType.ENCRYPTION_OPERATION,
                 timestamp=datetime.utcnow(),
-                details={"context": context, "data_length": len(data) if isinstance(data, (str, bytes)) else 0},
+                details={
+                    "context": context,
+                    "data_length": len(data) if isinstance(data, (str, bytes)) else 0,
+                },
             )
         )
 
         return encrypted
 
-    async def decrypt_sensitive_data(self, encrypted_data: bytes, context: Optional[str] = None) -> bytes:
+    async def decrypt_sensitive_data(
+        self, encrypted_data: bytes, context: Optional[str] = None
+    ) -> bytes:
         """Decrypt sensitive data with audit logging"""
         decrypted = self.encryption.decrypt_symmetric(encrypted_data)
 

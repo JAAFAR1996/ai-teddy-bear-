@@ -149,7 +149,9 @@ class ConversationSchemaManager:
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
             existing_tables = [row[0] for row in cursor.fetchall()]
 
-            missing_tables = [table for table in required_tables if table not in existing_tables]
+            missing_tables = [
+                table for table in required_tables if table not in existing_tables
+            ]
 
             # Check foreign key constraints
             cursor.execute("PRAGMA foreign_key_check")
@@ -160,7 +162,9 @@ class ConversationSchemaManager:
             existing_indexes = [row[0] for row in cursor.fetchall()]
 
             return {
-                "status": "valid" if not missing_tables and not fk_violations else "invalid",
+                "status": (
+                    "valid" if not missing_tables and not fk_violations else "invalid"
+                ),
                 "missing_tables": missing_tables,
                 "foreign_key_violations": len(fk_violations),
                 "total_indexes": len(existing_indexes),

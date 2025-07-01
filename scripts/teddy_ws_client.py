@@ -1,32 +1,31 @@
-
 """
 Enhanced Teddy Bear Client - عميل الدبدوب المحسّن
 نسخة محسّنة مع ميزات متقدمة للتفاعل الصوتي
 """
 
 import asyncio
-import websockets
-import sounddevice as sd
-import numpy as np
 import base64
-import json
-import simpleaudio as sa
-import wave
 import io
+import json
 import os
-import sys
-from datetime import datetime
-import threading
 import queue
+import sys
+import threading
 import time
+import wave
+from datetime import datetime
+
+import numpy as np
+import simpleaudio as sa
+import sounddevice as sd
+import websockets
 from pydub import AudioSegment
 from pydub.playback import play
-import io
 
 # إعدادات الصوت
 SAMPLE_RATE = 16000
 CHANNELS = 1
-DTYPE = 'int16'
+DTYPE = "int16"
 
 # إعدادات الاتصال
 WS_URL = "ws://127.0.0.1:8000/ws/audio"
@@ -87,15 +86,16 @@ class EnhancedTeddyClient:
                 if bars > 10:
                     bars = 10
                 indicator = "🔊" + "▬" * bars + " " * (10 - bars)
-                print(f"\r{indicator} [{volume_norm:4.0f}]",
-                      end='', flush=True)
+                print(f"\r{indicator} [{volume_norm:4.0f}]", end="", flush=True)
 
         # بدء التسجيل
         try:
-            with sd.InputStream(callback=audio_callback,
-                                channels=CHANNELS,
-                                samplerate=SAMPLE_RATE,
-                                dtype=DTYPE):
+            with sd.InputStream(
+                callback=audio_callback,
+                channels=CHANNELS,
+                samplerate=SAMPLE_RATE,
+                dtype=DTYPE,
+            ):
                 sd.sleep(int(duration * 1000))
         except sd.CallbackStop:
             print("\n✅ تم اكتشاف نهاية الكلام")
@@ -107,7 +107,7 @@ class EnhancedTeddyClient:
         """تحويل البيانات الصوتية إلى WAV في الذاكرة"""
         buffer = io.BytesIO()
 
-        with wave.open(buffer, 'wb') as wav_file:
+        with wave.open(buffer, "wb") as wav_file:
             wav_file.setnchannels(CHANNELS)
             wav_file.setsampwidth(2)  # 16-bit
             wav_file.setframerate(SAMPLE_RATE)
@@ -137,15 +137,17 @@ class EnhancedTeddyClient:
             wav_bytes = self.audio_to_wav_bytes(audio_data)
 
             # تشفير Base64
-            audio_b64 = base64.b64encode(wav_bytes).decode('utf-8')
+            audio_b64 = base64.b64encode(wav_bytes).decode("utf-8")
 
             # إنشاء الرسالة
-            message = json.dumps({
-                "type": "audio",
-                "audio": audio_b64,
-                "format": "wav",
-                "timestamp": datetime.now().isoformat()
-            })
+            message = json.dumps(
+                {
+                    "type": "audio",
+                    "audio": audio_b64,
+                    "format": "wav",
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
             # إرسال
             await self.websocket.send(message)
@@ -192,9 +194,10 @@ class EnhancedTeddyClient:
 
     def play_audio(self, audio_bytes):
         """تشغيل الصوت من الذاكرة مباشرة (MP3/WAV مدعوم)"""
+        import io
+
         from pydub import AudioSegment
         from pydub.playback import play
-        import io
 
     try:
         try:
@@ -214,12 +217,12 @@ class EnhancedTeddyClient:
     def show_emotion(self, emotion):
         """عرض المشاعر"""
         emotions = {
-            'happy': '😊 سعيد',
-            'sad': '😢 حزين',
-            'excited': '🤗 متحمس',
-            'neutral': '🙂 عادي',
-            'thinking': '🤔 يفكر',
-            'playful': '😄 مرح'
+            "happy": "😊 سعيد",
+            "sad": "😢 حزين",
+            "excited": "🤗 متحمس",
+            "neutral": "🙂 عادي",
+            "thinking": "🤔 يفكر",
+            "playful": "😄 مرح",
         }
         print(f"💭 مشاعر الدبدوب: {emotions.get(emotion, emotion)}")
 
@@ -265,7 +268,7 @@ class EnhancedTeddyClient:
                 # انتظار إدخال المستخدم
                 user_input = input("\n[اضغط Enter للتحدث] ")
 
-                if user_input.lower() in ['خروج', 'exit', 'quit']:
+                if user_input.lower() in ["خروج", "exit", "quit"]:
                     print("👋 وداعاً! سررت باللعب معك!")
                     break
 

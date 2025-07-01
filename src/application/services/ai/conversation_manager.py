@@ -59,7 +59,10 @@ class ConversationManager(ServiceBase):
 
     async def health_check(self) -> Dict:
         """Health check"""
-        return {"healthy": self._state == self.ServiceState.READY, "service": "conversation_manager"}
+        return {
+            "healthy": self._state == self.ServiceState.READY,
+            "service": "conversation_manager",
+        }
 
     @trace_async("get_conversation_context")
     async def get_context(self, session_id: str) -> ConversationContext:
@@ -99,16 +102,26 @@ class ConversationManager(ServiceBase):
 
         # Add to history
         context.conversation_history.append(
-            {"role": "user", "content": user_message, "timestamp": datetime.utcnow().isoformat()}
+            {
+                "role": "user",
+                "content": user_message,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
         )
 
         context.conversation_history.append(
-            {"role": "assistant", "content": ai_response, "timestamp": datetime.utcnow().isoformat()}
+            {
+                "role": "assistant",
+                "content": ai_response,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
         )
 
         # Trim history if too long
         if len(context.conversation_history) > self._max_history_length:
-            context.conversation_history = context.conversation_history[-self._max_history_length :]
+            context.conversation_history = context.conversation_history[
+                -self._max_history_length :
+            ]
 
         # Update mood history
         if emotion:
@@ -180,7 +193,11 @@ class ConversationManager(ServiceBase):
         dominant_mood = max(mood_counts.items(), key=lambda x: x[1])[0]
 
         # Analyze trend (simple approach)
-        recent_moods = context.mood_history[-5:] if len(context.mood_history) > 5 else context.mood_history
+        recent_moods = (
+            context.mood_history[-5:]
+            if len(context.mood_history) > 5
+            else context.mood_history
+        )
         positive_moods = ["happy", "excited", "curious"]
         negative_moods = ["sad", "angry", "scared"]
 

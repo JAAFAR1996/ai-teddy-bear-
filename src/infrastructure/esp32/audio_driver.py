@@ -53,7 +53,10 @@ class AudioDriver:
             # Initialize pygame mixer if available
             if PYGAME_AVAILABLE:
                 pygame.mixer.pre_init(
-                    frequency=self.sample_rate, size=-self.bit_depth, channels=self.channels, buffer=self.buffer_size
+                    frequency=self.sample_rate,
+                    size=-self.bit_depth,
+                    channels=self.channels,
+                    buffer=self.buffer_size,
                 )
                 pygame.mixer.init()
                 self.mixer = pygame.mixer
@@ -144,7 +147,9 @@ class AudioDriver:
             if SPEECH_RECOGNITION_AVAILABLE and self.recognizer and self.microphone:
                 with self.microphone as source:
                     # Listen for audio
-                    audio_data = self.recognizer.listen(source, timeout=duration, phrase_time_limit=duration)
+                    audio_data = self.recognizer.listen(
+                        source, timeout=duration, phrase_time_limit=duration
+                    )
 
                     # Convert to bytes
                     audio_bytes = audio_data.get_wav_data()
@@ -182,7 +187,9 @@ class AudioDriver:
             if PYGAME_AVAILABLE and self.mixer:
                 # In a real implementation, would convert bytes to pygame sound
                 # For now, simulate playback duration
-                estimated_duration = len(audio_bytes) / (self.sample_rate * self.channels * (self.bit_depth // 8))
+                estimated_duration = len(audio_bytes) / (
+                    self.sample_rate * self.channels * (self.bit_depth // 8)
+                )
                 time.sleep(estimated_duration)
             else:
                 # Mock playback
@@ -249,7 +256,9 @@ class AudioDriver:
             logger.error(f" Volume set failed: {e}")
             return False
 
-    def recognize_speech(self, audio_bytes: bytes, language: str = "ar-SA") -> Optional[str]:
+    def recognize_speech(
+        self, audio_bytes: bytes, language: str = "ar-SA"
+    ) -> Optional[str]:
         """Recognize speech from audio bytes."""
         try:
             if SPEECH_RECOGNITION_AVAILABLE and self.recognizer:
@@ -263,7 +272,9 @@ class AudioDriver:
 
                 # Recognize speech
                 try:
-                    text = self.recognizer.recognize_google(audio_data, language=language)
+                    text = self.recognizer.recognize_google(
+                        audio_data, language=language
+                    )
                     logger.info(f" Recognized: {text}")
                     return text
                 except sr.UnknownValueError:

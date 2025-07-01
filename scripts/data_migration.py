@@ -1,18 +1,20 @@
+import json
+import logging
 import os
 import sqlite3
-import logging
-import json
-from typing import Dict, Any, List
 from datetime import datetime
+from typing import Any, Dict, List
+
 
 class DataMigration:
     """
     Handles data migration between different versions of the database schema
     """
-    def __init__(self, db_path: str = 'data/child_memories.db'):
+
+    def __init__(self, db_path: str = "data/child_memories.db"):
         """
         Initialize data migration
-        
+
         :param db_path: Path to the SQLite database
         """
         self._db_path = db_path
@@ -22,7 +24,7 @@ class DataMigration:
     def _connect_db(self):
         """
         Create a database connection
-        
+
         :return: Database connection
         """
         return sqlite3.connect(self._db_path)
@@ -37,18 +39,23 @@ class DataMigration:
             cursor = conn.cursor()
 
             # Add new columns to existing tables
-            cursor.execute('''
+            cursor.execute(
+                """
             ALTER TABLE child_profiles 
             ADD COLUMN language_preference TEXT DEFAULT 'en'
-            ''')
+            """
+            )
 
-            cursor.execute('''
+            cursor.execute(
+                """
             ALTER TABLE child_profiles 
             ADD COLUMN learning_mode TEXT DEFAULT 'adaptive'
-            ''')
+            """
+            )
 
             # Create new tables
-            cursor.execute('''
+            cursor.execute(
+                """
             CREATE TABLE IF NOT EXISTS learning_progress (
                 child_id TEXT,
                 skill_category TEXT,
@@ -56,13 +63,17 @@ class DataMigration:
                 last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(child_id) REFERENCES child_profiles(child_id)
             )
-            ''')
+            """
+            )
 
             # Update system version
-            cursor.execute('''
+            cursor.execute(
+                """
             INSERT OR REPLACE INTO system_config (key, value, last_updated)
             VALUES ('database_version', '2', ?)
-            ''', (datetime.now(),))
+            """,
+                (datetime.now(),),
+            )
 
             conn.commit()
             self._logger.info("Database migrated to version 2 successfully")
@@ -87,18 +98,23 @@ class DataMigration:
             cursor = conn.cursor()
 
             # Add privacy consent tracking
-            cursor.execute('''
+            cursor.execute(
+                """
             ALTER TABLE child_profiles 
             ADD COLUMN parental_consent_timestamp DATETIME
-            ''')
+            """
+            )
 
-            cursor.execute('''
+            cursor.execute(
+                """
             ALTER TABLE child_profiles 
             ADD COLUMN consent_version TEXT
-            ''')
+            """
+            )
 
             # Create privacy audit log
-            cursor.execute('''
+            cursor.execute(
+                """
             CREATE TABLE IF NOT EXISTS privacy_audit_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 child_id TEXT,
@@ -107,13 +123,17 @@ class DataMigration:
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(child_id) REFERENCES child_profiles(child_id)
             )
-            ''')
+            """
+            )
 
             # Update system version
-            cursor.execute('''
+            cursor.execute(
+                """
             INSERT OR REPLACE INTO system_config (key, value, last_updated)
             VALUES ('database_version', '3', ?)
-            ''', (datetime.now(),))
+            """,
+                (datetime.now(),),
+            )
 
             conn.commit()
             self._logger.info("Database migrated to version 3 successfully")
@@ -132,6 +152,7 @@ class DataMigration:
         Create a backup before performing migration
         """
         from .backup_database import backup_database
+
         backup_file = backup_database()
         self._logger.info(f"Backup created before migration: {backup_file}")
         return backup_file
@@ -147,12 +168,14 @@ class DataMigration:
             # Check current database version
             conn = self._connect_db()
             cursor = conn.cursor()
-            
-            cursor.execute('''
+
+            cursor.execute(
+                """
             SELECT value FROM system_config 
             WHERE key = 'database_version'
-            ''')
-            
+            """
+            )
+
             result = cursor.fetchone()
             current_version = int(result[0]) if result else 1
             conn.close()
@@ -160,7 +183,7 @@ class DataMigration:
             # Run migrations in sequence
             if current_version < 2:
                 self.migrate_v1_to_v2()
-            
+
             if current_version < 3:
                 self.migrate_v2_to_v3()
 
@@ -170,18 +193,20 @@ class DataMigration:
             self._logger.error(f"Migration process failed: {e}")
             raise
 
+
 def main():
     """
     Main function to run database migrations
     """
     logging.basicConfig(level=logging.INFO)
-    
+
     try:
         migrator = DataMigration()
         migrator.run_migrations()
     except Exception as e:
         logging.error(f"Migration failed: {e}")
         exit(1)
+
 
 if __name__ == "__main__":
     main()

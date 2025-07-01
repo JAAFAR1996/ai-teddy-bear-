@@ -67,7 +67,11 @@ class AudioRecorder:
             else:
                 raise Exception("No audio library available")
 
-            logger.info("Audio recording started", sample_rate=self.config.sample_rate, channels=self.config.channels)
+            logger.info(
+                "Audio recording started",
+                sample_rate=self.config.sample_rate,
+                channels=self.config.channels,
+            )
         except Exception as e:
             logger.error("Failed to start recording", error=str(e))
             self.config.is_recording = False

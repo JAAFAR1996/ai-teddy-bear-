@@ -16,16 +16,9 @@ import pytest
 # Import the modules to test
 try:
     from src.infrastructure.ai.distributed_processor import (
-        RAY_AVAILABLE,
-        AIServiceType,
-        ChildContext,
-        ConversationRequest,
-        ConversationResponse,
-        DistributedAIProcessor,
-        MockAIServices,
-        ProcessingMetrics,
-        ProcessingPriority,
-    )
+        RAY_AVAILABLE, AIServiceType, ChildContext, ConversationRequest,
+        ConversationResponse, DistributedAIProcessor, MockAIServices,
+        ProcessingMetrics, ProcessingPriority)
 
     DISTRIBUTED_AI_IMPORTS_AVAILABLE = True
 except ImportError as e:
@@ -83,7 +76,9 @@ class TestConversationRequest:
 
         audio_data = b"fake_audio_data"
 
-        request = ConversationRequest(request_id="req_001", audio_data=audio_data, child_context=child_context)
+        request = ConversationRequest(
+            request_id="req_001", audio_data=audio_data, child_context=child_context
+        )
 
         assert request.request_id == "req_001"
         assert request.audio_data == audio_data
@@ -233,7 +228,9 @@ class TestDistributedAIProcessor:
         audio_data = np.random.uniform(-0.1, 0.1, 16000).astype(np.float32)
         audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
 
-        child_context = ChildContext(child_id="test_child_001", name="أحمد", age=7, language="ar")
+        child_context = ChildContext(
+            child_id="test_child_001", name="أحمد", age=7, language="ar"
+        )
 
         # Process conversation
         start_time = time.time()
@@ -246,7 +243,14 @@ class TestDistributedAIProcessor:
         assert response.request_id is not None
         assert response.transcription != ""
         assert response.ai_text != ""
-        assert response.emotion in ["happy", "sad", "angry", "excited", "calm", "neutral"]
+        assert response.emotion in [
+            "happy",
+            "sad",
+            "angry",
+            "excited",
+            "calm",
+            "neutral",
+        ]
         assert response.safety_status == "safe"
         assert response.confidence > 0.0
         assert response.processing_time_ms > 0
@@ -276,7 +280,9 @@ class TestDistributedAIProcessor:
             audio_data = np.random.uniform(-0.1, 0.1, 16000).astype(np.float32)
             audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
 
-            child_context = ChildContext(child_id=f"test_child_{i:03d}", name=f"طفل {i}", age=5 + i)
+            child_context = ChildContext(
+                child_id=f"test_child_{i:03d}", name=f"طفل {i}", age=5 + i
+            )
 
             requests.append((audio_bytes, child_context))
 
@@ -305,10 +311,14 @@ class TestDistributedAIProcessor:
         audio_data = np.random.uniform(-0.1, 0.1, 16000).astype(np.float32)
         audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
 
-        child_context = ChildContext(child_id="test_child_safety", name="طفل الأمان", age=6)
+        child_context = ChildContext(
+            child_id="test_child_safety", name="طفل الأمان", age=6
+        )
 
         # Mock unsafe content by patching the safety service
-        with patch.object(MockAIServices, "check_safety", new_callable=AsyncMock) as mock_safety:
+        with patch.object(
+            MockAIServices, "check_safety", new_callable=AsyncMock
+        ) as mock_safety:
             mock_safety.return_value = {
                 "is_safe": False,
                 "risk_level": "high",
@@ -459,7 +469,9 @@ class TestDistributedScaling:
             audio_data = np.random.uniform(-0.1, 0.1, 16000).astype(np.float32)
             audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
 
-            child_context = ChildContext(child_id=f"concurrent_child_{i}", name=f"طفل {i}", age=6)
+            child_context = ChildContext(
+                child_id=f"concurrent_child_{i}", name=f"طفل {i}", age=6
+            )
 
             return await processor.process_conversation(audio_bytes, child_context)
 

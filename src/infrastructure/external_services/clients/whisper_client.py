@@ -27,13 +27,18 @@ class WhisperClient:
         """Load Whisper model"""
         try:
             self.model = whisper.load_model(self.model_size, device=self.device)
-            self.logger.info(f"Loaded Whisper model: {self.model_size} on {self.device}")
+            self.logger.info(
+                f"Loaded Whisper model: {self.model_size} on {self.device}"
+            )
         except Exception as e:
             self.logger.error(f"Failed to load Whisper model: {e}")
             self.model = None
 
     async def transcribe_audio(
-        self, audio_data: np.ndarray, language: Optional[str] = None, task: str = "transcribe"
+        self,
+        audio_data: np.ndarray,
+        language: Optional[str] = None,
+        task: str = "transcribe",
     ) -> Optional[Dict[str, Any]]:
         """Transcribe audio using Whisper"""
         try:
@@ -42,7 +47,9 @@ class WhisperClient:
                 return None
 
             # Transcribe
-            result = self.model.transcribe(audio_data, language=language, task=task, verbose=False)
+            result = self.model.transcribe(
+                audio_data, language=language, task=task, verbose=False
+            )
 
             return {
                 "text": result["text"].strip(),

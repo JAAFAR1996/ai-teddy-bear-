@@ -9,17 +9,13 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 # Import specialized services
-from ...application.services.audio import AudioPlaybackService, AudioRecordingService, AudioSessionService
-
+from ...application.services.audio import (AudioPlaybackService,
+                                           AudioRecordingService,
+                                           AudioSessionService)
 # Import domain models
-from ...domain.audio.models import (
-    AudioFormatType,
-    AudioQualityMode,
-    AudioSession,
-    AudioSessionType,
-    AudioSystemConfig,
-    PerformanceMetrics,
-)
+from ...domain.audio.models import (AudioFormatType, AudioQualityMode,
+                                    AudioSession, AudioSessionType,
+                                    AudioSystemConfig, PerformanceMetrics)
 
 
 class AudioSystemError(Exception):
@@ -84,7 +80,9 @@ class EnhancedAudioManager:
 
                     # Log system health
                     if self.metrics.status.value != "healthy":
-                        self.logger.warning(f"System status: {self.metrics.status.value}")
+                        self.logger.warning(
+                            f"System status: {self.metrics.status.value}"
+                        )
 
                 except Exception as e:
                     self.logger.error(f"Monitoring worker error: {e}")
@@ -135,7 +133,9 @@ class EnhancedAudioManager:
         else:
             session = self.session_service.get_session(session_id)
 
-        return self.recording_service.record_audio(duration=duration, session=session, format_type=format)
+        return self.recording_service.record_audio(
+            duration=duration, session=session, format_type=format
+        )
 
     def is_recording(self) -> bool:
         """Check if currently recording."""
@@ -287,20 +287,31 @@ class EnhancedAudioManager:
             },
         }
 
-        return format_info.get(format, {"name": "Unknown", "description": "Unknown format"})
+        return format_info.get(
+            format, {"name": "Unknown", "description": "Unknown format"}
+        )
 
     def test_audio_system(self) -> Dict[str, Any]:
         """Test audio system functionality."""
-        test_results = {"timestamp": datetime.now().isoformat(), "tests": {}, "overall_status": "unknown", "errors": []}
+        test_results = {
+            "timestamp": datetime.now().isoformat(),
+            "tests": {},
+            "overall_status": "unknown",
+            "errors": [],
+        }
 
         try:
             # Test session creation
-            test_session_id = self.start_session("test_child", AudioSessionType.SYSTEM_TEST)
+            test_session_id = self.start_session(
+                "test_child", AudioSessionType.SYSTEM_TEST
+            )
             test_results["tests"]["session_creation"] = True
 
             # Test recording
             try:
-                recording_result = self.record_audio(duration=1, session_id=test_session_id)
+                recording_result = self.record_audio(
+                    duration=1, session_id=test_session_id
+                )
                 test_results["tests"]["recording"] = recording_result is not None
             except Exception as e:
                 test_results["tests"]["recording"] = False
@@ -387,7 +398,9 @@ class EnhancedAudioManager:
 # === Factory Functions ===
 
 
-def create_audio_manager(config: Optional[AudioSystemConfig] = None) -> EnhancedAudioManager:
+def create_audio_manager(
+    config: Optional[AudioSystemConfig] = None,
+) -> EnhancedAudioManager:
     """
     Factory function to create an audio manager.
 
@@ -425,7 +438,9 @@ def create_low_latency_config() -> AudioSystemConfig:
 _global_audio_manager: Optional[EnhancedAudioManager] = None
 
 
-def get_audio_manager(config: Optional[AudioSystemConfig] = None) -> EnhancedAudioManager:
+def get_audio_manager(
+    config: Optional[AudioSystemConfig] = None,
+) -> EnhancedAudioManager:
     """
     Get or create global audio manager instance.
 

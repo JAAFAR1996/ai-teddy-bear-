@@ -38,7 +38,9 @@ class InvalidInputException(ValidationException):
         if expected_type:
             message += f", expected {expected_type}"
 
-        super().__init__(message=message, field_name=field_name, error_code="INVALID_INPUT", **kwargs)
+        super().__init__(
+            message=message, field_name=field_name, error_code="INVALID_INPUT", **kwargs
+        )
         self.invalid_value = invalid_value
         self.expected_type = expected_type
         self.constraints = constraints

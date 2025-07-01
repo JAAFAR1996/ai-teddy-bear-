@@ -133,25 +133,41 @@ class GraphQLPerformanceMonitor:
     def _initialize_prometheus_metrics(self) -> Any:
         """Initialize Prometheus metrics."""
         self.prom_query_counter = Counter(
-            "graphql_queries_total", "Total GraphQL queries", ["operation_name", "status"]
+            "graphql_queries_total",
+            "Total GraphQL queries",
+            ["operation_name", "status"],
         )
 
         self.prom_query_duration = Histogram(
-            "graphql_query_duration_seconds", "GraphQL query duration", ["operation_name", "service"]
+            "graphql_query_duration_seconds",
+            "GraphQL query duration",
+            ["operation_name", "service"],
         )
 
         self.prom_service_duration = Histogram(
-            "graphql_service_duration_seconds", "Service call duration", ["service_name", "status"]
+            "graphql_service_duration_seconds",
+            "Service call duration",
+            ["service_name", "status"],
         )
 
-        self.prom_concurrent_queries = Gauge("graphql_concurrent_queries", "Current concurrent queries")
+        self.prom_concurrent_queries = Gauge(
+            "graphql_concurrent_queries", "Current concurrent queries"
+        )
 
-        self.prom_cache_hits = Counter("graphql_cache_hits_total", "Cache hits", ["cache_type"])
+        self.prom_cache_hits = Counter(
+            "graphql_cache_hits_total", "Cache hits", ["cache_type"]
+        )
 
-        self.prom_errors = Counter("graphql_errors_total", "GraphQL errors", ["error_type", "service"])
+        self.prom_errors = Counter(
+            "graphql_errors_total", "GraphQL errors", ["error_type", "service"]
+        )
 
     async def start_query_monitoring(
-        self, query: str, variables: Dict[str, Any], operation_name: Optional[str] = None, user_id: Optional[str] = None
+        self,
+        query: str,
+        variables: Dict[str, Any],
+        operation_name: Optional[str] = None,
+        user_id: Optional[str] = None,
     ) -> str:
         """Start monitoring a GraphQL query."""
         query_hash = self._generate_query_hash(query, variables)
@@ -227,11 +243,13 @@ class GraphQLPerformanceMonitor:
         # Update Prometheus metrics
         if self.enable_prometheus:
             status = "error" if error_count > 0 else "success"
-            self.prom_query_counter.labels(operation_name=operation_name or "anonymous", status=status).inc()
+            self.prom_query_counter.labels(
+                operation_name=operation_name or "anonymous", status=status
+            ).inc()
 
-            self.prom_query_duration.labels(operation_name=operation_name or "anonymous", service="gateway").observe(
-                execution_time_ms / 1000
-            )
+            self.prom_query_duration.labels(
+                operation_name=operation_name or "anonymous", service="gateway"
+            ).observe(execution_time_ms / 1000)
 
             self.prom_concurrent_queries.set(self.current_queries)
 
@@ -239,10 +257,14 @@ class GraphQLPerformanceMonitor:
                 self.prom_cache_hits.labels(cache_type="graphql").inc()
 
             if error_count > 0:
-                self.prom_errors.labels(error_type="query_error", service="gateway").inc(error_count)
+                self.prom_errors.labels(
+                    error_type="query_error", service="gateway"
+                ).inc(error_count)
 
         self.logger.debug(
-            f"Finished monitoring query: {query_hash}, " f"time: {execution_time_ms:.2f}ms, " f"errors: {error_count}"
+            f"Finished monitoring query: {query_hash}, "
+            f"time: {execution_time_ms:.2f}ms, "
+            f"errors: {error_count}"
         )
 
     async def record_service_call(
@@ -269,15 +291,19 @@ class GraphQLPerformanceMonitor:
         # Update Prometheus metrics
         if self.enable_prometheus:
             status = "success" if success else "error"
-            self.prom_service_duration.labels(service_name=service_name, status=status).observe(
-                execution_time_ms / 1000
-            )
+            self.prom_service_duration.labels(
+                service_name=service_name, status=status
+            ).observe(execution_time_ms / 1000)
 
             if not success:
-                self.prom_errors.labels(error_type="service_error", service=service_name).inc()
+                self.prom_errors.labels(
+                    error_type="service_error", service=service_name
+                ).inc()
 
         self.logger.debug(
-            f"Service call recorded: {service_name}, " f"time: {execution_time_ms:.2f}ms, " f"success: {success}"
+            f"Service call recorded: {service_name}, "
+            f"time: {execution_time_ms:.2f}ms, "
+            f"success: {success}"
         )
 
     async def _check_performance_thresholds(self, metrics: QueryMetrics):
@@ -355,7 +381,9 @@ class GraphQLPerformanceMonitor:
         """Get comprehensive performance summary."""
         current_time = datetime.now()
         recent_queries = [
-            m for m in self.query_metrics if (current_time - m.timestamp).total_seconds() < 3600  # Last hour
+            m
+            for m in self.query_metrics
+            if (current_time - m.timestamp).total_seconds() < 3600  # Last hour
         ]
 
         if not recent_queries:
@@ -367,7 +395,9 @@ class GraphQLPerformanceMonitor:
         error_rate = total_errors / total_queries if total_queries > 0 else 0
 
         execution_times = [m.execution_time_ms for m in recent_queries]
-        avg_latency = sum(execution_times) / len(execution_times) if execution_times else 0
+        avg_latency = (
+            sum(execution_times) / len(execution_times) if execution_times else 0
+        )
 
         cache_hits = sum(1 for m in recent_queries if m.cache_hit)
         cache_hit_rate = cache_hits / total_queries if total_queries > 0 else 0
@@ -388,11 +418,14 @@ class GraphQLPerformanceMonitor:
                 "success_count": success_count,
                 "success_rate": success_count / len(calls),
                 "avg_latency_ms": avg_time,
-                "total_response_size_mb": sum(c.response_size_bytes for c in calls) / (1024 * 1024),
+                "total_response_size_mb": sum(c.response_size_bytes for c in calls)
+                / (1024 * 1024),
             }
 
         # Top slow queries
-        slow_queries = sorted(recent_queries, key=lambda m: m.execution_time_ms, reverse=True)[:10]
+        slow_queries = sorted(
+            recent_queries, key=lambda m: m.execution_time_ms, reverse=True
+        )[:10]
 
         return {
             "summary": {
@@ -436,8 +469,11 @@ class GraphQLPerformanceMonitor:
             "max_execution_time_ms": max(execution_times),
             "total_errors": sum(error_counts),
             "error_rate": sum(error_counts) / len(matching_queries),
-            "cache_hit_rate": sum(1 for m in matching_queries if m.cache_hit) / len(matching_queries),
-            "services_involved": list(set().union(*(m.services_involved for m in matching_queries))),
+            "cache_hit_rate": sum(1 for m in matching_queries if m.cache_hit)
+            / len(matching_queries),
+            "services_involved": list(
+                set().union(*(m.services_involved for m in matching_queries))
+            ),
             "first_seen": min(m.timestamp for m in matching_queries).isoformat(),
             "last_seen": max(m.timestamp for m in matching_queries).isoformat(),
             "sample_query": matching_queries[0].query_string,
@@ -454,21 +490,31 @@ class GraphQLPerformanceMonitor:
 
         # High latency suggestions
         if analytics["avg_execution_time_ms"] > self.thresholds["slow_query_ms"]:
-            suggestions.append("Consider adding field-level caching for frequently accessed data")
+            suggestions.append(
+                "Consider adding field-level caching for frequently accessed data"
+            )
             suggestions.append("Review field selections to minimize over-fetching")
 
             if len(analytics["services_involved"]) > 3:
-                suggestions.append("Query involves many services - consider denormalization or query splitting")
+                suggestions.append(
+                    "Query involves many services - consider denormalization or query splitting"
+                )
 
         # Low cache hit rate suggestions
         if analytics["cache_hit_rate"] < self.thresholds["low_cache_hit_rate"]:
-            suggestions.append("Low cache hit rate - review caching strategy and TTL values")
+            suggestions.append(
+                "Low cache hit rate - review caching strategy and TTL values"
+            )
             suggestions.append("Consider implementing query-level caching")
 
         # High error rate suggestions
         if analytics["error_rate"] > self.thresholds["high_error_rate"]:
-            suggestions.append("High error rate detected - review error handling and validation")
-            suggestions.append("Consider implementing circuit breaker pattern for service calls")
+            suggestions.append(
+                "High error rate detected - review error handling and validation"
+            )
+            suggestions.append(
+                "Consider implementing circuit breaker pattern for service calls"
+            )
 
         return suggestions
 
@@ -480,7 +526,9 @@ class GraphQLPerformanceMonitor:
         # Include variables in hash for uniqueness
         query_data = {"query": normalized_query, "variables": variables}
 
-        return hashlib.sha256(json.dumps(query_data, sort_keys=True).encode()).hexdigest()[:16]
+        return hashlib.sha256(
+            json.dumps(query_data, sort_keys=True).encode()
+        ).hexdigest()[:16]
 
     async def cleanup_old_metrics(self, hours: int = 24):
         """Cleanup metrics older than specified hours."""
@@ -489,19 +537,23 @@ class GraphQLPerformanceMonitor:
         # Clean query metrics
         original_query_count = len(self.query_metrics)
         self.query_metrics = deque(
-            (m for m in self.query_metrics if m.timestamp > cutoff_time), maxlen=self.query_metrics.maxlen
+            (m for m in self.query_metrics if m.timestamp > cutoff_time),
+            maxlen=self.query_metrics.maxlen,
         )
 
         # Clean service metrics
         original_service_count = len(self.service_metrics)
         self.service_metrics = deque(
-            (m for m in self.service_metrics if m.timestamp > cutoff_time), maxlen=self.service_metrics.maxlen
+            (m for m in self.service_metrics if m.timestamp > cutoff_time),
+            maxlen=self.service_metrics.maxlen,
         )
 
         # Clean alerts
         original_alerts_count = len(self.alerts)
         self.alerts = [
-            alert for alert in self.alerts if (datetime.now() - alert.timestamp).total_seconds() < hours * 3600
+            alert
+            for alert in self.alerts
+            if (datetime.now() - alert.timestamp).total_seconds() < hours * 3600
         ]
 
         cleaned_queries = original_query_count - len(self.query_metrics)
@@ -560,7 +612,9 @@ class QueryComplexityAnalyzer:
                 "max_allowed": self.max_complexity,
                 "is_allowed": complexity <= self.max_complexity,
                 "complexity_ratio": complexity / self.max_complexity,
-                "recommendations": self._generate_complexity_recommendations(complexity),
+                "recommendations": self._generate_complexity_recommendations(
+                    complexity
+                ),
             }
 
             return analysis
@@ -579,7 +633,9 @@ class QueryComplexityAnalyzer:
         # Count field selections and apply costs
         for definition in document.definitions:
             if hasattr(definition, "selection_set"):
-                complexity += self._calculate_selection_complexity(definition.selection_set)
+                complexity += self._calculate_selection_complexity(
+                    definition.selection_set
+                )
 
         return complexity
 
@@ -599,7 +655,9 @@ class QueryComplexityAnalyzer:
 
             # Add nested selection complexity
             if hasattr(selection, "selection_set") and selection.selection_set:
-                complexity += self._calculate_selection_complexity(selection.selection_set, depth + 1)
+                complexity += self._calculate_selection_complexity(
+                    selection.selection_set, depth + 1
+                )
 
         return int(complexity)
 
@@ -608,7 +666,9 @@ class QueryComplexityAnalyzer:
         recommendations = []
 
         if complexity > self.max_complexity:
-            recommendations.append(f"Query complexity ({complexity}) exceeds limit ({self.max_complexity})")
+            recommendations.append(
+                f"Query complexity ({complexity}) exceeds limit ({self.max_complexity})"
+            )
             recommendations.append("Consider breaking the query into smaller parts")
             recommendations.append("Use pagination for list fields")
             recommendations.append("Remove unnecessary fields from selection")
@@ -621,6 +681,8 @@ class QueryComplexityAnalyzer:
 
 
 # Factory function
-def create_performance_monitor(enable_prometheus: bool = True) -> GraphQLPerformanceMonitor:
+def create_performance_monitor(
+    enable_prometheus: bool = True,
+) -> GraphQLPerformanceMonitor:
     """Create GraphQL performance monitor."""
     return GraphQLPerformanceMonitor(enable_prometheus)

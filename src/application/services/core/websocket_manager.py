@@ -84,7 +84,12 @@ class ModernWebSocketManager:
 
         logger.info("✅ Modern WebSocket Manager initialized")
 
-    async def connect(self, websocket: WebSocket, session_id: str, metadata: Optional[Dict[str, Any]] = None) -> bool:
+    async def connect(
+        self,
+        websocket: WebSocket,
+        session_id: str,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> bool:
         """
         🔗 Connect a new WebSocket client
 
@@ -107,7 +112,9 @@ class ModernWebSocketManager:
             await websocket.accept()
 
             # Create connection info
-            connection_info = ConnectionInfo(websocket=websocket, session_id=session_id, metadata=metadata or {})
+            connection_info = ConnectionInfo(
+                websocket=websocket, session_id=session_id, metadata=metadata or {}
+            )
 
             # Register connection
             self.connections[session_id] = connection_info
@@ -123,14 +130,18 @@ class ModernWebSocketManager:
             # Send welcome message
             await self._send_welcome_message(session_id)
 
-            logger.info(f"✅ WebSocket connected: {session_id} (total: {len(self.connections)})")
+            logger.info(
+                f"✅ WebSocket connected: {session_id} (total: {len(self.connections)})"
+            )
             return True
 
         except Exception as e:
             logger.error(f"❌ Failed to connect WebSocket {session_id}: {e}")
             return False
 
-    async def disconnect(self, session_id: str, code: int = 1000, reason: str = "Normal closure") -> None:
+    async def disconnect(
+        self, session_id: str, code: int = 1000, reason: str = "Normal closure"
+    ) -> None:
         """
         🔌 Disconnect a WebSocket client gracefully
 
@@ -161,7 +172,9 @@ class ModernWebSocketManager:
             if len(self.connections) == 0:
                 await self._stop_background_tasks()
 
-            logger.info(f"🔌 WebSocket disconnected: {session_id} (remaining: {len(self.connections)})")
+            logger.info(
+                f"🔌 WebSocket disconnected: {session_id} (remaining: {len(self.connections)})"
+            )
 
         except Exception as e:
             logger.error(f"❌ Error disconnecting {session_id}: {e}")
@@ -185,7 +198,11 @@ class ModernWebSocketManager:
 
         try:
             # Add timestamp
-            message_with_timestamp = {**message, "timestamp": datetime.utcnow().isoformat(), "session_id": session_id}
+            message_with_timestamp = {
+                **message,
+                "timestamp": datetime.utcnow().isoformat(),
+                "session_id": session_id,
+            }
 
             # Send message
             await connection.websocket.send_json(message_with_timestamp)
@@ -206,7 +223,9 @@ class ModernWebSocketManager:
             await self.disconnect(session_id, code=1011, reason="Send error")
             return False
 
-    async def broadcast(self, message: Dict[str, Any], exclude: Optional[Set[str]] = None) -> int:
+    async def broadcast(
+        self, message: Dict[str, Any], exclude: Optional[Set[str]] = None
+    ) -> int:
         """
         📡 Broadcast message to multiple clients
 
@@ -221,16 +240,24 @@ class ModernWebSocketManager:
         success_count = 0
 
         # Get target connections
-        target_sessions = [session_id for session_id in self.connections.keys() if session_id not in exclude]
+        target_sessions = [
+            session_id
+            for session_id in self.connections.keys()
+            if session_id not in exclude
+        ]
 
         # Send to all targets
-        send_tasks = [self.send_message(session_id, message) for session_id in target_sessions]
+        send_tasks = [
+            self.send_message(session_id, message) for session_id in target_sessions
+        ]
 
         if send_tasks:
             results = await asyncio.gather(*send_tasks, return_exceptions=True)
             success_count = sum(1 for result in results if result is True)
 
-        logger.debug(f"📡 Broadcast sent to {success_count}/{len(target_sessions)} clients")
+        logger.debug(
+            f"📡 Broadcast sent to {success_count}/{len(target_sessions)} clients"
+        )
         return success_count
 
     async def receive_message(self, session_id: str) -> Optional[Dict[str, Any]]:
@@ -320,7 +347,10 @@ class ModernWebSocketManager:
         while self.connections:
             try:
                 # Send ping to all connections
-                ping_message = {"type": "ping", "timestamp": datetime.utcnow().isoformat()}
+                ping_message = {
+                    "type": "ping",
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
 
                 await self.broadcast(ping_message)
 
@@ -349,7 +379,9 @@ class ModernWebSocketManager:
                 # Find stale connections
                 for session_id, connection in self.connections.items():
                     # Check connection timeout
-                    if (current_time - connection.connected_at).total_seconds() > self.config.connection_timeout:
+                    if (
+                        current_time - connection.connected_at
+                    ).total_seconds() > self.config.connection_timeout:
                         stale_sessions.append(session_id)
                         continue
 
@@ -363,7 +395,9 @@ class ModernWebSocketManager:
                 # Remove stale connections
                 for session_id in stale_sessions:
                     logger.warning(f"⚠️ Removing stale connection: {session_id}")
-                    await self.disconnect(session_id, code=1006, reason="Connection timeout")
+                    await self.disconnect(
+                        session_id, code=1006, reason="Connection timeout"
+                    )
 
                 # Wait before next cleanup
                 await asyncio.sleep(60)  # Cleanup every minute
@@ -388,7 +422,11 @@ class ModernWebSocketManager:
                 await self.message_handlers[message_type](session_id, message)
             except Exception as e:
                 logger.error(f"❌ Message handler error for {message_type}: {e}")
-                error_message = {"type": "error", "error": f"Handler error: {str(e)}", "original_type": message_type}
+                error_message = {
+                    "type": "error",
+                    "error": f"Handler error: {str(e)}",
+                    "original_type": message_type,
+                }
                 await self.send_message(session_id, error_message)
         else:
             logger.warning(f"⚠️ No handler for message type: {message_type}")
@@ -402,8 +440,12 @@ class ModernWebSocketManager:
         return {
             "session_id": session_id,
             "connected_at": connection.connected_at.isoformat(),
-            "last_ping": connection.last_ping.isoformat() if connection.last_ping else None,
-            "last_pong": connection.last_pong.isoformat() if connection.last_pong else None,
+            "last_ping": (
+                connection.last_ping.isoformat() if connection.last_ping else None
+            ),
+            "last_pong": (
+                connection.last_pong.isoformat() if connection.last_pong else None
+            ),
             "message_count": connection.message_count,
             "is_alive": connection.is_alive,
             "metadata": connection.metadata,
@@ -447,7 +489,9 @@ class ModernWebSocketManager:
 # ================== FACTORY FUNCTION ==================
 
 
-def create_websocket_manager(config: Optional[WebSocketConfig] = None) -> ModernWebSocketManager:
+def create_websocket_manager(
+    config: Optional[WebSocketConfig] = None,
+) -> ModernWebSocketManager:
     """Factory function to create WebSocket manager"""
     return ModernWebSocketManager(config or WebSocketConfig())
 

@@ -43,9 +43,13 @@ class TranscriptionService:
     def __init__(self, config: Optional[TranscriptionConfig] = None):
         self.config = config or TranscriptionConfig()
 
-    async def transcribe_audio(self, request: TranscriptionRequest) -> TranscriptionResult:
+    async def transcribe_audio(
+        self, request: TranscriptionRequest
+    ) -> TranscriptionResult:
         # Mock implementation
-        mock_text = "مرحبا، كيف حالك؟" if request.language == "ar" else "Hello, how are you?"
+        mock_text = (
+            "مرحبا، كيف حالك؟" if request.language == "ar" else "Hello, how are you?"
+        )
 
         return TranscriptionResult(
             text=mock_text,
@@ -69,7 +73,9 @@ class ModernTranscriptionService(TranscriptionService):
         super().__init__(config)
         self.advanced_mode = True
 
-    async def transcribe_with_timestamps(self, request: TranscriptionRequest) -> Dict[str, Any]:
+    async def transcribe_with_timestamps(
+        self, request: TranscriptionRequest
+    ) -> Dict[str, Any]:
         result = await self.transcribe_audio(request)
         return {
             "transcription": result,

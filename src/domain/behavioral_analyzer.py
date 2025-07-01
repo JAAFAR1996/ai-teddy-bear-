@@ -94,7 +94,10 @@ class AdvancedBehavioralAnalyzer:
                 "time_window_days": 7,
                 "anxiety_score_threshold": 0.7,
             },
-            BehavioralConcern.LOW_CONFIDENCE: {"confidence_threshold": 0.3, "consecutive_low_sessions": 5},
+            BehavioralConcern.LOW_CONFIDENCE: {
+                "confidence_threshold": 0.3,
+                "consecutive_low_sessions": 5,
+            },
             BehavioralConcern.SOCIAL_WITHDRAWAL: {
                 "cooperation_score_threshold": 0.2,
                 "social_initiative_threshold": 0.3,
@@ -102,7 +105,11 @@ class AdvancedBehavioralAnalyzer:
         }
 
     async def analyze_voice_with_context(
-        self, audio_data: bytes, story_context: Optional[Dict] = None, child_name: str = None, device_id: str = None
+        self,
+        audio_data: bytes,
+        story_context: Optional[Dict] = None,
+        child_name: str = None,
+        device_id: str = None,
     ) -> VoiceAnalysis:
         """تحليل الصوت مع السياق"""
 
@@ -114,11 +121,15 @@ class AdvancedBehavioralAnalyzer:
         text_analysis = await self._analyze_speech_patterns(transcribed_text)
 
         # دمج تحليل الصوت مع النص
-        combined_analysis = self._combine_voice_and_text_analysis(voice_features, text_analysis)
+        combined_analysis = self._combine_voice_and_text_analysis(
+            voice_features, text_analysis
+        )
 
         # تطبيق السياق إن وجد
         if story_context:
-            combined_analysis = self._apply_story_context(combined_analysis, story_context)
+            combined_analysis = self._apply_story_context(
+                combined_analysis, story_context
+            )
 
         # إنشاء تحليل الصوت
         voice_analysis = VoiceAnalysis(
@@ -138,7 +149,9 @@ class AdvancedBehavioralAnalyzer:
 
         # تحديث الملف النفسي للطفل
         if child_name and device_id:
-            await self._update_psychological_profile(child_name, device_id, voice_analysis)
+            await self._update_psychological_profile(
+                child_name, device_id, voice_analysis
+            )
 
         return voice_analysis
 
@@ -201,10 +214,18 @@ class AdvancedBehavioralAnalyzer:
         text_lower = text.lower()
 
         # حساب النقاط
-        hesitation_score = sum(1 for word in hesitation_words if word in text_lower) / len(text.split())
-        anxiety_score = sum(1 for word in anxiety_words if word in text_lower) / len(text.split())
-        confidence_score = sum(1 for word in confidence_words if word in text_lower) / len(text.split())
-        happiness_score = sum(1 for word in happiness_words if word in text_lower) / len(text.split())
+        hesitation_score = sum(
+            1 for word in hesitation_words if word in text_lower
+        ) / len(text.split())
+        anxiety_score = sum(1 for word in anxiety_words if word in text_lower) / len(
+            text.split()
+        )
+        confidence_score = sum(
+            1 for word in confidence_words if word in text_lower
+        ) / len(text.split())
+        happiness_score = sum(
+            1 for word in happiness_words if word in text_lower
+        ) / len(text.split())
 
         return {
             "hesitation_score": hesitation_score,
@@ -214,14 +235,19 @@ class AdvancedBehavioralAnalyzer:
             "text_length": len(text.split()),
         }
 
-    def _combine_voice_and_text_analysis(self, voice_features: Dict, text_analysis: Dict) -> Dict[str, Any]:
+    def _combine_voice_and_text_analysis(
+        self, voice_features: Dict, text_analysis: Dict
+    ) -> Dict[str, Any]:
         """دمج تحليل الصوت والنص"""
 
         # حساب نقاط الثقة المجمعة
         voice_confidence = 1.0 - (
-            voice_features["pause_frequency"] * 0.5 + (1.0 - voice_features["volume_consistency"]) * 0.3
+            voice_features["pause_frequency"] * 0.5
+            + (1.0 - voice_features["volume_consistency"]) * 0.3
         )
-        text_confidence = text_analysis["confidence_score"] - text_analysis["hesitation_score"]
+        text_confidence = (
+            text_analysis["confidence_score"] - text_analysis["hesitation_score"]
+        )
 
         combined_confidence = voice_confidence * 0.6 + text_confidence * 0.4
         combined_confidence = max(0.0, min(1.0, combined_confidence))  # تطبيع بين 0 و 1
@@ -260,20 +286,30 @@ class AdvancedBehavioralAnalyzer:
             "detected_patterns": detected_patterns,
         }
 
-    def _apply_story_context(self, analysis: Dict, story_context: Dict) -> Dict[str, Any]:
+    def _apply_story_context(
+        self, analysis: Dict, story_context: Dict
+    ) -> Dict[str, Any]:
         """تطبيق سياق القصة على التحليل"""
 
         # إذا كان السياق يتطلب شجاعة ولكن الطفل أظهر قلق
-        if story_context.get("requires_courage") and VoicePattern.ANXIOUS in analysis["detected_patterns"]:
+        if (
+            story_context.get("requires_courage")
+            and VoicePattern.ANXIOUS in analysis["detected_patterns"]
+        ):
             analysis["context_notes"] = "أظهر قلقاً في موقف يتطلب الشجاعة"
 
         # إذا كان السياق اجتماعي والطفل أظهر تردد
-        if story_context.get("social_situation") and VoicePattern.HESITANT in analysis["detected_patterns"]:
+        if (
+            story_context.get("social_situation")
+            and VoicePattern.HESITANT in analysis["detected_patterns"]
+        ):
             analysis["context_notes"] = "تردد في الموقف الاجتماعي"
 
         return analysis
 
-    async def _update_psychological_profile(self, child_name: str, device_id: str, voice_analysis: VoiceAnalysis):
+    async def _update_psychological_profile(
+        self, child_name: str, device_id: str, voice_analysis: VoiceAnalysis
+    ):
         """تحديث الملف النفسي للطفل"""
 
         profile_key = f"{device_id}_{child_name}"
@@ -304,7 +340,9 @@ class AdvancedBehavioralAnalyzer:
         emotional_tone = voice_analysis.emotional_tone
         if emotional_tone not in profile.emotional_patterns:
             profile.emotional_patterns[emotional_tone] = []
-        profile.emotional_patterns[emotional_tone].append(voice_analysis.confidence_score)
+        profile.emotional_patterns[emotional_tone].append(
+            voice_analysis.confidence_score
+        )
 
         # كشف مؤشرات التوتر
         if VoicePattern.ANXIOUS in voice_analysis.detected_patterns:
@@ -347,10 +385,16 @@ class AdvancedBehavioralAnalyzer:
         # فحص الانسحاب الاجتماعي
         await self._check_social_withdrawal(child_name, device_id)
 
-    async def _check_repeated_anxiety(self, child_name: str, device_id: str, analyses: List[VoiceAnalysis]):
+    async def _check_repeated_anxiety(
+        self, child_name: str, device_id: str, analyses: List[VoiceAnalysis]
+    ):
         """فحص القلق المتكرر"""
 
-        anxiety_count = sum(1 for analysis in analyses[-7:] if VoicePattern.ANXIOUS in analysis.detected_patterns)
+        anxiety_count = sum(
+            1
+            for analysis in analyses[-7:]
+            if VoicePattern.ANXIOUS in analysis.detected_patterns
+        )
 
         threshold = self.concern_thresholds[BehavioralConcern.REPEATED_ANXIETY]
 
@@ -379,7 +423,9 @@ class AdvancedBehavioralAnalyzer:
 
             self.behavioral_alerts.append(alert)
 
-    async def _check_low_confidence(self, child_name: str, device_id: str, analyses: List[VoiceAnalysis]):
+    async def _check_low_confidence(
+        self, child_name: str, device_id: str, analyses: List[VoiceAnalysis]
+    ):
         """فحص انخفاض الثقة"""
 
         recent_confidence = [analysis.confidence_score for analysis in analyses[-5:]]
@@ -446,7 +492,9 @@ class AdvancedBehavioralAnalyzer:
 
                 self.behavioral_alerts.append(alert)
 
-    def get_child_psychological_report(self, child_name: str, device_id: str) -> Dict[str, Any]:
+    def get_child_psychological_report(
+        self, child_name: str, device_id: str
+    ) -> Dict[str, Any]:
         """الحصول على التقرير النفسي للطفل"""
 
         profile_key = f"{device_id}_{child_name}"
@@ -461,7 +509,9 @@ class AdvancedBehavioralAnalyzer:
         if len(profile.confidence_trend) >= 5:
             recent_avg = sum(profile.confidence_trend[-5:]) / 5
             earlier_avg = (
-                sum(profile.confidence_trend[-10:-5]) / 5 if len(profile.confidence_trend) >= 10 else recent_avg
+                sum(profile.confidence_trend[-10:-5]) / 5
+                if len(profile.confidence_trend) >= 10
+                else recent_avg
             )
 
             if recent_avg > earlier_avg + 0.1:
@@ -482,7 +532,9 @@ class AdvancedBehavioralAnalyzer:
             "child_name": child_name,
             "device_id": device_id,
             "confidence_level": (
-                sum(profile.confidence_trend) / len(profile.confidence_trend) if profile.confidence_trend else 0.5
+                sum(profile.confidence_trend) / len(profile.confidence_trend)
+                if profile.confidence_trend
+                else 0.5
             ),
             "confidence_trend": confidence_trend,
             "emotional_patterns": profile.emotional_patterns,
@@ -503,13 +555,17 @@ class AdvancedBehavioralAnalyzer:
             "last_updated": profile.last_updated.isoformat(),
         }
 
-    def _generate_overall_recommendations(self, profile: PsychologicalProfile) -> List[str]:
+    def _generate_overall_recommendations(
+        self, profile: PsychologicalProfile
+    ) -> List[str]:
         """توليد توصيات شاملة"""
         recommendations = []
 
         # توصيات بناءً على الثقة
         if profile.confidence_trend:
-            avg_confidence = sum(profile.confidence_trend) / len(profile.confidence_trend)
+            avg_confidence = sum(profile.confidence_trend) / len(
+                profile.confidence_trend
+            )
 
             if avg_confidence < 0.4:
                 recommendations.extend(
@@ -525,13 +581,21 @@ class AdvancedBehavioralAnalyzer:
         # توصيات بناءً على المهارات الاجتماعية
         if profile.social_skills_level < 0.4:
             recommendations.extend(
-                ["شجع الأنشطة الاجتماعية التدريجية", "انضم لمجموعات لعب منظمة", "مارس الحوار والمشاركة في المنزل"]
+                [
+                    "شجع الأنشطة الاجتماعية التدريجية",
+                    "انضم لمجموعات لعب منظمة",
+                    "مارس الحوار والمشاركة في المنزل",
+                ]
             )
 
         # توصيات بناءً على مؤشرات التوتر
         if "قلق متكرر" in profile.stress_indicators:
             recommendations.extend(
-                ["علم الطفل تقنيات التنفس العميق", "وفر روتين يومي مستقر", "فكر في استشارة مختص إذا استمر القلق"]
+                [
+                    "علم الطفل تقنيات التنفس العميق",
+                    "وفر روتين يومي مستقر",
+                    "فكر في استشارة مختص إذا استمر القلق",
+                ]
             )
 
         return recommendations
@@ -539,7 +603,9 @@ class AdvancedBehavioralAnalyzer:
     def get_parent_alerts(self, device_id: str, unread_only: bool = True) -> List[Dict]:
         """الحصول على تنبيهات الوالدين"""
 
-        alerts = [alert for alert in self.behavioral_alerts if alert.device_id == device_id]
+        alerts = [
+            alert for alert in self.behavioral_alerts if alert.device_id == device_id
+        ]
 
         if unread_only:
             alerts = [alert for alert in alerts if not alert.parent_notified]

@@ -46,7 +46,11 @@ class KafkaEventPublisher:
         self.config = config or KAFKA_CONFIG[0]  # Producer config
         self._producer: Optional[KafkaProducer] = None
         self._executor = ThreadPoolExecutor(max_workers=4)
-        self._metrics = {"events_published": 0, "events_failed": 0, "total_publish_time": 0.0}
+        self._metrics = {
+            "events_published": 0,
+            "events_failed": 0,
+            "total_publish_time": 0.0,
+        }
 
         # Topic routing for domain events
         self._topic_routing = {
@@ -68,7 +72,9 @@ class KafkaEventPublisher:
             try:
                 self._producer = KafkaProducer(
                     **self.config.to_kafka_config(),
-                    value_serializer=lambda v: json.dumps(v, default=str).encode("utf-8"),
+                    value_serializer=lambda v: json.dumps(v, default=str).encode(
+                        "utf-8"
+                    ),
                     key_serializer=lambda v: v.encode("utf-8") if v else None,
                 )
                 logger.info("Kafka producer initialized successfully")
@@ -79,7 +85,10 @@ class KafkaEventPublisher:
         return self._producer
 
     async def publish_event(
-        self, event: BaseDomainEvent, partition_key: Optional[str] = None, headers: Optional[Dict[str, str]] = None
+        self,
+        event: BaseDomainEvent,
+        partition_key: Optional[str] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> bool:
         """
         Publish a single domain event to Kafka
@@ -112,7 +121,12 @@ class KafkaEventPublisher:
             # Publish to Kafka
             loop = asyncio.get_event_loop()
             future = loop.run_in_executor(
-                self._executor, self._send_to_kafka, topic, event_data, partition_key, message_headers
+                self._executor,
+                self._send_to_kafka,
+                topic,
+                event_data,
+                partition_key,
+                message_headers,
             )
 
             result = await future
@@ -178,13 +192,18 @@ class KafkaEventPublisher:
                 results["failures"].append(str(batch_result))
 
         logger.info(
-            f"Batch publish completed: {results['success_count']} successes, " f"{results['failure_count']} failures"
+            f"Batch publish completed: {results['success_count']} successes, "
+            f"{results['failure_count']} failures"
         )
 
         return results
 
     def _send_to_kafka(
-        self, topic: str, event_data: Dict[str, Any], partition_key: Optional[str], headers: Dict[str, bytes]
+        self,
+        topic: str,
+        event_data: Dict[str, Any],
+        partition_key: Optional[str],
+        headers: Dict[str, bytes],
     ) -> bool:
         """Send event to Kafka (synchronous)"""
 
@@ -192,7 +211,10 @@ class KafkaEventPublisher:
 
         try:
             future = producer.send(
-                topic=topic, value=event_data, key=partition_key, headers=list(headers.items()) if headers else None
+                topic=topic,
+                value=event_data,
+                key=partition_key,
+                headers=list(headers.items()) if headers else None,
             )
 
             # Wait for send to complete
@@ -241,7 +263,11 @@ class KafkaEventPublisher:
                 results["failures"].append(
                     {
                         "event_type": events[i].event_type,
-                        "error": str(result) if isinstance(result, Exception) else "Unknown error",
+                        "error": (
+                            str(result)
+                            if isinstance(result, Exception)
+                            else "Unknown error"
+                        ),
                     }
                 )
 
@@ -254,7 +280,9 @@ class KafkaEventPublisher:
         topic = self._topic_routing.get(event_type)
 
         if not topic:
-            logger.warning(f"No topic mapping for event type {event_type}, using default")
+            logger.warning(
+                f"No topic mapping for event type {event_type}, using default"
+            )
             topic = KafkaTopics.AUDIT_LOG.name  # Default topic
 
         return topic
@@ -304,7 +332,9 @@ class KafkaEventPublisher:
         return None
 
     def _create_headers(
-        self, event: BaseDomainEvent, additional_headers: Optional[Dict[str, str]] = None
+        self,
+        event: BaseDomainEvent,
+        additional_headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, bytes]:
         """Create message headers"""
 
@@ -362,13 +392,23 @@ class KafkaEventPublisher:
     def get_metrics(self) -> Dict[str, Any]:
         """Get publishing metrics"""
 
-        total_events = self._metrics["events_published"] + self._metrics["events_failed"]
+        total_events = (
+            self._metrics["events_published"] + self._metrics["events_failed"]
+        )
 
         return {
             "events_published": self._metrics["events_published"],
             "events_failed": self._metrics["events_failed"],
-            "success_rate": (self._metrics["events_published"] / total_events if total_events > 0 else 0.0),
-            "average_publish_time": (self._metrics["total_publish_time"] / total_events if total_events > 0 else 0.0),
+            "success_rate": (
+                self._metrics["events_published"] / total_events
+                if total_events > 0
+                else 0.0
+            ),
+            "average_publish_time": (
+                self._metrics["total_publish_time"] / total_events
+                if total_events > 0
+                else 0.0
+            ),
             "total_events": total_events,
         }
 
@@ -390,7 +430,11 @@ class KafkaEventPublisher:
             # Wait for completion with short timeout
             future.get(timeout=5)
 
-            return {"status": "healthy", "kafka_connection": "ok", "last_check": datetime.utcnow().isoformat()}
+            return {
+                "status": "healthy",
+                "kafka_connection": "ok",
+                "last_check": datetime.utcnow().isoformat(),
+            }
 
         except Exception as e:
             logger.error(f"Health check failed: {e}")

@@ -16,7 +16,12 @@ from ....infrastructure.memory.vector_memory_store import VectorMemoryStore
 class MemoryStorageService:
     """Service for storing and managing memories"""
 
-    def __init__(self, repository: MemoryRepository, vector_store: VectorMemoryStore, redis_client=None):
+    def __init__(
+        self,
+        repository: MemoryRepository,
+        vector_store: VectorMemoryStore,
+        redis_client=None,
+    ):
         self.repository = repository
         self.vector_store = vector_store
         self.redis_client = redis_client
@@ -36,7 +41,11 @@ class MemoryStorageService:
         self.logger.info("Memory storage service initialized")
 
     async def store_interaction(
-        self, session_id: str, user_message: str, ai_response: str, metadata: Dict[str, any]
+        self,
+        session_id: str,
+        user_message: str,
+        ai_response: str,
+        metadata: Dict[str, any],
     ) -> None:
         """Store an interaction in memory"""
         try:
@@ -89,7 +98,13 @@ class MemoryStorageService:
             await self.redis_client.setex(
                 key,
                 3600,  # 1 hour TTL
-                json.dumps({"content": memory.content, "topics": memory.topics, "emotions": memory.emotions}),
+                json.dumps(
+                    {
+                        "content": memory.content,
+                        "topics": memory.topics,
+                        "emotions": memory.emotions,
+                    }
+                ),
             )
 
     async def _update_working_memory(self, child_id: str, memory: Memory) -> None:
@@ -146,12 +161,16 @@ class MemoryStorageService:
         except Exception as e:
             self.logger.error(f"Memory consolidation failed: {e}")
 
-    async def _consolidate_topic_memories(self, topic: str, memories: List[Memory]) -> None:
+    async def _consolidate_topic_memories(
+        self, topic: str, memories: List[Memory]
+    ) -> None:
         """Consolidate memories around a specific topic"""
         try:
             # Create a consolidated memory for this topic
             contents = [m.content for m in memories]
-            combined_content = f"Topic: {topic}\nConsolidated memories: " + "; ".join(contents[:3])
+            combined_content = f"Topic: {topic}\nConsolidated memories: " + "; ".join(
+                contents[:3]
+            )
 
             consolidated_memory = Memory(
                 id=f"consolidated_{topic}_{datetime.now().timestamp()}",
@@ -165,12 +184,16 @@ class MemoryStorageService:
             )
 
             await self._store_long_term(consolidated_memory)
-            self.logger.info(f"Consolidated {len(memories)} memories for topic: {topic}")
+            self.logger.info(
+                f"Consolidated {len(memories)} memories for topic: {topic}"
+            )
 
         except Exception as e:
             self.logger.error(f"Failed to consolidate topic memories: {e}")
 
-    def _calculate_importance(self, user_message: str, ai_response: str, metadata: Dict[str, any]) -> MemoryImportance:
+    def _calculate_importance(
+        self, user_message: str, ai_response: str, metadata: Dict[str, any]
+    ) -> MemoryImportance:
         """Calculate importance of an interaction"""
         # Safety keywords = critical
         safety_keywords = ["help", "scared", "hurt", "emergency", "danger"]
@@ -256,7 +279,9 @@ class MemoryStorageService:
                     await self.repository.delete_memory(memory.id)
                     forgotten_count += 1
 
-            self.logger.info(f"Forgotten {forgotten_count} memories for child {child_id}")
+            self.logger.info(
+                f"Forgotten {forgotten_count} memories for child {child_id}"
+            )
             return forgotten_count
 
         except Exception as e:

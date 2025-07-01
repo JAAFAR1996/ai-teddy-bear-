@@ -195,7 +195,11 @@ class Confidence:
     value: float
 
     def __post_init__(self):
-        if not isinstance(self.value, (int, float)) or self.value < 0.0 or self.value > 1.0:
+        if (
+            not isinstance(self.value, (int, float))
+            or self.value < 0.0
+            or self.value > 1.0
+        ):
             raise ValueError("Confidence must be between 0.0 and 1.0")
 
     @property

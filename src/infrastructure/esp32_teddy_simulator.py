@@ -16,23 +16,16 @@ from typing import Any, Dict, Optional
 
 import structlog
 
-from ...application.services.esp32 import (
-    AudioManagementService,
-    ChildProfileService,
-    DeviceManagementService,
-    GUIManagementService,
-    NetworkCommunicationService,
-)
-from ...domain.esp32.models import (
-    AudioSettings,
-    ChildProfile,
-    DeviceStatus,
-    ESP32Device,
-    NetworkConnection,
-    PowerState,
-    SpeechRecognition,
-)
-from ...infrastructure.esp32 import AudioDriver, GUIComponents, HardwareSimulator, NetworkAdapter
+from ...application.services.esp32 import (AudioManagementService,
+                                           ChildProfileService,
+                                           DeviceManagementService,
+                                           GUIManagementService,
+                                           NetworkCommunicationService)
+from ...domain.esp32.models import (AudioSettings, ChildProfile, DeviceStatus,
+                                    ESP32Device, NetworkConnection, PowerState,
+                                    SpeechRecognition)
+from ...infrastructure.esp32 import (AudioDriver, GUIComponents,
+                                     HardwareSimulator, NetworkAdapter)
 
 logger = structlog.get_logger(__name__)
 
@@ -79,18 +72,30 @@ class ESP32TeddyBearSimulator:
     def _setup_callbacks(self) -> None:
         """Setup callbacks between services."""
         # Device service callbacks
-        self.device_service.register_power_callback("gui_update", self._on_power_state_changed)
+        self.device_service.register_power_callback(
+            "gui_update", self._on_power_state_changed
+        )
 
         # Audio service callbacks
-        self.audio_service.register_recognition_callback("speech_handler", self._on_speech_recognized)
+        self.audio_service.register_recognition_callback(
+            "speech_handler", self._on_speech_recognized
+        )
 
         # Network service callbacks
-        self.network_service.register_connection_callback("gui_update", self._on_network_status_changed)
+        self.network_service.register_connection_callback(
+            "gui_update", self._on_network_status_changed
+        )
 
         # GUI callbacks
-        self.gui_service.register_update_callback("power_button_callback", self._on_power_button_clicked)
-        self.gui_service.register_update_callback("save_profile_callback", self._on_save_profile_clicked)
-        self.gui_service.register_update_callback("closing_callback", self._on_window_closing)
+        self.gui_service.register_update_callback(
+            "power_button_callback", self._on_power_button_clicked
+        )
+        self.gui_service.register_update_callback(
+            "save_profile_callback", self._on_save_profile_clicked
+        )
+        self.gui_service.register_update_callback(
+            "closing_callback", self._on_window_closing
+        )
 
     async def initialize(self) -> bool:
         """Initialize the complete system."""
@@ -118,7 +123,9 @@ class ESP32TeddyBearSimulator:
                 return False
 
             # Update audio settings
-            self.audio_service.update_audio_settings(wake_words=WAKE_WORDS, language="ar-SA")
+            self.audio_service.update_audio_settings(
+                wake_words=WAKE_WORDS, language="ar-SA"
+            )
 
             logger.info(" System initialization complete")
             return True
@@ -272,12 +279,19 @@ class ESP32TeddyBearSimulator:
                 # Register with server
                 device_info = {
                     "device_id": self.device_id,
-                    "child_profile": {"name": name, "age": age, "child_id": profile.child_id},
+                    "child_profile": {
+                        "name": name,
+                        "age": age,
+                        "child_id": profile.child_id,
+                    },
                 }
 
                 # Register asynchronously
                 threading.Thread(
-                    target=lambda: asyncio.run(self.network_service.register_device(device_info)), daemon=True
+                    target=lambda: asyncio.run(
+                        self.network_service.register_device(device_info)
+                    ),
+                    daemon=True,
                 ).start()
 
                 return True
@@ -308,7 +322,10 @@ class ESP32TeddyBearSimulator:
             self.gui_service.update_device_status(status_data)
 
             # Update power button
-            if hasattr(self.gui_service, "gui_components") and "power_button" in self.gui_service.gui_components:
+            if (
+                hasattr(self.gui_service, "gui_components")
+                and "power_button" in self.gui_service.gui_components
+            ):
                 button = self.gui_service.gui_components["power_button"]
                 if power_state == PowerState.POWERED_ON:
                     button.config(text=" POWER OFF", bg="#e74c3c")
@@ -322,11 +339,16 @@ class ESP32TeddyBearSimulator:
         """Handle speech recognition results."""
         try:
             if recognition.wake_word_detected:
-                self.gui_service.log_message(f" Wake word detected: {recognition.detected_wake_word}")
+                self.gui_service.log_message(
+                    f" Wake word detected: {recognition.detected_wake_word}"
+                )
 
                 # Start conversation mode
                 threading.Thread(
-                    target=lambda: asyncio.run(self.handle_conversation(recognition.text)), daemon=True
+                    target=lambda: asyncio.run(
+                        self.handle_conversation(recognition.text)
+                    ),
+                    daemon=True,
                 ).start()
             else:
                 # Log regular speech without wake word
@@ -350,9 +372,13 @@ class ESP32TeddyBearSimulator:
             device_status = self.device_service.get_device_status()
 
             if device_status["is_powered_on"]:
-                threading.Thread(target=lambda: asyncio.run(self.power_off()), daemon=True).start()
+                threading.Thread(
+                    target=lambda: asyncio.run(self.power_off()), daemon=True
+                ).start()
             else:
-                threading.Thread(target=lambda: asyncio.run(self.power_on()), daemon=True).start()
+                threading.Thread(
+                    target=lambda: asyncio.run(self.power_on()), daemon=True
+                ).start()
 
         except Exception as e:
             logger.error(f" Power button callback failed: {e}")
@@ -365,14 +391,22 @@ class ESP32TeddyBearSimulator:
                 if 2 <= age_int <= 12:
                     if self.create_child_profile(name.strip(), age_int):
                         self.gui_service.show_message(
-                            "Profile Saved", f"Profile created for {name}, age {age_int}", "info"
+                            "Profile Saved",
+                            f"Profile created for {name}, age {age_int}",
+                            "info",
                         )
                     else:
-                        self.gui_service.show_message("Error", "Failed to create profile", "error")
+                        self.gui_service.show_message(
+                            "Error", "Failed to create profile", "error"
+                        )
                 else:
-                    self.gui_service.show_message("Invalid Age", "Age must be between 2 and 12", "warning")
+                    self.gui_service.show_message(
+                        "Invalid Age", "Age must be between 2 and 12", "warning"
+                    )
             else:
-                self.gui_service.show_message("Invalid Input", "Please enter valid name and age", "warning")
+                self.gui_service.show_message(
+                    "Invalid Input", "Please enter valid name and age", "warning"
+                )
 
         except Exception as e:
             logger.error(f" Save profile callback failed: {e}")
@@ -381,7 +415,9 @@ class ESP32TeddyBearSimulator:
         """Handle window closing."""
         try:
             self.gui_service.destroy_gui()
-            threading.Thread(target=lambda: asyncio.run(self.shutdown()), daemon=True).start()
+            threading.Thread(
+                target=lambda: asyncio.run(self.shutdown()), daemon=True
+            ).start()
 
         except Exception as e:
             logger.error(f" Window closing callback failed: {e}")

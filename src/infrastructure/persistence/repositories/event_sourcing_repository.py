@@ -78,7 +78,9 @@ class EventSourcingRepositoryImpl(EventSourcingRepository):
     async def _persist_events(self, aggregate: T, events, stream_id: str) -> None:
         """Persist events to event store"""
 
-        await self.event_store.append_events(stream_id=stream_id, events=events, expected_version=aggregate.version)
+        await self.event_store.append_events(
+            stream_id=stream_id, events=events, expected_version=aggregate.version
+        )
 
         # Update version after successful persistence
         for _ in events:
@@ -87,8 +89,12 @@ class EventSourcingRepositoryImpl(EventSourcingRepository):
     async def _handle_snapshotting(self, aggregate: T, stream_id: str) -> None:
         """Handle snapshot creation if needed"""
 
-        if await self.snapshot_store.should_create_snapshot(stream_id, aggregate.version):
-            await self.snapshot_store.save_snapshot(stream_id=stream_id, aggregate=aggregate, version=aggregate.version)
+        if await self.snapshot_store.should_create_snapshot(
+            stream_id, aggregate.version
+        ):
+            await self.snapshot_store.save_snapshot(
+                stream_id=stream_id, aggregate=aggregate, version=aggregate.version
+            )
 
     async def _load_from_snapshot(self, stream_id: str) -> Optional[T]:
         """Load aggregate from snapshot + subsequent events"""
@@ -100,7 +106,9 @@ class EventSourcingRepositoryImpl(EventSourcingRepository):
         aggregate = self._rebuild_from_snapshot(snapshot)
 
         # Apply events after snapshot
-        events = await self.event_store.load_events(stream_id=stream_id, from_version=snapshot.metadata.version + 1)
+        events = await self.event_store.load_events(
+            stream_id=stream_id, from_version=snapshot.metadata.version + 1
+        )
 
         return self._apply_events_to_aggregate(aggregate, events)
 

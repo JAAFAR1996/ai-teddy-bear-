@@ -15,10 +15,14 @@ from typing import Any, Dict, List, Optional
 from openai import APIError, APITimeoutError, AsyncOpenAI, RateLimitError
 from openai.types.chat import ChatCompletion
 
-from src.application.services.ai.analyzers.emotion_analyzer_service import EmotionAnalyzerService
-from src.application.services.ai.fallback_response_service import FallbackResponseService
-from src.application.services.ai.interfaces.ai_service_interface import IAIService
-from src.application.services.ai.models.ai_response_models import AIResponseModel
+from src.application.services.ai.analyzers.emotion_analyzer_service import \
+    EmotionAnalyzerService
+from src.application.services.ai.fallback_response_service import \
+    FallbackResponseService
+from src.application.services.ai.interfaces.ai_service_interface import \
+    IAIService
+from src.application.services.ai.models.ai_response_models import \
+    AIResponseModel
 from src.core.domain.entities.child import Child
 from src.infrastructure.caching.simple_cache_service import CacheService
 from src.infrastructure.config import Settings
@@ -79,7 +83,9 @@ class ModernOpenAIService(IAIService):
             logger.info("✅ OpenAI client initialized successfully")
 
         except Exception as e:
-            logger.error(f"❌ Failed to initialize OpenAI client: {str(e)}", exc_info=True)
+            logger.error(
+                f"❌ Failed to initialize OpenAI client: {str(e)}", exc_info=True
+            )
             raise
 
     @lru_cache(maxsize=1000)
@@ -113,7 +119,9 @@ class ModernOpenAIService(IAIService):
         # Clean old entries if cache is full
         if len(self.memory_cache) >= self.max_cache_size:
             # Remove 10% oldest entries
-            sorted_entries = sorted(self.memory_cache.items(), key=lambda x: x[1][1])  # Sort by timestamp
+            sorted_entries = sorted(
+                self.memory_cache.items(), key=lambda x: x[1][1]
+            )  # Sort by timestamp
             entries_to_remove = int(self.max_cache_size * 0.1)
             for key, _ in sorted_entries[:entries_to_remove]:
                 del self.memory_cache[key]
@@ -126,7 +134,11 @@ class ModernOpenAIService(IAIService):
         logger.debug(f"💾 Stored in memory cache: {cache_key[:8]}...")
 
     async def generate_response(
-        self, message: str, child: Child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None
+        self,
+        message: str,
+        child: Child,
+        session_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> AIResponseModel:
         """🚀 Enhanced response generation with modern 2025 features"""
         start_time = datetime.utcnow()
@@ -176,7 +188,10 @@ class ModernOpenAIService(IAIService):
 
             # 🤖 Call OpenAI API with comprehensive error handling
             response = await self._enhanced_openai_call(
-                message=message, system_prompt=system_prompt, history=history, emotion_context=await emotion_task
+                message=message,
+                system_prompt=system_prompt,
+                history=history,
+                emotion_context=await emotion_task,
             )
 
             # Extract response data
@@ -184,10 +199,14 @@ class ModernOpenAIService(IAIService):
 
             # Wait for parallel tasks
             emotion, category = await asyncio.gather(emotion_task, category_task)
-            learning_points = await self._extract_learning_points(message, response_text)
+            learning_points = await self._extract_learning_points(
+                message, response_text
+            )
 
             # Calculate processing time
-            processing_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+            processing_time = int(
+                (datetime.utcnow() - start_time).total_seconds() * 1000
+            )
             self.total_processing_time += processing_time
 
             # Create enhanced response model
@@ -206,38 +225,59 @@ class ModernOpenAIService(IAIService):
 
             # Update conversation history
             self._update_conversation_history(
-                device_id=device_id, message=message, response=response_text, emotion=emotion
+                device_id=device_id,
+                message=message,
+                response=response_text,
+                emotion=emotion,
             )
 
             # Store in both caches
             self._store_in_memory_cache(cache_key, ai_response)
-            await self.cache.set(f"ai_response_{cache_key}", json.dumps(ai_response.to_dict()), ttl=self.cache_ttl)
+            await self.cache.set(
+                f"ai_response_{cache_key}",
+                json.dumps(ai_response.to_dict()),
+                ttl=self.cache_ttl,
+            )
 
-            logger.info(f"✅ AI response generated in {processing_time}ms (model: {response.model})")
+            logger.info(
+                f"✅ AI response generated in {processing_time}ms (model: {response.model})"
+            )
             return ai_response
 
         except RateLimitError as e:
             self.rate_limit_count += 1
             logger.warning(f"⚠️ OpenAI rate limit hit (#{self.rate_limit_count})")
-            return await self.fallback_service.create_rate_limit_fallback(message, child, session_id)
+            return await self.fallback_service.create_rate_limit_fallback(
+                message, child, session_id
+            )
 
         except APITimeoutError as e:
             self.error_count += 1
             logger.error(f"⏰ OpenAI API timeout: {str(e)}")
-            return await self.fallback_service.create_timeout_fallback(message, child, session_id)
+            return await self.fallback_service.create_timeout_fallback(
+                message, child, session_id
+            )
 
         except APIError as e:
             self.error_count += 1
             logger.error(f"🚫 OpenAI API error: {str(e)}", exc_info=True)
-            return await self.fallback_service.create_api_error_fallback(message, child, session_id, str(e))
+            return await self.fallback_service.create_api_error_fallback(
+                message, child, session_id, str(e)
+            )
 
         except Exception as e:
             self.error_count += 1
             logger.error(f"💥 Unexpected AI service error: {str(e)}", exc_info=True)
-            return await self.fallback_service.create_generic_fallback(message, child, session_id, str(e))
+            return await self.fallback_service.create_generic_fallback(
+                message, child, session_id, str(e)
+            )
 
     async def _enhanced_openai_call(
-        self, message: str, system_prompt: str, history: List[Dict], emotion_context: str
+        self,
+        message: str,
+        system_prompt: str,
+        history: List[Dict],
+        emotion_context: str,
     ) -> ChatCompletion:
         """Enhanced OpenAI API call with emotion context"""
         messages = [{"role": "system", "content": system_prompt}]
@@ -246,7 +286,9 @@ class ModernOpenAIService(IAIService):
         messages.extend(history[-self.max_history_length :])
 
         # Add emotion context to message
-        enhanced_message = f"{message}\n[Context: Child's emotion appears to be {emotion_context}]"
+        enhanced_message = (
+            f"{message}\n[Context: Child's emotion appears to be {emotion_context}]"
+        )
         messages.append({"role": "user", "content": enhanced_message})
 
         try:
@@ -313,12 +355,16 @@ class ModernOpenAIService(IAIService):
             return "music_request"
         elif any(word in message_lower for word in ["?", "؟", "كيف", "لماذا", "متى"]):
             return "question"
-        elif any(word in message_lower for word in ["مرحبا", "hello", "أهلا", "السلام"]):
+        elif any(
+            word in message_lower for word in ["مرحبا", "hello", "أهلا", "السلام"]
+        ):
             return "greeting"
 
         return "general_conversation"
 
-    async def _build_enhanced_system_prompt(self, child: Child, context: Optional[Dict[str, Any]] = None) -> str:
+    async def _build_enhanced_system_prompt(
+        self, child: Child, context: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Build enhanced system prompt with context awareness"""
         base_prompt = f"""أنت دبدوب، دب محبوب وذكي يتحدث مع الأطفال باللغة العربية.
 
@@ -355,7 +401,15 @@ class ModernOpenAIService(IAIService):
 
     def _is_wake_word_only(self, message: str) -> bool:
         """Enhanced wake word detection"""
-        wake_patterns = ["يا دبدوب", "دبدوب", "hey teddy", "hello teddy", "مرحبا دبدوب", "أهلا دبدوب", "سلام دبدوب"]
+        wake_patterns = [
+            "يا دبدوب",
+            "دبدوب",
+            "hey teddy",
+            "hello teddy",
+            "مرحبا دبدوب",
+            "أهلا دبدوب",
+            "سلام دبدوب",
+        ]
         message_lower = message.lower().strip()
 
         # Check if message is primarily a wake word
@@ -364,7 +418,9 @@ class ModernOpenAIService(IAIService):
                 return True
         return False
 
-    async def _create_wake_word_response(self, child: Child, session_id: str) -> AIResponseModel:
+    async def _create_wake_word_response(
+        self, child: Child, session_id: str
+    ) -> AIResponseModel:
         """Enhanced wake word response with variety"""
         import random
 
@@ -406,7 +462,9 @@ class ModernOpenAIService(IAIService):
 
         return points if points else ["general_communication"]
 
-    def _update_conversation_history(self, device_id: str, message: str, response: str, emotion: str):
+    def _update_conversation_history(
+        self, device_id: str, message: str, response: str, emotion: str
+    ):
         """Enhanced conversation history with emotion tracking"""
         if device_id not in self.conversation_history:
             self.conversation_history[device_id] = []
@@ -415,13 +473,26 @@ class ModernOpenAIService(IAIService):
 
         # Add message with emotion context
         history.append(
-            {"role": "user", "content": message, "emotion": emotion, "timestamp": datetime.utcnow().isoformat()}
+            {
+                "role": "user",
+                "content": message,
+                "emotion": emotion,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
         )
-        history.append({"role": "assistant", "content": response, "timestamp": datetime.utcnow().isoformat()})
+        history.append(
+            {
+                "role": "assistant",
+                "content": response,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        )
 
         # Keep only recent history
         if len(history) > self.max_history_length * 2:
-            self.conversation_history[device_id] = history[-self.max_history_length * 2 :]
+            self.conversation_history[device_id] = history[
+                -self.max_history_length * 2 :
+            ]
 
     def _get_conversation_history(self, device_id: str) -> List[Dict]:
         """Get conversation history for device"""
@@ -429,13 +500,19 @@ class ModernOpenAIService(IAIService):
 
     async def get_performance_metrics(self) -> Dict[str, Any]:
         """Get comprehensive performance metrics"""
-        avg_processing_time = self.total_processing_time / self.request_count if self.request_count > 0 else 0
+        avg_processing_time = (
+            self.total_processing_time / self.request_count
+            if self.request_count > 0
+            else 0
+        )
 
         return {
             "total_requests": self.request_count,
             "total_errors": self.error_count,
             "rate_limit_hits": self.rate_limit_count,
-            "error_rate": self.error_count / self.request_count if self.request_count > 0 else 0,
+            "error_rate": (
+                self.error_count / self.request_count if self.request_count > 0 else 0
+            ),
             "average_processing_time_ms": avg_processing_time,
             "cache_size": len(self.memory_cache),
             "active_conversations": len(self.conversation_history),

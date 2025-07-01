@@ -22,7 +22,12 @@ class VoiceInteractionRequest:
 class VoiceInteractionUseCase(UseCase):
     async def execute(self, request: VoiceInteractionRequest) -> Dict[str, Any]:
         await asyncio.sleep(0.1)  # Mock processing
-        return {"success": True, "transcribed_text": "مرحبا", "response_text": "مرحبا! كيف حالك؟", "safety_score": 0.95}
+        return {
+            "success": True,
+            "transcribed_text": "مرحبا",
+            "response_text": "مرحبا! كيف حالك؟",
+            "safety_score": 0.95,
+        }
 
 
 @dataclass
@@ -37,7 +42,11 @@ class ChildRegistrationUseCase(UseCase):
         import uuid
 
         await asyncio.sleep(0.1)  # Mock processing
-        return {"success": True, "child_id": str(uuid.uuid4()), "message": f"تم تسجيل {request.name} بنجاح"}
+        return {
+            "success": True,
+            "child_id": str(uuid.uuid4()),
+            "message": f"تم تسجيل {request.name} بنجاح",
+        }
 
 
 class UseCaseFactory:

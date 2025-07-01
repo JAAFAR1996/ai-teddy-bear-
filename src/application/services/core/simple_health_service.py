@@ -28,12 +28,24 @@ class SimpleHealthService:
                 "system": {
                     "cpu_percent": psutil.cpu_percent(interval=1),
                     "memory_percent": psutil.virtual_memory().percent,
-                    "disk_percent": psutil.disk_usage("/").percent if hasattr(psutil.disk_usage("/"), "percent") else 0,
+                    "disk_percent": (
+                        psutil.disk_usage("/").percent
+                        if hasattr(psutil.disk_usage("/"), "percent")
+                        else 0
+                    ),
                 },
-                "services": {"api": "running", "database": "connected", "ai": "available"},
+                "services": {
+                    "api": "running",
+                    "database": "connected",
+                    "ai": "available",
+                },
             }
         except Exception as e:
-            return {"status": "unhealthy", "timestamp": datetime.now().isoformat(), "error": str(e)}
+            return {
+                "status": "unhealthy",
+                "timestamp": datetime.now().isoformat(),
+                "error": str(e),
+            }
 
     async def async_health_check(self) -> Dict[str, Any]:
         """فحص صحة غير متزامن"""

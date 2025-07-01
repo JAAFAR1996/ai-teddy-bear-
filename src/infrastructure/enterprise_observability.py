@@ -35,12 +35,14 @@ from typing import Any, Callable, Dict, Optional, Union
 # Enterprise imports with graceful fallbacks
 try:
     from opentelemetry import baggage, context, trace
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import \
+        OTLPSpanExporter
     from opentelemetry.instrumentation.asgi import ASGIInstrumentor
     from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor, SimpleSpanProcessor
+    from opentelemetry.sdk.trace.export import (BatchSpanProcessor,
+                                                SimpleSpanProcessor)
     from opentelemetry.semantic_conventions.resource import ResourceAttributes
 
     OTEL_AVAILABLE = True
@@ -52,7 +54,8 @@ except ImportError as e:
 
 # Prometheus integration
 try:
-    from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram, generate_latest
+    from prometheus_client import (CollectorRegistry, Counter, Gauge,
+                                   Histogram, generate_latest)
 
     PROMETHEUS_AVAILABLE = True
 except ImportError:
@@ -63,7 +66,9 @@ except ImportError:
 class EnterpriseMetrics:
     """Enterprise-grade metrics collection and monitoring."""
 
-    registry: Optional[Any] = field(default_factory=lambda: CollectorRegistry() if PROMETHEUS_AVAILABLE else None)
+    registry: Optional[Any] = field(
+        default_factory=lambda: CollectorRegistry() if PROMETHEUS_AVAILABLE else None
+    )
     request_count: Optional[Any] = None
     request_duration: Optional[Any] = None
     active_connections: Optional[Any] = None
@@ -90,15 +95,22 @@ class EnterpriseMetrics:
             )
 
             self.active_connections = Gauge(
-                "teddy_active_connections", "Number of active WebSocket connections", registry=self.registry
+                "teddy_active_connections",
+                "Number of active WebSocket connections",
+                registry=self.registry,
             )
 
             self.error_count = Counter(
-                "teddy_errors_total", "Total number of errors", ["error_type", "component"], registry=self.registry
+                "teddy_errors_total",
+                "Total number of errors",
+                ["error_type", "component"],
+                registry=self.registry,
             )
 
             self.system_health = Gauge(
-                "teddy_system_health_score", "System health score (0-100)", registry=self.registry
+                "teddy_system_health_score",
+                "System health score (0-100)",
+                registry=self.registry,
             )
 
             self.ai_processing_time = Histogram(
@@ -118,12 +130,16 @@ class EnterpriseMetrics:
     def increment_requests(int) -> None:
         """Increment request counter."""
         if self.request_count:
-            self.request_count.labels(method=method, endpoint=endpoint, status_code=status_code).inc()
+            self.request_count.labels(
+                method=method, endpoint=endpoint, status_code=status_code
+            ).inc()
 
     def record_request_duration(float) -> None:
         """Record request duration."""
         if self.request_duration:
-            self.request_duration.labels(method=method, endpoint=endpoint).observe(duration)
+            self.request_duration.labels(method=method, endpoint=endpoint).observe(
+                duration
+            )
 
     def set_active_connections(int) -> None:
         """Set active connections count."""
@@ -143,7 +159,9 @@ class EnterpriseMetrics:
     def record_ai_processing(float) -> None:
         """Record AI processing time."""
         if self.ai_processing_time:
-            self.ai_processing_time.labels(model_type=model_type, operation=operation).observe(duration)
+            self.ai_processing_time.labels(
+                model_type=model_type, operation=operation
+            ).observe(duration)
 
     def record_audio_latency(float) -> None:
         """Record audio processing latency."""
@@ -179,7 +197,9 @@ class EnterpriseTracer:
                     ResourceAttributes.SERVICE_NAME: self.service_name,
                     ResourceAttributes.SERVICE_VERSION: "2.0.0",
                     ResourceAttributes.SERVICE_NAMESPACE: "ai-teddy-enterprise",
-                    ResourceAttributes.DEPLOYMENT_ENVIRONMENT: os.getenv("ENVIRONMENT", "development"),
+                    ResourceAttributes.DEPLOYMENT_ENVIRONMENT: os.getenv(
+                        "ENVIRONMENT", "development"
+                    ),
                     "custom.enterprise.tier": "fortune500",
                     "custom.security.level": "high",
                     "custom.compliance.standards": "SOC2,GDPR,CCPA",
@@ -195,14 +215,18 @@ class EnterpriseTracer:
                 # Production OTLP exporter
                 otlp_exporter = OTLPSpanExporter(
                     endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT"),
-                    headers={"Authorization": f"Bearer {os.getenv('OTEL_EXPORTER_OTLP_TOKEN', '')}"},
+                    headers={
+                        "Authorization": f"Bearer {os.getenv('OTEL_EXPORTER_OTLP_TOKEN', '')}"
+                    },
                 )
                 span_processor = BatchSpanProcessor(otlp_exporter)
                 self.provider.add_span_processor(span_processor)
 
             # Get tracer instance
             self.tracer = trace.get_tracer(
-                __name__, version="2.0.0", schema_url="https://opentelemetry.io/schemas/1.21.0"
+                __name__,
+                version="2.0.0",
+                schema_url="https://opentelemetry.io/schemas/1.21.0",
             )
 
             logging.info("Enterprise OpenTelemetry tracing initialized successfully")
@@ -219,8 +243,13 @@ class EnterpriseTracer:
                 try:
                     # Add enterprise metadata
                     span.set_attribute("enterprise.component", self.service_name)
-                    span.set_attribute("enterprise.timestamp", datetime.now(timezone.utc).isoformat())
-                    span.set_attribute("enterprise.environment", os.getenv("ENVIRONMENT", "development"))
+                    span.set_attribute(
+                        "enterprise.timestamp", datetime.now(timezone.utc).isoformat()
+                    )
+                    span.set_attribute(
+                        "enterprise.environment",
+                        os.getenv("ENVIRONMENT", "development"),
+                    )
                     yield span
                 except Exception as e:
                     span.record_exception(e)
@@ -248,7 +277,9 @@ class EnterpriseTracer:
         if OTEL_AVAILABLE:
             try:
                 FastAPIInstrumentor.instrument_app(
-                    app, tracer_provider=self.provider, excluded_urls="/health,/metrics,/favicon.ico"
+                    app,
+                    tracer_provider=self.provider,
+                    excluded_urls="/health,/metrics,/favicon.ico",
                 )
                 logging.info("FastAPI instrumentation enabled")
             except Exception as e:

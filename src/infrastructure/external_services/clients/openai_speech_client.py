@@ -20,7 +20,10 @@ class OpenAISpeechClient:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     async def transcribe_audio(
-        self, audio_data: np.ndarray, language: Optional[str] = None, model: str = "whisper-1"
+        self,
+        audio_data: np.ndarray,
+        language: Optional[str] = None,
+        model: str = "whisper-1",
     ) -> Optional[Dict[str, Any]]:
         """Transcribe audio using OpenAI Whisper API"""
         try:
@@ -52,12 +55,21 @@ class OpenAISpeechClient:
             return None
 
     async def generate_speech(
-        self, text: str, voice: str = "alloy", model: str = "tts-1", response_format: str = "mp3", speed: float = 1.0
+        self,
+        text: str,
+        voice: str = "alloy",
+        model: str = "tts-1",
+        response_format: str = "mp3",
+        speed: float = 1.0,
     ) -> Optional[bytes]:
         """Generate speech using OpenAI TTS"""
         try:
             response = await self.client.audio.speech.create(
-                model=model, voice=voice, input=text, response_format=response_format, speed=speed
+                model=model,
+                voice=voice,
+                input=text,
+                response_format=response_format,
+                speed=speed,
             )
 
             return response.content

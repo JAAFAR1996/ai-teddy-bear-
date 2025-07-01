@@ -12,7 +12,9 @@ async def test_singleton_thread_safety():
     assert container1 is container2, "AppContainer is not a singleton!"
 
     # Test async singleton
-    results = await asyncio.gather(*(asyncio.to_thread(lambda: AppContainer()) for _ in range(10)))
+    results = await asyncio.gather(
+        *(asyncio.to_thread(lambda: AppContainer()) for _ in range(10))
+    )
     assert all(r is container1 for r in results)
 
 
@@ -21,7 +23,12 @@ async def test_cleanup_on_shutdown(monkeypatch):
     container = AppContainer()
     container.config.from_dict(
         {
-            "db": {"url": "sqlite+aiosqlite:///:memory:", "echo": False, "pool_size": 1, "max_overflow": 1},
+            "db": {
+                "url": "sqlite+aiosqlite:///:memory:",
+                "echo": False,
+                "pool_size": 1,
+                "max_overflow": 1,
+            },
             "redis": {"url": "redis://localhost:6379/0"},
         }
     )
@@ -47,12 +54,19 @@ async def test_cleanup_on_init_failure(monkeypatch):
     container = AppContainer()
     container.config.from_dict(
         {
-            "db": {"url": "invalid://", "echo": False, "pool_size": 1, "max_overflow": 1},
+            "db": {
+                "url": "invalid://",
+                "echo": False,
+                "pool_size": 1,
+                "max_overflow": 1,
+            },
             "redis": {"url": "redis://localhost:6379/0"},
         }
     )
     # Patch db_engine to raise
-    monkeypatch.setattr(container, "db_engine", lambda: (_ for _ in ()).throw(Exception("DB init fail")))
+    monkeypatch.setattr(
+        container, "db_engine", lambda: (_ for _ in ()).throw(Exception("DB init fail"))
+    )
     with pytest.raises(Exception):
         await container.init_resources()
     # Should not leave resources open
@@ -64,7 +78,12 @@ async def test_dependency_injection_and_no_circular():
     container = AppContainer()
     container.config.from_dict(
         {
-            "db": {"url": "sqlite+aiosqlite:///:memory:", "echo": False, "pool_size": 1, "max_overflow": 1},
+            "db": {
+                "url": "sqlite+aiosqlite:///:memory:",
+                "echo": False,
+                "pool_size": 1,
+                "max_overflow": 1,
+            },
             "redis": {"url": "redis://localhost:6379/0"},
         }
     )

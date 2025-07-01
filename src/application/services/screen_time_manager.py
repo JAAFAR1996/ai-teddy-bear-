@@ -56,7 +56,15 @@ class ScreenTimeSettings:
         if self.warning_intervals is None:
             self.warning_intervals = [10, 5, 2]
         if self.allowed_days is None:
-            self.allowed_days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+            self.allowed_days = [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+            ]
 
 
 class ScreenTimeManager:
@@ -99,7 +107,10 @@ class ScreenTimeManager:
         """حفظ البيانات في الملفات"""
         try:
             settings_file = self.data_dir / "settings.json"
-            settings_data = {child_id: asdict(settings) for child_id, settings in self.settings.items()}
+            settings_data = {
+                child_id: asdict(settings)
+                for child_id, settings in self.settings.items()
+            }
             with open(settings_file, "w", encoding="utf-8") as f:
                 json.dump(settings_data, f, ensure_ascii=False, indent=2)
 
@@ -117,7 +128,9 @@ class ScreenTimeManager:
             self._save_data()
         return self.settings[child_id]
 
-    async def start_session(self, child_id: str, activity_type: str = "general") -> bool:
+    async def start_session(
+        self, child_id: str, activity_type: str = "general"
+    ) -> bool:
         """بدء جلسة استخدام جديدة"""
         if child_id in self.active_sessions:
             logger.warning(f"جلسة نشطة موجودة للطفل: {child_id}")
@@ -136,7 +149,9 @@ class ScreenTimeManager:
             logger.info(f"📅 انتهى وقت اللعب لليوم! سنلعب مرة أخرى غداً 🌙")
             return False
 
-        session = UsageSession(child_id=child_id, start_time=datetime.now(), activity_type=activity_type)
+        session = UsageSession(
+            child_id=child_id, start_time=datetime.now(), activity_type=activity_type
+        )
 
         self.active_sessions[child_id] = session
 
@@ -159,7 +174,10 @@ class ScreenTimeManager:
             if settings.sleep_time_start <= current_time <= settings.sleep_time_end:
                 return False
         else:
-            if current_time >= settings.sleep_time_start or current_time <= settings.sleep_time_end:
+            if (
+                current_time >= settings.sleep_time_start
+                or current_time <= settings.sleep_time_end
+            ):
                 return False
 
         return True
@@ -168,7 +186,9 @@ class ScreenTimeManager:
         """الحصول على الاستخدام اليومي بالدقائق"""
         return self.daily_usage.get(child_id, {}).get(date, 0)
 
-    async def _setup_session_warnings(self, child_id: str, settings: ScreenTimeSettings):
+    async def _setup_session_warnings(
+        self, child_id: str, settings: ScreenTimeSettings
+    ):
         """إعداد تنبيهات الجلسة"""
         if child_id not in self.warning_tasks:
             self.warning_tasks[child_id] = []
@@ -179,21 +199,31 @@ class ScreenTimeManager:
             warning_seconds = session_limit_seconds - (warning_minutes * 60)
 
             if warning_seconds > 0:
-                task = asyncio.create_task(self._send_warning_after_delay(child_id, warning_seconds, warning_minutes))
+                task = asyncio.create_task(
+                    self._send_warning_after_delay(
+                        child_id, warning_seconds, warning_minutes
+                    )
+                )
                 self.warning_tasks[child_id].append(task)
 
-    async def _send_warning_after_delay(self, child_id: str, delay_seconds: int, minutes_remaining: int):
+    async def _send_warning_after_delay(
+        self, child_id: str, delay_seconds: int, minutes_remaining: int
+    ):
         """إرسال تنبيه بعد تأخير محدد"""
         await asyncio.sleep(delay_seconds)
 
         if child_id in self.active_sessions:
-            logger.info(f"🕐 {child_id}: باقي {minutes_remaining} دقائق على انتهاء وقت اللعب!")
+            logger.info(
+                f"🕐 {child_id}: باقي {minutes_remaining} دقائق على انتهاء وقت اللعب!"
+            )
 
     async def _setup_break_reminders(self, child_id: str, settings: ScreenTimeSettings):
         """إعداد تذكيرات الراحة"""
         break_seconds = settings.break_reminder_minutes * 60
 
-        task = asyncio.create_task(self._send_break_reminder_loop(child_id, break_seconds))
+        task = asyncio.create_task(
+            self._send_break_reminder_loop(child_id, break_seconds)
+        )
         self.break_reminder_tasks[child_id] = task
 
     async def _send_break_reminder_loop(self, child_id: str, interval_seconds: int):
@@ -202,7 +232,9 @@ class ScreenTimeManager:
             await asyncio.sleep(interval_seconds)
 
             if child_id in self.active_sessions:
-                logger.info(f"🤸‍♂️ {child_id}: هل تريد أخذ استراحة قصيرة؟ تحرك قليلاً أو اشرب الماء!")
+                logger.info(
+                    f"🤸‍♂️ {child_id}: هل تريد أخذ استراحة قصيرة؟ تحرك قليلاً أو اشرب الماء!"
+                )
 
     def start_monitoring(self) -> Any:
         """بدء مراقبة الجلسات النشطة"""

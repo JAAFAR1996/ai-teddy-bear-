@@ -14,15 +14,14 @@ from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 import structlog
 
-from src.domain.exceptions.base import (
-    AITeddyBearException,
-    CircuitBreakerOpenException,
-    ErrorCategory,
-    ErrorContext,
-    ErrorSeverity,
-)
+from src.domain.exceptions.base import (AITeddyBearException,
+                                        CircuitBreakerOpenException,
+                                        ErrorCategory, ErrorContext,
+                                        ErrorSeverity)
 from src.infrastructure.monitoring.alert_manager import AlertManager
-from src.infrastructure.monitoring.metrics import MetricsCollector, circuit_breaker_state, error_counter
+from src.infrastructure.monitoring.metrics import (MetricsCollector,
+                                                   circuit_breaker_state,
+                                                   error_counter)
 
 logger = structlog.get_logger(__name__)
 
@@ -86,7 +85,9 @@ class CircuitBreaker:
                     self.state = CircuitState.HALF_OPEN
                     self.stats.last_state_change = datetime.utcnow()
                     self._half_open_counter = 0
-                    logger.info("Circuit breaker moving to HALF_OPEN", service=self.service_name)
+                    logger.info(
+                        "Circuit breaker moving to HALF_OPEN", service=self.service_name
+                    )
                 else:
                     raise CircuitBreakerOpenException(
                         service_name=self.service_name,
@@ -112,7 +113,9 @@ class CircuitBreaker:
             if asyncio.iscoroutinefunction(func):
                 result = await func(*args, **kwargs)
             else:
-                result = await asyncio.get_event_loop().run_in_executor(None, func, *args, **kwargs)
+                result = await asyncio.get_event_loop().run_in_executor(
+                    None, func, *args, **kwargs
+                )
 
             await self._on_success()
             return result
@@ -251,12 +254,20 @@ class CircuitBreaker:
 
     def _is_expected_exception(self, exception: Exception) -> bool:
         """التحقق من أن الاستثناء متوقع"""
-        return any(isinstance(exception, exc_type) for exc_type in self.expected_exceptions)
+        return any(
+            isinstance(exception, exc_type) for exc_type in self.expected_exceptions
+        )
 
     def _update_metrics(self) -> None:
         """تحديث metrics"""
-        state_map = {CircuitState.CLOSED: 0, CircuitState.OPEN: 1, CircuitState.HALF_OPEN: 2}
-        circuit_breaker_state.labels(service=self.service_name).set(state_map[self.state])
+        state_map = {
+            CircuitState.CLOSED: 0,
+            CircuitState.OPEN: 1,
+            CircuitState.HALF_OPEN: 2,
+        }
+        circuit_breaker_state.labels(service=self.service_name).set(
+            state_map[self.state]
+        )
 
     def get_status(self) -> Dict[str, Any]:
         """الحصول على حالة Circuit Breaker"""
@@ -267,8 +278,16 @@ class CircuitBreaker:
                 "failure_count": self.stats.failure_count,
                 "success_count": self.stats.success_count,
                 "consecutive_successes": self.stats.consecutive_successes,
-                "last_failure": self.stats.last_failure_time.isoformat() if self.stats.last_failure_time else None,
-                "last_success": self.stats.last_success_time.isoformat() if self.stats.last_success_time else None,
+                "last_failure": (
+                    self.stats.last_failure_time.isoformat()
+                    if self.stats.last_failure_time
+                    else None
+                ),
+                "last_success": (
+                    self.stats.last_success_time.isoformat()
+                    if self.stats.last_success_time
+                    else None
+                ),
                 "last_state_change": self.stats.last_state_change.isoformat(),
                 "error_percentages": self.stats.error_percentages,
             },
@@ -303,16 +322,23 @@ class GlobalExceptionHandler:
         self._error_history = defaultdict(list)
         self._max_history_size = 1000
 
-    def register_error_handler(self, exception_type: Type[Exception], handler: Callable[[Exception], Any]) -> None:
+    def register_error_handler(
+        self, exception_type: Type[Exception], handler: Callable[[Exception], Any]
+    ) -> None:
         """تسجيل معالج خاص لنوع معين من الأخطاء"""
         self.error_handlers[exception_type] = handler
 
-    def register_recovery_strategy(self, error_code: str, strategy: Callable[[Exception, ErrorContext], Any]) -> None:
+    def register_recovery_strategy(
+        self, error_code: str, strategy: Callable[[Exception, ErrorContext], Any]
+    ) -> None:
         """تسجيل استراتيجية استرداد لكود خطأ معين"""
         self.recovery_strategies[error_code] = strategy
 
     async def handle_exception(
-        self, exception: Exception, context: Optional[ErrorContext] = None, apply_recovery: bool = True
+        self,
+        exception: Exception,
+        context: Optional[ErrorContext] = None,
+        apply_recovery: bool = True,
     ) -> Dict[str, Any]:
         """معالجة exception مع logging و monitoring و alerting"""
 
@@ -368,9 +394,15 @@ class GlobalExceptionHandler:
         recovery_result = None
         if apply_recovery and recoverable and error_code in self.recovery_strategies:
             try:
-                recovery_result = await self._apply_recovery_strategy(exception, context, error_code)
+                recovery_result = await self._apply_recovery_strategy(
+                    exception, context, error_code
+                )
             except Exception as recovery_error:
-                logger.error("Recovery strategy failed", error_code=error_code, recovery_error=str(recovery_error))
+                logger.error(
+                    "Recovery strategy failed",
+                    error_code=error_code,
+                    recovery_error=str(recovery_error),
+                )
 
         # Build response
         response = {
@@ -379,13 +411,17 @@ class GlobalExceptionHandler:
             "recovery_attempted": recovery_result is not None,
             "recovery_result": recovery_result,
             "user_message": self._get_user_friendly_message(
-                exception if isinstance(exception, AITeddyBearException) else None, category, severity
+                exception if isinstance(exception, AITeddyBearException) else None,
+                category,
+                severity,
             ),
         }
 
         return response
 
-    def handle_exception_sync(self, exception: Exception, context: Optional[ErrorContext] = None) -> Dict[str, Any]:
+    def handle_exception_sync(
+        self, exception: Exception, context: Optional[ErrorContext] = None
+    ) -> Dict[str, Any]:
         """نسخة synchronous من handle_exception"""
         # Similar logic but without async/await
         if isinstance(exception, AITeddyBearException):
@@ -421,12 +457,16 @@ class GlobalExceptionHandler:
         }
         return mapping.get(severity, logger.error)
 
-    def _update_metrics(self, error_code: str, category: ErrorCategory, severity: ErrorSeverity) -> None:
+    def _update_metrics(
+        self, error_code: str, category: ErrorCategory, severity: ErrorSeverity
+    ) -> None:
         """تحديث metrics للـ monitoring"""
         self.error_metrics[f"error.{category.value}.{error_code}"] += 1
 
         # Prometheus metrics
-        error_counter.labels(error_code=error_code, category=category.value, severity=severity.value).inc()
+        error_counter.labels(
+            error_code=error_code, category=category.value, severity=severity.value
+        ).inc()
 
     def _check_circuit_breaker(self, error_code: str, category: ErrorCategory) -> None:
         """التحقق من circuit breaker"""
@@ -438,7 +478,9 @@ class GlobalExceptionHandler:
                     service_name=breaker_key, failure_threshold=5, timeout_seconds=60
                 )
 
-    async def _apply_custom_handler(self, exception: Exception) -> Optional[Dict[str, Any]]:
+    async def _apply_custom_handler(
+        self, exception: Exception
+    ) -> Optional[Dict[str, Any]]:
         """تطبيق معالج مخصص إن وجد"""
         for exc_type, handler in self.error_handlers.items():
             if isinstance(exception, exc_type):
@@ -448,10 +490,14 @@ class GlobalExceptionHandler:
                     else:
                         return handler(exception)
                 except Exception as e:
-                    logger.error("Custom handler failed", handler=handler.__name__, error=str(e))
+                    logger.error(
+                        "Custom handler failed", handler=handler.__name__, error=str(e)
+                    )
         return None
 
-    async def _apply_recovery_strategy(self, exception: Exception, context: ErrorContext, error_code: str) -> Any:
+    async def _apply_recovery_strategy(
+        self, exception: Exception, context: ErrorContext, error_code: str
+    ) -> Any:
         """تطبيق استراتيجية الاسترداد"""
         strategy = self.recovery_strategies.get(error_code)
         if strategy:
@@ -471,7 +517,10 @@ class GlobalExceptionHandler:
             self._error_history[error_code] = history[-self._max_history_size :]
 
     def _get_user_friendly_message(
-        self, exception: Optional[AITeddyBearException], category: ErrorCategory, severity: ErrorSeverity
+        self,
+        exception: Optional[AITeddyBearException],
+        category: ErrorCategory,
+        severity: ErrorSeverity,
     ) -> str:
         """الحصول على رسالة صديقة للمستخدم"""
         if exception and hasattr(exception, "get_user_friendly_message"):
@@ -505,7 +554,11 @@ class GlobalExceptionHandler:
 
         # Recent errors
         for error_code, history in self._error_history.items():
-            recent = [err for err in history if datetime.fromisoformat(err["timestamp"]) > cutoff_time]
+            recent = [
+                err
+                for err in history
+                if datetime.fromisoformat(err["timestamp"]) > cutoff_time
+            ]
             if recent:
                 stats["recent_errors"].extend(recent[-5:])  # Last 5 errors
 
@@ -520,7 +573,11 @@ class GlobalExceptionHandler:
         return {
             "status": "healthy",
             "total_circuit_breakers": len(self.circuit_breakers),
-            "open_circuit_breakers": sum(1 for cb in self.circuit_breakers.values() if cb.state == CircuitState.OPEN),
+            "open_circuit_breakers": sum(
+                1
+                for cb in self.circuit_breakers.values()
+                if cb.state == CircuitState.OPEN
+            ),
             "total_errors_handled": sum(self.error_metrics.values()),
             "alert_manager_status": "active",
         }
@@ -536,11 +593,15 @@ def get_global_exception_handler() -> GlobalExceptionHandler:
 
 
 # Convenience functions
-async def handle_exception(exception: Exception, context: Optional[ErrorContext] = None) -> Dict[str, Any]:
+async def handle_exception(
+    exception: Exception, context: Optional[ErrorContext] = None
+) -> Dict[str, Any]:
     """دالة مساعدة لمعالجة الأخطاء"""
     return await _global_handler.handle_exception(exception, context)
 
 
-def handle_exception_sync(exception: Exception, context: Optional[ErrorContext] = None) -> Dict[str, Any]:
+def handle_exception_sync(
+    exception: Exception, context: Optional[ErrorContext] = None
+) -> Dict[str, Any]:
     """دالة مساعدة synchronous لمعالجة الأخطاء"""
     return _global_handler.handle_exception_sync(exception, context)

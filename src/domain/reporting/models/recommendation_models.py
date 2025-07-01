@@ -114,12 +114,18 @@ class RecommendationBundle:
     def get_total_recommendations(self) -> int:
         """Get total number of recommendations"""
         return (
-            len(self.activity_recommendations) + len(self.intervention_recommendations) + len(self.llm_recommendations)
+            len(self.activity_recommendations)
+            + len(self.intervention_recommendations)
+            + len(self.llm_recommendations)
         )
 
     def get_urgent_interventions(self) -> List[InterventionRecommendation]:
         """Get urgent intervention recommendations"""
-        return [intervention for intervention in self.intervention_recommendations if intervention.is_urgent()]
+        return [
+            intervention
+            for intervention in self.intervention_recommendations
+            if intervention.is_urgent()
+        ]
 
     def get_high_priority_llm_recommendations(self) -> List[LLMRecommendation]:
         """Get high priority LLM recommendations"""

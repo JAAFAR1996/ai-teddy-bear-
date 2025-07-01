@@ -41,7 +41,11 @@ class MicrophoneSettings:
     @property
     def is_ultra_sensitive(self) -> bool:
         """Check if microphone is in ultra-sensitive mode."""
-        return self.energy_threshold <= 200 and not self.dynamic_energy_threshold and self.pause_threshold <= 0.3
+        return (
+            self.energy_threshold <= 200
+            and not self.dynamic_energy_threshold
+            and self.pause_threshold <= 0.3
+        )
 
 
 @dataclass
@@ -64,7 +68,11 @@ class AudioSettings:
     @property
     def sample_rate(self) -> int:
         """Get sample rate based on quality."""
-        rates = {AudioQuality.LOW: 8000, AudioQuality.MEDIUM: 16000, AudioQuality.HIGH: 22050}
+        rates = {
+            AudioQuality.LOW: 8000,
+            AudioQuality.MEDIUM: 16000,
+            AudioQuality.HIGH: 22050,
+        }
         return rates[self.quality]
 
     @property
@@ -94,7 +102,10 @@ class AudioVisualization:
         """Update visualization bar heights."""
         if len(heights) == self.bar_count:
             self.bar_heights = heights
-            self.colors = ["#e74c3c" if h > 50 else "#f39c12" if h > 30 else "#3498db" for h in heights]
+            self.colors = [
+                "#e74c3c" if h > 50 else "#f39c12" if h > 30 else "#3498db"
+                for h in heights
+            ]
 
     def start_animation(self) -> None:
         """Start visualization animation."""

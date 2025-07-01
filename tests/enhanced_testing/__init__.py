@@ -4,14 +4,9 @@ Comprehensive testing suite with performance, security, and integration testing
 """
 
 from .base_test import AsyncBaseTest, BaseTest
-from .fixtures import (
-    mock_audio_data,
-    mock_database_session,
-    sample_ai_response,
-    sample_child_profile,
-    sample_device_info,
-    sample_voice_message,
-)
+from .fixtures import (mock_audio_data, mock_database_session,
+                       sample_ai_response, sample_child_profile,
+                       sample_device_info, sample_voice_message)
 from .integration_tests import IntegrationTestSuite
 from .load_tests import LoadTestSuite
 from .mocks import MockAIService, MockAudioService, MockServices

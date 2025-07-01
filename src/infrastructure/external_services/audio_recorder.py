@@ -40,7 +40,9 @@ class AudioRecorder:
                 from scipy import signal
 
                 resample_ratio = 16000 / sample_rate
-                audio_data = signal.resample(audio_data, int(len(audio_data) * resample_ratio))
+                audio_data = signal.resample(
+                    audio_data, int(len(audio_data) * resample_ratio)
+                )
 
             # Normalize audio
             if np.any(audio_data):
@@ -80,7 +82,9 @@ class AudioRecorder:
         """
         return audio_data is not None and len(audio_data) > 0 and np.any(audio_data)
 
-    def get_audio_duration(self, audio_data: np.ndarray, sample_rate: int = 16000) -> float:
+    def get_audio_duration(
+        self, audio_data: np.ndarray, sample_rate: int = 16000
+    ) -> float:
         """
         Get duration of audio data.
 

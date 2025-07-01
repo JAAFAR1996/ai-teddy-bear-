@@ -5,21 +5,14 @@ from abc import abstractmethod
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
-from src.core.domain.entities.child import (
-    Child,
-    ChildPreferences,
-    DevelopmentMilestone,
-    InteractionStyle,
-    Language,
-    LearningLevel,
-)
-from src.infrastructure.persistence.base import (
-    BaseRepository,
-    BulkOperationResult,
-    QueryOptions,
-    SearchCriteria,
-    SortOrder,
-)
+from src.core.domain.entities.child import (Child, ChildPreferences,
+                                            DevelopmentMilestone,
+                                            InteractionStyle, Language,
+                                            LearningLevel)
+from src.infrastructure.persistence.base import (BaseRepository,
+                                                 BulkOperationResult,
+                                                 QueryOptions, SearchCriteria,
+                                                 SortOrder)
 
 
 class ChildRepository(BaseRepository[Child, str]):
@@ -60,7 +53,9 @@ class ChildRepository(BaseRepository[Child, str]):
         pass
 
     @abstractmethod
-    async def find_by_age_range(self, min_age: int, max_age: int, include_boundaries: bool = True) -> List[Child]:
+    async def find_by_age_range(
+        self, min_age: int, max_age: int, include_boundaries: bool = True
+    ) -> List[Child]:
         """
         Find children within a specific age range
 
@@ -104,7 +99,10 @@ class ChildRepository(BaseRepository[Child, str]):
 
     @abstractmethod
     async def find_by_interests(
-        self, interests: List[str], match_all: bool = False, min_match_count: Optional[int] = None
+        self,
+        interests: List[str],
+        match_all: bool = False,
+        min_match_count: Optional[int] = None,
     ) -> List[Child]:
         """
         Find children with matching interests
@@ -143,7 +141,9 @@ class ChildRepository(BaseRepository[Child, str]):
             if child.id == child_id:
                 continue
 
-            similarity = self._calculate_interest_similarity(reference_child.interests, child.interests)
+            similarity = self._calculate_interest_similarity(
+                reference_child.interests, child.interests
+            )
 
             if similarity >= min_similarity:
                 similar_children.append((child, similarity))
@@ -199,14 +199,24 @@ class ChildRepository(BaseRepository[Child, str]):
         criteria = []
 
         if min_time is not None:
-            criteria.append(SearchCriteria(field="max_daily_interaction_time", operator="gte", value=min_time))
+            criteria.append(
+                SearchCriteria(
+                    field="max_daily_interaction_time", operator="gte", value=min_time
+                )
+            )
 
         if max_time is not None:
-            criteria.append(SearchCriteria(field="max_daily_interaction_time", operator="lte", value=max_time))
+            criteria.append(
+                SearchCriteria(
+                    field="max_daily_interaction_time", operator="lte", value=max_time
+                )
+            )
 
         return await self.search(criteria) if criteria else []
 
-    async def get_children_exceeding_time_limit(self, current_usage: Dict[str, int]) -> List[Tuple[Child, int]]:
+    async def get_children_exceeding_time_limit(
+        self, current_usage: Dict[str, int]
+    ) -> List[Tuple[Child, int]]:
         """
         Get children who have exceeded their time limits
 
@@ -228,7 +238,9 @@ class ChildRepository(BaseRepository[Child, str]):
 
     # Learning and Development Queries
 
-    async def get_children_by_milestone(self, milestone_name: str, achieved: bool = True) -> List[Child]:
+    async def get_children_by_milestone(
+        self, milestone_name: str, achieved: bool = True
+    ) -> List[Child]:
         """
         Get children who have/haven't achieved a milestone
 
@@ -271,7 +283,9 @@ class ChildRepository(BaseRepository[Child, str]):
 
     # Update Methods
 
-    async def update_child_preferences(self, child_id: str, preferences: ChildPreferences) -> Optional[Child]:
+    async def update_child_preferences(
+        self, child_id: str, preferences: ChildPreferences
+    ) -> Optional[Child]:
         """
         Update child's preferences
 
@@ -289,7 +303,9 @@ class ChildRepository(BaseRepository[Child, str]):
             return await self.update(child)
         return None
 
-    async def add_milestone(self, child_id: str, milestone: DevelopmentMilestone) -> Optional[Child]:
+    async def add_milestone(
+        self, child_id: str, milestone: DevelopmentMilestone
+    ) -> Optional[Child]:
         """
         Add a milestone achievement
 
@@ -331,7 +347,9 @@ class ChildRepository(BaseRepository[Child, str]):
                 child.known_concepts.append(concept)
 
         # Remove completed goals
-        child.learning_goals = [goal for goal in child.learning_goals if goal not in completed_goals]
+        child.learning_goals = [
+            goal for goal in child.learning_goals if goal not in completed_goals
+        ]
 
         child.updated_at = datetime.now()
         return await self.update(child)
@@ -452,7 +470,9 @@ class ChildRepository(BaseRepository[Child, str]):
             "total_interaction_hours": total_interaction_time / 3600,
             "total_sessions": total_sessions,
             "average_sessions_per_child": total_sessions / max(total_children, 1),
-            "active_children_7d": len(await self.get_children_with_recent_interactions(7)),
+            "active_children_7d": len(
+                await self.get_children_with_recent_interactions(7)
+            ),
             "inactive_children_30d": len(await self.get_inactive_children(30)),
         }
 
@@ -474,7 +494,9 @@ class ChildRepository(BaseRepository[Child, str]):
                 interest_counts[interest] = interest_counts.get(interest, 0) + 1
 
         # Sort by count descending
-        sorted_interests = sorted(interest_counts.items(), key=lambda x: x[1], reverse=True)
+        sorted_interests = sorted(
+            interest_counts.items(), key=lambda x: x[1], reverse=True
+        )
 
         return sorted_interests[:limit]
 
@@ -507,21 +529,38 @@ class ChildRepository(BaseRepository[Child, str]):
         criteria = []
 
         if query:
-            criteria.append(SearchCriteria(field="name", operator="ilike", value=f"%{query}%"))
+            criteria.append(
+                SearchCriteria(field="name", operator="ilike", value=f"%{query}%")
+            )
 
         if filters:
             for field, value in filters.items():
                 if isinstance(value, dict):
                     # Range query
                     if "min" in value:
-                        criteria.append(SearchCriteria(field=field, operator="gte", value=value["min"]))
+                        criteria.append(
+                            SearchCriteria(
+                                field=field, operator="gte", value=value["min"]
+                            )
+                        )
                     if "max" in value:
-                        criteria.append(SearchCriteria(field=field, operator="lte", value=value["max"]))
+                        criteria.append(
+                            SearchCriteria(
+                                field=field, operator="lte", value=value["max"]
+                            )
+                        )
                 else:
-                    criteria.append(SearchCriteria(field=field, operator="eq", value=value))
+                    criteria.append(
+                        SearchCriteria(field=field, operator="eq", value=value)
+                    )
 
         # Create query options
-        options = QueryOptions(limit=page_size, offset=(page - 1) * page_size, sort_by=sort_by, sort_order=sort_order)
+        options = QueryOptions(
+            limit=page_size,
+            offset=(page - 1) * page_size,
+            sort_by=sort_by,
+            sort_order=sort_order,
+        )
 
         # Execute search
         if criteria:
@@ -547,7 +586,9 @@ class ChildRepository(BaseRepository[Child, str]):
 
     # Helper Methods
 
-    def _calculate_interest_similarity(self, interests1: List[str], interests2: List[str]) -> float:
+    def _calculate_interest_similarity(
+        self, interests1: List[str], interests2: List[str]
+    ) -> float:
         """Calculate Jaccard similarity between interest sets"""
         if not interests1 and not interests2:
             return 1.0

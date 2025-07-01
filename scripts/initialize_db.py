@@ -1,14 +1,15 @@
+import json
+import logging
 import os
 import sqlite3
-import logging
-from typing import Dict, Any
-import json
 from datetime import datetime
+from typing import Any, Dict
 
-def create_database(db_path: str = 'data/child_memories.db'):
+
+def create_database(db_path: str = "data/child_memories.db"):
     """
     Initialize the SQLite database with required schemas
-    
+
     :param db_path: Path to the SQLite database file
     """
     logging.basicConfig(level=logging.INFO)
@@ -23,7 +24,8 @@ def create_database(db_path: str = 'data/child_memories.db'):
         cursor = conn.cursor()
 
         # Create child profiles table
-        cursor.execute('''
+        cursor.execute(
+            """
         CREATE TABLE IF NOT EXISTS child_profiles (
             child_id TEXT PRIMARY KEY,
             name TEXT,
@@ -32,10 +34,12 @@ def create_database(db_path: str = 'data/child_memories.db'):
             personality TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-        ''')
+        """
+        )
 
         # Create conversation history table
-        cursor.execute('''
+        cursor.execute(
+            """
         CREATE TABLE IF NOT EXISTS conversation_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             child_id TEXT,
@@ -45,10 +49,12 @@ def create_database(db_path: str = 'data/child_memories.db'):
             duration INTEGER,
             FOREIGN KEY(child_id) REFERENCES child_profiles(child_id)
         )
-        ''')
+        """
+        )
 
         # Create parent notifications table
-        cursor.execute('''
+        cursor.execute(
+            """
         CREATE TABLE IF NOT EXISTS parent_notifications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             child_id TEXT,
@@ -58,10 +64,12 @@ def create_database(db_path: str = 'data/child_memories.db'):
             is_read BOOLEAN DEFAULT 0,
             FOREIGN KEY(child_id) REFERENCES child_profiles(child_id)
         )
-        ''')
+        """
+        )
 
         # Create safety violation tracking table
-        cursor.execute('''
+        cursor.execute(
+            """
         CREATE TABLE IF NOT EXISTS safety_violations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             child_id TEXT,
@@ -71,16 +79,19 @@ def create_database(db_path: str = 'data/child_memories.db'):
             severity INTEGER,
             FOREIGN KEY(child_id) REFERENCES child_profiles(child_id)
         )
-        ''')
+        """
+        )
 
         # Create system configuration table
-        cursor.execute('''
+        cursor.execute(
+            """
         CREATE TABLE IF NOT EXISTS system_config (
             key TEXT PRIMARY KEY,
             value TEXT,
             last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-        ''')
+        """
+        )
 
         # Commit changes
         conn.commit()
@@ -90,10 +101,11 @@ def create_database(db_path: str = 'data/child_memories.db'):
         logger.error(f"Database initialization failed: {e}")
         raise
 
-def seed_initial_config(db_path: str = 'data/child_memories.db'):
+
+def seed_initial_config(db_path: str = "data/child_memories.db"):
     """
     Seed initial system configuration
-    
+
     :param db_path: Path to the SQLite database file
     """
     try:
@@ -102,21 +114,24 @@ def seed_initial_config(db_path: str = 'data/child_memories.db'):
 
         # Default configuration settings
         default_config = {
-            'safety_level': '2',
-            'coppa_compliance': 'true',
-            'gdpr_compliance': 'true',
-            'min_age': '4',
-            'max_age': '12',
-            'content_filter_enabled': 'true',
-            'analytics_enabled': 'true'
+            "safety_level": "2",
+            "coppa_compliance": "true",
+            "gdpr_compliance": "true",
+            "min_age": "4",
+            "max_age": "12",
+            "content_filter_enabled": "true",
+            "analytics_enabled": "true",
         }
 
         # Insert or update configuration
         for key, value in default_config.items():
-            cursor.execute('''
+            cursor.execute(
+                """
             INSERT OR REPLACE INTO system_config (key, value, last_updated)
             VALUES (?, ?, ?)
-            ''', (key, value, datetime.now()))
+            """,
+                (key, value, datetime.now()),
+            )
 
         conn.commit()
         logging.info("Initial system configuration seeded successfully")
@@ -128,19 +143,21 @@ def seed_initial_config(db_path: str = 'data/child_memories.db'):
         if conn:
             conn.close()
 
+
 def main():
     """
     Main function to initialize database and seed configuration
     """
     logging.basicConfig(level=logging.INFO)
-    
+
     try:
-        db_path = 'data/child_memories.db'
+        db_path = "data/child_memories.db"
         create_database(db_path)
         seed_initial_config(db_path)
     except Exception as e:
         logging.error(f"Database initialization failed: {e}")
         exit(1)
+
 
 if __name__ == "__main__":
     main()

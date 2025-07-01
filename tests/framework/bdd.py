@@ -112,7 +112,9 @@ class ActionExecutor:
 
     def then_expect_exception(self, exception_type: type) -> None:
         """Assert that exception was raised"""
-        assert self.exception is not None, f"Expected {exception_type.__name__} but no exception was raised"
+        assert (
+            self.exception is not None
+        ), f"Expected {exception_type.__name__} but no exception was raised"
         assert isinstance(
             self.exception, exception_type
         ), f"Expected {exception_type.__name__} but got {type(self.exception).__name__}"
@@ -125,7 +127,9 @@ class BDDTestCase:
         self.context = TestContext()
         self.steps_executed = []
 
-    def given(self, description: str, setup_func: Optional[Callable] = None) -> "BDDTestCase":
+    def given(
+        self, description: str, setup_func: Optional[Callable] = None
+    ) -> "BDDTestCase":
         """Define a given condition"""
         self.context.add_given(description)
 
@@ -157,12 +161,16 @@ class BDDTestCase:
         self.context.add_then(description)
 
         # Execute assertion
-        assertion_func(self.context.get_variable("last_result"), **self.context.variables)
+        assertion_func(
+            self.context.get_variable("last_result"), **self.context.variables
+        )
 
         self.steps_executed.append(("then", description))
         return self
 
-    def and_given(self, description: str, setup_func: Optional[Callable] = None) -> "BDDTestCase":
+    def and_given(
+        self, description: str, setup_func: Optional[Callable] = None
+    ) -> "BDDTestCase":
         """Add another given condition"""
         return self.given(description, setup_func)
 

@@ -22,7 +22,9 @@ class AudioEmotionAnalyzer:
     def __init__(self):
         self.is_ready = LIBROSA_AVAILABLE
 
-    async def analyze_audio(self, audio_data: np.ndarray, sample_rate: int) -> Optional[Dict[str, float]]:
+    async def analyze_audio(
+        self, audio_data: np.ndarray, sample_rate: int
+    ) -> Optional[Dict[str, float]]:
         """Analyze audio and return emotion scores."""
         if not self.is_ready:
             return None
@@ -42,15 +44,21 @@ class AudioEmotionAnalyzer:
 
         # Pitch features
         pitches, magnitudes = librosa.piptrack(y=audio, sr=sr)
-        features["pitch_mean"] = np.mean(pitches[pitches > 0]) if len(pitches[pitches > 0]) > 0 else 0
-        features["pitch_std"] = np.std(pitches[pitches > 0]) if len(pitches[pitches > 0]) > 0 else 0
+        features["pitch_mean"] = (
+            np.mean(pitches[pitches > 0]) if len(pitches[pitches > 0]) > 0 else 0
+        )
+        features["pitch_std"] = (
+            np.std(pitches[pitches > 0]) if len(pitches[pitches > 0]) > 0 else 0
+        )
 
         # Energy features
         features["rms_mean"] = np.mean(librosa.feature.rms(y=audio))
         features["rms_std"] = np.std(librosa.feature.rms(y=audio))
 
         # Spectral features
-        features["spectral_centroid"] = np.mean(librosa.feature.spectral_centroid(y=audio, sr=sr))
+        features["spectral_centroid"] = np.mean(
+            librosa.feature.spectral_centroid(y=audio, sr=sr)
+        )
         features["zcr_mean"] = np.mean(librosa.feature.zero_crossing_rate(audio))
 
         # Tempo
@@ -61,7 +69,14 @@ class AudioEmotionAnalyzer:
 
     def _map_features_to_emotions(self, features: Dict[str, float]) -> Dict[str, float]:
         """Map audio features to emotion scores."""
-        scores = {"happy": 0.0, "sad": 0.0, "angry": 0.0, "scared": 0.0, "calm": 0.0, "curious": 0.0}
+        scores = {
+            "happy": 0.0,
+            "sad": 0.0,
+            "angry": 0.0,
+            "scared": 0.0,
+            "calm": 0.0,
+            "curious": 0.0,
+        }
 
         # High pitch + high energy = happy
         if features["pitch_mean"] > 300 and features["rms_mean"] > 0.1:

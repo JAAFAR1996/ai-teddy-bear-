@@ -5,9 +5,11 @@ from typing import Any, Dict, List, Optional
 
 import whisper
 
-from src.application.services.azure_speech_to_text_service import AzureSpeechToTextService
+from src.application.services.azure_speech_to_text_service import \
+    AzureSpeechToTextService
 from src.core.domain.entities.transcription import Transcription
-from src.infrastructure.persistence.transcription_sqlite_repository import TranscriptionSQLiteRepository
+from src.infrastructure.persistence.transcription_sqlite_repository import \
+    TranscriptionSQLiteRepository
 
 
 class SpeechToTextService:
@@ -25,7 +27,13 @@ class SpeechToTextService:
         self.azure_service = None
         self.logger = logging.getLogger(__name__)
 
-        async def transcribe_audio(self, audio_file_path: str, user_id=None, conversation_id=None, language=None):
+        async def transcribe_audio(
+            self,
+            audio_file_path: str,
+            user_id=None,
+            conversation_id=None,
+            language=None,
+        ):
             if not self.whisper_model:
                 self.logger.error("Whisper model not loaded, cannot transcribe.")
                 return None
@@ -114,13 +122,18 @@ class SpeechToTextService:
 
         return cleaned_text
 
-    async def transcribe_directory(self, directory_path: str, user_id=None, conversation_id=None, language=None):
+    async def transcribe_directory(
+        self, directory_path: str, user_id=None, conversation_id=None, language=None
+    ):
         transcriptions = []
         for filename in os.listdir(directory_path):
             if filename.endswith((".wav", ".mp3", ".ogg", ".flac")):
                 full_path = os.path.join(directory_path, filename)
                 text = await self.transcribe_audio(
-                    full_path, user_id=user_id, conversation_id=conversation_id, language=language
+                    full_path,
+                    user_id=user_id,
+                    conversation_id=conversation_id,
+                    language=language,
                 )
                 transcriptions.append(text)
         return transcriptions
@@ -129,7 +142,9 @@ class SpeechToTextService:
         """Retrieve all transcriptions for a specific conversation."""
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
-        return TranscriptionSQLiteRepository(conn).get_by_conversation_id(conversation_id)
+        return TranscriptionSQLiteRepository(conn).get_by_conversation_id(
+            conversation_id
+        )
 
     async def transcribe(self, audio_data: bytes) -> str:
         """تحويل بيانات صوتية إلى نص"""

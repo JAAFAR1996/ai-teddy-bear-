@@ -86,7 +86,9 @@ class ChildSafetyMetrics:
 
         # Safety violation tracking
         self.safety_violations = self.meter.create_counter(
-            name="child_safety_violations_total", description="Total child safety violations detected", unit="1"
+            name="child_safety_violations_total",
+            description="Total child safety violations detected",
+            unit="1",
         )
 
         # Content toxicity monitoring
@@ -99,7 +101,9 @@ class ChildSafetyMetrics:
 
         # Real-time conversation sentiment
         self.conversation_sentiment = self.meter.create_gauge(
-            name="conversation_sentiment", description="Real-time sentiment of conversation (-1 to +1)", unit="1"
+            name="conversation_sentiment",
+            description="Real-time sentiment of conversation (-1 to +1)",
+            unit="1",
         )
 
         # Child engagement duration
@@ -120,22 +124,30 @@ class ChildSafetyMetrics:
 
         # Emergency protocol activations
         self.emergency_activations = self.meter.create_counter(
-            name="emergency_protocol_activations_total", description="Total emergency protocol activations", unit="1"
+            name="emergency_protocol_activations_total",
+            description="Total emergency protocol activations",
+            unit="1",
         )
 
         # Parental control events
         self.parental_control_events = self.meter.create_counter(
-            name="parental_control_events_total", description="Parental control related events", unit="1"
+            name="parental_control_events_total",
+            description="Parental control related events",
+            unit="1",
         )
 
         # Child safety compliance rate
         self.safety_compliance_rate = self.meter.create_gauge(
-            name="child_safety_compliance_rate", description="Overall child safety compliance rate", unit="1"
+            name="child_safety_compliance_rate",
+            description="Overall child safety compliance rate",
+            unit="1",
         )
 
         # COPPA compliance tracking
         self.coppa_compliance = self.meter.create_gauge(
-            name="coppa_compliance_score", description="COPPA compliance score", unit="1"
+            name="coppa_compliance_score",
+            description="COPPA compliance score",
+            unit="1",
         )
 
         # Content filter effectiveness
@@ -206,7 +218,9 @@ class ChildSafetyMetrics:
                     f"(severity: {severity.value}) for child {child_context.get('child_id', 'unknown')}"
                 )
 
-    def record_content_toxicity(self, toxicity_score: float, content_type: str, child_context: Dict[str, Any]):
+    def record_content_toxicity(
+        self, toxicity_score: float, content_type: str, child_context: Dict[str, Any]
+    ):
         """Record content toxicity score"""
         with self.tracer.start_as_current_span("content_toxicity_check") as span:
             span.set_attributes(
@@ -257,16 +271,23 @@ class ChildSafetyMetrics:
             # Record sentiment
             self.conversation_sentiment.set(
                 metrics.sentiment_score,
-                attributes={"age_group": metrics.age_group, "interaction_type": metrics.interaction_type},
+                attributes={
+                    "age_group": metrics.age_group,
+                    "interaction_type": metrics.interaction_type,
+                },
             )
 
             # Record safety violations if any
             for violation in metrics.violations:
                 self.record_safety_violation(
-                    violation, SeverityLevel.MEDIUM, {"child_id": metrics.child_id, "age_group": metrics.age_group}
+                    violation,
+                    SeverityLevel.MEDIUM,
+                    {"child_id": metrics.child_id, "age_group": metrics.age_group},
                 )
 
-    def record_emergency_activation(self, trigger_type: str, response_time_ms: float, child_context: Dict[str, Any]):
+    def record_emergency_activation(
+        self, trigger_type: str, response_time_ms: float, child_context: Dict[str, Any]
+    ):
         """Record emergency protocol activation"""
         with self.tracer.start_as_current_span("emergency_activation") as span:
             span.set_attributes(
@@ -283,15 +304,21 @@ class ChildSafetyMetrics:
                 attributes={
                     "trigger_type": trigger_type,
                     "age_group": child_context.get("age_group", "unknown"),
-                    "response_time_category": self._categorize_response_time(response_time_ms),
+                    "response_time_category": self._categorize_response_time(
+                        response_time_ms
+                    ),
                 },
             )
 
             # Critical alert for slow emergency response
             if response_time_ms > 30000:  # 30 seconds
-                logger.critical(f"Slow emergency response: {response_time_ms}ms for trigger {trigger_type}")
+                logger.critical(
+                    f"Slow emergency response: {response_time_ms}ms for trigger {trigger_type}"
+                )
 
-    def record_parental_control_event(self, event_type: str, action: str, parent_context: Dict[str, Any]):
+    def record_parental_control_event(
+        self, event_type: str, action: str, parent_context: Dict[str, Any]
+    ):
         """Record parental control events"""
         with self.tracer.start_as_current_span("parental_control_event") as span:
             span.set_attributes(
@@ -307,7 +334,9 @@ class ChildSafetyMetrics:
                 attributes={
                     "event_type": event_type,
                     "action": action,
-                    "verification_method": parent_context.get("verification_method", "unknown"),
+                    "verification_method": parent_context.get(
+                        "verification_method", "unknown"
+                    ),
                 },
             )
 
@@ -320,12 +349,17 @@ class ChildSafetyMetrics:
         coppa_compliance = 0.995  # 99.5% COPPA compliance
         filter_effectiveness = 0.973  # 97.3% filter effectiveness
 
-        self.safety_compliance_rate.set(safety_compliance, attributes={"measurement_window": "1h"})
+        self.safety_compliance_rate.set(
+            safety_compliance, attributes={"measurement_window": "1h"}
+        )
 
-        self.coppa_compliance.set(coppa_compliance, attributes={"regulation": "COPPA", "region": "US"})
+        self.coppa_compliance.set(
+            coppa_compliance, attributes={"regulation": "COPPA", "region": "US"}
+        )
 
         self.content_filter_effectiveness.record(
-            filter_effectiveness, attributes={"filter_type": "comprehensive", "ai_model": "gpt-4"}
+            filter_effectiveness,
+            attributes={"filter_type": "comprehensive", "ai_model": "gpt-4"},
         )
 
     def _categorize_response_time(self, response_time_ms: float) -> str:
@@ -370,12 +404,16 @@ class AIPerformanceMetrics:
 
         # Token usage tracking
         self.token_usage = self.meter.create_counter(
-            name="ai_tokens_used_total", description="Total AI tokens consumed", unit="1"
+            name="ai_tokens_used_total",
+            description="Total AI tokens consumed",
+            unit="1",
         )
 
         # Model inference cost
         self.inference_cost = self.meter.create_counter(
-            name="ai_inference_cost_total", description="Total AI inference cost", unit="usd"
+            name="ai_inference_cost_total",
+            description="Total AI inference cost",
+            unit="usd",
         )
 
         # Context window utilization
@@ -388,7 +426,9 @@ class AIPerformanceMetrics:
 
         # AI hallucination detection
         self.hallucination_rate = self.meter.create_gauge(
-            name="ai_hallucination_rate", description="AI hallucination detection rate", unit="1"
+            name="ai_hallucination_rate",
+            description="AI hallucination detection rate",
+            unit="1",
         )
 
         # Response quality score
@@ -446,7 +486,11 @@ class AIPerformanceMetrics:
             )
 
             self.ai_accuracy.record(
-                accuracy_score, attributes={"model": model_name, "age_group": child_context.get("age_group", "unknown")}
+                accuracy_score,
+                attributes={
+                    "model": model_name,
+                    "age_group": child_context.get("age_group", "unknown"),
+                },
             )
 
             self.token_usage.add(
@@ -459,14 +503,20 @@ class AIPerformanceMetrics:
             )
 
             self.inference_cost.add(
-                cost_usd, attributes={"model": model_name, "cost_tier": self._categorize_cost(cost_usd)}
+                cost_usd,
+                attributes={
+                    "model": model_name,
+                    "cost_tier": self._categorize_cost(cost_usd),
+                },
             )
 
             self.context_utilization.record(
                 context_utilization,
                 attributes={
                     "model": model_name,
-                    "utilization_level": self._categorize_utilization(context_utilization),
+                    "utilization_level": self._categorize_utilization(
+                        context_utilization
+                    ),
                 },
             )
 
@@ -530,11 +580,15 @@ class SystemHealthMetrics:
 
         # Service availability
         self.service_availability = self.meter.create_gauge(
-            name="service_availability", description="Service availability percentage", unit="1"
+            name="service_availability",
+            description="Service availability percentage",
+            unit="1",
         )
 
         # Error rate tracking
-        self.error_rate = self.meter.create_gauge(name="service_error_rate", description="Service error rate", unit="1")
+        self.error_rate = self.meter.create_gauge(
+            name="service_error_rate", description="Service error rate", unit="1"
+        )
 
         # Request latency
         self.request_latency = self.meter.create_histogram(
@@ -551,7 +605,9 @@ class SystemHealthMetrics:
 
         # Error budget consumption
         self.error_budget_consumption = self.meter.create_gauge(
-            name="error_budget_consumption", description="Error budget consumption rate", unit="1"
+            name="error_budget_consumption",
+            description="Error budget consumption rate",
+            unit="1",
         )
 
         # SLO compliance
@@ -561,7 +617,9 @@ class SystemHealthMetrics:
 
         # Database connection health
         self.db_connection_health = self.meter.create_gauge(
-            name="database_connection_health", description="Database connection health score", unit="1"
+            name="database_connection_health",
+            description="Database connection health score",
+            unit="1",
         )
 
         # Cache hit rate
@@ -579,7 +637,14 @@ class SystemHealthMetrics:
             name="cpu_utilization", description="CPU utilization percentage", unit="1"
         )
 
-    def record_request(self, latency_ms: float, status_code: int, service_name: str, endpoint: str, method: str):
+    def record_request(
+        self,
+        latency_ms: float,
+        status_code: int,
+        service_name: str,
+        endpoint: str,
+        method: str,
+    ):
         """Record request metrics"""
         with self.tracer.start_as_current_span("request") as span:
             span.set_attributes(
@@ -625,12 +690,15 @@ class SystemHealthMetrics:
         error_budget_used = 0.25  # 25% of error budget consumed
         slo_compliance = 0.998  # 99.8% SLO compliance
 
-        self.service_availability.set(availability, attributes={"service": service_name})
+        self.service_availability.set(
+            availability, attributes={"service": service_name}
+        )
 
         self.error_rate.set(error_rate, attributes={"service": service_name})
 
         self.error_budget_consumption.set(
-            error_budget_used, attributes={"service": service_name, "slo_type": "availability"}
+            error_budget_used,
+            attributes={"service": service_name, "slo_type": "availability"},
         )
 
         self.slo_compliance.set(slo_compliance, attributes={"service": service_name})

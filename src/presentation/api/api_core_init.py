@@ -10,7 +10,8 @@ logger = structlog.get_logger(__name__)
 from fastapi import APIRouter
 
 from .endpoints import voice  # New voice endpoints
-from .endpoints import advanced, audio, children, conversations, system, teddy_hardware
+from .endpoints import (advanced, audio, children, conversations, system,
+                        teddy_hardware)
 
 # Create main API router
 api_router = APIRouter(prefix="/api", tags=["API"])

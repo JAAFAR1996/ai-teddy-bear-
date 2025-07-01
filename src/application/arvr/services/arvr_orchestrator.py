@@ -36,7 +36,10 @@ class ArvrOrchestrator:
 
     async def execute_operation(self, operation_type: str, parameters: Dict[str, Any]):
         """تنفيذ عملية معقدة"""
-        context = ArvrContext(operation_id=f"{operation_type}_{datetime.utcnow().timestamp()}", parameters=parameters)
+        context = ArvrContext(
+            operation_id=f"{operation_type}_{datetime.utcnow().timestamp()}",
+            parameters=parameters,
+        )
 
         logger.info(f"🚀 Starting {operation_type} operation")
 
@@ -115,7 +118,9 @@ class ArvrOrchestrator:
 async def main():
     orchestrator = ArvrOrchestrator()
 
-    result = await orchestrator.execute_operation("test_operation", {"param1": "value1", "param2": "value2"})
+    result = await orchestrator.execute_operation(
+        "test_operation", {"param1": "value1", "param2": "value2"}
+    )
 
     logger.info(f"Operation result: {result}")
 

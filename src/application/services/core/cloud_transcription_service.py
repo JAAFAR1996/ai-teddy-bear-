@@ -26,7 +26,8 @@ except ImportError:
 
 # Azure Speech - optional import
 try:
-    from azure.cognitiveservices.speech import AudioConfig, ResultReason, SpeechConfig, SpeechRecognizer
+    from azure.cognitiveservices.speech import (AudioConfig, ResultReason,
+                                                SpeechConfig, SpeechRecognizer)
     AZURE_AVAILABLE = True
 except ImportError:
     AZURE_AVAILABLE = False

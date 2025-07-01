@@ -10,7 +10,8 @@ import pytest
 from PySide6.QtCore import QUrl
 from PySide6.QtWebSockets import QWebSocket
 
-from src.ui.network.websocket_client import WebSocketClient, create_websocket_client
+from src.ui.network.websocket_client import (WebSocketClient,
+                                             create_websocket_client)
 
 
 class TestWebSocketClient:
@@ -88,7 +89,9 @@ class TestWebSocketClient:
         websocket_client.is_connected = True
         test_message = {"type": "test", "data": "hello"}
 
-        with patch.object(websocket_client.websocket, "sendTextMessage", return_value=100) as mock_send:
+        with patch.object(
+            websocket_client.websocket, "sendTextMessage", return_value=100
+        ) as mock_send:
             result = websocket_client.send_message(test_message)
 
             assert result == True
@@ -120,7 +123,9 @@ class TestWebSocketClient:
         websocket_client.reconnect_attempts = 3
         websocket_client.message_queue = [{"type": "queued"}]
 
-        with patch.object(websocket_client, "_send_queued_messages") as mock_send_queued:
+        with patch.object(
+            websocket_client, "_send_queued_messages"
+        ) as mock_send_queued:
             websocket_client._on_connected()
 
             assert websocket_client.is_connected == True
@@ -157,13 +162,17 @@ class TestWebSocketClient:
         websocket_client.last_heartbeat_time = datetime.now()
         pong_message = json.dumps({"type": "pong"})
 
-        with patch.object(websocket_client.heartbeat_timeout_timer, "stop") as mock_stop:
+        with patch.object(
+            websocket_client.heartbeat_timeout_timer, "stop"
+        ) as mock_stop:
             websocket_client._on_message_received(pong_message)
             mock_stop.assert_called_once()
 
     def test_message_reception_error(self, websocket_client):
         """Test server error message handling"""
-        error_message = json.dumps({"type": "error", "message": "Server error", "code": "ERR001"})
+        error_message = json.dumps(
+            {"type": "error", "message": "Server error", "code": "ERR001"}
+        )
 
         with patch.object(websocket_client, "error_occurred") as mock_signal:
             websocket_client._on_message_received(error_message)
@@ -201,7 +210,9 @@ class TestWebSocketClient:
         websocket_client.is_connected = True
         websocket_client.connection_start_time = datetime.now()
 
-        with patch.object(websocket_client, "send_message", return_value=True) as mock_send:
+        with patch.object(
+            websocket_client, "send_message", return_value=True
+        ) as mock_send:
             websocket_client._send_heartbeat()
 
             mock_send.assert_called_once()
@@ -218,7 +229,9 @@ class TestWebSocketClient:
             {"type": "msg2", "sequence_number": 123},
         ]
 
-        with patch.object(websocket_client, "send_message", return_value=True) as mock_send:
+        with patch.object(
+            websocket_client, "send_message", return_value=True
+        ) as mock_send:
             websocket_client._send_queued_messages()
 
             assert len(websocket_client.message_queue) == 0

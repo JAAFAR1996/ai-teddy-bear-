@@ -13,10 +13,14 @@ logger = logging.getLogger(__name__)
 def parse_args(args: Optional[list] = None) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Record audio")
-    parser.add_argument("-d", "--duration", type=int, default=5, help="Recording duration in seconds")
+    parser.add_argument(
+        "-d", "--duration", type=int, default=5, help="Recording duration in seconds"
+    )
     parser.add_argument("-o", "--output", type=str, help="Output file path")
     parser.add_argument("--device", type=int, help="Audio input device ID")
-    parser.add_argument("--list-devices", action="store_true", help="List available audio input devices")
+    parser.add_argument(
+        "--list-devices", action="store_true", help="List available audio input devices"
+    )
     return parser.parse_args(args)
 
 
@@ -55,7 +59,9 @@ def main(args: Optional[list] = None) -> int:
         # Record audio
         logger.info(f"Recording for {parsed_args.duration} seconds...")
         audio_data = audio_manager.record(
-            duration=parsed_args.duration, save=bool(parsed_args.output), filename=parsed_args.output
+            duration=parsed_args.duration,
+            save=bool(parsed_args.output),
+            filename=parsed_args.output,
         )
 
         if audio_data is None:

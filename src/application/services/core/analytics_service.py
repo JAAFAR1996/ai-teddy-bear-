@@ -10,15 +10,19 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from src.domain.parentdashboard.models.analytics_models import AnalyticsFilter
-from src.domain.parentdashboard.services.analytics_domain_service import AnalyticsDomainService
-from src.infrastructure.persistence.conversation_repository import ConversationRepository
+from src.domain.parentdashboard.services.analytics_domain_service import \
+    AnalyticsDomainService
+from src.infrastructure.persistence.conversation_repository import \
+    ConversationRepository
 
 
 class DashboardAnalyticsService:
     """Application service for dashboard analytics"""
 
     def __init__(
-        self, conversation_repository: ConversationRepository, analytics_domain_service: AnalyticsDomainService
+        self,
+        conversation_repository: ConversationRepository,
+        analytics_domain_service: AnalyticsDomainService,
     ):
         self.conversation_repository = conversation_repository
         self.analytics_service = analytics_domain_service
@@ -43,7 +47,11 @@ class DashboardAnalyticsService:
 
             result = {
                 "analytics": analytics.__dict__,
-                "period": {"start_date": start_date.isoformat(), "end_date": end_date.isoformat(), "days": period_days},
+                "period": {
+                    "start_date": start_date.isoformat(),
+                    "end_date": end_date.isoformat(),
+                    "days": period_days,
+                },
                 "insights": analytics.get_insights(),
                 "recommendations": analytics.get_recommendations(),
             }
@@ -59,16 +67,24 @@ class DashboardAnalyticsService:
             self.logger.error(f"Error getting analytics for child {child_id}: {e}")
             return {}
 
-    async def get_comparative_analytics(self, child_ids: List[str], period_days: int = 30) -> Dict[str, Any]:
+    async def get_comparative_analytics(
+        self, child_ids: List[str], period_days: int = 30
+    ) -> Dict[str, Any]:
         """Get comparative analytics across multiple children"""
 
         try:
-            comparative_data = {"children": {}, "comparisons": {}, "period_days": period_days}
+            comparative_data = {
+                "children": {},
+                "comparisons": {},
+                "period_days": period_days,
+            }
 
             all_analytics = []
 
             for child_id in child_ids:
-                analytics_data = await self.get_child_analytics(child_id, period_days, include_charts=False)
+                analytics_data = await self.get_child_analytics(
+                    child_id, period_days, include_charts=False
+                )
 
                 if analytics_data:
                     comparative_data["children"][child_id] = analytics_data
@@ -76,7 +92,9 @@ class DashboardAnalyticsService:
 
             # Calculate comparisons
             if len(all_analytics) > 1:
-                comparative_data["comparisons"] = self._calculate_comparisons(all_analytics)
+                comparative_data["comparisons"] = self._calculate_comparisons(
+                    all_analytics
+                )
 
             return comparative_data
 
@@ -136,9 +154,15 @@ class DashboardAnalyticsService:
             return {}
 
         # Calculate averages
-        avg_conversations = sum(a["total_conversations"] for a in analytics_list) / len(analytics_list)
-        avg_duration = sum(a["total_duration_minutes"] for a in analytics_list) / len(analytics_list)
-        avg_quality = sum(a["interaction_quality_score"] for a in analytics_list) / len(analytics_list)
+        avg_conversations = sum(a["total_conversations"] for a in analytics_list) / len(
+            analytics_list
+        )
+        avg_duration = sum(a["total_duration_minutes"] for a in analytics_list) / len(
+            analytics_list
+        )
+        avg_quality = sum(a["interaction_quality_score"] for a in analytics_list) / len(
+            analytics_list
+        )
 
         return {
             "averages": {
@@ -149,8 +173,12 @@ class DashboardAnalyticsService:
             "variations": {
                 "highest_usage": max(a["total_conversations"] for a in analytics_list),
                 "lowest_usage": min(a["total_conversations"] for a in analytics_list),
-                "highest_quality": max(a["interaction_quality_score"] for a in analytics_list),
-                "lowest_quality": min(a["interaction_quality_score"] for a in analytics_list),
+                "highest_quality": max(
+                    a["interaction_quality_score"] for a in analytics_list
+                ),
+                "lowest_quality": min(
+                    a["interaction_quality_score"] for a in analytics_list
+                ),
             },
         }
 
@@ -164,15 +192,26 @@ class DashboardAnalyticsService:
         sorted_data = sorted(weekly_data, key=lambda x: x["week_start"])
 
         # Calculate trends for key metrics
-        conversations_trend = self._calculate_metric_trend([w["analytics"]["total_conversations"] for w in sorted_data])
-
-        quality_trend = self._calculate_metric_trend([w["analytics"]["interaction_quality_score"] for w in sorted_data])
-
-        sentiment_trend = self._calculate_metric_trend(
-            [w["analytics"]["sentiment_breakdown"].get("positive", 0) for w in sorted_data]
+        conversations_trend = self._calculate_metric_trend(
+            [w["analytics"]["total_conversations"] for w in sorted_data]
         )
 
-        return {"conversations": conversations_trend, "quality": quality_trend, "positive_sentiment": sentiment_trend}
+        quality_trend = self._calculate_metric_trend(
+            [w["analytics"]["interaction_quality_score"] for w in sorted_data]
+        )
+
+        sentiment_trend = self._calculate_metric_trend(
+            [
+                w["analytics"]["sentiment_breakdown"].get("positive", 0)
+                for w in sorted_data
+            ]
+        )
+
+        return {
+            "conversations": conversations_trend,
+            "quality": quality_trend,
+            "positive_sentiment": sentiment_trend,
+        }
 
     def _calculate_metric_trend(self, values: List[float]) -> Dict[str, Any]:
         """Calculate trend for a specific metric"""

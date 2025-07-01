@@ -112,7 +112,9 @@ class CommandBus:
         self._middleware: List[CommandMiddleware] = []
         self.event_sourcing_service = get_event_sourcing_service()
 
-    def register_handler(self, command_type: Type[TCommand], handler: CommandHandler[TCommand, TResult]) -> None:
+    def register_handler(
+        self, command_type: Type[TCommand], handler: CommandHandler[TCommand, TResult]
+    ) -> None:
         """Register command handler"""
 
         if command_type in self._handlers:
@@ -149,7 +151,9 @@ class CommandBus:
             if hasattr(handler, "validate"):
                 is_valid = await handler.validate(command)
                 if not is_valid:
-                    raise ValueError(f"Command validation failed: {type(command).__name__}")
+                    raise ValueError(
+                        f"Command validation failed: {type(command).__name__}"
+                    )
 
             # Execute handler
             return await handler.handle(command)
@@ -160,7 +164,9 @@ class CommandBus:
         for middleware in reversed(self._middleware):
             previous_handler = current_handler
 
-            async def wrapped_handler(cmd: TCommand, prev=previous_handler, mw=middleware) -> TResult:
+            async def wrapped_handler(
+                cmd: TCommand, prev=previous_handler, mw=middleware
+            ) -> TResult:
                 return await mw.execute(cmd, prev)
 
             current_handler = wrapped_handler

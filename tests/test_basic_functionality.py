@@ -8,10 +8,10 @@ import pytest
 # إضافة مسار المشروع
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.audio.speech_disorder_detector import SpeechDisorderDetector
-from src.data.database import Database
-from src.domain.games.voice_games_engine import GameType, VoiceGameEngine
-from src.domain.services.emotion_analyzer import EmotionAnalyzer
+from src.infrastructure.external_services.speech_disorder_detector import SpeechDisorderDetector
+from src.infrastructure.database import Database
+from src.core.domain.entities.voice_games_engine import GameType, VoiceGameEngine
+from src.application.services.emotion_analyzer import EmotionAnalyzer
 
 
 class TestBasicFunctionality:
@@ -143,7 +143,12 @@ class TestDataProcessing:
         # محاكاة قاعدة بيانات
         class MockDB:
             def get_emotion_history(self, child_id, start_date, end_date):
-                return [{"emotion": "happy"}, {"emotion": "happy"}, {"emotion": "calm"}, {"emotion": "happy"}]
+                return [
+                    {"emotion": "happy"},
+                    {"emotion": "happy"},
+                    {"emotion": "calm"},
+                    {"emotion": "happy"},
+                ]
 
         analytics = ChildAnalytics(MockDB())
         stability = analytics.calculate_emotion_stability("test_child")

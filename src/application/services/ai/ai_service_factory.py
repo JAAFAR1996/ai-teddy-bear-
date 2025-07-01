@@ -6,11 +6,16 @@ Factory pattern for creating and managing AI service instances
 import logging
 from typing import Any, Dict, List, Optional
 
-from src.application.services.ai.analyzers.emotion_analyzer_service import EmotionAnalyzerService
-from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer as DomainEmotionAnalyzer
-from src.application.services.ai.fallback_response_service import FallbackResponseService
-from src.application.services.ai.interfaces.ai_service_interface import IAIService
-from src.application.services.ai.models.ai_response_models import AIServiceMetrics
+from src.application.services.ai.analyzers.emotion_analyzer_service import \
+    EmotionAnalyzerService
+from src.application.services.ai.emotion_analyzer_service import \
+    EmotionAnalyzer as DomainEmotionAnalyzer
+from src.application.services.ai.fallback_response_service import \
+    FallbackResponseService
+from src.application.services.ai.interfaces.ai_service_interface import \
+    IAIService
+from src.application.services.ai.models.ai_response_models import \
+    AIServiceMetrics
 from src.infrastructure.caching.simple_cache_service import CacheService
 from src.infrastructure.config import Settings
 
@@ -96,7 +101,9 @@ class EnhancedAIServiceFactory:
             return service
 
         except Exception as e:
-            logger.error(f"❌ Failed to create AI service for provider {provider}: {str(e)}")
+            logger.error(
+                f"❌ Failed to create AI service for provider {provider}: {str(e)}"
+            )
             raise
 
     @classmethod
@@ -110,7 +117,8 @@ class EnhancedAIServiceFactory:
         """Create OpenAI service with all dependencies"""
         # Import here to avoid circular imports and allow dynamic loading
         try:
-            from src.infrastructure.external_services.openai_client import OpenAIClient
+            from src.infrastructure.external_services.openai_client import \
+                OpenAIClient
 
             # Create OpenAI client
             openai_client = OpenAIClient(settings)
@@ -125,8 +133,12 @@ class EnhancedAIServiceFactory:
             )
 
         except ImportError as e:
-            logger.warning(f"⚠️ OpenAI dependencies not available, creating fallback service: {e}")
-            return cls._create_fallback_only_service(settings, cache_service, emotion_analyzer, fallback_service)
+            logger.warning(
+                f"⚠️ OpenAI dependencies not available, creating fallback service: {e}"
+            )
+            return cls._create_fallback_only_service(
+                settings, cache_service, emotion_analyzer, fallback_service
+            )
 
     @classmethod
     def _create_mock_service(
@@ -138,7 +150,9 @@ class EnhancedAIServiceFactory:
     ) -> IAIService:
         """Create mock service for testing"""
         return MockAIService(
-            cache_service=cache_service, emotion_analyzer=emotion_analyzer, fallback_service=fallback_service
+            cache_service=cache_service,
+            emotion_analyzer=emotion_analyzer,
+            fallback_service=fallback_service,
         )
 
     @classmethod
@@ -151,7 +165,9 @@ class EnhancedAIServiceFactory:
     ) -> IAIService:
         """Create service that only uses fallback responses"""
         return FallbackOnlyAIService(
-            cache_service=cache_service, emotion_analyzer=emotion_analyzer, fallback_service=fallback_service
+            cache_service=cache_service,
+            emotion_analyzer=emotion_analyzer,
+            fallback_service=fallback_service,
         )
 
     @classmethod
@@ -203,20 +219,28 @@ class OpenAIServiceWrapper(IAIService):
         self.metrics = AIServiceMetrics()
 
     async def generate_response(
-        self, message: str, child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None
+        self,
+        message: str,
+        child,
+        session_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ):
         """Generate response using OpenAI"""
         self.metrics.total_requests += 1
 
         try:
             # Try to use the actual OpenAI client
-            response = await self.client.generate_response(message, child, session_id, context)
+            response = await self.client.generate_response(
+                message, child, session_id, context
+            )
             return response
         except Exception as e:
             logger.error(f"OpenAI service failed: {e}")
             self.metrics.total_errors += 1
             # Fallback to fallback service
-            return await self.fallback_service.create_generic_fallback(message, child, session_id or "unknown", str(e))
+            return await self.fallback_service.create_generic_fallback(
+                message, child, session_id or "unknown", str(e)
+            )
 
     async def analyze_emotion(self, message: str) -> str:
         """Analyze emotion using emotion analyzer"""
@@ -255,10 +279,15 @@ class MockAIService(IAIService):
         self.metrics = AIServiceMetrics()
 
     async def generate_response(
-        self, message: str, child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None
+        self,
+        message: str,
+        child,
+        session_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ):
         """Generate mock response"""
-        from src.application.services.ai.models.ai_response_models import AIResponseModel
+        from src.application.services.ai.models.ai_response_models import \
+            AIResponseModel
 
         self.metrics.total_requests += 1
 
@@ -296,7 +325,11 @@ class FallbackOnlyAIService(IAIService):
         self.metrics = AIServiceMetrics()
 
     async def generate_response(
-        self, message: str, child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None
+        self,
+        message: str,
+        child,
+        session_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ):
         """Generate fallback response only"""
         self.metrics.total_requests += 1

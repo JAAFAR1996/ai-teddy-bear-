@@ -27,7 +27,9 @@ class ConversationExportService:
     ) -> bytes:
         """Export conversations to specified format."""
         # Get conversations
-        conversations = await self._get_conversations_for_export(child_id, start_date, end_date)
+        conversations = await self._get_conversations_for_export(
+            child_id, start_date, end_date
+        )
 
         if format == "json":
             return self._export_json(conversations, include_transcripts)
@@ -39,7 +41,10 @@ class ConversationExportService:
             raise ValueError(f"Unsupported export format: {format}")
 
     async def _get_conversations_for_export(
-        self, child_id: Optional[str], start_date: Optional[datetime], end_date: Optional[datetime]
+        self,
+        child_id: Optional[str],
+        start_date: Optional[datetime],
+        end_date: Optional[datetime],
     ) -> List[Dict[str, Any]]:
         """Get conversations for export."""
         try:
@@ -69,7 +74,9 @@ class ConversationExportService:
             self.logger.error(f"Error getting conversations for export: {e}")
             raise
 
-    def _export_json(self, conversations: List[Dict[str, Any]], include_transcripts: bool) -> bytes:
+    def _export_json(
+        self, conversations: List[Dict[str, Any]], include_transcripts: bool
+    ) -> bytes:
         """Export as JSON."""
         data = []
 
@@ -126,15 +133,25 @@ class ConversationExportService:
                     "duration_minutes": duration_minutes,
                     "message_count": conv["total_messages"] or 0,
                     "topics": topics_str,
-                    "quality_score": round(conv["quality_score"], 2) if conv["quality_score"] else "",
-                    "safety_score": round(conv["safety_score"], 2) if conv["safety_score"] else "",
-                    "engagement_score": round(conv["engagement_score"], 2) if conv["engagement_score"] else "",
+                    "quality_score": (
+                        round(conv["quality_score"], 2) if conv["quality_score"] else ""
+                    ),
+                    "safety_score": (
+                        round(conv["safety_score"], 2) if conv["safety_score"] else ""
+                    ),
+                    "engagement_score": (
+                        round(conv["engagement_score"], 2)
+                        if conv["engagement_score"]
+                        else ""
+                    ),
                 }
             )
 
         return output.getvalue().encode("utf-8")
 
-    def _export_text(self, conversations: List[Dict[str, Any]], include_transcripts: bool) -> bytes:
+    def _export_text(
+        self, conversations: List[Dict[str, Any]], include_transcripts: bool
+    ) -> bytes:
         """Export as human-readable text."""
         lines = []
 
@@ -175,7 +192,9 @@ class ConversationExportService:
 
         return "\n".join(lines).encode("utf-8")
 
-    def _get_messages_for_conversation(self, conversation_id: str) -> List[Dict[str, Any]]:
+    def _get_messages_for_conversation(
+        self, conversation_id: str
+    ) -> List[Dict[str, Any]]:
         """Get messages for a conversation for export."""
         try:
             cursor = self.connection.cursor()
@@ -186,7 +205,10 @@ class ConversationExportService:
             """
             cursor.execute(sql, (conversation_id,))
 
-            return [{"role": row[0], "content": row[1], "timestamp": row[2]} for row in cursor.fetchall()]
+            return [
+                {"role": row[0], "content": row[1], "timestamp": row[2]}
+                for row in cursor.fetchall()
+            ]
 
         except sqlite3.Error as e:
             self.logger.error(f"Error getting messages for export: {e}")

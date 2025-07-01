@@ -117,17 +117,27 @@ class AudioEncryptionManager:
 
         # Create encryption context
         context = AudioEncryptionContext(
-            session_id=session_id, device_id=device_id, user_id=user_id, encryption_key=session_key
+            session_id=session_id,
+            device_id=device_id,
+            user_id=user_id,
+            encryption_key=session_key,
         )
 
         self.active_sessions[session_id] = context
         self.session_keys[session_id] = session_key
 
-        logger.info("Audio encryption session created", session_id=session_id, device_id=device_id, user_id=user_id)
+        logger.info(
+            "Audio encryption session created",
+            session_id=session_id,
+            device_id=device_id,
+            user_id=user_id,
+        )
 
         return session_id
 
-    def _derive_session_key(self, session_id: str, device_id: str, user_id: str) -> bytes:
+    def _derive_session_key(
+        self, session_id: str, device_id: str, user_id: str
+    ) -> bytes:
         """Derive session-specific encryption key"""
 
         # Create key derivation info
@@ -191,7 +201,10 @@ class AudioEncryptionManager:
             context.nonce_counter += 1
 
             logger.debug(
-                "Audio data encrypted", session_id=session_id, data_size=len(audio_data), encrypted_size=len(ciphertext)
+                "Audio data encrypted",
+                session_id=session_id,
+                data_size=len(audio_data),
+                encrypted_size=len(ciphertext),
             )
 
             return packet
@@ -221,12 +234,18 @@ class AudioEncryptionManager:
             decrypted_data = cipher.decrypt(packet.nonce, encrypted_data, None)
 
             # Verify checksum for integrity
-            expected_checksum = self._calculate_checksum(decrypted_data, packet.nonce, packet.tag)
+            expected_checksum = self._calculate_checksum(
+                decrypted_data, packet.nonce, packet.tag
+            )
 
             if packet.checksum != expected_checksum:
                 raise ValueError("Audio data integrity check failed")
 
-            logger.debug("Audio data decrypted", session_id=session_id, decrypted_size=len(decrypted_data))
+            logger.debug(
+                "Audio data decrypted",
+                session_id=session_id,
+                decrypted_size=len(decrypted_data),
+            )
 
             return decrypted_data
 
@@ -242,7 +261,9 @@ class AudioEncryptionManager:
         timestamp = int(datetime.utcnow().timestamp() * 1000000)  # microseconds
 
         # Combine session info, counter, and timestamp
-        nonce_data = struct.pack(">Q", timestamp) + struct.pack(">I", context.nonce_counter)
+        nonce_data = struct.pack(">Q", timestamp) + struct.pack(
+            ">I", context.nonce_counter
+        )
 
         # Hash to get exactly 12 bytes for GCM
         nonce_hash = hashlib.sha256(nonce_data + context.session_id.encode()).digest()
@@ -289,7 +310,9 @@ class AudioEncryptionManager:
 
         # Generate new session key
         new_key = self._derive_session_key(
-            f"{session_id}_rotated_{int(datetime.utcnow().timestamp())}", context.device_id, context.user_id
+            f"{session_id}_rotated_{int(datetime.utcnow().timestamp())}",
+            context.device_id,
+            context.user_id,
         )
 
         # Update context
@@ -363,7 +386,9 @@ class AudioEncryptionManager:
         logger.info("Expired sessions cleaned up", count=len(expired_sessions))
         return len(expired_sessions)
 
-    async def encrypt_audio_stream(self, session_id: str, audio_chunks: List[bytes]) -> List[EncryptedAudioPacket]:
+    async def encrypt_audio_stream(
+        self, session_id: str, audio_chunks: List[bytes]
+    ) -> List[EncryptedAudioPacket]:
         """Encrypt multiple audio chunks as a stream"""
 
         encrypted_packets = []
@@ -372,7 +397,9 @@ class AudioEncryptionManager:
             packet = await self.encrypt_audio_data(session_id, chunk, i)
             encrypted_packets.append(packet)
 
-        logger.info("Audio stream encrypted", session_id=session_id, chunks=len(audio_chunks))
+        logger.info(
+            "Audio stream encrypted", session_id=session_id, chunks=len(audio_chunks)
+        )
 
         return encrypted_packets
 
@@ -391,7 +418,9 @@ class AudioEncryptionManager:
         # Combine all chunks
         full_audio = b"".join(decrypted_chunks)
 
-        logger.info("Audio stream decrypted", packets=len(packets), total_size=len(full_audio))
+        logger.info(
+            "Audio stream decrypted", packets=len(packets), total_size=len(full_audio)
+        )
 
         return full_audio
 

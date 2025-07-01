@@ -20,7 +20,9 @@ Following Repository Pattern:
 """
 
 from .mongodb import MongoAnalyticsRepository, MongoLogRepository
-from .postgresql import PostgreSQLChildRepository, PostgreSQLConversationRepository, PostgreSQLEventStore
+from .postgresql import (PostgreSQLChildRepository,
+                         PostgreSQLConversationRepository,
+                         PostgreSQLEventStore)
 from .redis import RedisCacheRepository, RedisSessionRepository
 from .s3 import S3AudioFileRepository, S3BackupRepository
 

@@ -13,10 +13,7 @@ from typing import Optional
 from openai import AsyncOpenAI
 
 from application.services.moderation_service_modern import (
-    ModerationConfig,
-    ModernModerationService,
-    create_moderation_service,
-)
+    ModerationConfig, ModernModerationService, create_moderation_service)
 
 # ================== INTEGRATION WITH DI CONTAINER ==================
 
@@ -27,12 +24,16 @@ async def setup_moderation_in_container():
     # Method 1: Using factory function
     moderation_service = await create_moderation_service(
         openai_api_key="your-openai-api-key-here",  # From environment
-        config=ModerationConfig(enable_ai_fallback=True, ai_threshold_chars=25, strict_mode_age=13),
+        config=ModerationConfig(
+            enable_ai_fallback=True, ai_threshold_chars=25, strict_mode_age=13
+        ),
     )
 
     # Method 2: Manual initialization
     openai_client = AsyncOpenAI(api_key="your-openai-api-key")
-    moderation_service = ModernModerationService(openai_client=openai_client, config=ModerationConfig())
+    moderation_service = ModernModerationService(
+        openai_client=openai_client, config=ModerationConfig()
+    )
 
     return moderation_service
 
@@ -75,7 +76,10 @@ async def voice_interaction_moderation(text: str, child_age: int):
 
     if not is_safe:
         # Generate safe fallback response
-        return {"response": f"I didn't understand that. Let's talk about something fun instead!", "moderated": True}
+        return {
+            "response": f"I didn't understand that. Let's talk about something fun instead!",
+            "moderated": True,
+        }
 
     # Process normally
     return {"response": text, "moderated": False}
@@ -173,7 +177,12 @@ async def main_demo():
 
     # Test batch processing
     logger.info("\n5️⃣ Batch Processing:")
-    test_content = ["Hello world!", "I hate you stupid", "Call me at 555-123-4567", "Let's play a game!"]
+    test_content = [
+        "Hello world!",
+        "I hate you stupid",
+        "Call me at 555-123-4567",
+        "Let's play a game!",
+    ]
     batch_results = await batch_moderate_content(test_content)
     for result in batch_results:
         status = "✅" if result["safe"] else "❌"

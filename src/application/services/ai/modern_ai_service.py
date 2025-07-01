@@ -23,7 +23,8 @@ from openai import AsyncOpenAI
 from opentelemetry import trace
 from prometheus_client import Counter, Gauge, Histogram
 from pydantic import BaseModel, Field, validator
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from tenacity import (retry, retry_if_exception_type, stop_after_attempt,
+                      wait_exponential)
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent.parent

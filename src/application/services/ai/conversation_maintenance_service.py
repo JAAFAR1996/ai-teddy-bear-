@@ -14,7 +14,9 @@ class ConversationMaintenanceService:
         self.connection = connection
         self.logger = logging.getLogger(__name__)
 
-    async def delete_old_conversations(self, retention_days: int = 90, exclude_flagged: bool = True) -> int:
+    async def delete_old_conversations(
+        self, retention_days: int = 90, exclude_flagged: bool = True
+    ) -> int:
         """Delete old conversations."""
         cutoff_date = datetime.now() - timedelta(days=retention_days)
 
@@ -39,7 +41,9 @@ class ConversationMaintenanceService:
             self.logger.error(f"Error deleting old conversations: {e}")
             raise
 
-    async def archive_conversations(self, days_old: int = 30, archive_path: str = "archives/") -> int:
+    async def archive_conversations(
+        self, days_old: int = 30, archive_path: str = "archives/"
+    ) -> int:
         """Archive old conversations to storage."""
         cutoff_date = datetime.now() - timedelta(days=days_old)
 
@@ -226,7 +230,8 @@ class ConversationMaintenanceService:
                     "avg_duration_minutes": stats[0] or 0,
                     "avg_messages_per_conversation": stats[1] or 0,
                     "total_recent_conversations": stats[2] or 0,
-                    "flagged_rate_percentage": ((stats[3] or 0) / (stats[2] or 1)) * 100,
+                    "flagged_rate_percentage": ((stats[3] or 0) / (stats[2] or 1))
+                    * 100,
                     "avg_quality_score": stats[4] or 0,
                 },
                 "optimizations": optimizations,

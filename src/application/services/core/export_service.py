@@ -18,7 +18,8 @@ try:
     from reportlab.lib.pagesizes import A4, letter
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import inch
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer,
+                                    Table, TableStyle)
 
     REPORTLAB_AVAILABLE = True
 except ImportError:
@@ -33,7 +34,9 @@ class ExportService:
         if not REPORTLAB_AVAILABLE:
             self.logger.warning("ReportLab not available - PDF export will be limited")
 
-    async def export_conversation_history_as_json(self, conversations: List[Dict[str, Any]]) -> bytes:
+    async def export_conversation_history_as_json(
+        self, conversations: List[Dict[str, Any]]
+    ) -> bytes:
         """Export conversation history as JSON"""
 
         try:
@@ -49,7 +52,9 @@ class ExportService:
             self.logger.error(f"Error exporting as JSON: {e}")
             return b'{"error": "Export failed"}'
 
-    async def export_conversation_history_as_excel(self, conversations: List[Dict[str, Any]]) -> bytes:
+    async def export_conversation_history_as_excel(
+        self, conversations: List[Dict[str, Any]]
+    ) -> bytes:
         """Export conversation history as Excel file"""
 
         try:
@@ -63,7 +68,9 @@ class ExportService:
                         "Duration (minutes)": conv.get("duration_seconds", 0) / 60,
                         "Messages": conv.get("message_count", 0),
                         "Topics": ", ".join(conv.get("topics", [])),
-                        "Sentiment": conv.get("sentiment_scores", {}).get("positive", 0),
+                        "Sentiment": conv.get("sentiment_scores", {}).get(
+                            "positive", 0
+                        ),
                         "Quality Score": conv.get("quality_score", 0),
                         "Summary": conv.get("summary", ""),
                     }
@@ -83,7 +90,13 @@ class ExportService:
 
                 # Add formatting
                 header_format = workbook.add_format(
-                    {"bold": True, "text_wrap": True, "valign": "top", "fg_color": "#D7E4BC", "border": 1}
+                    {
+                        "bold": True,
+                        "text_wrap": True,
+                        "valign": "top",
+                        "fg_color": "#D7E4BC",
+                        "border": 1,
+                    }
                 )
 
                 # Write headers with formatting
@@ -118,7 +131,11 @@ class ExportService:
 
             # Title
             title_style = ParagraphStyle(
-                "CustomTitle", parent=styles["Heading1"], fontSize=18, spaceAfter=30, textColor=colors.darkblue
+                "CustomTitle",
+                parent=styles["Heading1"],
+                fontSize=18,
+                spaceAfter=30,
+                textColor=colors.darkblue,
             )
 
             story.append(Paragraph(f"Conversation History - {child_name}", title_style))
@@ -132,8 +149,12 @@ class ExportService:
             ]
 
             if conversations:
-                total_duration = sum(c.get("duration_seconds", 0) for c in conversations) / 60
-                avg_duration = total_duration / len(conversations) if conversations else 0
+                total_duration = (
+                    sum(c.get("duration_seconds", 0) for c in conversations) / 60
+                )
+                avg_duration = (
+                    total_duration / len(conversations) if conversations else 0
+                )
                 summary_data.extend(
                     [
                         ["Total Duration (minutes)", f"{total_duration:.1f}"],
@@ -165,7 +186,9 @@ class ExportService:
                 story.append(Paragraph("Detailed Conversations", styles["Heading2"]))
 
                 # Prepare table data
-                table_data = [["Date", "Duration (min)", "Messages", "Topics", "Summary"]]
+                table_data = [
+                    ["Date", "Duration (min)", "Messages", "Topics", "Summary"]
+                ]
 
                 for conv in conversations[:20]:  # Limit to 20 for PDF size
                     row = [
@@ -182,7 +205,16 @@ class ExportService:
                     table_data.append(row)
 
                 # Create table
-                conv_table = Table(table_data, colWidths=[1.2 * inch, 1 * inch, 0.8 * inch, 1.5 * inch, 2.5 * inch])
+                conv_table = Table(
+                    table_data,
+                    colWidths=[
+                        1.2 * inch,
+                        1 * inch,
+                        0.8 * inch,
+                        1.5 * inch,
+                        2.5 * inch,
+                    ],
+                )
                 conv_table.setStyle(
                     TableStyle(
                         [
@@ -211,7 +243,9 @@ class ExportService:
             self.logger.error(f"Error exporting as PDF: {e}")
             return self._export_simple_text_pdf(conversations, child_name)
 
-    def _export_simple_text_pdf(self, conversations: List[Dict[str, Any]], child_name: str) -> bytes:
+    def _export_simple_text_pdf(
+        self, conversations: List[Dict[str, Any]], child_name: str
+    ) -> bytes:
         """Fallback simple text-based PDF export"""
 
         try:
@@ -224,7 +258,9 @@ class ExportService:
             for i, conv in enumerate(conversations[:10], 1):
                 content += f"Conversation {i}:\n"
                 content += f"  Date: {conv.get('started_at', 'Unknown')}\n"
-                content += f"  Duration: {conv.get('duration_seconds', 0) / 60:.1f} minutes\n"
+                content += (
+                    f"  Duration: {conv.get('duration_seconds', 0) / 60:.1f} minutes\n"
+                )
                 content += f"  Messages: {conv.get('message_count', 0)}\n"
                 content += f"  Topics: {', '.join(conv.get('topics', []))}\n"
                 content += f"  Summary: {conv.get('summary', 'No summary')}\n"
@@ -248,7 +284,9 @@ class ExportService:
                     "generated_at": datetime.now().isoformat(),
                     "analytics": analytics_data,
                 }
-                return json.dumps(export_data, indent=2, ensure_ascii=False).encode("utf-8")
+                return json.dumps(export_data, indent=2, ensure_ascii=False).encode(
+                    "utf-8"
+                )
 
             elif format_type.lower() == "excel":
                 return await self._export_analytics_excel(analytics_data, child_name)
@@ -260,7 +298,9 @@ class ExportService:
             self.logger.error(f"Error exporting analytics report: {e}")
             return b"Export failed"
 
-    async def _export_analytics_excel(self, analytics_data: Dict[str, Any], child_name: str) -> bytes:
+    async def _export_analytics_excel(
+        self, analytics_data: Dict[str, Any], child_name: str
+    ) -> bytes:
         """Export analytics as Excel"""
 
         buffer = BytesIO()
@@ -282,19 +322,24 @@ class ExportService:
                 ],
             }
 
-            pd.DataFrame(summary_data).to_excel(writer, sheet_name="Summary", index=False)
+            pd.DataFrame(summary_data).to_excel(
+                writer, sheet_name="Summary", index=False
+            )
 
             # Topics sheet
             if "topics_frequency" in analytics_data:
                 topics_data = pd.DataFrame(
-                    list(analytics_data["topics_frequency"].items()), columns=["Topic", "Frequency"]
+                    list(analytics_data["topics_frequency"].items()),
+                    columns=["Topic", "Frequency"],
                 )
                 topics_data.to_excel(writer, sheet_name="Topics", index=False)
 
         buffer.seek(0)
         return buffer.read()
 
-    async def _export_analytics_pdf(self, analytics_data: Dict[str, Any], child_name: str) -> bytes:
+    async def _export_analytics_pdf(
+        self, analytics_data: Dict[str, Any], child_name: str
+    ) -> bytes:
         """Export analytics as PDF"""
 
         if not REPORTLAB_AVAILABLE:
@@ -303,7 +348,9 @@ class ExportService:
             content += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
             content += "=" * 50 + "\n\n"
 
-            content += f"Total Conversations: {analytics_data.get('total_conversations', 0)}\n"
+            content += (
+                f"Total Conversations: {analytics_data.get('total_conversations', 0)}\n"
+            )
             content += f"Total Duration: {analytics_data.get('total_duration_minutes', 0):.1f} minutes\n"
             content += f"Average Session: {analytics_data.get('average_session_minutes', 0):.1f} minutes\n"
             content += f"Quality Score: {analytics_data.get('interaction_quality_score', 0):.2f}\n"
@@ -324,9 +371,18 @@ class ExportService:
         metrics_data = [
             ["Metric", "Value"],
             ["Total Conversations", str(analytics_data.get("total_conversations", 0))],
-            ["Total Duration (minutes)", f"{analytics_data.get('total_duration_minutes', 0):.1f}"],
-            ["Average Session (minutes)", f"{analytics_data.get('average_session_minutes', 0):.1f}"],
-            ["Quality Score", f"{analytics_data.get('interaction_quality_score', 0):.2f}"],
+            [
+                "Total Duration (minutes)",
+                f"{analytics_data.get('total_duration_minutes', 0):.1f}",
+            ],
+            [
+                "Average Session (minutes)",
+                f"{analytics_data.get('average_session_minutes', 0):.1f}",
+            ],
+            [
+                "Quality Score",
+                f"{analytics_data.get('interaction_quality_score', 0):.2f}",
+            ],
         ]
 
         metrics_table = Table(metrics_data)

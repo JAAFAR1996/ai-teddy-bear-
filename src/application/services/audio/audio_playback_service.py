@@ -7,7 +7,8 @@ from typing import Any, Callable, Dict, Optional
 
 import numpy as np
 
-from ....domain.audio.models import AudioFormatType, AudioSession, AudioSystemConfig, PerformanceMetrics
+from ....domain.audio.models import (AudioFormatType, AudioSession,
+                                     AudioSystemConfig, PerformanceMetrics)
 
 
 class AudioPlaybackService:
@@ -47,7 +48,10 @@ class AudioPlaybackService:
             import pygame
 
             pygame.mixer.pre_init(
-                frequency=self.config.sample_rate, size=-16, channels=self.config.channels, buffer=1024
+                frequency=self.config.sample_rate,
+                size=-16,
+                channels=self.config.channels,
+                buffer=1024,
             )
             pygame.mixer.init()
             self.pygame_available = True
@@ -103,9 +107,13 @@ class AudioPlaybackService:
             # Choose playback method
             success = False
             if filename:
-                success = self._play_audio_file(filename, volume, loop, fade_in, fade_out, format_hint)
+                success = self._play_audio_file(
+                    filename, volume, loop, fade_in, fade_out, format_hint
+                )
             elif audio_data is not None:
-                success = self._play_audio_array(audio_data, volume, loop, fade_in, fade_out)
+                success = self._play_audio_array(
+                    audio_data, volume, loop, fade_in, fade_out
+                )
 
             if success:
                 # Update metrics
@@ -158,7 +166,12 @@ class AudioPlaybackService:
             self._start_playback(session)
 
             success = self.tts.speak(
-                text=text, language=language, speed=speed, volume=volume, cache=cache, voice_style=voice_style
+                text=text,
+                language=language,
+                speed=speed,
+                volume=volume,
+                cache=cache,
+                voice_style=voice_style,
             )
 
             if success:
@@ -252,7 +265,12 @@ class AudioPlaybackService:
             return False
 
     def _play_audio_array(
-        self, audio_data: np.ndarray, volume: float, loop: bool, fade_in: float, fade_out: float
+        self,
+        audio_data: np.ndarray,
+        volume: float,
+        loop: bool,
+        fade_in: float,
+        fade_out: float,
     ) -> bool:
         """Play audio from numpy array."""
         try:
@@ -300,7 +318,9 @@ class AudioPlaybackService:
         self.logger.warning("Pygame array playback not fully implemented")
         return False
 
-    def _apply_fades(self, audio_data: np.ndarray, fade_in: float, fade_out: float) -> np.ndarray:
+    def _apply_fades(
+        self, audio_data: np.ndarray, fade_in: float, fade_out: float
+    ) -> np.ndarray:
         """Apply fade in/out effects to audio data."""
         if len(audio_data) == 0:
             return audio_data
@@ -351,7 +371,11 @@ class AudioPlaybackService:
         """Get current playback status."""
         return {
             "is_playing": self._is_playing,
-            "current_session": (self._current_playback_session.session_id if self._current_playback_session else None),
+            "current_session": (
+                self._current_playback_session.session_id
+                if self._current_playback_session
+                else None
+            ),
             "volume": self.config.volume_level,
             "pygame_available": self.pygame_available,
             "tts_available": self.tts_available,

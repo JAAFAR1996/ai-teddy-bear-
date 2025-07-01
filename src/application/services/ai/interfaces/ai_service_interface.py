@@ -49,7 +49,9 @@ class IEmotionAnalyzer(ABC):
 
 class BaseAIService(IAIService):
     async def generate_response(self, request: AIRequest) -> AIResponse:
-        return AIResponse(text="مرحبا! كيف يمكنني مساعدتك؟", confidence=0.9, safety_score=0.95)
+        return AIResponse(
+            text="مرحبا! كيف يمكنني مساعدتك؟", confidence=0.9, safety_score=0.95
+        )
 
     def get_available_models(self) -> List[str]:
         return ["gpt-3.5-turbo", "gpt-4"]
@@ -57,19 +59,27 @@ class BaseAIService(IAIService):
 
 class IResponseGenerator(ABC):
     @abstractmethod
-    async def generate_text_response(self, prompt: str, context: Dict[str, Any] = None) -> str:
+    async def generate_text_response(
+        self, prompt: str, context: Dict[str, Any] = None
+    ) -> str:
         pass
 
     @abstractmethod
-    async def generate_audio_response(self, text: str, voice_config: Dict[str, Any] = None) -> bytes:
+    async def generate_audio_response(
+        self, text: str, voice_config: Dict[str, Any] = None
+    ) -> bytes:
         pass
 
 
 class BaseResponseGenerator(IResponseGenerator):
-    async def generate_text_response(self, prompt: str, context: Dict[str, Any] = None) -> str:
+    async def generate_text_response(
+        self, prompt: str, context: Dict[str, Any] = None
+    ) -> str:
         return "مرحبا! كيف يمكنني مساعدتك؟"
 
-    async def generate_audio_response(self, text: str, voice_config: Dict[str, Any] = None) -> bytes:
+    async def generate_audio_response(
+        self, text: str, voice_config: Dict[str, Any] = None
+    ) -> bytes:
         return b"mock_audio_response"
 
 
@@ -141,7 +151,11 @@ class BaseConversationManager(IConversationManager):
         import uuid
 
         session_id = str(uuid.uuid4())
-        self.conversations[session_id] = {"child_id": child_id, "started_at": "2024-01-01T00:00:00", "messages": []}
+        self.conversations[session_id] = {
+            "child_id": child_id,
+            "started_at": "2024-01-01T00:00:00",
+            "messages": [],
+        }
         return session_id
 
     async def end_conversation(self, session_id: str) -> bool:

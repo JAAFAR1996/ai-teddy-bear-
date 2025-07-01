@@ -149,26 +149,38 @@ class ContinuousLearningSystem:
     async def continuous_improvement_loop(self) -> None:
         """حلقة التحسين المستمر"""
 
-        cycle_interval = self.config.get("learning_cycle_hours", 24) * 3600  # Default: 24 hours
+        cycle_interval = (
+            self.config.get("learning_cycle_hours", 24) * 3600
+        )  # Default: 24 hours
 
         while self.is_running:
             try:
                 cycle_start = datetime.utcnow()
-                logger.info(f"🔄 Starting learning cycle {self.learning_stats['total_learning_cycles'] + 1}")
+                logger.info(
+                    f"🔄 Starting learning cycle {self.learning_stats['total_learning_cycles'] + 1}"
+                )
 
                 # جمع التغذية الراجعة من جميع المصادر
                 feedback_data = await self.feedback_collector.collect_daily_feedback()
-                logger.info(f"📊 Collected feedback from {len(feedback_data)} interactions")
+                logger.info(
+                    f"📊 Collected feedback from {len(feedback_data)} interactions"
+                )
 
                 # تقييم الأداء الحالي للنماذج
-                performance_results = await self.model_evaluator.evaluate_current_models()
+                performance_results = (
+                    await self.model_evaluator.evaluate_current_models()
+                )
                 logger.info(f"📈 Evaluated {len(performance_results)} models")
 
                 # تحليل الحاجة لإعادة التدريب
-                retrain_decisions = await self._analyze_retraining_needs(feedback_data, performance_results)
+                retrain_decisions = await self._analyze_retraining_needs(
+                    feedback_data, performance_results
+                )
 
                 if retrain_decisions["should_retrain"]:
-                    logger.info("🎯 Retraining required - starting model improvement process")
+                    logger.info(
+                        "🎯 Retraining required - starting model improvement process"
+                    )
 
                     # إعداد بيانات التدريب الجديدة
                     training_data = await self._prepare_enhanced_training_data(
@@ -186,7 +198,9 @@ class ContinuousLearningSystem:
                     ab_test_results = await self._run_comprehensive_ab_test(
                         current_models=self.current_models,
                         new_models=new_models,
-                        test_duration_hours=self.config.get("ab_test_duration_hours", 6),
+                        test_duration_hours=self.config.get(
+                            "ab_test_duration_hours", 6
+                        ),
                     )
 
                     # نشر النماذج المحسنة إذا كانت أفضل
@@ -196,10 +210,14 @@ class ContinuousLearningSystem:
                         self.learning_stats["successful_deployments"] += 1
 
                     else:
-                        logger.info("🤔 New models did not show significant improvement - keeping current models")
+                        logger.info(
+                            "🤔 New models did not show significant improvement - keeping current models"
+                        )
 
                 # استخراج الرؤى من التفاعلات
-                learning_insights = await self._extract_learning_insights(feedback_data, performance_results)
+                learning_insights = await self._extract_learning_insights(
+                    feedback_data, performance_results
+                )
                 await self._update_insights_database(learning_insights)
 
                 # تحديث قاعدة المعرفة
@@ -213,7 +231,9 @@ class ContinuousLearningSystem:
                 cycle_duration = (datetime.utcnow() - cycle_start).total_seconds()
                 self.learning_stats["total_learning_cycles"] += 1
 
-                logger.info(f"✅ Learning cycle completed in {cycle_duration:.1f} seconds")
+                logger.info(
+                    f"✅ Learning cycle completed in {cycle_duration:.1f} seconds"
+                )
 
                 # النوم حتى الدورة التالية
                 await asyncio.sleep(cycle_interval)
@@ -225,7 +245,9 @@ class ContinuousLearningSystem:
                 logger.error(f"Error in learning cycle: {str(e)}")
                 await asyncio.sleep(3600)  # Wait 1 hour before retry
 
-    async def _analyze_retraining_needs(self, feedback_data: Dict, performance_results: Dict) -> Dict[str, Any]:
+    async def _analyze_retraining_needs(
+        self, feedback_data: Dict, performance_results: Dict
+    ) -> Dict[str, Any]:
         """تحليل الحاجة لإعادة التدريب"""
 
         should_retrain = False
@@ -258,7 +280,9 @@ class ContinuousLearningSystem:
         if feedback_analysis["new_patterns_detected"]:
             should_retrain = True
             focus_areas.extend(feedback_analysis["focus_areas"])
-            logger.info("🆕 New interaction patterns detected - adaptive learning required")
+            logger.info(
+                "🆕 New interaction patterns detected - adaptive learning required"
+            )
 
         # تحليل التدهور التدريجي
         performance_trend = await self._analyze_performance_degradation()
@@ -272,13 +296,19 @@ class ContinuousLearningSystem:
             "focus_areas": list(set(focus_areas)),
             "strategy": strategy,
             "confidence": min(1.0, len(focus_areas) * 0.3),
-            "urgency": "high" if strategy == LearningStrategy.FULL_RETRAIN else "normal",
+            "urgency": (
+                "high" if strategy == LearningStrategy.FULL_RETRAIN else "normal"
+            ),
         }
 
-    async def _prepare_enhanced_training_data(self, feedback_data: Dict, focus_areas: List[str]) -> Dict[str, Any]:
+    async def _prepare_enhanced_training_data(
+        self, feedback_data: Dict, focus_areas: List[str]
+    ) -> Dict[str, Any]:
         """إعداد بيانات التدريب المحسنة"""
 
-        logger.info(f"📚 Preparing enhanced training data for focus areas: {focus_areas}")
+        logger.info(
+            f"📚 Preparing enhanced training data for focus areas: {focus_areas}"
+        )
 
         # تجميع البيانات من مصادر متعددة
         training_datasets = {
@@ -294,13 +324,21 @@ class ContinuousLearningSystem:
 
         for focus_area in focus_areas:
             if focus_area == "child_engagement":
-                enhanced_data["engagement"] = await self._enhance_engagement_data(training_datasets)
+                enhanced_data["engagement"] = await self._enhance_engagement_data(
+                    training_datasets
+                )
             elif focus_area == "safety_enhancement":
-                enhanced_data["safety"] = await self._enhance_safety_data(training_datasets)
+                enhanced_data["safety"] = await self._enhance_safety_data(
+                    training_datasets
+                )
             elif focus_area == "accuracy_improvement":
-                enhanced_data["accuracy"] = await self._enhance_accuracy_data(training_datasets)
+                enhanced_data["accuracy"] = await self._enhance_accuracy_data(
+                    training_datasets
+                )
             elif focus_area == "performance_restoration":
-                enhanced_data["performance"] = await self._enhance_performance_data(training_datasets)
+                enhanced_data["performance"] = await self._enhance_performance_data(
+                    training_datasets
+                )
 
         # تطبيق تقنيات تحسين البيانات
         enhanced_data = await self._apply_data_augmentation(enhanced_data, focus_areas)
@@ -323,7 +361,9 @@ class ContinuousLearningSystem:
     ) -> Dict[str, Any]:
         """تشغيل اختبارات A/B شاملة"""
 
-        logger.info(f"🧪 Starting comprehensive A/B test for {test_duration_hours} hours")
+        logger.info(
+            f"🧪 Starting comprehensive A/B test for {test_duration_hours} hours"
+        )
 
         # إعداد اختبار A/B
         test_config = {
@@ -337,12 +377,18 @@ class ContinuousLearningSystem:
                 "parent_approval",
                 "learning_effectiveness",
             ],
-            "safety_thresholds": {"min_safety_score": 0.95, "max_response_time": 2.0, "min_accuracy": 0.85},
+            "safety_thresholds": {
+                "min_safety_score": 0.95,
+                "max_response_time": 2.0,
+                "min_accuracy": 0.85,
+            },
         }
 
         # تشغيل الاختبار مع مراقبة مستمرة
         test_results = await self.deployment_manager.run_ab_test(
-            control_models=current_models, treatment_models=new_models, config=test_config
+            control_models=current_models,
+            treatment_models=new_models,
+            config=test_config,
         )
 
         # تحليل النتائج إحصائياً
@@ -350,7 +396,8 @@ class ContinuousLearningSystem:
 
         # تقييم التحسن الإجمالي
         improvement_score = await self._calculate_improvement_score(
-            current_performance=test_results["control_metrics"], new_performance=test_results["treatment_metrics"]
+            current_performance=test_results["control_metrics"],
+            new_performance=test_results["treatment_metrics"],
         )
 
         # تحديد ما إذا كانت النماذج الجديدة أفضل بشكل كبير
@@ -367,13 +414,16 @@ class ContinuousLearningSystem:
             "new_models_superior": new_models_superior,
             "improvement_score": improvement_score,
             "statistical_significance": statistical_analysis["p_value"],
-            "safety_maintained": test_results["treatment_metrics"]["safety_score"] >= 0.95,
+            "safety_maintained": test_results["treatment_metrics"]["safety_score"]
+            >= 0.95,
             "detailed_results": test_results,
             "recommendation": "deploy" if new_models_superior else "keep_current",
             "confidence": statistical_analysis["confidence_interval"],
         }
 
-    async def _deploy_improved_models(self, new_models: Dict, ab_test_results: Dict) -> None:
+    async def _deploy_improved_models(
+        self, new_models: Dict, ab_test_results: Dict
+    ) -> None:
         """نشر النماذج المحسنة"""
 
         logger.info("🚀 Deploying improved models to production")
@@ -391,7 +441,9 @@ class ContinuousLearningSystem:
 
         # بدء النشر التدريجي
         deployment_result = await self.deployment_manager.deploy_models(
-            models=new_models, strategy=deployment_strategy, ab_test_evidence=ab_test_results
+            models=new_models,
+            strategy=deployment_strategy,
+            ab_test_evidence=ab_test_results,
         )
 
         if deployment_result["success"]:
@@ -400,14 +452,18 @@ class ContinuousLearningSystem:
 
             # بدء مراقبة الأداء
             await self.performance_monitor.start_deployment_monitoring(
-                deployment_id=deployment_result["deployment_id"], models=new_models, monitoring_duration_hours=48
+                deployment_id=deployment_result["deployment_id"],
+                models=new_models,
+                monitoring_duration_hours=48,
             )
 
             logger.info("✅ Model deployment completed successfully")
         else:
             logger.error(f"❌ Model deployment failed: {deployment_result['error']}")
 
-    async def _extract_learning_insights(self, feedback_data: Dict, performance_results: Dict) -> List[LearningInsight]:
+    async def _extract_learning_insights(
+        self, feedback_data: Dict, performance_results: Dict
+    ) -> List[LearningInsight]:
         """استخراج الرؤى من البيانات"""
 
         insights = []
@@ -428,7 +484,9 @@ class ContinuousLearningSystem:
             insights.append(insight)
 
         # تحليل فعالية التعلم
-        learning_effectiveness = await self._analyze_learning_effectiveness(feedback_data)
+        learning_effectiveness = await self._analyze_learning_effectiveness(
+            feedback_data
+        )
         for finding in learning_effectiveness:
             insight = LearningInsight(
                 insight_id=f"learning_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{len(insights)}",
@@ -470,7 +528,8 @@ class ContinuousLearningSystem:
 
         # إعادة التدريب مطلوبة إذا:
         return (
-            safety_score < ModelPerformanceThreshold.EXCELLENT.value  # Safety is critical
+            safety_score
+            < ModelPerformanceThreshold.EXCELLENT.value  # Safety is critical
             or accuracy < ModelPerformanceThreshold.GOOD.value
             or child_satisfaction < 0.8
             or self._detect_concept_drift(feedback, performance)
@@ -487,7 +546,10 @@ class ContinuousLearningSystem:
             return False
 
         # حساب الاختلاف في الأنماط
-        pattern_drift = abs(recent_patterns.get("avg_sentiment", 0.5) - historical_patterns.get("avg_sentiment", 0.5))
+        pattern_drift = abs(
+            recent_patterns.get("avg_sentiment", 0.5)
+            - historical_patterns.get("avg_sentiment", 0.5)
+        )
 
         return pattern_drift > 0.2  # عتبة كشف الانحراف
 
@@ -500,7 +562,9 @@ class ContinuousLearningSystem:
             "system_status": "active" if self.is_running else "stopped",
             "learning_statistics": self.learning_stats,
             "current_models": {k: v.__dict__ for k, v in self.current_models.items()},
-            "recent_insights": [insight.__dict__ for insight in self.insights_database[-10:]],
+            "recent_insights": [
+                insight.__dict__ for insight in self.insights_database[-10:]
+            ],
             "performance_trends": await self._get_performance_trends(),
             "recommendations": await self._generate_recommendations(),
         }
@@ -518,9 +582,17 @@ class ContinuousLearningSystem:
             "feedback_window_days": 7,
             "performance_monitoring": {
                 "enabled": True,
-                "alert_thresholds": {"safety_score": 0.95, "accuracy": 0.85, "response_time": 2.0},
+                "alert_thresholds": {
+                    "safety_score": 0.95,
+                    "accuracy": 0.85,
+                    "response_time": 2.0,
+                },
             },
-            "privacy_settings": {"anonymize_data": True, "encryption_enabled": True, "retention_days": 30},
+            "privacy_settings": {
+                "anonymize_data": True,
+                "encryption_enabled": True,
+                "retention_days": 30,
+            },
         }
 
     # Placeholder methods for complex operations

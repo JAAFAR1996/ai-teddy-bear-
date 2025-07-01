@@ -62,7 +62,12 @@ class UnifiedMonitoringService:
 
     def _load_config(self) -> Dict[str, Any]:
         """تحميل إعدادات المراقبة"""
-        return {"max_issues": 1000, "retention_days": 30, "alert_threshold": 10, "db_path": "monitoring_issues.db"}
+        return {
+            "max_issues": 1000,
+            "retention_days": 30,
+            "alert_threshold": 10,
+            "db_path": "monitoring_issues.db",
+        }
 
     def _init_database(self) -> None:
         """تهيئة قاعدة بيانات المراقبة"""
@@ -109,7 +114,9 @@ class UnifiedMonitoringService:
 
     def _init_counters(self) -> None:
         """تهيئة عدادات المعدل"""
-        self.rate_counters = defaultdict(lambda: {"count": 0, "last_reset": time.time()})
+        self.rate_counters = defaultdict(
+            lambda: {"count": 0, "last_reset": time.time()}
+        )
         self.rate_limits = {
             "/api/chat": 60,  # 60 requests per minute
             "/api/voice": 30,  # 30 requests per minute
@@ -130,15 +137,27 @@ class UnifiedMonitoringService:
             services_health = self._check_services_health()
 
             return {
-                "status": "healthy" if cpu_percent < 80 and memory.percent < 85 else "degraded",
+                "status": (
+                    "healthy"
+                    if cpu_percent < 80 and memory.percent < 85
+                    else "degraded"
+                ),
                 "timestamp": datetime.utcnow().isoformat(),
-                "system": {"cpu_percent": cpu_percent, "memory_percent": memory.percent, "disk_percent": disk.percent},
+                "system": {
+                    "cpu_percent": cpu_percent,
+                    "memory_percent": memory.percent,
+                    "disk_percent": disk.percent,
+                },
                 "services": services_health,
                 "uptime": time.time() - psutil.boot_time(),
             }
         except Exception as e:
             logger.error(f"Error getting health status: {e}")
-            return {"status": "error", "error": str(e), "timestamp": datetime.utcnow().isoformat()}
+            return {
+                "status": "error",
+                "error": str(e),
+                "timestamp": datetime.utcnow().isoformat(),
+            }
 
     # ==========================================
     # دوال مساعدة إضافية

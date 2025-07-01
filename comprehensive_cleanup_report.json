@@ -1,16 +1,16 @@
 {
   "metadata": {
-    "date": "2025-07-01T11:33:49.801097",
-    "dry_run": true,
-    "backup_dir": "final_backup_20250701_113348"
+    "date": "2025-07-01T11:43:35.410093",
+    "dry_run": false,
+    "backup_dir": "final_backup_20250701_114318"
   },
   "statistics": {
-    "deleted_files": 177,
-    "deleted_dirs": 30,
-    "moved_files": 45,
-    "merged_files": 110,
-    "fixed_issues": 4,
-    "total_size_saved": 0
+    "deleted_files": 97,
+    "deleted_dirs": 64,
+    "moved_files": 32,
+    "merged_files": 94,
+    "fixed_issues": 2,
+    "total_size_saved": 491465
   },
   "actions": {
     "phase1_cleanup": [
@@ -21,11 +21,6 @@
       },
       {
         "action": "delete_file",
-        "path": "backup_before_reorganization\\src\\testing\\demo_runner.py",
-        "reason": "Classified as trash"
-      },
-      {
-        "action": "delete_file",
         "path": "src\\testing\\demo_runner.py",
         "reason": "Classified as trash"
       },
@@ -33,113 +28,14 @@
         "action": "delete_file",
         "path": "tests\\unit\\ui\\test_simple.py",
         "reason": "Classified as trash"
-      },
-      {
-        "action": "delete_file",
-        "path": "backup_before_reorganization\\src\\testing\\demo_runner.py",
-        "reason": "Empty file"
       },
       {
         "action": "delete_file",
         "path": "src\\infrastructure\\external_services\\mock\\__init__.py",
         "reason": "Empty file"
-      },
-      {
-        "action": "delete_file",
-        "path": "src\\testing\\demo_runner.py",
-        "reason": "Empty file"
-      },
-      {
-        "action": "delete_file",
-        "path": "tests\\unit\\ui\\test_simple.py",
-        "reason": "Empty file"
       }
     ],
     "phase2_dedup": [
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\application\\accessibility\\dto\\__init__.py",
-        "kept": ".\\src\\application\\accessibility\\dto\\__init__.py",
-        "hash": "da480b53"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\application\\queries\\__init__.py",
-        "kept": ".\\src\\application\\queries\\__init__.py",
-        "hash": "ce458cdd"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\application\\services\\core\\__init__.py",
-        "kept": ".\\src\\application\\services\\core\\__init__.py",
-        "hash": "05acb17d"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\application\\use_cases\\__init__.py",
-        "kept": ".\\src\\application\\use_cases\\__init__.py",
-        "hash": "f6d7b42f"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\compliance\\reports\\__init__.py",
-        "kept": ".\\src\\compliance\\reports\\__init__.py",
-        "hash": "febe9082"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\domain\\services\\__init__.py",
-        "kept": ".\\src\\domain\\services\\__init__.py",
-        "hash": "71a97f9f"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\domain\\streaming\\aggregates\\__init__.py",
-        "kept": ".\\src\\domain\\streaming\\aggregates\\__init__.py",
-        "hash": "5583da6f"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\domain\\value_objects\\__init__.py",
-        "kept": ".\\src\\domain\\value_objects\\__init__.py",
-        "hash": "bec7625e"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\infrastructure\\services\\monitoring\\__init__.py",
-        "kept": ".\\src\\infrastructure\\services\\monitoring\\__init__.py",
-        "hash": "ab17bbed"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\infrastructure\\streaming\\persistence\\__init__.py",
-        "kept": ".\\src\\infrastructure\\streaming\\persistence\\__init__.py",
-        "hash": "190e73ae"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\ml\\deployment\\__init__.py",
-        "kept": ".\\src\\ml\\deployment\\__init__.py",
-        "hash": "c06e62ad"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\presentation\\__init__.py",
-        "kept": ".\\src\\presentation\\__init__.py",
-        "hash": "84effd5e"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\shared\\__init__.py",
-        "kept": ".\\src\\shared\\__init__.py",
-        "hash": "45b12471"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\backup_before_reorganization\\src\\simulators\\__init__.py",
-        "kept": ".\\src\\simulators\\__init__.py",
-        "hash": "0a70175f"
-      },
       {
         "action": "merge_duplicate",
         "deleted": ".\\src\\core\\domain\\entities\\base.py",
@@ -646,18 +542,6 @@
       },
       {
         "action": "merge_duplicate",
-        "deleted": ".\\src\\testing\\demo_runner.py",
-        "kept": ".\\src\\infrastructure\\external_services\\mock\\__init__.py",
-        "hash": "d41d8cd9"
-      },
-      {
-        "action": "merge_duplicate",
-        "deleted": ".\\tests\\unit\\ui\\test_simple.py",
-        "kept": ".\\src\\infrastructure\\external_services\\mock\\__init__.py",
-        "hash": "d41d8cd9"
-      },
-      {
-        "action": "merge_duplicate",
         "deleted": ".\\src\\infrastructure\\middleware\\rate_limiter.py",
         "kept": ".\\src\\infrastructure\\security\\rate_limiter.py",
         "hash": "9f7cec15"
@@ -741,78 +625,6 @@
         "from": "service_fixes.py",
         "to": "src\\core\\services\\service_fixes.py",
         "type": "service"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\application\\services\\enhanced_componentshume_componentsintegration\\emotioncalibrationconfig.py",
-        "to": "configs\\emotioncalibrationconfig.py",
-        "type": "config"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\domain\\emotion_config.py",
-        "to": "configs\\emotion_config.py",
-        "type": "config"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\infrastructure\\config_manager.py",
-        "to": "configs\\config_manager.py",
-        "type": "config"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\infrastructure\\config\\secure_configuration.py",
-        "to": "configs\\secure_configuration.py",
-        "type": "config"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\infrastructure\\messaging\\kafka_config.py",
-        "to": "configs\\kafka_config.py",
-        "type": "config"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\ml\\components\\transcription_component.py",
-        "to": "scripts\\transcription_component.py",
-        "type": "script"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\presentation\\simple_compatibility_test.py",
-        "to": "tests\\simple_compatibility_test.py",
-        "type": "test"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\presentation\\test_backward_compatibility.py",
-        "to": "tests\\test_backward_compatibility.py",
-        "type": "test"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\presentation\\ui\\audio\\audio_config.py",
-        "to": "configs\\audio_config.py",
-        "type": "config"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\testing\\ai_test_demo.py",
-        "to": "tests\\ai_test_demo.py",
-        "type": "test"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\testing\\ai_test_generator.py",
-        "to": "tests\\ai_test_generator.py",
-        "type": "test"
-      },
-      {
-        "action": "move_file",
-        "from": "backup_before_reorganization\\src\\testing\\test_validator.py",
-        "to": "tests\\test_validator.py",
-        "type": "test"
       },
       {
         "action": "move_file",
@@ -936,12 +748,6 @@
       },
       {
         "action": "move_file",
-        "from": "src\\infrastructure\\config\\__init__.py",
-        "to": "configs\\__init__.py",
-        "type": "config"
-      },
-      {
-        "action": "move_file",
         "from": "src\\infrastructure\\messaging\\kafka_config.py",
         "to": "configs\\kafka_config.py",
         "type": "config"
@@ -990,30 +796,6 @@
       }
     ],
     "phase4_fix": [
-      {
-        "action": "security_warning",
-        "file": "backup_before_reorganization\\src\\infrastructure\\security\\safe_expression_parser.py",
-        "issues": [
-          "Uses eval() - security risk",
-          "Uses exec() - security risk"
-        ]
-      },
-      {
-        "action": "security_warning",
-        "file": "backup_before_reorganization\\src\\infrastructure\\security\\security_migration_examples.py",
-        "issues": [
-          "Uses eval() - security risk",
-          "Uses exec() - security risk"
-        ]
-      },
-      {
-        "action": "security_warning",
-        "file": "backup_before_reorganization\\src\\infrastructure\\security\\security_solutions_integration.py",
-        "issues": [
-          "Uses eval() - security risk",
-          "Uses exec() - security risk"
-        ]
-      },
       {
         "action": "security_warning",
         "file": "scripts\\advanced_deep_analyzer.py",

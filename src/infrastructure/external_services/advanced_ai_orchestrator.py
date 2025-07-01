@@ -149,7 +149,10 @@ class ConversationContextManager:
         self.context_cache = TTLCache(maxsize=1000, ttl=1800)
 
     async def optimize_context(
-        self, conversation_history: List[Dict[str, str]], child_profile: Dict[str, Any], current_emotion: str
+        self,
+        conversation_history: List[Dict[str, str]],
+        child_profile: Dict[str, Any],
+        current_emotion: str,
     ) -> Dict[str, Any]:
         """تحسين سياق المحادثة"""
 
@@ -159,19 +162,27 @@ class ConversationContextManager:
             return cached_context
 
         # تحسين التاريخ
-        optimized_history = conversation_history[-5:] if len(conversation_history) > 5 else conversation_history
+        optimized_history = (
+            conversation_history[-5:]
+            if len(conversation_history) > 5
+            else conversation_history
+        )
 
         optimized_context = {
             "history": optimized_history,
             "child_profile": child_profile,
             "current_emotion": current_emotion,
-            "optimization_hints": self._generate_optimization_hints(child_profile, current_emotion),
+            "optimization_hints": self._generate_optimization_hints(
+                child_profile, current_emotion
+            ),
         }
 
         self.context_cache[cache_key] = optimized_context
         return optimized_context
 
-    def _generate_optimization_hints(self, child_profile: Dict[str, Any], emotion: str) -> Dict[str, Any]:
+    def _generate_optimization_hints(
+        self, child_profile: Dict[str, Any], emotion: str
+    ) -> Dict[str, Any]:
         """توليد تلميحات التحسين"""
 
         hints = {}
@@ -202,7 +213,9 @@ class AdvancedAIOrchestrator:
         self.performance_tracker = {}
         self.logger = structlog.get_logger(__name__)
 
-    async def generate_intelligent_response(self, request: ChildRequest) -> Dict[str, Any]:
+    async def generate_intelligent_response(
+        self, request: ChildRequest
+    ) -> Dict[str, Any]:
         """نظام توجيه ذكي للمودلات حسب نوع الطلب"""
 
         start_time = time.time()
@@ -235,18 +248,24 @@ class AdvancedAIOrchestrator:
 
             # 5. توليد الاستجابة
             response = await self._generate_with_model(
-                model_config=model_config, request=request, optimized_context=optimized_context
+                model_config=model_config,
+                request=request,
+                optimized_context=optimized_context,
             )
 
             # 6. تحسين الاستجابة
-            enhanced_response = await self._enhance_response(response, request, optimized_context)
+            enhanced_response = await self._enhance_response(
+                response, request, optimized_context
+            )
 
             # 7. حفظ في الكاش
             self.response_cache[cache_key] = enhanced_response
 
             # 8. تحديث الإحصائيات
             processing_time = time.time() - start_time
-            await self._update_performance_stats(model_config.model_name, processing_time, enhanced_response)
+            await self._update_performance_stats(
+                model_config.model_name, processing_time, enhanced_response
+            )
 
             return enhanced_response
 
@@ -273,7 +292,10 @@ class AdvancedAIOrchestrator:
             return RequestType.GENERAL_CHAT
 
     async def _generate_with_model(
-        self, model_config: ModelConfig, request: ChildRequest, optimized_context: Dict[str, Any]
+        self,
+        model_config: ModelConfig,
+        request: ChildRequest,
+        optimized_context: Dict[str, Any],
     ) -> Dict[str, Any]:
         """توليد الاستجابة باستخدام المودل المحدد"""
 
@@ -288,7 +310,9 @@ class AdvancedAIOrchestrator:
         elif "قصة" in request.text:
             content = "بالتأكيد! دعني أحكي لك قصة جميلة..."
         else:
-            content = f"شكراً لك على رسالتك الجميلة! (معالج بواسطة {model_config.model_name})"
+            content = (
+                f"شكراً لك على رسالتك الجميلة! (معالج بواسطة {model_config.model_name})"
+            )
 
         return {
             "content": content,
@@ -309,7 +333,9 @@ class AdvancedAIOrchestrator:
         enhanced = response.copy()
 
         enhanced["response_metadata"] = {
-            "request_type": await self._classify_request(request.text, request.child_age),
+            "request_type": await self._classify_request(
+                request.text, request.child_age
+            ),
             "child_age": request.child_age,
             "emotion_context": request.emotion_state,
             "optimization_applied": context.get("optimization_hints", {}),
@@ -317,11 +343,15 @@ class AdvancedAIOrchestrator:
             "estimated_reading_time": len(response.get("content", "")) / 200,
         }
 
-        enhanced["quality_score"] = self._assess_response_quality(response.get("content", ""), request)
+        enhanced["quality_score"] = self._assess_response_quality(
+            response.get("content", ""), request
+        )
 
         return enhanced
 
-    def _assess_response_quality(self, response_text: str, request: ChildRequest) -> float:
+    def _assess_response_quality(
+        self, response_text: str, request: ChildRequest
+    ) -> float:
         """تقييم جودة الاستجابة"""
 
         if not response_text:
@@ -343,14 +373,23 @@ class AdvancedAIOrchestrator:
 
         return min(1.0, score)
 
-    def _generate_response_cache_key(self, request: ChildRequest, model_config: ModelConfig) -> str:
+    def _generate_response_cache_key(
+        self, request: ChildRequest, model_config: ModelConfig
+    ) -> str:
         """توليد مفتاح كاش للاستجابة"""
 
-        key_components = [request.text[:50], str(request.child_age), request.emotion_state, model_config.model_name]
+        key_components = [
+            request.text[:50],
+            str(request.child_age),
+            request.emotion_state,
+            model_config.model_name,
+        ]
 
         return hashlib.md5("_".join(key_components).encode()).hexdigest()
 
-    async def _update_performance_stats(self, model_name: str, processing_time: float, response: Dict[str, Any]):
+    async def _update_performance_stats(
+        self, model_name: str, processing_time: float, response: Dict[str, Any]
+    ):
         """تحديث إحصائيات أداء المودل"""
 
         if model_name not in self.performance_tracker:
@@ -370,7 +409,9 @@ class AdvancedAIOrchestrator:
 
         stats["quality_scores"].append(response.get("quality_score", 0))
 
-    async def _generate_fallback_response(self, request: ChildRequest) -> Dict[str, Any]:
+    async def _generate_fallback_response(
+        self, request: ChildRequest
+    ) -> Dict[str, Any]:
         """توليد استجابة احتياطية آمنة"""
 
         fallback_responses = [
@@ -388,7 +429,10 @@ class AdvancedAIOrchestrator:
             "model_used": "fallback",
             "provider": "internal",
             "quality_score": 0.7,
-            "response_metadata": {"is_fallback": True, "original_request": request.text[:100]},
+            "response_metadata": {
+                "is_fallback": True,
+                "original_request": request.text[:100],
+            },
         }
 
     async def get_performance_report(self) -> Dict[str, Any]:
@@ -429,7 +473,11 @@ async def test_ai_orchestrator():
         text="أريد أن أتعلم عن الديناصورات",
         child_id="test_child_123",
         child_age=8,
-        child_profile={"id": "test_child_123", "name": "أحمد", "interests": ["علوم", "تاريخ"]},
+        child_profile={
+            "id": "test_child_123",
+            "name": "أحمد",
+            "interests": ["علوم", "تاريخ"],
+        },
         emotion_state="curious",
         conversation_history=[
             {"role": "user", "content": "مرحبا دبدوب"},

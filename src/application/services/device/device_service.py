@@ -7,7 +7,8 @@ from typing import Any, Callable, Dict, Optional
 
 import structlog
 
-from ....domain.esp32.models import DeviceStatus, ESP32Device, HardwareState, PowerState
+from ....domain.esp32.models import (DeviceStatus, ESP32Device, HardwareState,
+                                     PowerState)
 
 logger = structlog.get_logger(__name__)
 
@@ -24,11 +25,15 @@ class DeviceManagementService:
 
         logger.info(f" Device service initialized: {device_id}")
 
-    def register_power_callback(self, name: str, callback: Callable[[PowerState], None]) -> None:
+    def register_power_callback(
+        self, name: str, callback: Callable[[PowerState], None]
+    ) -> None:
         """Register callback for power state changes."""
         self.power_callbacks[name] = callback
 
-    def register_status_callback(self, name: str, callback: Callable[[DeviceStatus], None]) -> None:
+    def register_status_callback(
+        self, name: str, callback: Callable[[DeviceStatus], None]
+    ) -> None:
         """Register callback for status changes."""
         self.status_callbacks[name] = callback
 
@@ -151,7 +156,11 @@ class DeviceManagementService:
             "is_powered_on": self.device.is_powered_on,
             "is_ready": self.device.is_ready,
             "uptime_seconds": self.device.uptime_seconds,
-            "last_heartbeat": self.device.last_heartbeat.isoformat() if self.device.last_heartbeat else None,
+            "last_heartbeat": (
+                self.device.last_heartbeat.isoformat()
+                if self.device.last_heartbeat
+                else None
+            ),
             "hardware": {
                 "led_status": self.device.hardware_state.led_status,
                 "volume_level": self.device.hardware_state.volume_level,
@@ -165,7 +174,9 @@ class DeviceManagementService:
         """Start device monitoring."""
         if not self.monitoring_active:
             self.monitoring_active = True
-            self.monitor_thread = threading.Thread(target=self._monitor_device, daemon=True)
+            self.monitor_thread = threading.Thread(
+                target=self._monitor_device, daemon=True
+            )
             self.monitor_thread.start()
             logger.info(" Device monitoring started")
 

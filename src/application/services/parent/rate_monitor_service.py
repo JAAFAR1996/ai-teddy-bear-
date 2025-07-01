@@ -61,7 +61,9 @@ class RateMonitorService:
                 per_minute=notification_config.get("rate_limit_per_minute", 30),
                 per_hour=notification_config.get("rate_limit_per_hour", 100),
                 per_day=notification_config.get("rate_limit_per_day", 1000),
-                per_week_per_parent=notification_config.get("max_notifications_per_parent_per_week", 3),
+                per_week_per_parent=notification_config.get(
+                    "max_notifications_per_parent_per_week", 3
+                ),
                 cooldown_hours=notification_config.get("cooldown_period_hours", 24),
             )
 
@@ -119,9 +121,13 @@ class RateMonitorService:
             self.logger.info("Rate monitor database initialized", db_path=self.db_path)
 
         except Exception as e:
-            self.logger.error("Failed to initialize rate monitor database", error=str(e))
+            self.logger.error(
+                "Failed to initialize rate monitor database", error=str(e)
+            )
 
-    async def check_rate_limit(self, parent_email: str, child_udid: str) -> Tuple[bool, str]:
+    async def check_rate_limit(
+        self, parent_email: str, child_udid: str
+    ) -> Tuple[bool, str]:
         """فحص حدود معدل الإرسال"""
         try:
             now = datetime.utcnow()
@@ -146,17 +152,24 @@ class RateMonitorService:
         """فحص الحدود العامة للنظام"""
         try:
             cutoff_minute = now - timedelta(minutes=1)
-            self.minute_counter = deque([t for t in self.minute_counter if t > cutoff_minute], maxlen=60)
+            self.minute_counter = deque(
+                [t for t in self.minute_counter if t > cutoff_minute], maxlen=60
+            )
 
             if len(self.minute_counter) >= self.rate_limit.per_minute:
-                return False, f"System minute limit exceeded ({self.rate_limit.per_minute}/min)"
+                return (
+                    False,
+                    f"System minute limit exceeded ({self.rate_limit.per_minute}/min)",
+                )
 
             return True, "System limits OK"
 
         except Exception as e:
             return False, "System limits check error"
 
-    async def _check_parent_weekly_limit(self, parent_email: str, now: datetime) -> Tuple[bool, str]:
+    async def _check_parent_weekly_limit(
+        self, parent_email: str, now: datetime
+    ) -> Tuple[bool, str]:
         """فحص الحد الأسبوعي لولي الأمر"""
         try:
             week_start = now - timedelta(days=now.weekday())
@@ -178,7 +191,10 @@ class RateMonitorService:
             conn.close()
 
             if result and result[0] >= self.rate_limit.per_week_per_parent:
-                return False, f"Parent weekly limit exceeded ({result[0]}/{self.rate_limit.per_week_per_parent})"
+                return (
+                    False,
+                    f"Parent weekly limit exceeded ({result[0]}/{self.rate_limit.per_week_per_parent})",
+                )
 
             return True, "Parent weekly limit OK"
 
@@ -186,7 +202,12 @@ class RateMonitorService:
             return False, "Parent limit check error"
 
     async def record_notification(
-        self, parent_email: str, child_udid: str, channel: str, success: bool, error_message: str = None
+        self,
+        parent_email: str,
+        child_udid: str,
+        channel: str,
+        success: bool,
+        error_message: str = None,
     ):
         """تسجيل إرسال إشعار"""
         try:
@@ -203,13 +224,23 @@ class RateMonitorService:
                 (timestamp, parent_email, child_udid, notification_type, channel, success, error_message)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-                (now, parent_email, child_udid, "cleanup_warning", channel, success, error_message),
+                (
+                    now,
+                    parent_email,
+                    child_udid,
+                    "cleanup_warning",
+                    channel,
+                    success,
+                    error_message,
+                ),
             )
 
             # تحديث الحدود الأسبوعية
             if success:
                 week_start = now - timedelta(days=now.weekday())
-                week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+                week_start = week_start.replace(
+                    hour=0, minute=0, second=0, microsecond=0
+                )
 
                 cursor.execute(
                     """
@@ -220,13 +251,21 @@ class RateMonitorService:
                                  WHERE parent_email = ? AND week_start = ?), 0) + 1,
                         ?)
                 """,
-                    (parent_email, week_start.date(), parent_email, week_start.date(), now),
+                    (
+                        parent_email,
+                        week_start.date(),
+                        parent_email,
+                        week_start.date(),
+                        now,
+                    ),
                 )
 
             conn.commit()
             conn.close()
 
-            self.logger.info("Notification recorded", parent_email=parent_email, success=success)
+            self.logger.info(
+                "Notification recorded", parent_email=parent_email, success=success
+            )
 
         except Exception as e:
             self.logger.error("Failed to record notification", error=str(e))
@@ -235,7 +274,10 @@ class RateMonitorService:
         """الحصول على إحصائيات المعدلات"""
         try:
             return {
-                "system": {"current_minute": len(self.minute_counter), "limits": asdict(self.rate_limit)},
+                "system": {
+                    "current_minute": len(self.minute_counter),
+                    "limits": asdict(self.rate_limit),
+                },
                 "timestamp": datetime.utcnow().isoformat(),
             }
         except Exception as e:
@@ -248,21 +290,32 @@ rate_monitor = RateMonitorService()
 
 
 # دوال مساعدة
-async def check_notification_rate_limit(parent_email: str, child_udid: str) -> Tuple[bool, str]:
+async def check_notification_rate_limit(
+    parent_email: str, child_udid: str
+) -> Tuple[bool, str]:
     """فحص حدود معدل الإرسال"""
     return await rate_monitor.check_rate_limit(parent_email, child_udid)
 
 
 async def record_notification_sent(
-    parent_email: str, child_udid: str, channel: str, success: bool, error_message: str = None
+    parent_email: str,
+    child_udid: str,
+    channel: str,
+    success: bool,
+    error_message: str = None,
 ):
     """تسجيل إرسال إشعار"""
-    await rate_monitor.record_notification(parent_email, child_udid, channel, success, error_message)
+    await rate_monitor.record_notification(
+        parent_email, child_udid, channel, success, error_message
+    )
 
 
 async def get_rate_statistics() -> Dict:
     """الحصول على إحصائيات المعدلات"""
     return {
-        "system": {"current_minute": len(rate_monitor.minute_counter), "limits": asdict(rate_monitor.rate_limit)},
+        "system": {
+            "current_minute": len(rate_monitor.minute_counter),
+            "limits": asdict(rate_monitor.rate_limit),
+        },
         "timestamp": datetime.utcnow().isoformat(),
     }

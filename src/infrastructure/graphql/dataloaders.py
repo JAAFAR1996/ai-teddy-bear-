@@ -89,7 +89,13 @@ class BaseDataLoader(DataLoader, Generic[K, T]):
     Advanced caching, batching, and performance monitoring
     """
 
-    def __init__(self, repository: Any, cache_client: Redis, config: CacheConfig = None, name: str = "base_loader"):
+    def __init__(
+        self,
+        repository: Any,
+        cache_client: Redis,
+        config: CacheConfig = None,
+        name: str = "base_loader",
+    ):
         self.repository = repository
         self.cache_client = cache_client
         self.config = config or CacheConfig()
@@ -97,9 +103,16 @@ class BaseDataLoader(DataLoader, Generic[K, T]):
         self.metrics = LoaderMetrics()
 
         # Initialize parent DataLoader
-        super().__init__(batch_load_fn=self._batch_load_with_cache, max_batch_size=self.config.max_batch_size)
+        super().__init__(
+            batch_load_fn=self._batch_load_with_cache,
+            max_batch_size=self.config.max_batch_size,
+        )
 
-        logger.info("🚀 DataLoader initialized", name=self.name, max_batch_size=self.config.max_batch_size)
+        logger.info(
+            "🚀 DataLoader initialized",
+            name=self.name,
+            max_batch_size=self.config.max_batch_size,
+        )
 
     async def _batch_load_with_cache(self, keys: List[K]) -> List[Optional[T]]:
         """Enhanced batch loading with multi-level caching"""
@@ -108,7 +121,9 @@ class BaseDataLoader(DataLoader, Generic[K, T]):
         try:
             # Step 1: Check cache for all keys
             cached_results = await self._get_from_cache_batch(keys)
-            missing_keys = [key for key, result in zip(keys, cached_results) if result is None]
+            missing_keys = [
+                key for key, result in zip(keys, cached_results) if result is None
+            ]
 
             # Update metrics
             self.metrics.cache_hits += len(keys) - len(missing_keys)
@@ -117,7 +132,11 @@ class BaseDataLoader(DataLoader, Generic[K, T]):
             # Step 2: Fetch missing data from repository
             db_results = {}
             if missing_keys:
-                logger.debug("📊 Fetching from database", loader=self.name, missing_count=len(missing_keys))
+                logger.debug(
+                    "📊 Fetching from database",
+                    loader=self.name,
+                    missing_count=len(missing_keys),
+                )
 
                 db_data = await self._fetch_from_repository(missing_keys)
                 db_results = {key: data for key, data in zip(missing_keys, db_data)}
@@ -138,9 +157,12 @@ class BaseDataLoader(DataLoader, Generic[K, T]):
             self.metrics.total_items_loaded += len(keys)
             load_time = time.time() - start_time
             self.metrics.average_load_time = (
-                self.metrics.average_load_time * (self.metrics.batch_loads - 1) + load_time
+                self.metrics.average_load_time * (self.metrics.batch_loads - 1)
+                + load_time
             ) / self.metrics.batch_loads
-            self.metrics.average_batch_size = self.metrics.total_items_loaded / self.metrics.batch_loads
+            self.metrics.average_batch_size = (
+                self.metrics.total_items_loaded / self.metrics.batch_loads
+            )
 
             logger.debug(
                 "✅ Batch load completed",
@@ -154,7 +176,12 @@ class BaseDataLoader(DataLoader, Generic[K, T]):
             return final_results
 
         except Exception as e:
-            logger.error("❌ Batch load failed", loader=self.name, error=str(e), keys_count=len(keys))
+            logger.error(
+                "❌ Batch load failed",
+                loader=self.name,
+                error=str(e),
+                keys_count=len(keys),
+            )
             # Return None for all keys on error
             return [None] * len(keys)
 
@@ -201,7 +228,11 @@ class BaseDataLoader(DataLoader, Generic[K, T]):
                         pipe.setex(cache_key, self.config.ttl, cache_value)
                     await pipe.execute()
 
-                logger.debug("📋 Cached batch results", loader=self.name, cached_count=len(cache_data))
+                logger.debug(
+                    "📋 Cached batch results",
+                    loader=self.name,
+                    cached_count=len(cache_data),
+                )
 
         except Exception as e:
             logger.warning("Batch cache failed", error=str(e))
@@ -248,18 +279,26 @@ class ChildDataLoader(BaseDataLoader[str, Dict[str, Any]]):
         super().__init__(
             repository=child_repository,
             cache_client=cache_client,
-            config=CacheConfig(ttl=600, prefix="child_loader", max_batch_size=50),  # 10 minutes for child data
+            config=CacheConfig(
+                ttl=600, prefix="child_loader", max_batch_size=50
+            ),  # 10 minutes for child data
             name="child_loader",
         )
 
-    async def _fetch_from_repository(self, child_ids: List[str]) -> List[Optional[Dict[str, Any]]]:
+    async def _fetch_from_repository(
+        self, child_ids: List[str]
+    ) -> List[Optional[Dict[str, Any]]]:
         """Fetch children from repository efficiently"""
         try:
             # Use repository's batch get method
             children = await self.repository.get_by_ids(child_ids)
 
             # Convert to dictionary format expected by GraphQL
-            result_map = {str(child.id): self._serialize_child(child) for child in children if child}
+            result_map = {
+                str(child.id): self._serialize_child(child)
+                for child in children
+                if child
+            }
 
             # Return results in the same order as requested IDs
             return [result_map.get(child_id) for child_id in child_ids]
@@ -294,16 +333,24 @@ class ConversationDataLoader(BaseDataLoader[str, Dict[str, Any]]):
             repository=conversation_repository,
             cache_client=cache_client,
             config=CacheConfig(
-                ttl=300, prefix="conversation_loader", max_batch_size=100  # 5 minutes for conversation data
+                ttl=300,
+                prefix="conversation_loader",
+                max_batch_size=100,  # 5 minutes for conversation data
             ),
             name="conversation_loader",
         )
 
-    async def _fetch_from_repository(self, conversation_ids: List[str]) -> List[Optional[Dict[str, Any]]]:
+    async def _fetch_from_repository(
+        self, conversation_ids: List[str]
+    ) -> List[Optional[Dict[str, Any]]]:
         """Fetch conversations from repository efficiently"""
         try:
             conversations = await self.repository.get_by_ids(conversation_ids)
-            result_map = {str(conv.id): self._serialize_conversation(conv) for conv in conversations if conv}
+            result_map = {
+                str(conv.id): self._serialize_conversation(conv)
+                for conv in conversations
+                if conv
+            }
 
             return [result_map.get(conv_id) for conv_id in conversation_ids]
 
@@ -317,8 +364,12 @@ class ConversationDataLoader(BaseDataLoader[str, Dict[str, Any]]):
             "id": str(conversation.id),
             "child_id": str(conversation.child_id),
             "title": conversation.title,
-            "started_at": conversation.started_at.isoformat() if conversation.started_at else None,
-            "ended_at": conversation.ended_at.isoformat() if conversation.ended_at else None,
+            "started_at": (
+                conversation.started_at.isoformat() if conversation.started_at else None
+            ),
+            "ended_at": (
+                conversation.ended_at.isoformat() if conversation.ended_at else None
+            ),
             "message_count": conversation.message_count,
             "topics": conversation.topics or [],
             "is_active": conversation.is_active,
@@ -336,20 +387,28 @@ class ConversationByChildLoader(BaseDataLoader[str, List[Dict[str, Any]]]):
             repository=conversation_repository,
             cache_client=cache_client,
             config=CacheConfig(
-                ttl=180, prefix="conversation_by_child", max_batch_size=20  # 3 minutes for conversation lists
+                ttl=180,
+                prefix="conversation_by_child",
+                max_batch_size=20,  # 3 minutes for conversation lists
             ),
             name="conversation_by_child_loader",
         )
 
-    async def _fetch_from_repository(self, child_ids: List[str]) -> List[Optional[List[Dict[str, Any]]]]:
+    async def _fetch_from_repository(
+        self, child_ids: List[str]
+    ) -> List[Optional[List[Dict[str, Any]]]]:
         """Fetch conversations by child IDs efficiently"""
         try:
             results = []
 
             # Batch fetch for all child IDs
             for child_id in child_ids:
-                conversations = await self.repository.get_by_child_id(child_id, limit=50)
-                serialized_conversations = [self._serialize_conversation(conv) for conv in conversations]
+                conversations = await self.repository.get_by_child_id(
+                    child_id, limit=50
+                )
+                serialized_conversations = [
+                    self._serialize_conversation(conv) for conv in conversations
+                ]
                 results.append(serialized_conversations)
 
             return results
@@ -364,7 +423,9 @@ class ConversationByChildLoader(BaseDataLoader[str, List[Dict[str, Any]]]):
             "id": str(conversation.id),
             "child_id": str(conversation.child_id),
             "title": conversation.title,
-            "started_at": conversation.started_at.isoformat() if conversation.started_at else None,
+            "started_at": (
+                conversation.started_at.isoformat() if conversation.started_at else None
+            ),
             "message_count": conversation.message_count,
             "topics": conversation.topics or [],
         }
@@ -397,12 +458,20 @@ class DataLoaderRegistry:
     def _create_loader(self, loader_name: str) -> None:
         """Create DataLoader based on name"""
         if loader_name == "child" and "child_repository" in self._repositories:
-            self.loaders[loader_name] = ChildDataLoader(self._repositories["child_repository"], self.cache_client)
-        elif loader_name == "conversation" and "conversation_repository" in self._repositories:
+            self.loaders[loader_name] = ChildDataLoader(
+                self._repositories["child_repository"], self.cache_client
+            )
+        elif (
+            loader_name == "conversation"
+            and "conversation_repository" in self._repositories
+        ):
             self.loaders[loader_name] = ConversationDataLoader(
                 self._repositories["conversation_repository"], self.cache_client
             )
-        elif loader_name == "conversation_by_child" and "conversation_repository" in self._repositories:
+        elif (
+            loader_name == "conversation_by_child"
+            and "conversation_repository" in self._repositories
+        ):
             self.loaders[loader_name] = ConversationByChildLoader(
                 self._repositories["conversation_repository"], self.cache_client
             )
@@ -432,17 +501,25 @@ class DataLoaderRegistry:
             if loader := self.get_loader(loader_name):
                 try:
                     await loader.load_many(keys)
-                    logger.info("✅ Cache warmed", loader=loader_name, keys_count=len(keys))
+                    logger.info(
+                        "✅ Cache warmed", loader=loader_name, keys_count=len(keys)
+                    )
                 except Exception as e:
-                    logger.error("❌ Cache warmup failed", loader=loader_name, error=str(e))
+                    logger.error(
+                        "❌ Cache warmup failed", loader=loader_name, error=str(e)
+                    )
 
 
 # Factory function for creating DataLoader registry
-def create_dataloader_registry(cache_client: Redis, **repositories) -> DataLoaderRegistry:
+def create_dataloader_registry(
+    cache_client: Redis, **repositories
+) -> DataLoaderRegistry:
     """Create and configure DataLoader registry"""
     registry = DataLoaderRegistry(cache_client)
     registry.register_repositories(**repositories)
 
-    logger.info("🏭 DataLoader registry created", repositories=list(repositories.keys()))
+    logger.info(
+        "🏭 DataLoader registry created", repositories=list(repositories.keys())
+    )
 
     return registry

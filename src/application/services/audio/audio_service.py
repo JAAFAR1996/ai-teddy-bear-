@@ -7,14 +7,9 @@ from typing import Any, Callable, Dict, List, Optional
 
 import structlog
 
-from ....domain.esp32.models import (
-    AudioQuality,
-    AudioSettings,
-    AudioVisualization,
-    MicrophoneSettings,
-    RecognitionLanguage,
-    SpeechRecognition,
-)
+from ....domain.esp32.models import (AudioQuality, AudioSettings,
+                                     AudioVisualization, MicrophoneSettings,
+                                     RecognitionLanguage, SpeechRecognition)
 
 logger = structlog.get_logger(__name__)
 
@@ -33,7 +28,9 @@ class AudioManagementService:
 
         logger.info(" Audio management service initialized")
 
-    def register_recognition_callback(self, name: str, callback: Callable[[SpeechRecognition], None]) -> None:
+    def register_recognition_callback(
+        self, name: str, callback: Callable[[SpeechRecognition], None]
+    ) -> None:
         """Register callback for speech recognition results."""
         self.recognition_callbacks[name] = callback
 
@@ -146,7 +143,9 @@ class AudioManagementService:
         """Start audio visualization."""
         if not self.visualization.is_active:
             self.visualization.start_animation()
-            self.visualizer_thread = threading.Thread(target=self._visualizer_loop, daemon=True)
+            self.visualizer_thread = threading.Thread(
+                target=self._visualizer_loop, daemon=True
+            )
             self.visualizer_thread.start()
             logger.debug(" Audio visualization started")
 
@@ -224,10 +223,14 @@ class AudioManagementService:
         while self.visualization.is_active:
             try:
                 # Generate random heights for visualization
-                heights = [random.randint(10, 70) for _ in range(self.visualization.bar_count)]
+                heights = [
+                    random.randint(10, 70) for _ in range(self.visualization.bar_count)
+                ]
                 self.visualization.update_bars(heights)
 
-                time.sleep(self.visualization.animation_speed / 1000)  # Convert to seconds
+                time.sleep(
+                    self.visualization.animation_speed / 1000
+                )  # Convert to seconds
 
             except Exception as e:
                 logger.error(f" Visualizer error: {e}")
@@ -250,7 +253,11 @@ class AudioManagementService:
             phrase = random.choice(mock_phrases)
             confidence = random.uniform(0.7, 0.95)
 
-            return SpeechRecognition(text=phrase, confidence=confidence, language=self.settings.language.value)
+            return SpeechRecognition(
+                text=phrase,
+                confidence=confidence,
+                language=self.settings.language.value,
+            )
 
         return None
 

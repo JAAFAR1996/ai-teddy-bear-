@@ -61,7 +61,12 @@ class InteractionPattern:
         if self.mood_triggers is None:
             self.mood_triggers = {"positive": [], "negative": []}
         if self.learning_preferences is None:
-            self.learning_preferences = {"storytelling": 0.5, "games": 0.5, "songs": 0.5, "questions": 0.5}
+            self.learning_preferences = {
+                "storytelling": 0.5,
+                "games": 0.5,
+                "songs": 0.5,
+                "questions": 0.5,
+            }
         if self.attention_patterns is None:
             self.attention_patterns = {"morning": 0, "afternoon": 0, "evening": 0}
 
@@ -104,7 +109,9 @@ class AdvancedPersonalizationService:
                 with open(personalities_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     for child_id, personality_data in data.items():
-                        self.personalities[child_id] = ChildPersonality(**personality_data)
+                        self.personalities[child_id] = ChildPersonality(
+                            **personality_data
+                        )
 
             # تحميل أنماط التفاعل
             patterns_file = self.data_dir / "interaction_patterns.json"
@@ -112,7 +119,9 @@ class AdvancedPersonalizationService:
                 with open(patterns_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     for child_id, pattern_data in data.items():
-                        self.interaction_patterns[child_id] = InteractionPattern(**pattern_data)
+                        self.interaction_patterns[child_id] = InteractionPattern(
+                            **pattern_data
+                        )
 
             # تحميل أداء المحتوى
             content_file = self.data_dir / "content_performance.json"
@@ -120,7 +129,9 @@ class AdvancedPersonalizationService:
                 with open(content_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     for child_id, contents in data.items():
-                        self.content_performance[child_id] = [AdaptiveContent(**content) for content in contents]
+                        self.content_performance[child_id] = [
+                            AdaptiveContent(**content) for content in contents
+                        ]
 
         except Exception as e:
             logger.error(f"خطأ في تحميل بيانات التخصيص: {e}")
@@ -130,13 +141,19 @@ class AdvancedPersonalizationService:
         try:
             # حفظ الشخصيات
             personalities_file = self.data_dir / "personalities.json"
-            personalities_data = {child_id: asdict(personality) for child_id, personality in self.personalities.items()}
+            personalities_data = {
+                child_id: asdict(personality)
+                for child_id, personality in self.personalities.items()
+            }
             with open(personalities_file, "w", encoding="utf-8") as f:
                 json.dump(personalities_data, f, ensure_ascii=False, indent=2)
 
             # حفظ أنماط التفاعل
             patterns_file = self.data_dir / "interaction_patterns.json"
-            patterns_data = {child_id: asdict(pattern) for child_id, pattern in self.interaction_patterns.items()}
+            patterns_data = {
+                child_id: asdict(pattern)
+                for child_id, pattern in self.interaction_patterns.items()
+            }
             with open(patterns_file, "w", encoding="utf-8") as f:
                 json.dump(patterns_data, f, ensure_ascii=False, indent=2)
 
@@ -155,7 +172,9 @@ class AdvancedPersonalizationService:
     def get_child_personality(self, child_id: str) -> ChildPersonality:
         """الحصول على شخصية الطفل"""
         if child_id not in self.personalities:
-            self.personalities[child_id] = ChildPersonality(child_id=child_id, last_updated=datetime.now().isoformat())
+            self.personalities[child_id] = ChildPersonality(
+                child_id=child_id, last_updated=datetime.now().isoformat()
+            )
             self._save_data()
         return self.personalities[child_id]
 
@@ -166,7 +185,9 @@ class AdvancedPersonalizationService:
             self._save_data()
         return self.interaction_patterns[child_id]
 
-    def analyze_personality_from_interactions(self, child_id: str, interactions: List[Dict]) -> ChildPersonality:
+    def analyze_personality_from_interactions(
+        self, child_id: str, interactions: List[Dict]
+    ) -> ChildPersonality:
         """تحليل الشخصية من التفاعلات"""
         personality = self.get_child_personality(child_id)
 
@@ -233,7 +254,9 @@ class AdvancedPersonalizationService:
 
         if conversation_lengths:
             avg_length = np.mean(conversation_lengths)
-            personality.extraversion = min(1.0, avg_length / 30)  # 30 دقيقة = انبساطية كاملة
+            personality.extraversion = min(
+                1.0, avg_length / 30
+            )  # 30 دقيقة = انبساطية كاملة
 
         if total_tasks > 0:
             personality.conscientiousness = completed_tasks / total_tasks
@@ -246,17 +269,26 @@ class AdvancedPersonalizationService:
 
         # تحديث مستوى الفضول
         unique_topics = len(
-            set(interaction.get("topic", "") for interaction in interactions if interaction.get("topic"))
+            set(
+                interaction.get("topic", "")
+                for interaction in interactions
+                if interaction.get("topic")
+            )
         )
-        personality.curiosity_level = min(1.0, unique_topics / 10)  # 10 مواضيع مختلفة = فضول كامل
+        personality.curiosity_level = min(
+            1.0, unique_topics / 10
+        )  # 10 مواضيع مختلفة = فضول كامل
 
         # تحديث مستوى الإبداع
         creative_activities = sum(
             1
             for interaction in interactions
-            if interaction.get("activity_type") in ["storytelling", "creative_games", "art"]
+            if interaction.get("activity_type")
+            in ["storytelling", "creative_games", "art"]
         )
-        personality.creativity_level = min(1.0, creative_activities / len(interactions) * 2)
+        personality.creativity_level = min(
+            1.0, creative_activities / len(interactions) * 2
+        )
 
         personality.last_updated = datetime.now().isoformat()
         self._save_data()
@@ -287,21 +319,29 @@ class AdvancedPersonalizationService:
         current_hour = datetime.now().strftime("%H")
         if interaction_data.get("engagement_score", 0) > 0.6:
             time_slot = self._get_time_slot(current_hour)
-            patterns.attention_patterns[time_slot] = patterns.attention_patterns.get(time_slot, 0) + 1
+            patterns.attention_patterns[time_slot] = (
+                patterns.attention_patterns.get(time_slot, 0) + 1
+            )
 
         # تحديث أنماط الردود
         response_type = interaction_data.get("response_type")
         if response_type:
-            patterns.response_patterns[response_type] = patterns.response_patterns.get(response_type, 0) + 1
+            patterns.response_patterns[response_type] = (
+                patterns.response_patterns.get(response_type, 0) + 1
+            )
 
         # تحديث محفزات المزاج
         emotion = interaction_data.get("emotion")
         trigger = interaction_data.get("trigger")
         if emotion and trigger:
-            mood_category = "positive" if emotion in ["happy", "excited", "calm"] else "negative"
+            mood_category = (
+                "positive" if emotion in ["happy", "excited", "calm"] else "negative"
+            )
             if trigger not in patterns.mood_triggers[mood_category]:
                 patterns.mood_triggers[mood_category].append(trigger)
-                patterns.mood_triggers[mood_category] = patterns.mood_triggers[mood_category][-10:]
+                patterns.mood_triggers[mood_category] = patterns.mood_triggers[
+                    mood_category
+                ][-10:]
 
         # تحديث تفضيلات التعلم
         learning_method = interaction_data.get("learning_method")
@@ -345,11 +385,15 @@ class AdvancedPersonalizationService:
             recommendations.extend(conv_recs)
 
         # ترتيب التوصيات حسب الملاءمة
-        recommendations = sorted(recommendations, key=lambda x: x["suitability_score"], reverse=True)
+        recommendations = sorted(
+            recommendations, key=lambda x: x["suitability_score"], reverse=True
+        )
 
         return recommendations[:10]  # أفضل 10 توصيات
 
-    def _recommend_stories(self, personality: ChildPersonality, patterns: InteractionPattern) -> List[Dict]:
+    def _recommend_stories(
+        self, personality: ChildPersonality, patterns: InteractionPattern
+    ) -> List[Dict]:
         """اقتراح قصص مخصصة"""
         stories = []
 
@@ -360,7 +404,11 @@ class AdvancedPersonalizationService:
                     "type": "story",
                     "title": "مغامرة في عالم غريب",
                     "theme": "exploration",
-                    "difficulty": "hard" if personality.preferred_difficulty == "hard" else "medium",
+                    "difficulty": (
+                        "hard"
+                        if personality.preferred_difficulty == "hard"
+                        else "medium"
+                    ),
                     "duration": personality.attention_span,
                     "suitability_score": 0.9,
                 }
@@ -405,7 +453,9 @@ class AdvancedPersonalizationService:
 
         return stories
 
-    def _recommend_games(self, personality: ChildPersonality, patterns: InteractionPattern) -> List[Dict]:
+    def _recommend_games(
+        self, personality: ChildPersonality, patterns: InteractionPattern
+    ) -> List[Dict]:
         """اقتراح ألعاب مخصصة"""
         games = []
 
@@ -461,7 +511,9 @@ class AdvancedPersonalizationService:
 
         return games
 
-    def _recommend_conversations(self, personality: ChildPersonality, patterns: InteractionPattern) -> List[Dict]:
+    def _recommend_conversations(
+        self, personality: ChildPersonality, patterns: InteractionPattern
+    ) -> List[Dict]:
         """اقتراح مواضيع محادثة مخصصة"""
         conversations = []
 
@@ -540,7 +592,9 @@ class AdvancedPersonalizationService:
             existing_content.engagement_score = (
                 existing_content.engagement_score + adaptive_content.engagement_score
             ) / 2
-            existing_content.success_rate = (existing_content.success_rate + adaptive_content.success_rate) / 2
+            existing_content.success_rate = (
+                existing_content.success_rate + adaptive_content.success_rate
+            ) / 2
             existing_content.last_used = adaptive_content.last_used
         else:
             # إضافة محتوى جديد
@@ -561,8 +615,12 @@ class AdvancedPersonalizationService:
             "learning_style": self._determine_learning_style(personality, patterns),
             "engagement_patterns": self._analyze_engagement_patterns(child_id),
             "content_preferences": self._analyze_content_preferences(child_id),
-            "optimization_suggestions": self._get_optimization_suggestions(personality, patterns),
-            "development_areas": self._identify_development_areas(personality, patterns),
+            "optimization_suggestions": self._get_optimization_suggestions(
+                personality, patterns
+            ),
+            "development_areas": self._identify_development_areas(
+                personality, patterns
+            ),
         }
 
         return insights
@@ -570,15 +628,31 @@ class AdvancedPersonalizationService:
     def _get_personality_summary(self, personality: ChildPersonality) -> Dict:
         """ملخص الشخصية"""
         traits = {
-            "openness": "منفتح على التجارب" if personality.openness > 0.6 else "يفضل المألوف",
-            "conscientiousness": "مثابر ومنظم" if personality.conscientiousness > 0.6 else "يحتاج تشجيع للإكمال",
-            "extraversion": "اجتماعي ونشط" if personality.extraversion > 0.6 else "هادئ ومتأمل",
-            "agreeableness": "متعاون ودود" if personality.agreeableness > 0.6 else "مستقل في الرأي",
-            "neuroticism": "حساس عاطفياً" if personality.neuroticism > 0.6 else "مستقر عاطفياً",
+            "openness": (
+                "منفتح على التجارب" if personality.openness > 0.6 else "يفضل المألوف"
+            ),
+            "conscientiousness": (
+                "مثابر ومنظم"
+                if personality.conscientiousness > 0.6
+                else "يحتاج تشجيع للإكمال"
+            ),
+            "extraversion": (
+                "اجتماعي ونشط" if personality.extraversion > 0.6 else "هادئ ومتأمل"
+            ),
+            "agreeableness": (
+                "متعاون ودود" if personality.agreeableness > 0.6 else "مستقل في الرأي"
+            ),
+            "neuroticism": (
+                "حساس عاطفياً" if personality.neuroticism > 0.6 else "مستقر عاطفياً"
+            ),
         }
 
         return {
-            "dominant_traits": [trait for trait, desc in traits.items() if getattr(personality, trait) > 0.6],
+            "dominant_traits": [
+                trait
+                for trait, desc in traits.items()
+                if getattr(personality, trait) > 0.6
+            ],
             "trait_descriptions": traits,
             "curiosity_level": (
                 "عالي"
@@ -592,7 +666,9 @@ class AdvancedPersonalizationService:
             ),
         }
 
-    def _determine_learning_style(self, personality: ChildPersonality, patterns: InteractionPattern) -> Dict:
+    def _determine_learning_style(
+        self, personality: ChildPersonality, patterns: InteractionPattern
+    ) -> Dict:
         """تحديد أسلوب التعلم"""
         # تحليل تفضيلات التعلم
         learning_prefs = patterns.learning_preferences
@@ -609,7 +685,11 @@ class AdvancedPersonalizationService:
             "dominant_style": dominant_style[0],
             "style_description": recommendations.get(dominant_style[0], "متنوع"),
             "all_preferences": learning_prefs,
-            "recommendations": [recommendations[style] for style, score in learning_prefs.items() if score > 0.6],
+            "recommendations": [
+                recommendations[style]
+                for style, score in learning_prefs.items()
+                if score > 0.6
+            ],
         }
 
     def _analyze_engagement_patterns(self, child_id: str) -> Dict:
@@ -642,8 +722,15 @@ class AdvancedPersonalizationService:
         for content in contents:
             content_scores[content.content_type].append(content.engagement_score)
 
-        avg_scores = {content_type: np.mean(scores) for content_type, scores in content_scores.items()}
-        best_content_type = max(avg_scores.items(), key=lambda x: x[1]) if avg_scores else ("unknown", 0)
+        avg_scores = {
+            content_type: np.mean(scores)
+            for content_type, scores in content_scores.items()
+        }
+        best_content_type = (
+            max(avg_scores.items(), key=lambda x: x[1])
+            if avg_scores
+            else ("unknown", 0)
+        )
 
         # أفضل مواضيع
         topic_scores = defaultdict(list)
@@ -651,8 +738,12 @@ class AdvancedPersonalizationService:
             if content.topic:
                 topic_scores[content.topic].append(content.engagement_score)
 
-        avg_topic_scores = {topic: np.mean(scores) for topic, scores in topic_scores.items()}
-        best_topics = sorted(avg_topic_scores.items(), key=lambda x: x[1], reverse=True)[:5]
+        avg_topic_scores = {
+            topic: np.mean(scores) for topic, scores in topic_scores.items()
+        }
+        best_topics = sorted(
+            avg_topic_scores.items(), key=lambda x: x[1], reverse=True
+        )[:5]
 
         return {
             "preferred_content_type": best_content_type[0],
@@ -661,7 +752,9 @@ class AdvancedPersonalizationService:
             "topic_scores": dict(best_topics),
         }
 
-    def _get_optimization_suggestions(self, personality: ChildPersonality, patterns: InteractionPattern) -> List[str]:
+    def _get_optimization_suggestions(
+        self, personality: ChildPersonality, patterns: InteractionPattern
+    ) -> List[str]:
         """اقتراحات التحسين"""
         suggestions = []
 
@@ -670,7 +763,9 @@ class AdvancedPersonalizationService:
             suggestions.append("تقليل مدة الأنشطة لتناسب فترة الانتباه القصيرة")
 
         if personality.openness < 0.4:
-            suggestions.append("تقديم تجارب جديدة تدريجياً مع التأكيد على العناصر المألوفة")
+            suggestions.append(
+                "تقديم تجارب جديدة تدريجياً مع التأكيد على العناصر المألوفة"
+            )
 
         if personality.conscientiousness < 0.4:
             suggestions.append("تقسيم المهام الكبيرة إلى خطوات صغيرة مع مكافآت متكررة")
@@ -683,14 +778,18 @@ class AdvancedPersonalizationService:
             suggestions.append("تجربة أنواع أنشطة متنوعة لاكتشاف تفضيلات جديدة")
 
         best_time = (
-            max(patterns.attention_patterns.items(), key=lambda x: x[1])[0] if patterns.attention_patterns else None
+            max(patterns.attention_patterns.items(), key=lambda x: x[1])[0]
+            if patterns.attention_patterns
+            else None
         )
         if best_time:
             suggestions.append(f"جدولة الأنشطة المهمة في فترة {best_time}")
 
         return suggestions
 
-    def _identify_development_areas(self, personality: ChildPersonality, patterns: InteractionPattern) -> Dict:
+    def _identify_development_areas(
+        self, personality: ChildPersonality, patterns: InteractionPattern
+    ) -> Dict:
         """تحديد مجالات التطوير"""
         areas = {"strengths": [], "growth_areas": [], "focus_suggestions": []}
 
@@ -714,7 +813,9 @@ class AdvancedPersonalizationService:
 
         # اقتراحات التركيز
         if personality.creativity_level < 0.4:
-            areas["focus_suggestions"].append("أنشطة إبداعية مثل الرسم والقصص التفاعلية")
+            areas["focus_suggestions"].append(
+                "أنشطة إبداعية مثل الرسم والقصص التفاعلية"
+            )
         if personality.conscientiousness < 0.4:
             areas["focus_suggestions"].append("ألعاب تعزز المثابرة والتنظيم")
         if len(patterns.favorite_topics) < 3:

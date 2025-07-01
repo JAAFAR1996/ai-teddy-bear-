@@ -8,16 +8,17 @@ Simplified Domain-Driven Design structure creation
 import os
 from pathlib import Path
 
+
 class QuickDDDSetup:
     """Quick setup for DDD structure"""
-    
+
     def __init__(self, project_root: str = "."):
         self.project_root = Path(project_root)
-        
+
     def create_structure(self):
         """Create the basic DDD structure"""
         print("Creating DDD Structure...")
-        
+
         # Create directories
         directories = [
             "src_new",
@@ -36,29 +37,29 @@ class QuickDDDSetup:
             "src_new/presentation/api",
             "tests_new",
             "tests_new/unit",
-            "tests_new/integration"
+            "tests_new/integration",
         ]
-        
+
         for directory in directories:
             dir_path = self.project_root / directory
             dir_path.mkdir(parents=True, exist_ok=True)
-            
+
             # Create simple __init__.py
-            init_file = dir_path / '__init__.py'
+            init_file = dir_path / "__init__.py"
             if not init_file.exists():
                 init_file.write_text('"""DDD Module"""')
-        
+
         # Create base entity class
         self._create_base_entity()
-        
+
         # Create example child entity
         self._create_child_entity()
-        
+
         # Create command example
         self._create_commands()
-        
+
         print("DDD Structure created successfully!")
-    
+
     def _create_base_entity(self):
         """Create base entity class"""
         content = '''"""
@@ -107,10 +108,10 @@ class AggregateRoot(Entity):
         super().__init__(entity_id)
         self.version = 1
 '''
-        
+
         file_path = self.project_root / "src_new/domain/entities/base.py"
         file_path.write_text(content)
-    
+
     def _create_child_entity(self):
         """Create child entity example"""
         content = '''"""
@@ -158,10 +159,10 @@ class Child(AggregateRoot):
         self.is_active = False
         self.mark_as_modified()
 '''
-        
+
         file_path = self.project_root / "src_new/domain/entities/child.py"
         file_path.write_text(content)
-    
+
     def _create_commands(self):
         """Create command examples"""
         content = '''"""
@@ -226,19 +227,20 @@ class RegisterChildHandler(CommandHandler):
         
         return child.id
 '''
-        
+
         file_path = self.project_root / "src_new/application/commands/__init__.py"
         file_path.write_text(content)
+
 
 def main():
     """Main execution"""
     print("Quick DDD Structure Setup")
     print("Lead Architect: Jaafar Adeeb")
     print("=" * 40)
-    
+
     setup = QuickDDDSetup()
     setup.create_structure()
-    
+
     print("\nDDD Structure created!")
     print("New structure available in src_new/ directory")
     print("\nNext steps:")
@@ -247,5 +249,6 @@ def main():
     print("3. Update imports and dependencies")
     print("4. Run tests to validate")
 
+
 if __name__ == "__main__":
-    main() 
+    main()

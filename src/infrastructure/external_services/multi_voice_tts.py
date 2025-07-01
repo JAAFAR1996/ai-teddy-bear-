@@ -4,7 +4,12 @@ import asyncio
 try:
     from elevenlabs import Voice, VoiceSettings, generate, set_api_key
 except ImportError:
-    from src.infrastructure.external_services.mock.elevenlabs import generate, Voice, VoiceSettings, set_api_key
+    from src.infrastructure.external_services.mock.elevenlabs import (
+        generate,
+        Voice,
+        VoiceSettings,
+        set_api_key,
+    )
 
 import io
 from datetime import datetime
@@ -36,22 +41,40 @@ class MultiVoiceTTS:
             "narrator_female": VoiceProfile(
                 voice_id="EXAVITQu4vr4xnSDxMaL",
                 name="الراوية",
-                settings={"stability": 0.8, "similarity_boost": 0.75, "style": 0.4, "use_speaker_boost": True},
+                settings={
+                    "stability": 0.8,
+                    "similarity_boost": 0.75,
+                    "style": 0.4,
+                    "use_speaker_boost": True,
+                },
             ),
             "child_boy": VoiceProfile(
                 voice_id="TxGEqnHWrfWFTfGW9XjX",
                 name="طفل",
-                settings={"stability": 0.5, "similarity_boost": 0.75, "style": 0.8, "use_speaker_boost": True},
+                settings={
+                    "stability": 0.5,
+                    "similarity_boost": 0.75,
+                    "style": 0.8,
+                    "use_speaker_boost": True,
+                },
             ),
             "mother": VoiceProfile(
                 voice_id="pNInz6obpgDQGcFmaJgB",
                 name="الأم",
-                settings={"stability": 0.85, "similarity_boost": 0.8, "style": 0.3, "use_speaker_boost": True},
+                settings={
+                    "stability": 0.85,
+                    "similarity_boost": 0.8,
+                    "style": 0.3,
+                    "use_speaker_boost": True,
+                },
             ),
         }
 
     async def generate_multi_character_audio(
-        self, story_parts: Dict[str, List[str]], child_name: str, child_gender: str = "neutral"
+        self,
+        story_parts: Dict[str, List[str]],
+        child_name: str,
+        child_gender: str = "neutral",
     ) -> str:
         """توليد صوت متعدد الشخصيات للقصة"""
 
@@ -66,7 +89,9 @@ class MultiVoiceTTS:
                 if text.strip():  # تجاهل النصوص الفارغة
                     # توليد الصوت
                     audio_data = await self._generate_voice_segment(
-                        text=text, voice_profile=voice_profile, character_type=character_type
+                        text=text,
+                        voice_profile=voice_profile,
+                        character_type=character_type,
                     )
 
                     audio_segments.append(audio_data)
@@ -75,17 +100,25 @@ class MultiVoiceTTS:
         final_audio = self._merge_audio_segments(audio_segments)
 
         # حفظ الملف
-        output_path = f"outputs/stories/story_{child_name}_{datetime.now().timestamp()}.mp3"
+        output_path = (
+            f"outputs/stories/story_{child_name}_{datetime.now().timestamp()}.mp3"
+        )
         final_audio.export(output_path, format="mp3")
 
         return output_path
 
     def _select_voice(self, character_type: str, child_gender: str) -> VoiceProfile:
         """اختيار الصوت المناسب للشخصية"""
-        voice_mapping = {"narrator": "narrator_female", "hero": "child_boy", "الأم": "mother"}
+        voice_mapping = {
+            "narrator": "narrator_female",
+            "hero": "child_boy",
+            "الأم": "mother",
+        }
 
         voice_key = voice_mapping.get(character_type, "narrator_female")
-        return self.voice_profiles.get(voice_key, self.voice_profiles["narrator_female"])
+        return self.voice_profiles.get(
+            voice_key, self.voice_profiles["narrator_female"]
+        )
 
     async def _generate_voice_segment(
         self, text: str, voice_profile: VoiceProfile, character_type: str
@@ -95,7 +128,9 @@ class MultiVoiceTTS:
         # توليد الصوت
         audio = generate(
             text=text,
-            voice=Voice(voice_id=voice_profile.voice_id, settings=voice_profile.settings),
+            voice=Voice(
+                voice_id=voice_profile.voice_id, settings=voice_profile.settings
+            ),
             model="eleven_multilingual_v2",
         )
 
@@ -124,7 +159,9 @@ class MultiVoiceTTS:
 
         return combined
 
-    async def generate_emotional_response(self, text: str, emotion: str, character: str = "teddy") -> str:
+    async def generate_emotional_response(
+        self, text: str, emotion: str, character: str = "teddy"
+    ) -> str:
         """توليد رد صوتي عاطفي"""
 
         # تعديل إعدادات الصوت حسب العاطفة
@@ -140,12 +177,17 @@ class MultiVoiceTTS:
 
         audio = generate(
             text=text,
-            voice=Voice(voice_id=self.voice_profiles["child_boy"].voice_id, settings=voice_settings),
+            voice=Voice(
+                voice_id=self.voice_profiles["child_boy"].voice_id,
+                settings=voice_settings,
+            ),
             model="eleven_multilingual_v2",
         )
 
         # حفظ الملف
-        output_path = f"outputs/responses/response_{emotion}_{datetime.now().timestamp()}.mp3"
+        output_path = (
+            f"outputs/responses/response_{emotion}_{datetime.now().timestamp()}.mp3"
+        )
         with open(output_path, "wb") as f:
             f.write(audio)
 

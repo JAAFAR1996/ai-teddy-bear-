@@ -51,24 +51,14 @@ except ImportError:
 # Import main enhanced audio manager
 try:
     # Import domain models
-    from ...domain.audio.models import (
-        AudioFormatType,
-        AudioQualityMode,
-        AudioSession,
-        AudioSessionType,
-        AudioSystemConfig,
-    )
-    from .audio_manager import (
-        AudioSystemError,
-        EnhancedAudioManager,
-        create_audio_manager,
-        create_child_safe_config,
-        create_high_quality_config,
-        create_low_latency_config,
-        get_audio_manager,
-        get_default_config,
-        shutdown_audio_manager,
-    )
+    from ...domain.audio.models import (AudioFormatType, AudioQualityMode,
+                                        AudioSession, AudioSessionType,
+                                        AudioSystemConfig)
+    from .audio_manager import (AudioSystemError, EnhancedAudioManager,
+                                create_audio_manager, create_child_safe_config,
+                                create_high_quality_config,
+                                create_low_latency_config, get_audio_manager,
+                                get_default_config, shutdown_audio_manager)
 
     # Alias for backward compatibility
     AudioManager = EnhancedAudioManager
@@ -82,14 +72,9 @@ MODERN_AUDIO_AVAILABLE = False
 
 # Import audio processing components (optional)
 try:
-    from .audio_processing import (
-        AudioProcessor,
-        detect_silence,
-        get_audio_stats,
-        normalize_volume,
-        process_audio,
-        trim_silence,
-    )
+    from .audio_processing import (AudioProcessor, detect_silence,
+                                   get_audio_stats, normalize_volume,
+                                   process_audio, trim_silence)
 
     AUDIO_PROCESSING_AVAILABLE = True
 except ImportError:
@@ -97,16 +82,9 @@ except ImportError:
 
 # Import audio I/O components (optional)
 try:
-    from .audio_io import (
-        AudioFormat,
-        AudioIO,
-        AudioMetadata,
-        AudioQuality,
-        cleanup_temp_files,
-        get_audio_duration,
-        get_audio_files,
-        get_audio_format,
-    )
+    from .audio_io import (AudioFormat, AudioIO, AudioMetadata, AudioQuality,
+                           cleanup_temp_files, get_audio_duration,
+                           get_audio_files, get_audio_format)
 
     AUDIO_IO_AVAILABLE = True
 except ImportError:
@@ -122,7 +100,8 @@ except ImportError:
 
 # Import state management (optional)
 try:
-    from .state_manager import AudioState, StateChangeEvent, StateManager, state_manager
+    from .state_manager import (AudioState, StateChangeEvent, StateManager,
+                                state_manager)
 
     STATE_MANAGER_AVAILABLE = True
 except ImportError:
@@ -130,7 +109,8 @@ except ImportError:
 
 # Import emotion analysis (optional)
 try:
-    from .hume_emotion_analyzer import ChildVoiceEmotion, HumeSpeechEmotionAnalyzer
+    from .hume_emotion_analyzer import (ChildVoiceEmotion,
+                                        HumeSpeechEmotionAnalyzer)
 
     EMOTION_ANALYSIS_AVAILABLE = True
 except ImportError:
@@ -166,7 +146,14 @@ if ENHANCED_AUDIO_AVAILABLE:
 # Audio processing exports
 if AUDIO_PROCESSING_AVAILABLE:
     __all__.extend(
-        ["AudioProcessor", "process_audio", "normalize_volume", "detect_silence", "trim_silence", "get_audio_stats"]
+        [
+            "AudioProcessor",
+            "process_audio",
+            "normalize_volume",
+            "detect_silence",
+            "trim_silence",
+            "get_audio_stats",
+        ]
     )
 
 # Audio I/O exports
@@ -267,9 +254,13 @@ def _print_init_status():
         available_components.append("Emotion Analysis")
 
     if available_components:
-        print(f"🎵 Audio System v{__version__} - Available: {', '.join(available_components)}")
+        print(
+            f"🎵 Audio System v{__version__} - Available: {', '.join(available_components)}"
+        )
     else:
-        print(f"⚠️ Audio System v{__version__} - Limited functionality (no components available)")
+        print(
+            f"⚠️ Audio System v{__version__} - Limited functionality (no components available)"
+        )
 
 
 # Print status only if running directly

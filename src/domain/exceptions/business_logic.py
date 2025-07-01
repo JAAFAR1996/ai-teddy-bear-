@@ -27,7 +27,9 @@ class ResourceNotFoundException(BusinessLogicException):
 
     def __init__(self, resource_type: str, resource_id: str, **kwargs):
         super().__init__(
-            message=f"{resource_type} with ID '{resource_id}' not found", error_code="RESOURCE_NOT_FOUND", **kwargs
+            message=f"{resource_type} with ID '{resource_id}' not found",
+            error_code="RESOURCE_NOT_FOUND",
+            **kwargs,
         )
         self.resource_type = resource_type
         self.resource_id = resource_id
@@ -36,7 +38,9 @@ class ResourceNotFoundException(BusinessLogicException):
 class DuplicateResourceException(BusinessLogicException):
     """مورد مكرر"""
 
-    def __init__(self, resource_type: str, duplicate_field: str, duplicate_value: Any, **kwargs):
+    def __init__(
+        self, resource_type: str, duplicate_field: str, duplicate_value: Any, **kwargs
+    ):
         super().__init__(
             message=f"{resource_type} with {duplicate_field}='{duplicate_value}' already exists",
             error_code="DUPLICATE_RESOURCE",
@@ -51,7 +55,12 @@ class QuotaExceededException(BusinessLogicException):
     """تجاوز الحصة المسموحة"""
 
     def __init__(
-        self, quota_type: str, current_usage: int, quota_limit: int, reset_time: Optional[datetime] = None, **kwargs
+        self,
+        quota_type: str,
+        current_usage: int,
+        quota_limit: int,
+        reset_time: Optional[datetime] = None,
+        **kwargs,
     ):
         message = f"Quota exceeded for {quota_type}: {current_usage}/{quota_limit}"
         retry_after = None

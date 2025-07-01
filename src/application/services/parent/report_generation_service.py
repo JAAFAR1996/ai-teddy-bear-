@@ -7,14 +7,12 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from src.domain.reporting.models import (
-    ChildProgress,
-    EmotionDistribution,
-    InteractionAnalysis,
-    ReportPeriod,
-    SkillAnalysis,
-)
-from src.domain.reporting.services import BehaviorAnalyzer, EmotionAnalyzerService, ProgressAnalyzer, SkillAnalyzer
+from src.domain.reporting.models import (ChildProgress, EmotionDistribution,
+                                         InteractionAnalysis, ReportPeriod,
+                                         SkillAnalysis)
+from src.domain.reporting.services import (BehaviorAnalyzer,
+                                           EmotionAnalyzerService,
+                                           ProgressAnalyzer, SkillAnalyzer)
 
 
 class ReportGenerationService:
@@ -31,7 +29,9 @@ class ReportGenerationService:
         self.skill_analyzer = SkillAnalyzer()
         self.behavior_analyzer = BehaviorAnalyzer()
 
-    async def generate_weekly_report(self, child_id: str, week_offset: int = 0) -> ChildProgress:
+    async def generate_weekly_report(
+        self, child_id: str, week_offset: int = 0
+    ) -> ChildProgress:
         """
         Generate comprehensive weekly report for a child
 
@@ -55,7 +55,9 @@ class ReportGenerationService:
             interactions = await self._get_interactions(child_id, start_date, end_date)
 
             # Analyze all metrics using domain services
-            emotion_analysis = self.emotion_analyzer.analyze_emotion_distribution(interactions)
+            emotion_analysis = self.emotion_analyzer.analyze_emotion_distribution(
+                interactions
+            )
             skill_analysis = self.skill_analyzer.analyze_skills_practiced(interactions)
 
             # Build comprehensive progress report
@@ -67,37 +69,71 @@ class ReportGenerationService:
                 # Basic interaction metrics
                 total_interactions=len(interactions),
                 avg_daily_interactions=len(interactions) / 7,
-                longest_conversation=self.progress_analyzer.calculate_longest_conversation(interactions),
-                favorite_topics=self.progress_analyzer.extract_favorite_topics(interactions),
+                longest_conversation=self.progress_analyzer.calculate_longest_conversation(
+                    interactions
+                ),
+                favorite_topics=self.progress_analyzer.extract_favorite_topics(
+                    interactions
+                ),
                 # Emotional analysis
                 emotion_analysis=emotion_analysis,
-                mood_trends=self.progress_analyzer.analyze_mood_trends(interactions, start_date, end_date),
+                mood_trends=self.progress_analyzer.analyze_mood_trends(
+                    interactions, start_date, end_date
+                ),
                 # Behavioral analysis
-                attention_span=self.progress_analyzer.calculate_attention_span(interactions),
-                response_time=self.progress_analyzer.calculate_response_time(interactions),
-                vocabulary_growth=self.progress_analyzer.estimate_vocabulary_growth(interactions),
-                question_frequency=self.progress_analyzer.calculate_question_frequency(interactions),
+                attention_span=self.progress_analyzer.calculate_attention_span(
+                    interactions
+                ),
+                response_time=self.progress_analyzer.calculate_response_time(
+                    interactions
+                ),
+                vocabulary_growth=self.progress_analyzer.estimate_vocabulary_growth(
+                    interactions
+                ),
+                question_frequency=self.progress_analyzer.calculate_question_frequency(
+                    interactions
+                ),
                 # Learning analysis
                 skill_analysis=skill_analysis,
-                learning_achievements=self.skill_analyzer.identify_achievements(interactions),
-                recommended_activities=self.skill_analyzer.generate_activity_recommendations(interactions),
+                learning_achievements=self.skill_analyzer.identify_achievements(
+                    interactions
+                ),
+                recommended_activities=self.skill_analyzer.generate_activity_recommendations(
+                    interactions
+                ),
                 # Social analysis
-                empathy_indicators=self.emotion_analyzer.count_empathy_indicators(interactions),
-                sharing_behavior=self.emotion_analyzer.analyze_sharing_behavior(interactions),
-                cooperation_level=self.emotion_analyzer.calculate_cooperation_level(interactions),
+                empathy_indicators=self.emotion_analyzer.count_empathy_indicators(
+                    interactions
+                ),
+                sharing_behavior=self.emotion_analyzer.analyze_sharing_behavior(
+                    interactions
+                ),
+                cooperation_level=self.emotion_analyzer.calculate_cooperation_level(
+                    interactions
+                ),
                 # Sleep analysis (if data available)
-                sleep_pattern_quality=self.emotion_analyzer.analyze_sleep_patterns(interactions),
-                bedtime_conversations=self.emotion_analyzer.count_bedtime_conversations(interactions),
+                sleep_pattern_quality=self.emotion_analyzer.analyze_sleep_patterns(
+                    interactions
+                ),
+                bedtime_conversations=self.emotion_analyzer.count_bedtime_conversations(
+                    interactions
+                ),
                 # Red flags
-                concerning_patterns=self.emotion_analyzer.identify_concerning_patterns(interactions),
-                urgent_recommendations=self.emotion_analyzer.generate_urgent_recommendations(interactions),
+                concerning_patterns=self.emotion_analyzer.identify_concerning_patterns(
+                    interactions
+                ),
+                urgent_recommendations=self.emotion_analyzer.generate_urgent_recommendations(
+                    interactions
+                ),
             )
 
             self.logger.info(f"Generated weekly report for child {child_id}")
             return progress
 
         except Exception as e:
-            self.logger.error(f"Weekly report generation failed for child {child_id}: {e}")
+            self.logger.error(
+                f"Weekly report generation failed for child {child_id}: {e}"
+            )
             raise
 
     async def generate_monthly_report(self, child_id: str) -> Dict[str, Any]:
@@ -111,8 +147,12 @@ class ReportGenerationService:
 
             # Analyze trends across weeks
             monthly_trends = self._analyze_monthly_trends(weekly_reports)
-            long_term_recommendations = self._generate_long_term_recommendations(weekly_reports)
-            developmental_milestones = self._check_developmental_milestones(weekly_reports)
+            long_term_recommendations = self._generate_long_term_recommendations(
+                weekly_reports
+            )
+            developmental_milestones = self._check_developmental_milestones(
+                weekly_reports
+            )
 
             report = {
                 "child_id": child_id,
@@ -128,7 +168,9 @@ class ReportGenerationService:
             return report
 
         except Exception as e:
-            self.logger.error(f"Monthly report generation failed for child {child_id}: {e}")
+            self.logger.error(
+                f"Monthly report generation failed for child {child_id}: {e}"
+            )
             raise
 
     async def _get_child_info(self, child_id: str) -> Dict[str, Any]:
@@ -139,7 +181,12 @@ class ReportGenerationService:
                 return await self.db.get_child_info(child_id)
 
             # Fallback mock data
-            return {"name": f"Child_{child_id}", "age": 5, "preferences": [], "special_needs": []}
+            return {
+                "name": f"Child_{child_id}",
+                "age": 5,
+                "preferences": [],
+                "special_needs": [],
+            }
 
         except Exception as e:
             self.logger.error(f"Failed to get child info for {child_id}: {e}")
@@ -175,7 +222,9 @@ class ReportGenerationService:
             self.logger.error(f"Failed to get interactions for {child_id}: {e}")
             return []
 
-    def _analyze_monthly_trends(self, weekly_reports: List[ChildProgress]) -> Dict[str, Any]:
+    def _analyze_monthly_trends(
+        self, weekly_reports: List[ChildProgress]
+    ) -> Dict[str, Any]:
         """Analyze trends across weekly reports"""
         try:
             if not weekly_reports:
@@ -190,7 +239,9 @@ class ReportGenerationService:
             }
 
             # Analyze interaction trends
-            interaction_counts = [report.total_interactions for report in weekly_reports]
+            interaction_counts = [
+                report.total_interactions for report in weekly_reports
+            ]
             if len(interaction_counts) >= 2:
                 if interaction_counts[-1] > interaction_counts[0]:
                     trends["interaction_trend"] = "increasing"
@@ -198,7 +249,9 @@ class ReportGenerationService:
                     trends["interaction_trend"] = "decreasing"
 
             # Analyze emotion stability trends
-            stability_scores = [report.emotion_analysis.stability_score for report in weekly_reports]
+            stability_scores = [
+                report.emotion_analysis.stability_score for report in weekly_reports
+            ]
             if len(stability_scores) >= 2:
                 if stability_scores[-1] > stability_scores[0]:
                     trends["emotion_stability_trend"] = "improving"
@@ -206,7 +259,10 @@ class ReportGenerationService:
                     trends["emotion_stability_trend"] = "declining"
 
             # Analyze skill development
-            skill_counts = [report.skill_analysis.get_total_practice_sessions() for report in weekly_reports]
+            skill_counts = [
+                report.skill_analysis.get_total_practice_sessions()
+                for report in weekly_reports
+            ]
             if len(skill_counts) >= 2:
                 if skill_counts[-1] > skill_counts[0]:
                     trends["skill_development_trend"] = "positive"
@@ -219,7 +275,9 @@ class ReportGenerationService:
             self.logger.error(f"Monthly trends analysis error: {e}")
             return {}
 
-    def _generate_long_term_recommendations(self, weekly_reports: List[ChildProgress]) -> List[str]:
+    def _generate_long_term_recommendations(
+        self, weekly_reports: List[ChildProgress]
+    ) -> List[str]:
         """Generate long-term recommendations based on monthly data"""
         try:
             recommendations = []
@@ -237,12 +295,16 @@ class ReportGenerationService:
                 recommendations.append("مراجعة شاملة مع أخصائي تطوير الطفل")
 
             # Check for skill plateau
-            recent_achievements = weekly_reports[-1].learning_achievements if weekly_reports else []
+            recent_achievements = (
+                weekly_reports[-1].learning_achievements if weekly_reports else []
+            )
             if len(recent_achievements) < 2:
                 recommendations.append("تنويع الأنشطة التعليمية لتحفيز التطور")
 
             # Check for interaction consistency
-            avg_interactions = sum(report.total_interactions for report in weekly_reports) / len(weekly_reports)
+            avg_interactions = sum(
+                report.total_interactions for report in weekly_reports
+            ) / len(weekly_reports)
 
             if avg_interactions < 10:
                 recommendations.append("زيادة تكرار جلسات التفاعل اليومية")
@@ -253,7 +315,9 @@ class ReportGenerationService:
             self.logger.error(f"Long-term recommendations generation error: {e}")
             return []
 
-    def _check_developmental_milestones(self, weekly_reports: List[ChildProgress]) -> Dict[str, Any]:
+    def _check_developmental_milestones(
+        self, weekly_reports: List[ChildProgress]
+    ) -> Dict[str, Any]:
         """Check developmental milestones based on monthly data"""
         try:
             if not weekly_reports:

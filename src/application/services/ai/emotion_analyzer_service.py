@@ -8,9 +8,12 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer as DomainEmotionAnalyzer
-from src.application.services.ai.interfaces.ai_service_interface import IEmotionAnalyzer
-from src.application.services.ai.models.ai_response_models import EmotionAnalysis
+from src.application.services.ai.emotion_analyzer_service import \
+    EmotionAnalyzer as DomainEmotionAnalyzer
+from src.application.services.ai.interfaces.ai_service_interface import \
+    IEmotionAnalyzer
+from src.application.services.ai.models.ai_response_models import \
+    EmotionAnalysis
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +60,13 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             },
             "fear": {
                 "arabic_keywords": ["خوف", "خائف", "قلق", "مرعوب", "فزع", "رعب"],
-                "english_keywords": ["scared", "afraid", "frightened", "worried", "anxious"],
+                "english_keywords": [
+                    "scared",
+                    "afraid",
+                    "frightened",
+                    "worried",
+                    "anxious",
+                ],
                 "emojis": ["😨", "😰", "😱", "😟", "😧"],
                 "weight": 1.0,
             },
@@ -69,12 +78,26 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             },
             "excitement": {
                 "arabic_keywords": ["متحمس", "متشوق", "رائع", "ممتاز", "واو"],
-                "english_keywords": ["excited", "thrilled", "amazing", "awesome", "wow"],
+                "english_keywords": [
+                    "excited",
+                    "thrilled",
+                    "amazing",
+                    "awesome",
+                    "wow",
+                ],
                 "emojis": ["🤩", "✨", "🎉", "😍", "🔥"],
                 "weight": 1.0,
             },
             "curiosity": {
-                "arabic_keywords": ["فضول", "ليش", "لماذا", "كيف", "متى", "أين", "ماذا"],
+                "arabic_keywords": [
+                    "فضول",
+                    "ليش",
+                    "لماذا",
+                    "كيف",
+                    "متى",
+                    "أين",
+                    "ماذا",
+                ],
                 "english_keywords": ["curious", "why", "how", "when", "where", "what"],
                 "emojis": ["🤔", "❓", "❔"],
                 "weight": 0.8,
@@ -87,7 +110,9 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             },
         }
 
-    async def analyze_text_emotion(self, text: str, language: str = "ar") -> EmotionAnalysis:
+    async def analyze_text_emotion(
+        self, text: str, language: str = "ar"
+    ) -> EmotionAnalysis:
         """🎭 Analyze emotion from text with advanced detection"""
         try:
             # Check cache first
@@ -100,7 +125,9 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             # Use domain analyzer if available
             if self.domain_analyzer:
                 try:
-                    domain_result = await self.domain_analyzer.analyze_text_emotion(text)
+                    domain_result = await self.domain_analyzer.analyze_text_emotion(
+                        text
+                    )
                     if hasattr(domain_result, "value"):
                         primary_emotion = domain_result.value
                         confidence = 0.85
@@ -109,9 +136,13 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
                         confidence = 0.80
                 except Exception as e:
                     logger.warning(f"Domain analyzer failed: {e}")
-                    primary_emotion, confidence = self._analyze_with_patterns(text, language)
+                    primary_emotion, confidence = self._analyze_with_patterns(
+                        text, language
+                    )
             else:
-                primary_emotion, confidence = self._analyze_with_patterns(text, language)
+                primary_emotion, confidence = self._analyze_with_patterns(
+                    text, language
+                )
 
             # Get detailed emotion breakdown
             emotion_scores = self._get_emotion_scores(text, language)
@@ -131,7 +162,11 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
 
         except Exception as e:
             logger.error(f"Error in emotion analysis: {e}")
-            return EmotionAnalysis(primary_emotion="neutral", confidence=0.5, detected_emotions={"neutral": 1.0})
+            return EmotionAnalysis(
+                primary_emotion="neutral",
+                confidence=0.5,
+                detected_emotions={"neutral": 1.0},
+            )
 
     def _analyze_with_patterns(self, text: str, language: str) -> tuple[str, float]:
         """Analyze emotion using enhanced pattern matching"""
@@ -173,7 +208,9 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
 
         return primary_emotion, confidence
 
-    def _apply_contextual_multipliers(self, text: str, emotion: str, base_score: float) -> float:
+    def _apply_contextual_multipliers(
+        self, text: str, emotion: str, base_score: float
+    ) -> float:
         """Apply contextual multipliers to emotion scores"""
         if base_score == 0:
             return 0
@@ -204,7 +241,9 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
         for emotion, data in self.emotion_patterns.items():
             score = 0.0
 
-            keywords = data.get("arabic_keywords" if language == "ar" else "english_keywords", [])
+            keywords = data.get(
+                "arabic_keywords" if language == "ar" else "english_keywords", []
+            )
             keywords.extend(data.get("emojis", []))
 
             for keyword in keywords:
@@ -220,7 +259,9 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
 
         return scores
 
-    async def analyze_emotion_trend(self, conversation_history: List[Dict[str, Any]]) -> Dict[str, Any]:
+    async def analyze_emotion_trend(
+        self, conversation_history: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """🔍 Analyze emotion trends in conversation history"""
         if not conversation_history:
             return {"trend": "neutral", "confidence": 0.5, "pattern": "no_data"}
@@ -292,11 +333,19 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             return False
 
         # Check if recent emotions are more positive than earlier ones
-        early_positive = sum(1 for e in emotions[: len(emotions) // 2] if e in positive_emotions)
-        late_positive = sum(1 for e in emotions[len(emotions) // 2 :] if e in positive_emotions)
+        early_positive = sum(
+            1 for e in emotions[: len(emotions) // 2] if e in positive_emotions
+        )
+        late_positive = sum(
+            1 for e in emotions[len(emotions) // 2 :] if e in positive_emotions
+        )
 
-        early_negative = sum(1 for e in emotions[: len(emotions) // 2] if e in negative_emotions)
-        late_negative = sum(1 for e in emotions[len(emotions) // 2 :] if e in negative_emotions)
+        early_negative = sum(
+            1 for e in emotions[: len(emotions) // 2] if e in negative_emotions
+        )
+        late_negative = sum(
+            1 for e in emotions[len(emotions) // 2 :] if e in negative_emotions
+        )
 
         return late_positive > early_positive or late_negative < early_negative
 
@@ -309,11 +358,19 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             return False
 
         # Check if recent emotions are more negative than earlier ones
-        early_positive = sum(1 for e in emotions[: len(emotions) // 2] if e in positive_emotions)
-        late_positive = sum(1 for e in emotions[len(emotions) // 2 :] if e in positive_emotions)
+        early_positive = sum(
+            1 for e in emotions[: len(emotions) // 2] if e in positive_emotions
+        )
+        late_positive = sum(
+            1 for e in emotions[len(emotions) // 2 :] if e in positive_emotions
+        )
 
-        early_negative = sum(1 for e in emotions[: len(emotions) // 2] if e in negative_emotions)
-        late_negative = sum(1 for e in emotions[len(emotions) // 2 :] if e in negative_emotions)
+        early_negative = sum(
+            1 for e in emotions[: len(emotions) // 2] if e in negative_emotions
+        )
+        late_negative = sum(
+            1 for e in emotions[len(emotions) // 2 :] if e in negative_emotions
+        )
 
         return late_positive < early_positive or late_negative > early_negative
 

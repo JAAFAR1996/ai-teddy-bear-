@@ -71,7 +71,11 @@ class TokenClaims:
 class EnhancedJWTManager:
     """Enhanced JWT manager with security features"""
 
-    def __init__(self, secret_key: Optional[str] = None, redis_client: Optional[redis.Redis] = None):
+    def __init__(
+        self,
+        secret_key: Optional[str] = None,
+        redis_client: Optional[redis.Redis] = None,
+    ):
 
         self.secret_key = secret_key or self._generate_secret_key()
         self.redis_client = redis_client
@@ -97,7 +101,9 @@ class EnhancedJWTManager:
         """Generate secure secret key"""
         return secrets.token_urlsafe(64)
 
-    async def create_token_pair(self, claims: TokenClaims, device_fingerprint: Optional[str] = None) -> TokenPair:
+    async def create_token_pair(
+        self, claims: TokenClaims, device_fingerprint: Optional[str] = None
+    ) -> TokenPair:
         """Create access and refresh token pair"""
 
         now = datetime.utcnow()
@@ -134,13 +140,24 @@ class EnhancedJWTManager:
         }
 
         # Generate tokens
-        access_token = jwt.encode(access_claims, self.secret_key, algorithm=self.algorithm)
-        refresh_token = jwt.encode(refresh_claims, self.secret_key, algorithm=self.algorithm)
+        access_token = jwt.encode(
+            access_claims, self.secret_key, algorithm=self.algorithm
+        )
+        refresh_token = jwt.encode(
+            refresh_claims, self.secret_key, algorithm=self.algorithm
+        )
 
         # Store refresh token info
-        await self._store_refresh_token(refresh_token, claims.user_id, device_fingerprint)
+        await self._store_refresh_token(
+            refresh_token, claims.user_id, device_fingerprint
+        )
 
-        logger.info("Token pair created", user_id=claims.user_id, role=claims.role, device_id=claims.device_id)
+        logger.info(
+            "Token pair created",
+            user_id=claims.user_id,
+            role=claims.role,
+            device_id=claims.device_id,
+        )
 
         return TokenPair(
             access_token=access_token,
@@ -198,7 +215,9 @@ class EnhancedJWTManager:
 
         try:
             # Decode refresh token
-            payload = jwt.decode(refresh_token, self.secret_key, algorithms=[self.algorithm])
+            payload = jwt.decode(
+                refresh_token, self.secret_key, algorithms=[self.algorithm]
+            )
 
             # Verify token type
             if payload.get("token_type") != TokenType.REFRESH.value:
@@ -252,12 +271,21 @@ class EnhancedJWTManager:
 
         try:
             # Decode to get expiration
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm], options={"verify_exp": False})
+            payload = jwt.decode(
+                token,
+                self.secret_key,
+                algorithms=[self.algorithm],
+                options={"verify_exp": False},
+            )
 
             # Add to blacklist
             await self._blacklist_token(token)
 
-            logger.info("Token revoked", user_id=payload.get("user_id"), token_type=payload.get("token_type"))
+            logger.info(
+                "Token revoked",
+                user_id=payload.get("user_id"),
+                token_type=payload.get("token_type"),
+            )
 
             return True
 
@@ -282,7 +310,9 @@ class EnhancedJWTManager:
             logger.error("User token revocation error", error=str(e))
             return False
 
-    async def create_device_token(self, user_id: str, device_id: str, device_info: Dict[str, Any]) -> str:
+    async def create_device_token(
+        self, user_id: str, device_id: str, device_info: Dict[str, Any]
+    ) -> str:
         """Create long-lived device token"""
 
         now = datetime.utcnow()
@@ -336,7 +366,9 @@ class EnhancedJWTManager:
 
         return fingerprint[:32]  # First 32 characters
 
-    async def _store_refresh_token(self, token: str, user_id: str, device_fingerprint: Optional[str]):
+    async def _store_refresh_token(
+        self, token: str, user_id: str, device_fingerprint: Optional[str]
+    ):
         """Store refresh token information"""
 
         if self.redis_client:
@@ -348,9 +380,13 @@ class EnhancedJWTManager:
 
             # Store with expiration
             await self.redis_client.hset(f"refresh_token:{token}", mapping=token_info)
-            await self.redis_client.expire(f"refresh_token:{token}", int(self.refresh_token_expire.total_seconds()))
+            await self.redis_client.expire(
+                f"refresh_token:{token}", int(self.refresh_token_expire.total_seconds())
+            )
 
-    async def _store_device_token(self, token: str, user_id: str, device_id: str, device_info: Dict[str, Any]):
+    async def _store_device_token(
+        self, token: str, user_id: str, device_id: str, device_info: Dict[str, Any]
+    ):
         """Store device token information"""
 
         if self.redis_client:
@@ -362,7 +398,9 @@ class EnhancedJWTManager:
             }
 
             await self.redis_client.hset(f"device_token:{token}", mapping=token_info)
-            await self.redis_client.expire(f"device_token:{token}", int(self.device_token_expire.total_seconds()))
+            await self.redis_client.expire(
+                f"device_token:{token}", int(self.device_token_expire.total_seconds())
+            )
 
     async def _is_token_blacklisted(self, token: str) -> bool:
         """Check if token is blacklisted"""
@@ -397,7 +435,9 @@ class EnhancedJWTManager:
         # Increment attempts
         if self.redis_client:
             await self.redis_client.incr(f"refresh_attempts:{user_id}")
-            await self.redis_client.expire(f"refresh_attempts:{user_id}", 3600)  # 1 hour
+            await self.redis_client.expire(
+                f"refresh_attempts:{user_id}", 3600
+            )  # 1 hour
         else:
             self.refresh_attempts[user_id] = current_attempts + 1
 
@@ -430,14 +470,20 @@ class EnhancedJWTManager:
 
         try:
             # Decode without verification to get info
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm], options={"verify_exp": False})
+            payload = jwt.decode(
+                token,
+                self.secret_key,
+                algorithms=[self.algorithm],
+                options={"verify_exp": False},
+            )
 
             return {
                 "user_id": payload.get("user_id"),
                 "token_type": payload.get("token_type"),
                 "issued_at": datetime.fromtimestamp(payload.get("iat", 0)),
                 "expires_at": datetime.fromtimestamp(payload.get("exp", 0)),
-                "is_expired": datetime.utcnow() > datetime.fromtimestamp(payload.get("exp", 0)),
+                "is_expired": datetime.utcnow()
+                > datetime.fromtimestamp(payload.get("exp", 0)),
             }
 
         except Exception as e:
@@ -449,7 +495,9 @@ class EnhancedJWTManager:
 _jwt_manager: Optional[EnhancedJWTManager] = None
 
 
-def get_jwt_manager(secret_key: Optional[str] = None, redis_client: Optional[redis.Redis] = None) -> EnhancedJWTManager:
+def get_jwt_manager(
+    secret_key: Optional[str] = None, redis_client: Optional[redis.Redis] = None
+) -> EnhancedJWTManager:
     """Get global JWT manager instance"""
     global _jwt_manager
     if _jwt_manager is None:
@@ -461,7 +509,11 @@ def get_jwt_manager(secret_key: Optional[str] = None, redis_client: Optional[red
 
 
 async def create_parent_tokens(
-    user_id: str, username: str, email: str, family_id: str, device_fingerprint: Optional[str] = None
+    user_id: str,
+    username: str,
+    email: str,
+    family_id: str,
+    device_fingerprint: Optional[str] = None,
 ) -> TokenPair:
     """Create tokens for parent user"""
     jwt_manager = get_jwt_manager()
@@ -480,7 +532,12 @@ async def create_parent_tokens(
 
 
 async def create_child_tokens(
-    user_id: str, username: str, email: str, family_id: str, parent_id: str, device_id: str
+    user_id: str,
+    username: str,
+    email: str,
+    family_id: str,
+    parent_id: str,
+    device_id: str,
 ) -> TokenPair:
     """Create tokens for child user"""
     jwt_manager = get_jwt_manager()

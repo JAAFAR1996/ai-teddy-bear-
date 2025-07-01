@@ -20,9 +20,9 @@ from openai.types.chat import ChatCompletion
 from opentelemetry import trace
 from prometheus_client import Counter, Gauge, Histogram
 
-from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer
+from src.application.services.ai.emotion_analyzer_service import \
+    EmotionAnalyzer
 from src.core.domain.entities.child import Child
-
 # from src.application.services.core.circuit_breaker import CircuitBreaker
 # from src.application.services.core.service_registry import ServiceBase
 from src.core.domain.entities.conversation import Conversation, Message
@@ -30,7 +30,8 @@ from src.domain.value_objects import ConversationCategory, EmotionalTone
 from src.infrastructure.caching.simple_cache_service import CacheService
 from src.infrastructure.config import Settings, get_config, get_settings
 from src.infrastructure.observability import trace_async
-from src.infrastructure.security.audit_logger import AuditEventType, AuditLogger
+from src.infrastructure.security.audit_logger import (AuditEventType,
+                                                      AuditLogger)
 
 try:
     from transformers import AutoModelForCausalLM, AutoTokenizer

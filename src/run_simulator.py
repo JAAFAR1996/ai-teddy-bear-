@@ -11,7 +11,9 @@ import sys
 from pathlib import Path
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 
 def main() -> Any:
@@ -22,7 +24,8 @@ def main() -> Any:
         sys.path.insert(0, str(project_root))
 
         # Import and run simulator
-        from core.simulators.esp32_production_simulator import main as simulator_main
+        from core.simulators.esp32_production_simulator import \
+            main as simulator_main
 
         logging.info("🧸 Starting ESP32 Simulator...")
         simulator_main()

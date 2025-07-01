@@ -15,9 +15,16 @@ class AuthService:
         self.algorithm = algorithm
         self.security = HTTPBearer()
 
-    def create_access_token(self, subject: str, expires_delta: timedelta = timedelta(minutes=15)) -> str:
+    def create_access_token(
+        self, subject: str, expires_delta: timedelta = timedelta(minutes=15)
+    ) -> str:
         expire = datetime.utcnow() + expires_delta
-        to_encode = {"sub": subject, "exp": expire, "iat": datetime.utcnow(), "type": "access"}
+        to_encode = {
+            "sub": subject,
+            "exp": expire,
+            "iat": datetime.utcnow(),
+            "type": "access",
+        }
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
     def create_refresh_token(self, subject: str) -> str:

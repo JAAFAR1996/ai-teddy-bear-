@@ -19,7 +19,10 @@ class AITeddyBearLoadTest(HttpUser):
         """Authenticate user"""
         response = self.client.post(
             "/api/v1/auth/login",
-            json={"email": f"parent{random.randint(1, 100)}@test.com", "password": "test-password"},
+            json={
+                "email": f"parent{random.randint(1, 100)}@test.com",
+                "password": "test-password",
+            },
         )
 
         if response.status_code == 200:
@@ -36,7 +39,9 @@ class AITeddyBearLoadTest(HttpUser):
             "/api/v1/conversations/start",
             json={
                 "child_id": self.child_id,
-                "initial_message": random.choice(["مرحبا صديقي", "Hello friend", "كيف حالك؟", "How are you?"]),
+                "initial_message": random.choice(
+                    ["مرحبا صديقي", "Hello friend", "كيف حالك؟", "How are you?"]
+                ),
             },
             headers=self.headers,
             name="Start Conversation",
@@ -76,13 +81,19 @@ class AITeddyBearLoadTest(HttpUser):
     @task(3)
     def get_history(self):
         """Get conversation history"""
-        self.client.get(f"/api/v1/children/{self.child_id}/conversations", headers=self.headers, name="Get History")
+        self.client.get(
+            f"/api/v1/children/{self.child_id}/conversations",
+            headers=self.headers,
+            name="Get History",
+        )
 
     @task(2)
     def end_conversation(self):
         """End active conversation"""
         if self.session_id:
             self.client.post(
-                f"/api/v1/conversations/{self.session_id}/end", headers=self.headers, name="End Conversation"
+                f"/api/v1/conversations/{self.session_id}/end",
+                headers=self.headers,
+                name="End Conversation",
             )
             self.session_id = None

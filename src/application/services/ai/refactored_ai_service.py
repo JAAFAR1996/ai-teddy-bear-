@@ -8,9 +8,12 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from src.application.services.ai.ai_service_factory import EnhancedAIServiceFactory
-from src.application.services.ai.interfaces.ai_service_interface import IAIService
-from src.application.services.ai.models.ai_response_models import AIResponseModel, AIServiceMetrics
+from src.application.services.ai.ai_service_factory import \
+    EnhancedAIServiceFactory
+from src.application.services.ai.interfaces.ai_service_interface import \
+    IAIService
+from src.application.services.ai.models.ai_response_models import (
+    AIResponseModel, AIServiceMetrics)
 from src.core.domain.entities.child import Child
 from src.infrastructure.caching.simple_cache_service import CacheService
 from src.infrastructure.config import Settings
@@ -27,7 +30,12 @@ class RefactoredAIService:
     - Handles service lifecycle
     """
 
-    def __init__(self, settings: Settings, cache_service: CacheService, provider: str = "openai_modern"):
+    def __init__(
+        self,
+        settings: Settings,
+        cache_service: CacheService,
+        provider: str = "openai_modern",
+    ):
         self.settings = settings
         self.cache_service = cache_service
         self.provider = provider
@@ -45,7 +53,9 @@ class RefactoredAIService:
         try:
             # Create AI service using factory
             self._ai_service = EnhancedAIServiceFactory.create_service(
-                provider=self.provider, settings=self.settings, cache_service=self.cache_service
+                provider=self.provider,
+                settings=self.settings,
+                cache_service=self.cache_service,
             )
 
             self._initialized = True
@@ -57,7 +67,9 @@ class RefactoredAIService:
             # Fallback to mock service
             try:
                 self._ai_service = EnhancedAIServiceFactory.create_service(
-                    provider="mock", settings=self.settings, cache_service=self.cache_service
+                    provider="mock",
+                    settings=self.settings,
+                    cache_service=self.cache_service,
                 )
                 self._initialized = True
                 logger.warning("⚠️ Initialized with mock service as fallback")
@@ -66,7 +78,11 @@ class RefactoredAIService:
                 raise
 
     async def generate_response(
-        self, message: str, child: Child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None
+        self,
+        message: str,
+        child: Child,
+        session_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> AIResponseModel:
         """
         🎯 Generate AI response with automatic service management
@@ -89,7 +105,9 @@ class RefactoredAIService:
             # Update metrics
             processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
             self._metrics.average_processing_time_ms = (
-                self._metrics.average_processing_time_ms * (self._metrics.total_requests - 1) + processing_time
+                self._metrics.average_processing_time_ms
+                * (self._metrics.total_requests - 1)
+                + processing_time
             ) / self._metrics.total_requests
 
             return response
@@ -100,11 +118,15 @@ class RefactoredAIService:
 
             # Try to create a basic fallback response
             try:
-                from src.application.services.ai.fallback_response_service import FallbackResponseService
+                from src.application.services.ai.fallback_response_service import \
+                    FallbackResponseService
 
                 fallback_service = FallbackResponseService()
                 return await fallback_service.create_generic_fallback(
-                    message=message, child=child, session_id=session_id or "error_session", error_details=str(e)
+                    message=message,
+                    child=child,
+                    session_id=session_id or "error_session",
+                    error_details=str(e),
                 )
             except Exception as fallback_error:
                 logger.error(f"💥 Fallback also failed: {str(fallback_error)}")
@@ -192,10 +214,15 @@ class RefactoredAIService:
 
             if self._ai_service:
                 # Test basic functionality
-                test_child = type("TestChild", (), {"name": "Test", "age": 5, "device_id": "health_check"})()
+                test_child = type(
+                    "TestChild",
+                    (),
+                    {"name": "Test", "age": 5, "device_id": "health_check"},
+                )()
 
                 test_response = await asyncio.wait_for(
-                    self.generate_response("مرحبا", test_child, "health_check"), timeout=5.0
+                    self.generate_response("مرحبا", test_child, "health_check"),
+                    timeout=5.0,
                 )
 
                 if test_response and test_response.text:
@@ -205,11 +232,15 @@ class RefactoredAIService:
                     health_status["components"]["response_generation"] = False
 
                 # Test emotion analysis
-                emotion = await asyncio.wait_for(self.analyze_emotion("أنا سعيد"), timeout=2.0)
+                emotion = await asyncio.wait_for(
+                    self.analyze_emotion("أنا سعيد"), timeout=2.0
+                )
                 health_status["components"]["emotion_analysis"] = bool(emotion)
 
                 # Test categorization
-                category = await asyncio.wait_for(self.categorize_message("احكي لي قصة"), timeout=2.0)
+                category = await asyncio.wait_for(
+                    self.categorize_message("احكي لي قصة"), timeout=2.0
+                )
                 health_status["components"]["message_categorization"] = bool(category)
 
             else:

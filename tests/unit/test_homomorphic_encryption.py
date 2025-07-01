@@ -15,13 +15,8 @@ import pytest
 # Import the modules to test
 try:
     from src.infrastructure.security.homomorphic_encryption import (
-        TENSEAL_AVAILABLE,
-        EncryptedData,
-        HEConfig,
-        HEScheme,
-        HomomorphicEncryption,
-        ProcessingMode,
-    )
+        TENSEAL_AVAILABLE, EncryptedData, HEConfig, HEScheme,
+        HomomorphicEncryption, ProcessingMode)
 
     HE_IMPORTS_AVAILABLE = True
 except ImportError as e:
@@ -54,7 +49,9 @@ class TestHomomorphicEncryption:
         if not HE_IMPORTS_AVAILABLE:
             pytest.skip(f"HE imports not available: {import_error}")
 
-        with patch("core.infrastructure.security.homomorphic_encryption.SecurityAuditLogger"):
+        with patch(
+            "core.infrastructure.security.homomorphic_encryption.SecurityAuditLogger"
+        ):
             config = HEConfig()
             return HomomorphicEncryption(config)
 

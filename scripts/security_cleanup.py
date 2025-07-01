@@ -4,160 +4,175 @@
 Removes hardcoded secrets and implements secure environment-based configuration
 """
 
+import json
+import logging
 import os
 import re
-import json
-import shutil
 import secrets
+import shutil
 from pathlib import Path
 from typing import Dict, List, Set
-import logging
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
+
 class SecurityCleanup:
     """Comprehensive security cleanup for AI Teddy Bear project"""
-    
+
     def __init__(self, project_root: str = "."):
         self.project_root = Path(project_root)
         self.secrets_found: List[Dict] = []
         self.files_modified: Set[Path] = set()
-        
+
         # Common secret patterns
         self.secret_patterns = {
-            'openai_key': r'sk-[a-zA-Z0-9]{48,}',
-            'anthropic_key': r'sk-ant-[a-zA-Z0-9-]{95,}',
-            'google_key': r'AIza[0-9A-Za-z\-_]{35}',
-            'jwt_secret': r'[a-zA-Z0-9%!@#$&*+=\-_]{32,}',
-            'encryption_key': r'[A-Za-z0-9+/]{32,}={0,2}',
-            'bearer_token': r'Bearer [a-zA-Z0-9\-_\.]+',
-            'basic_auth': r'Basic [A-Za-z0-9+/]+=*'
+            "openai_key": r"sk-[a-zA-Z0-9]{48,}",
+            "anthropic_key": r"sk-ant-[a-zA-Z0-9-]{95,}",
+            "google_key": r"AIza[0-9A-Za-z\-_]{35}",
+            "jwt_secret": r"[a-zA-Z0-9%!@#$&*+=\-_]{32,}",
+            "encryption_key": r"[A-Za-z0-9+/]{32,}={0,2}",
+            "bearer_token": r"Bearer [a-zA-Z0-9\-_\.]+",
+            "basic_auth": r"Basic [A-Za-z0-9+/]+=*",
         }
-        
+
     def scan_for_secrets(self) -> None:
         """Scan the entire codebase for hardcoded secrets"""
         logger.info("🔍 Scanning for hardcoded secrets...")
-        
+
         # Files to exclude from scanning
         exclude_patterns = {
-            '.git', '__pycache__', 'node_modules', 'venv', 'env',
-            '.pytest_cache', '*.pyc', '*.log', '.env*', 'README.md',
-            'LICENSE', '*.md'
+            ".git",
+            "__pycache__",
+            "node_modules",
+            "venv",
+            "env",
+            ".pytest_cache",
+            "*.pyc",
+            "*.log",
+            ".env*",
+            "README.md",
+            "LICENSE",
+            "*.md",
         }
-        
-        for file_path in self.project_root.rglob('*'):
-            if file_path.is_file() and not self._should_exclude(file_path, exclude_patterns):
+
+        for file_path in self.project_root.rglob("*"):
+            if file_path.is_file() and not self._should_exclude(
+                file_path, exclude_patterns
+            ):
                 self._scan_file(file_path)
-    
+
     def _should_exclude(self, file_path: Path, exclude_patterns: Set[str]) -> bool:
         """Check if file should be excluded from scanning"""
         for pattern in exclude_patterns:
-            if pattern in str(file_path) or file_path.name.endswith(pattern.replace('*', '')):
+            if pattern in str(file_path) or file_path.name.endswith(
+                pattern.replace("*", "")
+            ):
                 return True
         return False
-    
+
     def _scan_file(self, file_path: Path) -> None:
         """Scan individual file for secrets"""
         try:
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
-                
+
             for secret_type, pattern in self.secret_patterns.items():
                 matches = re.finditer(pattern, content)
                 for match in matches:
-                    self.secrets_found.append({
-                        'file': str(file_path),
-                        'type': secret_type,
-                        'value': match.group()[:20] + '...',  # Truncated for safety
-                        'line_number': content[:match.start()].count('\n') + 1,
-                        'full_match': match.group()
-                    })
-                    
+                    self.secrets_found.append(
+                        {
+                            "file": str(file_path),
+                            "type": secret_type,
+                            "value": match.group()[:20] + "...",  # Truncated for safety
+                            "line_number": content[: match.start()].count("\n") + 1,
+                            "full_match": match.group(),
+                        }
+                    )
+
         except Exception as e:
             logger.warning(f"Could not scan {file_path}: {e}")
-    
+
     def clean_config_files(self) -> None:
         """Remove secrets from configuration files"""
         logger.info("🧹 Cleaning configuration files...")
-        
+
         config_files = [
-            'config/config.json',
-            'config/config/config.json',
-            'tests/config/config.json',
-            'tests/tests/config/config.json'
+            "config/config.json",
+            "config/config/config.json",
+            "tests/config/config.json",
+            "tests/tests/config/config.json",
         ]
-        
+
         for config_path_str in config_files:
             config_path = self.project_root / config_path_str
             if config_path.exists():
                 self._clean_json_config(config_path)
-    
+
     def _clean_json_config(self, config_path: Path) -> None:
         """Clean secrets from JSON configuration file"""
         try:
             # Backup original
-            backup_path = config_path.with_suffix('.json.backup')
+            backup_path = config_path.with_suffix(".json.backup")
             shutil.copy2(config_path, backup_path)
             logger.info(f"📋 Backed up {config_path} to {backup_path}")
-            
-            with open(config_path, 'r', encoding='utf-8') as f:
+
+            with open(config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
-            
+
             # Clean security section
-            if 'SECURITY' in config:
-                security = config['SECURITY']
-                if 'encryption_key' in security:
-                    security['encryption_key'] = '${TEDDY_ENCRYPTION_KEY}'
-                if 'jwt_secret' in security:
-                    security['jwt_secret'] = '${TEDDY_JWT_SECRET}'
-            
+            if "SECURITY" in config:
+                security = config["SECURITY"]
+                if "encryption_key" in security:
+                    security["encryption_key"] = "${TEDDY_ENCRYPTION_KEY}"
+                if "jwt_secret" in security:
+                    security["jwt_secret"] = "${TEDDY_JWT_SECRET}"
+
             # Update APPLICATION section
-            if 'APPLICATION' in config:
-                app_config = config['APPLICATION']
-                if 'SECRET_KEY' in app_config:
-                    app_config['SECRET_KEY'] = '${TEDDY_SECRET_KEY}'
-            
+            if "APPLICATION" in config:
+                app_config = config["APPLICATION"]
+                if "SECRET_KEY" in app_config:
+                    app_config["SECRET_KEY"] = "${TEDDY_SECRET_KEY}"
+
             # Ensure API_KEYS section uses environment variables
-            if 'API_KEYS' in config:
-                api_keys = config['API_KEYS']
+            if "API_KEYS" in config:
+                api_keys = config["API_KEYS"]
                 env_mappings = {
-                    'OPENAI_API_KEY': '${TEDDY_OPENAI_API_KEY}',
-                    'ANTHROPIC_API_KEY': '${TEDDY_ANTHROPIC_API_KEY}',
-                    'GOOGLE_GEMINI_API_KEY': '${TEDDY_GOOGLE_GEMINI_API_KEY}',
-                    'ELEVENLABS_API_KEY': '${TEDDY_ELEVENLABS_API_KEY}',
-                    'AZURE_SPEECH_KEY': '${TEDDY_AZURE_SPEECH_KEY}',
-                    'HUGGINGFACE_API_KEY': '${TEDDY_HUGGINGFACE_API_KEY}',
-                    'COHERE_API_KEY': '${TEDDY_COHERE_API_KEY}',
-                    'HUME_API_KEY': '${TEDDY_HUME_API_KEY}',
-                    'PERSPECTIVE_API_KEY': '${TEDDY_PERSPECTIVE_API_KEY}',
-                    'SENTRY_DSN': '${TEDDY_SENTRY_DSN}'
+                    "OPENAI_API_KEY": "${TEDDY_OPENAI_API_KEY}",
+                    "ANTHROPIC_API_KEY": "${TEDDY_ANTHROPIC_API_KEY}",
+                    "GOOGLE_GEMINI_API_KEY": "${TEDDY_GOOGLE_GEMINI_API_KEY}",
+                    "ELEVENLABS_API_KEY": "${TEDDY_ELEVENLABS_API_KEY}",
+                    "AZURE_SPEECH_KEY": "${TEDDY_AZURE_SPEECH_KEY}",
+                    "HUGGINGFACE_API_KEY": "${TEDDY_HUGGINGFACE_API_KEY}",
+                    "COHERE_API_KEY": "${TEDDY_COHERE_API_KEY}",
+                    "HUME_API_KEY": "${TEDDY_HUME_API_KEY}",
+                    "PERSPECTIVE_API_KEY": "${TEDDY_PERSPECTIVE_API_KEY}",
+                    "SENTRY_DSN": "${TEDDY_SENTRY_DSN}",
                 }
-                
+
                 for key, env_var in env_mappings.items():
                     if key in api_keys:
                         api_keys[key] = env_var
-            
+
             # Write cleaned config
-            with open(config_path, 'w', encoding='utf-8') as f:
+            with open(config_path, "w", encoding="utf-8") as f:
                 json.dump(config, f, indent=2, ensure_ascii=False)
-            
+
             self.files_modified.add(config_path)
             logger.info(f"✅ Cleaned {config_path}")
-            
+
         except Exception as e:
             logger.error(f"❌ Failed to clean {config_path}: {e}")
-    
+
     def update_gitignore(self) -> None:
         """Update .gitignore with comprehensive security exclusions"""
         logger.info("📝 Updating .gitignore...")
-        
-        gitignore_path = self.project_root / '.gitignore'
-        
+
+        gitignore_path = self.project_root / ".gitignore"
+
         # Additional security entries
         security_entries = [
             "",
@@ -195,55 +210,59 @@ class SecurityCleanup:
             "*.private",
             "",
         ]
-        
+
         try:
             if gitignore_path.exists():
-                with open(gitignore_path, 'r', encoding='utf-8') as f:
+                with open(gitignore_path, "r", encoding="utf-8") as f:
                     existing_content = f.read()
-                
+
                 # Check if security section already exists
                 if "ADDITIONAL SECURITY (Auto-generated)" not in existing_content:
-                    with open(gitignore_path, 'a', encoding='utf-8') as f:
-                        f.write('\n'.join(security_entries))
-                    logger.info("✅ Updated .gitignore with additional security exclusions")
+                    with open(gitignore_path, "a", encoding="utf-8") as f:
+                        f.write("\n".join(security_entries))
+                    logger.info(
+                        "✅ Updated .gitignore with additional security exclusions"
+                    )
                 else:
                     logger.info("ℹ️ .gitignore already contains security exclusions")
-            
+
         except Exception as e:
             logger.error(f"❌ Failed to update .gitignore: {e}")
-    
+
     def generate_secure_keys(self) -> Dict[str, str]:
         """Generate secure keys for environment variables"""
         logger.info("🔐 Generating secure keys...")
-        
+
         secure_keys = {
-            'TEDDY_ENCRYPTION_KEY': secrets.token_urlsafe(32),
-            'TEDDY_JWT_SECRET': secrets.token_urlsafe(64),
-            'TEDDY_SECRET_KEY': secrets.token_hex(32),
-            'BACKUP_ENCRYPTION_KEY': secrets.token_urlsafe(32),
-            'TEDDY_DATABASE_ENCRYPTION_KEY': secrets.token_urlsafe(32),
+            "TEDDY_ENCRYPTION_KEY": secrets.token_urlsafe(32),
+            "TEDDY_JWT_SECRET": secrets.token_urlsafe(64),
+            "TEDDY_SECRET_KEY": secrets.token_hex(32),
+            "BACKUP_ENCRYPTION_KEY": secrets.token_urlsafe(32),
+            "TEDDY_DATABASE_ENCRYPTION_KEY": secrets.token_urlsafe(32),
         }
-        
+
         # Save to secure file (excluded from git)
-        keys_file = self.project_root / 'generated_keys.env'
-        with open(keys_file, 'w', encoding='utf-8') as f:
+        keys_file = self.project_root / "generated_keys.env"
+        with open(keys_file, "w", encoding="utf-8") as f:
             f.write("# GENERATED SECURE KEYS\n")
             f.write("# Copy these to your .env file and DELETE this file\n\n")
             for key, value in secure_keys.items():
                 f.write(f"{key}={value}\n")
-        
+
         logger.info(f"✅ Generated secure keys in {keys_file}")
         logger.warning("⚠️  Copy keys to .env and DELETE generated_keys.env file!")
-        
+
         return secure_keys
-    
+
     def create_secure_config_loader(self) -> None:
         """Create a secure configuration loader"""
         logger.info("🔧 Creating secure configuration loader...")
-        
-        config_loader_path = self.project_root / 'core' / 'infrastructure' / 'secure_config_loader.py'
+
+        config_loader_path = (
+            self.project_root / "core" / "infrastructure" / "secure_config_loader.py"
+        )
         config_loader_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         config_loader_code = '''"""
 🔒 Secure Configuration Loader
 Loads configuration from environment variables with proper validation
@@ -422,47 +441,47 @@ def reload_config() -> SecureConfig:
     _config = None
     return get_config()
 '''
-        
-        with open(config_loader_path, 'w', encoding='utf-8') as f:
+
+        with open(config_loader_path, "w", encoding="utf-8") as f:
             f.write(config_loader_code)
-        
+
         self.files_modified.add(config_loader_path)
         logger.info(f"✅ Created secure config loader at {config_loader_path}")
-    
+
     def create_git_secrets_config(self) -> None:
         """Create git-secrets configuration"""
         logger.info("🔒 Creating git-secrets configuration...")
-        
-        git_secrets_path = self.project_root / '.gitsecrets'
-        
+
+        git_secrets_path = self.project_root / ".gitsecrets"
+
         patterns = [
             # API Key patterns
-            'sk-[a-zA-Z0-9]{48,}',
-            'sk-ant-[a-zA-Z0-9-]{95,}',
-            'AIza[0-9A-Za-z\\-_]{35}',
+            "sk-[a-zA-Z0-9]{48,}",
+            "sk-ant-[a-zA-Z0-9-]{95,}",
+            "AIza[0-9A-Za-z\\-_]{35}",
             # Generic secrets
-            'password\\s*=\\s*[\'"][^\'\"]{8,}[\'"]',
-            'secret\\s*=\\s*[\'"][^\'\"]{8,}[\'"]',
-            'token\\s*=\\s*[\'"][^\'\"]{16,}[\'"]',
+            "password\\s*=\\s*['\"][^'\"]{8,}['\"]",
+            "secret\\s*=\\s*['\"][^'\"]{8,}['\"]",
+            "token\\s*=\\s*['\"][^'\"]{16,}['\"]",
             # Base64 encoded (likely secrets)
-            '[A-Za-z0-9+/]{32,}={0,2}',
+            "[A-Za-z0-9+/]{32,}={0,2}",
         ]
-        
-        with open(git_secrets_path, 'w', encoding='utf-8') as f:
+
+        with open(git_secrets_path, "w", encoding="utf-8") as f:
             f.write("# Git Secrets Configuration\n")
             f.write("# Patterns to detect secrets in commits\n\n")
             for pattern in patterns:
                 f.write(f"{pattern}\n")
-        
+
         logger.info(f"✅ Created git-secrets config at {git_secrets_path}")
-    
+
     def generate_cleanup_report(self) -> str:
         """Generate comprehensive cleanup report"""
         report = []
         report.append("🔒 SECURITY CLEANUP REPORT")
         report.append("=" * 50)
         report.append("")
-        
+
         # Secrets found
         if self.secrets_found:
             report.append(f"⚠️ SECRETS FOUND: {len(self.secrets_found)}")
@@ -476,7 +495,7 @@ def reload_config() -> SecureConfig:
         else:
             report.append("✅ NO HARDCODED SECRETS FOUND")
             report.append("")
-        
+
         # Files modified
         if self.files_modified:
             report.append(f"📝 FILES MODIFIED: {len(self.files_modified)}")
@@ -484,7 +503,7 @@ def reload_config() -> SecureConfig:
             for file_path in sorted(self.files_modified):
                 report.append(f"• {file_path}")
             report.append("")
-        
+
         # Next steps
         report.append("📋 NEXT STEPS")
         report.append("-" * 30)
@@ -496,7 +515,7 @@ def reload_config() -> SecureConfig:
         report.append("6. Clean Git history using BFG Repo-Cleaner")
         report.append("7. Test application with new configuration")
         report.append("")
-        
+
         # Git history cleanup
         report.append("🗑️ GIT HISTORY CLEANUP")
         report.append("-" * 30)
@@ -515,44 +534,44 @@ def reload_config() -> SecureConfig:
         report.append("git gc --prune=now --aggressive")
         report.append("git push --force-with-lease origin main")
         report.append("")
-        
+
         return "\n".join(report)
-    
+
     def run_full_cleanup(self) -> str:
         """Run complete security cleanup"""
         logger.info("🚀 Starting comprehensive security cleanup...")
-        
+
         try:
             # Step 1: Scan for secrets
             self.scan_for_secrets()
-            
+
             # Step 2: Clean configuration files
             self.clean_config_files()
-            
+
             # Step 3: Update .gitignore
             self.update_gitignore()
-            
+
             # Step 4: Generate secure keys
             self.generate_secure_keys()
-            
+
             # Step 5: Create secure config loader
             self.create_secure_config_loader()
-            
+
             # Step 6: Create git-secrets config
             self.create_git_secrets_config()
-            
+
             # Step 7: Generate report
             report = self.generate_cleanup_report()
-            
+
             # Save report
-            report_path = self.project_root / 'SECURITY_CLEANUP_REPORT.md'
-            with open(report_path, 'w', encoding='utf-8') as f:
+            report_path = self.project_root / "SECURITY_CLEANUP_REPORT.md"
+            with open(report_path, "w", encoding="utf-8") as f:
                 f.write(report)
-            
+
             logger.info(f"✅ Security cleanup complete! Report saved to {report_path}")
-            
+
             return report
-            
+
         except Exception as e:
             logger.error(f"❌ Security cleanup failed: {e}")
             raise
@@ -566,4 +585,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

@@ -9,21 +9,10 @@ from typing import Any, Dict
 import structlog
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QFont, QIcon
-from PySide6.QtWidgets import (
-    QApplication,
-    QHBoxLayout,
-    QLabel,
-    QMainWindow,
-    QMenu,
-    QMenuBar,
-    QMessageBox,
-    QPushButton,
-    QStatusBar,
-    QSystemTrayIcon,
-    QTabWidget,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QMainWindow,
+                               QMenu, QMenuBar, QMessageBox, QPushButton,
+                               QStatusBar, QSystemTrayIcon, QTabWidget,
+                               QVBoxLayout, QWidget)
 
 from .networking.message_sender import EnterpriseMessageSender
 from .networking.websocket_client import WebSocketClient

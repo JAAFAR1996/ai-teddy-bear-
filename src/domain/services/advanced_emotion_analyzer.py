@@ -14,20 +14,15 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import structlog
 
-from ...application.services.emotion import (
-    EmotionAnalysisService,
-    EmotionAnalyticsService,
-    EmotionDatabaseService,
-    EmotionHistoryService,
-)
-from ...domain.emotion.models import (
-    ChildEmotionProfile,
-    EmotionAnalytics,
-    EmotionContext,
-    EmotionResult,
-    ParentalReport,
-)
-from ...infrastructure.emotion import AudioEmotionAnalyzer, EmotionRepository, TextEmotionAnalyzer
+from ...application.services.emotion import (EmotionAnalysisService,
+                                             EmotionAnalyticsService,
+                                             EmotionDatabaseService,
+                                             EmotionHistoryService)
+from ...domain.emotion.models import (ChildEmotionProfile, EmotionAnalytics,
+                                      EmotionContext, EmotionResult,
+                                      ParentalReport)
+from ...infrastructure.emotion import (AudioEmotionAnalyzer, EmotionRepository,
+                                       TextEmotionAnalyzer)
 
 logger = structlog.get_logger(__name__)
 
@@ -40,10 +35,16 @@ class AdvancedEmotionAnalyzer:
     while maintaining backward compatibility with the original interface.
     """
 
-    def __init__(self, database_url: str = "sqlite:///teddy_emotions.db", enable_db_integration: bool = True):
+    def __init__(
+        self,
+        database_url: str = "sqlite:///teddy_emotions.db",
+        enable_db_integration: bool = True,
+    ):
         # Initialize core services
         self.analysis_service = EmotionAnalysisService()
-        self.database_service = EmotionDatabaseService(database_url) if enable_db_integration else None
+        self.database_service = (
+            EmotionDatabaseService(database_url) if enable_db_integration else None
+        )
         self.analytics_service = EmotionAnalyticsService()
         self.history_service = EmotionHistoryService()
 
@@ -90,7 +91,10 @@ class AdvancedEmotionAnalyzer:
 
             # Delegate to analysis service
             result = await self.analysis_service.analyze_comprehensive(
-                text=text, audio_data=audio_data, audio_sr=audio_sr, context=emotion_context
+                text=text,
+                audio_data=audio_data,
+                audio_sr=audio_sr,
+                context=emotion_context,
             )
 
             return result
@@ -140,7 +144,9 @@ class AdvancedEmotionAnalyzer:
                 )
 
                 # Add to history
-                await self.history_service.add_emotion_to_history(child_id=child_id, emotion_result=emotion_result)
+                await self.history_service.add_emotion_to_history(
+                    child_id=child_id, emotion_result=emotion_result
+                )
 
             return emotion_result, record_id
 
@@ -148,13 +154,19 @@ class AdvancedEmotionAnalyzer:
             logger.error(f" Analyze and save failed: {e}")
             return self._get_default_emotion_result(), None
 
-    async def get_emotion_history(self, child_id: str, hours: int = 24, limit: int = 100) -> List[EmotionResult]:
+    async def get_emotion_history(
+        self, child_id: str, hours: int = 24, limit: int = 100
+    ) -> List[EmotionResult]:
         """Get emotion history for a child."""
         try:
             if self.enable_db_integration and self.database_service:
-                return await self.database_service.get_child_emotions(child_id=child_id, hours=hours, limit=limit)
+                return await self.database_service.get_child_emotions(
+                    child_id=child_id, hours=hours, limit=limit
+                )
             else:
-                return await self.history_service.get_emotion_history(child_id=child_id, hours=hours, limit=limit)
+                return await self.history_service.get_emotion_history(
+                    child_id=child_id, hours=hours, limit=limit
+                )
         except Exception as e:
             logger.error(f" Failed to get emotion history: {e}")
             return []
@@ -169,12 +181,19 @@ class AdvancedEmotionAnalyzer:
         """Generate comprehensive parental report."""
         try:
             # Get emotion history
-            period_hours = {"daily": 24, "weekly": 168, "monthly": 720}.get(report_type, 168)
-            emotions = await self.get_emotion_history(child_id=child_id, hours=period_hours, limit=1000)
+            period_hours = {"daily": 24, "weekly": 168, "monthly": 720}.get(
+                report_type, 168
+            )
+            emotions = await self.get_emotion_history(
+                child_id=child_id, hours=period_hours, limit=1000
+            )
 
             # Generate report using analytics service
             report = await self.analytics_service.generate_parental_report(
-                child_id=child_id, child_name=child_name, emotions=emotions, report_type=report_type
+                child_id=child_id,
+                child_name=child_name,
+                emotions=emotions,
+                report_type=report_type,
             )
 
             # Convert to dictionary for backward compatibility
@@ -190,7 +209,9 @@ class AdvancedEmotionAnalyzer:
                 "emotional_stability": report.emotional_stability,
                 "positive_highlights": report.positive_highlights,
                 "areas_of_concern": report.areas_of_concern,
-                "parental_recommendations": report.parental_recommendations if include_recommendations else [],
+                "parental_recommendations": (
+                    report.parental_recommendations if include_recommendations else []
+                ),
                 "risk_level": report.risk_level,
                 "risk_factors": report.risk_factors,
                 "protective_factors": report.protective_factors,
@@ -201,11 +222,15 @@ class AdvancedEmotionAnalyzer:
             logger.error(f" Failed to generate parental report: {e}")
             return self._get_default_report(child_id, child_name, report_type)
 
-    async def get_emotion_analytics(self, child_id: str, days: int = 7) -> Dict[str, Any]:
+    async def get_emotion_analytics(
+        self, child_id: str, days: int = 7
+    ) -> Dict[str, Any]:
         """Get emotion analytics for a child."""
         try:
             if self.enable_db_integration and self.database_service:
-                analytics = await self.database_service.get_emotion_analytics(child_id=child_id, days=days)
+                analytics = await self.database_service.get_emotion_analytics(
+                    child_id=child_id, days=days
+                )
 
                 if analytics:
                     return {
@@ -223,7 +248,9 @@ class AdvancedEmotionAnalyzer:
                     }
 
             # Fallback to history service
-            stability_score = await self.history_service.get_emotional_stability_score(child_id=child_id, days=days)
+            stability_score = await self.history_service.get_emotional_stability_score(
+                child_id=child_id, days=days
+            )
 
             return {
                 "child_id": child_id,
@@ -268,7 +295,9 @@ class AdvancedEmotionAnalyzer:
             recommendations=["Continue monitoring emotional state"],
         )
 
-    def _get_default_report(self, child_id: str, child_name: str, report_type: str) -> Dict[str, Any]:
+    def _get_default_report(
+        self, child_id: str, child_name: str, report_type: str
+    ) -> Dict[str, Any]:
         """Get default report for error cases."""
         return {
             "child_id": child_id,
@@ -336,9 +365,13 @@ async def test_analyzer():
         analyzer = AdvancedEmotionAnalyzer()
 
         # Test text analysis
-        result = await analyzer.analyze_comprehensive(text="I am very happy today!", context={"child_age": 7})
+        result = await analyzer.analyze_comprehensive(
+            text="I am very happy today!", context={"child_age": 7}
+        )
 
-        logger.info(f" Test successful: {result.primary_emotion} ({result.confidence:.2f})")
+        logger.info(
+            f" Test successful: {result.primary_emotion} ({result.confidence:.2f})"
+        )
         return True
 
     except Exception as e:

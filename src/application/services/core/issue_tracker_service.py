@@ -47,8 +47,12 @@ class IssueTrackerService:
             monitoring_config = config.get("MONITORING_CONFIG", {})
 
             self.config = {
-                "enable_issue_tracking": monitoring_config.get("enable_issue_tracking", True),
-                "alert_email": monitoring_config.get("alert_email", "admin@aiteddybear.com"),
+                "enable_issue_tracking": monitoring_config.get(
+                    "enable_issue_tracking", True
+                ),
+                "alert_email": monitoring_config.get(
+                    "alert_email", "admin@aiteddybear.com"
+                ),
                 "log_retention_days": monitoring_config.get("log_retention_days", 30),
             }
 
@@ -89,7 +93,9 @@ class IssueTrackerService:
             self.logger.info("Issue tracker database initialized")
 
         except Exception as e:
-            self.logger.error("Failed to initialize issue tracker database", error=str(e))
+            self.logger.error(
+                "Failed to initialize issue tracker database", error=str(e)
+            )
 
     async def create_issue(
         self,
@@ -110,7 +116,9 @@ class IssueTrackerService:
             cursor = conn.cursor()
 
             # فحص إذا كانت المشكلة موجودة مسبقاً
-            cursor.execute("SELECT occurrence_count FROM issues WHERE id = ?", (issue_id,))
+            cursor.execute(
+                "SELECT occurrence_count FROM issues WHERE id = ?", (issue_id,)
+            )
             existing = cursor.fetchone()
 
             if existing:
@@ -132,13 +140,27 @@ class IssueTrackerService:
                     (id, title, description, severity, status, component, error_type, stacktrace)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                    (issue_id, title, description, severity, "open", component, error_type, stacktrace or ""),
+                    (
+                        issue_id,
+                        title,
+                        description,
+                        severity,
+                        "open",
+                        component,
+                        error_type,
+                        stacktrace or "",
+                    ),
                 )
 
             conn.commit()
             conn.close()
 
-            self.logger.info("Issue created", issue_id=issue_id, severity=severity, component=component)
+            self.logger.info(
+                "Issue created",
+                issue_id=issue_id,
+                severity=severity,
+                component=component,
+            )
 
             return issue_id
 
@@ -192,7 +214,10 @@ class IssueTrackerService:
                 "total_issues": stats[0] if stats else 0,
                 "open_issues": stats[1] if stats else 0,
                 "critical_issues": stats[2] if stats else 0,
-                "by_component": [{"component": comp, "count": count} for comp, count in component_stats],
+                "by_component": [
+                    {"component": comp, "count": count}
+                    for comp, count in component_stats
+                ],
                 "timestamp": datetime.utcnow().isoformat(),
             }
 
@@ -214,10 +239,14 @@ async def report_issue(
     error_type: str = "runtime_error",
 ) -> str:
     """تسجيل مشكلة جديدة"""
-    return await issue_tracker.create_issue(title, description, severity, component, error_type)
+    return await issue_tracker.create_issue(
+        title, description, severity, component, error_type
+    )
 
 
-async def report_exception(component: str, exception: Exception, context: str = "") -> str:
+async def report_exception(
+    component: str, exception: Exception, context: str = ""
+) -> str:
     """تسجيل استثناء مع stacktrace"""
     stacktrace = traceback.format_exc()
 

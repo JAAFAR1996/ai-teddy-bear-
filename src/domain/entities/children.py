@@ -63,7 +63,11 @@ def update_child(child_id) -> Any:
         data = request.json
 
         # Mock update - replace with actual database update
-        updated_child = {"id": child_id, "updated": True, "timestamp": datetime.utcnow().isoformat()}
+        updated_child = {
+            "id": child_id,
+            "updated": True,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
 
         return jsonify(updated_child), 200
     except Exception as e:

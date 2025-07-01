@@ -9,8 +9,11 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.domain.parentdashboard.models.alert_models import Alert, AlertSeverity, AlertType
-from src.domain.parentdashboard.services.content_analysis_service import ContentAnalysisService
+from src.domain.parentdashboard.models.alert_models import (Alert,
+                                                            AlertSeverity,
+                                                            AlertType)
+from src.domain.parentdashboard.services.content_analysis_service import \
+    ContentAnalysisService
 
 
 class DashboardAlertService:
@@ -42,11 +45,17 @@ class DashboardAlertService:
             details=details or {},
         )
 
-        self.logger.info(f"Created {severity.value} alert for child {child_id}: {title}")
+        self.logger.info(
+            f"Created {severity.value} alert for child {child_id}: {title}"
+        )
         return alert
 
     async def process_moderation_alert(
-        self, child_id: str, parent_id: str, conversation_content: str, detected_issues: List[str]
+        self,
+        child_id: str,
+        parent_id: str,
+        conversation_content: str,
+        detected_issues: List[str],
     ) -> Optional[Alert]:
         """Process and create moderation alerts"""
 
@@ -57,7 +66,10 @@ class DashboardAlertService:
         severity = AlertSeverity.LOW
         if "emergency" in detected_issues:
             severity = AlertSeverity.CRITICAL
-        elif any(issue in ["inappropriate_content", "bullying_concern"] for issue in detected_issues):
+        elif any(
+            issue in ["inappropriate_content", "bullying_concern"]
+            for issue in detected_issues
+        ):
             severity = AlertSeverity.HIGH
         elif "emotional_distress" in detected_issues:
             severity = AlertSeverity.MEDIUM
@@ -73,7 +85,9 @@ class DashboardAlertService:
             details={
                 "detected_issues": detected_issues,
                 "conversation_excerpt": (
-                    conversation_content[:200] + "..." if len(conversation_content) > 200 else conversation_content
+                    conversation_content[:200] + "..."
+                    if len(conversation_content) > 200
+                    else conversation_content
                 ),
                 "timestamp": datetime.now().isoformat(),
             },
@@ -82,7 +96,12 @@ class DashboardAlertService:
         return alert
 
     async def process_time_limit_alert(
-        self, child_id: str, parent_id: str, alert_type: AlertType, usage_minutes: int, limit_minutes: int
+        self,
+        child_id: str,
+        parent_id: str,
+        alert_type: AlertType,
+        usage_minutes: int,
+        limit_minutes: int,
     ) -> Alert:
         """Process time limit related alerts"""
 
@@ -93,7 +112,9 @@ class DashboardAlertService:
         else:  # TIME_LIMIT_EXCEEDED
             severity = AlertSeverity.HIGH
             title = "Time Limit Exceeded"
-            message = f"Daily time limit exceeded ({usage_minutes}/{limit_minutes} minutes)"
+            message = (
+                f"Daily time limit exceeded ({usage_minutes}/{limit_minutes} minutes)"
+            )
 
         alert = await self.create_alert(
             parent_id=parent_id,
@@ -106,7 +127,9 @@ class DashboardAlertService:
                 "usage_minutes": usage_minutes,
                 "limit_minutes": limit_minutes,
                 "overage_minutes": max(0, usage_minutes - limit_minutes),
-                "percentage_used": (usage_minutes / limit_minutes) * 100 if limit_minutes > 0 else 0,
+                "percentage_used": (
+                    (usage_minutes / limit_minutes) * 100 if limit_minutes > 0 else 0
+                ),
             },
         )
 

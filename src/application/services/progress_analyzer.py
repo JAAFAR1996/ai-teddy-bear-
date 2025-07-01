@@ -89,7 +89,9 @@ class ProgressAnalyzer:
         social_analysis = self._analyze_social_skills(interactions)
 
         # تحديد المخاوف والتوصيات
-        concerns = self._identify_concerns(vocabulary_analysis, emotional_analysis, cognitive_analysis)
+        concerns = self._identify_concerns(
+            vocabulary_analysis, emotional_analysis, cognitive_analysis
+        )
 
         # إنشاء مقاييس التقدم
         metrics = ProgressMetrics(
@@ -111,7 +113,9 @@ class ProgressAnalyzer:
         self.logger.info(f"✅ اكتمل تحليل التقدم للطفل {child_id}")
         return metrics
 
-    async def generate_llm_recommendations(self, child_id: int, metrics: ProgressMetrics) -> List[LLMRecommendation]:
+    async def generate_llm_recommendations(
+        self, child_id: int, metrics: ProgressMetrics
+    ) -> List[LLMRecommendation]:
         """
         توليد توصيات مخصصة باستخدام LLM مع Chain-of-Thought prompting
         """
@@ -127,7 +131,9 @@ class ProgressAnalyzer:
 
         for category in categories:
             try:
-                recommendation = await self._generate_category_recommendation(category, metrics, child_info)
+                recommendation = await self._generate_category_recommendation(
+                    category, metrics, child_info
+                )
                 if recommendation:
                     recommendations.append(recommendation)
             except Exception as e:
@@ -161,13 +167,17 @@ class ProgressAnalyzer:
             )
 
             # تحليل الاستجابة
-            return self._parse_llm_response(category, response.choices[0].message.content)
+            return self._parse_llm_response(
+                category, response.choices[0].message.content
+            )
 
         except Exception as e:
             self.logger.error(f"فشل في استدعاء OpenAI للفئة {category}: {e}")
             return None
 
-    def _create_cot_prompt(self, category: str, metrics: ProgressMetrics, child_info: Dict[str, Any]) -> str:
+    def _create_cot_prompt(
+        self, category: str, metrics: ProgressMetrics, child_info: Dict[str, Any]
+    ) -> str:
         """إنشاء Chain-of-Thought prompt"""
 
         child_name = child_info.get("name", "غير محدد")
@@ -264,7 +274,9 @@ class ProgressAnalyzer:
             "generated_at": datetime.now().isoformat(),
         }
 
-    async def _store_report(self, metrics: ProgressMetrics, recommendations: List[LLMRecommendation]) -> str:
+    async def _store_report(
+        self, metrics: ProgressMetrics, recommendations: List[LLMRecommendation]
+    ) -> str:
         """حفظ التقرير في قاعدة البيانات"""
         if not self.db:
             raise Exception("قاعدة البيانات غير متوفرة")
@@ -353,7 +365,10 @@ class ProgressAnalyzer:
 
         cognitive_score = min(1.0, cognitive_count / max(1, len(texts)))
 
-        return {"cognitive_score": cognitive_score, "thinking_indicators": cognitive_count}
+        return {
+            "cognitive_score": cognitive_score,
+            "thinking_indicators": cognitive_count,
+        }
 
     def _analyze_social_skills(self, interactions: List[Dict]) -> Dict[str, Any]:
         """تحليل المهارات الاجتماعية"""
@@ -372,7 +387,9 @@ class ProgressAnalyzer:
 
         return {"social_score": social_score, "social_expressions": social_count}
 
-    def _identify_concerns(self, vocab_analysis, emotional_analysis, cognitive_analysis) -> Dict[str, Any]:
+    def _identify_concerns(
+        self, vocab_analysis, emotional_analysis, cognitive_analysis
+    ) -> Dict[str, Any]:
         """تحديد المخاوف والتوصيات"""
         concerns = []
         interventions = []
@@ -396,7 +413,11 @@ class ProgressAnalyzer:
             interventions.append("أنشطة تطوير التفكير")
             urgency_level = max(urgency_level, 1)
 
-        return {"concerns": concerns, "interventions": interventions, "urgency_level": urgency_level}
+        return {
+            "concerns": concerns,
+            "interventions": interventions,
+            "urgency_level": urgency_level,
+        }
 
     def _create_empty_metrics(self, child_id: int) -> ProgressMetrics:
         """إنشاء مقاييس فارغة"""
@@ -416,7 +437,9 @@ class ProgressAnalyzer:
             urgency_level=0,
         )
 
-    def _generate_fallback_recommendations(self, metrics: ProgressMetrics) -> List[LLMRecommendation]:
+    def _generate_fallback_recommendations(
+        self, metrics: ProgressMetrics
+    ) -> List[LLMRecommendation]:
         """توصيات احتياطية"""
         recommendations = []
 
@@ -448,7 +471,9 @@ class ProgressAnalyzer:
 
         return recommendations[:3]
 
-    async def _get_interactions(self, child_id: int, start_date: datetime, end_date: datetime) -> List[Dict]:
+    async def _get_interactions(
+        self, child_id: int, start_date: datetime, end_date: datetime
+    ) -> List[Dict]:
         """جلب التفاعلات من قاعدة البيانات"""
         if not self.db:
             return []
@@ -473,7 +498,9 @@ class ProgressAnalyzer:
             return {"name": "غير محدد", "age": 5}
 
         try:
-            child = await self.db.fetch_one("SELECT * FROM children WHERE id = ?", (child_id,))
+            child = await self.db.fetch_one(
+                "SELECT * FROM children WHERE id = ?", (child_id,)
+            )
             return dict(child) if child else {"name": "غير محدد", "age": 5}
         except Exception as e:
             self.logger.error(f"فشل في جلب معلومات الطفل: {e}")

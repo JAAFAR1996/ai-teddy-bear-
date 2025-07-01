@@ -128,7 +128,9 @@ class SecureContextManager:
 
             elif self.config.scheme == HEScheme.BFV:
                 context = ts.context(
-                    ts.SCHEME_TYPE.BFV, poly_modulus_degree=self.config.poly_modulus_degree, plain_modulus=786433
+                    ts.SCHEME_TYPE.BFV,
+                    poly_modulus_degree=self.config.poly_modulus_degree,
+                    plain_modulus=786433,
                 )
             else:
                 raise ValueError(f"Unsupported scheme: {self.config.scheme}")
@@ -173,7 +175,9 @@ class VoiceFeatureEncryptor:
         self.context_manager = context_manager
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
-    def encrypt_voice_features(self, features: np.ndarray, child_id: str, context_id: str) -> EncryptedData:
+    def encrypt_voice_features(
+        self, features: np.ndarray, child_id: str, context_id: str
+    ) -> EncryptedData:
         """Encrypt voice features for secure processing."""
         try:
             context = self.context_manager.get_context(context_id)
@@ -234,7 +238,9 @@ class EmotionProcessor:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def process_encrypted_emotion(
-        self, encrypted_features: EncryptedData, processing_mode: ProcessingMode = ProcessingMode.EMOTION_ANALYSIS
+        self,
+        encrypted_features: EncryptedData,
+        processing_mode: ProcessingMode = ProcessingMode.EMOTION_ANALYSIS,
     ) -> HEProcessingResult:
         """Process emotions on encrypted data."""
         start_time = time.time()
@@ -308,14 +314,18 @@ class EmotionProcessor:
         else:
             return [0.2, 0.2, 0.2, 0.2, 0.2]  # Equal weights
 
-    def _apply_emotion_transform(self, encrypted_result: ts.CKKSVector, context: ts.TenSEALContext) -> ts.CKKSVector:
+    def _apply_emotion_transform(
+        self, encrypted_result: ts.CKKSVector, context: ts.TenSEALContext
+    ) -> ts.CKKSVector:
         """Apply emotion classification transformation."""
         # Apply softmax-like transformation using polynomial approximation
         # This is a simplified version - real implementation would use more sophisticated methods
         squared = encrypted_result.square()
         return squared
 
-    def _create_audit_trail(self, operations: List[str], processing_time: float) -> Dict[str, Any]:
+    def _create_audit_trail(
+        self, operations: List[str], processing_time: float
+    ) -> Dict[str, Any]:
         """Create audit trail for processing operations."""
         return {
             "operations": operations,
@@ -371,7 +381,11 @@ class HomomorphicEncryption:
         try:
             # Run encryption in thread pool to avoid blocking
             encrypted_data = await asyncio.get_event_loop().run_in_executor(
-                self.executor, self.voice_encryptor.encrypt_voice_features, features, child_id, context_id
+                self.executor,
+                self.voice_encryptor.encrypt_voice_features,
+                features,
+                child_id,
+                context_id,
             )
 
             # Log successful encryption
@@ -390,13 +404,18 @@ class HomomorphicEncryption:
         except Exception as e:
             await self.audit_logger.log_security_event(
                 event_type="homomorphic_encryption_failure",
-                details={"error": str(e), "child_id_hash": hashlib.sha256(child_id.encode()).hexdigest()[:8]},
+                details={
+                    "error": str(e),
+                    "child_id_hash": hashlib.sha256(child_id.encode()).hexdigest()[:8],
+                },
                 classification=DataClassification.RESTRICTED,
             )
             raise
 
     async def process_encrypted_emotion(
-        self, encrypted_features: EncryptedData, processing_mode: ProcessingMode = ProcessingMode.EMOTION_ANALYSIS
+        self,
+        encrypted_features: EncryptedData,
+        processing_mode: ProcessingMode = ProcessingMode.EMOTION_ANALYSIS,
     ) -> HEProcessingResult:
         """Process emotions on encrypted data without decryption."""
         # Validate input
@@ -416,7 +435,9 @@ class HomomorphicEncryption:
 
         try:
             # Process encrypted emotion
-            result = await self.emotion_processor.process_encrypted_emotion(encrypted_features, processing_mode)
+            result = await self.emotion_processor.process_encrypted_emotion(
+                encrypted_features, processing_mode
+            )
 
             # Log successful processing
             await self.audit_logger.log_security_event(
@@ -462,7 +483,9 @@ class HomomorphicEncryption:
 
         return valid_results
 
-    def load_encrypted_model_weights(self, model_type: str = "emotion") -> Dict[str, Any]:
+    def load_encrypted_model_weights(
+        self, model_type: str = "emotion"
+    ) -> Dict[str, Any]:
         """Load encrypted model weights for homomorphic computation."""
         # This would load pre-encrypted model weights in a real implementation
         model_weights = {
@@ -482,7 +505,9 @@ class HomomorphicEncryption:
 
         return model_weights.get(model_type, {})
 
-    async def decrypt_result(self, encrypted_result: EncryptedData, context_id: Optional[str] = None) -> List[float]:
+    async def decrypt_result(
+        self, encrypted_result: EncryptedData, context_id: Optional[str] = None
+    ) -> List[float]:
         """Decrypt final results when needed (with proper authorization)."""
         context_id = context_id or self.default_context_id
 
@@ -510,7 +535,10 @@ class HomomorphicEncryption:
             # Log successful decryption
             await self.audit_logger.log_security_event(
                 event_type="homomorphic_decryption_success",
-                details={"result_count": len(decrypted_values), "data_type": encrypted_result.data_type},
+                details={
+                    "result_count": len(decrypted_values),
+                    "data_type": encrypted_result.data_type,
+                },
                 classification=DataClassification.CRITICAL,
             )
 

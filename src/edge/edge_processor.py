@@ -23,11 +23,15 @@ class EdgeProcessor:
             import tflite_runtime.interpreter as tflite
 
             # Voice activity detection model
-            self._models["vad"] = tflite.Interpreter(model_path="models/vad_edge.tflite")
+            self._models["vad"] = tflite.Interpreter(
+                model_path="models/vad_edge.tflite"
+            )
             self._models["vad"].allocate_tensors()
 
             # Emotion detection model
-            self._models["emotion"] = tflite.Interpreter(model_path="models/emotion_edge.tflite")
+            self._models["emotion"] = tflite.Interpreter(
+                model_path="models/emotion_edge.tflite"
+            )
             self._models["emotion"].allocate_tensors()
         except ImportError:
             # Fallback to mock models

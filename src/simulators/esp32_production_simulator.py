@@ -15,7 +15,8 @@ from datetime import datetime
 
 try:
     from PySide6 import QtCore, QtGui, QtWidgets
-    from PySide6.QtCore import QPropertyAnimation, QThread, QTimer, Signal, Slot
+    from PySide6.QtCore import (QPropertyAnimation, QThread, QTimer, Signal,
+                                Slot)
         QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
         QPushButton, QTextEdit, QLabel, QGroupBox, QStatusBar,
         QProgressBar, QMessageBox, QInputDialog, QSplitter

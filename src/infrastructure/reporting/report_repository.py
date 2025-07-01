@@ -17,10 +17,14 @@ class ReportRepository:
         self.db = database_service
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    async def store_in_parent_reports(self, metrics: ProgressMetrics, recommendations: List[Dict]) -> str:
+    async def store_in_parent_reports(
+        self, metrics: ProgressMetrics, recommendations: List[Dict]
+    ) -> str:
         """Store analysis results in parent_reports table"""
         try:
-            report_id = f"report_{metrics.child_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            report_id = (
+                f"report_{metrics.child_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            )
 
             if self.db:
                 query = """
@@ -103,7 +107,9 @@ class ReportRepository:
                 ORDER BY timestamp
                 """
 
-                results = await self.db.fetch_all(query, (child_id, start_date, end_date))
+                results = await self.db.fetch_all(
+                    query, (child_id, start_date, end_date)
+                )
 
                 interactions = []
                 for row in results:
@@ -128,7 +134,9 @@ class ReportRepository:
             self.logger.error(f"Get interactions error for {child_id}: {e}")
             return []
 
-    async def get_recent_interactions(self, child_id: int, limit: int = 20) -> List[InteractionAnalysis]:
+    async def get_recent_interactions(
+        self, child_id: int, limit: int = 20
+    ) -> List[InteractionAnalysis]:
         """Get recent interactions for analysis"""
         try:
             if self.db:
@@ -165,7 +173,9 @@ class ReportRepository:
             self.logger.error(f"Get recent interactions error for {child_id}: {e}")
             return []
 
-    def _generate_mock_interactions(self, start_date: datetime, end_date: datetime) -> List[InteractionAnalysis]:
+    def _generate_mock_interactions(
+        self, start_date: datetime, end_date: datetime
+    ) -> List[InteractionAnalysis]:
         """Generate mock interaction data for testing"""
         try:
             import random
@@ -182,7 +192,9 @@ class ReportRepository:
                     interaction = InteractionAnalysis(
                         timestamp=current_date + timedelta(hours=random.randint(9, 20)),
                         duration=random.randint(60, 300),  # 1-5 minutes
-                        primary_emotion=random.choice(["happy", "curious", "calm", "excited"]),
+                        primary_emotion=random.choice(
+                            ["happy", "curious", "calm", "excited"]
+                        ),
                         emotions={
                             "happy": random.uniform(0.3, 0.8),
                             "curious": random.uniform(0.2, 0.7),
@@ -216,7 +228,15 @@ class ReportRepository:
                             random.randint(1, 4),
                         ),
                         behavioral_indicators=random.sample(
-                            ["engaged", "attentive", "cooperative", "responsive", "creative", "patient", "curious"],
+                            [
+                                "engaged",
+                                "attentive",
+                                "cooperative",
+                                "responsive",
+                                "creative",
+                                "patient",
+                                "curious",
+                            ],
                             random.randint(1, 3),
                         ),
                         quality_score=random.uniform(0.5, 1.0),
@@ -234,7 +254,9 @@ class ReportRepository:
     async def store_report_metadata(self, report_data: Dict[str, Any]) -> str:
         """Store report metadata for tracking"""
         try:
-            report_id = report_data.get("report_id", f"meta_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+            report_id = report_data.get(
+                "report_id", f"meta_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            )
 
             if self.db:
                 query = """
@@ -265,7 +287,9 @@ class ReportRepository:
             self.logger.error(f"Report metadata storage error: {e}")
             return ""
 
-    async def get_report_history(self, child_id: str, limit: int = 10) -> List[Dict[str, Any]]:
+    async def get_report_history(
+        self, child_id: str, limit: int = 10
+    ) -> List[Dict[str, Any]]:
         """Get report generation history for a child"""
         try:
             if self.db:

@@ -123,7 +123,9 @@ class ProgressMetrics:
     def get_overall_score(self) -> float:
         """Calculate overall development score"""
         return (
-            self.vocabulary_complexity_score + self.emotional_intelligence_score + self.cognitive_development_score
+            self.vocabulary_complexity_score
+            + self.emotional_intelligence_score
+            + self.cognitive_development_score
         ) / 3.0
 
 
@@ -198,6 +200,8 @@ class ChildProgress:
         interaction_score = min(self.avg_daily_interactions / 5 * 25, 25)
         emotion_score = self.emotion_analysis.stability_score * 25
         attention_score = min(self.attention_span / 10 * 25, 25)
-        social_score = min((self.empathy_indicators + self.sharing_behavior) / 20 * 25, 25)
+        social_score = min(
+            (self.empathy_indicators + self.sharing_behavior) / 20 * 25, 25
+        )
 
         return interaction_score + emotion_score + attention_score + social_score

@@ -8,7 +8,8 @@ import random
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.application.services.ai.models.ai_response_models import AIResponseModel
+from src.application.services.ai.models.ai_response_models import \
+    AIResponseModel
 from src.core.domain.entities.child import Child
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,13 @@ class FallbackResponseService:
 
     def __init__(self):
         self.fallback_responses = self._load_fallback_responses()
-        self.usage_stats = {"rate_limit": 0, "timeout": 0, "api_error": 0, "generic_error": 0, "total_fallbacks": 0}
+        self.usage_stats = {
+            "rate_limit": 0,
+            "timeout": 0,
+            "api_error": 0,
+            "generic_error": 0,
+            "total_fallbacks": 0,
+        }
 
         logger.info("✅ Fallback Response Service initialized")
 
@@ -114,7 +121,9 @@ class FallbackResponseService:
             },
         }
 
-    async def create_rate_limit_fallback(self, message: str, child: Child, session_id: str) -> AIResponseModel:
+    async def create_rate_limit_fallback(
+        self, message: str, child: Child, session_id: str
+    ) -> AIResponseModel:
         """🚦 Create smart rate limit fallback response"""
         self.usage_stats["rate_limit"] += 1
         self.usage_stats["total_fallbacks"] += 1
@@ -123,7 +132,9 @@ class FallbackResponseService:
         context = self._detect_message_context(message.lower())
 
         # Get appropriate response
-        responses = self.fallback_responses["rate_limit"].get(context, self.fallback_responses["rate_limit"]["general"])
+        responses = self.fallback_responses["rate_limit"].get(
+            context, self.fallback_responses["rate_limit"]["general"]
+        )
 
         response_text = random.choice(responses).format(name=child.name)
 
@@ -147,7 +158,9 @@ class FallbackResponseService:
             error="rate_limit",
         )
 
-    async def create_timeout_fallback(self, message: str, child: Child, session_id: str) -> AIResponseModel:
+    async def create_timeout_fallback(
+        self, message: str, child: Child, session_id: str
+    ) -> AIResponseModel:
         """⏰ Create smart timeout fallback response"""
         self.usage_stats["timeout"] += 1
         self.usage_stats["total_fallbacks"] += 1
@@ -224,7 +237,10 @@ class FallbackResponseService:
         self.usage_stats["total_fallbacks"] += 1
 
         # Choose response style based on message characteristics
-        if any(word in message.lower() for word in ["كيف", "لماذا", "ماذا", "why", "how", "what"]):
+        if any(
+            word in message.lower()
+            for word in ["كيف", "لماذا", "ماذا", "why", "how", "what"]
+        ):
             response_style = "curious"
         else:
             response_style = "positive"
@@ -243,7 +259,9 @@ class FallbackResponseService:
             error=f"generic_error: {error_details[:50]}...",
         )
 
-    async def create_wake_word_response(self, child: Child, session_id: str) -> AIResponseModel:
+    async def create_wake_word_response(
+        self, child: Child, session_id: str
+    ) -> AIResponseModel:
         """👋 Create wake word response with variety"""
         # Choose response style based on time or randomness
         style = random.choice(["enthusiastic", "warm"])
@@ -266,7 +284,19 @@ class FallbackResponseService:
         context_patterns = {
             "story": ["قصة", "story", "حكاية", "احكي", "حدثني", "قصص"],
             "play": ["لعب", "play", "game", "نلعب", "العب", "لعبة"],
-            "question": ["?", "؟", "كيف", "لماذا", "متى", "أين", "ماذا", "مين", "why", "how", "what"],
+            "question": [
+                "?",
+                "؟",
+                "كيف",
+                "لماذا",
+                "متى",
+                "أين",
+                "ماذا",
+                "مين",
+                "why",
+                "how",
+                "what",
+            ],
             "music": ["غناء", "sing", "أغنية", "موسيقى", "غني"],
             "learning": ["تعلم", "learn", "درس", "أتعلم", "علمني"],
         }
@@ -335,14 +365,30 @@ class FallbackResponseService:
             "api_error_fallbacks": self.usage_stats["api_error"],
             "generic_error_fallbacks": self.usage_stats["generic_error"],
             "fallback_distribution": {
-                "rate_limit_percentage": (self.usage_stats["rate_limit"] / total * 100) if total > 0 else 0,
-                "timeout_percentage": (self.usage_stats["timeout"] / total * 100) if total > 0 else 0,
-                "api_error_percentage": (self.usage_stats["api_error"] / total * 100) if total > 0 else 0,
-                "generic_error_percentage": (self.usage_stats["generic_error"] / total * 100) if total > 0 else 0,
+                "rate_limit_percentage": (
+                    (self.usage_stats["rate_limit"] / total * 100) if total > 0 else 0
+                ),
+                "timeout_percentage": (
+                    (self.usage_stats["timeout"] / total * 100) if total > 0 else 0
+                ),
+                "api_error_percentage": (
+                    (self.usage_stats["api_error"] / total * 100) if total > 0 else 0
+                ),
+                "generic_error_percentage": (
+                    (self.usage_stats["generic_error"] / total * 100)
+                    if total > 0
+                    else 0
+                ),
             },
         }
 
     def reset_statistics(self) -> None:
         """🔄 Reset usage statistics"""
-        self.usage_stats = {"rate_limit": 0, "timeout": 0, "api_error": 0, "generic_error": 0, "total_fallbacks": 0}
+        self.usage_stats = {
+            "rate_limit": 0,
+            "timeout": 0,
+            "api_error": 0,
+            "generic_error": 0,
+            "total_fallbacks": 0,
+        }
         logger.info("Fallback usage statistics reset")

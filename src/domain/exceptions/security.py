@@ -40,7 +40,13 @@ class AuthenticationException(SecurityException):
 class AuthorizationException(SecurityException):
     """عدم وجود صلاحية"""
 
-    def __init__(self, action: str, resource: Optional[str] = None, required_role: Optional[str] = None, **kwargs):
+    def __init__(
+        self,
+        action: str,
+        resource: Optional[str] = None,
+        required_role: Optional[str] = None,
+        **kwargs,
+    ):
         message = f"Unauthorized action: {action}"
         if resource:
             message += f" on resource: {resource}"

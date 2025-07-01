@@ -12,7 +12,8 @@ import numpy as np
 from elevenlabs import ElevenLabs, generate, stream
 
 from src.application.services.streaming_service import StreamingService
-from src.domain.audio.models.voice_models import EmotionalTone, Language, VoiceProfile
+from src.domain.audio.models.voice_models import (EmotionalTone, Language,
+                                                  VoiceProfile)
 
 
 class VoiceSynthesisService:
@@ -30,7 +31,9 @@ class VoiceSynthesisService:
         """Initialize voice synthesis clients"""
         # ElevenLabs
         if getattr(self.config, "ELEVENLABS_API_KEY", None):
-            self.elevenlabs_client = ElevenLabs(api_key=getattr(self.config, "ELEVENLABS_API_KEY"))
+            self.elevenlabs_client = ElevenLabs(
+                api_key=getattr(self.config, "ELEVENLABS_API_KEY")
+            )
         else:
             self.elevenlabs_client = None
 
@@ -101,7 +104,10 @@ class VoiceSynthesisService:
             if stream_output and self.streaming_service:
                 # Stream directly to output
                 audio_stream = stream(
-                    text=text, voice=voice_id, model="eleven_multilingual_v2", voice_settings=voice_settings
+                    text=text,
+                    voice=voice_id,
+                    model="eleven_multilingual_v2",
+                    voice_settings=voice_settings,
                 )
 
                 async for chunk in audio_stream:
@@ -111,7 +117,10 @@ class VoiceSynthesisService:
             else:
                 # Generate complete audio
                 audio = generate(
-                    text=text, voice=voice_id, model="eleven_multilingual_v2", voice_settings=voice_settings
+                    text=text,
+                    voice=voice_id,
+                    model="eleven_multilingual_v2",
+                    voice_settings=voice_settings,
                 )
                 return audio
 
@@ -127,7 +136,9 @@ class VoiceSynthesisService:
             self.azure_speech_config.speech_synthesis_voice_name = voice_name
 
             # Create synthesizer
-            synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.azure_speech_config)
+            synthesizer = speechsdk.SpeechSynthesizer(
+                speech_config=self.azure_speech_config
+            )
 
             # Generate speech
             result = synthesizer.speak_text_async(text).get()
@@ -157,7 +168,9 @@ class VoiceSynthesisService:
     async def test_synthesis(self, text: str, voice_profile: VoiceProfile) -> bool:
         """Test voice synthesis capability"""
         try:
-            audio_data = await self.synthesize_speech(text, voice_profile, EmotionalTone.HAPPY, stream_output=False)
+            audio_data = await self.synthesize_speech(
+                text, voice_profile, EmotionalTone.HAPPY, stream_output=False
+            )
             return audio_data is not None
 
         except Exception as e:

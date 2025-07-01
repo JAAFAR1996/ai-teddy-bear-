@@ -10,27 +10,20 @@ from typing import Any, Dict, Optional
 
 import structlog
 
-from src.domain.exceptions.base import (
-    AgeInappropriateException,
-    AuthenticationException,
-    ErrorContext,
-    ExternalServiceException,
-    InappropriateContentException,
-    ParentalConsentRequiredException,
-    QuotaExceededException,
-    ValidationException,
-)
+from src.domain.exceptions.base import (AgeInappropriateException,
+                                        AuthenticationException, ErrorContext,
+                                        ExternalServiceException,
+                                        InappropriateContentException,
+                                        ParentalConsentRequiredException,
+                                        QuotaExceededException,
+                                        ValidationException)
 from src.infrastructure.decorators.exception_handler import (
-    RetryConfig,
-    authenticated,
-    child_safe,
-    handle_exceptions,
-    validate_input,
-    with_circuit_breaker,
-    with_retry,
-)
-from src.infrastructure.exception_handling.global_handler import get_global_exception_handler
-from src.infrastructure.monitoring.metrics import MetricsCollector, track_request_duration
+    RetryConfig, authenticated, child_safe, handle_exceptions, validate_input,
+    with_circuit_breaker, with_retry)
+from src.infrastructure.exception_handling.global_handler import \
+    get_global_exception_handler
+from src.infrastructure.monitoring.metrics import (MetricsCollector,
+                                                   track_request_duration)
 
 logger = structlog.get_logger(__name__)
 
@@ -65,7 +58,9 @@ class ContentFilterService:
 
         return SafetyCheckResult(is_safe=True, confidence=0.98)
 
-    async def check_age_appropriateness(self, content: str, child_age: int) -> SafetyCheckResult:
+    async def check_age_appropriateness(
+        self, content: str, child_age: int
+    ) -> SafetyCheckResult:
         """فحص ملاءمة المحتوى لعمر الطفل"""
         # مثال: محتوى معقد للأطفال الصغار
         if child_age < 6 and len(content.split()) > 50:
@@ -90,7 +85,10 @@ class AIService:
     )
     @with_retry(
         config=RetryConfig(
-            max_attempts=3, initial_delay=1.0, exponential_backoff=True, exceptions_to_retry=[ExternalServiceException]
+            max_attempts=3,
+            initial_delay=1.0,
+            exponential_backoff=True,
+            exceptions_to_retry=[ExternalServiceException],
         )
     )
     async def generate_response(self, message: str, context: Dict[str, Any]) -> str:
@@ -104,7 +102,9 @@ class AIService:
 
             if random.random() < 0.1:  # 10% failure rate
                 raise ExternalServiceException(
-                    service_name="OpenAI", status_code=503, response_body="Service temporarily unavailable"
+                    service_name="OpenAI",
+                    status_code=503,
+                    response_body="Service temporarily unavailable",
                 )
 
             # رد بسيط للمثال
@@ -113,7 +113,9 @@ class AIService:
 
         except Exception as e:
             if not isinstance(e, ExternalServiceException):
-                raise ExternalServiceException(service_name="OpenAI", status_code=500, response_body=str(e))
+                raise ExternalServiceException(
+                    service_name="OpenAI", status_code=500, response_body=str(e)
+                )
             raise
 
 
@@ -131,7 +133,11 @@ class QuotaService:
         if (datetime.utcnow() - usage["last_reset"]).days >= 1:
             usage = {"count": 0, "last_reset": datetime.utcnow()}
 
-        return {"current_usage": usage["count"], "daily_limit": 100, "remaining": 100 - usage["count"]}
+        return {
+            "current_usage": usage["count"],
+            "daily_limit": 100,
+            "remaining": 100 - usage["count"],
+        }
 
     async def increment_usage(self, child_id: str) -> None:
         """زيادة عداد الاستخدام"""
@@ -158,7 +164,10 @@ class ChildInteractionServiceV2:
         # استراتيجية لمعالجة المحتوى غير المناسب
         handler.register_recovery_strategy(
             "INAPPROPRIATE_CONTENT",
-            lambda e, ctx: {"response": "عذراً، لا أستطيع الإجابة على هذا السؤال. هل لديك سؤال آخر؟", "filtered": True},
+            lambda e, ctx: {
+                "response": "عذراً، لا أستطيع الإجابة على هذا السؤال. هل لديك سؤال آخر؟",
+                "filtered": True,
+            },
         )
 
         # استراتيجية لتجاوز الحصة
@@ -173,7 +182,11 @@ class ChildInteractionServiceV2:
     @handle_exceptions(
         (
             InappropriateContentException,
-            lambda e: {"error": "Content filtered", "safe": True, "message": "تم تصفية المحتوى لحماية الطفل"},
+            lambda e: {
+                "error": "Content filtered",
+                "safe": True,
+                "message": "تم تصفية المحتوى لحماية الطفل",
+            },
         ),
         (
             ParentalConsentRequiredException,
@@ -183,7 +196,14 @@ class ChildInteractionServiceV2:
                 "details": {"action": e.action, "reason": e.reason},
             },
         ),
-        (ValidationException, lambda e: {"error": f"Invalid input: {str(e)}", "retry": True, "field": e.field_name}),
+        (
+            ValidationException,
+            lambda e: {
+                "error": f"Invalid input: {str(e)}",
+                "retry": True,
+                "field": e.field_name,
+            },
+        ),
         (
             QuotaExceededException,
             lambda e: {
@@ -252,7 +272,9 @@ class ChildInteractionServiceV2:
                 )
 
             # 3. فحص ملاءمة العمر
-            age_result = await self.content_filter.check_age_appropriateness(message, child_age)
+            age_result = await self.content_filter.check_age_appropriateness(
+                message, child_age
+            )
             if not age_result.is_safe:
                 raise AgeInappropriateException(
                     child_age=child_age,
@@ -289,7 +311,9 @@ class ChildInteractionServiceV2:
             await self.quota_service.increment_usage(child_id)
 
             # 8. تسجيل metrics
-            MetricsCollector.record_interaction(interaction_type="voice_chat", child_age=child_age)
+            MetricsCollector.record_interaction(
+                interaction_type="voice_chat", child_age=child_age
+            )
 
             # 9. تسجيل النجاح
             logger.info(
@@ -316,7 +340,9 @@ class ChildInteractionServiceV2:
             raise
         except Exception as e:
             # أي خطأ غير متوقع
-            logger.error("Unexpected error in process_interaction", error=str(e), exc_info=True)
+            logger.error(
+                "Unexpected error in process_interaction", error=str(e), exc_info=True
+            )
             # سيتم معالجته بواسطة global handler
             raise
 
@@ -331,7 +357,13 @@ class ChildInteractionServiceV2:
 
     @authenticated(required_role="parent")
     @handle_exceptions(
-        (AuthenticationException, lambda e: {"error": "Authentication required", "login_url": "/api/v2/auth/login"})
+        (
+            AuthenticationException,
+            lambda e: {
+                "error": "Authentication required",
+                "login_url": "/api/v2/auth/login",
+            },
+        )
     )
     async def get_interaction_history(
         self, child_id: str, auth_context: Dict[str, Any], limit: int = 50
@@ -342,7 +374,9 @@ class ChildInteractionServiceV2:
             from src.domain.exceptions.base import AuthorizationException
 
             raise AuthorizationException(
-                action="view_child_history", resource=f"child/{child_id}", required_role="parent_of_child"
+                action="view_child_history",
+                resource=f"child/{child_id}",
+                required_role="parent_of_child",
             )
 
         # جلب التاريخ (مثال)
@@ -371,13 +405,19 @@ async def main():
     try:
         # مثال 1: تفاعل ناجح
         result = await service.process_interaction(
-            child_id="child789", child_age=7, message="ما هي الشمس؟", auth_context=auth_context
+            child_id="child789",
+            child_age=7,
+            message="ما هي الشمس؟",
+            auth_context=auth_context,
         )
         print("Success:", result)
 
         # مثال 2: محتوى غير مناسب
         result = await service.process_interaction(
-            child_id="child789", child_age=7, message="أريد أن أشاهد محتوى violence", auth_context=auth_context
+            child_id="child789",
+            child_age=7,
+            message="أريد أن أشاهد محتوى violence",
+            auth_context=auth_context,
         )
         print("Filtered:", result)
 

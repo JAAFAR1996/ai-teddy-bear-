@@ -29,7 +29,9 @@ class EdgeOrchestrator:
 
         self._initialized = True
 
-    async def process_request(self, audio_data, request_type: str = "conversation") -> Dict[str, Any]:
+    async def process_request(
+        self, audio_data, request_type: str = "conversation"
+    ) -> Dict[str, Any]:
         """Process request using edge-first approach"""
         if not self._initialized:
             await self.initialize()
@@ -45,28 +47,42 @@ class EdgeOrchestrator:
 
         # Decide if cloud processing is needed
         if await self.edge_processor.should_process_cloud(edge_results):
-            cloud_results = await self._process_cloud(audio_data, edge_results, request_type)
+            cloud_results = await self._process_cloud(
+                audio_data, edge_results, request_type
+            )
             return self._merge_results(edge_results, cloud_results)
 
         # Return edge-only results
         return self._format_edge_results(edge_results)
 
-    async def _process_cloud(self, audio_data, edge_results: Dict[str, Any], request_type: str) -> Dict[str, Any]:
+    async def _process_cloud(
+        self, audio_data, edge_results: Dict[str, Any], request_type: str
+    ) -> Dict[str, Any]:
         """Process request in cloud with edge context"""
         try:
             # Send to cloud with edge context
-            cloud_request = {"audio_data": audio_data, "edge_context": edge_results, "request_type": request_type}
+            cloud_request = {
+                "audio_data": audio_data,
+                "edge_context": edge_results,
+                "request_type": request_type,
+            }
 
             return await self.cloud_client.process_audio(cloud_request)
         except Exception as e:
             # Fallback to edge-only processing
             return {"error": str(e), "fallback": True}
 
-    async def _process_cloud_only(self, audio_data, request_type: str) -> Dict[str, Any]:
+    async def _process_cloud_only(
+        self, audio_data, request_type: str
+    ) -> Dict[str, Any]:
         """Process request in cloud only"""
-        return await self.cloud_client.process_audio({"audio_data": audio_data, "request_type": request_type})
+        return await self.cloud_client.process_audio(
+            {"audio_data": audio_data, "request_type": request_type}
+        )
 
-    def _merge_results(self, edge_results: Dict[str, Any], cloud_results: Dict[str, Any]) -> Dict[str, Any]:
+    def _merge_results(
+        self, edge_results: Dict[str, Any], cloud_results: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Merge edge and cloud processing results"""
         merged = {
             "transcription": cloud_results.get("transcription", ""),

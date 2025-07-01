@@ -22,7 +22,10 @@ class KubeflowPipelineDeployer:
     """نشر pipeline Kubeflow للإنتاج"""
 
     def __init__(self, kubeflow_host: str = None):
-        self.kubeflow_host = kubeflow_host or "http://kubeflow-pipelines.ai-teddy-system.svc.cluster.local:8888"
+        self.kubeflow_host = (
+            kubeflow_host
+            or "http://kubeflow-pipelines.ai-teddy-system.svc.cluster.local:8888"
+        )
         self.client = kfp.Client(host=self.kubeflow_host)
 
     def deploy_child_interaction_pipeline(self) -> Dict[str, Any]:
@@ -34,7 +37,8 @@ class KubeflowPipelineDeployer:
         pipeline_path = "child_interaction_pipeline.yaml"
 
         kfp.compiler.Compiler().compile(
-            pipeline_func=self._get_child_interaction_pipeline(), package_path=pipeline_path
+            pipeline_func=self._get_child_interaction_pipeline(),
+            package_path=pipeline_path,
         )
 
         # رفع Pipeline
@@ -46,7 +50,8 @@ class KubeflowPipelineDeployer:
 
         # إنشاء Experiment
         experiment = self.client.create_experiment(
-            name="child-interaction-production", description="Production experiments for child interaction AI"
+            name="child-interaction-production",
+            description="Production experiments for child interaction AI",
         )
 
         # تشغيل Pipeline تجريبي
@@ -54,7 +59,10 @@ class KubeflowPipelineDeployer:
             experiment_id=experiment.id,
             job_name=f"test-run-{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             pipeline_id=pipeline.id,
-            params={"audio_file": "gs://ai-teddy-data/test/sample_child_audio.wav", "child_id": "test-child-001"},
+            params={
+                "audio_file": "gs://ai-teddy-data/test/sample_child_audio.wav",
+                "child_id": "test-child-001",
+            },
         )
 
         logger.info(f"Pipeline deployed successfully: {pipeline.id}")
@@ -69,12 +77,16 @@ class KubeflowPipelineDeployer:
 
     def _get_child_interaction_pipeline(self) -> Any:
         """استيراد pipeline من الملف الرئيسي"""
-        from src.ml.pipelines.child_interaction_pipeline import child_interaction_pipeline
+        from src.ml.pipelines.child_interaction_pipeline import \
+            child_interaction_pipeline
 
         return child_interaction_pipeline
 
     def create_recurring_pipeline(
-        self, pipeline_id: str, experiment_id: str, schedule: str = "0 */6 * * *"  # كل 6 ساعات
+        self,
+        pipeline_id: str,
+        experiment_id: str,
+        schedule: str = "0 */6 * * *",  # كل 6 ساعات
     ) -> str:
         """إنشاء pipeline دوري للمراقبة"""
 

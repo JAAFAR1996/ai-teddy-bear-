@@ -42,7 +42,9 @@ class TestIntegration:
         db.create_child("integration_test", "سارة", 8, {"language": "ar"})
 
         # حفظ تفاعل
-        db.save_interaction("integration_test", "السلام عليكم", "وعليكم السلام", "happy")
+        db.save_interaction(
+            "integration_test", "السلام عليكم", "وعليكم السلام", "happy"
+        )
 
         # حفظ نتيجة لعبة
         db.save_game_result("integration_test", "trivia", 85, 300)
@@ -63,7 +65,8 @@ class TestIntegration:
 
     def test_security_integration(self):
         """اختبار تكامل الأمان"""
-        from src.infrastructure.security import APISecurityManager, SecurityManager
+        from src.infrastructure.security import (APISecurityManager,
+                                                 SecurityManager)
 
         security = SecurityManager()
         api_security = APISecurityManager()

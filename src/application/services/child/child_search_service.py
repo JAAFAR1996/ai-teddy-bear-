@@ -8,7 +8,9 @@ import logging
 from typing import List, Optional, Tuple
 
 from src.core.domain.entities.child import Child
-from src.domain.child.models.child_search_criteria import AgeGroup, AgeRange, ChildSearchCriteria, SearchFilters
+from src.domain.child.models.child_search_criteria import (AgeGroup, AgeRange,
+                                                           ChildSearchCriteria,
+                                                           SearchFilters)
 from src.infrastructure.persistence.child_repository import ChildRepository
 
 
@@ -25,7 +27,11 @@ class ChildSearchService:
             if not criteria.filters.has_filters():
                 from src.infrastructure.persistence.base import QueryOptions
 
-                options = QueryOptions(limit=criteria.limit, offset=criteria.offset, sort_by=criteria.sort_by)
+                options = QueryOptions(
+                    limit=criteria.limit,
+                    offset=criteria.offset,
+                    sort_by=criteria.sort_by,
+                )
                 return await self.child_repository.list(options)
 
             return await self._execute_advanced_search(criteria)
@@ -34,7 +40,9 @@ class ChildSearchService:
             self.logger.error(f"Error searching children: {e}")
             raise
 
-    async def _execute_advanced_search(self, criteria: ChildSearchCriteria) -> List[Child]:
+    async def _execute_advanced_search(
+        self, criteria: ChildSearchCriteria
+    ) -> List[Child]:
         """Execute advanced search with multiple criteria"""
         filters = criteria.filters
 
@@ -62,7 +70,9 @@ class ChildSearchService:
     async def search_by_age_group(self, age_group: AgeGroup) -> List[Child]:
         """Search children by predefined age group"""
         age_range = AgeRange.from_age_group(age_group)
-        return await self.child_repository.find_by_age_range(age_range.min_age, age_range.max_age)
+        return await self.child_repository.find_by_age_range(
+            age_range.min_age, age_range.max_age
+        )
 
     async def full_text_search(self, query: str) -> List[Child]:
         """Perform full-text search across child profiles"""

@@ -8,7 +8,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import structlog
 
-from ....domain.emotion.models import BehavioralIndicator, EmotionContext, EmotionResult
+from ....domain.emotion.models import (BehavioralIndicator, EmotionContext,
+                                       EmotionResult)
 
 logger = structlog.get_logger(__name__)
 

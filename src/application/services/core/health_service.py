@@ -22,12 +22,20 @@ from prometheus_client import Counter, Gauge, Histogram
 logger = structlog.get_logger()
 
 # Prometheus metrics
-memory_usage_gauge = Gauge("system_memory_usage_bytes", "Memory usage in bytes", ["type"])
+memory_usage_gauge = Gauge(
+    "system_memory_usage_bytes", "Memory usage in bytes", ["type"]
+)
 cpu_usage_gauge = Gauge("system_cpu_usage_percent", "CPU usage percentage")
 disk_usage_gauge = Gauge("system_disk_usage_percent", "Disk usage percentage", ["path"])
-connection_count_gauge = Gauge("system_connections_count", "Number of connections", ["type"])
-memory_leak_counter = Counter("memory_leak_detections_total", "Number of memory leak detections")
-health_check_duration = Histogram("health_check_duration_seconds", "Health check duration", ["service"])
+connection_count_gauge = Gauge(
+    "system_connections_count", "Number of connections", ["type"]
+)
+memory_leak_counter = Counter(
+    "memory_leak_detections_total", "Number of memory leak detections"
+)
+health_check_duration = Histogram(
+    "health_check_duration_seconds", "Health check duration", ["service"]
+)
 
 
 @dataclass
@@ -79,7 +87,9 @@ class HealthService(ServiceBase):
     def __init__(self, registry, config: Dict[str, Any]):
         super().__init__(registry, config)
         self.check_interval = config.get("health_check_interval", 60)
-        self.memory_leak_threshold = config.get("memory_leak_threshold", 100 * 1024 * 1024)  # 100MB
+        self.memory_leak_threshold = config.get(
+            "memory_leak_threshold", 100 * 1024 * 1024
+        )  # 100MB
         self.memory_snapshots: List[MemorySnapshot] = []
         self.max_snapshots = 60  # Keep 1 hour of snapshots
         self._monitor_task: Optional[asyncio.Task] = None
@@ -227,7 +237,10 @@ class HealthService(ServiceBase):
                 cpu_count=psutil.cpu_count(),
                 memory_percent=memory.percent,
                 disk_usage=disk_usage,
-                network_io={"bytes_sent": net_io.bytes_sent, "bytes_recv": net_io.bytes_recv},
+                network_io={
+                    "bytes_sent": net_io.bytes_sent,
+                    "bytes_recv": net_io.bytes_recv,
+                },
                 open_files=open_files,
                 threads=threads,
                 connections=connections,
@@ -251,7 +264,11 @@ class HealthService(ServiceBase):
 
         for name, info in self.registry._services.items():
             if info.state != ServiceState.READY:
-                results[name] = {"is_healthy": False, "state": info.state.value, "error": "Service not ready"}
+                results[name] = {
+                    "is_healthy": False,
+                    "state": info.state.value,
+                    "error": "Service not ready",
+                }
                 continue
 
             try:
@@ -270,7 +287,11 @@ class HealthService(ServiceBase):
                 }
 
             except Exception as e:
-                results[name] = {"is_healthy": False, "state": info.state.value, "error": str(e)}
+                results[name] = {
+                    "is_healthy": False,
+                    "state": info.state.value,
+                    "error": str(e),
+                }
 
         return results
 
@@ -281,7 +302,10 @@ class HealthService(ServiceBase):
         memory_info = process.memory_info()
 
         # Python heap
-        gc_stats = {f"generation_{i}": len(gc.get_objects(i)) for i in range(gc.get_count().__len__())}
+        gc_stats = {
+            f"generation_{i}": len(gc.get_objects(i))
+            for i in range(gc.get_count().__len__())
+        }
 
         # Top memory consumers
         snapshot = tracemalloc.take_snapshot()
@@ -324,14 +348,19 @@ class HealthService(ServiceBase):
         growth_rate = growth / (len(rss_values) - 1)
 
         # Check if consistently growing
-        increasing_count = sum(1 for i in range(1, len(rss_values)) if rss_values[i] > rss_values[i - 1])
+        increasing_count = sum(
+            1 for i in range(1, len(rss_values)) if rss_values[i] > rss_values[i - 1]
+        )
 
         # Leak detected if:
         # 1. Memory grew more than threshold
         # 2. Memory increased in at least 70% of samples
         if growth > self.memory_leak_threshold and increasing_count >= 7:
             self.logger.warning(
-                "Memory leak detected", growth_bytes=growth, growth_rate=growth_rate, current_rss=rss_values[-1]
+                "Memory leak detected",
+                growth_bytes=growth,
+                growth_rate=growth_rate,
+                current_rss=rss_values[-1],
             )
             return True
 
@@ -349,7 +378,12 @@ class HealthService(ServiceBase):
         self.logger.error(
             "Memory leak details",
             top_consumers=[
-                {"file": stat.traceback.format()[0], "size": stat.size, "count": stat.count} for stat in top_stats
+                {
+                    "file": stat.traceback.format()[0],
+                    "size": stat.size,
+                    "count": stat.count,
+                }
+                for stat in top_stats
             ],
         )
 
@@ -397,7 +431,9 @@ class HealthService(ServiceBase):
                 memory_diff = current_memory - initial_memory
                 if memory_diff > 10 * 1024 * 1024:  # 10MB
                     self.logger.warning(
-                        "Potential WebSocket memory leak", session_id=session_id, memory_diff=memory_diff
+                        "Potential WebSocket memory leak",
+                        session_id=session_id,
+                        memory_diff=memory_diff,
                     )
 
     async def _check_memory_health(self) -> Dict[str, Any]:
@@ -412,7 +448,9 @@ class HealthService(ServiceBase):
         heap_size_mb = latest.heap_size / (1024 * 1024)
         objects_count = latest.objects_count
 
-        healthy = memory_percent < 85 and heap_size_mb < 1000 and objects_count < 1000000  # 1GB heap  # 1M objects
+        healthy = (
+            memory_percent < 85 and heap_size_mb < 1000 and objects_count < 1000000
+        )  # 1GB heap  # 1M objects
 
         return {
             "healthy": healthy,
@@ -420,7 +458,10 @@ class HealthService(ServiceBase):
             "heap_size_mb": heap_size_mb,
             "objects_count": objects_count,
             "gc_stats": latest.gc_stats,
-            "top_consumers": [{"location": t[0], "count": t[1], "size": t[2]} for t in latest.top_types[:5]],
+            "top_consumers": [
+                {"location": t[0], "count": t[1], "size": t[2]}
+                for t in latest.top_types[:5]
+            ],
         }
 
     def _update_prometheus_metrics(self, snapshot: MemorySnapshot) -> None:
@@ -440,8 +481,12 @@ class HealthService(ServiceBase):
                 disk_usage_gauge.labels(path=partition.mountpoint).set(usage.percent)
 
         # Connection metrics
-        connection_count_gauge.labels(type="websocket").set(len(self._websocket_connections))
-        connection_count_gauge.labels(type="total").set(len(psutil.Process(os.getpid()).connections()))
+        connection_count_gauge.labels(type="websocket").set(
+            len(self._websocket_connections)
+        )
+        connection_count_gauge.labels(type="total").set(
+            len(psutil.Process(os.getpid()).connections())
+        )
 
     def get_memory_report(self) -> Dict[str, Any]:
         """Generate memory usage report"""
@@ -458,5 +503,7 @@ class HealthService(ServiceBase):
             "avg_rss_mb": sum(rss_values) / len(rss_values) / (1024 * 1024),
             "trend": "increasing" if rss_values[-1] > rss_values[0] else "stable",
             "samples": len(self.memory_snapshots),
-            "monitoring_duration_minutes": len(self.memory_snapshots) * self.check_interval / 60,
+            "monitoring_duration_minutes": len(self.memory_snapshots)
+            * self.check_interval
+            / 60,
         }

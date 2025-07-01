@@ -1,6 +1,8 @@
 import pytest
 
-from src.core.domain.services.content_moderator import AgeAppropriateRule, ContentModerator, ProfanityRule
+from src.core.domain.services.content_moderator import (AgeAppropriateRule,
+                                                        ContentModerator,
+                                                        ProfanityRule)
 
 
 class TestContentModerator:

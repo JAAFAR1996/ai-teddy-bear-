@@ -106,7 +106,8 @@ class GetChildProfileQueryHandler(QueryHandler):
             enriched_data = await self._enrich_child_profile(child_data)
 
             return QueryResult(
-                data=enriched_data, metadata={"cached": True, "query_time": datetime.utcnow().isoformat()}
+                data=enriched_data,
+                metadata={"cached": True, "query_time": datetime.utcnow().isoformat()},
             )
 
         except Exception as e:
@@ -119,13 +120,19 @@ class GetChildProfileQueryHandler(QueryHandler):
         child_id = child_data["id"]
 
         # Get conversation count
-        conversations = await self.db.find_many("conversations", filters={"child_id": child_id})
+        conversations = await self.db.find_many(
+            "conversations", filters={"child_id": child_id}
+        )
 
         # Get safety violations count
-        violations = await self.db.find_many("safety_violations", filters={"child_id": child_id})
+        violations = await self.db.find_many(
+            "safety_violations", filters={"child_id": child_id}
+        )
 
         # Get latest interaction
-        interactions = await self.db.find_many("interactions", filters={"child_id": child_id}, limit=1)
+        interactions = await self.db.find_many(
+            "interactions", filters={"child_id": child_id}, limit=1
+        )
 
         enriched_data = child_data.copy()
         enriched_data.update(
@@ -133,7 +140,9 @@ class GetChildProfileQueryHandler(QueryHandler):
                 "conversation_count": len(conversations),
                 "safety_violations_count": len(violations),
                 "last_interaction": interactions[0] if interactions else None,
-                "profile_completeness": self._calculate_profile_completeness(child_data),
+                "profile_completeness": self._calculate_profile_completeness(
+                    child_data
+                ),
             }
         )
 
@@ -148,7 +157,9 @@ class GetChildProfileQueryHandler(QueryHandler):
         required_score = sum(1 for field in required_fields if child_data.get(field))
         optional_score = sum(1 for field in optional_fields if child_data.get(field))
 
-        total_score = (required_score / len(required_fields)) * 0.7 + (optional_score / len(optional_fields)) * 0.3
+        total_score = (required_score / len(required_fields)) * 0.7 + (
+            optional_score / len(optional_fields)
+        ) * 0.3
 
         return round(total_score * 100, 1)
 
@@ -175,11 +186,16 @@ class GetChildrenByParentQueryHandler(QueryHandler):
 
             # Get children for parent
             children = await self.db.find_many(
-                "children", filters={"parent_id": query.parent_id}, limit=query.page_size, offset=offset
+                "children",
+                filters={"parent_id": query.parent_id},
+                limit=query.page_size,
+                offset=offset,
             )
 
             # Get total count for pagination
-            all_children = await self.db.find_many("children", filters={"parent_id": query.parent_id})
+            all_children = await self.db.find_many(
+                "children", filters={"parent_id": query.parent_id}
+            )
 
             # Enrich each child with summary data
             enriched_children = []
@@ -194,7 +210,10 @@ class GetChildrenByParentQueryHandler(QueryHandler):
                 total_count=len(all_children),
                 page=query.page,
                 page_size=query.page_size,
-                metadata={"parent_id": query.parent_id, "has_more": len(all_children) > offset + query.page_size},
+                metadata={
+                    "parent_id": query.parent_id,
+                    "has_more": len(all_children) > offset + query.page_size,
+                },
             )
 
         except Exception as e:
@@ -205,15 +224,21 @@ class GetChildrenByParentQueryHandler(QueryHandler):
         """Get summary information for child"""
 
         # Get recent conversations
-        recent_conversations = await self.db.find_many("conversations", filters={"child_id": child_id}, limit=5)
+        recent_conversations = await self.db.find_many(
+            "conversations", filters={"child_id": child_id}, limit=5
+        )
 
         # Get safety status
-        recent_violations = await self.db.find_many("safety_violations", filters={"child_id": child_id}, limit=1)
+        recent_violations = await self.db.find_many(
+            "safety_violations", filters={"child_id": child_id}, limit=1
+        )
 
         return {
             "recent_conversations_count": len(recent_conversations),
             "safety_status": "warning" if recent_violations else "safe",
-            "last_activity": recent_conversations[0]["created_at"] if recent_conversations else None,
+            "last_activity": (
+                recent_conversations[0]["created_at"] if recent_conversations else None
+            ),
         }
 
 
@@ -249,7 +274,9 @@ class GetChildSafetyReportQueryHandler(QueryHandler):
             violations = await self.db.find_many("safety_violations", filters=filters)
 
             # Get flagged conversations
-            flagged_conversations = await self.db.find_many("conversations", filters={**filters, "flagged": True})
+            flagged_conversations = await self.db.find_many(
+                "conversations", filters={**filters, "flagged": True}
+            )
 
             # Generate safety report
             report = self._generate_safety_report(violations, flagged_conversations)
@@ -259,7 +286,9 @@ class GetChildSafetyReportQueryHandler(QueryHandler):
                 metadata={
                     "child_id": query.child_id,
                     "report_period": {
-                        "from": query.from_date.isoformat() if query.from_date else None,
+                        "from": (
+                            query.from_date.isoformat() if query.from_date else None
+                        ),
                         "to": query.to_date.isoformat() if query.to_date else None,
                     },
                 },
@@ -269,7 +298,9 @@ class GetChildSafetyReportQueryHandler(QueryHandler):
             logger.error(f"Failed to generate safety report: {e}")
             raise
 
-    def _generate_safety_report(self, violations: List[Dict], flagged_conversations: List[Dict]) -> Dict:
+    def _generate_safety_report(
+        self, violations: List[Dict], flagged_conversations: List[Dict]
+    ) -> Dict:
         """Generate comprehensive safety report"""
 
         # Categorize violations
@@ -281,7 +312,9 @@ class GetChildSafetyReportQueryHandler(QueryHandler):
             violation_categories[category].append(violation)
 
         # Calculate safety score
-        total_interactions = len(flagged_conversations) + 100  # Assume 100 normal interactions
+        total_interactions = (
+            len(flagged_conversations) + 100
+        )  # Assume 100 normal interactions
         safety_score = max(0, 100 - (len(violations) * 10))
 
         return {
@@ -313,13 +346,19 @@ class GetChildSafetyReportQueryHandler(QueryHandler):
         recommendations = []
 
         if len(violations) > 5:
-            recommendations.append("Consider reviewing conversation topics and setting stricter content filters.")
+            recommendations.append(
+                "Consider reviewing conversation topics and setting stricter content filters."
+            )
 
         if any(v.get("severity") == "high" for v in violations):
-            recommendations.append("High-severity violations detected. Enable immediate parent notifications.")
+            recommendations.append(
+                "High-severity violations detected. Enable immediate parent notifications."
+            )
 
         if not recommendations:
-            recommendations.append("Safety status is good. Continue monitoring interactions.")
+            recommendations.append(
+                "Safety status is good. Continue monitoring interactions."
+            )
 
         return recommendations
 
@@ -333,10 +372,16 @@ def register_child_query_handlers() -> Any:
     read_model_db = query_bus._db
 
     # Register handlers
-    query_bus.register_handler(GetChildProfileQuery, GetChildProfileQueryHandler(read_model_db))
+    query_bus.register_handler(
+        GetChildProfileQuery, GetChildProfileQueryHandler(read_model_db)
+    )
 
-    query_bus.register_handler(GetChildrenByParentQuery, GetChildrenByParentQueryHandler(read_model_db))
+    query_bus.register_handler(
+        GetChildrenByParentQuery, GetChildrenByParentQueryHandler(read_model_db)
+    )
 
-    query_bus.register_handler(GetChildSafetyReportQuery, GetChildSafetyReportQueryHandler(read_model_db))
+    query_bus.register_handler(
+        GetChildSafetyReportQuery, GetChildSafetyReportQueryHandler(read_model_db)
+    )
 
     logger.info("Child query handlers registered successfully")

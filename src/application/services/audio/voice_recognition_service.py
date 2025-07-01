@@ -40,12 +40,17 @@ class VoiceRecognitionService:
 
         # OpenAI
         if getattr(self.config, "OPENAI_API_KEY", None):
-            self.openai_client = AsyncOpenAI(api_key=getattr(self.config, "OPENAI_API_KEY"))
+            self.openai_client = AsyncOpenAI(
+                api_key=getattr(self.config, "OPENAI_API_KEY")
+            )
         else:
             self.openai_client = None
 
     async def transcribe_audio(
-        self, audio_data: Union[np.ndarray, bytes, str], language: Optional[Language] = None, use_openai: bool = False
+        self,
+        audio_data: Union[np.ndarray, bytes, str],
+        language: Optional[Language] = None,
+        use_openai: bool = False,
     ) -> Dict[str, Any]:
         """
         Transcribe audio to text
@@ -79,14 +84,19 @@ class VoiceRecognitionService:
             self.logger.error(f"Transcription error: {e}")
             return {"error": str(e), "text": ""}
 
-    async def _prepare_audio_data(self, audio_data: Union[np.ndarray, bytes, str]) -> Optional[np.ndarray]:
+    async def _prepare_audio_data(
+        self, audio_data: Union[np.ndarray, bytes, str]
+    ) -> Optional[np.ndarray]:
         """Prepare audio data for transcription"""
         try:
             if isinstance(audio_data, np.ndarray):
                 return audio_data
             elif isinstance(audio_data, bytes):
                 # Convert bytes to numpy array
-                return np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+                return (
+                    np.frombuffer(audio_data, dtype=np.int16).astype(np.float32)
+                    / 32768.0
+                )
             elif isinstance(audio_data, str):
                 # Load from file
                 data, _ = sf.read(audio_data)
@@ -99,14 +109,18 @@ class VoiceRecognitionService:
             self.logger.error(f"Audio preparation error: {e}")
             return None
 
-    async def _transcribe_whisper(self, audio_array: np.ndarray, language: Optional[Language]) -> Dict[str, Any]:
+    async def _transcribe_whisper(
+        self, audio_array: np.ndarray, language: Optional[Language]
+    ) -> Dict[str, Any]:
         """Transcribe using Whisper model"""
         try:
             # Prepare language parameter
             lang_code = language.value if language else None
 
             # Transcribe
-            result = self.whisper_model.transcribe(audio_array, language=lang_code, task="transcribe")
+            result = self.whisper_model.transcribe(
+                audio_array, language=lang_code, task="transcribe"
+            )
 
             return {
                 "text": result["text"].strip(),
@@ -120,7 +134,9 @@ class VoiceRecognitionService:
             self.logger.error(f"Whisper transcription error: {e}")
             return {"error": str(e), "text": ""}
 
-    async def _transcribe_openai(self, audio_array: np.ndarray, language: Optional[Language]) -> Dict[str, Any]:
+    async def _transcribe_openai(
+        self, audio_array: np.ndarray, language: Optional[Language]
+    ) -> Dict[str, Any]:
         """Transcribe using OpenAI API"""
         try:
             # Create temporary file
@@ -130,7 +146,9 @@ class VoiceRecognitionService:
                 # Transcribe with OpenAI
                 with open(temp_file.name, "rb") as audio_file:
                     transcript = await self.openai_client.audio.transcriptions.create(
-                        model="whisper-1", file=audio_file, language=language.value if language else None
+                        model="whisper-1",
+                        file=audio_file,
+                        language=language.value if language else None,
                     )
 
                 return {

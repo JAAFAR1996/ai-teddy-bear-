@@ -13,14 +13,18 @@ import structlog
 from prometheus_client import Counter, Histogram
 
 from src.infrastructure.config import get_settings
-from src.infrastructure.external_services import EmailService, PushNotificationService, SMSService
-
+from src.infrastructure.external_services import (EmailService,
+                                                  PushNotificationService,
+                                                  SMSService)
 # from src.application.services.core.service_registry import ServiceBase
 from src.infrastructure.observability import trace_async
-from src.infrastructure.security.audit_logger import AuditEventType, AuditLogger
+from src.infrastructure.security.audit_logger import (AuditEventType,
+                                                      AuditLogger)
 
 # Metrics
-health_alerts = Counter("teddy_health_alerts", "Health alerts sent", ["type", "severity"])
+health_alerts = Counter(
+    "teddy_health_alerts", "Health alerts sent", ["type", "severity"]
+)
 analysis_time = Histogram("teddy_health_analysis_seconds", "Health analysis duration")
 
 
@@ -63,13 +67,19 @@ class HealthMonitoringService(ServiceBase):
         self.audit_logger = await self.wait_for_service("audit_logger")
         self.speech_analyzer = await self.get_service("speech_analyzer")
         self.repository = await self.get_service("child_repository")
-        self.parent_dashboard_service = await self.get_service("parent_dashboard_service")
+        self.parent_dashboard_service = await self.get_service(
+            "parent_dashboard_service"
+        )
         self.email_service = await self.get_service("email_service")
         self.sms_service = await self.get_service("sms_service")
         self.push_service = await self.get_service("push_notification_service")
 
         self.alert_service = AlertService(
-            self.email_service, self.sms_service, self.push_service, self.repository, self.parent_dashboard_service
+            self.email_service,
+            self.sms_service,
+            self.push_service,
+            self.repository,
+            self.parent_dashboard_service,
         )
         self._state = self.ServiceState.READY
 
@@ -83,7 +93,11 @@ class HealthMonitoringService(ServiceBase):
     @trace_async
     @analysis_time.time()
     async def analyze_interaction(
-        self, child_id: str, audio_data: bytes, interaction_data: Dict, user_context: Optional[Dict] = None
+        self,
+        child_id: str,
+        audio_data: bytes,
+        interaction_data: Dict,
+        user_context: Optional[Dict] = None,
     ) -> HealthReport:
         """Analyze a single interaction (with authentication)"""
         if not self._is_authenticated(user_context):
@@ -131,7 +145,9 @@ class HealthMonitoringService(ServiceBase):
 
         return report
 
-    async def generate_weekly_report(self, child_id: str, user_context: Optional[Dict] = None) -> HealthReport:
+    async def generate_weekly_report(
+        self, child_id: str, user_context: Optional[Dict] = None
+    ) -> HealthReport:
         """Generate weekly health report (with authentication)"""
         if not self._is_authenticated(user_context):
             raise PermissionError("Authentication required")
@@ -183,14 +199,23 @@ class HealthMonitoringService(ServiceBase):
 
         # Audit
         await self.audit_logger.log_event(
-            AuditEventType.ALERT_SENT, report.child_id, {"type": "health", "severity": severity}
+            AuditEventType.ALERT_SENT,
+            report.child_id,
+            {"type": "health", "severity": severity},
         )
 
 
 class AlertService:
     """Service for sending alerts (production-ready, uses DI and DB)"""
 
-    def __init__(self, email_service, sms_service, push_service, child_repository, parent_dashboard_service):
+    def __init__(
+        self,
+        email_service,
+        sms_service,
+        push_service,
+        child_repository,
+        parent_dashboard_service,
+    ):
         self.email_service = email_service
         self.sms_service = sms_service
         self.push_service = push_service
@@ -198,7 +223,9 @@ class AlertService:
         self.parent_dashboard_service = parent_dashboard_service
         self.logger = structlog.get_logger()
 
-    async def send_health_alert(self, child_id: str, concerns: List[str], severity: str) -> None:
+    async def send_health_alert(
+        self, child_id: str, concerns: List[str], severity: str
+    ) -> None:
         """Send health alert to parents (fetches parent info from DB)"""
         parent_info = await self._get_parent_info(child_id)
         if not parent_info:
@@ -208,12 +235,15 @@ class AlertService:
         # Send via email
         if parent_info.get("email"):
             await self.email_service.send_email(
-                to=parent_info["email"], subject=f"Health Alert - {severity.upper()}", body=message
+                to=parent_info["email"],
+                subject=f"Health Alert - {severity.upper()}",
+                body=message,
             )
         # Send SMS for high severity
         if severity == "high" and self.sms_service and parent_info.get("phone"):
             await self.sms_service.send_sms(
-                to=parent_info["phone"], message=f"Health Alert: {concerns[0]}" if concerns else "Check app"
+                to=parent_info["phone"],
+                message=f"Health Alert: {concerns[0]}" if concerns else "Check app",
             )
         # Push notification
         if parent_info.get("device_tokens"):
@@ -244,7 +274,9 @@ class AlertService:
         
         View full details in your parent dashboard.
         """
-        await self.email_service.send_email(to=parent_info["email"], subject="Weekly Health Report", body=message)
+        await self.email_service.send_email(
+            to=parent_info["email"], subject="Weekly Health Report", body=message
+        )
 
     def _format_alert_message(self, concerns: List[str], severity: str) -> str:
         """Format alert message"""

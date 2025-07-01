@@ -4,15 +4,13 @@ import sqlite3
 from abc import abstractmethod
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union
+from typing import (Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar,
+                    Union)
 
-from src.infrastructure.persistence.base import (
-    BaseRepository,
-    BulkOperationResult,
-    QueryOptions,
-    SearchCriteria,
-    SortOrder,
-)
+from src.infrastructure.persistence.base import (BaseRepository,
+                                                 BulkOperationResult,
+                                                 QueryOptions, SearchCriteria,
+                                                 SortOrder)
 
 T = TypeVar("T")
 ID = TypeVar("ID")
@@ -58,7 +56,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         """Get the table name for this repository."""
         if hasattr(self, "_table_name") and self._table_name:
             return self._table_name
-        raise NotImplementedError("Subclasses must define table_name property or provide it in constructor")
+        raise NotImplementedError(
+            "Subclasses must define table_name property or provide it in constructor"
+        )
 
     @abstractmethod
     def _get_table_schema(self) -> str:
@@ -127,7 +127,13 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         processed = data.copy()
 
         # Common datetime field names
-        datetime_fields = ["created_at", "updated_at", "start_time", "end_time", "timestamp"]
+        datetime_fields = [
+            "created_at",
+            "updated_at",
+            "start_time",
+            "end_time",
+            "timestamp",
+        ]
 
         for field in datetime_fields:
             if field in processed and processed[field]:
@@ -137,9 +143,13 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                     except ValueError:
                         # Try alternative datetime format
                         try:
-                            processed[field] = datetime.strptime(processed[field], "%Y-%m-%d %H:%M:%S")
+                            processed[field] = datetime.strptime(
+                                processed[field], "%Y-%m-%d %H:%M:%S"
+                            )
                         except ValueError:
-                            self.logger.warning(f"Could not parse datetime field {field}: {processed[field]}")
+                            self.logger.warning(
+                                f"Could not parse datetime field {field}: {processed[field]}"
+                            )
 
         return processed
 
@@ -148,7 +158,14 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         processed = data.copy()
 
         # Common JSON field names
-        json_fields = ["metadata", "settings", "config", "data", "topics", "emotional_states"]
+        json_fields = [
+            "metadata",
+            "settings",
+            "config",
+            "data",
+            "topics",
+            "emotional_states",
+        ]
 
         for field in json_fields:
             if field in processed and processed[field]:
@@ -156,7 +173,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                     try:
                         processed[field] = json.loads(processed[field])
                     except json.JSONDecodeError:
-                        self.logger.warning(f"Could not parse JSON field {field}: {processed[field]}")
+                        self.logger.warning(
+                            f"Could not parse JSON field {field}: {processed[field]}"
+                        )
 
         return processed
 
@@ -187,7 +206,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                 entity_dict = self._entity_to_dict(entity)
 
                 # Serialize complex fields
-                serialized_dict = {k: self._serialize_for_db(v) for k, v in entity_dict.items()}
+                serialized_dict = {
+                    k: self._serialize_for_db(v) for k, v in entity_dict.items()
+                }
 
                 # Remove id if it's None or empty
                 if "id" in serialized_dict and not serialized_dict["id"]:
@@ -196,7 +217,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                 # Prepare SQL
                 columns = ", ".join(serialized_dict.keys())
                 placeholders = ", ".join(["?" for _ in serialized_dict])
-                sql = f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
+                sql = (
+                    f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
+                )
 
                 cursor.execute(sql, list(serialized_dict.values()))
 
@@ -252,10 +275,14 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                     raise ValueError("Entity must have an ID for update")
 
                 # Serialize complex fields
-                serialized_dict = {k: self._serialize_for_db(v) for k, v in entity_dict.items()}
+                serialized_dict = {
+                    k: self._serialize_for_db(v) for k, v in entity_dict.items()
+                }
 
                 # Prepare update SQL
-                update_fields = [f"{k} = ?" for k in serialized_dict.keys() if k != "id"]
+                update_fields = [
+                    f"{k} = ?" for k in serialized_dict.keys() if k != "id"
+                ]
                 update_values = [v for k, v in serialized_dict.items() if k != "id"]
                 update_values.append(serialized_dict["id"])
 
@@ -338,7 +365,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             self.logger.error(f"Error listing entities: {e}")
             raise DatabaseError(f"Failed to list entities: {e}")
 
-    async def search(self, criteria: List[SearchCriteria], options: Optional[QueryOptions] = None) -> List[T]:
+    async def search(
+        self, criteria: List[SearchCriteria], options: Optional[QueryOptions] = None
+    ) -> List[T]:
         """
         Search entities with advanced criteria
 
@@ -477,7 +506,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                 for entity in entities:
                     try:
                         entity_dict = self._entity_to_dict(entity)
-                        serialized_dict = {k: self._serialize_for_db(v) for k, v in entity_dict.items()}
+                        serialized_dict = {
+                            k: self._serialize_for_db(v) for k, v in entity_dict.items()
+                        }
 
                         # Remove id if it's None or empty
                         if "id" in serialized_dict and not serialized_dict["id"]:
@@ -504,7 +535,11 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             self.logger.error(f"Bulk create failed: {e}")
             raise DatabaseError(f"Bulk create failed: {e}")
 
-        return BulkOperationResult(success_count=success_count, failed_count=len(failed_ids), failed_ids=failed_ids)
+        return BulkOperationResult(
+            success_count=success_count,
+            failed_count=len(failed_ids),
+            failed_ids=failed_ids,
+        )
 
     async def bulk_update(self, entities: List[T]) -> BulkOperationResult:
         """
@@ -529,10 +564,16 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                             failed_ids.append("unknown")
                             continue
 
-                        serialized_dict = {k: self._serialize_for_db(v) for k, v in entity_dict.items()}
+                        serialized_dict = {
+                            k: self._serialize_for_db(v) for k, v in entity_dict.items()
+                        }
 
-                        update_fields = [f"{k} = ?" for k in serialized_dict.keys() if k != "id"]
-                        update_values = [v for k, v in serialized_dict.items() if k != "id"]
+                        update_fields = [
+                            f"{k} = ?" for k in serialized_dict.keys() if k != "id"
+                        ]
+                        update_values = [
+                            v for k, v in serialized_dict.items() if k != "id"
+                        ]
                         update_values.append(serialized_dict["id"])
 
                         sql = f"UPDATE {self.table_name} SET {', '.join(update_fields)} WHERE id = ?"
@@ -553,7 +594,11 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             self.logger.error(f"Bulk update failed: {e}")
             raise DatabaseError(f"Bulk update failed: {e}")
 
-        return BulkOperationResult(success_count=success_count, failed_count=len(failed_ids), failed_ids=failed_ids)
+        return BulkOperationResult(
+            success_count=success_count,
+            failed_count=len(failed_ids),
+            failed_ids=failed_ids,
+        )
 
     async def bulk_delete(self, entity_ids: List[str]) -> BulkOperationResult:
         """
@@ -588,7 +633,11 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             self.logger.error(f"Bulk delete failed: {e}")
             raise DatabaseError(f"Bulk delete failed: {e}")
 
-        return BulkOperationResult(success_count=success_count, failed_count=len(failed_ids), failed_ids=failed_ids)
+        return BulkOperationResult(
+            success_count=success_count,
+            failed_count=len(failed_ids),
+            failed_ids=failed_ids,
+        )
 
     # Advanced Query Methods
 
@@ -701,7 +750,12 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    async def aggregate(self, field: str, operation: str, criteria: Optional[List[SearchCriteria]] = None) -> Any:
+    async def aggregate(
+        self,
+        field: str,
+        operation: str,
+        criteria: Optional[List[SearchCriteria]] = None,
+    ) -> Any:
         """
         Perform aggregation operation
 

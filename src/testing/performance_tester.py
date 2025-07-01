@@ -191,13 +191,17 @@ class PerformanceTester:
         end_time = time.time()
 
         # Generate comprehensive report
-        report = await self._generate_performance_report(test_results, start_time, end_time)
+        report = await self._generate_performance_report(
+            test_results, start_time, end_time
+        )
 
         logger.info(f"✅ Performance testing complete: {report.pass_fail_status}")
 
         return report
 
-    async def _run_baseline_test(self, target_function: Callable) -> List[PerformanceResult]:
+    async def _run_baseline_test(
+        self, target_function: Callable
+    ) -> List[PerformanceResult]:
         """Run baseline performance test"""
         logger.info("Running baseline performance test...")
 
@@ -250,9 +254,13 @@ class PerformanceTester:
 
         return results
 
-    async def _run_load_test(self, target_function: Callable, config: LoadTestConfig) -> List[PerformanceResult]:
+    async def _run_load_test(
+        self, target_function: Callable, config: LoadTestConfig
+    ) -> List[PerformanceResult]:
         """Run load testing with multiple concurrent users"""
-        logger.info(f"Running load test: {config.concurrent_users} users, {config.test_duration_seconds}s")
+        logger.info(
+            f"Running load test: {config.concurrent_users} users, {config.test_duration_seconds}s"
+        )
 
         results = []
         response_times = []
@@ -283,7 +291,8 @@ class PerformanceTester:
                         from .smart_fuzzer import ChildContext
 
                         context = ChildContext(
-                            age=random.randint(3, 12), emotion=random.choice(["happy", "excited", "curious"])
+                            age=random.randint(3, 12),
+                            emotion=random.choice(["happy", "excited", "curious"]),
                         )
 
                         if asyncio.iscoroutinefunction(target_function):
@@ -313,7 +322,9 @@ class PerformanceTester:
         if response_times:
             avg_response_time = statistics.mean(response_times)
             median_response_time = statistics.median(response_times)
-            p95_response_time = statistics.quantiles(response_times, n=20)[18]  # 95th percentile
+            p95_response_time = statistics.quantiles(response_times, n=20)[
+                18
+            ]  # 95th percentile
             min_response_time = min(response_times)
             max_response_time = max(response_times)
         else:
@@ -333,7 +344,8 @@ class PerformanceTester:
                     value=avg_response_time,
                     unit="ms",
                     timestamp=time.time(),
-                    success=avg_response_time <= self.performance_targets["average_response_time_ms"],
+                    success=avg_response_time
+                    <= self.performance_targets["average_response_time_ms"],
                 ),
                 PerformanceResult(
                     test_name="load_test_p95_response_time",
@@ -342,7 +354,8 @@ class PerformanceTester:
                     value=p95_response_time,
                     unit="ms",
                     timestamp=time.time(),
-                    success=p95_response_time <= self.performance_targets["max_response_time_ms"],
+                    success=p95_response_time
+                    <= self.performance_targets["max_response_time_ms"],
                 ),
                 PerformanceResult(
                     test_name="load_test_throughput",
@@ -351,7 +364,8 @@ class PerformanceTester:
                     value=throughput,
                     unit="rps",
                     timestamp=time.time(),
-                    success=throughput >= self.performance_targets["min_throughput_rps"],
+                    success=throughput
+                    >= self.performance_targets["min_throughput_rps"],
                 ),
                 PerformanceResult(
                     test_name="load_test_error_rate",
@@ -367,7 +381,9 @@ class PerformanceTester:
 
         return results
 
-    async def _run_stress_test(self, target_function: Callable) -> List[PerformanceResult]:
+    async def _run_stress_test(
+        self, target_function: Callable
+    ) -> List[PerformanceResult]:
         """Run stress testing to find breaking point"""
         logger.info("Running stress test to find system limits...")
 
@@ -429,7 +445,9 @@ class PerformanceTester:
 
         return results
 
-    async def _run_spike_test(self, target_function: Callable) -> List[PerformanceResult]:
+    async def _run_spike_test(
+        self, target_function: Callable
+    ) -> List[PerformanceResult]:
         """Run spike testing for sudden load increases"""
         logger.info("Running spike test for sudden load increases...")
 
@@ -462,8 +480,12 @@ class PerformanceTester:
         spike_duration = time.perf_counter() - start_time
 
         # Analyze results
-        normal_success_rate = len([r for r in normal_responses if not isinstance(r, Exception)]) / len(normal_responses)
-        spike_success_rate = len([r for r in spike_responses if not isinstance(r, Exception)]) / len(spike_responses)
+        normal_success_rate = len(
+            [r for r in normal_responses if not isinstance(r, Exception)]
+        ) / len(normal_responses)
+        spike_success_rate = len(
+            [r for r in spike_responses if not isinstance(r, Exception)]
+        ) / len(spike_responses)
 
         # System should handle spike with reasonable degradation
         spike_success = spike_success_rate >= 0.8  # Allow 20% degradation
@@ -493,7 +515,9 @@ class PerformanceTester:
 
         return results
 
-    async def _run_resource_test(self, target_function: Callable) -> List[PerformanceResult]:
+    async def _run_resource_test(
+        self, target_function: Callable
+    ) -> List[PerformanceResult]:
         """Run resource utilization testing"""
         logger.info("Running resource utilization test...")
 
@@ -547,14 +571,17 @@ class PerformanceTester:
                     value=avg_cpu_usage,
                     unit="percent",
                     timestamp=time.time(),
-                    success=avg_cpu_usage <= self.performance_targets["max_cpu_percent"],
+                    success=avg_cpu_usage
+                    <= self.performance_targets["max_cpu_percent"],
                 ),
             ]
         )
 
         return results
 
-    async def _run_concurrency_test(self, target_function: Callable) -> List[PerformanceResult]:
+    async def _run_concurrency_test(
+        self, target_function: Callable
+    ) -> List[PerformanceResult]:
         """Run concurrency testing"""
         logger.info("Running concurrency test...")
 
@@ -568,7 +595,9 @@ class PerformanceTester:
 
             tasks = []
             for _ in range(level):
-                task = self._single_performance_request(target_function, f"concurrency_{level}")
+                task = self._single_performance_request(
+                    target_function, f"concurrency_{level}"
+                )
                 tasks.append(task)
 
             responses = await asyncio.gather(*tasks, return_exceptions=True)
@@ -590,7 +619,9 @@ class PerformanceTester:
 
         return results
 
-    async def _run_endurance_test(self, target_function: Callable) -> List[PerformanceResult]:
+    async def _run_endurance_test(
+        self, target_function: Callable
+    ) -> List[PerformanceResult]:
         """Run endurance testing for extended periods"""
         logger.info("Running endurance test (abbreviated for demo)...")
 
@@ -642,7 +673,11 @@ class PerformanceTester:
         else:
             performance_stable = False
 
-        error_rate = error_count / (request_count + error_count) if (request_count + error_count) > 0 else 1.0
+        error_rate = (
+            error_count / (request_count + error_count)
+            if (request_count + error_count) > 0
+            else 1.0
+        )
 
         results.extend(
             [
@@ -669,7 +704,9 @@ class PerformanceTester:
 
         return results
 
-    async def _single_performance_request(self, target_function: Callable, test_context: str):
+    async def _single_performance_request(
+        self, target_function: Callable, test_context: str
+    ):
         """Execute a single performance request"""
         try:
             from .smart_fuzzer import ChildContext
@@ -677,7 +714,9 @@ class PerformanceTester:
             context = ChildContext(age=7, emotion="happy")
 
             if asyncio.iscoroutinefunction(target_function):
-                return await target_function(f"test request for {test_context}", context)
+                return await target_function(
+                    f"test request for {test_context}", context
+                )
             else:
                 return target_function(f"test request for {test_context}", context)
         except Exception as e:
@@ -731,14 +770,20 @@ class PerformanceTester:
 
         return report
 
-    def _generate_performance_recommendations(self, test_results: List[PerformanceResult]) -> List[str]:
+    def _generate_performance_recommendations(
+        self, test_results: List[PerformanceResult]
+    ) -> List[str]:
         """Generate performance recommendations based on test results"""
         recommendations = []
 
         # Check response times
-        response_time_results = [r for r in test_results if r.metric == PerformanceMetric.RESPONSE_TIME]
+        response_time_results = [
+            r for r in test_results if r.metric == PerformanceMetric.RESPONSE_TIME
+        ]
         if response_time_results:
-            avg_response_time = statistics.mean([r.value for r in response_time_results])
+            avg_response_time = statistics.mean(
+                [r.value for r in response_time_results]
+            )
             if avg_response_time > self.performance_targets["average_response_time_ms"]:
                 recommendations.append(
                     f"Average response time ({avg_response_time:.1f}ms) exceeds target "
@@ -747,7 +792,9 @@ class PerformanceTester:
                 )
 
         # Check error rates
-        error_rate_results = [r for r in test_results if r.metric == PerformanceMetric.ERROR_RATE]
+        error_rate_results = [
+            r for r in test_results if r.metric == PerformanceMetric.ERROR_RATE
+        ]
         if error_rate_results:
             max_error_rate = max([r.value for r in error_rate_results])
             if max_error_rate > self.performance_targets["max_error_rate"]:
@@ -758,7 +805,9 @@ class PerformanceTester:
                 )
 
         # Check memory usage
-        memory_results = [r for r in test_results if r.metric == PerformanceMetric.MEMORY_USAGE]
+        memory_results = [
+            r for r in test_results if r.metric == PerformanceMetric.MEMORY_USAGE
+        ]
         if memory_results:
             max_memory = max([r.value for r in memory_results])
             if max_memory > self.performance_targets["max_memory_mb"]:
@@ -769,7 +818,9 @@ class PerformanceTester:
                 )
 
         # Check CPU usage
-        cpu_results = [r for r in test_results if r.metric == PerformanceMetric.CPU_USAGE]
+        cpu_results = [
+            r for r in test_results if r.metric == PerformanceMetric.CPU_USAGE
+        ]
         if cpu_results:
             max_cpu = max([r.value for r in cpu_results])
             if max_cpu > self.performance_targets["max_cpu_percent"]:
@@ -780,7 +831,9 @@ class PerformanceTester:
                 )
 
         # Check throughput
-        throughput_results = [r for r in test_results if r.metric == PerformanceMetric.THROUGHPUT]
+        throughput_results = [
+            r for r in test_results if r.metric == PerformanceMetric.THROUGHPUT
+        ]
         if throughput_results:
             min_throughput = min([r.value for r in throughput_results])
             if min_throughput < self.performance_targets["min_throughput_rps"]:
@@ -803,7 +856,9 @@ class PerformanceTester:
 
         return recommendations
 
-    async def export_performance_report(self, report: PerformanceReport, output_file: str) -> bool:
+    async def export_performance_report(
+        self, report: PerformanceReport, output_file: str
+    ) -> bool:
         """Export performance report to file"""
         try:
             report_data = {

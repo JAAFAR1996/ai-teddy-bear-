@@ -154,7 +154,15 @@ class SafeExpressionParser:
 
         if self.security_level == SecurityLevel.STRICT:
             # Only basic math
-            self.allowed_functions = {"abs", "round", "min", "max", "sum", "int", "float"}
+            self.allowed_functions = {
+                "abs",
+                "round",
+                "min",
+                "max",
+                "sum",
+                "int",
+                "float",
+            }
         elif self.security_level == SecurityLevel.MODERATE:
             # Math + safe string operations
             self.allowed_functions = set(self.SAFE_MATH_FUNCTIONS.keys())
@@ -164,9 +172,13 @@ class SafeExpressionParser:
             self.allowed_functions = set(self.SAFE_MATH_FUNCTIONS.keys())
             self.allowed_attributes = self.SAFE_STRING_METHODS
             # Add additional safe operations
-            self.allowed_functions.update({"sorted", "reversed", "enumerate", "zip", "range"})
+            self.allowed_functions.update(
+                {"sorted", "reversed", "enumerate", "zip", "range"}
+            )
 
-    def parse(self, expression: str, context: Optional[ExpressionContext] = None) -> ParseResult:
+    def parse(
+        self, expression: str, context: Optional[ExpressionContext] = None
+    ) -> ParseResult:
         """Parse and evaluate an expression safely"""
         import time
 
@@ -175,7 +187,9 @@ class SafeExpressionParser:
         try:
             # Input validation
             if not expression or not isinstance(expression, str):
-                return ParseResult(success=False, error="Invalid expression: must be non-empty string")
+                return ParseResult(
+                    success=False, error="Invalid expression: must be non-empty string"
+                )
 
             if len(expression) > 10000:  # Max expression length
                 return ParseResult(success=False, error="Expression too long")
@@ -191,14 +205,18 @@ class SafeExpressionParser:
                 return ParseResult(success=False, error=f"Syntax error: {e}")
 
             # Validate AST
-            validator = ASTValidator(self.allowed_functions, self.allowed_attributes, context)
+            validator = ASTValidator(
+                self.allowed_functions, self.allowed_attributes, context
+            )
 
             is_valid, error = validator.validate(tree)
             if not is_valid:
                 return ParseResult(success=False, error=error)
 
             # Evaluate expression
-            evaluator = SafeEvaluator(self.OPERATORS, self.UNARY_OPERATORS, self.SAFE_MATH_FUNCTIONS, context)
+            evaluator = SafeEvaluator(
+                self.OPERATORS, self.UNARY_OPERATORS, self.SAFE_MATH_FUNCTIONS, context
+            )
 
             result = evaluator.evaluate(tree.body)
 
@@ -260,7 +278,12 @@ class SafeExpressionParser:
 class ASTValidator:
     """Validates AST nodes for safety"""
 
-    def __init__(self, allowed_functions: Set[str], allowed_attributes: Set[str], context: ExpressionContext):
+    def __init__(
+        self,
+        allowed_functions: Set[str],
+        allowed_attributes: Set[str],
+        context: ExpressionContext,
+    ):
         self.allowed_functions = allowed_functions
         self.allowed_attributes = allowed_attributes
         self.context = context
@@ -352,7 +375,13 @@ class ASTValidator:
 class SafeEvaluator:
     """Safely evaluates validated AST"""
 
-    def __init__(self, operators: Dict, unary_operators: Dict, safe_functions: Dict, context: ExpressionContext):
+    def __init__(
+        self,
+        operators: Dict,
+        unary_operators: Dict,
+        safe_functions: Dict,
+        context: ExpressionContext,
+    ):
         self.operators = operators
         self.unary_operators = unary_operators
         self.safe_functions = safe_functions
@@ -584,7 +613,10 @@ class SafeTemplateEngine:
 
         # Use sandboxed environment
         self.env = SandboxedEnvironment(
-            loader=BaseLoader(), autoescape=True, trim_blocks=True, lstrip_blocks=True  # Auto-escape HTML
+            loader=BaseLoader(),
+            autoescape=True,
+            trim_blocks=True,
+            lstrip_blocks=True,  # Auto-escape HTML
         )
 
         # Add safe filters
@@ -623,7 +655,9 @@ class SafeTemplateEngine:
 
 
 # Factory functions
-def create_safe_parser(security_level: SecurityLevel = SecurityLevel.MODERATE) -> SafeExpressionParser:
+def create_safe_parser(
+    security_level: SecurityLevel = SecurityLevel.MODERATE,
+) -> SafeExpressionParser:
     """Create a configured safe expression parser"""
     return SafeExpressionParser(security_level)
 
@@ -635,11 +669,16 @@ def create_safe_template_engine() -> SafeTemplateEngine:
 
 # Helper function for common use cases
 def safe_eval(
-    expression: str, variables: Optional[Dict[str, Any]] = None, security_level: SecurityLevel = SecurityLevel.MODERATE
+    expression: str,
+    variables: Optional[Dict[str, Any]] = None,
+    security_level: SecurityLevel = SecurityLevel.MODERATE,
 ) -> Any:
     """Safely evaluate an expression - drop-in replacement for eval()"""
     parser = create_safe_parser(security_level)
-    context = ExpressionContext(variables=variables or {}, allowed_names=set(variables.keys()) if variables else set())
+    context = ExpressionContext(
+        variables=variables or {},
+        allowed_names=set(variables.keys()) if variables else set(),
+    )
 
     result = parser.parse(expression, context)
 

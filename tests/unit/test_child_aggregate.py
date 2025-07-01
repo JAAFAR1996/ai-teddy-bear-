@@ -7,7 +7,9 @@ import pytest
 class ChildProfile:
     """Child aggregate for testing"""
 
-    def __init__(self, name: str, age: int, parent_id: str, language_preference: str = "en"):
+    def __init__(
+        self, name: str, age: int, parent_id: str, language_preference: str = "en"
+    ):
         self.id = str(uuid.uuid4())
         self.name = name
         self.age = age
@@ -26,7 +28,9 @@ class ChildProfile:
             raise ValueError("Child already has an active session")
 
         self.active_sessions.append(session_id)
-        self._domain_events.append({"type": "SessionStarted", "child_id": self.id, "session_id": session_id})
+        self._domain_events.append(
+            {"type": "SessionStarted", "child_id": self.id, "session_id": session_id}
+        )
 
 
 class TestChildAggregate:
@@ -34,7 +38,9 @@ class TestChildAggregate:
 
     def test_child_creation(self):
         """Test creating a child profile"""
-        child = ChildProfile(name="Ahmed", age=7, parent_id="parent-123", language_preference="ar")
+        child = ChildProfile(
+            name="Ahmed", age=7, parent_id="parent-123", language_preference="ar"
+        )
 
         assert child.name == "Ahmed"
         assert child.age == 7

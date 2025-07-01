@@ -18,32 +18,24 @@ from typing import Any, Dict, List, Optional
 
 # Application imports
 from src.application.services.parentdashboard import (
-    DashboardAlertService,
-    DashboardAnalyticsService,
-    DashboardOrchestrator,
-    DashboardSessionService,
-)
-
+    DashboardAlertService, DashboardAnalyticsService, DashboardOrchestrator,
+    DashboardSessionService)
 # Domain imports
-from src.domain.parentdashboard import (
-    AccessControlService,
-    Alert,
-    AlertSeverity,
-    AlertType,
-    AnalyticsDomainService,
-    ChildProfile,
-    ContentAnalysisService,
-    ParentalControl,
-    ParentUser,
-)
+from src.domain.parentdashboard import (AccessControlService, Alert,
+                                        AlertSeverity, AlertType,
+                                        AnalyticsDomainService, ChildProfile,
+                                        ContentAnalysisService,
+                                        ParentalControl, ParentUser)
 from src.infrastructure.config import get_config
-
 # Infrastructure imports
-from src.infrastructure.parentdashboard import CacheService, ChartGenerationService, ExportService, NotificationService
-
+from src.infrastructure.parentdashboard import (CacheService,
+                                                ChartGenerationService,
+                                                ExportService,
+                                                NotificationService)
 # Repository imports
 from src.infrastructure.persistence.child_repository import ChildRepository
-from src.infrastructure.persistence.conversation_repository import ConversationRepository
+from src.infrastructure.persistence.conversation_repository import \
+    ConversationRepository
 
 
 class ParentDashboardService:
@@ -58,7 +50,12 @@ class ParentDashboardService:
     All heavy lifting is delegated to specialized services.
     """
 
-    def __init__(self, child_repo: ChildRepository, conversation_repo: ConversationRepository, config=None):
+    def __init__(
+        self,
+        child_repo: ChildRepository,
+        conversation_repo: ConversationRepository,
+        config=None,
+    ):
         """Initialize parent dashboard service with dependency injection"""
         self.config = config or get_config()
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -78,13 +75,17 @@ class ParentDashboardService:
         )
 
         self.analytics_service = DashboardAnalyticsService(
-            conversation_repository=conversation_repo, analytics_domain_service=self.analytics_domain_service
+            conversation_repository=conversation_repo,
+            analytics_domain_service=self.analytics_domain_service,
         )
 
-        self.alert_service = DashboardAlertService(content_analysis_service=self.content_analysis_service)
+        self.alert_service = DashboardAlertService(
+            content_analysis_service=self.content_analysis_service
+        )
 
         self.session_service = DashboardSessionService(
-            content_service=self.content_analysis_service, access_service=self.access_control_service
+            content_service=self.content_analysis_service,
+            access_service=self.access_control_service,
         )
 
         # Initialize infrastructure services
@@ -104,15 +105,26 @@ class ParentDashboardService:
         self, email: str, name: str, phone: Optional[str] = None, timezone: str = "UTC"
     ) -> ParentUser:
         """Create a new parent account"""
-        return await self.orchestrator.create_parent_account(email, name, phone, timezone)
+        return await self.orchestrator.create_parent_account(
+            email, name, phone, timezone
+        )
 
     async def create_child_profile(
-        self, parent_id: str, name: str, age: int, interests: List[str], language: str = "en"
+        self,
+        parent_id: str,
+        name: str,
+        age: int,
+        interests: List[str],
+        language: str = "en",
     ) -> ChildProfile:
         """Create child profile with age-appropriate defaults"""
-        return await self.orchestrator.create_child_profile(parent_id, name, age, interests, language)
+        return await self.orchestrator.create_child_profile(
+            parent_id, name, age, interests, language
+        )
 
-    async def update_parental_controls(self, child_id: str, controls: Dict[str, Any]) -> bool:
+    async def update_parental_controls(
+        self, child_id: str, controls: Dict[str, Any]
+    ) -> bool:
         """Update parental control settings"""
         success = await self.orchestrator.update_parental_controls(child_id, controls)
 
@@ -141,7 +153,9 @@ class ParentDashboardService:
             session_result = await self.session_service.start_session(user_id)
             session_id = session_result.get("session_id")
 
-        return await self.session_service.log_interaction(session_id, child_message, assistant_message, audio_url)
+        return await self.session_service.log_interaction(
+            session_id, child_message, assistant_message, audio_url
+        )
 
     async def end_conversation_session(self, session_id: str):
         """End a conversation session"""
@@ -175,12 +189,16 @@ class ParentDashboardService:
         period_days = (datetime.now() - start_date).days
 
         # Check cache first
-        cached_analytics = self.cache_service.get_cached_analytics(child_id, period_days)
+        cached_analytics = self.cache_service.get_cached_analytics(
+            child_id, period_days
+        )
         if cached_analytics and not include_charts:
             return cached_analytics
 
         # Get fresh analytics
-        analytics = await self.analytics_service.get_child_analytics(child_id, period_days, include_charts)
+        analytics = await self.analytics_service.get_child_analytics(
+            child_id, period_days, include_charts
+        )
 
         # Cache results (without charts for size)
         if analytics and not include_charts:
@@ -188,9 +206,13 @@ class ParentDashboardService:
 
         return analytics
 
-    async def get_comparative_analytics(self, child_ids: List[str], period_days: int = 30) -> Dict[str, Any]:
+    async def get_comparative_analytics(
+        self, child_ids: List[str], period_days: int = 30
+    ) -> Dict[str, Any]:
         """Get comparative analytics across children"""
-        return await self.analytics_service.get_comparative_analytics(child_ids, period_days)
+        return await self.analytics_service.get_comparative_analytics(
+            child_ids, period_days
+        )
 
     async def get_trend_analysis(self, child_id: str, weeks: int = 4) -> Dict[str, Any]:
         """Get trend analysis over specified weeks"""
@@ -205,10 +227,14 @@ class ParentDashboardService:
         access_result = await self.orchestrator.check_child_access(child_id)
         return access_result.get("allowed", False), access_result.get("reason")
 
-    async def set_access_schedule(self, child_id: str, schedule_type, custom_schedule: Optional[List[Dict]] = None):
+    async def set_access_schedule(
+        self, child_id: str, schedule_type, custom_schedule: Optional[List[Dict]] = None
+    ):
         """Set access schedule for a child"""
         # This would be implemented by creating schedules using AccessControlService
-        schedules = self.access_control_service.create_default_schedule(child_id, schedule_type)
+        schedules = self.access_control_service.create_default_schedule(
+            child_id, schedule_type
+        )
         # In real implementation, would save to database
         self.logger.info(f"Set access schedule for child {child_id}")
 
@@ -216,7 +242,9 @@ class ParentDashboardService:
     # ALERTS & NOTIFICATIONS (Delegates to AlertService)
     # =============================================================================
 
-    async def send_moderation_alert(self, user_id: str, alert_type: str, severity: str, details: Dict[str, Any]):
+    async def send_moderation_alert(
+        self, user_id: str, alert_type: str, severity: str, details: Dict[str, Any]
+    ):
         """Send moderation alert to parent"""
 
         # Get parent info (simplified)
@@ -259,9 +287,13 @@ class ParentDashboardService:
             conversations = []  # Would fetch from database
 
             if format.lower() == "json":
-                return await self.export_service.export_conversation_history_as_json(conversations)
+                return await self.export_service.export_conversation_history_as_json(
+                    conversations
+                )
             elif format.lower() == "excel":
-                return await self.export_service.export_conversation_history_as_excel(conversations)
+                return await self.export_service.export_conversation_history_as_excel(
+                    conversations
+                )
             else:  # PDF
                 return await self.export_service.export_conversation_history_as_pdf(
                     conversations, child_name="Child Name"
@@ -277,7 +309,9 @@ class ParentDashboardService:
 
     async def get_dashboard_data(self, parent_id: str) -> Dict[str, Any]:
         """Get comprehensive dashboard data"""
-        return await self.orchestrator.get_dashboard_data(parent_id, include_analytics=True)
+        return await self.orchestrator.get_dashboard_data(
+            parent_id, include_analytics=True
+        )
 
     async def get_recommendations(self, child_id: str) -> Dict[str, Any]:
         """Get AI-powered recommendations for the child"""
@@ -310,9 +344,13 @@ class ParentDashboardService:
         """Process potential alerts from conversation"""
 
         # Analyze conversation for issues
-        controls = ParentalControl(child_id=conversation_log.child_id)  # Would get from DB
+        controls = ParentalControl(
+            child_id=conversation_log.child_id
+        )  # Would get from DB
 
-        analysis = self.content_analysis_service.analyze_conversation_content(conversation_log, controls)
+        analysis = self.content_analysis_service.analyze_conversation_content(
+            conversation_log, controls
+        )
 
         # Process any alerts that were flagged
         for alert_info in analysis.get("alerts_needed", []):
@@ -345,7 +383,9 @@ class ParentDashboardService:
             "SMTP_PASS": getattr(self.config, "SMTP_PASS", None),
         }
 
-    def _generate_content_suggestions(self, analytics_data: Dict[str, Any]) -> List[str]:
+    def _generate_content_suggestions(
+        self, analytics_data: Dict[str, Any]
+    ) -> List[str]:
         """Generate content suggestions based on analytics"""
         suggestions = []
 
@@ -369,7 +409,9 @@ class ParentDashboardService:
 
         return suggestions
 
-    def _generate_learning_suggestions(self, analytics_data: Dict[str, Any]) -> List[str]:
+    def _generate_learning_suggestions(
+        self, analytics_data: Dict[str, Any]
+    ) -> List[str]:
         """Generate learning activity suggestions"""
         suggestions = []
 
@@ -387,7 +429,9 @@ class ParentDashboardService:
 
         sentiment = analytics_data.get("sentiment_breakdown", {})
         if sentiment.get("negative", 0) > 0.3:
-            suggestions.append("Monitor emotional well-being - consider professional guidance if needed")
+            suggestions.append(
+                "Monitor emotional well-being - consider professional guidance if needed"
+            )
 
         return suggestions
 
@@ -422,14 +466,18 @@ class ParentDashboardAPI:
         """Get dashboard data for parent"""
         return await self.service.get_dashboard_data(parent_id)
 
-    async def update_settings(self, child_id: str, settings: Dict[str, Any]) -> Dict[str, Any]:
+    async def update_settings(
+        self, child_id: str, settings: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Update child settings"""
         success = await self.service.update_parental_controls(child_id, settings)
         return {"success": success}
 
     async def get_real_time_status(self, child_id: str) -> Dict[str, Any]:
         """Get real-time status for a child"""
-        active_sessions = await self.service.session_service.get_active_sessions(child_id)
+        active_sessions = await self.service.session_service.get_active_sessions(
+            child_id
+        )
 
         if active_sessions:
             session = active_sessions[0]
@@ -440,13 +488,22 @@ class ParentDashboardAPI:
                 "message_count": session["message_count"],
             }
 
-        return {"is_active": False, "session_duration": 0, "current_topics": [], "message_count": 0}
+        return {
+            "is_active": False,
+            "session_duration": 0,
+            "current_topics": [],
+            "message_count": 0,
+        }
 
-    async def get_analytics(self, child_id: str, period_days: int = 30) -> Dict[str, Any]:
+    async def get_analytics(
+        self, child_id: str, period_days: int = 30
+    ) -> Dict[str, Any]:
         """Get analytics for child"""
         return await self.service.get_analytics(child_id, include_charts=True)
 
-    async def export_data(self, child_id: str, format: str = "pdf", data_type: str = "conversations") -> bytes:
+    async def export_data(
+        self, child_id: str, format: str = "pdf", data_type: str = "conversations"
+    ) -> bytes:
         """Export child data"""
         if data_type == "conversations":
             return await self.service.export_conversation_history(child_id, format)
@@ -455,6 +512,8 @@ class ParentDashboardAPI:
             analytics = await self.service.get_analytics(child_id)
             if analytics:
                 return await self.service.export_service.export_analytics_report(
-                    analytics["analytics"], child_name="Child Name", format_type=format  # Would get from database
+                    analytics["analytics"],
+                    child_name="Child Name",
+                    format_type=format,  # Would get from database
                 )
             return b""

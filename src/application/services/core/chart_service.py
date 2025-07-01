@@ -29,7 +29,9 @@ class ChartGenerationService:
         plt.style.use("seaborn-v0_8-whitegrid")
         sns.set_palette("husl")
 
-    def generate_usage_trend_chart(self, daily_data: List[Dict[str, Any]], title: str = "Daily Usage Trend") -> str:
+    def generate_usage_trend_chart(
+        self, daily_data: List[Dict[str, Any]], title: str = "Daily Usage Trend"
+    ) -> str:
         """Generate daily usage trend chart"""
 
         try:
@@ -68,7 +70,9 @@ class ChartGenerationService:
             plt.figure(figsize=(10, 8))
             colors = plt.cm.Set3(np.linspace(0, 1, len(topics)))
 
-            plt.pie(counts, labels=topics, autopct="%1.1f%%", colors=colors, startangle=90)
+            plt.pie(
+                counts, labels=topics, autopct="%1.1f%%", colors=colors, startangle=90
+            )
             plt.title(title, fontsize=16, fontweight="bold")
             plt.axis("equal")
 
@@ -79,7 +83,9 @@ class ChartGenerationService:
             return ""
 
     def generate_sentiment_chart(
-        self, sentiment_breakdown: Dict[str, float], title: str = "Conversation Sentiment"
+        self,
+        sentiment_breakdown: Dict[str, float],
+        title: str = "Conversation Sentiment",
     ) -> str:
         """Generate bar chart for sentiment breakdown"""
 
@@ -154,13 +160,18 @@ class ChartGenerationService:
             return ""
 
     def generate_weekly_comparison_chart(
-        self, weekly_data: List[Dict[str, Any]], metric: str = "conversations", title: str = "Weekly Comparison"
+        self,
+        weekly_data: List[Dict[str, Any]],
+        metric: str = "conversations",
+        title: str = "Weekly Comparison",
     ) -> str:
         """Generate weekly comparison chart"""
 
         try:
             weeks = [f"Week {i+1}" for i in range(len(weekly_data))]
-            values = [week_data["analytics"].get(metric, 0) for week_data in weekly_data]
+            values = [
+                week_data["analytics"].get(metric, 0) for week_data in weekly_data
+            ]
 
             plt.figure(figsize=(10, 6))
             bars = plt.bar(weeks, values, color="skyblue", edgecolor="navy", alpha=0.7)
@@ -187,7 +198,9 @@ class ChartGenerationService:
             self.logger.error(f"Error generating weekly comparison chart: {e}")
             return ""
 
-    def generate_time_distribution_chart(self, peak_hours: List[int], title: str = "Usage by Time of Day") -> str:
+    def generate_time_distribution_chart(
+        self, peak_hours: List[int], title: str = "Usage by Time of Day"
+    ) -> str:
         """Generate chart showing usage distribution by hour"""
 
         try:
@@ -240,7 +253,9 @@ class ChartGenerationService:
             plt.close()  # Ensure cleanup
             return ""
 
-    def generate_comprehensive_dashboard_charts(self, analytics_data: Dict[str, Any]) -> Dict[str, str]:
+    def generate_comprehensive_dashboard_charts(
+        self, analytics_data: Dict[str, Any]
+    ) -> Dict[str, str]:
         """Generate all charts for dashboard"""
 
         charts = {}
@@ -248,7 +263,9 @@ class ChartGenerationService:
         try:
             # Usage trend chart
             if "daily_usage" in analytics_data:
-                charts["usage_trend"] = self.generate_usage_trend_chart(analytics_data["daily_usage"])
+                charts["usage_trend"] = self.generate_usage_trend_chart(
+                    analytics_data["daily_usage"]
+                )
 
             # Topic distribution
             if "topics_frequency" in analytics_data:
@@ -258,17 +275,23 @@ class ChartGenerationService:
 
             # Sentiment breakdown
             if "sentiment_breakdown" in analytics_data:
-                charts["sentiment_overview"] = self.generate_sentiment_chart(analytics_data["sentiment_breakdown"])
+                charts["sentiment_overview"] = self.generate_sentiment_chart(
+                    analytics_data["sentiment_breakdown"]
+                )
 
             # Learning progress
             if "learning_progress" in analytics_data:
                 progress_data = analytics_data["learning_progress"]
                 if isinstance(progress_data, dict):
-                    charts["learning_progress"] = self.generate_learning_progress_chart(progress_data)
+                    charts["learning_progress"] = self.generate_learning_progress_chart(
+                        progress_data
+                    )
 
             # Time distribution
             if "peak_usage_hours" in analytics_data:
-                charts["time_distribution"] = self.generate_time_distribution_chart(analytics_data["peak_usage_hours"])
+                charts["time_distribution"] = self.generate_time_distribution_chart(
+                    analytics_data["peak_usage_hours"]
+                )
 
             self.logger.info(f"Generated {len(charts)} charts successfully")
 

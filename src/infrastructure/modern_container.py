@@ -17,21 +17,8 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    Dict,
-    Generic,
-    List,
-    Optional,
-    Type,
-    TypeVar,
-    Union,
-    get_args,
-    get_origin,
-    get_type_hints,
-)
+from typing import (Any, Awaitable, Callable, Dict, Generic, List, Optional,
+                    Type, TypeVar, Union, get_args, get_origin, get_type_hints)
 
 import structlog
 from dependency_injector import containers, providers

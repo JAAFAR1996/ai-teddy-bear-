@@ -10,7 +10,8 @@ from typing import Dict, List, Optional
 
 from .dto.accessibility_dto import AccessibilityProfileDTO
 from .use_cases.adapt_content_use_case import AdaptContentUseCase
-from .use_cases.create_profile_use_case import CreateAccessibilityProfileUseCase
+from .use_cases.create_profile_use_case import \
+    CreateAccessibilityProfileUseCase
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +23,13 @@ class AccessibilityApplicationService:
         self.repository = repository
         self.adaptation_service = adaptation_service
         self.create_profile_use_case = CreateAccessibilityProfileUseCase(repository)
-        self.adapt_content_use_case = AdaptContentUseCase(repository, adaptation_service)
+        self.adapt_content_use_case = AdaptContentUseCase(
+            repository, adaptation_service
+        )
 
-    def create_accessibility_profile(self, child_id: str, special_needs: List[str]) -> AccessibilityProfileDTO:
+    def create_accessibility_profile(
+        self, child_id: str, special_needs: List[str]
+    ) -> AccessibilityProfileDTO:
         """إنشاء ملف وصولية جديد"""
         try:
             profile = self.create_profile_use_case.execute(child_id, special_needs)
@@ -41,7 +46,9 @@ class AccessibilityApplicationService:
             logger.error(f"خطأ في تكييف المحتوى: {e}")
             return content
 
-    def get_accessibility_profile(self, child_id: str) -> Optional[AccessibilityProfileDTO]:
+    def get_accessibility_profile(
+        self, child_id: str
+    ) -> Optional[AccessibilityProfileDTO]:
         """الحصول على ملف الوصولية"""
         try:
             profile = self.repository.get_by_child_id(child_id)

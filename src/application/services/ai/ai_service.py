@@ -6,13 +6,17 @@ Refactored to use modular components and clean architecture
 import logging
 from typing import Any, Dict, Optional
 
-from src.application.services.ai.ai_service_factory import EnhancedAIServiceFactory
-from src.application.services.ai.interfaces.ai_service_interface import IAIService
-from src.application.services.ai.models.ai_response_models import AIResponseModel
-
+from src.application.services.ai.ai_service_factory import \
+    EnhancedAIServiceFactory
+from src.application.services.ai.interfaces.ai_service_interface import \
+    IAIService
+from src.application.services.ai.models.ai_response_models import \
+    AIResponseModel
 # Import refactored components
-from src.application.services.ai.refactored_ai_service import AIService as CompatibilityAIService
-from src.application.services.ai.refactored_ai_service import RefactoredAIService
+from src.application.services.ai.refactored_ai_service import \
+    AIService as CompatibilityAIService
+from src.application.services.ai.refactored_ai_service import \
+    RefactoredAIService
 from src.core.domain.entities.child import Child
 from src.infrastructure.caching.simple_cache_service import CacheService
 from src.infrastructure.config import Settings
@@ -30,7 +34,12 @@ class AIService:
     All heavy logic has been moved to specialized services.
     """
 
-    def __init__(self, settings: Settings, cache_service: CacheService, provider: str = "openai_modern"):
+    def __init__(
+        self,
+        settings: Settings,
+        cache_service: CacheService,
+        provider: str = "openai_modern",
+    ):
         """Initialize AI Service with refactored components"""
         self.settings = settings
         self.cache_service = cache_service
@@ -44,7 +53,11 @@ class AIService:
         logger.info(f"✅ AI Service initialized (delegating to refactored service)")
 
     async def generate_response(
-        self, message: str, child: Child, session_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None
+        self,
+        message: str,
+        child: Child,
+        session_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> AIResponseModel:
         """Generate AI response (delegated)"""
         return await self._refactored_service.generate_response(
@@ -85,7 +98,9 @@ class AIServiceFactory:
     """
 
     @staticmethod
-    def create(provider: str, settings: Settings, cache_service: CacheService, **kwargs) -> IAIService:
+    def create(
+        provider: str, settings: Settings, cache_service: CacheService, **kwargs
+    ) -> IAIService:
         """Create AI service using enhanced factory"""
         return EnhancedAIServiceFactory.create_service(
             provider=provider, settings=settings, cache_service=cache_service, **kwargs
@@ -104,6 +119,12 @@ ModernOpenAIService = AIService
 EnhancedAIServiceFactory_Legacy = AIServiceFactory
 
 # Export main interfaces
-__all__ = ["AIService", "AIServiceFactory", "AIResponseModel", "IAIService", "RefactoredAIService"]
+__all__ = [
+    "AIService",
+    "AIServiceFactory",
+    "AIResponseModel",
+    "IAIService",
+    "RefactoredAIService",
+]
 
 logger.info("🔄 AI Service module loaded with refactored architecture")

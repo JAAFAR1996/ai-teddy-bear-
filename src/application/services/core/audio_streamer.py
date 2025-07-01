@@ -49,7 +49,9 @@ class StreamingAudioBuffer:
     async def add_chunk(self, audio_data: bytes) -> None:
         """Add audio chunk to buffer"""
         async with self._lock:
-            audio_array = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+            audio_array = (
+                np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+            )
             self.buffer.append(audio_array)
             self.total_samples += len(audio_array)
 
@@ -151,10 +153,14 @@ class ModernAudioStreamer:
 
         logger.info("✅ Modern Audio Streamer initialized")
 
-    async def handle_audio_stream(self, websocket: WebSocket, session_id: str, child: Optional[Any] = None) -> None:
+    async def handle_audio_stream(
+        self, websocket: WebSocket, session_id: str, child: Optional[Any] = None
+    ) -> None:
         """Main audio streaming handler - replaces mock implementations"""
         try:
-            success = await self.ws_manager.connect(websocket, session_id, {"type": "audio_stream"})
+            success = await self.ws_manager.connect(
+                websocket, session_id, {"type": "audio_stream"}
+            )
             if not success:
                 logger.error(f"❌ Failed to connect audio stream: {session_id}")
                 return
@@ -218,7 +224,9 @@ class ModernAudioStreamer:
                 logger.error(f"❌ Streaming loop error: {e}")
                 await asyncio.sleep(0.1)
 
-    async def _process_audio_chunk(self, session: StreamSession, message: Dict[str, Any]) -> None:
+    async def _process_audio_chunk(
+        self, session: StreamSession, message: Dict[str, Any]
+    ) -> None:
         """Process incoming audio chunk with real voice services (not mock!)"""
         try:
             audio_data = message.get("audio_data")
@@ -240,17 +248,25 @@ class ModernAudioStreamer:
         except Exception as e:
             logger.error(f"❌ Audio chunk processing error: {e}")
             await self.ws_manager.send_message(
-                session.session_id, {"type": "error", "error": "Audio processing failed", "details": str(e)}
+                session.session_id,
+                {
+                    "type": "error",
+                    "error": "Audio processing failed",
+                    "details": str(e),
+                },
             )
 
-    async def _process_complete_audio(self, session: StreamSession, audio_chunk: np.ndarray) -> None:
+    async def _process_complete_audio(
+        self, session: StreamSession, audio_chunk: np.ndarray
+    ) -> None:
         """Process complete audio chunk with AI pipeline: Audio → Transcription → AI → Synthesis"""
         start_time = time.time()
         session.processing_active = True
 
         try:
             await self.ws_manager.send_message(
-                session.session_id, {"type": "processing", "message": "Processing audio..."}
+                session.session_id,
+                {"type": "processing", "message": "Processing audio..."},
             )
 
             # Real audio processing would integrate with voice services here
@@ -272,12 +288,19 @@ class ModernAudioStreamer:
         except Exception as e:
             logger.error(f"❌ Complete audio processing error: {e}")
             await self.ws_manager.send_message(
-                session.session_id, {"type": "error", "error": "Audio processing failed", "details": str(e)}
+                session.session_id,
+                {
+                    "type": "error",
+                    "error": "Audio processing failed",
+                    "details": str(e),
+                },
             )
         finally:
             session.processing_active = False
 
-    async def _process_text_input(self, session: StreamSession, message: Dict[str, Any]) -> None:
+    async def _process_text_input(
+        self, session: StreamSession, message: Dict[str, Any]
+    ) -> None:
         """Process text input directly (bypass audio transcription)"""
         try:
             text = message.get("text", "").strip()
@@ -285,11 +308,17 @@ class ModernAudioStreamer:
                 return
 
             await self.ws_manager.send_message(
-                session.session_id, {"type": "text_received", "text": text, "timestamp": datetime.utcnow().isoformat()}
+                session.session_id,
+                {
+                    "type": "text_received",
+                    "text": text,
+                    "timestamp": datetime.utcnow().isoformat(),
+                },
             )
 
             await self.ws_manager.send_message(
-                session.session_id, {"type": "response_complete", "text": f"I received: {text}"}
+                session.session_id,
+                {"type": "response_complete", "text": f"I received: {text}"},
             )
 
         except Exception as e:
@@ -318,7 +347,9 @@ class ModernAudioStreamer:
         completed = self.stats["transcriptions_completed"]
 
         if completed > 0:
-            self.stats["average_processing_time"] = (current_avg * (completed - 1) + processing_time) / completed
+            self.stats["average_processing_time"] = (
+                current_avg * (completed - 1) + processing_time
+            ) / completed
         else:
             self.stats["average_processing_time"] = processing_time
 
@@ -353,7 +384,10 @@ class ModernAudioStreamer:
         """Graceful shutdown of audio streamer"""
         logger.info("🛑 Shutting down audio streamer...")
 
-        cleanup_tasks = [self._cleanup_session(session_id) for session_id in list(self.sessions.keys())]
+        cleanup_tasks = [
+            self._cleanup_session(session_id)
+            for session_id in list(self.sessions.keys())
+        ]
 
         if cleanup_tasks:
             await asyncio.gather(*cleanup_tasks, return_exceptions=True)
@@ -362,10 +396,16 @@ class ModernAudioStreamer:
 
 
 def create_audio_streamer(
-    ws_manager: ModernWebSocketManager, voice_service: Optional[Any] = None, config: Optional[AudioStreamConfig] = None
+    ws_manager: ModernWebSocketManager,
+    voice_service: Optional[Any] = None,
+    config: Optional[AudioStreamConfig] = None,
 ) -> ModernAudioStreamer:
     """Factory function to create audio streamer"""
-    return ModernAudioStreamer(ws_manager=ws_manager, voice_service=voice_service, config=config or AudioStreamConfig())
+    return ModernAudioStreamer(
+        ws_manager=ws_manager,
+        voice_service=voice_service,
+        config=config or AudioStreamConfig(),
+    )
 
 
 # Re-export for compatibility

@@ -8,19 +8,14 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from ..config.secure_configuration import Environment, create_configuration_manager
+from ..config.secure_configuration import (Environment,
+                                           create_configuration_manager)
 from ..exception_handling.global_exception_handler import (
-    ChildSafetyException,
-    CircuitBreakerStrategy,
-    CorrelationContext,
-    ExternalServiceException,
-    FallbackStrategy,
-    RetryStrategy,
-    global_exception_handler,
-    handle_exceptions,
-    set_child_context,
-)
-from .safe_expression_parser import SecurityLevel, create_safe_parser, create_safe_template_engine, safe_eval
+    ChildSafetyException, CircuitBreakerStrategy, CorrelationContext,
+    ExternalServiceException, FallbackStrategy, RetryStrategy,
+    global_exception_handler, handle_exceptions, set_child_context)
+from .safe_expression_parser import (SecurityLevel, create_safe_parser,
+                                     create_safe_template_engine, safe_eval)
 from .secrets_manager import SecretProvider, SecretType, create_secrets_manager
 
 logger = logging.getLogger(__name__)
@@ -214,32 +209,26 @@ async def main():
                 "template": "Hello {{ child_name }}, you are {{ age }} years old!",
             },
         )
-        print(f"Request processed successfully: {result}")
+
     except Exception as e:
-        print(f"Error processing request: {e}")
 
     # Example 2: Rotate secrets
     await service.rotate_all_secrets()
 
     # Example 3: Get audit report
     audit_report = await service.get_audit_report()
-    print(f"Audit report: {audit_report}")
 
     # Example 4: Safe expression evaluation
     try:
         # Safe mathematical expression
         result = safe_eval("2 + 3 * 4")
-        print(f"Safe eval result: {result}")
 
         # Blocked dangerous expression
         result = safe_eval("__import__('os').system('ls')")
     except ValueError as e:
-        print(f"Expression blocked: {e}")
 
     # Example 5: Configuration access
     db_config = await service.config_manager.get("database")
-    print(f"Database config: {db_config}")
-
 
 # Security best practices implementation
 class SecurityBestPractices:
@@ -345,8 +334,7 @@ class SecurityMigrationGuide:
         try:
             risky_operation()
         except Exception as e:
-            print(f"Error: {e}")
-        
+
         # After (SECURE):
         @handle_exceptions(recovery_strategy=RetryStrategy())
         async def safe_operation():

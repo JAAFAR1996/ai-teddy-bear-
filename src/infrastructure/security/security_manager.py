@@ -19,7 +19,8 @@ import redis.asyncio as redis
 import structlog
 
 from .api_security_gateway import APISecurityGateway, get_security_gateway
-from .audio_security import AudioEncryptionManager, get_audio_encryption_manager
+from .audio_security import (AudioEncryptionManager,
+                             get_audio_encryption_manager)
 from .jwt_auth import JWTManager, TokenPair, UserClaims, get_jwt_manager
 from .rbac_system import Permission, RBACManager, UserRole, get_rbac_manager
 from .vault_secrets_manager import VaultSecretsManager, get_vault_manager
@@ -52,27 +53,54 @@ class SecurityManager:
         return await self.vault_manager.get_secret(path)
 
     # RBAC Operations
-    async def create_parent_user(self, user_id: str, username: str, family_id: str, parent_id: Optional[str] = None):
+    async def create_parent_user(
+        self,
+        user_id: str,
+        username: str,
+        family_id: str,
+        parent_id: Optional[str] = None,
+    ):
         """Create parent user with proper permissions"""
         return await self.rbac_manager.create_user(
-            user_id=user_id, username=username, role=UserRole.PARENT, family_id=family_id, parent_id=parent_id
+            user_id=user_id,
+            username=username,
+            role=UserRole.PARENT,
+            family_id=family_id,
+            parent_id=parent_id,
         )
 
-    async def create_child_user(self, user_id: str, username: str, family_id: str, parent_id: str):
+    async def create_child_user(
+        self, user_id: str, username: str, family_id: str, parent_id: str
+    ):
         """Create child user with restricted permissions"""
         return await self.rbac_manager.create_user(
-            user_id=user_id, username=username, role=UserRole.CHILD, family_id=family_id, parent_id=parent_id
+            user_id=user_id,
+            username=username,
+            role=UserRole.CHILD,
+            family_id=family_id,
+            parent_id=parent_id,
         )
 
-    async def check_permission(self, user_id: str, permission: Permission, resource_id: Optional[str] = None) -> bool:
+    async def check_permission(
+        self, user_id: str, permission: Permission, resource_id: Optional[str] = None
+    ) -> bool:
         """Check if user has permission for action"""
-        return await self.rbac_manager.check_permission(user_id, permission, resource_id)
+        return await self.rbac_manager.check_permission(
+            user_id, permission, resource_id
+        )
 
     # Authentication Operations
-    async def authenticate_parent(self, user_id: str, username: str, email: str, family_id: str) -> TokenPair:
+    async def authenticate_parent(
+        self, user_id: str, username: str, email: str, family_id: str
+    ) -> TokenPair:
         """Authenticate parent and create tokens"""
         claims = UserClaims(
-            user_id=user_id, username=username, email=email, role="parent", family_id=family_id, is_parent=True
+            user_id=user_id,
+            username=username,
+            email=email,
+            role="parent",
+            family_id=family_id,
+            is_parent=True,
         )
         return await self.jwt_manager.create_token_pair(claims)
 
@@ -122,7 +150,10 @@ class SecurityManager:
             "status": "healthy",
             "components": {
                 "vault": vault_health,
-                "rbac": {"status": "healthy", "users_count": len(self.rbac_manager.users)},
+                "rbac": {
+                    "status": "healthy",
+                    "users_count": len(self.rbac_manager.users),
+                },
                 "api_gateway": {"status": "healthy"},
                 "audio_encryption": {
                     "status": "healthy",
@@ -199,12 +230,16 @@ def get_security_manager(redis_client: Optional[redis.Redis] = None) -> Security
 # Convenience functions for common operations
 
 
-async def secure_child_audio_flow(device_id: str, user_id: str, audio_data: bytes) -> Dict[str, Any]:
+async def secure_child_audio_flow(
+    device_id: str, user_id: str, audio_data: bytes
+) -> Dict[str, Any]:
     """Complete secure audio flow for child interaction"""
     security_manager = get_security_manager()
 
     # 1. Check permissions
-    can_record = await security_manager.check_permission(user_id, Permission.AUDIO_RECORD)
+    can_record = await security_manager.check_permission(
+        user_id, Permission.AUDIO_RECORD
+    )
     if not can_record:
         raise PermissionError("Audio recording not permitted")
 
@@ -218,11 +253,19 @@ async def secure_child_audio_flow(device_id: str, user_id: str, audio_data: byte
     # 4. Encrypt audio
     encrypted_packet = await security_manager.encrypt_audio(session_id, audio_data)
 
-    return {"encrypted_packet": encrypted_packet, "session_id": session_id, "security_level": "high"}
+    return {
+        "encrypted_packet": encrypted_packet,
+        "session_id": session_id,
+        "security_level": "high",
+    }
 
 
 async def authenticate_family_member(
-    username: str, password: str, role: str, family_id: str, device_id: Optional[str] = None
+    username: str,
+    password: str,
+    role: str,
+    family_id: str,
+    device_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Authenticate family member with full security flow"""
     security_manager = get_security_manager()
@@ -238,7 +281,9 @@ async def authenticate_family_member(
         await security_manager.create_parent_user(user_id, username, family_id)
 
         # Authenticate and get tokens
-        tokens = await security_manager.authenticate_parent(user_id, username, email, family_id)
+        tokens = await security_manager.authenticate_parent(
+            user_id, username, email, family_id
+        )
     elif role == "child":
         if not device_id:
             raise ValueError("Device ID required for child authentication")
@@ -247,7 +292,9 @@ async def authenticate_family_member(
         await security_manager.create_child_user(user_id, username, family_id, user_id)
 
         # Authenticate and get tokens
-        tokens = await security_manager.authenticate_child(user_id, username, email, family_id, device_id)
+        tokens = await security_manager.authenticate_child(
+            user_id, username, email, family_id, device_id
+        )
     else:
         raise ValueError(f"Invalid role: {role}")
 

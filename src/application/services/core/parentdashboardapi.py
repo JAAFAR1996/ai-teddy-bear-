@@ -32,7 +32,8 @@ import redis.asyncio as aioredis
 import seaborn as sns
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from jinja2 import Template
-from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Time
+from sqlalchemy import (JSON, Boolean, Column, DateTime, Float, ForeignKey,
+                        Integer, String, Time)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -40,7 +41,8 @@ from src.core.domain.entities.child import Child
 from src.core.domain.entities.conversation import Conversation, Message
 from src.infrastructure.config import get_config
 from src.infrastructure.persistence.child_repository import ChildRepository
-from src.infrastructure.persistence.conversation_repository import ConversationRepository
+from src.infrastructure.persistence.conversation_repository import \
+    ConversationRepository
 
 
 class ParentDashboardAPI:

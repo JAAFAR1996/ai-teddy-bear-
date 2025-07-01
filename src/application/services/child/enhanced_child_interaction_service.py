@@ -17,18 +17,12 @@ import numpy as np
 import structlog
 
 from src.infrastructure.external_services.advanced_ai_orchestrator import (
-    AdvancedAIOrchestrator,
-    ChildRequest,
-    ModelComplexity,
-)
-
+    AdvancedAIOrchestrator, ChildRequest, ModelComplexity)
 # Import enhanced components
 from src.infrastructure.external_services.enhanced_audio_processor import (
-    AudioConfig,
-    AudioProcessingResult,
-    EnhancedAudioProcessor,
-)
-from src.infrastructure.security.advanced_content_filter import AdvancedContentFilter, ContentAnalysisResult
+    AudioConfig, AudioProcessingResult, EnhancedAudioProcessor)
+from src.infrastructure.security.advanced_content_filter import (
+    AdvancedContentFilter, ContentAnalysisResult)
 
 logger = structlog.get_logger(__name__)
 
@@ -186,7 +180,9 @@ class EnhancedChildInteractionService:
                     session_context=session_context or {},
                 )
 
-                ai_response = await self.ai_orchestrator.generate_intelligent_response(child_request)
+                ai_response = await self.ai_orchestrator.generate_intelligent_response(
+                    child_request
+                )
 
                 self.logger.info(
                     "🧠 AI response generated",
@@ -206,18 +202,27 @@ class EnhancedChildInteractionService:
 
             # 7. فحص أمان الاستجابة أيضاً
             response_safety = await self.content_filter.comprehensive_safety_check(
-                content=ai_response.get("content", ""), child_age=child_profile.get("age", 7)
+                content=ai_response.get("content", ""),
+                child_age=child_profile.get("age", 7),
             )
 
             if not response_safety.is_safe:
-                ai_response["content"] = response_safety.safe_alternative or "دعنا نتحدث عن شيء آخر جميل!"
-                self.logger.warning("⚠️ AI response was filtered for safety", child_id=child_id)
+                ai_response["content"] = (
+                    response_safety.safe_alternative or "دعنا نتحدث عن شيء آخر جميل!"
+                )
+                self.logger.warning(
+                    "⚠️ AI response was filtered for safety", child_id=child_id
+                )
 
             # 8. تحديث الجلسة
-            session_updated = await self._update_session(session, audio_result, content_analysis, ai_response)
+            session_updated = await self._update_session(
+                session, audio_result, content_analysis, ai_response
+            )
 
             # 9. تحديد ما إذا كان يتطلب إشعار الوالدين
-            parent_notification_sent = await self._handle_parent_notification(child_id, content_analysis, session)
+            parent_notification_sent = await self._handle_parent_notification(
+                child_id, content_analysis, session
+            )
 
             # 10. توليد التوصيات
             recommendations = await self._generate_interaction_recommendations(
@@ -226,7 +231,9 @@ class EnhancedChildInteractionService:
 
             # 11. تحديث الإحصائيات
             processing_time = (time.time() - start_time) * 1000
-            await self._update_service_stats(processing_time, content_analysis, ai_response)
+            await self._update_service_stats(
+                processing_time, content_analysis, ai_response
+            )
 
             # 12. إنشاء الاستجابة النهائية
             interaction_response = InteractionResponse(
@@ -261,7 +268,9 @@ class EnhancedChildInteractionService:
             # إرجاع استجابة احتياطية آمنة
             return await self._generate_emergency_response(child_id, child_profile)
 
-    async def _get_or_create_session(self, child_id: str, child_profile: Dict[str, Any]) -> ChildSession:
+    async def _get_or_create_session(
+        self, child_id: str, child_profile: Dict[str, Any]
+    ) -> ChildSession:
         """إنشاء أو استرجاع جلسة الطفل"""
 
         if child_id not in self.active_sessions:
@@ -321,7 +330,9 @@ class EnhancedChildInteractionService:
         else:
             return "calm"
 
-    def _determine_complexity_level(self, child_profile: Dict[str, Any]) -> ModelComplexity:
+    def _determine_complexity_level(
+        self, child_profile: Dict[str, Any]
+    ) -> ModelComplexity:
         """تحديد مستوى تعقيد المودل المناسب"""
 
         age = child_profile.get("age", 7)
@@ -373,7 +384,9 @@ class EnhancedChildInteractionService:
 
             # تحديث التقدم التعليمي
             if content_analysis.content_category.value == "educational":
-                request_type = ai_response.get("response_metadata", {}).get("request_type")
+                request_type = ai_response.get("response_metadata", {}).get(
+                    "request_type"
+                )
                 if request_type:
                     if request_type.value not in session.educational_progress:
                         session.educational_progress[request_type.value] = 0
@@ -386,7 +399,10 @@ class EnhancedChildInteractionService:
             return False
 
     async def _handle_parent_notification(
-        self, child_id: str, content_analysis: ContentAnalysisResult, session: ChildSession
+        self,
+        child_id: str,
+        content_analysis: ContentAnalysisResult,
+        session: ChildSession,
     ) -> bool:
         """التعامل مع إشعارات الوالدين"""
 
@@ -403,7 +419,9 @@ class EnhancedChildInteractionService:
                 }
 
                 self.logger.warning(
-                    "📧 Parent notification required", child_id=child_id, notification_data=notification_data
+                    "📧 Parent notification required",
+                    child_id=child_id,
+                    notification_data=notification_data,
                 )
 
                 # محاكاة إرسال الإشعار
@@ -461,7 +479,10 @@ class EnhancedChildInteractionService:
         return recommendations
 
     async def _update_service_stats(
-        self, processing_time: float, content_analysis: ContentAnalysisResult, ai_response: Dict[str, Any]
+        self,
+        processing_time: float,
+        content_analysis: ContentAnalysisResult,
+        ai_response: Dict[str, Any],
     ):
         """تحديث إحصائيات الخدمة"""
 
@@ -479,10 +500,14 @@ class EnhancedChildInteractionService:
         # تحديث متوسط زمن الاستجابة
         total_interactions = self.service_stats["total_interactions"]
         current_avg = self.service_stats["average_response_time"]
-        new_avg = ((current_avg * (total_interactions - 1)) + processing_time) / total_interactions
+        new_avg = (
+            (current_avg * (total_interactions - 1)) + processing_time
+        ) / total_interactions
         self.service_stats["average_response_time"] = new_avg
 
-    async def _generate_emergency_response(self, child_id: str, child_profile: Dict[str, Any]) -> InteractionResponse:
+    async def _generate_emergency_response(
+        self, child_id: str, child_profile: Dict[str, Any]
+    ) -> InteractionResponse:
         """توليد استجابة طوارئ آمنة"""
 
         # استجابة طوارئ آمنة
@@ -498,11 +523,7 @@ class EnhancedChildInteractionService:
         )
 
         from src.infrastructure.security.advanced_content_filter import (
-            ContentAnalysisResult,
-            ContentCategory,
-            RiskLevel,
-            SafetyViolation,
-        )
+            ContentAnalysisResult, ContentCategory, RiskLevel, SafetyViolation)
 
         emergency_content_analysis = ContentAnalysisResult(
             is_safe=False,
@@ -551,23 +572,35 @@ class EnhancedChildInteractionService:
         session = self.active_sessions[child_id]
 
         return {
-            "child_info": {"id": session.child_id, "name": session.child_name, "age": session.child_age},
+            "child_info": {
+                "id": session.child_id,
+                "name": session.child_name,
+                "age": session.child_age,
+            },
             "session_stats": {
                 "duration_minutes": (time.time() - session.session_start) / 60,
                 "interaction_count": session.interaction_count,
-                "average_processing_time": (session.total_processing_time / max(1, session.interaction_count)),
+                "average_processing_time": (
+                    session.total_processing_time / max(1, session.interaction_count)
+                ),
                 "topics_discussed": session.topics_discussed,
                 "educational_progress": session.educational_progress,
             },
             "mood_analysis": {
                 "mood_history": session.mood_history,
-                "current_mood": session.mood_history[-1] if session.mood_history else "unknown",
+                "current_mood": (
+                    session.mood_history[-1] if session.mood_history else "unknown"
+                ),
                 "mood_stability": self._calculate_mood_stability(session.mood_history),
             },
             "safety_summary": {
                 "total_violations": len(session.safety_violations),
-                "violation_types": list(set(v["type"] for v in session.safety_violations)),
-                "last_violation": session.safety_violations[-1] if session.safety_violations else None,
+                "violation_types": list(
+                    set(v["type"] for v in session.safety_violations)
+                ),
+                "last_violation": (
+                    session.safety_violations[-1] if session.safety_violations else None
+                ),
             },
         }
 
@@ -602,16 +635,21 @@ class EnhancedChildInteractionService:
             },
             "performance_metrics": {
                 "success_rate": (
-                    self.service_stats["successful_interactions"] / max(1, self.service_stats["total_interactions"])
+                    self.service_stats["successful_interactions"]
+                    / max(1, self.service_stats["total_interactions"])
                 )
                 * 100,
                 "safety_rate": (
-                    (self.service_stats["total_interactions"] - self.service_stats["safety_violations"])
+                    (
+                        self.service_stats["total_interactions"]
+                        - self.service_stats["safety_violations"]
+                    )
                     / max(1, self.service_stats["total_interactions"])
                 )
                 * 100,
                 "educational_rate": (
-                    self.service_stats["educational_interactions"] / max(1, self.service_stats["total_interactions"])
+                    self.service_stats["educational_interactions"]
+                    / max(1, self.service_stats["total_interactions"])
                 )
                 * 100,
             },
@@ -645,5 +683,7 @@ def create_enhanced_child_interaction_service(
 ) -> EnhancedChildInteractionService:
     """إنشاء خدمة تفاعل طفل محسنة"""
     return EnhancedChildInteractionService(
-        audio_processor=audio_processor, ai_orchestrator=ai_orchestrator, content_filter=content_filter
+        audio_processor=audio_processor,
+        ai_orchestrator=ai_orchestrator,
+        content_filter=content_filter,
     )

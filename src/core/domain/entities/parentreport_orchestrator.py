@@ -37,7 +37,8 @@ class ParentreportOrchestrator:
     async def execute_operation(self, operation_type: str, parameters: Dict[str, Any]):
         """تنفيذ عملية معقدة"""
         context = ParentreportContext(
-            operation_id=f"{operation_type}_{datetime.utcnow().timestamp()}", parameters=parameters
+            operation_id=f"{operation_type}_{datetime.utcnow().timestamp()}",
+            parameters=parameters,
         )
 
         logger.info(f"🚀 Starting {operation_type} operation")
@@ -117,7 +118,9 @@ class ParentreportOrchestrator:
 async def main():
     orchestrator = ParentreportOrchestrator()
 
-    result = await orchestrator.execute_operation("test_operation", {"param1": "value1", "param2": "value2"})
+    result = await orchestrator.execute_operation(
+        "test_operation", {"param1": "value1", "param2": "value2"}
+    )
 
     logger.info(f"Operation result: {result}")
 

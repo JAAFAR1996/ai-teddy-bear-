@@ -86,7 +86,9 @@ class ChildInteractionDomainService:
         # Minimum session of 5 minutes
         return max(300, optimal_duration)
 
-    def should_send_time_warning(self, child: Child, warning_threshold: float = 0.8) -> bool:
+    def should_send_time_warning(
+        self, child: Child, warning_threshold: float = 0.8
+    ) -> bool:
         """
         Check if time warning should be sent
 
@@ -97,7 +99,9 @@ class ChildInteractionDomainService:
         Returns:
             True if warning should be sent
         """
-        usage_percentage = child.total_interaction_time / child.max_daily_interaction_time
+        usage_percentage = (
+            child.total_interaction_time / child.max_daily_interaction_time
+        )
         return usage_percentage >= warning_threshold
 
     def get_interaction_patterns(self, child: Child) -> dict:
@@ -119,7 +123,9 @@ class ChildInteractionDomainService:
 
         # Calculate usage efficiency
         if child.max_daily_interaction_time > 0:
-            patterns["usage_efficiency"] = child.total_interaction_time / child.max_daily_interaction_time
+            patterns["usage_efficiency"] = (
+                child.total_interaction_time / child.max_daily_interaction_time
+            )
 
         # Determine consistency based on last interaction
         if child.last_interaction:

@@ -41,7 +41,11 @@ class ModernModerationService:
     - No disabled logic or awkward category removal
     """
 
-    def __init__(self, openai_client: Optional[AsyncOpenAI] = None, config: Optional[ModerationConfig] = None):
+    def __init__(
+        self,
+        openai_client: Optional[AsyncOpenAI] = None,
+        config: Optional[ModerationConfig] = None,
+    ):
         self.openai_client = openai_client
         self.config = config or ModerationConfig()
 
@@ -50,9 +54,15 @@ class ModernModerationService:
             "phone": re.compile(r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b"),
             "email": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
             "profanity": re.compile(r"\b(bad|damn|stupid|idiot|hate)\b", re.IGNORECASE),
-            "violence": re.compile(r"\b(kill|murder|hurt|harm|attack|fight|weapon)\b", re.IGNORECASE),
-            "scary": re.compile(r"\b(monster|ghost|scary|nightmare|demon|terror)\b", re.IGNORECASE),
-            "inappropriate": re.compile(r"\b(sex|drug|alcohol|cigarette)\b", re.IGNORECASE),
+            "violence": re.compile(
+                r"\b(kill|murder|hurt|harm|attack|fight|weapon)\b", re.IGNORECASE
+            ),
+            "scary": re.compile(
+                r"\b(monster|ghost|scary|nightmare|demon|terror)\b", re.IGNORECASE
+            ),
+            "inappropriate": re.compile(
+                r"\b(sex|drug|alcohol|cigarette)\b", re.IGNORECASE
+            ),
         }
 
         # Age-specific keyword sets
@@ -64,7 +74,11 @@ class ModernModerationService:
         logger.info("✅ Modern Moderation Service initialized")
 
     async def moderate_content(
-        self, text: str, user_age: int = 10, use_ai: bool = None, session_id: Optional[str] = None
+        self,
+        text: str,
+        user_age: int = 10,
+        use_ai: bool = None,
+        session_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         🎯 Main moderation function - clean and efficient
@@ -129,9 +143,17 @@ class ModernModerationService:
         flags = []
 
         # Check universal patterns (apply to all ages)
-        universal_patterns = ["phone", "email", "profanity", "violence", "inappropriate"]
+        universal_patterns = [
+            "phone",
+            "email",
+            "profanity",
+            "violence",
+            "inappropriate",
+        ]
         for pattern_name in universal_patterns:
-            if pattern_name in self.patterns and self.patterns[pattern_name].search(text):
+            if pattern_name in self.patterns and self.patterns[pattern_name].search(
+                text
+            ):
                 flags.append(pattern_name)
 
         # Age-specific checks for young children
@@ -149,7 +171,12 @@ class ModernModerationService:
         # Determine safety
         is_safe = len(flags) == 0
 
-        return {"safe": is_safe, "flags": flags, "confidence": 0.85 if flags else 0.95, "method": "local_regex"}
+        return {
+            "safe": is_safe,
+            "flags": flags,
+            "confidence": 0.85 if flags else 0.95,
+            "method": "local_regex",
+        }
 
     async def _ai_moderation(self, text: str) -> Dict[str, Any]:
         """
@@ -158,10 +185,16 @@ class ModernModerationService:
         Only called for edge cases that pass local moderation
         """
         try:
-            response = await self.openai_client.moderations.create(model="text-moderation-stable", input=text)
+            response = await self.openai_client.moderations.create(
+                model="text-moderation-stable", input=text
+            )
 
             result = response.results[0]
-            flagged_categories = [category for category, flagged in result.categories.__dict__.items() if flagged]
+            flagged_categories = [
+                category
+                for category, flagged in result.categories.__dict__.items()
+                if flagged
+            ]
 
             return {
                 "safe": not result.flagged,
@@ -173,7 +206,13 @@ class ModernModerationService:
         except Exception as e:
             logger.error(f"❌ AI moderation failed: {e}")
             # Fail safely - don't block content on API errors
-            return {"safe": True, "flags": [], "confidence": 0.5, "method": "ai_fallback_failed", "error": str(e)}
+            return {
+                "safe": True,
+                "flags": [],
+                "confidence": 0.5,
+                "method": "ai_fallback_failed",
+                "error": str(e),
+            }
 
     def _generate_cache_key(self, text: str, age: int) -> str:
         """Generate simple cache key"""
@@ -217,7 +256,9 @@ class ModernModerationService:
             },
         }
 
-    def add_custom_pattern(self, name: str, pattern: str, flags: int = re.IGNORECASE) -> bool:
+    def add_custom_pattern(
+        self, name: str, pattern: str, flags: int = re.IGNORECASE
+    ) -> bool:
         """Add custom regex pattern for specific use cases"""
         try:
             compiled_pattern = re.compile(pattern, flags)
@@ -263,7 +304,9 @@ async def create_moderation_service(
     if openai_api_key:
         openai_client = AsyncOpenAI(api_key=openai_api_key)
 
-    service = ModernModerationService(openai_client=openai_client, config=config or ModerationConfig())
+    service = ModernModerationService(
+        openai_client=openai_client, config=config or ModerationConfig()
+    )
 
     return service
 

@@ -34,7 +34,8 @@ try:
 except ImportError:
     import torch
 
-    from src.infrastructure.external_services.mock.transformers import AutoModel, AutoTokenizer, pipeline
+    from src.infrastructure.external_services.mock.transformers import (
+        AutoModel, AutoTokenizer, pipeline)
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False

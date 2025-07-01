@@ -8,7 +8,8 @@ import structlog
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from ....domain.emotion.models import EmotionAnalytics, EmotionResult, ParentalReport
+from ....domain.emotion.models import (EmotionAnalytics, EmotionResult,
+                                       ParentalReport)
 
 logger = structlog.get_logger(__name__)
 
@@ -16,7 +17,11 @@ logger = structlog.get_logger(__name__)
 class EmotionDatabaseService:
     """Service for managing emotion data in database."""
 
-    def __init__(self, database_url: str = "sqlite:///teddy_emotions.db", retention_days: int = 365):
+    def __init__(
+        self,
+        database_url: str = "sqlite:///teddy_emotions.db",
+        retention_days: int = 365,
+    ):
         self.database_url = database_url
         self.retention_days = retention_days
         self.engine = create_engine(database_url)
@@ -90,7 +95,9 @@ class EmotionDatabaseService:
             logger.error(f" Failed to save emotion: {e}")
             raise
 
-    async def get_child_emotions(self, child_id: str, hours: int = 24, limit: int = 100) -> List[EmotionResult]:
+    async def get_child_emotions(
+        self, child_id: str, hours: int = 24, limit: int = 100
+    ) -> List[EmotionResult]:
         """Get emotion history for a child."""
         try:
             with self.get_db_session() as session:
@@ -116,7 +123,9 @@ class EmotionDatabaseService:
             logger.error(f" Failed to get emotions: {e}")
             return []
 
-    async def get_emotion_analytics(self, child_id: str, days: int = 7) -> Optional[EmotionAnalytics]:
+    async def get_emotion_analytics(
+        self, child_id: str, days: int = 7
+    ) -> Optional[EmotionAnalytics]:
         """Generate emotion analytics for a child."""
         try:
             with self.get_db_session() as session:
@@ -125,7 +134,12 @@ class EmotionDatabaseService:
                     child_id=child_id,
                     analysis_period=f"{days} days",
                     total_interactions=45,
-                    emotion_distribution={"happy": 20, "curious": 15, "calm": 8, "sad": 2},
+                    emotion_distribution={
+                        "happy": 20,
+                        "curious": 15,
+                        "calm": 8,
+                        "sad": 2,
+                    },
                     dominant_emotion="happy",
                     emotional_stability_score=0.82,
                     behavioral_patterns=[
@@ -135,7 +149,10 @@ class EmotionDatabaseService:
                     ],
                     risk_assessment="low",
                     trends={"happiness": 0.15, "stability": 0.08},
-                    recommendations=["Continue current supportive approach", "Encourage creative activities"],
+                    recommendations=[
+                        "Continue current supportive approach",
+                        "Encourage creative activities",
+                    ],
                     analysis_date=datetime.now(),
                 )
 
@@ -170,7 +187,12 @@ class EmotionDatabaseService:
                 profile = {
                     "child_id": child_id,
                     "total_interactions": 150,
-                    "dominant_emotions": {"happy": 0.45, "curious": 0.30, "calm": 0.20, "sad": 0.05},
+                    "dominant_emotions": {
+                        "happy": 0.45,
+                        "curious": 0.30,
+                        "calm": 0.20,
+                        "sad": 0.05,
+                    },
                     "behavioral_patterns": [
                         "High engagement with stories",
                         "Positive response to encouragement",

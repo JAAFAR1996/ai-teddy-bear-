@@ -26,7 +26,11 @@ class InappropriateContentException(ChildSafetyException):
     """محتوى غير مناسب للأطفال"""
 
     def __init__(
-        self, content_type: str, content_snippet: Optional[str] = None, violation_reason: Optional[str] = None, **kwargs
+        self,
+        content_type: str,
+        content_snippet: Optional[str] = None,
+        violation_reason: Optional[str] = None,
+        **kwargs,
     ):
         message = f"Inappropriate {content_type} content detected"
         if violation_reason:
@@ -51,7 +55,11 @@ class ParentalConsentRequiredException(ChildSafetyException):
     """مطلوب موافقة الوالدين"""
 
     def __init__(
-        self, action: str, reason: Optional[str] = None, required_permission_level: Optional[str] = None, **kwargs
+        self,
+        action: str,
+        reason: Optional[str] = None,
+        required_permission_level: Optional[str] = None,
+        **kwargs,
     ):
         message = f"Parental consent required for action: {action}"
         if reason:
@@ -75,11 +83,20 @@ class ParentalConsentRequiredException(ChildSafetyException):
 class AgeInappropriateException(ChildSafetyException):
     """محتوى غير مناسب لعمر الطفل"""
 
-    def __init__(self, child_age: int, content_age_rating: int, content_description: Optional[str] = None, **kwargs):
+    def __init__(
+        self,
+        child_age: int,
+        content_age_rating: int,
+        content_description: Optional[str] = None,
+        **kwargs,
+    ):
         super().__init__(
             message=f"Content requires age {content_age_rating}+, child is {child_age}",
             error_code="AGE_INAPPROPRIATE_CONTENT",
-            suggested_actions=["Suggest age-appropriate alternative", "Notify parent of attempt"],
+            suggested_actions=[
+                "Suggest age-appropriate alternative",
+                "Notify parent of attempt",
+            ],
             **kwargs,
         )
         self.child_age = child_age

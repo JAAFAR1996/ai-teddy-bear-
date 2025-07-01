@@ -14,19 +14,15 @@ import pytest
 
 # Import the modules to test
 try:
-    from src.adapters.edge.edge_ai_manager import (
-        AUDIO_PROCESSING_AVAILABLE,
-        TF_AVAILABLE,
-        EdgeAIManager,
-        EdgeAudioFeatures,
-        EdgeEmotionResult,
-        EdgeModelConfig,
-        EdgeProcessingMode,
-        EdgeProcessingResult,
-        EdgeSafetyResult,
-        SafetyLevel,
-        WakeWordModel,
-    )
+    from src.adapters.edge.edge_ai_manager import (AUDIO_PROCESSING_AVAILABLE,
+                                                   TF_AVAILABLE, EdgeAIManager,
+                                                   EdgeAudioFeatures,
+                                                   EdgeEmotionResult,
+                                                   EdgeModelConfig,
+                                                   EdgeProcessingMode,
+                                                   EdgeProcessingResult,
+                                                   EdgeSafetyResult,
+                                                   SafetyLevel, WakeWordModel)
 
     EDGE_AI_IMPORTS_AVAILABLE = True
 except ImportError as e:
@@ -121,7 +117,9 @@ class TestEdgeAIManager:
 
         # Test with high energy audio (should trigger wake word)
         high_energy_audio = np.random.uniform(-0.5, 0.5, 16000).astype(np.float32)
-        detected, confidence = await edge_ai_manager.wake_word_detector.detect_wake_word(high_energy_audio)
+        detected, confidence = (
+            await edge_ai_manager.wake_word_detector.detect_wake_word(high_energy_audio)
+        )
 
         assert isinstance(detected, bool)
         assert 0.0 <= confidence <= 1.0
@@ -148,7 +146,9 @@ class TestEdgeAIManager:
         )
 
         # Analyze emotion
-        emotion_result = await edge_ai_manager.emotion_analyzer.analyze_emotion(mock_features)
+        emotion_result = await edge_ai_manager.emotion_analyzer.analyze_emotion(
+            mock_features
+        )
 
         assert isinstance(emotion_result, EdgeEmotionResult)
         assert emotion_result.primary_emotion in [
@@ -187,11 +187,19 @@ class TestEdgeAIManager:
         )
 
         # Test with safe text
-        safety_result = await edge_ai_manager.safety_checker.check_safety(mock_features, "Hello, how are you today?")
+        safety_result = await edge_ai_manager.safety_checker.check_safety(
+            mock_features, "Hello, how are you today?"
+        )
 
         assert isinstance(safety_result, EdgeSafetyResult)
         assert isinstance(safety_result.passed, bool)
-        assert safety_result.risk_level in ["low", "medium", "high", "critical", "unknown"]
+        assert safety_result.risk_level in [
+            "low",
+            "medium",
+            "high",
+            "critical",
+            "unknown",
+        ]
         assert 0.0 <= safety_result.safety_score <= 1.0
 
         # Test with potentially unsafe text
@@ -201,7 +209,10 @@ class TestEdgeAIManager:
 
         assert isinstance(unsafe_safety_result, EdgeSafetyResult)
         # Should detect some issues
-        assert len(unsafe_safety_result.detected_issues) > 0 or unsafe_safety_result.safety_score < 1.0
+        assert (
+            len(unsafe_safety_result.detected_issues) > 0
+            or unsafe_safety_result.safety_score < 1.0
+        )
 
     def test_performance_stats(self, edge_ai_manager):
         """Test performance statistics generation."""

@@ -15,10 +15,21 @@ def parse_args(args: Optional[list] = None) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Process audio files")
     parser.add_argument("input", type=str, help="Input audio file path")
-    parser.add_argument("-o", "--output", type=str, help="Output file path (default: input_processed.wav)")
-    parser.add_argument("--normalize", action="store_true", help="Normalize audio volume")
-    parser.add_argument("--trim", action="store_true", help="Trim silence from start and end")
-    parser.add_argument("--noise-reduction", action="store_true", help="Apply noise reduction")
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        help="Output file path (default: input_processed.wav)",
+    )
+    parser.add_argument(
+        "--normalize", action="store_true", help="Normalize audio volume"
+    )
+    parser.add_argument(
+        "--trim", action="store_true", help="Trim silence from start and end"
+    )
+    parser.add_argument(
+        "--noise-reduction", action="store_true", help="Apply noise reduction"
+    )
     parser.add_argument("--stats", action="store_true", help="Show audio statistics")
     return parser.parse_args(args)
 
@@ -69,7 +80,9 @@ def main(args: Optional[list] = None) -> int:
             show_audio_stats(audio_data)
 
         # Save processed audio
-        output_file = parsed_args.output or parsed_args.input.rsplit(".", 1)[0] + "_processed.wav"
+        output_file = (
+            parsed_args.output or parsed_args.input.rsplit(".", 1)[0] + "_processed.wav"
+        )
         logger.info(f"Saving processed audio to: {output_file}")
         audio_manager.audio_io.save_audio(audio_data, output_file, sample_rate)
 

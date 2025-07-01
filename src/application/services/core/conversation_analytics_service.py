@@ -57,11 +57,16 @@ class ConversationAnalyticsService:
             result = cursor.fetchone()
 
             return {
-                "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+                "period": {
+                    "start": start_date.isoformat(),
+                    "end": end_date.isoformat(),
+                },
                 "summary": {
                     "total_conversations": result[0] or 0,
                     "total_duration_hours": (result[1] or 0) / 3600,
-                    "average_duration_minutes": ((result[2] or 0) / 60) if result[2] else 0,
+                    "average_duration_minutes": (
+                        ((result[2] or 0) / 60) if result[2] else 0
+                    ),
                     "total_messages": result[3] or 0,
                     "average_messages_per_conversation": result[4] or 0,
                 },
@@ -72,7 +77,11 @@ class ConversationAnalyticsService:
                 },
                 "safety": {
                     "flagged_conversations": result[8] or 0,
-                    "safety_percentage": ((result[0] - (result[8] or 0)) / result[0] * 100) if result[0] else 100,
+                    "safety_percentage": (
+                        ((result[0] - (result[8] or 0)) / result[0] * 100)
+                        if result[0]
+                        else 100
+                    ),
                 },
             }
 
@@ -89,16 +98,23 @@ class ConversationAnalyticsService:
             cursor.execute("SELECT COUNT(*) FROM conversations WHERE archived = 0")
             total_conversations = cursor.fetchone()[0]
 
-            cursor.execute("SELECT COUNT(DISTINCT child_id) FROM conversations WHERE archived = 0")
+            cursor.execute(
+                "SELECT COUNT(DISTINCT child_id) FROM conversations WHERE archived = 0"
+            )
             unique_children = cursor.fetchone()[0]
 
-            return {"total_conversations": total_conversations, "unique_children": unique_children}
+            return {
+                "total_conversations": total_conversations,
+                "unique_children": unique_children,
+            }
 
         except sqlite3.Error as e:
             self.logger.error(f"Error getting conversation statistics: {e}")
             raise
 
-    async def generate_daily_summary(self, date: date, child_id: Optional[str] = None) -> Dict[str, Any]:
+    async def generate_daily_summary(
+        self, date: date, child_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Generate daily conversation summary."""
         start = datetime.combine(date, datetime.min.time())
         end = datetime.combine(date, datetime.max.time())

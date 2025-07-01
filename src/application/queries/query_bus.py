@@ -70,7 +70,9 @@ class ReadModelDatabase(Protocol):
     """Protocol for read model database"""
 
     @abstractmethod
-    async def execute_query(self, sql: str, params: Optional[Dict] = None) -> List[Dict]:
+    async def execute_query(
+        self, sql: str, params: Optional[Dict] = None
+    ) -> List[Dict]:
         """Execute raw SQL query"""
         pass
 
@@ -81,7 +83,11 @@ class ReadModelDatabase(Protocol):
 
     @abstractmethod
     async def find_many(
-        self, table: str, filters: Optional[Dict] = None, limit: Optional[int] = None, offset: Optional[int] = None
+        self,
+        table: str,
+        filters: Optional[Dict] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> List[Dict]:
         """Find multiple records with filters"""
         pass
@@ -108,15 +114,24 @@ class QueryCache:
 
         return entry.data
 
-    async def set(self, key: str, data: Any, duration: timedelta = timedelta(minutes=15)) -> None:
+    async def set(
+        self, key: str, data: Any, duration: timedelta = timedelta(minutes=15)
+    ) -> None:
         """Set cached result"""
 
         # Remove oldest entries if cache is full
         if len(self._cache) >= self.max_size:
-            oldest_key = min(self._cache.keys(), key=lambda k: self._cache[k].created_at)
+            oldest_key = min(
+                self._cache.keys(), key=lambda k: self._cache[k].created_at
+            )
             del self._cache[oldest_key]
 
-        entry = CacheEntry(key=key, data=data, created_at=datetime.utcnow(), expires_at=datetime.utcnow() + duration)
+        entry = CacheEntry(
+            key=key,
+            data=data,
+            created_at=datetime.utcnow(),
+            expires_at=datetime.utcnow() + duration,
+        )
 
         self._cache[key] = entry
 
@@ -136,13 +151,16 @@ class QueryCache:
         """Get cache statistics"""
 
         now = datetime.utcnow()
-        expired_count = sum(1 for entry in self._cache.values() if entry.expires_at < now)
+        expired_count = sum(
+            1 for entry in self._cache.values() if entry.expires_at < now
+        )
 
         return {
             "total_entries": len(self._cache),
             "expired_entries": expired_count,
             "max_size": self.max_size,
-            "hit_rate": getattr(self, "_hit_count", 0) / max(getattr(self, "_total_requests", 1), 1),
+            "hit_rate": getattr(self, "_hit_count", 0)
+            / max(getattr(self, "_total_requests", 1), 1),
         }
 
 
@@ -154,7 +172,9 @@ class QueryBus:
         self._db = read_model_db
         self._cache = QueryCache()
 
-    def register_handler(self, query_type: Type[TQuery], handler: QueryHandler[TQuery, TResult]) -> None:
+    def register_handler(
+        self, query_type: Type[TQuery], handler: QueryHandler[TQuery, TResult]
+    ) -> None:
         """Register query handler"""
 
         if query_type in self._handlers:
@@ -196,7 +216,9 @@ class QueryBus:
 
         return result
 
-    async def execute_raw_sql(self, sql: str, params: Optional[Dict] = None) -> List[Dict]:
+    async def execute_raw_sql(
+        self, sql: str, params: Optional[Dict] = None
+    ) -> List[Dict]:
         """Execute raw SQL query on read model"""
 
         return await self._db.execute_query(sql, params)
@@ -231,7 +253,9 @@ class InMemoryReadModelDB(ReadModelDatabase):
     def __init__(self):
         self._tables: Dict[str, List[Dict]] = {}
 
-    async def execute_query(self, sql: str, params: Optional[Dict] = None) -> List[Dict]:
+    async def execute_query(
+        self, sql: str, params: Optional[Dict] = None
+    ) -> List[Dict]:
         """Execute simple query (limited implementation)"""
         # This is a simple implementation - in production use proper SQL engine
         return []
@@ -246,7 +270,11 @@ class InMemoryReadModelDB(ReadModelDatabase):
         return None
 
     async def find_many(
-        self, table: str, filters: Optional[Dict] = None, limit: Optional[int] = None, offset: Optional[int] = None
+        self,
+        table: str,
+        filters: Optional[Dict] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> List[Dict]:
         """Find records with filters"""
 

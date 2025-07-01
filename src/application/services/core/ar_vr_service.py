@@ -68,7 +68,10 @@ class VREnvironment:
         if self.safety_boundaries is None:
             self.safety_boundaries = {"max_session_time": 15, "break_intervals": 5}
         if self.comfort_settings is None:
-            self.comfort_settings = {"motion_sickness_prevention": True, "eye_strain_protection": True}
+            self.comfort_settings = {
+                "motion_sickness_prevention": True,
+                "eye_strain_protection": True,
+            }
 
 
 class ARVRService:
@@ -99,12 +102,23 @@ class ARVRService:
                 duration_minutes=10,
                 difficulty_level="easy",
                 required_objects=["book", "table"],
-                learning_objectives=["تعلم الحروف", "تحسين النطق", "تطوير الذاكرة البصرية"],
+                learning_objectives=[
+                    "تعلم الحروف",
+                    "تحسين النطق",
+                    "تطوير الذاكرة البصرية",
+                ],
                 safety_requirements=["مساحة آمنة 2x2 متر", "إشراف بالغ"],
-                ar_models={"letters": "3d_arabic_letters.obj", "animations": "letter_animations.fbx"},
+                ar_models={
+                    "letters": "3d_arabic_letters.obj",
+                    "animations": "letter_animations.fbx",
+                },
                 interaction_points=[
                     {"type": "touch", "object": "letter", "action": "play_sound"},
-                    {"type": "voice", "trigger": "say_letter", "response": "show_animation"},
+                    {
+                        "type": "voice",
+                        "trigger": "say_letter",
+                        "response": "show_animation",
+                    },
                 ],
             ),
             ARExperience(
@@ -116,12 +130,23 @@ class ARVRService:
                 duration_minutes=15,
                 difficulty_level="medium",
                 required_objects=["floor_space"],
-                learning_objectives=["تعلم أسماء الحيوانات", "فهم بيئات الحيوانات", "تطوير التفكير العلمي"],
+                learning_objectives=[
+                    "تعلم أسماء الحيوانات",
+                    "فهم بيئات الحيوانات",
+                    "تطوير التفكير العلمي",
+                ],
                 safety_requirements=["مساحة آمنة 3x3 متر", "تجنب الحركة السريعة"],
-                ar_models={"animals": "3d_animals_pack.obj", "environments": "habitats.fbx"},
+                ar_models={
+                    "animals": "3d_animals_pack.obj",
+                    "environments": "habitats.fbx",
+                },
                 interaction_points=[
                     {"type": "gesture", "object": "animal", "action": "show_info"},
-                    {"type": "voice", "trigger": "animal_sound", "response": "play_animal_sound"},
+                    {
+                        "type": "voice",
+                        "trigger": "animal_sound",
+                        "response": "play_animal_sound",
+                    },
                 ],
             ),
         ]
@@ -225,7 +250,9 @@ class ARVRService:
             # حفظ بيئات VR (المخصصة فقط)
             vr_file = self.data_dir / "vr_environments.json"
             custom_vr = {
-                env_id: asdict(env) for env_id, env in self.vr_environments.items() if not env_id.startswith("vr_")
+                env_id: asdict(env)
+                for env_id, env in self.vr_environments.items()
+                if not env_id.startswith("vr_")
             }
             with open(vr_file, "w", encoding="utf-8") as f:
                 json.dump(custom_vr, f, ensure_ascii=False, indent=2)
@@ -243,19 +270,29 @@ class ARVRService:
         except Exception as e:
             logger.error(f"خطأ في حفظ بيانات AR/VR: {e}")
 
-    def get_available_ar_experiences(self, child_age: int = None, difficulty: str = None) -> List[ARExperience]:
+    def get_available_ar_experiences(
+        self, child_age: int = None, difficulty: str = None
+    ) -> List[ARExperience]:
         """الحصول على تجارب الواقع المعزز المتاحة"""
         experiences = list(self.ar_experiences.values())
 
         if child_age:
-            experiences = [exp for exp in experiences if exp.age_range[0] <= child_age <= exp.age_range[1]]
+            experiences = [
+                exp
+                for exp in experiences
+                if exp.age_range[0] <= child_age <= exp.age_range[1]
+            ]
 
         if difficulty:
-            experiences = [exp for exp in experiences if exp.difficulty_level == difficulty]
+            experiences = [
+                exp for exp in experiences if exp.difficulty_level == difficulty
+            ]
 
         return experiences
 
-    def get_available_vr_environments(self, child_age: int = None, theme: str = None) -> List[VREnvironment]:
+    def get_available_vr_environments(
+        self, child_age: int = None, theme: str = None
+    ) -> List[VREnvironment]:
         """الحصول على بيئات الواقع الافتراضي المتاحة"""
         environments = list(self.vr_environments.values())
 
@@ -264,7 +301,11 @@ class ARVRService:
             if child_age < 6:
                 return []  # VR غير مناسب للأطفال الصغار
             elif child_age < 10:
-                environments = [env for env in environments if env.immersion_level in ["low", "medium"]]
+                environments = [
+                    env
+                    for env in environments
+                    if env.immersion_level in ["low", "medium"]
+                ]
 
         if theme:
             environments = [env for env in environments if env.theme == theme]
@@ -280,7 +321,10 @@ class ARVRService:
         # التحقق من متطلبات الأمان
         safety_check = self._check_ar_safety_requirements(experience)
         if not safety_check["safe"]:
-            return {"error": "متطلبات الأمان غير مستوفاة", "details": safety_check["issues"]}
+            return {
+                "error": "متطلبات الأمان غير مستوفاة",
+                "details": safety_check["issues"],
+            }
 
         # إنشاء جلسة جديدة
         session = {
@@ -312,7 +356,9 @@ class ARVRService:
             "estimated_duration": experience.duration_minutes,
         }
 
-    def start_vr_session(self, child_id: str, environment_id: str, child_age: int) -> Dict:
+    def start_vr_session(
+        self, child_id: str, environment_id: str, child_age: int
+    ) -> Dict:
         """بدء جلسة واقع افتراضي"""
         environment = self.vr_environments.get(environment_id)
         if not environment:
@@ -367,7 +413,9 @@ class ARVRService:
 
         # فحص الأجسام المطلوبة
         if experience.required_objects:
-            safety_check["issues"].append(f"تأكد من وجود: {', '.join(experience.required_objects)}")
+            safety_check["issues"].append(
+                f"تأكد من وجود: {', '.join(experience.required_objects)}"
+            )
 
         return safety_check
 
@@ -380,7 +428,9 @@ class ARVRService:
         }
 
         if child_age < 8:
-            adapted["max_duration"] = min(adapted["max_duration"], 10)  # 10 دقائق كحد أقصى
+            adapted["max_duration"] = min(
+                adapted["max_duration"], 10
+            )  # 10 دقائق كحد أقصى
             adapted["break_intervals"] = 3  # راحة كل 3 دقائق
             adapted["comfort_settings"]["motion_reduction"] = True
             adapted["comfort_settings"]["simplified_interface"] = True
@@ -399,7 +449,9 @@ class ARVRService:
         ]
 
         if experience.required_objects:
-            instructions.append(f"ضع الأجسام التالية في مجال الرؤية: {', '.join(experience.required_objects)}")
+            instructions.append(
+                f"ضع الأجسام التالية في مجال الرؤية: {', '.join(experience.required_objects)}"
+            )
 
         if "مساحة" in str(experience.safety_requirements):
             instructions.append("تأكد من خلو المساحة من العوائق")
@@ -417,7 +469,9 @@ class ARVRService:
         ]
 
         if child_age < 8:
-            guidelines.extend(["استخدم أقل إعدادات الحركة", "راحة كل 3 دقائق", "مدة قصوى 10 دقائق"])
+            guidelines.extend(
+                ["استخدم أقل إعدادات الحركة", "راحة كل 3 دقائق", "مدة قصوى 10 دقائق"]
+            )
 
         return guidelines
 
@@ -457,7 +511,10 @@ class ARVRService:
         # البحث عن الجلسة وإنهاؤها
         for child_id, sessions in self.user_sessions.items():
             for session in sessions:
-                if session["session_id"] == session_id and session["status"] == "active":
+                if (
+                    session["session_id"] == session_id
+                    and session["status"] == "active"
+                ):
                     session["status"] = "completed"
                     session["end_time"] = datetime.now().isoformat()
 
@@ -499,18 +556,26 @@ class ARVRService:
 
         if interactions:
             # تحليل مستوى التفاعل
-            interaction_rate = len(interactions) / max(session.get("actual_duration_minutes", 1), 1)
+            interaction_rate = len(interactions) / max(
+                session.get("actual_duration_minutes", 1), 1
+            )
             if interaction_rate > 3:
                 performance["engagement_level"] = "high"
             elif interaction_rate < 1:
                 performance["engagement_level"] = "low"
 
             # تحليل المشاكل التقنية
-            technical_issues = sum(1 for interaction in interactions if interaction.get("type") == "error")
+            technical_issues = sum(
+                1 for interaction in interactions if interaction.get("type") == "error"
+            )
             performance["technical_issues"] = technical_issues
 
             # تحليل مؤشرات عدم الراحة
-            comfort_issues = sum(1 for interaction in interactions if interaction.get("comfort_issue", False))
+            comfort_issues = sum(
+                1
+                for interaction in interactions
+                if interaction.get("comfort_issue", False)
+            )
             if comfort_issues > 0:
                 performance["comfort_level"] = "medium" if comfort_issues < 3 else "low"
 
@@ -560,8 +625,12 @@ class ARVRService:
         actual_duration = session.get("actual_duration_minutes", 10)
         performance = session.get("performance_summary", {})
 
-        if performance.get("comfort_level") == "high" and performance.get("engagement_level") in ["medium", "high"]:
-            prefs["optimal_session_duration"] = (prefs["optimal_session_duration"] + actual_duration) / 2
+        if performance.get("comfort_level") == "high" and performance.get(
+            "engagement_level"
+        ) in ["medium", "high"]:
+            prefs["optimal_session_duration"] = (
+                prefs["optimal_session_duration"] + actual_duration
+            ) / 2
 
     def _get_session_recommendations(self, session: Dict) -> List[str]:
         """الحصول على توصيات بناءً على الجلسة"""
@@ -605,12 +674,16 @@ class ARVRService:
                 "total_vr_sessions": len(vr_sessions),
                 "total_time_ar_minutes": total_time_ar,
                 "total_time_vr_minutes": total_time_vr,
-                "average_session_duration": (total_time_ar + total_time_vr) / len(sessions) if sessions else 0,
+                "average_session_duration": (
+                    (total_time_ar + total_time_vr) / len(sessions) if sessions else 0
+                ),
             },
             "preferences": preferences,
             "learning_progress": self._calculate_learning_progress(sessions),
             "safety_compliance": self._assess_safety_compliance(sessions),
-            "recommendations": self._generate_personalized_recommendations(child_id, sessions, preferences),
+            "recommendations": self._generate_personalized_recommendations(
+                child_id, sessions, preferences
+            ),
         }
 
         return report
@@ -626,7 +699,9 @@ class ARVRService:
                 all_objectives[objective] += count
 
         return {
-            "mastered_objectives": [obj for obj, count in all_objectives.items() if count >= 5],
+            "mastered_objectives": [
+                obj for obj, count in all_objectives.items() if count >= 5
+            ],
             "learning_objectives": all_objectives,
             "total_learning_interactions": sum(all_objectives.values()),
         }
@@ -642,16 +717,27 @@ class ARVRService:
 
         if sessions:
             total_duration = sum(s.get("actual_duration_minutes", 0) for s in sessions)
-            safety_assessment["average_session_duration"] = total_duration / len(sessions)
+            safety_assessment["average_session_duration"] = total_duration / len(
+                sessions
+            )
 
-            comfort_issues = sum(s.get("performance_summary", {}).get("comfort_level") == "low" for s in sessions)
-            technical_issues = sum(s.get("performance_summary", {}).get("technical_issues", 0) for s in sessions)
+            comfort_issues = sum(
+                s.get("performance_summary", {}).get("comfort_level") == "low"
+                for s in sessions
+            )
+            technical_issues = sum(
+                s.get("performance_summary", {}).get("technical_issues", 0)
+                for s in sessions
+            )
 
             safety_assessment["comfort_issues_count"] = comfort_issues
             safety_assessment["technical_issues_count"] = technical_issues
 
             # تقييم النتيجة
-            if comfort_issues > len(sessions) * 0.3 or technical_issues > len(sessions) * 2:
+            if (
+                comfort_issues > len(sessions) * 0.3
+                or technical_issues > len(sessions) * 2
+            ):
                 safety_assessment["safety_score"] = "needs_improvement"
             elif comfort_issues > 0 or technical_issues > 0:
                 safety_assessment["safety_score"] = "good"
@@ -666,12 +752,20 @@ class ARVRService:
 
         # توصيات بناءً على التفضيلات
         if preferences.get("preferred_ar_categories"):
-            top_ar_category = max(preferences["preferred_ar_categories"].items(), key=lambda x: x[1])[0]
-            recommendations.append(f"يفضل الطفل تجارب الواقع المعزز من فئة: {top_ar_category}")
+            top_ar_category = max(
+                preferences["preferred_ar_categories"].items(), key=lambda x: x[1]
+            )[0]
+            recommendations.append(
+                f"يفضل الطفل تجارب الواقع المعزز من فئة: {top_ar_category}"
+            )
 
         if preferences.get("preferred_vr_themes"):
-            top_vr_theme = max(preferences["preferred_vr_themes"].items(), key=lambda x: x[1])[0]
-            recommendations.append(f"يفضل الطفل بيئات الواقع الافتراضي بموضوع: {top_vr_theme}")
+            top_vr_theme = max(
+                preferences["preferred_vr_themes"].items(), key=lambda x: x[1]
+            )[0]
+            recommendations.append(
+                f"يفضل الطفل بيئات الواقع الافتراضي بموضوع: {top_vr_theme}"
+            )
 
         # توصيات بناءً على الأداء
         recent_sessions = sessions[-5:]  # آخر 5 جلسات
@@ -680,8 +774,14 @@ class ARVRService:
             avg_engagement = sum(
                 (
                     1
-                    if s.get("performance_summary", {}).get("engagement_level") == "high"
-                    else 0.5 if s.get("performance_summary", {}).get("engagement_level") == "medium" else 0
+                    if s.get("performance_summary", {}).get("engagement_level")
+                    == "high"
+                    else (
+                        0.5
+                        if s.get("performance_summary", {}).get("engagement_level")
+                        == "medium"
+                        else 0
+                    )
                 )
                 for s in recent_sessions
             ) / len(recent_sessions)
@@ -689,7 +789,9 @@ class ARVRService:
             if avg_engagement < 0.3:
                 recommendations.append("جرب تجارب أكثر تفاعلية أو قصر مدة الجلسات")
             elif avg_engagement > 0.7:
-                recommendations.append("الطفل يظهر انخراطاً عالياً - يمكن تجربة تجارب أكثر تحدياً")
+                recommendations.append(
+                    "الطفل يظهر انخراطاً عالياً - يمكن تجربة تجارب أكثر تحدياً"
+                )
 
         # توصيات الأمان
         optimal_duration = preferences.get("optimal_session_duration", 10)

@@ -63,24 +63,32 @@ class GraphQLContextManager:
                 "child": self.container.child_repository(),
                 "conversation": self.container.conversation_repository(),
                 "message": (
-                    self.container.message_repository() if hasattr(self.container, "message_repository") else None
+                    self.container.message_repository()
+                    if hasattr(self.container, "message_repository")
+                    else None
                 ),
             }
 
             # Create DataLoader registry
             cache_client = self.container.redis_client()
             self._dataloader_registry = create_dataloader_registry(
-                cache_client=cache_client, **{k: v for k, v in self._repositories.items() if v is not None}
+                cache_client=cache_client,
+                **{k: v for k, v in self._repositories.items() if v is not None}
             )
 
             logger.info("✅ GraphQL Context Manager initialized successfully")
 
         except Exception as e:
-            logger.error("❌ Failed to initialize GraphQL Context Manager", error=str(e))
+            logger.error(
+                "❌ Failed to initialize GraphQL Context Manager", error=str(e)
+            )
             raise
 
     async def create_context(
-        self, request: Any = None, user_id: Optional[str] = None, auth_token: Optional[str] = None
+        self,
+        request: Any = None,
+        user_id: Optional[str] = None,
+        auth_token: Optional[str] = None,
     ) -> GraphQLContext:
         """
         Create GraphQL context for request
@@ -128,13 +136,19 @@ class GraphQLContextManager:
             if self._dataloader_registry:
                 # Core entity loaders
                 dataloaders["child"] = self._dataloader_registry.get_loader("child")
-                dataloaders["conversation"] = self._dataloader_registry.get_loader("conversation")
+                dataloaders["conversation"] = self._dataloader_registry.get_loader(
+                    "conversation"
+                )
 
                 # Relationship loaders
-                dataloaders["conversation_by_child"] = self._dataloader_registry.get_loader("conversation_by_child")
+                dataloaders["conversation_by_child"] = (
+                    self._dataloader_registry.get_loader("conversation_by_child")
+                )
 
                 # Aggregate loaders (for counts, stats)
-                dataloaders["conversation_count"] = await self._create_conversation_count_loader()
+                dataloaders["conversation_count"] = (
+                    await self._create_conversation_count_loader()
+                )
                 dataloaders["message_count"] = await self._create_message_count_loader()
 
             return dataloaders
@@ -152,12 +166,15 @@ class GraphQLContextManager:
 
             # Child paginator
             if "child" in self._repositories:
-                paginators["child"] = CursorPaginator(repository=self._repositories["child"], cache_client=cache_client)
+                paginators["child"] = CursorPaginator(
+                    repository=self._repositories["child"], cache_client=cache_client
+                )
 
             # Conversation paginator
             if "conversation" in self._repositories:
                 paginators["conversation"] = CursorPaginator(
-                    repository=self._repositories["conversation"], cache_client=cache_client
+                    repository=self._repositories["conversation"],
+                    cache_client=cache_client,
                 )
 
             # Message paginator
@@ -179,7 +196,9 @@ class GraphQLContextManager:
         class ConversationCountLoader(BaseDataLoader[str, int]):
             def __init__(self, conversation_repository, cache_client):
                 super().__init__(
-                    repository=conversation_repository, cache_client=cache_client, name="conversation_count_loader"
+                    repository=conversation_repository,
+                    cache_client=cache_client,
+                    name="conversation_count_loader",
                 )
 
             async def _fetch_from_repository(self, child_ids: list) -> list:
@@ -203,14 +222,20 @@ class GraphQLContextManager:
 
         class MessageCountLoader(BaseDataLoader[str, int]):
             def __init__(self, message_repository, cache_client):
-                super().__init__(repository=message_repository, cache_client=cache_client, name="message_count_loader")
+                super().__init__(
+                    repository=message_repository,
+                    cache_client=cache_client,
+                    name="message_count_loader",
+                )
 
             async def _fetch_from_repository(self, conversation_ids: list) -> list:
                 """Fetch message counts for conversation IDs"""
                 try:
                     counts = []
                     for conversation_id in conversation_ids:
-                        count = await self.repository.count({"conversation_id": conversation_id})
+                        count = await self.repository.count(
+                            {"conversation_id": conversation_id}
+                        )
                         counts.append(count)
                     return counts
                 except Exception as e:
@@ -226,7 +251,10 @@ class GraphQLContextManager:
         """Pre-warm DataLoader caches"""
         if not warmup_data:
             # Default warmup data
-            warmup_data = {"child": [], "conversation": []}  # Will be populated from recent queries
+            warmup_data = {
+                "child": [],
+                "conversation": [],
+            }  # Will be populated from recent queries
 
         if self._dataloader_registry:
             await self._dataloader_registry.warm_cache(warmup_data)

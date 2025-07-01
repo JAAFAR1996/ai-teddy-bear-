@@ -37,7 +37,14 @@ class TimeoutException(PerformanceException):
 class RateLimitException(PerformanceException):
     """تجاوز معدل الطلبات المسموح"""
 
-    def __init__(self, limit_type: str, current_rate: float, max_rate: float, window_seconds: int = 60, **kwargs):
+    def __init__(
+        self,
+        limit_type: str,
+        current_rate: float,
+        max_rate: float,
+        window_seconds: int = 60,
+        **kwargs,
+    ):
         retry_after = window_seconds
         super().__init__(
             message=f"Rate limit exceeded for {limit_type}: {current_rate}/{max_rate} per {window_seconds}s",

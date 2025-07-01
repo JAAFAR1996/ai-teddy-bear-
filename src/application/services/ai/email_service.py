@@ -112,17 +112,25 @@ class EmailService:
             success = await self._send_message(message, to_email)
 
             if success:
-                self.logger.info("HTML email sent successfully", to=to_email, subject=subject)
+                self.logger.info(
+                    "HTML email sent successfully", to=to_email, subject=subject
+                )
             else:
-                self.logger.error("Failed to send HTML email", to=to_email, subject=subject)
+                self.logger.error(
+                    "Failed to send HTML email", to=to_email, subject=subject
+                )
 
             return success
 
         except Exception as e:
-            self.logger.error("HTML email sending failed", to=to_email, error=str(e), exc_info=True)
+            self.logger.error(
+                "HTML email sending failed", to=to_email, error=str(e), exc_info=True
+            )
             return False
 
-    async def send_text_email(self, to_email: str, subject: str, text_content: str) -> bool:
+    async def send_text_email(
+        self, to_email: str, subject: str, text_content: str
+    ) -> bool:
         """
         إرسال بريد إلكتروني نصي بسيط
 
@@ -145,14 +153,20 @@ class EmailService:
             success = await self._send_message(message, to_email)
 
             if success:
-                self.logger.info("Text email sent successfully", to=to_email, subject=subject)
+                self.logger.info(
+                    "Text email sent successfully", to=to_email, subject=subject
+                )
             else:
-                self.logger.error("Failed to send text email", to=to_email, subject=subject)
+                self.logger.error(
+                    "Failed to send text email", to=to_email, subject=subject
+                )
 
             return success
 
         except Exception as e:
-            self.logger.error("Text email sending failed", to=to_email, error=str(e), exc_info=True)
+            self.logger.error(
+                "Text email sending failed", to=to_email, error=str(e), exc_info=True
+            )
             return False
 
     async def _send_message(self, message: MimeMultipart, to_email: str) -> bool:
@@ -160,7 +174,9 @@ class EmailService:
         try:
             # في بيئة التطوير، نقوم بمحاكاة الإرسال
             if not self.password or self.password == "your_app_password":
-                self.logger.info("Email sending simulated (no password configured)", to=to_email)
+                self.logger.info(
+                    "Email sending simulated (no password configured)", to=to_email
+                )
                 return True
 
             # الإرسال الفعلي باستخدام aiosmtplib
@@ -184,7 +200,9 @@ class EmailService:
         """إضافة مرفق للرسالة"""
         try:
             if not attachment_path.exists():
-                self.logger.warning("Attachment file not found", path=str(attachment_path))
+                self.logger.warning(
+                    "Attachment file not found", path=str(attachment_path)
+                )
                 return
 
             with open(attachment_path, "rb") as attachment:
@@ -192,13 +210,17 @@ class EmailService:
                 part.set_payload(attachment.read())
 
             encoders.encode_base64(part)
-            part.add_header("Content-Disposition", f"attachment; filename= {attachment_path.name}")
+            part.add_header(
+                "Content-Disposition", f"attachment; filename= {attachment_path.name}"
+            )
 
             message.attach(part)
             self.logger.debug("Attachment added", filename=attachment_path.name)
 
         except Exception as e:
-            self.logger.error("Failed to add attachment", path=str(attachment_path), error=str(e))
+            self.logger.error(
+                "Failed to add attachment", path=str(attachment_path), error=str(e)
+            )
 
 
 # 🔧 مثيل خدمة البريد العامة
@@ -222,7 +244,9 @@ if __name__ == "__main__":
         logger.info("📧 Testing Email Service...")
 
         # اختبار بريد نصي
-        success = await send_email("test@example.com", "Test Email", "This is a test email from AI Teddy Bear!")
+        success = await send_email(
+            "test@example.com", "Test Email", "This is a test email from AI Teddy Bear!"
+        )
         logger.error(f"Text email test: {'✅ Success' if success else '❌ Failed'}")
 
         # اختبار بريد HTML

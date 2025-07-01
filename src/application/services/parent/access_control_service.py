@@ -8,7 +8,8 @@ Domain service for managing access control and parental controls.
 from datetime import datetime, time, timedelta
 from typing import List, Optional, Tuple
 
-from ..models.control_models import AccessSchedule, AccessScheduleType, ParentalControl, TimeUsageStats
+from ..models.control_models import (AccessSchedule, AccessScheduleType,
+                                     ParentalControl, TimeUsageStats)
 
 
 class AccessControlService:
@@ -56,7 +57,10 @@ class AccessControlService:
         return errors
 
     def calculate_time_usage_stats(
-        self, controls: ParentalControl, daily_minutes_used: int, session_minutes_used: int
+        self,
+        controls: ParentalControl,
+        daily_minutes_used: int,
+        session_minutes_used: int,
     ) -> TimeUsageStats:
         """Calculate time usage statistics"""
 
@@ -76,7 +80,10 @@ class AccessControlService:
 
     def should_block_access_time_limit(self, usage_stats: TimeUsageStats) -> bool:
         """Check if access should be blocked due to time limits"""
-        return usage_stats.is_daily_limit_exceeded() or usage_stats.is_session_limit_exceeded()
+        return (
+            usage_stats.is_daily_limit_exceeded()
+            or usage_stats.is_session_limit_exceeded()
+        )
 
     def is_topic_allowed(self, controls: ParentalControl, topic: str) -> bool:
         """Check if topic is allowed based on controls"""
@@ -86,7 +93,9 @@ class AccessControlService:
         """Check if should send alert for this topic"""
         return controls.should_alert_for_topic(topic)
 
-    def create_default_schedule(self, child_id: str, schedule_type: AccessScheduleType) -> List[AccessSchedule]:
+    def create_default_schedule(
+        self, child_id: str, schedule_type: AccessScheduleType
+    ) -> List[AccessSchedule]:
         """Create default access schedule based on type"""
 
         schedules = []
@@ -127,7 +136,9 @@ class AccessControlService:
 
         return None
 
-    def _get_next_allowed_time(self, schedules: List[AccessSchedule], current_time: datetime) -> str:
+    def _get_next_allowed_time(
+        self, schedules: List[AccessSchedule], current_time: datetime
+    ) -> str:
         """Get next allowed access time as human-readable string"""
 
         current_day = current_time.weekday()
@@ -135,7 +146,11 @@ class AccessControlService:
 
         # Check if there's a later time today
         for schedule in schedules:
-            if schedule.enabled and schedule.day_of_week == current_day and schedule.start_time > current_time_only:
+            if (
+                schedule.enabled
+                and schedule.day_of_week == current_day
+                and schedule.start_time > current_time_only
+            ):
                 return f"Today at {schedule.start_time.strftime('%I:%M %p')}"
 
         # Check next 7 days
@@ -144,7 +159,15 @@ class AccessControlService:
 
             for schedule in schedules:
                 if schedule.enabled and schedule.day_of_week == next_day:
-                    day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                    day_names = [
+                        "Monday",
+                        "Tuesday",
+                        "Wednesday",
+                        "Thursday",
+                        "Friday",
+                        "Saturday",
+                        "Sunday",
+                    ]
 
                     if days_ahead == 1:
                         day_str = "Tomorrow"
@@ -155,7 +178,9 @@ class AccessControlService:
 
         return "No scheduled access time found"
 
-    def get_access_summary(self, schedules: List[AccessSchedule], current_time: Optional[datetime] = None) -> dict:
+    def get_access_summary(
+        self, schedules: List[AccessSchedule], current_time: Optional[datetime] = None
+    ) -> dict:
         """Get summary of access schedule and current status"""
 
         if current_time is None:
@@ -169,7 +194,9 @@ class AccessControlService:
         for schedule in schedules:
             if schedule.enabled:
                 # Calculate duration for this schedule
-                start_minutes = schedule.start_time.hour * 60 + schedule.start_time.minute
+                start_minutes = (
+                    schedule.start_time.hour * 60 + schedule.start_time.minute
+                )
                 end_minutes = schedule.end_time.hour * 60 + schedule.end_time.minute
                 duration = end_minutes - start_minutes
                 total_weekly_minutes += duration

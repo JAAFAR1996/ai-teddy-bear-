@@ -14,23 +14,9 @@ import uuid
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import (
-    Boolean,
-    CheckConstraint,
-    Column,
-    Date,
-    DateTime,
-    Float,
-    ForeignKey,
-    Index,
-    Integer,
-    String,
-    Table,
-    Text,
-    UniqueConstraint,
-    create_engine,
-    event,
-)
+from sqlalchemy import (Boolean, CheckConstraint, Column, Date, DateTime,
+                        Float, ForeignKey, Index, Integer, String, Table, Text,
+                        UniqueConstraint, create_engine, event)
 from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property

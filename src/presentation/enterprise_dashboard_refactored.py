@@ -130,7 +130,9 @@ class EnterpriseDashboardWidgetNotificationFacade:
     """Legacy facade for EnterpriseDashboardWidgetNotification"""
 
     def __init__(self):
-        self.enterprisedashboardwidgetnotification = EnterpriseDashboardWidgetNotification()
+        self.enterprisedashboardwidgetnotification = (
+            EnterpriseDashboardWidgetNotification()
+        )
 
     def __getattr__(self, name):
         return getattr(self.enterprisedashboardwidgetnotification, name)

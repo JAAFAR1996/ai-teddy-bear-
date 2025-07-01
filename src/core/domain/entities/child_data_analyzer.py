@@ -98,8 +98,12 @@ class ChildDataAnalyzer:
             learning_analysis = self._analyze_learning(interactions)
 
             # تحديد المشاكل والتوصيات
-            concerns = self._identify_concerns(interactions, emotion_analysis, behavior_analysis)
-            recommendations = self._generate_recommendations(emotion_analysis, behavior_analysis, learning_analysis)
+            concerns = self._identify_concerns(
+                interactions, emotion_analysis, behavior_analysis
+            )
+            recommendations = self._generate_recommendations(
+                emotion_analysis, behavior_analysis, learning_analysis
+            )
 
             result = AnalysisResult(
                 child_id=child_id,
@@ -139,8 +143,15 @@ class ChildDataAnalyzer:
 
             # تحديد المشاعر المهيمنة
             total_emotions = sum(emotion_counts.values())
-            distribution = {emotion: count / total_emotions for emotion, count in emotion_counts.items()}
-            dominant = max(distribution.keys(), key=distribution.get) if distribution else "calm"
+            distribution = {
+                emotion: count / total_emotions
+                for emotion, count in emotion_counts.items()
+            }
+            dominant = (
+                max(distribution.keys(), key=distribution.get)
+                if distribution
+                else "calm"
+            )
 
             # حساب استقرار المشاعر
             stability = self._calculate_emotion_stability(interactions)
@@ -148,18 +159,30 @@ class ChildDataAnalyzer:
             # اتجاهات المزاج عبر الوقت
             trends = self._calculate_mood_trends(interactions)
 
-            return {"distribution": distribution, "dominant": dominant, "stability": stability, "trends": trends}
+            return {
+                "distribution": distribution,
+                "dominant": dominant,
+                "stability": stability,
+                "trends": trends,
+            }
 
         except Exception as e:
             logger.error(f"Emotion analysis error: {e}")
-            return {"distribution": {}, "dominant": "calm", "stability": 0.5, "trends": {}}
+            return {
+                "distribution": {},
+                "dominant": "calm",
+                "stability": 0.5,
+                "trends": {},
+            }
 
     def _analyze_behavior(self, interactions: List[InteractionData]) -> Dict:
         """تحليل السلوك فقط"""
         try:
             # حساب مدة التركيز
             durations = [interaction.duration for interaction in interactions]
-            attention_span = statistics.mean(durations) / 60 if durations else 0  # في دقائق
+            attention_span = (
+                statistics.mean(durations) / 60 if durations else 0
+            )  # في دقائق
 
             # أنماط الاستجابة
             response_patterns = self._analyze_response_patterns(interactions)
@@ -175,7 +198,11 @@ class ChildDataAnalyzer:
 
         except Exception as e:
             logger.error(f"Behavior analysis error: {e}")
-            return {"attention_span": 0, "response_patterns": {}, "social_indicators": {}}
+            return {
+                "attention_span": 0,
+                "response_patterns": {},
+                "social_indicators": {},
+            }
 
     def _analyze_learning(self, interactions: List[InteractionData]) -> Dict:
         """تحليل التعلم فقط"""
@@ -195,7 +222,9 @@ class ChildDataAnalyzer:
 
             # تحويل إلى نسب تقدم
             max_usage = max(skills_usage.values()) if skills_usage else 1
-            skills_progress = {skill: count / max_usage for skill, count in skills_usage.items()}
+            skills_progress = {
+                skill: count / max_usage for skill, count in skills_usage.items()
+            }
 
             # أنماط التعلم
             learning_patterns = self._identify_learning_patterns(interactions)
@@ -210,7 +239,9 @@ class ChildDataAnalyzer:
             logger.error(f"Learning analysis error: {e}")
             return {"vocabulary_growth": 0, "skills_progress": {}, "patterns": []}
 
-    def _calculate_emotion_stability(self, interactions: List[InteractionData]) -> float:
+    def _calculate_emotion_stability(
+        self, interactions: List[InteractionData]
+    ) -> float:
         """حساب استقرار المشاعر"""
         try:
             if len(interactions) < 2:
@@ -220,7 +251,9 @@ class ChildDataAnalyzer:
             dominant_emotions = []
             for interaction in interactions:
                 if interaction.emotions:
-                    dominant = max(interaction.emotions.keys(), key=interaction.emotions.get)
+                    dominant = max(
+                        interaction.emotions.keys(), key=interaction.emotions.get
+                    )
                     dominant_emotions.append(dominant)
 
             # حساب التنوع
@@ -235,7 +268,9 @@ class ChildDataAnalyzer:
             logger.error(f"Emotion stability calculation error: {e}")
             return 0.5
 
-    def _calculate_mood_trends(self, interactions: List[InteractionData]) -> Dict[str, List[float]]:
+    def _calculate_mood_trends(
+        self, interactions: List[InteractionData]
+    ) -> Dict[str, List[float]]:
         """حساب اتجاهات المزاج"""
         try:
             # تجميع المشاعر حسب اليوم
@@ -272,7 +307,9 @@ class ChildDataAnalyzer:
             logger.error(f"Mood trends calculation error: {e}")
             return {}
 
-    def _analyze_response_patterns(self, interactions: List[InteractionData]) -> Dict[str, float]:
+    def _analyze_response_patterns(
+        self, interactions: List[InteractionData]
+    ) -> Dict[str, float]:
         """تحليل أنماط الاستجابة"""
         try:
             patterns = {
@@ -306,7 +343,9 @@ class ChildDataAnalyzer:
             logger.error(f"Response patterns analysis error: {e}")
             return {}
 
-    def _count_social_indicators(self, interactions: List[InteractionData]) -> Dict[str, int]:
+    def _count_social_indicators(
+        self, interactions: List[InteractionData]
+    ) -> Dict[str, int]:
         """عد المؤشرات الاجتماعية"""
         try:
             indicators = {"empathy": 0, "sharing": 0, "cooperation": 0, "politeness": 0}
@@ -317,9 +356,16 @@ class ChildDataAnalyzer:
                         indicators["empathy"] += 1
                     elif "sharing" in indicator.lower() or "share" in indicator.lower():
                         indicators["sharing"] += 1
-                    elif "cooperation" in indicator.lower() or "cooperate" in indicator.lower():
+                    elif (
+                        "cooperation" in indicator.lower()
+                        or "cooperate" in indicator.lower()
+                    ):
                         indicators["cooperation"] += 1
-                    elif "polite" in indicator.lower() or "please" in indicator.lower() or "thank" in indicator.lower():
+                    elif (
+                        "polite" in indicator.lower()
+                        or "please" in indicator.lower()
+                        or "thank" in indicator.lower()
+                    ):
                         indicators["politeness"] += 1
 
             return indicators
@@ -328,15 +374,23 @@ class ChildDataAnalyzer:
             logger.error(f"Social indicators counting error: {e}")
             return {}
 
-    def _identify_learning_patterns(self, interactions: List[InteractionData]) -> List[str]:
+    def _identify_learning_patterns(
+        self, interactions: List[InteractionData]
+    ) -> List[str]:
         """تحديد أنماط التعلم"""
         try:
             patterns = []
 
             # تحليل أوقات النشاط
-            morning_interactions = sum(1 for i in interactions if 6 <= i.timestamp.hour < 12)
-            afternoon_interactions = sum(1 for i in interactions if 12 <= i.timestamp.hour < 18)
-            evening_interactions = sum(1 for i in interactions if 18 <= i.timestamp.hour < 22)
+            morning_interactions = sum(
+                1 for i in interactions if 6 <= i.timestamp.hour < 12
+            )
+            afternoon_interactions = sum(
+                1 for i in interactions if 12 <= i.timestamp.hour < 18
+            )
+            evening_interactions = sum(
+                1 for i in interactions if 18 <= i.timestamp.hour < 22
+            )
 
             total = len(interactions)
             if total > 0:
@@ -364,7 +418,10 @@ class ChildDataAnalyzer:
             return []
 
     def _identify_concerns(
-        self, interactions: List[InteractionData], emotion_analysis: Dict, behavior_analysis: Dict
+        self,
+        interactions: List[InteractionData],
+        emotion_analysis: Dict,
+        behavior_analysis: Dict,
     ) -> List[str]:
         """تحديد المشاكل المثيرة للقلق"""
         concerns = []
@@ -404,7 +461,9 @@ class ChildDataAnalyzer:
 
         return recommendations
 
-    async def _get_interactions_data(self, child_id: str, period: DateRange) -> List[InteractionData]:
+    async def _get_interactions_data(
+        self, child_id: str, period: DateRange
+    ) -> List[InteractionData]:
         """جلب بيانات التفاعلات من قاعدة البيانات"""
         if not self.db:
             # بيانات تجريبية للاختبار
@@ -420,9 +479,13 @@ class ChildDataAnalyzer:
                 )
             ]
 
-        return await self.db.get_interactions(child_id, period.start_date, period.end_date)
+        return await self.db.get_interactions(
+            child_id, period.start_date, period.end_date
+        )
 
-    def _create_empty_analysis(self, child_id: str, period: DateRange) -> AnalysisResult:
+    def _create_empty_analysis(
+        self, child_id: str, period: DateRange
+    ) -> AnalysisResult:
         """إنشاء تحليل فارغ في حالة عدم وجود بيانات"""
         return AnalysisResult(
             child_id=child_id,

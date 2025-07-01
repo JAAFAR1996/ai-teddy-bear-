@@ -19,23 +19,10 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 from PySide6.QtCore import QObject, Qt, QTimer, Signal
 from PySide6.QtGui import QPainter, QPixmap
-from PySide6.QtWidgets import (
-    QCheckBox,
-    QComboBox,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QListWidget,
-    QProgressBar,
-    QPushButton,
-    QSlider,
-    QSplitter,
-    QTabWidget,
-    QTextEdit,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import (QCheckBox, QComboBox, QGridLayout, QGroupBox,
+                               QHBoxLayout, QLabel, QListWidget, QProgressBar,
+                               QPushButton, QSlider, QSplitter, QTabWidget,
+                               QTextEdit, QVBoxLayout, QWidget)
 
 try:
     from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -79,7 +66,12 @@ class EmotionAnalyticsEngine:
 
     def add_emotion_data(dict=None) -> None:
         """Add new emotion data point"""
-        entry = {"emotion": emotion, "confidence": confidence, "timestamp": datetime.now(), "metadata": metadata or {}}
+        entry = {
+            "emotion": emotion,
+            "confidence": confidence,
+            "timestamp": datetime.now(),
+            "metadata": metadata or {},
+        }
 
         self.emotion_history.append(entry)
 
@@ -126,7 +118,9 @@ class EmotionAnalyticsEngine:
 
         # Filter data by time range
         cutoff_time = datetime.now() - timedelta(hours=hours)
-        recent_data = [entry for entry in self.emotion_history if entry["timestamp"] >= cutoff_time]
+        recent_data = [
+            entry for entry in self.emotion_history if entry["timestamp"] >= cutoff_time
+        ]
 
         if not recent_data:
             return None
@@ -155,8 +149,12 @@ class EmotionAnalyticsEngine:
         unique_emotions = list(set(emotions))
 
         for emotion in unique_emotions:
-            emotion_times = [timestamps[i] for i, e in enumerate(emotions) if e == emotion]
-            emotion_conf = [confidences[i] for i, e in enumerate(emotions) if e == emotion]
+            emotion_times = [
+                timestamps[i] for i, e in enumerate(emotions) if e == emotion
+            ]
+            emotion_conf = [
+                confidences[i] for i, e in enumerate(emotions) if e == emotion
+            ]
 
             fig.add_trace(
                 self.go.Scatter(
@@ -214,7 +212,16 @@ class EmotionAnalyticsEngine:
                     textinfo="label+percent",
                     textfont_size=14,
                     marker=dict(
-                        colors=["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8", "#F7DC6F"],
+                        colors=[
+                            "#FF6B6B",
+                            "#4ECDC4",
+                            "#45B7D1",
+                            "#96CEB4",
+                            "#FFEAA7",
+                            "#DDA0DD",
+                            "#98D8C8",
+                            "#F7DC6F",
+                        ],
                         line=dict(color="#FFFFFF", width=2),
                     ),
                 )
@@ -272,7 +279,12 @@ class EmotionAnalyticsEngine:
         )
 
         fig.update_layout(
-            title={"text": "Emotion Intensity Heatmap by Hour", "x": 0.5, "xanchor": "center", "font": {"size": 16}},
+            title={
+                "text": "Emotion Intensity Heatmap by Hour",
+                "x": 0.5,
+                "xanchor": "center",
+                "font": {"size": 16},
+            },
             xaxis_title="Hour of Day",
             yaxis_title="Emotion Type",
             template="plotly_white",
@@ -298,7 +310,9 @@ class EmotionAnalyticsEngine:
         dominant_emotion = max(emotion_counts.items(), key=lambda x: x[1])
 
         # Calculate average confidence
-        avg_confidence = sum(entry["confidence"] for entry in recent_emotions) / len(recent_emotions)
+        avg_confidence = sum(entry["confidence"] for entry in recent_emotions) / len(
+            recent_emotions
+        )
 
         # Detect trends
         trend = "stable"
@@ -306,12 +320,14 @@ class EmotionAnalyticsEngine:
             first_half = recent_emotions[: len(recent_emotions) // 2]
             second_half = recent_emotions[len(recent_emotions) // 2 :]
 
-            first_avg = sum(1 if e["emotion"] in ["happy", "excited", "calm"] else 0 for e in first_half) / len(
-                first_half
-            )
-            second_avg = sum(1 if e["emotion"] in ["happy", "excited", "calm"] else 0 for e in second_half) / len(
-                second_half
-            )
+            first_avg = sum(
+                1 if e["emotion"] in ["happy", "excited", "calm"] else 0
+                for e in first_half
+            ) / len(first_half)
+            second_avg = sum(
+                1 if e["emotion"] in ["happy", "excited", "calm"] else 0
+                for e in second_half
+            ) / len(second_half)
 
             if second_avg > first_avg + 0.2:
                 trend = "improving"
@@ -383,9 +399,14 @@ class SmartAlertSystem:
 
         # Check negative emotion streak
         negative_emotions = ["sad", "angry", "frustrated", "confused"]
-        recent_negative = [e for e in emotion_history[-10:] if e["emotion"] in negative_emotions]
+        recent_negative = [
+            e for e in emotion_history[-10:] if e["emotion"] in negative_emotions
+        ]
 
-        if len(recent_negative) >= self.alert_rules["negative_emotion_streak"]["threshold"]:
+        if (
+            len(recent_negative)
+            >= self.alert_rules["negative_emotion_streak"]["threshold"]
+        ):
             alert = self.create_alert(
                 "negative_emotion_streak",
                 f"Child has shown {len(recent_negative)} negative emotions recently",
@@ -398,7 +419,9 @@ class SmartAlertSystem:
             recent_confidence = emotion_history[-1]["confidence"]
             previous_confidence = emotion_history[-2]["confidence"]
 
-            if (previous_confidence - recent_confidence) > self.alert_rules["sudden_mood_drop"]["threshold"]:
+            if (previous_confidence - recent_confidence) > self.alert_rules[
+                "sudden_mood_drop"
+            ]["threshold"]:
                 alert = self.create_alert(
                     "sudden_mood_drop",
                     f"Confidence dropped from {previous_confidence:.1%} to {recent_confidence:.1%}",
@@ -410,7 +433,8 @@ class SmartAlertSystem:
         recent_frustration = [
             e
             for e in emotion_history[-5:]
-            if e["emotion"] == "frustrated" and e["confidence"] > self.alert_rules["high_frustration"]["threshold"]
+            if e["emotion"] == "frustrated"
+            and e["confidence"] > self.alert_rules["high_frustration"]["threshold"]
         ]
 
         if recent_frustration:
@@ -444,7 +468,9 @@ class SmartAlertSystem:
         if len(self.alerts_history) > 100:
             self.alerts_history.pop(0)
 
-        logger.info("Smart alert generated", type=alert_type, priority=alert["priority"])
+        logger.info(
+            "Smart alert generated", type=alert_type, priority=alert["priority"]
+        )
 
         return alert
 
@@ -452,7 +478,9 @@ class SmartAlertSystem:
         """Get alerts from specified time period"""
         cutoff_time = datetime.now() - timedelta(hours=hours)
 
-        return [alert for alert in self.alerts_history if alert["timestamp"] >= cutoff_time]
+        return [
+            alert for alert in self.alerts_history if alert["timestamp"] >= cutoff_time
+        ]
 
     def set_sensitivity(float) -> None:
         """Set alert sensitivity (0.1 to 2.0)"""
@@ -463,7 +491,9 @@ class SmartAlertSystem:
             if "threshold" in rule:
                 if rule_name in ["negative_emotion_streak", "learning_difficulty"]:
                     # For count-based thresholds, adjust inversely
-                    rule["threshold"] = max(1, int(rule["threshold"] / self.sensitivity))
+                    rule["threshold"] = max(
+                        1, int(rule["threshold"] / self.sensitivity)
+                    )
                 else:
                     # For ratio-based thresholds, adjust directly
                     rule["threshold"] = rule["threshold"] * self.sensitivity
@@ -528,19 +558,25 @@ class EnterpriseDashboardWidget(QWidget):
         # Connection indicator
         status_layout.addWidget(QLabel("Connection:"), 0, 0)
         self.connection_indicator = QLabel("● Disconnected")
-        self.connection_indicator.setStyleSheet("QLabel { color: red; font-weight: bold; }")
+        self.connection_indicator.setStyleSheet(
+            "QLabel { color: red; font-weight: bold; }"
+        )
         status_layout.addWidget(self.connection_indicator, 0, 1)
 
         # Active children
         status_layout.addWidget(QLabel("Active Children:"), 1, 0)
         self.active_children_label = QLabel("0")
-        self.active_children_label.setStyleSheet("QLabel { font-weight: bold; color: #2196F3; }")
+        self.active_children_label.setStyleSheet(
+            "QLabel { font-weight: bold; color: #2196F3; }"
+        )
         status_layout.addWidget(self.active_children_label, 1, 1)
 
         # Today's interactions
         status_layout.addWidget(QLabel("Interactions Today:"), 2, 0)
         self.interactions_today_label = QLabel("0")
-        self.interactions_today_label.setStyleSheet("QLabel { font-weight: bold; color: #4CAF50; }")
+        self.interactions_today_label.setStyleSheet(
+            "QLabel { font-weight: bold; color: #4CAF50; }"
+        )
         status_layout.addWidget(self.interactions_today_label, 2, 1)
 
         layout.addWidget(status_group)
@@ -591,7 +627,9 @@ class EnterpriseDashboardWidget(QWidget):
         self.alert_sensitivity_slider = QSlider(Qt.Horizontal)
         self.alert_sensitivity_slider.setRange(1, 10)
         self.alert_sensitivity_slider.setValue(5)
-        self.alert_sensitivity_slider.valueChanged.connect(self.update_alert_sensitivity)
+        self.alert_sensitivity_slider.valueChanged.connect(
+            self.update_alert_sensitivity
+        )
         alert_controls.addWidget(self.alert_sensitivity_slider)
 
         alerts_layout.addLayout(alert_controls)
@@ -637,7 +675,9 @@ class EnterpriseDashboardWidget(QWidget):
 
         controls_layout.addWidget(QLabel("Time Range:"))
         self.time_range_combo = QComboBox()
-        self.time_range_combo.addItems(["Last Hour", "Last 6 Hours", "Last 24 Hours", "Last Week"])
+        self.time_range_combo.addItems(
+            ["Last Hour", "Last 6 Hours", "Last 24 Hours", "Last Week"]
+        )
         self.time_range_combo.setCurrentText("Last 6 Hours")
         self.time_range_combo.currentTextChanged.connect(self.update_charts)
         controls_layout.addWidget(self.time_range_combo)
@@ -662,7 +702,9 @@ class EnterpriseDashboardWidget(QWidget):
         # Placeholder
         placeholder = QLabel("📊 Emotion charts will appear after first interactions")
         placeholder.setAlignment(Qt.AlignCenter)
-        placeholder.setStyleSheet("QLabel { color: #666; font-size: 16px; padding: 50px; }")
+        placeholder.setStyleSheet(
+            "QLabel { color: #666; font-size: 16px; padding: 50px; }"
+        )
         self.emotion_charts_layout.addWidget(placeholder)
 
         emotion_layout.addWidget(self.emotion_charts_container)
@@ -674,7 +716,9 @@ class EnterpriseDashboardWidget(QWidget):
 
         perf_placeholder = QLabel("📈 Performance metrics will be displayed here")
         perf_placeholder.setAlignment(Qt.AlignCenter)
-        perf_placeholder.setStyleSheet("QLabel { color: #666; font-size: 16px; padding: 50px; }")
+        perf_placeholder.setStyleSheet(
+            "QLabel { color: #666; font-size: 16px; padding: 50px; }"
+        )
         performance_layout.addWidget(perf_placeholder)
 
         self.charts_tabs.addTab(performance_tab, "📊 Performance")
@@ -732,7 +776,9 @@ class EnterpriseDashboardWidget(QWidget):
         self.update_current_emotion_display(emotion, confidence)
 
         # Emit signal
-        self.emotion_detected.emit([{"emotion": emotion, "confidence": confidence}], confidence)
+        self.emotion_detected.emit(
+            [{"emotion": emotion, "confidence": confidence}], confidence
+        )
 
         logger.info("Emotion data added", emotion=emotion, confidence=confidence)
 
@@ -796,7 +842,12 @@ class EnterpriseDashboardWidget(QWidget):
 
             # Get time range
             time_range_text = self.time_range_combo.currentText()
-            hours_map = {"Last Hour": 1, "Last 6 Hours": 6, "Last 24 Hours": 24, "Last Week": 168}
+            hours_map = {
+                "Last Hour": 1,
+                "Last 6 Hours": 6,
+                "Last 24 Hours": 24,
+                "Last Week": 168,
+            }
             hours = hours_map.get(time_range_text, 6)
 
             # Create timeline chart
@@ -822,7 +873,9 @@ class EnterpriseDashboardWidget(QWidget):
         try:
             if WEBENGINE_AVAILABLE:
                 # Use QWebEngineView for interactive charts
-                html_str = fig.to_html(include_plotlyjs="cdn", div_id=f"chart_{chart_type}")
+                html_str = fig.to_html(
+                    include_plotlyjs="cdn", div_id=f"chart_{chart_type}"
+                )
 
                 web_view = QWebEngineView()
                 web_view.setHtml(html_str)
@@ -864,7 +917,9 @@ class EnterpriseDashboardWidget(QWidget):
 
         try:
             # Get new alerts
-            new_alerts = self.alert_system.process_emotion_data(self.emotion_engine.emotion_history)
+            new_alerts = self.alert_system.process_emotion_data(
+                self.emotion_engine.emotion_history
+            )
 
             # Display new alerts
             for alert in new_alerts:
@@ -926,14 +981,23 @@ class EnterpriseDashboardWidget(QWidget):
         config = status_config.get(status, {"color": "gray", "symbol": "●"})
 
         self.connection_indicator.setText(f"{config['symbol']} {status}")
-        self.connection_indicator.setStyleSheet(f"QLabel {{ color: {config['color']}; font-weight: bold; }}")
+        self.connection_indicator.setStyleSheet(
+            f"QLabel {{ color: {config['color']}; font-weight: bold; }}"
+        )
 
     def add_child_profile(dict=None) -> None:
         """Add child profile to dashboard"""
         profile_text = f"{name} (Age: {age})"
         self.profiles_list.addItem(profile_text)
 
-        self.child_profiles.append({"name": name, "age": age, "metadata": metadata or {}, "added_time": datetime.now()})
+        self.child_profiles.append(
+            {
+                "name": name,
+                "age": age,
+                "metadata": metadata or {},
+                "added_time": datetime.now(),
+            }
+        )
 
         logger.info("Child profile added", name=name, age=age)
 

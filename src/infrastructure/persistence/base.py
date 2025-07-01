@@ -6,7 +6,8 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, AsyncIterator, Callable, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union
+from typing import (Any, AsyncIterator, Callable, Dict, Generic, List,
+                    Optional, Tuple, Type, TypeVar, Union)
 
 T = TypeVar("T")
 ID = TypeVar("ID", bound=Union[str, int])
@@ -146,7 +147,9 @@ class BaseRepository(ABC, Generic[T, ID]):
         self.entity_name = entity_type.__name__
         self._cache: Dict[ID, T] = {}
         self._cache_ttl: int = 300  # 5 minutes default
-        self._hooks: Dict[OperationType, List[Callable]] = {op: [] for op in OperationType}
+        self._hooks: Dict[OperationType, List[Callable]] = {
+            op: [] for op in OperationType
+        }
 
     # Core CRUD Operations
 
@@ -173,17 +176,23 @@ class BaseRepository(ABC, Generic[T, ID]):
     # Advanced Query Operations
 
     @abstractmethod
-    async def list(self, options: Optional[QueryOptions] = None, **filters: Any) -> List[T]:
+    async def list(
+        self, options: Optional[QueryOptions] = None, **filters: Any
+    ) -> List[T]:
         """List entities with advanced querying options"""
         pass
 
     @abstractmethod
-    async def search(self, criteria: List[SearchCriteria], options: Optional[QueryOptions] = None) -> List[T]:
+    async def search(
+        self, criteria: List[SearchCriteria], options: Optional[QueryOptions] = None
+    ) -> List[T]:
         """Search entities with multiple criteria"""
         pass
 
     @abstractmethod
-    async def count(self, criteria: Optional[List[SearchCriteria]] = None, **filters: Any) -> int:
+    async def count(
+        self, criteria: Optional[List[SearchCriteria]] = None, **filters: Any
+    ) -> int:
         """Count entities matching criteria"""
         pass
 
@@ -196,7 +205,9 @@ class BaseRepository(ABC, Generic[T, ID]):
 
     async def bulk_add(self, entities: List[T]) -> BulkOperationResult:
         """Add multiple entities in a single operation"""
-        result = BulkOperationResult(total_count=len(entities), success_count=0, failed_count=0)
+        result = BulkOperationResult(
+            total_count=len(entities), success_count=0, failed_count=0
+        )
 
         for entity in entities:
             try:
@@ -213,7 +224,9 @@ class BaseRepository(ABC, Generic[T, ID]):
 
     async def bulk_update(self, entities: List[T]) -> BulkOperationResult:
         """Update multiple entities in a single operation"""
-        result = BulkOperationResult(total_count=len(entities), success_count=0, failed_count=0)
+        result = BulkOperationResult(
+            total_count=len(entities), success_count=0, failed_count=0
+        )
 
         for entity in entities:
             try:
@@ -230,7 +243,9 @@ class BaseRepository(ABC, Generic[T, ID]):
 
     async def bulk_delete(self, entity_ids: List[ID]) -> BulkOperationResult:
         """Delete multiple entities in a single operation"""
-        result = BulkOperationResult(total_count=len(entity_ids), success_count=0, failed_count=0)
+        result = BulkOperationResult(
+            total_count=len(entity_ids), success_count=0, failed_count=0
+        )
 
         for entity_id in entity_ids:
             try:
@@ -249,7 +264,9 @@ class BaseRepository(ABC, Generic[T, ID]):
 
     # Pagination
 
-    async def paginate(self, page: int = 1, page_size: int = 20, **filters: Any) -> Dict[str, Any]:
+    async def paginate(
+        self, page: int = 1, page_size: int = 20, **filters: Any
+    ) -> Dict[str, Any]:
         """Get paginated results"""
         offset = (page - 1) * page_size
         options = QueryOptions(limit=page_size, offset=offset)
@@ -290,7 +307,10 @@ class BaseRepository(ABC, Generic[T, ID]):
 
     @abstractmethod
     async def aggregate(
-        self, group_by: Optional[List[str]] = None, aggregations: Optional[Dict[str, str]] = None, **filters: Any
+        self,
+        group_by: Optional[List[str]] = None,
+        aggregations: Optional[Dict[str, str]] = None,
+        **filters: Any,
     ) -> List[Dict[str, Any]]:
         """Perform aggregation operations"""
         pass
@@ -403,7 +423,9 @@ class BaseRepository(ABC, Generic[T, ID]):
         results = await self.list(options=options, **filters)
         return results[0] if results else None
 
-    async def find_or_create(self, defaults: Dict[str, Any], **filters: Any) -> Tuple[T, bool]:
+    async def find_or_create(
+        self, defaults: Dict[str, Any], **filters: Any
+    ) -> Tuple[T, bool]:
         """Find entity or create if not exists"""
         entity = await self.find_one(**filters)
         if entity:
@@ -415,7 +437,9 @@ class BaseRepository(ABC, Generic[T, ID]):
         created_entity = await self.add(entity)
         return created_entity, True
 
-    async def update_or_create(self, defaults: Dict[str, Any], **filters: Any) -> Tuple[T, bool]:
+    async def update_or_create(
+        self, defaults: Dict[str, Any], **filters: Any
+    ) -> Tuple[T, bool]:
         """Update entity or create if not exists"""
         entity = await self.find_one(**filters)
 
@@ -458,7 +482,9 @@ class QueryBuilder(Generic[T]):
         self._filters.update(kwargs)
         return self
 
-    def order_by(self, field: str, order: SortOrder = SortOrder.ASC) -> "QueryBuilder[T]":
+    def order_by(
+        self, field: str, order: SortOrder = SortOrder.ASC
+    ) -> "QueryBuilder[T]":
         """Set ordering"""
         self.options.sort_by = field
         self.options.sort_order = order

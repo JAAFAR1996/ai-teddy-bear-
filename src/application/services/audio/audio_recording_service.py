@@ -7,14 +7,9 @@ from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 
-from ....domain.audio.models import (
-    AudioFormatType,
-    AudioQualityMode,
-    AudioSession,
-    AudioSessionType,
-    AudioSystemConfig,
-    PerformanceMetrics,
-)
+from ....domain.audio.models import (AudioFormatType, AudioQualityMode,
+                                     AudioSession, AudioSessionType,
+                                     AudioSystemConfig, PerformanceMetrics)
 
 
 class AudioSystemError(Exception):
@@ -44,7 +39,8 @@ class AudioRecordingService:
         try:
             # Try to import and initialize real recorder
             try:
-                from ....infrastructure.audio.audio_recorder import AudioRecorder
+                from ....infrastructure.audio.audio_recorder import \
+                    AudioRecorder
 
                 self.recorder = AudioRecorder()
                 self.logger.info("Real audio recorder initialized")
@@ -121,7 +117,9 @@ class AudioRecordingService:
                 return None
 
             # Create metadata
-            metadata = self._create_recording_metadata(duration, session, format_type, processing_time)
+            metadata = self._create_recording_metadata(
+                duration, session, format_type, processing_time
+            )
 
             # Update metrics
             self.metrics.increment_recordings(processing_time)
@@ -160,7 +158,9 @@ class AudioRecordingService:
                 return self.recorder.record_audio(duration)
             else:
                 # Fallback mock recording
-                return np.random.random(duration * self.config.sample_rate).astype(np.float32)
+                return np.random.random(duration * self.config.sample_rate).astype(
+                    np.float32
+                )
 
         except Exception as e:
             self.logger.error(f"Recording operation failed: {e}")
@@ -175,7 +175,11 @@ class AudioRecordingService:
             self.recorder.stop_recording()
 
     def _create_recording_metadata(
-        self, duration: int, session: Optional[AudioSession], format_type: AudioFormatType, processing_time: float
+        self,
+        duration: int,
+        session: Optional[AudioSession],
+        format_type: AudioFormatType,
+        processing_time: float,
     ) -> Dict[str, Any]:
         """Create metadata for recorded audio."""
         return {
@@ -216,7 +220,9 @@ class AudioRecordingService:
         return {
             "is_recording": self._is_recording,
             "current_session": (
-                self._current_recording_session.session_id if self._current_recording_session else None
+                self._current_recording_session.session_id
+                if self._current_recording_session
+                else None
             ),
             "config": {
                 "default_duration": self.config.default_record_duration,

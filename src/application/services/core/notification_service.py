@@ -18,10 +18,12 @@ from jinja2 import Template
 
 # استيراد النماذج من قاعدة البيانات
 try:
-    from database import ChildProfile, Emotion, EmotionSummary, SessionRecord, db_manager
+    from database import (ChildProfile, Emotion, EmotionSummary, SessionRecord,
+                          db_manager)
 except ImportError:
     # Fallback للبنية البديلة
-    from ...database import ChildProfile, Emotion, EmotionSummary, SessionRecord, db_manager
+    from ...database import (ChildProfile, Emotion, EmotionSummary,
+                             SessionRecord, db_manager)
 
 # إعداد logger مهيكل
 logger = structlog.get_logger(__name__)
@@ -320,7 +322,8 @@ class NotificationService:
         try:
             # فحص حدود معدل الإرسال
             try:
-                from .rate_monitor_service import check_notification_rate_limit, record_notification_sent
+                from .rate_monitor_service import (
+                    check_notification_rate_limit, record_notification_sent)
                 
                 can_send, reason = await check_notification_rate_limit(
                     notification.parent_email, 

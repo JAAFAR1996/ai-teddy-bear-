@@ -63,7 +63,9 @@ class ConversationResolver:
         if not user:
             raise Exception("Unauthorized")
 
-        return await self.conversation_service.start_conversation(child_id=child_id, parent_id=user.id)
+        return await self.conversation_service.start_conversation(
+            child_id=child_id, parent_id=user.id
+        )
 
     async def send_message(self, conversation_id: str, content: str, info) -> "Message":
         """Send message in conversation"""

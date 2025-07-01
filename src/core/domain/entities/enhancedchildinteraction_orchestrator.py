@@ -37,7 +37,8 @@ class EnhancedchildinteractionOrchestrator:
     async def execute_operation(self, operation_type: str, parameters: Dict[str, Any]):
         """تنفيذ عملية معقدة"""
         context = EnhancedchildinteractionContext(
-            operation_id=f"{operation_type}_{datetime.utcnow().timestamp()}", parameters=parameters
+            operation_id=f"{operation_type}_{datetime.utcnow().timestamp()}",
+            parameters=parameters,
         )
 
         logger.info(f"🚀 Starting {operation_type} operation")
@@ -72,7 +73,9 @@ class EnhancedchildinteractionOrchestrator:
         # Add validation logic here
         pass
 
-    async def _execute_steps(self, context: EnhancedchildinteractionContext, operation_type: str):
+    async def _execute_steps(
+        self, context: EnhancedchildinteractionContext, operation_type: str
+    ):
         """تنفيذ خطوات العملية"""
         steps = [self._step_1_prepare, self._step_2_process, self._step_3_finalize]
 
@@ -89,7 +92,9 @@ class EnhancedchildinteractionOrchestrator:
 
         return results
 
-    async def _finalize_operation(self, context: EnhancedchildinteractionContext, results):
+    async def _finalize_operation(
+        self, context: EnhancedchildinteractionContext, results
+    ):
         """إنهاء العملية"""
         # Add finalization logic here
         pass
@@ -117,7 +122,9 @@ class EnhancedchildinteractionOrchestrator:
 async def main():
     orchestrator = EnhancedchildinteractionOrchestrator()
 
-    result = await orchestrator.execute_operation("test_operation", {"param1": "value1", "param2": "value2"})
+    result = await orchestrator.execute_operation(
+        "test_operation", {"param1": "value1", "param2": "value2"}
+    )
 
     logger.info(f"Operation result: {result}")
 

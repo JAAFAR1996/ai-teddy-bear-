@@ -51,10 +51,17 @@ class SchedulerService:
                 "default": AsyncIOExecutor(),
             }
 
-            job_defaults = {"coalesce": False, "max_instances": 3, "misfire_grace_time": 30}
+            job_defaults = {
+                "coalesce": False,
+                "max_instances": 3,
+                "misfire_grace_time": 30,
+            }
 
             self.scheduler = AsyncIOScheduler(
-                jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone="UTC"
+                jobstores=jobstores,
+                executors=executors,
+                job_defaults=job_defaults,
+                timezone="UTC",
             )
 
             # إضافة listener للمراقبة
@@ -70,10 +77,14 @@ class SchedulerService:
         """مراقب الأحداث للمهام"""
         try:
             if event.exception:
-                self.logger.error("Job failed", job_id=event.job_id, exception=str(event.exception))
+                self.logger.error(
+                    "Job failed", job_id=event.job_id, exception=str(event.exception)
+                )
             else:
                 self.logger.info(
-                    "Job completed successfully", job_id=event.job_id, scheduled_run_time=event.scheduled_run_time
+                    "Job completed successfully",
+                    job_id=event.job_id,
+                    scheduled_run_time=event.scheduled_run_time,
                 )
         except Exception as e:
             self.logger.error("Error in job listener", error=str(e))
@@ -158,7 +169,10 @@ class SchedulerService:
                 replace_existing=True,
             )
 
-            self.logger.info("Scheduled jobs added successfully", job_count=len(self.scheduler.get_jobs()))
+            self.logger.info(
+                "Scheduled jobs added successfully",
+                job_count=len(self.scheduler.get_jobs()),
+            )
 
         except Exception as e:
             self.logger.error("Failed to add scheduled jobs", error=str(e))
@@ -212,9 +226,13 @@ class SchedulerService:
             total_items = preview.get("items_to_delete", {}).get("total", 0)
 
             if total_items > 10000:  # تنبيه إذا كان هناك كمية كبيرة
-                self.logger.warning("Large amount of data pending cleanup", total_items=total_items)
+                self.logger.warning(
+                    "Large amount of data pending cleanup", total_items=total_items
+                )
 
-            self.logger.debug("Data status monitored", items_pending_cleanup=total_items)
+            self.logger.debug(
+                "Data status monitored", items_pending_cleanup=total_items
+            )
 
         except Exception as e:
             self.logger.error("Data monitoring failed", error=str(e))
@@ -270,7 +288,9 @@ class SchedulerService:
     def add_custom_job(str, **kwargs) -> None:
         """إضافة مهمة مخصصة"""
         try:
-            self.scheduler.add_job(func, trigger, id=job_id, replace_existing=True, **kwargs)
+            self.scheduler.add_job(
+                func, trigger, id=job_id, replace_existing=True, **kwargs
+            )
 
             self.logger.info("Custom job added", job_id=job_id)
 
@@ -297,14 +317,22 @@ class SchedulerService:
                 job_info = {
                     "id": job.id,
                     "name": job.name,
-                    "next_run_time": job.next_run_time.isoformat() if job.next_run_time else None,
+                    "next_run_time": (
+                        job.next_run_time.isoformat() if job.next_run_time else None
+                    ),
                     "trigger": str(job.trigger),
-                    "func": job.func.__name__ if hasattr(job.func, "__name__") else str(job.func),
+                    "func": (
+                        job.func.__name__
+                        if hasattr(job.func, "__name__")
+                        else str(job.func)
+                    ),
                 }
                 jobs_info.append(job_info)
 
             return {
-                "scheduler_running": self.scheduler.running if self.scheduler else False,
+                "scheduler_running": (
+                    self.scheduler.running if self.scheduler else False
+                ),
                 "total_jobs": len(jobs),
                 "jobs": jobs_info,
             }

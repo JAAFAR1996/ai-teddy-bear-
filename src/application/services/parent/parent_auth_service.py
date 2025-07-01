@@ -70,7 +70,9 @@ class ParentAuthenticationService:
                 return None
 
             # التحقق من ربط الطفل
-            if credentials.child_id and not self._verify_child_access(parent["id"], credentials.child_id):
+            if credentials.child_id and not self._verify_child_access(
+                parent["id"], credentials.child_id
+            ):
                 logger.warning(f"Unauthorized child access: {credentials.child_id}")
                 return None
 
@@ -134,7 +136,12 @@ class ParentAuthenticationService:
     async def _find_parent_by_email(self, email: str) -> Optional[dict]:
         """البحث عن الوالد بالإيميل"""
         if not self.db:
-            return {"id": "test_parent", "email": email, "password_hash": "test_hash", "default_child_id": "test_child"}
+            return {
+                "id": "test_parent",
+                "email": email,
+                "password_hash": "test_hash",
+                "default_child_id": "test_child",
+            }
 
         return await self.db.get_parent_by_email(email)
 

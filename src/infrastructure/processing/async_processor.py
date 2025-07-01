@@ -139,7 +139,9 @@ class ProcessingTask:
             "status": self.status.value,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "retry_count": self.retry_count,
             "max_retries": self.max_retries,
             "tags": list(self.tags),
@@ -192,7 +194,10 @@ class TaskManager:
             return False
 
         for dep_id in self.dependencies[task_id]:
-            if dep_id not in self.results or self.results[dep_id].status != TaskStatus.COMPLETED:
+            if (
+                dep_id not in self.results
+                or self.results[dep_id].status != TaskStatus.COMPLETED
+            ):
                 return False
 
         return True
@@ -216,7 +221,10 @@ class TaskManager:
                 to_cancel = list(self.dependents[task_id])
                 while to_cancel:
                     dependent_id = to_cancel.pop(0)
-                    if dependent_id in self.tasks and self.tasks[dependent_id].status == TaskStatus.PENDING:
+                    if (
+                        dependent_id in self.tasks
+                        and self.tasks[dependent_id].status == TaskStatus.PENDING
+                    ):
                         self.tasks[dependent_id].status = TaskStatus.CANCELLED
                         to_cancel.extend(self.dependents[dependent_id])
 
@@ -256,7 +264,9 @@ class PerformanceMonitor:
             self.metrics["tasks_cancelled"] += 1
 
         self.metrics["total_execution_time"] += result.execution_time
-        self.metrics["average_execution_time"] = self.metrics["total_execution_time"] / self.metrics["tasks_processed"]
+        self.metrics["average_execution_time"] = (
+            self.metrics["total_execution_time"] / self.metrics["tasks_processed"]
+        )
 
         if result.memory_used > self.metrics["peak_memory_usage"]:
             self.metrics["peak_memory_usage"] = result.memory_used
@@ -291,10 +301,18 @@ class PerformanceMonitor:
         return {
             "uptime_seconds": uptime,
             "tasks_per_second": self.metrics["tasks_processed"] / max(uptime, 1),
-            "success_rate": (self.metrics["tasks_completed"] / max(self.metrics["tasks_processed"], 1)) * 100,
+            "success_rate": (
+                self.metrics["tasks_completed"]
+                / max(self.metrics["tasks_processed"], 1)
+            )
+            * 100,
             "average_execution_time": self.metrics["average_execution_time"],
             "peak_memory_usage_mb": self.metrics["peak_memory_usage"] / 1024 / 1024,
-            "queue_size": self.metrics["queue_size_history"][-1][1] if self.metrics["queue_size_history"] else 0,
+            "queue_size": (
+                self.metrics["queue_size_history"][-1][1]
+                if self.metrics["queue_size_history"]
+                else 0
+            ),
             "current_throughput": self.calculate_throughput(),
             **self.metrics,
         }
@@ -430,9 +448,13 @@ class AdvancedAsyncProcessor:
 
         # Wait for workers to finish
         try:
-            await asyncio.wait_for(asyncio.gather(*self.workers, return_exceptions=True), timeout=timeout)
+            await asyncio.wait_for(
+                asyncio.gather(*self.workers, return_exceptions=True), timeout=timeout
+            )
         except asyncio.TimeoutError:
-            self.logger.warning("Timeout waiting for workers to finish, forcing shutdown")
+            self.logger.warning(
+                "Timeout waiting for workers to finish, forcing shutdown"
+            )
             for worker in self.workers:
                 if not worker.done():
                     worker.cancel()
@@ -489,7 +511,9 @@ class AdvancedAsyncProcessor:
         """Get result of a completed task"""
         return self.task_manager.results.get(task_id)
 
-    async def wait_for_task(self, task_id: str, timeout: Optional[float] = None) -> TaskResult:
+    async def wait_for_task(
+        self, task_id: str, timeout: Optional[float] = None
+    ) -> TaskResult:
         """Wait for a specific task to complete"""
         start_time = time.time()
 
@@ -499,11 +523,15 @@ class AdvancedAsyncProcessor:
                 return result
 
             if timeout and (time.time() - start_time) > timeout:
-                raise asyncio.TimeoutError(f"Task {task_id} timed out after {timeout} seconds")
+                raise asyncio.TimeoutError(
+                    f"Task {task_id} timed out after {timeout} seconds"
+                )
 
             await asyncio.sleep(0.1)
 
-    def register_processor(self, task_type: ProcessingType, processor_func: Callable) -> None:
+    def register_processor(
+        self, task_type: ProcessingType, processor_func: Callable
+    ) -> None:
         """Register a custom processor for a task type"""
         self.processors[task_type] = processor_func
         self.logger.info(f"Registered custom processor for {task_type.value}")
@@ -530,7 +558,9 @@ class AdvancedAsyncProcessor:
             try:
                 # Get next task from priority queue
                 try:
-                    priority, task = await asyncio.wait_for(self.priority_queue.get(), timeout=1.0)
+                    priority, task = await asyncio.wait_for(
+                        self.priority_queue.get(), timeout=1.0
+                    )
                 except asyncio.TimeoutError:
                     continue
 
@@ -556,11 +586,15 @@ class AdvancedAsyncProcessor:
                 # Submit newly ready tasks
                 for ready_task_id in ready_tasks:
                     ready_task = self.task_manager.tasks[ready_task_id]
-                    await self.priority_queue.put((ready_task.priority.value, ready_task))
+                    await self.priority_queue.put(
+                        (ready_task.priority.value, ready_task)
+                    )
 
                 # Update worker stats
                 self.worker_stats[worker_id]["tasks_processed"] += 1
-                self.worker_stats[worker_id]["total_execution_time"] += result.execution_time
+                self.worker_stats[worker_id][
+                    "total_execution_time"
+                ] += result.execution_time
                 self.worker_stats[worker_id]["last_active"] = time.time()
 
                 # Record performance metrics
@@ -592,7 +626,9 @@ class AdvancedAsyncProcessor:
             # Apply timeout if specified
             if task.timeout:
                 try:
-                    task_result = await asyncio.wait_for(execution_task, timeout=task.timeout)
+                    task_result = await asyncio.wait_for(
+                        execution_task, timeout=task.timeout
+                    )
                 except asyncio.TimeoutError:
                     execution_task.cancel()
                     result.status = TaskStatus.TIMEOUT
@@ -651,11 +687,15 @@ class AdvancedAsyncProcessor:
         if task.cpu_intensive and not task.io_bound:
             # CPU-intensive tasks go to process pool
             loop = asyncio.get_event_loop()
-            return await loop.run_in_executor(self.process_executor, self._sync_processor_wrapper, processor, task)
+            return await loop.run_in_executor(
+                self.process_executor, self._sync_processor_wrapper, processor, task
+            )
         elif task.io_bound or task.memory_intensive:
             # I/O bound tasks go to thread pool
             loop = asyncio.get_event_loop()
-            return await loop.run_in_executor(self.thread_executor, self._sync_processor_wrapper, processor, task)
+            return await loop.run_in_executor(
+                self.thread_executor, self._sync_processor_wrapper, processor, task
+            )
         else:
             # Async tasks run directly
             return await processor(task)
@@ -683,7 +723,9 @@ class AdvancedAsyncProcessor:
                 # Update performance metrics
                 if self.performance_monitor:
                     self.performance_monitor.calculate_throughput()
-                    self.performance_monitor.record_queue_size(self.priority_queue.qsize())
+                    self.performance_monitor.record_queue_size(
+                        self.priority_queue.qsize()
+                    )
 
                 # Clean up old completed tasks (keep last 1000)
                 current_time = time.time()
@@ -703,7 +745,9 @@ class AdvancedAsyncProcessor:
 
     # Specific task processors
 
-    async def _process_audio_transcription(self, task: ProcessingTask) -> Dict[str, Any]:
+    async def _process_audio_transcription(
+        self, task: ProcessingTask
+    ) -> Dict[str, Any]:
         """Process audio transcription using Whisper or other STT"""
         audio_data = task.payload.get("audio_data")
         if not audio_data:
@@ -873,7 +917,13 @@ class AdvancedAsyncProcessor:
         # Mock database operation - replace with actual database calls
         await asyncio.sleep(0.05)
 
-        return {"operation": operation, "table": table, "affected_rows": 1, "success": True, "execution_time": 0.05}
+        return {
+            "operation": operation,
+            "table": table,
+            "affected_rows": 1,
+            "success": True,
+            "execution_time": 0.05,
+        }
 
     async def _process_notification(self, task: ProcessingTask) -> Dict[str, Any]:
         """Process notification sending"""
@@ -887,7 +937,12 @@ class AdvancedAsyncProcessor:
         # Mock notification - replace with actual notification service
         await asyncio.sleep(0.1)
 
-        return {"notification_type": notification_type, "recipient": recipient, "status": "sent", "delivery_time": 0.1}
+        return {
+            "notification_type": notification_type,
+            "recipient": recipient,
+            "status": "sent",
+            "delivery_time": 0.1,
+        }
 
     async def _process_custom(self, task: ProcessingTask) -> Dict[str, Any]:
         """Process custom tasks"""
@@ -927,7 +982,9 @@ def create_task(
     if isinstance(priority, int):
         priority = TaskPriority(priority)
 
-    return ProcessingTask(task_type=task_type, payload=payload, priority=priority, **kwargs)
+    return ProcessingTask(
+        task_type=task_type, payload=payload, priority=priority, **kwargs
+    )
 
 
 # Example usage and testing
@@ -942,14 +999,19 @@ async def main():
 
         # Audio processing task
         audio_task = create_task(
-            ProcessingType.AUDIO_TRANSCRIPTION, {"audio_data": b"fake_audio_data"}, TaskPriority.HIGH, timeout=10.0
+            ProcessingType.AUDIO_TRANSCRIPTION,
+            {"audio_data": b"fake_audio_data"},
+            TaskPriority.HIGH,
+            timeout=10.0,
         )
         task_id = await processor.submit_task(audio_task)
         tasks.append(task_id)
 
         # AI response task
         ai_task = create_task(
-            ProcessingType.AI_RESPONSE, {"prompt": "Hello, how are you?", "model": "gpt-3.5-turbo"}, TaskPriority.NORMAL
+            ProcessingType.AI_RESPONSE,
+            {"prompt": "Hello, how are you?", "model": "gpt-3.5-turbo"},
+            TaskPriority.NORMAL,
         )
         task_id = await processor.submit_task(ai_task)
         tasks.append(task_id)

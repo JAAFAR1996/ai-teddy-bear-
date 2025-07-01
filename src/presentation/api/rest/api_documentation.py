@@ -64,7 +64,11 @@ def custom_openapi(FastAPI) -> None:
                 "summary": "Conversation started webhook",
                 "requestBody": {
                     "content": {
-                        "application/json": {"schema": {"$ref": "#/components/schemas/ConversationStartedEvent"}}
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ConversationStartedEvent"
+                            }
+                        }
                     }
                 },
             }

@@ -159,7 +159,11 @@ class AdvancedFamilySystem:
         }
 
     def create_family_profile(
-        self, family_name: str, parent_name: str, children_info: List[Dict], settings: Dict = None
+        self,
+        family_name: str,
+        parent_name: str,
+        children_info: List[Dict],
+        settings: Dict = None,
     ) -> str:
         """إنشاء ملف عائلة جديد"""
 
@@ -237,7 +241,9 @@ class AdvancedFamilySystem:
         """إنشاء رسائل تشجيعية افتراضية للعائلة"""
 
         children = [member for member in family.members if member.role == "child"]
-        parent = next((member for member in family.members if member.role == "parent"), None)
+        parent = next(
+            (member for member in family.members if member.role == "parent"), None
+        )
 
         for child in children:
             for device_id in child.device_ids:
@@ -247,9 +253,9 @@ class AdvancedFamilySystem:
                     child_name=child.name,
                     device_id=device_id,
                     message_type=MessageType.MOTIVATION,
-                    content=random.choice(self.message_templates[MessageType.MOTIVATION.value]).format(
-                        child_name=child.name
-                    ),
+                    content=random.choice(
+                        self.message_templates[MessageType.MOTIVATION.value]
+                    ).format(child_name=child.name),
                     scheduled_time=time(8, 0),  # 8:00 ص
                     days_of_week=[0, 1, 2, 3, 4],  # الاثنين إلى الجمعة
                     is_active=True,
@@ -263,9 +269,9 @@ class AdvancedFamilySystem:
                     child_name=child.name,
                     device_id=device_id,
                     message_type=MessageType.BEDTIME,
-                    content=random.choice(self.message_templates[MessageType.BEDTIME.value]).format(
-                        child_name=child.name
-                    ),
+                    content=random.choice(
+                        self.message_templates[MessageType.BEDTIME.value]
+                    ).format(child_name=child.name),
                     scheduled_time=time(20, 30),  # 8:30 م
                     days_of_week=[0, 1, 2, 3, 4, 5, 6],  # كل يوم
                     is_active=True,
@@ -279,7 +285,9 @@ class AdvancedFamilySystem:
         """إنشاء قيود زمنية افتراضية"""
 
         children = [member for member in family.members if member.role == "child"]
-        parent = next((member for member in family.members if member.role == "parent"), None)
+        parent = next(
+            (member for member in family.members if member.role == "parent"), None
+        )
 
         for child in children:
             for device_id in child.device_ids:
@@ -291,7 +299,9 @@ class AdvancedFamilySystem:
                     restriction_type=TimeRestrictionType.DAILY_LIMIT,
                     start_time=None,
                     end_time=None,
-                    daily_limit_minutes=family.shared_settings.get("daily_interaction_limit", 60),
+                    daily_limit_minutes=family.shared_settings.get(
+                        "daily_interaction_limit", 60
+                    ),
                     days_of_week=[0, 1, 2, 3, 4, 5, 6],
                     is_active=True,
                     set_by_parent=parent.name if parent else "system",
@@ -423,16 +433,25 @@ class AdvancedFamilySystem:
 
         return messages_to_send
 
-    def check_time_restrictions(self, device_id: str, child_name: str) -> Dict[str, Any]:
+    def check_time_restrictions(
+        self, device_id: str, child_name: str
+    ) -> Dict[str, Any]:
         """فحص القيود الزمنية للطفل"""
 
         current_time = datetime.now().time()
         current_weekday = datetime.now().weekday()
 
-        restrictions_status = {"allowed": True, "restrictions": [], "time_remaining": None, "next_allowed_time": None}
+        restrictions_status = {
+            "allowed": True,
+            "restrictions": [],
+            "time_remaining": None,
+            "next_allowed_time": None,
+        }
 
         child_restrictions = [
-            r for r in self.time_restrictions if r.device_id == device_id and r.child_name == child_name and r.is_active
+            r
+            for r in self.time_restrictions
+            if r.device_id == device_id and r.child_name == child_name and r.is_active
         ]
 
         for restriction in child_restrictions:
@@ -447,11 +466,18 @@ class AdvancedFamilySystem:
                 if restriction.start_time and restriction.end_time:
                     if restriction.start_time > restriction.end_time:
                         # يمتد عبر منتصف الليل
-                        if current_time >= restriction.start_time or current_time <= restriction.end_time:
+                        if (
+                            current_time >= restriction.start_time
+                            or current_time <= restriction.end_time
+                        ):
                             violation = True
                     else:
                         # في نفس اليوم
-                        if restriction.start_time <= current_time <= restriction.end_time:
+                        if (
+                            restriction.start_time
+                            <= current_time
+                            <= restriction.end_time
+                        ):
                             violation = True
 
             elif restriction.restriction_type == TimeRestrictionType.TIME_WINDOW:
@@ -459,7 +485,9 @@ class AdvancedFamilySystem:
                 if (
                     restriction.start_time
                     and restriction.end_time
-                    and not (restriction.start_time <= current_time <= restriction.end_time)
+                    and not (
+                        restriction.start_time <= current_time <= restriction.end_time
+                    )
                 ):
                     violation = True
 
@@ -480,7 +508,9 @@ class AdvancedFamilySystem:
 
         return restrictions_status
 
-    def generate_family_comparison_report(self, family_id: str, children_data: Dict[str, Dict]) -> ChildComparison:
+    def generate_family_comparison_report(
+        self, family_id: str, children_data: Dict[str, Dict]
+    ) -> ChildComparison:
         """توليد تقرير مقارنة بين الأطفال في العائلة"""
 
         if family_id not in self.family_profiles:
@@ -528,7 +558,9 @@ class AdvancedFamilySystem:
                 if score > 80:
                     insights.append(f"{child_name} يتمتع بمهارات اجتماعية ممتازة")
                 elif score < 50:
-                    recommendations.append(f"شجع {child_name} على المزيد من الأنشطة الاجتماعية")
+                    recommendations.append(
+                        f"شجع {child_name} على المزيد من الأنشطة الاجتماعية"
+                    )
 
         comparison = ChildComparison(
             family_id=family_id,
@@ -553,10 +585,17 @@ class AdvancedFamilySystem:
         # تحديث القيود الزمنية إذا تغيرت
         if "daily_interaction_limit" in new_settings:
             for restriction in self.time_restrictions:
-                if restriction.restriction_type == TimeRestrictionType.DAILY_LIMIT and any(
-                    member.name == restriction.child_name for member in family.members if member.role == "child"
+                if (
+                    restriction.restriction_type == TimeRestrictionType.DAILY_LIMIT
+                    and any(
+                        member.name == restriction.child_name
+                        for member in family.members
+                        if member.role == "child"
+                    )
                 ):
-                    restriction.daily_limit_minutes = new_settings["daily_interaction_limit"]
+                    restriction.daily_limit_minutes = new_settings[
+                        "daily_interaction_limit"
+                    ]
 
         return True
 
@@ -598,12 +637,18 @@ class AdvancedFamilySystem:
             ],
             "recent_activity": [],  # سيتم ملؤه من أنظمة أخرى
             "upcoming_messages": [
-                {"child": msg.child_name, "time": msg.scheduled_time.strftime("%H:%M"), "type": msg.message_type.value}
+                {
+                    "child": msg.child_name,
+                    "time": msg.scheduled_time.strftime("%H:%M"),
+                    "type": msg.message_type.value,
+                }
                 for msg in self.scheduled_messages[-5:]  # آخر 5 رسائل
             ],
         }
 
-    def create_custom_encouragement_message(self, child_name: str, achievement: str, personal_traits: List[str]) -> str:
+    def create_custom_encouragement_message(
+        self, child_name: str, achievement: str, personal_traits: List[str]
+    ) -> str:
         """إنشاء رسالة تشجيعية مخصصة"""
 
         # قوالب مخصصة بناءً على الإنجاز
@@ -628,11 +673,16 @@ class AdvancedFamilySystem:
 
         # اختيار فئة الإنجاز
         category = "academic"  # افتراضي
-        if any(trait in ["creative", "artistic", "imaginative"] for trait in personal_traits):
+        if any(
+            trait in ["creative", "artistic", "imaginative"]
+            for trait in personal_traits
+        ):
             category = "creative"
         elif any(trait in ["kind", "helpful", "friendly"] for trait in personal_traits):
             category = "social"
-        elif any(trait in ["active", "strong", "athletic"] for trait in personal_traits):
+        elif any(
+            trait in ["active", "strong", "athletic"] for trait in personal_traits
+        ):
             category = "physical"
 
         template = random.choice(achievement_templates[category])
@@ -649,23 +699,35 @@ class AdvancedFamilySystem:
         children = [member for member in family.members if member.role == "child"]
 
         control_summary = {
-            "time_management": {"daily_limits_set": 0, "bedtime_restrictions": 0, "study_time_blocks": 0},
+            "time_management": {
+                "daily_limits_set": 0,
+                "bedtime_restrictions": 0,
+                "study_time_blocks": 0,
+            },
             "content_filtering": {
                 "level": family.shared_settings.get("content_filtering", "moderate"),
                 "custom_blocks": 0,
             },
             "communication": {
                 "scheduled_messages": len(self.scheduled_messages),
-                "emergency_contacts": len(family.shared_settings.get("emergency_contacts", [])),
+                "emergency_contacts": len(
+                    family.shared_settings.get("emergency_contacts", [])
+                ),
             },
-            "monitoring": {"activity_tracking": True, "progress_reports": True, "behavioral_alerts": True},
+            "monitoring": {
+                "activity_tracking": True,
+                "progress_reports": True,
+                "behavioral_alerts": True,
+            },
         }
 
         # حساب القيود الزمنية
         for restriction in self.time_restrictions:
             if restriction.restriction_type == TimeRestrictionType.DAILY_LIMIT:
                 control_summary["time_management"]["daily_limits_set"] += 1
-            elif restriction.restriction_type == TimeRestrictionType.BEDTIME_RESTRICTION:
+            elif (
+                restriction.restriction_type == TimeRestrictionType.BEDTIME_RESTRICTION
+            ):
                 control_summary["time_management"]["bedtime_restrictions"] += 1
             elif restriction.restriction_type == TimeRestrictionType.STUDY_TIME:
                 control_summary["time_management"]["study_time_blocks"] += 1

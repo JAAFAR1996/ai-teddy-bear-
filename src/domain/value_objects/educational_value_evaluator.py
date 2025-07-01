@@ -50,28 +50,65 @@ class EducationalValueEvaluator:
         """Load age-appropriate learning objectives"""
         return {
             3: {
-                "core_skills": ["colors", "shapes", "numbers_1_10", "letters", "animals"],
+                "core_skills": [
+                    "colors",
+                    "shapes",
+                    "numbers_1_10",
+                    "letters",
+                    "animals",
+                ],
                 "social_skills": ["sharing", "taking_turns", "please_thank_you"],
                 "motor_skills": ["walking", "running", "jumping", "holding_objects"],
-                "language": ["simple_words", "basic_sentences", "following_instructions"],
+                "language": [
+                    "simple_words",
+                    "basic_sentences",
+                    "following_instructions",
+                ],
             },
             4: {
-                "core_skills": ["counting_to_20", "alphabet", "rhyming", "basic_addition"],
+                "core_skills": [
+                    "counting_to_20",
+                    "alphabet",
+                    "rhyming",
+                    "basic_addition",
+                ],
                 "social_skills": ["friendship", "cooperation", "empathy", "manners"],
                 "motor_skills": ["drawing", "cutting", "building", "balance"],
                 "language": ["storytelling", "questions", "expressing_feelings"],
             },
             5: {
-                "core_skills": ["reading_readiness", "writing_letters", "counting_to_50", "patterns"],
-                "social_skills": ["problem_solving", "conflict_resolution", "leadership"],
+                "core_skills": [
+                    "reading_readiness",
+                    "writing_letters",
+                    "counting_to_50",
+                    "patterns",
+                ],
+                "social_skills": [
+                    "problem_solving",
+                    "conflict_resolution",
+                    "leadership",
+                ],
                 "motor_skills": ["fine_motor", "sports_basics", "coordination"],
-                "language": ["complex_sentences", "vocabulary_expansion", "listening_skills"],
+                "language": [
+                    "complex_sentences",
+                    "vocabulary_expansion",
+                    "listening_skills",
+                ],
             },
             6: {
-                "core_skills": ["reading", "writing", "math_basics", "science_concepts"],
+                "core_skills": [
+                    "reading",
+                    "writing",
+                    "math_basics",
+                    "science_concepts",
+                ],
                 "social_skills": ["teamwork", "responsibility", "respect", "diversity"],
                 "motor_skills": ["sports", "arts_crafts", "technology_basics"],
-                "language": ["reading_comprehension", "creative_writing", "presentations"],
+                "language": [
+                    "reading_comprehension",
+                    "creative_writing",
+                    "presentations",
+                ],
             },
         }
 
@@ -108,7 +145,9 @@ class EducationalValueEvaluator:
         learning_categories = self._identify_learning_categories(content)
 
         # Calculate educational score
-        educational_score = self._calculate_educational_score(content, child_age, learning_categories)
+        educational_score = self._calculate_educational_score(
+            content, child_age, learning_categories
+        )
 
         # Assess cognitive complexity
         cognitive_complexity = self._assess_cognitive_complexity(content, child_age)
@@ -133,7 +172,9 @@ class EducationalValueEvaluator:
         identified_categories = []
 
         # Check multiple intelligences
-        for intelligence, keywords in self.learning_frameworks["multiple_intelligences"].items():
+        for intelligence, keywords in self.learning_frameworks[
+            "multiple_intelligences"
+        ].items():
             if any(keyword in content_lower for keyword in keywords):
                 identified_categories.append(f"intelligence_{intelligence}")
 
@@ -149,7 +190,9 @@ class EducationalValueEvaluator:
 
         return list(set(identified_categories))
 
-    def _calculate_educational_score(self, content: str, child_age: int, learning_categories: List[str]) -> float:
+    def _calculate_educational_score(
+        self, content: str, child_age: int, learning_categories: List[str]
+    ) -> float:
         """Calculate overall educational value score"""
 
         base_score = 0.0
@@ -170,7 +213,9 @@ class EducationalValueEvaluator:
             "question",
         ]
 
-        educational_content = sum(1 for keyword in educational_keywords if keyword in content_lower)
+        educational_content = sum(
+            1 for keyword in educational_keywords if keyword in content_lower
+        )
         base_score += min(0.4, educational_content * 0.1)
 
         # Score based on learning categories
@@ -183,7 +228,9 @@ class EducationalValueEvaluator:
 
         # Bonus for interactive elements
         interactive_keywords = ["what", "how", "why", "can you", "try to", "let's"]
-        interactive_content = sum(1 for keyword in interactive_keywords if keyword in content_lower)
+        interactive_content = sum(
+            1 for keyword in interactive_keywords if keyword in content_lower
+        )
         base_score += min(0.2, interactive_content * 0.05)
 
         return min(1.0, base_score)
@@ -208,7 +255,12 @@ class EducationalValueEvaluator:
             max_complexity = max(complexity_scores.items(), key=lambda x: x[1])
 
             # Map complexity to numerical score
-            complexity_mapping = {"simple": 0.25, "moderate": 0.5, "complex": 0.75, "advanced": 1.0}
+            complexity_mapping = {
+                "simple": 0.25,
+                "moderate": 0.5,
+                "complex": 0.75,
+                "advanced": 1.0,
+            }
 
             return complexity_mapping.get(max_complexity[0], 0.25)
 
@@ -263,7 +315,9 @@ class EducationalValueEvaluator:
 
         return matched_skills / total_skills if total_skills > 0 else 0.0
 
-    def suggest_educational_enhancements(self, content: str, child_age: int, current_score: float) -> List[str]:
+    def suggest_educational_enhancements(
+        self, content: str, child_age: int, current_score: float
+    ) -> List[str]:
         """Suggest ways to enhance educational value"""
         suggestions = []
         content_lower = content.lower()
@@ -272,7 +326,9 @@ class EducationalValueEvaluator:
         age_curriculum = self.age_curricula.get(child_age, self.age_curricula[6])
 
         for category, skills in age_curriculum.items():
-            category_present = any(skill.replace("_", " ") in content_lower for skill in skills)
+            category_present = any(
+                skill.replace("_", " ") in content_lower for skill in skills
+            )
 
             if not category_present:
                 suggestions.append(f"Consider adding {category} elements")
@@ -292,7 +348,9 @@ class EducationalValueEvaluator:
 
         return suggestions
 
-    def analyze_learning_progression(self, conversation_history: List[str], child_age: int) -> Dict[str, any]:
+    def analyze_learning_progression(
+        self, conversation_history: List[str], child_age: int
+    ) -> Dict[str, any]:
         """Analyze learning progression through conversation"""
 
         learning_timeline = []
@@ -324,7 +382,9 @@ class EducationalValueEvaluator:
             "learning_timeline": learning_timeline,
             "progression_trend": progression_trend,
             "skill_mastery": skill_mastery,
-            "recommendations": self._generate_learning_recommendations(progression_trend, skill_mastery, child_age),
+            "recommendations": self._generate_learning_recommendations(
+                progression_trend, skill_mastery, child_age
+            ),
         }
 
     def _calculate_learning_trend(self, timeline: List[Dict]) -> str:
@@ -342,7 +402,9 @@ class EducationalValueEvaluator:
         else:
             return "stable"
 
-    def _assess_skill_mastery(self, skill_timeline: Dict[str, List[int]]) -> Dict[str, str]:
+    def _assess_skill_mastery(
+        self, skill_timeline: Dict[str, List[int]]
+    ) -> Dict[str, str]:
         """Assess skill mastery levels"""
         mastery_levels = {}
 
@@ -365,20 +427,28 @@ class EducationalValueEvaluator:
         recommendations = []
 
         if progression_trend == "declining":
-            recommendations.append("Educational content decreasing - add more learning activities")
+            recommendations.append(
+                "Educational content decreasing - add more learning activities"
+            )
 
         # Check for skill gaps
         expected_skills = self.age_curricula.get(child_age, {})
         for category, skills in expected_skills.items():
-            covered_skills = [skill for skill in skill_mastery.keys() if skill.endswith(category)]
+            covered_skills = [
+                skill for skill in skill_mastery.keys() if skill.endswith(category)
+            ]
 
             if len(covered_skills) < len(skills) * 0.5:
                 recommendations.append(f"Focus more on {category} development")
 
         # Suggest skill advancement
-        mastered_skills = [skill for skill, level in skill_mastery.items() if level == "mastered"]
+        mastered_skills = [
+            skill for skill, level in skill_mastery.items() if level == "mastered"
+        ]
 
         if len(mastered_skills) > 3:
-            recommendations.append("Child showing mastery - consider advancing to more complex topics")
+            recommendations.append(
+                "Child showing mastery - consider advancing to more complex topics"
+            )
 
         return recommendations

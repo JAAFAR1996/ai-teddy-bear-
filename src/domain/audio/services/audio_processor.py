@@ -49,7 +49,9 @@ class AudioProcessor:
 
             # Use noisereduce library
             reduced = nr.reduce_noise(
-                y=audio_data, sr=self.config.sample_rate, prop_decrease=self.config.noise_reduction_strength
+                y=audio_data,
+                sr=self.config.sample_rate,
+                prop_decrease=self.config.noise_reduction_strength,
             )
             return reduced
 
@@ -86,7 +88,9 @@ class AudioProcessor:
             self.logger.error(f"Normalization error: {e}")
             return audio_data
 
-    async def change_pitch(self, audio_data: np.ndarray, semitones: float) -> np.ndarray:
+    async def change_pitch(
+        self, audio_data: np.ndarray, semitones: float
+    ) -> np.ndarray:
         """Change audio pitch"""
         try:
             if audio_data is None or len(audio_data) == 0:
@@ -100,14 +104,18 @@ class AudioProcessor:
             self.logger.error(f"Pitch shift error: {e}")
             return audio_data
 
-    async def change_speed(self, audio_data: np.ndarray, speed_factor: float) -> np.ndarray:
+    async def change_speed(
+        self, audio_data: np.ndarray, speed_factor: float
+    ) -> np.ndarray:
         """Change audio speed without affecting pitch"""
         try:
             if audio_data is None or len(audio_data) == 0:
                 return audio_data
 
             # Use pyrubberband for time stretching
-            stretched = pyrb.time_stretch(audio_data, self.config.sample_rate, speed_factor)
+            stretched = pyrb.time_stretch(
+                audio_data, self.config.sample_rate, speed_factor
+            )
             return stretched
 
         except Exception as e:

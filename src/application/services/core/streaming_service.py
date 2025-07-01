@@ -17,9 +17,11 @@ from elevenlabs import ElevenLabs, Voice, VoiceSettings
 from websockets.client import WebSocketClientProtocol
 from websockets.server import WebSocketServerProtocol
 
-from src.application.services.llm_service_factory import LLMProvider, LLMServiceFactory
+from src.application.services.llm_service_factory import (LLMProvider,
+                                                          LLMServiceFactory)
 from src.application.services.moderation_service import ModerationService
-from src.application.services.parent_dashboard_service import ParentDashboardService
+from src.application.services.parent_dashboard_service import \
+    ParentDashboardService
 from src.application.services.speech_to_text_service import SpeechToTextService
 from src.audio.state_manager import AudioState, state_manager
 from src.core.domain.entities.audio_stream import AudioStream

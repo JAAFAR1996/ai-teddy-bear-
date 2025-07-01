@@ -146,7 +146,10 @@ class CircuitBreaker:
         )
 
         logger.info(
-            "Circuit breaker state changed", name=self.config.name, from_state=old_state.value, to_state=new_state.value
+            "Circuit breaker state changed",
+            name=self.config.name,
+            from_state=old_state.value,
+            to_state=new_state.value,
         )
 
         # Notify callbacks
@@ -164,7 +167,9 @@ class CircuitBreaker:
         if self._stats.last_failure_time is None:
             return False
 
-        return time.time() - self._stats.last_failure_time >= self.config.recovery_timeout
+        return (
+            time.time() - self._stats.last_failure_time >= self.config.recovery_timeout
+        )
 
     async def call(self, func: Callable, *args, **kwargs) -> Any:
         """
@@ -180,11 +185,18 @@ class CircuitBreaker:
 
             # Reject if circuit is open
             if self.is_open:
-                raise CircuitBreakerError(f"Circuit breaker is OPEN (name={self.config.name})")
+                raise CircuitBreakerError(
+                    f"Circuit breaker is OPEN (name={self.config.name})"
+                )
 
             # Check half-open call limit
-            if self.is_half_open and self._half_open_calls >= self.config.half_open_max_calls:
-                raise CircuitBreakerError(f"Circuit breaker half-open call limit reached (name={self.config.name})")
+            if (
+                self.is_half_open
+                and self._half_open_calls >= self.config.half_open_max_calls
+            ):
+                raise CircuitBreakerError(
+                    f"Circuit breaker half-open call limit reached (name={self.config.name})"
+                )
 
         # Execute function
         start_time = time.time()
@@ -219,7 +231,9 @@ class CircuitBreaker:
             duration = time.time() - start_time
 
             if hasattr(self, "_metrics_recorder"):
-                self._metrics_recorder.record_call(self.config.name, self._state.value, duration)
+                self._metrics_recorder.record_call(
+                    self.config.name, self._state.value, duration
+                )
 
     async def _on_success(self) -> None:
         """Handle successful call"""

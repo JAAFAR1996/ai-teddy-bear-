@@ -8,8 +8,10 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from ...domain.accessibility.entities.accessibility_profile import AccessibilityProfile, AdaptiveContent
-from ...domain.accessibility.value_objects.special_need_type import SpecialNeedType
+from ...domain.accessibility.entities.accessibility_profile import (
+    AccessibilityProfile, AdaptiveContent)
+from ...domain.accessibility.value_objects.special_need_type import \
+    SpecialNeedType
 from ..dto.accessibility_dto import AccessibilityProfileDTO, AdaptiveContentDTO
 
 logger = logging.getLogger(__name__)
@@ -22,7 +24,10 @@ class CreateAccessibilityProfileUseCase:
         self.repository = repository
 
     def execute(
-        self, child_id: str, special_needs: List[str], communication_level: str = "verbal"
+        self,
+        child_id: str,
+        special_needs: List[str],
+        communication_level: str = "verbal",
     ) -> AccessibilityProfile:
         """تنفيذ إنشاء ملف الوصولية"""
         try:
@@ -37,7 +42,9 @@ class CreateAccessibilityProfileUseCase:
 
             # إنشاء ملف الوصولية
             profile = AccessibilityProfile(
-                child_id=child_id, special_needs=special_needs, communication_level=communication_level
+                child_id=child_id,
+                special_needs=special_needs,
+                communication_level=communication_level,
             )
 
             # حفظ في قاعدة البيانات
@@ -68,7 +75,9 @@ class AdaptContentUseCase:
                 return original_content
 
             # تطبيق التكييفات
-            adapted_content = self.adaptation_service.adapt_content(profile, original_content)
+            adapted_content = self.adaptation_service.adapt_content(
+                profile, original_content
+            )
 
             logger.info(f"تم تكييف المحتوى للطفل {child_id}")
             return adapted_content

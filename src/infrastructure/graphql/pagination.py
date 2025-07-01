@@ -93,7 +93,11 @@ class CursorPaginator:
 
         # Fetch extra item to check for next page
         items = await self.repository.get_paginated(
-            offset=offset, limit=limit + 1, filters=filters or {}, sort_field=sort_field, sort_direction=sort_direction
+            offset=offset,
+            limit=limit + 1,
+            filters=filters or {},
+            sort_field=sort_field,
+            sort_direction=sort_direction,
         )
 
         # Check if there are more items
@@ -105,7 +109,8 @@ class CursorPaginator:
         edges = []
         for i, item in enumerate(items):
             cursor = encode_cursor(
-                offset=offset + i + 1, timestamp=getattr(item, sort_field, datetime.utcnow()).isoformat()
+                offset=offset + i + 1,
+                timestamp=getattr(item, sort_field, datetime.utcnow()).isoformat(),
             )
             edges.append(Edge(node=self._serialize_item(item), cursor=cursor))
 

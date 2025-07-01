@@ -75,7 +75,13 @@ class ToxicityDetector:
 
     def __init__(self):
         self.toxic_patterns = self._load_toxic_patterns()
-        self.severity_weights = {"violence": 0.9, "hate_speech": 0.8, "sexual": 1.0, "drugs": 0.7, "profanity": 0.5}
+        self.severity_weights = {
+            "violence": 0.9,
+            "hate_speech": 0.8,
+            "sexual": 1.0,
+            "drugs": 0.7,
+            "profanity": 0.5,
+        }
 
     def _load_toxic_patterns(self) -> Dict[str, List[str]]:
         """تحميل أنماط المحتوى الضار"""
@@ -103,11 +109,18 @@ class ToxicityDetector:
             for pattern in patterns:
                 if pattern in content_lower:
                     detected_patterns.append(pattern)
-                    age_multiplier = self._get_age_sensitivity_multiplier(child_age, category)
-                    category_score += self.severity_weights.get(category, 0.5) * age_multiplier
+                    age_multiplier = self._get_age_sensitivity_multiplier(
+                        child_age, category
+                    )
+                    category_score += (
+                        self.severity_weights.get(category, 0.5) * age_multiplier
+                    )
 
             if detected_patterns:
-                detected_categories[category] = {"score": min(1.0, category_score), "patterns": detected_patterns}
+                detected_categories[category] = {
+                    "score": min(1.0, category_score),
+                    "patterns": detected_patterns,
+                }
 
                 violation = SafetyViolation(
                     violation_type=category,
@@ -165,7 +178,9 @@ class ToxicityDetector:
 class AgeAppropriatenessChecker:
     """فاحص ملاءمة العمر"""
 
-    async def check_age_appropriateness(self, content: str, child_age: int) -> Dict[str, Any]:
+    async def check_age_appropriateness(
+        self, content: str, child_age: int
+    ) -> Dict[str, Any]:
         """فحص ملاءمة المحتوى للعمر"""
 
         vocabulary_score = self._analyze_vocabulary_complexity(content, child_age)
@@ -214,9 +229,20 @@ class AgeAppropriatenessChecker:
 
         content_lower = content.lower()
 
-        inappropriate_concepts = ["موت", "مرض خطير", "حادث", "طلاق", "فقر", "حروب", "سياسة", "اقتصاد معقد"]
+        inappropriate_concepts = [
+            "موت",
+            "مرض خطير",
+            "حادث",
+            "طلاق",
+            "فقر",
+            "حروب",
+            "سياسة",
+            "اقتصاد معقد",
+        ]
 
-        inappropriate_count = sum(1 for concept in inappropriate_concepts if concept in content_lower)
+        inappropriate_count = sum(
+            1 for concept in inappropriate_concepts if concept in content_lower
+        )
 
         if inappropriate_count == 0:
             return 1.0
@@ -230,9 +256,19 @@ class AgeAppropriatenessChecker:
 
         content_lower = content.lower()
 
-        complex_emotions = ["اكتئاب", "قلق شديد", "خوف مرضي", "غضب شديد", "يأس", "إحباط عميق", "صدمة نفسية"]
+        complex_emotions = [
+            "اكتئاب",
+            "قلق شديد",
+            "خوف مرضي",
+            "غضب شديد",
+            "يأس",
+            "إحباط عميق",
+            "صدمة نفسية",
+        ]
 
-        complex_emotion_count = sum(1 for emotion in complex_emotions if emotion in content_lower)
+        complex_emotion_count = sum(
+            1 for emotion in complex_emotions if emotion in content_lower
+        )
 
         if age < 6:
             tolerance = 0
@@ -313,7 +349,9 @@ class AdvancedContentFilter:
             )
 
             # دمج النتائج وتحليلها
-            analysis_result = await self._combine_analysis_results(content, child_age, toxicity_result, age_result)
+            analysis_result = await self._combine_analysis_results(
+                content, child_age, toxicity_result, age_result
+            )
 
             # حفظ في الكاش
             self.analysis_cache[cache_key] = analysis_result
@@ -328,12 +366,21 @@ class AdvancedContentFilter:
             return self._generate_safe_fallback_result(content)
 
     async def _combine_analysis_results(
-        self, content: str, child_age: int, toxicity_result: Dict[str, Any], age_result: Dict[str, Any]
+        self,
+        content: str,
+        child_age: int,
+        toxicity_result: Dict[str, Any],
+        age_result: Dict[str, Any],
     ) -> ContentAnalysisResult:
         """دمج جميع نتائج التحليل"""
 
         # تحديد الأمان العام
-        is_safe = all([not toxicity_result.get("is_toxic", False), age_result.get("is_age_appropriate", False)])
+        is_safe = all(
+            [
+                not toxicity_result.get("is_toxic", False),
+                age_result.get("is_age_appropriate", False),
+            ]
+        )
 
         # حساب مستوى الخطر
         risk_level = self._calculate_overall_risk(toxicity_result, age_result)
@@ -342,7 +389,11 @@ class AdvancedContentFilter:
         confidence_score = self._calculate_confidence(toxicity_result, age_result)
 
         # تحديد فئة المحتوى
-        content_category = ContentCategory.EDUCATIONAL if "تعلم" in content else ContentCategory.ENTERTAINMENT
+        content_category = (
+            ContentCategory.EDUCATIONAL
+            if "تعلم" in content
+            else ContentCategory.ENTERTAINMENT
+        )
 
         # جمع الانتهاكات
         violations = toxicity_result.get("violations", [])
@@ -357,7 +408,9 @@ class AdvancedContentFilter:
             )
 
         # توليد توصيات الأمان
-        safety_recommendations = self._generate_safety_recommendations(toxicity_result, age_result, child_age)
+        safety_recommendations = self._generate_safety_recommendations(
+            toxicity_result, age_result, child_age
+        )
 
         # تحديد ما إذا كان يتطلب إشعار الوالدين
         parent_notification = self._requires_parent_notification(risk_level, child_age)
@@ -377,7 +430,9 @@ class AdvancedContentFilter:
             processing_time_ms=processing_time,
         )
 
-    def _calculate_overall_risk(self, toxicity_result: Dict[str, Any], age_result: Dict[str, Any]) -> RiskLevel:
+    def _calculate_overall_risk(
+        self, toxicity_result: Dict[str, Any], age_result: Dict[str, Any]
+    ) -> RiskLevel:
         """حساب مستوى الخطر الإجمالي"""
 
         risk_scores = []
@@ -420,7 +475,9 @@ class AdvancedContentFilter:
 
         return risk_levels[min(max_risk_score, len(risk_levels) - 1)]
 
-    def _calculate_confidence(self, toxicity_result: Dict[str, Any], age_result: Dict[str, Any]) -> float:
+    def _calculate_confidence(
+        self, toxicity_result: Dict[str, Any], age_result: Dict[str, Any]
+    ) -> float:
         """حساب نقاط الثقة"""
 
         confidence_factors = []
@@ -438,7 +495,11 @@ class AdvancedContentFilter:
         return sum(confidence_factors) / len(confidence_factors)
 
     async def _generate_safe_modifications(
-        self, content: str, toxicity_result: Dict[str, Any], age_result: Dict[str, Any], child_age: int
+        self,
+        content: str,
+        toxicity_result: Dict[str, Any],
+        age_result: Dict[str, Any],
+        child_age: int,
     ) -> Tuple[List[str], Optional[str]]:
         """توليد تعديلات آمنة للمحتوى"""
 
@@ -447,7 +508,9 @@ class AdvancedContentFilter:
 
         # تعديل السمية
         if toxicity_result.get("is_toxic", False):
-            safe_alternative = await self._remove_toxic_content(safe_alternative, toxicity_result)
+            safe_alternative = await self._remove_toxic_content(
+                safe_alternative, toxicity_result
+            )
             modifications.append("تم إزالة المحتوى الضار")
 
         # تعديل ملاءمة العمر
@@ -462,7 +525,9 @@ class AdvancedContentFilter:
 
         return modifications, safe_alternative
 
-    async def _remove_toxic_content(self, content: str, toxicity_result: Dict[str, Any]) -> str:
+    async def _remove_toxic_content(
+        self, content: str, toxicity_result: Dict[str, Any]
+    ) -> str:
         """إزالة المحتوى الضار"""
 
         safe_content = content
@@ -472,7 +537,12 @@ class AdvancedContentFilter:
         for category, info in detected_categories.items():
             patterns = info.get("patterns", [])
             for pattern in patterns:
-                safe_replacements = {"عنف": "لعب", "ضرب": "لمس بلطف", "قتل": "نوم", "غضب": "انزعاج خفيف"}
+                safe_replacements = {
+                    "عنف": "لعب",
+                    "ضرب": "لمس بلطف",
+                    "قتل": "نوم",
+                    "غضب": "انزعاج خفيف",
+                }
 
                 replacement = safe_replacements.get(pattern, "***")
                 safe_content = safe_content.replace(pattern, replacement)
@@ -482,7 +552,12 @@ class AdvancedContentFilter:
     async def _simplify_for_age(self, content: str, age: int) -> str:
         """تبسيط المحتوى ليناسب العمر"""
 
-        simplifications = {"تكنولوجيا": "آلات ذكية", "اقتصاد": "تجارة", "سياسة": "قوانين", "فلسفة": "أفكار"}
+        simplifications = {
+            "تكنولوجيا": "آلات ذكية",
+            "اقتصاد": "تجارة",
+            "سياسة": "قوانين",
+            "فلسفة": "أفكار",
+        }
 
         simplified_content = content
         for complex_word, simple_word in simplifications.items():
@@ -506,7 +581,10 @@ class AdvancedContentFilter:
         return "دعنا نتحدث عن شيء آخر أكثر متعة!"
 
     def _generate_safety_recommendations(
-        self, toxicity_result: Dict[str, Any], age_result: Dict[str, Any], child_age: int
+        self,
+        toxicity_result: Dict[str, Any],
+        age_result: Dict[str, Any],
+        child_age: int,
     ) -> List[str]:
         """توليد توصيات الأمان"""
 
@@ -526,7 +604,9 @@ class AdvancedContentFilter:
 
         return recommendations
 
-    def _requires_parent_notification(self, risk_level: RiskLevel, child_age: int) -> bool:
+    def _requires_parent_notification(
+        self, risk_level: RiskLevel, child_age: int
+    ) -> bool:
         """تحديد ما إذا كان يتطلب إشعار الوالدين"""
 
         if risk_level in [RiskLevel.HIGH_RISK, RiskLevel.CRITICAL]:
@@ -537,10 +617,16 @@ class AdvancedContentFilter:
 
         return False
 
-    def _generate_cache_key(self, content: str, child_age: int, context: Optional[Dict[str, Any]]) -> str:
+    def _generate_cache_key(
+        self, content: str, child_age: int, context: Optional[Dict[str, Any]]
+    ) -> str:
         """توليد مفتاح كاش"""
 
-        cache_components = [content[:100], str(child_age), str(context.get("safety_level", 5) if context else 5)]
+        cache_components = [
+            content[:100],
+            str(child_age),
+            str(context.get("safety_level", 5) if context else 5),
+        ]
 
         cache_string = "_".join(cache_components)
         return hashlib.md5(cache_string.encode()).hexdigest()
@@ -586,7 +672,8 @@ class AdvancedContentFilter:
         return {
             **self.filter_stats,
             "safety_rate": (self.filter_stats["safe_content"] / max(1, total)) * 100,
-            "modification_rate": (self.filter_stats["modified_content"] / max(1, total)) * 100,
+            "modification_rate": (self.filter_stats["modified_content"] / max(1, total))
+            * 100,
             "block_rate": (self.filter_stats["blocked_content"] / max(1, total)) * 100,
             "cache_hit_rate": (self.filter_stats["cache_hits"] / max(1, total)) * 100,
             "cache_size": len(self.analysis_cache),

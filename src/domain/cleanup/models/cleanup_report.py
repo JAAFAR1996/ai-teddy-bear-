@@ -63,7 +63,9 @@ class CleanupReport:
         self.completed_at = datetime.utcnow()
         self.status = "completed"
         if self.started_at:
-            self.execution_time_seconds = (self.completed_at - self.started_at).total_seconds()
+            self.execution_time_seconds = (
+                self.completed_at - self.started_at
+            ).total_seconds()
 
     def mark_failed(self, error: str):
         """تسجيل فشل العملية"""
@@ -89,7 +91,9 @@ class CleanupReport:
         """Get summary of performance metrics"""
         return {
             "execution_time_seconds": self.execution_time_seconds,
-            "records_per_second": round(self.total_records_deleted / max(self.execution_time_seconds, 0.1), 2),
+            "records_per_second": round(
+                self.total_records_deleted / max(self.execution_time_seconds, 0.1), 2
+            ),
             "database_operations": self.database_operations_count,
             "file_operations": self.file_operations_count,
             "size_freed_mb": self.get_size_freed_mb(),

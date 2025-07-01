@@ -4,15 +4,16 @@ Comprehensive Architecture Analyzer for AI-TEDDY-BEAR
 أداة تحليل شاملة لإعادة هيكلة المشروع حسب Clean Architecture
 """
 
-import os
-import json
 import hashlib
-import shutil
-from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional
-from datetime import datetime
-from collections import defaultdict
+import json
+import os
 import re
+import shutil
+from collections import defaultdict
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional, Set, Tuple
+
 
 class ArchitectureAnalyzer:
     def __init__(self, base_path: str = "."):
@@ -24,14 +25,14 @@ class ArchitectureAnalyzer:
                 "files": [],
                 "directories": [],
                 "services": [],
-                "configs": []
+                "configs": [],
             },
             "evaluation": {},
             "classification": {
                 "KEEP": [],
                 "MERGE": [],
                 "DEPRECATED": [],
-                "INCOMPLETE": []
+                "INCOMPLETE": [],
             },
             "merge_strategy": {},
             "proposed_structure": {},
@@ -39,62 +40,78 @@ class ArchitectureAnalyzer:
                 "total_files": 0,
                 "total_duplicates": 0,
                 "architecture_violations": 0,
-                "clean_score": 0
-            }
+                "clean_score": 0,
+            },
         }
 
     def scan_for_duplicates(self) -> Dict:
         """فحص شامل للتكرارات في المشروع"""
         print("🔍 بدء فحص التكرارات الشامل...")
-        
+
         file_hashes = defaultdict(list)
         file_names = defaultdict(list)
         service_files = defaultdict(list)
         config_files = defaultdict(list)
-        
+
         # استثناء المجلدات التي لا نريد فحصها
-        exclude_dirs = {'.git', '__pycache__', '.mypy_cache', 'node_modules', 
-                       'deleted', 'deprecated', '.pytest_cache'}
-        
+        exclude_dirs = {
+            ".git",
+            "__pycache__",
+            ".mypy_cache",
+            "node_modules",
+            "deleted",
+            "deprecated",
+            ".pytest_cache",
+        }
+
         for root, dirs, files in os.walk(self.base_path):
             # إزالة المجلدات المستثناة
             dirs[:] = [d for d in dirs if d not in exclude_dirs]
-            
+
             for file in files:
                 file_path = Path(root) / file
                 relative_path = file_path.relative_to(self.base_path)
-                
+
                 # تخطي الملفات المولدة والثنائية
-                if file.endswith(('.pyc', '.pyo', '.log', '.tmp', '.cache')):
+                if file.endswith((".pyc", ".pyo", ".log", ".tmp", ".cache")):
                     continue
-                
+
                 self.analysis_report["statistics"]["total_files"] += 1
-                
+
                 # فحص التكرار بـ hash
                 file_hash = self.calculate_file_hash(file_path)
                 if file_hash:
                     file_hashes[file_hash].append(str(relative_path))
-                
+
                 # فحص التكرار بالاسم
                 file_names[file].append(str(relative_path))
-                
+
                 # تحديد الخدمات
-                if 'service' in file.lower() and file.endswith('.py'):
+                if "service" in file.lower() and file.endswith(".py"):
                     service_type = self.extract_service_type(file)
                     service_files[service_type].append(str(relative_path))
-                
+
                 # تحديد ملفات التكوين
-                if any(config_indicator in file.lower() for config_indicator in 
-                      ['config', 'setting', 'env', '.json', '.yaml', '.yml']):
+                if any(
+                    config_indicator in file.lower()
+                    for config_indicator in [
+                        "config",
+                        "setting",
+                        "env",
+                        ".json",
+                        ".yaml",
+                        ".yml",
+                    ]
+                ):
                     config_type = self.extract_config_type(file)
                     config_files[config_type].append(str(relative_path))
-        
+
         # تحليل النتائج
         self._analyze_hash_duplicates(file_hashes)
         self._analyze_name_duplicates(file_names)
         self._analyze_service_duplicates(service_files)
         self._analyze_config_duplicates(config_files)
-        
+
         return self.analysis_report["duplicates"]
 
     def calculate_file_hash(self, file_path: Path) -> str:
@@ -102,7 +119,7 @@ class ArchitectureAnalyzer:
         try:
             if file_path.stat().st_size > 10 * 1024 * 1024:  # تخطي الملفات الكبيرة
                 return ""
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 return hashlib.md5(f.read()).hexdigest()
         except Exception:
             return ""
@@ -110,91 +127,104 @@ class ArchitectureAnalyzer:
     def extract_service_type(self, filename: str) -> str:
         """استخراج نوع الخدمة من اسم الملف"""
         service_patterns = {
-            'openai': ['openai', 'gpt', 'chatgpt'],
-            'audio': ['audio', 'voice', 'speech', 'tts', 'stt'],
-            'ai': ['ai_service', 'ai_processor', 'ai_handler'],
-            'config': ['config_service', 'configuration'],
-            'database': ['db_service', 'database', 'repository'],
-            'auth': ['auth', 'authentication', 'security'],
-            'websocket': ['websocket', 'ws_service', 'realtime']
+            "openai": ["openai", "gpt", "chatgpt"],
+            "audio": ["audio", "voice", "speech", "tts", "stt"],
+            "ai": ["ai_service", "ai_processor", "ai_handler"],
+            "config": ["config_service", "configuration"],
+            "database": ["db_service", "database", "repository"],
+            "auth": ["auth", "authentication", "security"],
+            "websocket": ["websocket", "ws_service", "realtime"],
         }
-        
+
         filename_lower = filename.lower()
         for service_type, patterns in service_patterns.items():
             if any(pattern in filename_lower for pattern in patterns):
                 return service_type
-        return 'other'
+        return "other"
 
     def extract_config_type(self, filename: str) -> str:
         """استخراج نوع التكوين من اسم الملف"""
-        if 'package' in filename.lower():
-            return 'package'
-        elif 'docker' in filename.lower():
-            return 'docker'
-        elif 'env' in filename.lower():
-            return 'environment'
-        elif 'api' in filename.lower():
-            return 'api_config'
-        elif filename.endswith('.json'):
-            return 'json_config'
-        elif filename.endswith(('.yaml', '.yml')):
-            return 'yaml_config'
-        return 'general'
+        if "package" in filename.lower():
+            return "package"
+        elif "docker" in filename.lower():
+            return "docker"
+        elif "env" in filename.lower():
+            return "environment"
+        elif "api" in filename.lower():
+            return "api_config"
+        elif filename.endswith(".json"):
+            return "json_config"
+        elif filename.endswith((".yaml", ".yml")):
+            return "yaml_config"
+        return "general"
 
     def _analyze_hash_duplicates(self, file_hashes: Dict):
         """تحليل التكرارات المطابقة تماماً"""
         for file_hash, files in file_hashes.items():
             if len(files) > 1:
-                self.analysis_report["duplicates"]["files"].append({
-                    "hash": file_hash,
-                    "files": files,
-                    "type": "identical_content",
-                    "action_needed": "remove_duplicates"
-                })
+                self.analysis_report["duplicates"]["files"].append(
+                    {
+                        "hash": file_hash,
+                        "files": files,
+                        "type": "identical_content",
+                        "action_needed": "remove_duplicates",
+                    }
+                )
                 self.analysis_report["statistics"]["total_duplicates"] += len(files) - 1
 
     def _analyze_name_duplicates(self, file_names: Dict):
         """تحليل التكرارات في الأسماء"""
         for filename, paths in file_names.items():
-            if len(paths) > 1 and not filename.startswith('.'):
-                self.analysis_report["duplicates"]["files"].append({
-                    "filename": filename,
-                    "files": paths,
-                    "type": "similar_name",
-                    "action_needed": "review_and_merge"
-                })
+            if len(paths) > 1 and not filename.startswith("."):
+                self.analysis_report["duplicates"]["files"].append(
+                    {
+                        "filename": filename,
+                        "files": paths,
+                        "type": "similar_name",
+                        "action_needed": "review_and_merge",
+                    }
+                )
 
     def _analyze_service_duplicates(self, service_files: Dict):
         """تحليل تكرار الخدمات"""
         for service_type, files in service_files.items():
             if len(files) > 1:
-                self.analysis_report["duplicates"]["services"].append({
-                    "service_type": service_type,
-                    "files": files,
-                    "count": len(files),
-                    "action_needed": "consolidate_service"
-                })
+                self.analysis_report["duplicates"]["services"].append(
+                    {
+                        "service_type": service_type,
+                        "files": files,
+                        "count": len(files),
+                        "action_needed": "consolidate_service",
+                    }
+                )
 
     def _analyze_config_duplicates(self, config_files: Dict):
         """تحليل تكرار ملفات التكوين"""
         for config_type, files in config_files.items():
             if len(files) > 1:
-                self.analysis_report["duplicates"]["configs"].append({
-                    "config_type": config_type,
-                    "files": files,
-                    "count": len(files),
-                    "action_needed": "merge_configs"
-                })
+                self.analysis_report["duplicates"]["configs"].append(
+                    {
+                        "config_type": config_type,
+                        "files": files,
+                        "count": len(files),
+                        "action_needed": "merge_configs",
+                    }
+                )
 
     def evaluate_files(self) -> Dict:
         """تقييم جودة وأهمية الملفات (1-10)"""
         print("📊 تقييم جودة الملفات...")
-        
+
         critical_files = [
-            'main.py', 'app.py', '__init__.py', 'config.py',
-            'requirements.txt', 'package.json', 'docker-compose.yml'
+            "main.py",
+            "app.py",
+            "__init__.py",
+            "config.py",
+            "requirements.txt",
+            "package.json",
+            "docker-compose.yml",
         ]
-        
+
         for duplicate_group in self.analysis_report["duplicates"]["files"]:
             if duplicate_group["type"] == "identical_content":
                 # تقييم الملفات المتطابقة
@@ -205,33 +235,33 @@ class ArchitectureAnalyzer:
                         "importance_score": score["importance"],
                         "recency_score": score["recency"],
                         "total_score": score["total"],
-                        "recommendation": score["recommendation"]
+                        "recommendation": score["recommendation"],
                     }
-        
+
         return self.analysis_report["evaluation"]
 
     def _calculate_file_score(self, file_path: str, critical_files: List[str]) -> Dict:
         """حساب نقاط الملف"""
         path_obj = Path(file_path)
-        
+
         # نقاط الجودة (1-10)
         quality_score = 5  # افتراضي
-        if 'test' in file_path.lower():
+        if "test" in file_path.lower():
             quality_score += 2
-        if 'deprecated' in file_path.lower() or 'old' in file_path.lower():
+        if "deprecated" in file_path.lower() or "old" in file_path.lower():
             quality_score -= 3
-        if path_obj.suffix == '.py':
+        if path_obj.suffix == ".py":
             quality_score += 1
-        
+
         # نقاط الأهمية (1-10)
         importance_score = 5  # افتراضي
         if any(critical in path_obj.name for critical in critical_files):
             importance_score += 3
-        if 'src/' in file_path or 'application/' in file_path:
+        if "src/" in file_path or "application/" in file_path:
             importance_score += 2
-        if 'deprecated/' in file_path or 'backup/' in file_path:
+        if "deprecated/" in file_path or "backup/" in file_path:
             importance_score -= 4
-        
+
         # نقاط الحداثة (1-10)
         recency_score = 7  # افتراضي للملفات الموجودة
         try:
@@ -240,9 +270,9 @@ class ArchitectureAnalyzer:
             recency_score = min(10, max(1, recency_score))
         except:
             recency_score = 5
-        
+
         total_score = (quality_score + importance_score + recency_score) / 3
-        
+
         # التوصية
         if total_score >= 8:
             recommendation = "KEEP"
@@ -252,36 +282,38 @@ class ArchitectureAnalyzer:
             recommendation = "MERGE"
         else:
             recommendation = "DEPRECATED"
-        
+
         return {
             "quality": min(10, max(1, quality_score)),
             "importance": min(10, max(1, importance_score)),
             "recency": min(10, max(1, recency_score)),
             "total": round(total_score, 2),
-            "recommendation": recommendation
+            "recommendation": recommendation,
         }
 
     def classify_files(self) -> Dict:
         """تصنيف الملفات حسب الإجراء المطلوب"""
         print("📂 تصنيف الملفات...")
-        
+
         for file_path, evaluation in self.analysis_report["evaluation"].items():
             category = evaluation["recommendation"]
             if category == "REVIEW":
                 category = "MERGE"  # نضع المراجعة في فئة الدمج
-            
-            self.analysis_report["classification"][category].append({
-                "file": file_path,
-                "score": evaluation["total_score"],
-                "reason": self._get_classification_reason(evaluation)
-            })
-        
+
+            self.analysis_report["classification"][category].append(
+                {
+                    "file": file_path,
+                    "score": evaluation["total_score"],
+                    "reason": self._get_classification_reason(evaluation),
+                }
+            )
+
         # ترتيب كل فئة حسب النقاط
         for category in self.analysis_report["classification"]:
             self.analysis_report["classification"][category].sort(
                 key=lambda x: x["score"], reverse=True
             )
-        
+
         return self.analysis_report["classification"]
 
     def _get_classification_reason(self, evaluation: Dict) -> str:
@@ -299,137 +331,147 @@ class ArchitectureAnalyzer:
     def propose_merge_strategy(self) -> Dict:
         """اقتراح استراتيجية الدمج"""
         print("🔄 اقتراح استراتيجية الدمج...")
-        
+
         # استراتيجيات الدمج للخدمات
         for service_group in self.analysis_report["duplicates"]["services"]:
             service_type = service_group["service_type"]
             files = service_group["files"]
-            
+
             # اختيار الملف الأساسي (الأعلى تقييماً)
             best_file = self._select_best_file(files)
             other_files = [f for f in files if f != best_file]
-            
+
             self.analysis_report["merge_strategy"][service_type] = {
                 "primary_file": best_file,
                 "files_to_merge": other_files,
                 "merge_approach": self._get_merge_approach(service_type),
-                "unique_features": self._extract_unique_features(files)
+                "unique_features": self._extract_unique_features(files),
             }
-        
+
         # استراتيجيات الدمج للتكوين
         for config_group in self.analysis_report["duplicates"]["configs"]:
             config_type = config_group["config_type"]
             files = config_group["files"]
-            
+
             best_file = self._select_best_file(files)
             other_files = [f for f in files if f != best_file]
-            
+
             self.analysis_report["merge_strategy"][f"config_{config_type}"] = {
                 "primary_file": best_file,
                 "files_to_merge": other_files,
                 "merge_approach": "merge_configurations",
-                "validation_needed": True
+                "validation_needed": True,
             }
-        
+
         return self.analysis_report["merge_strategy"]
 
     def _select_best_file(self, files: List[str]) -> str:
         """اختيار أفضل ملف من المجموعة"""
         best_score = 0
         best_file = files[0]
-        
+
         for file_path in files:
             if file_path in self.analysis_report["evaluation"]:
                 score = self.analysis_report["evaluation"][file_path]["total_score"]
                 if score > best_score:
                     best_score = score
                     best_file = file_path
-            elif 'src/' in file_path:  # تفضيل ملفات src
+            elif "src/" in file_path:  # تفضيل ملفات src
                 best_file = file_path
-        
+
         return best_file
 
     def _get_merge_approach(self, service_type: str) -> str:
         """الحصول على نهج الدمج للخدمة"""
         approaches = {
-            'openai': 'consolidate_openai_clients',
-            'audio': 'merge_audio_processing',
-            'ai': 'unify_ai_services',
-            'config': 'merge_configuration_services',
-            'database': 'consolidate_repositories',
-            'auth': 'unify_authentication',
-            'websocket': 'merge_realtime_services'
+            "openai": "consolidate_openai_clients",
+            "audio": "merge_audio_processing",
+            "ai": "unify_ai_services",
+            "config": "merge_configuration_services",
+            "database": "consolidate_repositories",
+            "auth": "unify_authentication",
+            "websocket": "merge_realtime_services",
         }
-        return approaches.get(service_type, 'generic_service_merge')
+        return approaches.get(service_type, "generic_service_merge")
 
     def _extract_unique_features(self, files: List[str]) -> List[str]:
         """استخراج الميزات الفريدة من الملفات"""
         # هذه دالة مبسطة - في الواقع نحتاج تحليل محتوى الملفات
         features = []
         for file_path in files:
-            if 'async' in file_path.lower():
+            if "async" in file_path.lower():
                 features.append("async_support")
-            if 'streaming' in file_path.lower():
+            if "streaming" in file_path.lower():
                 features.append("streaming_capability")
-            if 'enterprise' in file_path.lower():
+            if "enterprise" in file_path.lower():
                 features.append("enterprise_features")
         return list(set(features))
 
     def propose_clean_architecture(self) -> Dict:
         """اقتراح هيكل Clean Architecture نهائي"""
         print("🏗️ اقتراح هيكل Clean Architecture...")
-        
+
         proposed_structure = {
             "src/": {
                 "domain/": {
                     "entities/": ["child.py", "conversation.py", "voice_command.py"],
                     "value_objects/": ["age.py", "voice_data.py", "device_id.py"],
-                    "repositories/": ["child_repository.py", "conversation_repository.py"],
+                    "repositories/": [
+                        "child_repository.py",
+                        "conversation_repository.py",
+                    ],
                     "services/": ["domain_services.py"],
-                    "events/": ["domain_events.py"]
+                    "events/": ["domain_events.py"],
                 },
                 "application/": {
-                    "use_cases/": ["process_voice_command.py", "manage_conversation.py"],
+                    "use_cases/": [
+                        "process_voice_command.py",
+                        "manage_conversation.py",
+                    ],
                     "services/": ["ai_orchestrator.py", "conversation_service.py"],
                     "interfaces/": ["ai_service_interface.py", "audio_interface.py"],
                     "dto/": ["voice_command_dto.py", "response_dto.py"],
-                    "handlers/": ["command_handlers.py", "event_handlers.py"]
+                    "handlers/": ["command_handlers.py", "event_handlers.py"],
                 },
                 "infrastructure/": {
                     "ai/": ["openai_service.py", "ai_safety_service.py"],
-                    "audio/": ["audio_processor.py", "tts_service.py", "stt_service.py"],
+                    "audio/": [
+                        "audio_processor.py",
+                        "tts_service.py",
+                        "stt_service.py",
+                    ],
                     "persistence/": ["database_repository.py", "cache_repository.py"],
                     "external_services/": ["cloud_api.py", "device_api.py"],
                     "security/": ["authentication.py", "encryption.py"],
-                    "messaging/": ["websocket_handler.py", "event_bus.py"]
+                    "messaging/": ["websocket_handler.py", "event_bus.py"],
                 },
                 "presentation/": {
                     "api/": ["endpoints/", "websocket/"],
                     "web/": ["dashboard/", "admin_panel/"],
-                    "cli/": ["management_commands.py"]
-                }
+                    "cli/": ["management_commands.py"],
+                },
             },
             "config/": {
                 "environments/": ["development.json", "production.json"],
                 "schemas/": ["config_schema.json"],
-                "api_keys.json.example": None
+                "api_keys.json.example": None,
             },
             "tests/": {
                 "unit/": ["domain/", "application/", "infrastructure/"],
                 "integration/": ["api_tests/", "service_tests/"],
-                "e2e/": ["full_journey_tests/"]
+                "e2e/": ["full_journey_tests/"],
             },
             "docs/": {
                 "architecture/": ["clean_architecture.md", "api_docs.md"],
-                "deployment/": ["docker_guide.md", "k8s_guide.md"]
+                "deployment/": ["docker_guide.md", "k8s_guide.md"],
             },
             "deprecated/": {
                 "old_implementations/": [],
                 "legacy_code/": [],
-                "reports/": []
-            }
+                "reports/": [],
+            },
         }
-        
+
         self.analysis_report["proposed_structure"] = proposed_structure
         return proposed_structure
 
@@ -437,34 +479,36 @@ class ArchitectureAnalyzer:
         """حساب نقاط نظافة المشروع (0-100)"""
         total_files = self.analysis_report["statistics"]["total_files"]
         total_duplicates = self.analysis_report["statistics"]["total_duplicates"]
-        
+
         if total_files == 0:
             return 0
-        
+
         # نقاط أساسية
         base_score = 50
-        
+
         # خصم نقاط على التكرارات
         duplication_penalty = min(40, (total_duplicates / total_files) * 100)
-        
+
         # مكافآت على البنية الجيدة
         structure_bonus = 0
-        if any('domain/' in str(f) for f in Path(self.base_path).rglob('*.py')):
+        if any("domain/" in str(f) for f in Path(self.base_path).rglob("*.py")):
             structure_bonus += 10
-        if any('application/' in str(f) for f in Path(self.base_path).rglob('*.py')):
+        if any("application/" in str(f) for f in Path(self.base_path).rglob("*.py")):
             structure_bonus += 10
-        if any('infrastructure/' in str(f) for f in Path(self.base_path).rglob('*.py')):
+        if any("infrastructure/" in str(f) for f in Path(self.base_path).rglob("*.py")):
             structure_bonus += 10
-        
+
         clean_score = int(base_score - duplication_penalty + structure_bonus)
-        self.analysis_report["statistics"]["clean_score"] = max(0, min(100, clean_score))
-        
+        self.analysis_report["statistics"]["clean_score"] = max(
+            0, min(100, clean_score)
+        )
+
         return self.analysis_report["statistics"]["clean_score"]
 
     def generate_comprehensive_report(self) -> str:
         """إنشاء تقرير شامل"""
         clean_score = self.calculate_clean_score()
-        
+
         report = f"""
 # 🏗️ تقرير التحليل الشامل لمشروع AI-TEDDY-BEAR
 **التاريخ**: {self.analysis_report['timestamp']}
@@ -481,7 +525,7 @@ class ArchitectureAnalyzer:
 
 ### 📄 ملفات متطابقة تماماً
 """
-        
+
         for duplicate in self.analysis_report["duplicates"]["files"]:
             if duplicate["type"] == "identical_content":
                 report += f"""
@@ -489,7 +533,7 @@ class ArchitectureAnalyzer:
 {chr(10).join(f"- `{f}`" for f in duplicate["files"])}
 **الإجراء**: {duplicate["action_needed"]}
 """
-        
+
         report += f"""
 ### 🔧 خدمات مكررة
 """
@@ -499,7 +543,7 @@ class ArchitectureAnalyzer:
 **عدد النسخ**: {service["count"]}
 **الملفات**: {', '.join(f"`{f}`" for f in service["files"])}
 """
-        
+
         report += f"""
 ## 📂 التصنيف المقترح
 
@@ -507,19 +551,19 @@ class ArchitectureAnalyzer:
 """
         for item in self.analysis_report["classification"]["KEEP"]:
             report += f"- `{item['file']}` (نقاط: {item['score']})\n"
-        
+
         report += f"""
 ### 🔄 MERGE - ادمجها
 """
         for item in self.analysis_report["classification"]["MERGE"]:
             report += f"- `{item['file']}` (نقاط: {item['score']})\n"
-        
+
         report += f"""
 ### 📦 DEPRECATED - انقلها للمهملات
 """
         for item in self.analysis_report["classification"]["DEPRECATED"]:
             report += f"- `{item['file']}` (نقاط: {item['score']})\n"
-        
+
         report += f"""
 ## 🔄 استراتيجية الدمج المقترحة
 """
@@ -530,7 +574,7 @@ class ArchitectureAnalyzer:
 - **ملفات للدمج**: {', '.join(f"`{f}`" for f in strategy['files_to_merge'])}
 - **نهج الدمج**: {strategy['merge_approach']}
 """
-        
+
         report += f"""
 ## 🏗️ الهيكل النهائي المقترح (Clean Architecture)
 
@@ -584,61 +628,71 @@ src/
 **تم إنشاؤه بواسطة**: ArchitectureAnalyzer Pro
 **التوقيت**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 """
-        
+
         return report
 
     def run_comprehensive_analysis(self) -> Dict:
         """تشغيل التحليل الشامل"""
         print("🚀 بدء التحليل الشامل للمشروع...")
-        
+
         # الخطوة 1: فحص التكرارات
         self.scan_for_duplicates()
-        
+
         # الخطوة 2: تقييم الملفات
         self.evaluate_files()
-        
+
         # الخطوة 3: تصنيف الملفات
         self.classify_files()
-        
+
         # الخطوة 4: اقتراح استراتيجية الدمج
         self.propose_merge_strategy()
-        
+
         # الخطوة 5: اقتراح الهيكل النهائي
         self.propose_clean_architecture()
-        
+
         # الخطوة 6: إنشاء التقرير
         report_content = self.generate_comprehensive_report()
-        report_path = self.base_path / "deleted" / "reports" / "COMPREHENSIVE_ARCHITECTURE_ANALYSIS.md"
+        report_path = (
+            self.base_path
+            / "deleted"
+            / "reports"
+            / "COMPREHENSIVE_ARCHITECTURE_ANALYSIS.md"
+        )
         report_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(report_path, 'w', encoding='utf-8') as f:
+
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(report_content)
-        
+
         print(f"✅ تم إنشاء التقرير الشامل: {report_path}")
         return self.analysis_report
+
 
 def main():
     """الدالة الرئيسية"""
     analyzer = ArchitectureAnalyzer()
-    
+
     try:
         print("=" * 60)
         print("🏗️  COMPREHENSIVE ARCHITECTURE ANALYZER")
         print("🎯  AI-TEDDY-BEAR PROJECT RESTRUCTURING")
         print("=" * 60)
-        
+
         report = analyzer.run_comprehensive_analysis()
-        
+
         print(f"\n🎉 تم إكمال التحليل الشامل!")
         print(f"📊 إجمالي الملفات: {report['statistics']['total_files']}")
         print(f"🔄 التكرارات: {report['statistics']['total_duplicates']}")
         print(f"🏆 نقاط النظافة: {report['statistics']['clean_score']}/100")
-        print(f"📋 التقرير الكامل: deleted/reports/COMPREHENSIVE_ARCHITECTURE_ANALYSIS.md")
-        
+        print(
+            f"📋 التقرير الكامل: deleted/reports/COMPREHENSIVE_ARCHITECTURE_ANALYSIS.md"
+        )
+
     except Exception as e:
         print(f"❌ خطأ في التحليل: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     main()

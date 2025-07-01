@@ -9,20 +9,18 @@ import logging
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime, timedelta
-from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union
+from typing import (Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar,
+                    Union)
 
 from sqlalchemy import and_, asc, desc, func, or_, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.query import Query
 
-from src.infrastructure.persistence.base import (
-    BaseRepository,
-    BulkOperationResult,
-    QueryOptions,
-    SearchCriteria,
-    SortOrder,
-)
+from src.infrastructure.persistence.base import (BaseRepository,
+                                                 BulkOperationResult,
+                                                 QueryOptions, SearchCriteria,
+                                                 SortOrder)
 
 T = TypeVar("T")  # Entity type
 ID = TypeVar("ID")  # ID type
@@ -92,7 +90,11 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
 
         logger.info(
             f"Initialized {self.__class__.__name__} for {model_class.__name__}",
-            extra={"model_class": model_class.__name__, "auto_commit": auto_commit, "caching_enabled": enable_caching},
+            extra={
+                "model_class": model_class.__name__,
+                "auto_commit": auto_commit,
+                "caching_enabled": enable_caching,
+            },
         )
 
     @contextmanager
@@ -111,7 +113,10 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             session.close()
 
     def _build_query(
-        self, session: Session, criteria: Optional[List[SearchCriteria]] = None, options: Optional[QueryOptions] = None
+        self,
+        session: Session,
+        criteria: Optional[List[SearchCriteria]] = None,
+        options: Optional[QueryOptions] = None,
     ) -> Query:
         """
         Build SQLAlchemy query with filters, sorting, and pagination
@@ -166,7 +171,9 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         """Build SQLAlchemy condition from search criteria"""
         field_attr = getattr(self.model_class, criterion.field, None)
         if field_attr is None:
-            logger.warning(f"Field {criterion.field} not found in {self.model_class.__name__}")
+            logger.warning(
+                f"Field {criterion.field} not found in {self.model_class.__name__}"
+            )
             return None
 
         value = criterion.value
@@ -279,13 +286,18 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                 if hasattr(entity, "id") and entity.id:
                     self._cache_put(str(entity.id), entity)
 
-                logger.info(f"Created {self.model_class.__name__}", extra={"entity_id": getattr(entity, "id", None)})
+                logger.info(
+                    f"Created {self.model_class.__name__}",
+                    extra={"entity_id": getattr(entity, "id", None)},
+                )
 
                 return entity
 
         except IntegrityError as e:
             logger.error(f"Integrity constraint violation: {e}")
-            raise ValidationError(f"Entity creation failed due to constraint violation: {e}") from e
+            raise ValidationError(
+                f"Entity creation failed due to constraint violation: {e}"
+            ) from e
         except SQLAlchemyError as e:
             logger.error(f"Database error during create: {e}")
             raise RepositoryError(f"Failed to create entity: {e}") from e
@@ -310,7 +322,11 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
 
         try:
             with self.get_session() as session:
-                entity = session.query(self.model_class).filter(self.model_class.id == entity_id).first()
+                entity = (
+                    session.query(self.model_class)
+                    .filter(self.model_class.id == entity_id)
+                    .first()
+                )
 
                 # Cache the result
                 if entity:
@@ -344,7 +360,11 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         try:
             with self.get_session() as session:
                 # Check if entity exists
-                existing = session.query(self.model_class).filter(self.model_class.id == entity.id).first()
+                existing = (
+                    session.query(self.model_class)
+                    .filter(self.model_class.id == entity.id)
+                    .first()
+                )
 
                 if not existing:
                     raise EntityNotFoundError(f"Entity with ID {entity.id} not found")
@@ -363,7 +383,10 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                 # Update cache
                 self._cache_put(str(entity.id), existing)
 
-                logger.info(f"Updated {self.model_class.__name__}", extra={"entity_id": entity.id})
+                logger.info(
+                    f"Updated {self.model_class.__name__}",
+                    extra={"entity_id": entity.id},
+                )
 
                 return existing
 
@@ -386,7 +409,11 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
 
         try:
             with self.get_session() as session:
-                entity = session.query(self.model_class).filter(self.model_class.id == entity_id).first()
+                entity = (
+                    session.query(self.model_class)
+                    .filter(self.model_class.id == entity_id)
+                    .first()
+                )
 
                 if not entity:
                     return False
@@ -397,7 +424,10 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                 # Remove from cache
                 self._cache_remove(str(entity_id))
 
-                logger.info(f"Deleted {self.model_class.__name__}", extra={"entity_id": entity_id})
+                logger.info(
+                    f"Deleted {self.model_class.__name__}",
+                    extra={"entity_id": entity_id},
+                )
 
                 return True
 
@@ -431,7 +461,9 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             logger.error(f"Database error during list: {e}")
             raise RepositoryError(f"Failed to list entities: {e}") from e
 
-    async def search(self, criteria: List[SearchCriteria], options: Optional[QueryOptions] = None) -> List[T]:
+    async def search(
+        self, criteria: List[SearchCriteria], options: Optional[QueryOptions] = None
+    ) -> List[T]:
         """
         Search entities with advanced criteria
 
@@ -494,7 +526,9 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         try:
             with self.get_session() as session:
                 exists = session.query(
-                    session.query(self.model_class).filter(self.model_class.id == entity_id).exists()
+                    session.query(self.model_class)
+                    .filter(self.model_class.id == entity_id)
+                    .exists()
                 ).scalar()
 
                 return exists
@@ -539,14 +573,21 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
 
                 logger.info(
                     f"Bulk created {success_count} {self.model_class.__name__} entities",
-                    extra={"success_count": success_count, "failed_count": failed_count},
+                    extra={
+                        "success_count": success_count,
+                        "failed_count": failed_count,
+                    },
                 )
 
         except SQLAlchemyError as e:
             logger.error(f"Database error during bulk create: {e}")
             raise RepositoryError(f"Bulk create operation failed: {e}") from e
 
-        return BulkOperationResult(success_count=success_count, failed_count=failed_count, failed_ids=failed_ids)
+        return BulkOperationResult(
+            success_count=success_count,
+            failed_count=failed_count,
+            failed_ids=failed_ids,
+        )
 
     async def bulk_update(self, entities: List[T]) -> BulkOperationResult:
         """
@@ -572,7 +613,11 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                         if not hasattr(entity, "id") or not entity.id:
                             raise ValidationError("Entity must have ID for update")
 
-                        existing = session.query(self.model_class).filter(self.model_class.id == entity.id).first()
+                        existing = (
+                            session.query(self.model_class)
+                            .filter(self.model_class.id == entity.id)
+                            .first()
+                        )
 
                         if existing:
                             # Update fields
@@ -598,7 +643,11 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             logger.error(f"Database error during bulk update: {e}")
             raise RepositoryError(f"Bulk update operation failed: {e}") from e
 
-        return BulkOperationResult(success_count=success_count, failed_count=failed_count, failed_ids=failed_ids)
+        return BulkOperationResult(
+            success_count=success_count,
+            failed_count=failed_count,
+            failed_ids=failed_ids,
+        )
 
     async def bulk_delete(self, entity_ids: List[ID]) -> BulkOperationResult:
         """
@@ -641,7 +690,11 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             logger.error(f"Database error during bulk delete: {e}")
             raise RepositoryError(f"Bulk delete operation failed: {e}") from e
 
-        return BulkOperationResult(success_count=success_count, failed_count=failed_count, failed_ids=failed_ids)
+        return BulkOperationResult(
+            success_count=success_count,
+            failed_count=failed_count,
+            failed_ids=failed_ids,
+        )
 
     # Advanced Operations
 
@@ -673,7 +726,12 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         criteria = [SearchCriteria(field=field, operator="eq", value=value)]
         return await self.search(criteria)
 
-    async def aggregate(self, field: str, operation: str, criteria: Optional[List[SearchCriteria]] = None) -> Any:
+    async def aggregate(
+        self,
+        field: str,
+        operation: str,
+        criteria: Optional[List[SearchCriteria]] = None,
+    ) -> Any:
         """
         Perform aggregation operation
 
@@ -691,7 +749,9 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
 
                 field_attr = getattr(self.model_class, field, None)
                 if field_attr is None:
-                    raise ValueError(f"Field {field} not found in {self.model_class.__name__}")
+                    raise ValueError(
+                        f"Field {field} not found in {self.model_class.__name__}"
+                    )
 
                 if operation.lower() == "count":
                     result = query.count()
@@ -712,7 +772,9 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             logger.error(f"Database error during aggregation: {e}")
             raise RepositoryError(f"Aggregation operation failed: {e}") from e
 
-    async def execute_raw_query(self, query: str, params: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+    async def execute_raw_query(
+        self, query: str, params: Dict[str, Any] = None
+    ) -> List[Dict[str, Any]]:
         """
         Execute raw SQL query (use with caution)
 

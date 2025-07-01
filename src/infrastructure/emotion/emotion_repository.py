@@ -36,7 +36,9 @@ class EmotionRepository:
             logger.error(f" Failed to save emotion: {e}")
             raise
 
-    async def get_emotions(self, child_id: str, hours: int = 24, limit: int = 100) -> List[EmotionResult]:
+    async def get_emotions(
+        self, child_id: str, hours: int = 24, limit: int = 100
+    ) -> List[EmotionResult]:
         """Retrieve emotion history for child."""
         try:
             # Mock implementation - would use actual queries
@@ -73,13 +75,20 @@ class EmotionRepository:
             logger.error(f" Cleanup failed: {e}")
             return 0
 
-    async def get_emotion_statistics(self, child_id: str, days: int = 7) -> Dict[str, Any]:
+    async def get_emotion_statistics(
+        self, child_id: str, days: int = 7
+    ) -> Dict[str, Any]:
         """Get emotion statistics for child."""
         try:
             # Mock statistics - would use actual aggregation queries
             stats = {
                 "total_interactions": 45,
-                "emotion_distribution": {"happy": 20, "curious": 15, "calm": 8, "sad": 2},
+                "emotion_distribution": {
+                    "happy": 20,
+                    "curious": 15,
+                    "calm": 8,
+                    "sad": 2,
+                },
                 "average_confidence": 0.82,
                 "dominant_emotion": "happy",
             }

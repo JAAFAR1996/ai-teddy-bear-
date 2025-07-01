@@ -61,17 +61,26 @@ class CleanupPolicy:
 
         logger.info("Cleanup policy created", policy_id=self.policy_id, name=self.name)
 
-    def add_rule(self, data_category: str, retention_days: int, conditions: Dict[str, Any] = None) -> PolicyRule:
+    def add_rule(
+        self, data_category: str, retention_days: int, conditions: Dict[str, Any] = None
+    ) -> PolicyRule:
         """إضافة قاعدة جديدة للسياسة"""
         self._ensure_can_modify()
 
-        rule = PolicyRule(data_category=data_category, retention_days=retention_days, conditions=conditions or {})
+        rule = PolicyRule(
+            data_category=data_category,
+            retention_days=retention_days,
+            conditions=conditions or {},
+        )
 
         self.rules.append(rule)
         self.updated_at = datetime.utcnow()
 
         logger.info(
-            "Policy rule added", policy_id=self.policy_id, data_category=data_category, retention_days=retention_days
+            "Policy rule added",
+            policy_id=self.policy_id,
+            data_category=data_category,
+            retention_days=retention_days,
         )
 
         return rule
@@ -84,7 +93,11 @@ class CleanupPolicy:
         self.status = PolicyStatus.ACTIVE
         self.updated_at = datetime.utcnow()
 
-        logger.info("Cleanup policy activated", policy_id=self.policy_id, activated_by=activated_by)
+        logger.info(
+            "Cleanup policy activated",
+            policy_id=self.policy_id,
+            activated_by=activated_by,
+        )
 
     def get_applicable_rules(self, data_item: Dict[str, Any]) -> List[PolicyRule]:
         """الحصول على القواعد المنطبقة على عنصر بيانات معين"""

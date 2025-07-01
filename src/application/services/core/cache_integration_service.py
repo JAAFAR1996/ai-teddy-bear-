@@ -18,7 +18,8 @@ from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 try:
-    from .multi_layer_cache import CacheConfig, CacheLayer, CacheMetrics, ContentType, MultiLayerCache
+    from .multi_layer_cache import (CacheConfig, CacheLayer, CacheMetrics,
+                                    ContentType, MultiLayerCache)
 
     MULTI_LAYER_CACHE_AVAILABLE = True
 except ImportError:
@@ -90,7 +91,9 @@ class CacheIntegrationService:
         start_time = time.time()
 
         # Try cache first
-        cached_result = await self.cache_system.get_with_fallback(cache_key, strategy.content_type)
+        cached_result = await self.cache_system.get_with_fallback(
+            cache_key, strategy.content_type
+        )
 
         if cached_result is not None:
             self.performance_stats["cache_hits"] += 1
@@ -103,7 +106,9 @@ class CacheIntegrationService:
 
         # Cache result
         if result and strategy.cache_on_miss:
-            await self.cache_system.set_multi_layer(cache_key, result, strategy.content_type)
+            await self.cache_system.set_multi_layer(
+                cache_key, result, strategy.content_type
+            )
             self.performance_stats["operations_cached"] += 1
 
         compute_time = (time.time() - start_time) * 1000
@@ -112,7 +117,11 @@ class CacheIntegrationService:
         return result
 
     async def cache_ai_response(
-        self, conversation_context: Dict[str, Any], ai_response_fn: Callable, *args, **kwargs
+        self,
+        conversation_context: Dict[str, Any],
+        ai_response_fn: Callable,
+        *args,
+        **kwargs,
     ) -> Optional[str]:
         """Cache AI response results."""
         if not self.cache_system:
@@ -127,7 +136,9 @@ class CacheIntegrationService:
         start_time = time.time()
 
         # Try cache first
-        cached_result = await self.cache_system.get_with_fallback(cache_key, strategy.content_type)
+        cached_result = await self.cache_system.get_with_fallback(
+            cache_key, strategy.content_type
+        )
 
         if cached_result is not None:
             self.performance_stats["cache_hits"] += 1
@@ -140,7 +151,9 @@ class CacheIntegrationService:
 
         # Cache result
         if result and strategy.cache_on_miss:
-            await self.cache_system.set_multi_layer(cache_key, result, strategy.content_type)
+            await self.cache_system.set_multi_layer(
+                cache_key, result, strategy.content_type
+            )
             self.performance_stats["operations_cached"] += 1
 
         compute_time = (time.time() - start_time) * 1000
@@ -149,7 +162,11 @@ class CacheIntegrationService:
         return result
 
     async def cache_emotion_analysis(
-        self, audio_features: Dict[str, Any], emotion_analysis_fn: Callable, *args, **kwargs
+        self,
+        audio_features: Dict[str, Any],
+        emotion_analysis_fn: Callable,
+        *args,
+        **kwargs,
     ) -> Optional[Dict[str, float]]:
         """Cache emotion analysis results."""
         if not self.cache_system:
@@ -164,7 +181,9 @@ class CacheIntegrationService:
         start_time = time.time()
 
         # Try cache first
-        cached_result = await self.cache_system.get_with_fallback(cache_key, strategy.content_type)
+        cached_result = await self.cache_system.get_with_fallback(
+            cache_key, strategy.content_type
+        )
 
         if cached_result is not None:
             self.performance_stats["cache_hits"] += 1
@@ -177,7 +196,9 @@ class CacheIntegrationService:
 
         # Cache result
         if result and strategy.cache_on_miss:
-            await self.cache_system.set_multi_layer(cache_key, result, strategy.content_type)
+            await self.cache_system.set_multi_layer(
+                cache_key, result, strategy.content_type
+            )
             self.performance_stats["operations_cached"] += 1
 
         compute_time = (time.time() - start_time) * 1000
@@ -186,7 +207,12 @@ class CacheIntegrationService:
         return result
 
     async def cache_voice_synthesis(
-        self, text: str, voice_config: Dict[str, Any], synthesis_fn: Callable, *args, **kwargs
+        self,
+        text: str,
+        voice_config: Dict[str, Any],
+        synthesis_fn: Callable,
+        *args,
+        **kwargs,
     ) -> Optional[bytes]:
         """Cache voice synthesis results."""
         if not self.cache_system:
@@ -201,7 +227,9 @@ class CacheIntegrationService:
         start_time = time.time()
 
         # Try cache first
-        cached_result = await self.cache_system.get_with_fallback(cache_key, strategy.content_type)
+        cached_result = await self.cache_system.get_with_fallback(
+            cache_key, strategy.content_type
+        )
 
         if cached_result is not None:
             self.performance_stats["cache_hits"] += 1
@@ -214,7 +242,9 @@ class CacheIntegrationService:
 
         # Cache result
         if result and strategy.cache_on_miss:
-            await self.cache_system.set_multi_layer(cache_key, result, strategy.content_type)
+            await self.cache_system.set_multi_layer(
+                cache_key, result, strategy.content_type
+            )
             self.performance_stats["operations_cached"] += 1
 
         compute_time = (time.time() - start_time) * 1000
@@ -223,7 +253,10 @@ class CacheIntegrationService:
         return result
 
     async def cache_user_session(
-        self, user_id: str, session_data: Dict[str, Any], ttl_override: Optional[int] = None
+        self,
+        user_id: str,
+        session_data: Dict[str, Any],
+        ttl_override: Optional[int] = None,
     ) -> bool:
         """Cache user session data."""
         if not self.cache_system:
@@ -234,7 +267,9 @@ class CacheIntegrationService:
 
         ttl = ttl_override or strategy.ttl_seconds
 
-        return await self.cache_system.set_multi_layer(cache_key, session_data, strategy.content_type)
+        return await self.cache_system.set_multi_layer(
+            cache_key, session_data, strategy.content_type
+        )
 
     async def get_user_session(self, user_id: str) -> Optional[Dict[str, Any]]:
         """Get cached user session data."""
@@ -244,9 +279,13 @@ class CacheIntegrationService:
         strategy = self.strategies["user_session"]
         cache_key = f"session:{user_id}"
 
-        return await self.cache_system.get_with_fallback(cache_key, strategy.content_type)
+        return await self.cache_system.get_with_fallback(
+            cache_key, strategy.content_type
+        )
 
-    async def cache_configuration(self, config_key: str, config_data: Dict[str, Any]) -> bool:
+    async def cache_configuration(
+        self, config_key: str, config_data: Dict[str, Any]
+    ) -> bool:
         """Cache configuration data."""
         if not self.cache_system:
             return False
@@ -254,7 +293,9 @@ class CacheIntegrationService:
         strategy = self.strategies["configuration"]
         cache_key = f"config:{config_key}"
 
-        return await self.cache_system.set_multi_layer(cache_key, config_data, strategy.content_type)
+        return await self.cache_system.set_multi_layer(
+            cache_key, config_data, strategy.content_type
+        )
 
     async def get_configuration(self, config_key: str) -> Optional[Dict[str, Any]]:
         """Get cached configuration data."""
@@ -264,14 +305,20 @@ class CacheIntegrationService:
         strategy = self.strategies["configuration"]
         cache_key = f"config:{config_key}"
 
-        return await self.cache_system.get_with_fallback(cache_key, strategy.content_type)
+        return await self.cache_system.get_with_fallback(
+            cache_key, strategy.content_type
+        )
 
     async def invalidate_user_cache(self, user_id: str) -> bool:
         """Invalidate all cache entries for a user."""
         if not self.cache_system:
             return False
 
-        patterns = [f"session:{user_id}", f"ai_response:*{user_id}*", f"emotion:*{user_id}*"]
+        patterns = [
+            f"session:{user_id}",
+            f"ai_response:*{user_id}*",
+            f"emotion:*{user_id}*",
+        ]
 
         success = True
         for pattern in patterns:
@@ -294,18 +341,30 @@ class CacheIntegrationService:
 
         # Session data
         if "session" in user_data:
-            cache_entries.append((f"session:{user_id}", user_data["session"], ContentType.USER_SESSION))
+            cache_entries.append(
+                (f"session:{user_id}", user_data["session"], ContentType.USER_SESSION)
+            )
 
         # Frequently used configurations
         if "preferences" in user_data:
             cache_entries.append(
-                (f"config:user_preferences:{user_id}", user_data["preferences"], ContentType.CONFIGURATION)
+                (
+                    f"config:user_preferences:{user_id}",
+                    user_data["preferences"],
+                    ContentType.CONFIGURATION,
+                )
             )
 
         # Pre-computed responses for common scenarios
         if "common_responses" in user_data:
             for scenario, response in user_data["common_responses"].items():
-                cache_entries.append((f"ai_response:common:{user_id}:{scenario}", response, ContentType.AI_RESPONSE))
+                cache_entries.append(
+                    (
+                        f"ai_response:common:{user_id}:{scenario}",
+                        response,
+                        ContentType.AI_RESPONSE,
+                    )
+                )
 
         return await self.cache_system.warm_cache(cache_entries)
 
@@ -410,8 +469,15 @@ class CacheIntegrationService:
         cache_metrics = self.cache_system.get_performance_metrics()
 
         # Calculate integration-specific metrics
-        total_operations = self.performance_stats["cache_hits"] + self.performance_stats["cache_misses"]
-        integration_hit_rate = self.performance_stats["cache_hits"] / total_operations if total_operations > 0 else 0.0
+        total_operations = (
+            self.performance_stats["cache_hits"]
+            + self.performance_stats["cache_misses"]
+        )
+        integration_hit_rate = (
+            self.performance_stats["cache_hits"] / total_operations
+            if total_operations > 0
+            else 0.0
+        )
 
         average_time_saved = self.performance_stats["compute_time_saved_ms"] / max(
             1, self.performance_stats["cache_hits"]
@@ -499,10 +565,14 @@ class CacheIntegrationService:
             "analysis_timestamp": datetime.now().isoformat(),
             "performance_metrics": metrics,
             "optimization_suggestions": suggestions,
-            "recommended_config_changes": self._generate_config_recommendations(suggestions),
+            "recommended_config_changes": self._generate_config_recommendations(
+                suggestions
+            ),
         }
 
-    def _generate_config_recommendations(self, suggestions: List[Dict]) -> Dict[str, Any]:
+    def _generate_config_recommendations(
+        self, suggestions: List[Dict]
+    ) -> Dict[str, Any]:
         """Generate specific configuration recommendations."""
         recommendations = {}
 
@@ -515,7 +585,9 @@ class CacheIntegrationService:
                 recommendations["transcription_ttl"] = 7200  # Increase to 2 hours
 
             elif suggestion["type"] == "redis_optimization":
-                recommendations["l2_max_connections"] = min(200, self.cache_config.l2_max_connections * 2)
+                recommendations["l2_max_connections"] = min(
+                    200, self.cache_config.l2_max_connections * 2
+                )
                 recommendations["enable_redis_cluster"] = True
 
             elif suggestion["type"] == "cache_warming":
@@ -533,7 +605,9 @@ class CacheIntegrationService:
 
 
 # Factory function for easy integration
-async def create_cache_integration_service(config: Optional[CacheConfig] = None) -> CacheIntegrationService:
+async def create_cache_integration_service(
+    config: Optional[CacheConfig] = None,
+) -> CacheIntegrationService:
     """Factory function to create and initialize cache integration service."""
     service = CacheIntegrationService(config)
     await service.initialize()

@@ -94,13 +94,21 @@ class AlertManager:
         return {
             ErrorCategory.CHILD_SAFETY.value: {
                 "priority": AlertPriority.P1,
-                "channels": [AlertChannel.EMAIL, AlertChannel.SMS, AlertChannel.PUSH_NOTIFICATION],
+                "channels": [
+                    AlertChannel.EMAIL,
+                    AlertChannel.SMS,
+                    AlertChannel.PUSH_NOTIFICATION,
+                ],
                 "throttle_minutes": 0,  # لا throttling لأمان الأطفال
                 "escalation_enabled": True,
             },
             ErrorCategory.SECURITY.value: {
                 "priority": AlertPriority.P1,
-                "channels": [AlertChannel.EMAIL, AlertChannel.SLACK, AlertChannel.PAGERDUTY],
+                "channels": [
+                    AlertChannel.EMAIL,
+                    AlertChannel.SLACK,
+                    AlertChannel.PAGERDUTY,
+                ],
                 "throttle_minutes": 5,
                 "escalation_enabled": True,
             },
@@ -139,7 +147,10 @@ class AlertManager:
                 "headers": {"Content-Type": "application/json"},
                 "auth_token": os.getenv("ALERT_WEBHOOK_TOKEN"),
             },
-            AlertChannel.PUSH_NOTIFICATION.value: {"fcm_server_key": os.getenv("FCM_SERVER_KEY"), "topic": "alerts"},
+            AlertChannel.PUSH_NOTIFICATION.value: {
+                "fcm_server_key": os.getenv("FCM_SERVER_KEY"),
+                "topic": "alerts",
+            },
             AlertChannel.PAGERDUTY.value: {
                 "integration_key": os.getenv("PAGERDUTY_INTEGRATION_KEY"),
                 "api_url": "https://events.pagerduty.com/v2/enqueue",
@@ -150,7 +161,9 @@ class AlertManager:
         """إرسال تنبيه critical"""
         try:
             category = error_data.get("category", ErrorCategory.INFRASTRUCTURE.value)
-            rule = self.alert_rules.get(category, self.alert_rules[ErrorCategory.INFRASTRUCTURE.value])
+            rule = self.alert_rules.get(
+                category, self.alert_rules[ErrorCategory.INFRASTRUCTURE.value]
+            )
 
             # Create alert
             alert = Alert(
@@ -250,7 +263,9 @@ Actions Required:
         throttle = self.alert_throttles.get(key)
         if not throttle:
             throttle = AlertThrottle(
-                last_sent=datetime.utcnow(), count=1, reset_time=datetime.utcnow() + timedelta(minutes=15)
+                last_sent=datetime.utcnow(),
+                count=1,
+                reset_time=datetime.utcnow() + timedelta(minutes=15),
             )
             self.alert_throttles[key] = throttle
         else:
@@ -292,7 +307,9 @@ Actions Required:
             msg.attach(body)
 
             # Send email in thread to avoid blocking
-            await asyncio.get_event_loop().run_in_executor(None, self._send_email_sync, config, msg)
+            await asyncio.get_event_loop().run_in_executor(
+                None, self._send_email_sync, config, msg
+            )
 
             logger.info("Email alert sent", alert_id=alert.id)
 
@@ -326,8 +343,16 @@ Actions Required:
                         "title": alert.title,
                         "text": alert.message,
                         "fields": [
-                            {"title": "Priority", "value": alert.priority.value.upper(), "short": True},
-                            {"title": "Category", "value": alert.error_data.get("category", "Unknown"), "short": True},
+                            {
+                                "title": "Priority",
+                                "value": alert.priority.value.upper(),
+                                "short": True,
+                            },
+                            {
+                                "title": "Category",
+                                "value": alert.error_data.get("category", "Unknown"),
+                                "short": True,
+                            },
                             {
                                 "title": "Error Code",
                                 "value": alert.error_data.get("error_code", "Unknown"),
@@ -335,7 +360,9 @@ Actions Required:
                             },
                             {
                                 "title": "Time",
-                                "value": alert.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC"),
+                                "value": alert.timestamp.strftime(
+                                    "%Y-%m-%d %H:%M:%S UTC"
+                                ),
                                 "short": True,
                             },
                         ],
@@ -393,7 +420,9 @@ Actions Required:
             if not self._session:
                 self._session = aiohttp.ClientSession()
 
-            async with self._session.post(url, json=alert.to_dict(), headers=headers) as response:
+            async with self._session.post(
+                url, json=alert.to_dict(), headers=headers
+            ) as response:
                 if response.status in (200, 201, 202):
                     logger.info("Webhook alert sent", alert_id=alert.id)
                 else:
@@ -439,7 +468,11 @@ Actions Required:
                     "category": alert.error_data.get("category"),
                     "child_id": child_id,
                 },
-                "priority": "high" if alert.priority in (AlertPriority.P1, AlertPriority.P2) else "normal",
+                "priority": (
+                    "high"
+                    if alert.priority in (AlertPriority.P1, AlertPriority.P2)
+                    else "normal"
+                ),
             }
 
             if not self._session:
@@ -448,12 +481,17 @@ Actions Required:
             async with self._session.post(
                 "https://fcm.googleapis.com/fcm/send",
                 json=fcm_data,
-                headers={"Authorization": f"key={fcm_key}", "Content-Type": "application/json"},
+                headers={
+                    "Authorization": f"key={fcm_key}",
+                    "Content-Type": "application/json",
+                },
             ) as response:
                 if response.status == 200:
                     logger.info("Push notification sent", alert_id=alert.id)
                 else:
-                    logger.error("Failed to send push notification", status=response.status)
+                    logger.error(
+                        "Failed to send push notification", status=response.status
+                    )
 
         except Exception as e:
             logger.error("Failed to send push notification", error=str(e))
@@ -496,12 +534,16 @@ Actions Required:
                 self._session = aiohttp.ClientSession()
 
             async with self._session.post(
-                config["api_url"], json=pd_event, headers={"Content-Type": "application/json"}
+                config["api_url"],
+                json=pd_event,
+                headers={"Content-Type": "application/json"},
             ) as response:
                 if response.status == 202:
                     logger.info("PagerDuty alert sent", alert_id=alert.id)
                 else:
-                    logger.error("Failed to send PagerDuty alert", status=response.status)
+                    logger.error(
+                        "Failed to send PagerDuty alert", status=response.status
+                    )
 
         except Exception as e:
             logger.error("Failed to send PagerDuty alert", error=str(e))

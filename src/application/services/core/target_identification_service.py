@@ -33,7 +33,11 @@ class TargetIdentificationService:
         try:
             # Use emotion database service if available
             if self.emotion_db_service:
-                targets.extend(await self._identify_emotion_targets(policy, report, session_manager))
+                targets.extend(
+                    await self._identify_emotion_targets(
+                        policy, report, session_manager
+                    )
+                )
 
             # Identify file targets
             targets.extend(await self._identify_file_targets(policy, report))
@@ -60,18 +64,32 @@ class TargetIdentificationService:
         try:
             async with session_manager() as session:
                 # Calculate cutoff dates
-                conversations_cutoff = datetime.utcnow() - timedelta(days=policy.conversations_retention_days)
-                messages_cutoff = datetime.utcnow() - timedelta(days=policy.messages_retention_days)
-                emotions_cutoff = datetime.utcnow() - timedelta(days=policy.emotional_states_retention_days)
+                conversations_cutoff = datetime.utcnow() - timedelta(
+                    days=policy.conversations_retention_days
+                )
+                messages_cutoff = datetime.utcnow() - timedelta(
+                    days=policy.messages_retention_days
+                )
+                emotions_cutoff = datetime.utcnow() - timedelta(
+                    days=policy.emotional_states_retention_days
+                )
 
                 # Find old conversations
-                targets.extend(await self._find_old_conversations(session, conversations_cutoff, report))
+                targets.extend(
+                    await self._find_old_conversations(
+                        session, conversations_cutoff, report
+                    )
+                )
 
                 # Find old messages
-                targets.extend(await self._find_old_messages(session, messages_cutoff, report))
+                targets.extend(
+                    await self._find_old_messages(session, messages_cutoff, report)
+                )
 
                 # Find old emotional states
-                targets.extend(await self._find_old_emotions(session, emotions_cutoff, report))
+                targets.extend(
+                    await self._find_old_emotions(session, emotions_cutoff, report)
+                )
 
         except Exception as e:
             report.add_error(f"Error identifying emotion database targets: {str(e)}")
@@ -79,7 +97,9 @@ class TargetIdentificationService:
 
         return targets
 
-    async def _find_old_conversations(self, session, cutoff_date, report) -> List[CleanupTarget]:
+    async def _find_old_conversations(
+        self, session, cutoff_date, report
+    ) -> List[CleanupTarget]:
         """البحث عن المحادثات القديمة"""
         targets = []
 
@@ -100,7 +120,11 @@ class TargetIdentificationService:
                     table_name="conversations",
                     record_id=conv[0],
                     child_id=conv[1],
-                    created_at=conv[2] if isinstance(conv[2], datetime) else datetime.fromisoformat(conv[2]),
+                    created_at=(
+                        conv[2]
+                        if isinstance(conv[2], datetime)
+                        else datetime.fromisoformat(conv[2])
+                    ),
                     data_type="conversation",
                     foreign_key_refs=["messages", "emotional_states"],
                 )
@@ -109,7 +133,9 @@ class TargetIdentificationService:
 
         return targets
 
-    async def _find_old_messages(self, session, cutoff_date, report) -> List[CleanupTarget]:
+    async def _find_old_messages(
+        self, session, cutoff_date, report
+    ) -> List[CleanupTarget]:
         """البحث عن الرسائل القديمة"""
         targets = []
 
@@ -129,7 +155,11 @@ class TargetIdentificationService:
                 CleanupTarget(
                     table_name="messages",
                     record_id=msg[0],
-                    created_at=msg[2] if isinstance(msg[2], datetime) else datetime.fromisoformat(msg[2]),
+                    created_at=(
+                        msg[2]
+                        if isinstance(msg[2], datetime)
+                        else datetime.fromisoformat(msg[2])
+                    ),
                     data_type="message",
                     size_bytes=len(msg[3].encode("utf-8")) if msg[3] else 0,
                     foreign_key_refs=["emotional_states"],
@@ -138,7 +168,9 @@ class TargetIdentificationService:
 
         return targets
 
-    async def _find_old_emotions(self, session, cutoff_date, report) -> List[CleanupTarget]:
+    async def _find_old_emotions(
+        self, session, cutoff_date, report
+    ) -> List[CleanupTarget]:
         """البحث عن البيانات العاطفية القديمة"""
         targets = []
 
@@ -159,7 +191,11 @@ class TargetIdentificationService:
                     table_name="emotional_states",
                     record_id=emotion[0],
                     child_id=emotion[1],
-                    created_at=emotion[2] if isinstance(emotion[2], datetime) else datetime.fromisoformat(emotion[2]),
+                    created_at=(
+                        emotion[2]
+                        if isinstance(emotion[2], datetime)
+                        else datetime.fromisoformat(emotion[2])
+                    ),
                     data_type="emotional_state",
                 )
             )
@@ -168,7 +204,9 @@ class TargetIdentificationService:
 
         return targets
 
-    async def _identify_file_targets(self, policy: DataRetentionPolicy, report: CleanupReport) -> List[CleanupTarget]:
+    async def _identify_file_targets(
+        self, policy: DataRetentionPolicy, report: CleanupReport
+    ) -> List[CleanupTarget]:
         """تحديد الملفات المرشحة للحذف"""
 
         targets = []
@@ -186,13 +224,22 @@ class TargetIdentificationService:
 
         return targets
 
-    async def _find_old_audio_files(self, policy: DataRetentionPolicy) -> List[CleanupTarget]:
+    async def _find_old_audio_files(
+        self, policy: DataRetentionPolicy
+    ) -> List[CleanupTarget]:
         """البحث عن ملفات الصوت القديمة"""
         targets = []
 
-        audio_directories = [Path("audio-files"), Path("uploads"), Path("cache/audio"), Path("data/audio")]
+        audio_directories = [
+            Path("audio-files"),
+            Path("uploads"),
+            Path("cache/audio"),
+            Path("data/audio"),
+        ]
 
-        audio_cutoff = datetime.utcnow() - timedelta(days=policy.audio_files_retention_days)
+        audio_cutoff = datetime.utcnow() - timedelta(
+            days=policy.audio_files_retention_days
+        )
 
         for audio_dir in audio_directories:
             if audio_dir.exists():
@@ -218,7 +265,9 @@ class TargetIdentificationService:
         """البحث عن ملفات النسخ الاحتياطي القديمة"""
         targets = []
 
-        backup_cutoff = datetime.utcnow() - timedelta(days=30)  # Keep backups for 30 days
+        backup_cutoff = datetime.utcnow() - timedelta(
+            days=30
+        )  # Keep backups for 30 days
         backup_directory = Path("data_backups")
 
         if backup_directory.exists():

@@ -11,7 +11,9 @@ class RateLimiter:
     def __init__(self, requests_per_minute: int = 60, burst_size: int = 10):
         self.rate = requests_per_minute / 60.0  # requests per second
         self.burst_size = burst_size
-        self.buckets = defaultdict(lambda: {"tokens": burst_size, "last_update": time.time()})
+        self.buckets = defaultdict(
+            lambda: {"tokens": burst_size, "last_update": time.time()}
+        )
 
     async def __call__(self, request: Request, call_next: Callable):
         # Get client identifier
@@ -19,7 +21,11 @@ class RateLimiter:
 
         # Check rate limit
         if not self._is_allowed(client_id):
-            raise HTTPException(status_code=429, detail="Rate limit exceeded", headers={"Retry-After": "60"})
+            raise HTTPException(
+                status_code=429,
+                detail="Rate limit exceeded",
+                headers={"Retry-After": "60"},
+            )
 
         # Process request
         response = await call_next(request)
@@ -28,7 +34,9 @@ class RateLimiter:
         bucket = self.buckets[client_id]
         response.headers["X-RateLimit-Limit"] = str(self.burst_size)
         response.headers["X-RateLimit-Remaining"] = str(int(bucket["tokens"]))
-        response.headers["X-RateLimit-Reset"] = str(int(time.time() + (self.burst_size - bucket["tokens"]) / self.rate))
+        response.headers["X-RateLimit-Reset"] = str(
+            int(time.time() + (self.burst_size - bucket["tokens"]) / self.rate)
+        )
 
         return response
 
@@ -39,7 +47,9 @@ class RateLimiter:
 
         # Refill tokens based on time elapsed
         time_elapsed = current_time - bucket["last_update"]
-        bucket["tokens"] = min(self.burst_size, bucket["tokens"] + time_elapsed * self.rate)
+        bucket["tokens"] = min(
+            self.burst_size, bucket["tokens"] + time_elapsed * self.rate
+        )
         bucket["last_update"] = current_time
 
         # Check if we have tokens

@@ -9,7 +9,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from application.services.advanced_personalization_service import ChildPersonality
+from application.services.advanced_personalization_service import \
+    ChildPersonality
 
 
 class TestChildPersonality:

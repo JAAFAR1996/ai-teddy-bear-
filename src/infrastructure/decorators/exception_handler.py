@@ -12,20 +12,20 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import structlog
 
-from src.domain.exceptions.base import (
-    AITeddyBearException,
-    AuthenticationException,
-    CircuitBreakerOpenException,
-    DatabaseException,
-    ErrorContext,
-    ErrorSeverity,
-    ExternalServiceException,
-    InappropriateContentException,
-    ParentalConsentRequiredException,
-    ValidationException,
-)
-from src.infrastructure.exception_handling.global_handler import CircuitBreaker, get_global_exception_handler
-from src.infrastructure.monitoring.metrics import MetricsCollector, exception_counter, track_request_duration
+from src.domain.exceptions.base import (AITeddyBearException,
+                                        AuthenticationException,
+                                        CircuitBreakerOpenException,
+                                        DatabaseException, ErrorContext,
+                                        ErrorSeverity,
+                                        ExternalServiceException,
+                                        InappropriateContentException,
+                                        ParentalConsentRequiredException,
+                                        ValidationException)
+from src.infrastructure.exception_handling.global_handler import (
+    CircuitBreaker, get_global_exception_handler)
+from src.infrastructure.monitoring.metrics import (MetricsCollector,
+                                                   exception_counter,
+                                                   track_request_duration)
 
 logger = structlog.get_logger(__name__)
 
@@ -42,7 +42,11 @@ class RetryConfig:
 
     def __post_init__(self):
         if self.exceptions_to_retry is None:
-            self.exceptions_to_retry = [DatabaseException, ExternalServiceException, CircuitBreakerOpenException]
+            self.exceptions_to_retry = [
+                DatabaseException,
+                ExternalServiceException,
+                CircuitBreakerOpenException,
+            ]
 
 
 def handle_exceptions(
@@ -72,21 +76,29 @@ def handle_exceptions(
                 # Log error if enabled
                 if log_errors:
                     logger.error(
-                        f"Exception in {func.__name__}", exception=type(e).__name__, message=str(e), exc_info=True
+                        f"Exception in {func.__name__}",
+                        exception=type(e).__name__,
+                        message=str(e),
+                        exc_info=True,
                     )
 
                 # Try custom handlers
                 for exception_type, handler in exception_handlers:
                     if isinstance(e, exception_type):
                         try:
-                            result = await handler(e) if asyncio.iscoroutinefunction(handler) else handler(e)
+                            result = (
+                                await handler(e)
+                                if asyncio.iscoroutinefunction(handler)
+                                else handler(e)
+                            )
                             if not propagate:
                                 return result
                             else:
                                 raise
                         except Exception as handler_error:
                             logger.error(
-                                f"Handler failed for {exception_type.__name__}", handler_error=str(handler_error)
+                                f"Handler failed for {exception_type.__name__}",
+                                handler_error=str(handler_error),
                             )
 
                 # Use global handler if enabled
@@ -94,11 +106,17 @@ def handle_exceptions(
                     global_handler = get_global_exception_handler()
                     result = await global_handler.handle_exception(e)
                     if not propagate:
-                        return result.get("recovery_result", fallback() if fallback else None)
+                        return result.get(
+                            "recovery_result", fallback() if fallback else None
+                        )
 
                 # Use fallback if available
                 if fallback and not propagate:
-                    return await fallback() if asyncio.iscoroutinefunction(fallback) else fallback()
+                    return (
+                        await fallback()
+                        if asyncio.iscoroutinefunction(fallback)
+                        else fallback()
+                    )
 
                 # Re-raise if no handler found or propagate is True
                 raise
@@ -111,7 +129,10 @@ def handle_exceptions(
                 # Log error if enabled
                 if log_errors:
                     logger.error(
-                        f"Exception in {func.__name__}", exception=type(e).__name__, message=str(e), exc_info=True
+                        f"Exception in {func.__name__}",
+                        exception=type(e).__name__,
+                        message=str(e),
+                        exc_info=True,
                     )
 
                 # Try custom handlers
@@ -125,7 +146,8 @@ def handle_exceptions(
                                 raise
                         except Exception as handler_error:
                             logger.error(
-                                f"Handler failed for {exception_type.__name__}", handler_error=str(handler_error)
+                                f"Handler failed for {exception_type.__name__}",
+                                handler_error=str(handler_error),
                             )
 
                 # Use global handler if enabled
@@ -133,7 +155,9 @@ def handle_exceptions(
                     global_handler = get_global_exception_handler()
                     result = global_handler.handle_exception_sync(e)
                     if not propagate:
-                        return result.get("recovery_result", fallback() if fallback else None)
+                        return result.get(
+                            "recovery_result", fallback() if fallback else None
+                        )
 
                 # Use fallback if available
                 if fallback and not propagate:
@@ -147,7 +171,10 @@ def handle_exceptions(
     return decorator
 
 
-def with_retry(config: Optional[RetryConfig] = None, on_retry: Optional[Callable[[Exception, int], None]] = None):
+def with_retry(
+    config: Optional[RetryConfig] = None,
+    on_retry: Optional[Callable[[Exception, int], None]] = None,
+):
     """
     Decorator لإعادة المحاولة مع exponential backoff
 
@@ -171,7 +198,10 @@ def with_retry(config: Optional[RetryConfig] = None, on_retry: Optional[Callable
                     last_exception = e
 
                     # Check if we should retry this exception
-                    should_retry = any(isinstance(e, exc_type) for exc_type in config.exceptions_to_retry)
+                    should_retry = any(
+                        isinstance(e, exc_type)
+                        for exc_type in config.exceptions_to_retry
+                    )
 
                     if not should_retry or attempt == config.max_attempts:
                         raise
@@ -213,7 +243,10 @@ def with_retry(config: Optional[RetryConfig] = None, on_retry: Optional[Callable
                     last_exception = e
 
                     # Check if we should retry this exception
-                    should_retry = any(isinstance(e, exc_type) for exc_type in config.exceptions_to_retry)
+                    should_retry = any(
+                        isinstance(e, exc_type)
+                        for exc_type in config.exceptions_to_retry
+                    )
 
                     if not should_retry or attempt == config.max_attempts:
                         raise
@@ -267,7 +300,9 @@ def with_circuit_breaker(
 
     if not circuit_breaker:
         circuit_breaker = CircuitBreaker(
-            service_name=service_name, failure_threshold=failure_threshold, timeout_seconds=timeout_seconds
+            service_name=service_name,
+            failure_threshold=failure_threshold,
+            timeout_seconds=timeout_seconds,
         )
         global_handler.circuit_breakers[service_name] = circuit_breaker
 
@@ -277,9 +312,16 @@ def with_circuit_breaker(
             try:
                 return await circuit_breaker.call(func, *args, **kwargs)
             except CircuitBreakerOpenException as e:
-                logger.warning(f"Circuit breaker open for {service_name}", retry_after=e.retry_after)
+                logger.warning(
+                    f"Circuit breaker open for {service_name}",
+                    retry_after=e.retry_after,
+                )
                 if fallback:
-                    return await fallback() if asyncio.iscoroutinefunction(fallback) else fallback()
+                    return (
+                        await fallback()
+                        if asyncio.iscoroutinefunction(fallback)
+                        else fallback()
+                    )
                 raise
 
         @wraps(func)
@@ -287,7 +329,10 @@ def with_circuit_breaker(
             try:
                 return circuit_breaker.call_sync(func, *args, **kwargs)
             except CircuitBreakerOpenException as e:
-                logger.warning(f"Circuit breaker open for {service_name}", retry_after=e.retry_after)
+                logger.warning(
+                    f"Circuit breaker open for {service_name}",
+                    retry_after=e.retry_after,
+                )
                 if fallback:
                     return fallback()
                 raise
@@ -298,7 +343,9 @@ def with_circuit_breaker(
 
 
 def child_safe(
-    content_filter: Optional[Callable[[Any], bool]] = None, notify_parent: bool = True, log_violations: bool = True
+    content_filter: Optional[Callable[[Any], bool]] = None,
+    notify_parent: bool = True,
+    log_violations: bool = True,
 ):
     """
     Decorator لضمان أمان المحتوى للأطفال
@@ -324,7 +371,8 @@ def child_safe(
                     )
                     if not is_safe:
                         raise InappropriateContentException(
-                            content_type="response", violation_reason="Content filter violation"
+                            content_type="response",
+                            violation_reason="Content filter violation",
                         )
 
                 return result
@@ -340,20 +388,30 @@ def child_safe(
 
                 # Record metric
                 MetricsCollector.record_content_filtered(
-                    filter_type="function_decorator", reason=e.violation_reason or "unknown"
+                    filter_type="function_decorator",
+                    reason=e.violation_reason or "unknown",
                 )
 
                 # Return safe response
-                return {"error": "Content not appropriate for children", "safe": True, "filtered": True}
+                return {
+                    "error": "Content not appropriate for children",
+                    "safe": True,
+                    "filtered": True,
+                }
 
             except ParentalConsentRequiredException as e:
                 if log_violations:
                     logger.warning(
-                        "Parental consent required", function=func.__name__, action=e.action, reason=e.reason
+                        "Parental consent required",
+                        function=func.__name__,
+                        action=e.action,
+                        reason=e.reason,
                     )
 
                 # Record metric
-                MetricsCollector.record_parental_consent(action=e.action, status="required")
+                MetricsCollector.record_parental_consent(
+                    action=e.action, status="required"
+                )
 
                 # Return response requiring parent action
                 return {
@@ -373,7 +431,8 @@ def child_safe(
                     is_safe = content_filter(result)
                     if not is_safe:
                         raise InappropriateContentException(
-                            content_type="response", violation_reason="Content filter violation"
+                            content_type="response",
+                            violation_reason="Content filter violation",
                         )
 
                 return result
@@ -389,20 +448,30 @@ def child_safe(
 
                 # Record metric
                 MetricsCollector.record_content_filtered(
-                    filter_type="function_decorator", reason=e.violation_reason or "unknown"
+                    filter_type="function_decorator",
+                    reason=e.violation_reason or "unknown",
                 )
 
                 # Return safe response
-                return {"error": "Content not appropriate for children", "safe": True, "filtered": True}
+                return {
+                    "error": "Content not appropriate for children",
+                    "safe": True,
+                    "filtered": True,
+                }
 
             except ParentalConsentRequiredException as e:
                 if log_violations:
                     logger.warning(
-                        "Parental consent required", function=func.__name__, action=e.action, reason=e.reason
+                        "Parental consent required",
+                        function=func.__name__,
+                        action=e.action,
+                        reason=e.reason,
                     )
 
                 # Record metric
-                MetricsCollector.record_parental_consent(action=e.action, status="required")
+                MetricsCollector.record_parental_consent(
+                    action=e.action, status="required"
+                )
 
                 # Return response requiring parent action
                 return {
@@ -417,7 +486,10 @@ def child_safe(
     return decorator
 
 
-def validate_input(validators: Dict[str, Callable[[Any], bool]], error_messages: Optional[Dict[str, str]] = None):
+def validate_input(
+    validators: Dict[str, Callable[[Any], bool]],
+    error_messages: Optional[Dict[str, str]] = None,
+):
     """
     Decorator للتحقق من صحة المدخلات
 
@@ -443,16 +515,25 @@ def validate_input(validators: Dict[str, Callable[[Any], bool]], error_messages:
 
                     try:
                         is_valid = (
-                            await validator(value) if asyncio.iscoroutinefunction(validator) else validator(value)
+                            await validator(value)
+                            if asyncio.iscoroutinefunction(validator)
+                            else validator(value)
                         )
                         if not is_valid:
-                            error_msg = error_messages.get(param_name) if error_messages else f"Invalid {param_name}"
-                            raise ValidationException(message=error_msg, field_name=param_name)
+                            error_msg = (
+                                error_messages.get(param_name)
+                                if error_messages
+                                else f"Invalid {param_name}"
+                            )
+                            raise ValidationException(
+                                message=error_msg, field_name=param_name
+                            )
                     except Exception as e:
                         if isinstance(e, ValidationException):
                             raise
                         raise ValidationException(
-                            message=f"Validation failed for {param_name}: {str(e)}", field_name=param_name
+                            message=f"Validation failed for {param_name}: {str(e)}",
+                            field_name=param_name,
                         )
 
             return await func(*args, **kwargs)
@@ -474,13 +555,20 @@ def validate_input(validators: Dict[str, Callable[[Any], bool]], error_messages:
                     try:
                         is_valid = validator(value)
                         if not is_valid:
-                            error_msg = error_messages.get(param_name) if error_messages else f"Invalid {param_name}"
-                            raise ValidationException(message=error_msg, field_name=param_name)
+                            error_msg = (
+                                error_messages.get(param_name)
+                                if error_messages
+                                else f"Invalid {param_name}"
+                            )
+                            raise ValidationException(
+                                message=error_msg, field_name=param_name
+                            )
                     except Exception as e:
                         if isinstance(e, ValidationException):
                             raise
                         raise ValidationException(
-                            message=f"Validation failed for {param_name}: {str(e)}", field_name=param_name
+                            message=f"Validation failed for {param_name}: {str(e)}",
+                            field_name=param_name,
                         )
 
             return func(*args, **kwargs)
@@ -519,16 +607,24 @@ def authenticated(required_role: Optional[str] = None, check_token_expiry: bool 
             # Check token expiry
             if check_token_expiry:
                 token_expiry = auth_context.get("token_expiry")
-                if token_expiry and datetime.fromisoformat(token_expiry) < datetime.utcnow():
-                    raise AuthenticationException(reason="Token expired", auth_method="jwt")
+                if (
+                    token_expiry
+                    and datetime.fromisoformat(token_expiry) < datetime.utcnow()
+                ):
+                    raise AuthenticationException(
+                        reason="Token expired", auth_method="jwt"
+                    )
 
             # Check role if required
             if required_role:
                 user_roles = auth_context.get("roles", [])
                 if required_role not in user_roles:
-                    from src.domain.exceptions.base import AuthorizationException
+                    from src.domain.exceptions.base import \
+                        AuthorizationException
 
-                    raise AuthorizationException(action=func.__name__, required_role=required_role)
+                    raise AuthorizationException(
+                        action=func.__name__, required_role=required_role
+                    )
 
             return await func(*args, **kwargs)
 
@@ -549,15 +645,23 @@ def authenticated(required_role: Optional[str] = None, check_token_expiry: bool 
 
             if check_token_expiry:
                 token_expiry = auth_context.get("token_expiry")
-                if token_expiry and datetime.fromisoformat(token_expiry) < datetime.utcnow():
-                    raise AuthenticationException(reason="Token expired", auth_method="jwt")
+                if (
+                    token_expiry
+                    and datetime.fromisoformat(token_expiry) < datetime.utcnow()
+                ):
+                    raise AuthenticationException(
+                        reason="Token expired", auth_method="jwt"
+                    )
 
             if required_role:
                 user_roles = auth_context.get("roles", [])
                 if required_role not in user_roles:
-                    from src.domain.exceptions.base import AuthorizationException
+                    from src.domain.exceptions.base import \
+                        AuthorizationException
 
-                    raise AuthorizationException(action=func.__name__, required_role=required_role)
+                    raise AuthorizationException(
+                        action=func.__name__, required_role=required_role
+                    )
 
             return func(*args, **kwargs)
 
@@ -575,19 +679,43 @@ class ChildInteractionService:
         self.ai_service = ai_service
 
     @handle_exceptions(
-        (InappropriateContentException, lambda e: {"error": "Content filtered", "safe": True}),
-        (ParentalConsentRequiredException, lambda e: {"error": "Parent approval needed", "action": "notify_parent"}),
-        (ValidationException, lambda e: {"error": f"Invalid input: {str(e)}", "retry": True}),
+        (
+            InappropriateContentException,
+            lambda e: {"error": "Content filtered", "safe": True},
+        ),
+        (
+            ParentalConsentRequiredException,
+            lambda e: {"error": "Parent approval needed", "action": "notify_parent"},
+        ),
+        (
+            ValidationException,
+            lambda e: {"error": f"Invalid input: {str(e)}", "retry": True},
+        ),
     )
     @validate_input(
-        validators={"message": lambda m: m and 0 < len(m) <= 1000, "child_id": lambda c: c and len(c) > 0},
-        error_messages={"message": "Message must be between 1 and 1000 characters", "child_id": "Child ID is required"},
+        validators={
+            "message": lambda m: m and 0 < len(m) <= 1000,
+            "child_id": lambda c: c and len(c) > 0,
+        },
+        error_messages={
+            "message": "Message must be between 1 and 1000 characters",
+            "child_id": "Child ID is required",
+        },
     )
     @child_safe(notify_parent=True)
-    @with_retry(config=RetryConfig(max_attempts=3, exceptions_to_retry=[ExternalServiceException]))
-    @with_circuit_breaker(service_name="ai_service", fallback=lambda: {"response": "عذراً، حاول مرة أخرى لاحقاً"})
+    @with_retry(
+        config=RetryConfig(
+            max_attempts=3, exceptions_to_retry=[ExternalServiceException]
+        )
+    )
+    @with_circuit_breaker(
+        service_name="ai_service",
+        fallback=lambda: {"response": "عذراً، حاول مرة أخرى لاحقاً"},
+    )
     @track_request_duration(endpoint="/child/message")
-    async def process_child_message(self, child_id: str, message: str) -> Dict[str, Any]:
+    async def process_child_message(
+        self, child_id: str, message: str
+    ) -> Dict[str, Any]:
         """معالجة رسالة الطفل مع جميع الحمايات"""
 
         # Check content safety
@@ -602,7 +730,12 @@ class ChildInteractionService:
         # Process message with AI
         response = await self.ai_service.generate_response(message)
 
-        return {"response": response, "safe": True, "child_id": child_id, "timestamp": datetime.utcnow().isoformat()}
+        return {
+            "response": response,
+            "safe": True,
+            "child_id": child_id,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
 
 
 # Export all decorators

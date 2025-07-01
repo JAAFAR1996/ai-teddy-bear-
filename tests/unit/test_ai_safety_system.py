@@ -11,7 +11,8 @@ import pytest
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../src"))
 
-from src.domain.safety import AdvancedContentFilter, ContentCategory, RiskLevel, SafetyConfig
+from src.domain.safety import (AdvancedContentFilter, ContentCategory,
+                               RiskLevel, SafetyConfig)
 
 
 class TestAdvancedContentFilter:
@@ -21,7 +22,10 @@ class TestAdvancedContentFilter:
     def safety_filter(self):
         """Create safety filter instance for testing"""
         config = SafetyConfig(
-            toxicity_threshold=0.1, high_risk_threshold=0.3, critical_threshold=0.7, enable_strict_mode=True
+            toxicity_threshold=0.1,
+            high_risk_threshold=0.3,
+            critical_threshold=0.7,
+            enable_strict_mode=True,
         )
         return AdvancedContentFilter(config)
 
@@ -74,7 +78,9 @@ class TestAdvancedContentFilter:
     @pytest.mark.asyncio
     async def test_educational_content_boost(self, safety_filter):
         """Test that educational content gets positive scoring"""
-        educational_content = "Let's learn to count! One, two, three... Can you count to ten?"
+        educational_content = (
+            "Let's learn to count! One, two, three... Can you count to ten?"
+        )
 
         result = await safety_filter.analyze_content(educational_content, child_age=5)
 
@@ -88,8 +94,12 @@ class TestAdvancedContentFilter:
         negative_content = "You're sad and nobody loves you"
         positive_content = "You're amazing and everyone cares about you!"
 
-        negative_result = await safety_filter.analyze_content(negative_content, child_age=6)
-        positive_result = await safety_filter.analyze_content(positive_content, child_age=6)
+        negative_result = await safety_filter.analyze_content(
+            negative_content, child_age=6
+        )
+        positive_result = await safety_filter.analyze_content(
+            positive_content, child_age=6
+        )
 
         assert negative_result.emotional_impact.is_positive == False
         assert negative_result.emotional_impact.overall_sentiment < 0
@@ -169,7 +179,9 @@ class TestAdvancedContentFilter:
 
         # Process some content
         await safety_filter.analyze_content("Hello, how are you?", child_age=6)
-        await safety_filter.analyze_content("This is inappropriate content", child_age=6)
+        await safety_filter.analyze_content(
+            "This is inappropriate content", child_age=6
+        )
 
         updated_metrics = safety_filter.get_performance_metrics()
 
@@ -193,12 +205,16 @@ class TestAdvancedContentFilter:
     def test_config_validation(self):
         """Test safety configuration validation"""
         # Valid config
-        valid_config = SafetyConfig(toxicity_threshold=0.1, high_risk_threshold=0.3, critical_threshold=0.7)
+        valid_config = SafetyConfig(
+            toxicity_threshold=0.1, high_risk_threshold=0.3, critical_threshold=0.7
+        )
         assert valid_config.validate() == True
 
         # Invalid config (thresholds out of range)
         invalid_config = SafetyConfig(
-            toxicity_threshold=1.5, high_risk_threshold=0.3, critical_threshold=0.7  # Invalid: > 1.0
+            toxicity_threshold=1.5,
+            high_risk_threshold=0.3,
+            critical_threshold=0.7,  # Invalid: > 1.0
         )
         assert invalid_config.validate() == False
 
@@ -213,9 +229,7 @@ class TestIntegrationScenarios:
     @pytest.mark.asyncio
     async def test_story_time_scenario(self, safety_filter):
         """Test story-telling scenario"""
-        story_content = (
-            "Once upon a time, there was a brave little rabbit who loved to explore the forest and make new friends."
-        )
+        story_content = "Once upon a time, there was a brave little rabbit who loved to explore the forest and make new friends."
 
         result = await safety_filter.analyze_content(story_content, child_age=5)
 
@@ -295,13 +309,19 @@ async def test_system_stress():
     # Verify that clearly safe content passes
     safe_indices = [0, 1, 4, 6]  # Educational and story content
     for i in safe_indices:
-        assert results[i].is_safe == True or results[i].overall_risk_level == RiskLevel.LOW_RISK
+        assert (
+            results[i].is_safe == True
+            or results[i].overall_risk_level == RiskLevel.LOW_RISK
+        )
 
     # Verify that clearly unsafe content is blocked
     unsafe_indices = [3, 5, 7]  # Privacy risk, toxic, secrecy
     for i in unsafe_indices:
         assert results[i].is_safe == False
-        assert results[i].overall_risk_level in [RiskLevel.HIGH_RISK, RiskLevel.CRITICAL]
+        assert results[i].overall_risk_level in [
+            RiskLevel.HIGH_RISK,
+            RiskLevel.CRITICAL,
+        ]
 
 
 if __name__ == "__main__":
@@ -322,7 +342,9 @@ if __name__ == "__main__":
 
         # Test 2: Unsafe content
         print("\n❌ Testing unsafe content...")
-        unsafe_result = await filter_instance.analyze_content("You're stupid and I hate you!", child_age=5)
+        unsafe_result = await filter_instance.analyze_content(
+            "You're stupid and I hate you!", child_age=5
+        )
         print(f"Unsafe content result: {unsafe_result.is_safe}")
         print(f"Risk level: {unsafe_result.overall_risk_level.value}")
         print(f"Modifications suggested: {len(unsafe_result.required_modifications)}")
@@ -333,14 +355,19 @@ if __name__ == "__main__":
             "What's your real name and where do you live?", child_age=5
         )
         print(f"Privacy risk result: {privacy_result.is_safe}")
-        print(f"Parent notification required: {privacy_result.parent_notification_required}")
+        print(
+            f"Parent notification required: {privacy_result.parent_notification_required}"
+        )
 
         # Test 4: Educational content
         print("\n📚 Testing educational content...")
         edu_result = await filter_instance.analyze_content(
-            "Let's count together! One, two, three... Can you count to ten?", child_age=5
+            "Let's count together! One, two, three... Can you count to ten?",
+            child_age=5,
         )
-        print(f"Educational score: {edu_result.educational_value.educational_score:.2f}")
+        print(
+            f"Educational score: {edu_result.educational_value.educational_score:.2f}"
+        )
         print(f"Content category: {edu_result.content_category.value}")
 
         print("\n🎉 All basic tests completed!")

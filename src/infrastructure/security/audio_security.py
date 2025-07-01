@@ -164,7 +164,9 @@ def get_audio_encryption_manager() -> AudioEncryptionManager:
 # Convenience functions
 
 
-async def encrypt_child_audio(device_id: str, user_id: str, audio_data: bytes) -> Dict[str, str]:
+async def encrypt_child_audio(
+    device_id: str, user_id: str, audio_data: bytes
+) -> Dict[str, str]:
     """Encrypt audio from child device"""
     manager = get_audio_encryption_manager()
 

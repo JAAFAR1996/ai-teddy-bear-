@@ -156,7 +156,9 @@ class HardwareSimulator:
         """Start hardware monitoring."""
         if not self.monitoring_active:
             self.monitoring_active = True
-            self.monitor_thread = threading.Thread(target=self._monitor_hardware, daemon=True)
+            self.monitor_thread = threading.Thread(
+                target=self._monitor_hardware, daemon=True
+            )
             self.monitor_thread.start()
             logger.info(" Hardware monitoring started")
 
@@ -232,7 +234,9 @@ class HardwareSimulator:
 
                 # Check power consumption
                 if self.power_consumption > 500:
-                    logger.warning(f" High power consumption: {self.power_consumption:.1f}mW")
+                    logger.warning(
+                        f" High power consumption: {self.power_consumption:.1f}mW"
+                    )
 
                 time.sleep(5)  # Monitor every 5 seconds
 

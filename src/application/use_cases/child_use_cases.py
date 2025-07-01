@@ -13,7 +13,8 @@ from typing import Optional
 from ...domain.entities import Child
 from ...domain.value_objects import ChildId, ParentId
 from ...shared.kernel import DomainEvent
-from ..dto import ChildProfileResponse, RegisterChildRequest, RegisterChildResponse, UpdateChildProfileRequest
+from ..dto import (ChildProfileResponse, RegisterChildRequest,
+                   RegisterChildResponse, UpdateChildProfileRequest)
 from ..ports.outbound import ChildRepositoryPort, EventPublisherPort
 
 
@@ -53,7 +54,10 @@ class RegisterChildUseCase:
             await self.event_publisher.publish(event)
 
         return RegisterChildResponse(
-            child_id=child.id, name=child.name, status=child.status, created_at=child.created_at
+            child_id=child.id,
+            name=child.name,
+            status=child.status,
+            created_at=child.created_at,
         )
 
 

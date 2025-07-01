@@ -17,14 +17,9 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
 # Mock the observability components for demo
-from custom_metrics import (
-    AIPerformanceMetrics,
-    ChildInteractionMetrics,
-    ChildSafetyMetrics,
-    SafetyViolationType,
-    SeverityLevel,
-    SystemHealthMetrics,
-)
+from custom_metrics import (AIPerformanceMetrics, ChildInteractionMetrics,
+                            ChildSafetyMetrics, SafetyViolationType,
+                            SeverityLevel, SystemHealthMetrics)
 
 # Setup logging
 logging.basicConfig(

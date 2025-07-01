@@ -58,7 +58,10 @@ class PersonalizedStoryGenerator:
         """
 
         # توليد القصة
-        messages = [{"role": "system", "content": "أنت راوي قصص محترف للأطفال"}, {"role": "user", "content": prompt}]
+        messages = [
+            {"role": "system", "content": "أنت راوي قصص محترف للأطفال"},
+            {"role": "user", "content": prompt},
+        ]
 
         response = openai.ChatCompletion.create(
             model="gpt-4-turbo-preview",
@@ -91,7 +94,11 @@ class PersonalizedStoryGenerator:
 
     def _extract_characters(self, story: str, child_name: str) -> Dict[str, List[str]]:
         """استخراج الشخصيات من القصة لتعدد الأصوات"""
-        characters = {"narrator": [], "hero": [], "others": {}}  # الراوي  # البطل (الطفل)  # شخصيات أخرى
+        characters = {
+            "narrator": [],
+            "hero": [],
+            "others": {},
+        }  # الراوي  # البطل (الطفل)  # شخصيات أخرى
 
         # تقسيم القصة إلى فقرات
         paragraphs = story.split("\n\n")

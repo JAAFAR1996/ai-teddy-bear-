@@ -83,7 +83,10 @@ class PerformanceMonitor:
         logger.info("📊 Performance Monitor initialized")
 
     async def start_deployment_monitoring(
-        self, deployment_id: str, models: Dict[str, Any], monitoring_duration_hours: int = 48
+        self,
+        deployment_id: str,
+        models: Dict[str, Any],
+        monitoring_duration_hours: int = 48,
     ) -> None:
         """بدء مراقبة النشر"""
 
@@ -101,9 +104,15 @@ class PerformanceMonitor:
         }
 
         # بدء مهمة المراقبة
-        monitoring_task = asyncio.create_task(self._deployment_monitoring_loop(monitoring_config))
+        monitoring_task = asyncio.create_task(
+            self._deployment_monitoring_loop(monitoring_config)
+        )
 
-        self.active_monitors[deployment_id] = {"config": monitoring_config, "task": monitoring_task, "status": "active"}
+        self.active_monitors[deployment_id] = {
+            "config": monitoring_config,
+            "task": monitoring_task,
+            "status": "active",
+        }
 
     async def _deployment_monitoring_loop(self, config: Dict[str, Any]) -> None:
         """حلقة مراقبة النشر"""
@@ -127,7 +136,9 @@ class PerformanceMonitor:
                         model_id=model_id,
                         metrics=metrics,
                         health_score=await self._calculate_health_score(metrics),
-                        anomalies_detected=await self._detect_anomalies(model_id, metrics),
+                        anomalies_detected=await self._detect_anomalies(
+                            model_id, metrics
+                        ),
                     )
 
                     self.metric_history.append(snapshot)
@@ -149,7 +160,9 @@ class PerformanceMonitor:
         await self._finalize_deployment_monitoring(deployment_id)
         logger.info(f"✅ Monitoring completed for {deployment_id}")
 
-    async def _collect_current_metrics(self, models: Dict[str, Any]) -> Dict[str, Dict[str, float]]:
+    async def _collect_current_metrics(
+        self, models: Dict[str, Any]
+    ) -> Dict[str, Dict[str, float]]:
         """جمع المقاييس الحالية"""
 
         current_metrics = {}
@@ -161,7 +174,9 @@ class PerformanceMonitor:
 
         return current_metrics
 
-    async def _simulate_model_metrics(self, model_id: str, model_data: Any) -> Dict[str, float]:
+    async def _simulate_model_metrics(
+        self, model_id: str, model_data: Any
+    ) -> Dict[str, float]:
         """محاكاة مقاييس النموذج"""
 
         # محاكاة مقاييس واقعية مع اتجاهات وضوضاء
@@ -193,7 +208,9 @@ class PerformanceMonitor:
                 current_metrics[metric] = max(50, np.random.poisson(base_value))
             elif metric in ["memory_usage_mb"]:
                 # استخدام الذاكرة - توزيع طبيعي
-                current_metrics[metric] = max(256, np.random.normal(base_value, base_value * 0.1))
+                current_metrics[metric] = max(
+                    256, np.random.normal(base_value, base_value * 0.1)
+                )
             elif metric in ["cpu_usage_percent"]:
                 # استخدام المعالج - توزيع بيتا مقيس
                 current_metrics[metric] = np.random.beta(3, 5) * 100
@@ -216,7 +233,12 @@ class PerformanceMonitor:
 
         # تطبيق الحدود
         for metric in current_metrics:
-            if metric not in ["response_time_ms", "throughput_rps", "memory_usage_mb", "cpu_usage_percent"]:
+            if metric not in [
+                "response_time_ms",
+                "throughput_rps",
+                "memory_usage_mb",
+                "cpu_usage_percent",
+            ]:
                 current_metrics[metric] = max(0, min(1, current_metrics[metric]))
 
         return current_metrics
@@ -245,7 +267,9 @@ class PerformanceMonitor:
                 # تطبيع المقاييس المعكوسة
                 if metric == "response_time_ms":
                     # تحويل وقت الاستجابة إلى درجة (أقل = أفضل)
-                    normalized_value = max(0, 1 - (value - 500) / 1500)  # 500-2000ms range
+                    normalized_value = max(
+                        0, 1 - (value - 500) / 1500
+                    )  # 500-2000ms range
                 elif metric == "error_rate":
                     # تحويل معدل الخطأ إلى درجة (أقل = أفضل)
                     normalized_value = max(0, 1 - value / 0.1)  # 0-10% range
@@ -257,14 +281,18 @@ class PerformanceMonitor:
 
         return weighted_score / total_weight if total_weight > 0 else 0.5
 
-    async def _detect_anomalies(self, model_id: str, metrics: Dict[str, float]) -> List[str]:
+    async def _detect_anomalies(
+        self, model_id: str, metrics: Dict[str, float]
+    ) -> List[str]:
         """كشف الشذوذ في المقاييس"""
 
         anomalies = []
 
         # الحصول على البيانات التاريخية للنموذج
         historical_data = [
-            snapshot for snapshot in self.metric_history[-100:] if snapshot.model_id == model_id  # آخر 100 قياس
+            snapshot
+            for snapshot in self.metric_history[-100:]
+            if snapshot.model_id == model_id  # آخر 100 قياس
         ]
 
         if len(historical_data) < 10:
@@ -272,7 +300,9 @@ class PerformanceMonitor:
 
         # فحص كل مقياس للشذوذ
         for metric_name, current_value in metrics.items():
-            historical_values = [snapshot.metrics.get(metric_name, 0) for snapshot in historical_data]
+            historical_values = [
+                snapshot.metrics.get(metric_name, 0) for snapshot in historical_data
+            ]
 
             if len(historical_values) >= 10:
                 mean_value = np.mean(historical_values)
@@ -315,11 +345,19 @@ class PerformanceMonitor:
         alert_thresholds = config["alert_thresholds"]
 
         for rule_name, rule_config in self.alert_rules.items():
-            if await self._evaluate_alert_rule(rule_name, rule_config, snapshot, alert_thresholds):
-                await self._trigger_alert(deployment_id, rule_name, rule_config, snapshot)
+            if await self._evaluate_alert_rule(
+                rule_name, rule_config, snapshot, alert_thresholds
+            ):
+                await self._trigger_alert(
+                    deployment_id, rule_name, rule_config, snapshot
+                )
 
     async def _evaluate_alert_rule(
-        self, rule_name: str, rule_config: Dict[str, Any], snapshot: MetricSnapshot, thresholds: Dict[str, float]
+        self,
+        rule_name: str,
+        rule_config: Dict[str, Any],
+        snapshot: MetricSnapshot,
+        thresholds: Dict[str, float],
     ) -> bool:
         """تقييم قاعدة التنبيه"""
 
@@ -342,7 +380,11 @@ class PerformanceMonitor:
         return False
 
     async def _trigger_alert(
-        self, deployment_id: str, rule_name: str, rule_config: Dict[str, Any], snapshot: MetricSnapshot
+        self,
+        deployment_id: str,
+        rule_name: str,
+        rule_config: Dict[str, Any],
+        snapshot: MetricSnapshot,
     ) -> None:
         """تشغيل التنبيه"""
 
@@ -377,11 +419,17 @@ class PerformanceMonitor:
         if rule_config.get("auto_resolve", False):
             await self._attempt_auto_resolution(alert, snapshot)
 
-    def _find_existing_alert(self, rule_name: str, model_id: str) -> Optional[PerformanceAlert]:
+    def _find_existing_alert(
+        self, rule_name: str, model_id: str
+    ) -> Optional[PerformanceAlert]:
         """البحث عن تنبيه موجود"""
 
         for alert in self.active_alerts:
-            if rule_name in alert.alert_id and model_id in alert.affected_models and not alert.auto_resolved:
+            if (
+                rule_name in alert.alert_id
+                and model_id in alert.affected_models
+                and not alert.auto_resolved
+            ):
                 return alert
 
         return None
@@ -410,7 +458,9 @@ class PerformanceMonitor:
         # محاكاة إرسال التنبيه
         await self._notify_stakeholders(deployment_id, alert)
 
-    async def _notify_stakeholders(self, deployment_id: str, alert: PerformanceAlert) -> None:
+    async def _notify_stakeholders(
+        self, deployment_id: str, alert: PerformanceAlert
+    ) -> None:
         """إشعار أصحاب المصلحة"""
 
         notification_channels = []
@@ -422,9 +472,13 @@ class PerformanceMonitor:
         else:
             notification_channels = ["slack"]
 
-        logger.info(f"📢 Notifying stakeholders via {notification_channels} for alert {alert.alert_id}")
+        logger.info(
+            f"📢 Notifying stakeholders via {notification_channels} for alert {alert.alert_id}"
+        )
 
-    async def _attempt_auto_resolution(self, alert: PerformanceAlert, snapshot: MetricSnapshot) -> None:
+    async def _attempt_auto_resolution(
+        self, alert: PerformanceAlert, snapshot: MetricSnapshot
+    ) -> None:
         """محاولة الحل التلقائي"""
 
         resolved = False
@@ -441,11 +495,15 @@ class PerformanceMonitor:
             alert.auto_resolved = True
             logger.info(f"✅ Auto-resolved alert {alert.alert_id}")
 
-    async def _auto_resolve_response_time_issue(self, alert: PerformanceAlert, snapshot: MetricSnapshot) -> bool:
+    async def _auto_resolve_response_time_issue(
+        self, alert: PerformanceAlert, snapshot: MetricSnapshot
+    ) -> bool:
         """حل مشكلة وقت الاستجابة تلقائياً"""
 
         # محاولة تحسين الأداء
-        logger.info(f"🔧 Attempting auto-resolution for response time issue in {snapshot.model_id}")
+        logger.info(
+            f"🔧 Attempting auto-resolution for response time issue in {snapshot.model_id}"
+        )
 
         # في بيئة الإنتاج:
         # - زيادة موارد الحوسبة
@@ -454,10 +512,14 @@ class PerformanceMonitor:
 
         return np.random.choice([True, False], p=[0.7, 0.3])  # محاكاة نجاح 70%
 
-    async def _auto_resolve_memory_issue(self, alert: PerformanceAlert, snapshot: MetricSnapshot) -> bool:
+    async def _auto_resolve_memory_issue(
+        self, alert: PerformanceAlert, snapshot: MetricSnapshot
+    ) -> bool:
         """حل مشكلة الذاكرة تلقائياً"""
 
-        logger.info(f"🔧 Attempting auto-resolution for memory issue in {snapshot.model_id}")
+        logger.info(
+            f"🔧 Attempting auto-resolution for memory issue in {snapshot.model_id}"
+        )
 
         # في بيئة الإنتاج:
         # - تنظيف الذاكرة
@@ -466,10 +528,14 @@ class PerformanceMonitor:
 
         return np.random.choice([True, False], p=[0.6, 0.4])  # محاكاة نجاح 60%
 
-    async def _auto_resolve_error_rate_issue(self, alert: PerformanceAlert, snapshot: MetricSnapshot) -> bool:
+    async def _auto_resolve_error_rate_issue(
+        self, alert: PerformanceAlert, snapshot: MetricSnapshot
+    ) -> bool:
         """حل مشكلة معدل الخطأ تلقائياً"""
 
-        logger.info(f"🔧 Attempting auto-resolution for error rate issue in {snapshot.model_id}")
+        logger.info(
+            f"🔧 Attempting auto-resolution for error rate issue in {snapshot.model_id}"
+        )
 
         # في بيئة الإنتاج:
         # - إعادة تشغيل الخدمات المعطلة
@@ -478,7 +544,9 @@ class PerformanceMonitor:
 
         return np.random.choice([True, False], p=[0.5, 0.5])  # محاكاة نجاح 50%
 
-    async def _establish_baseline_metrics(self, models: Dict[str, Any]) -> Dict[str, Dict[str, float]]:
+    async def _establish_baseline_metrics(
+        self, models: Dict[str, Any]
+    ) -> Dict[str, Dict[str, float]]:
         """إنشاء مقاييس أساسية"""
 
         baseline_metrics = {}
@@ -575,7 +643,11 @@ class PerformanceMonitor:
 
     def _initialize_metrics_collector(self) -> Dict[str, Any]:
         """تهيئة جامع المقاييس"""
-        return {"collection_interval_seconds": 60, "metrics_retention_hours": 168, "aggregation_enabled": True}  # أسبوع
+        return {
+            "collection_interval_seconds": 60,
+            "metrics_retention_hours": 168,
+            "aggregation_enabled": True,
+        }  # أسبوع
 
     def _initialize_anomaly_detector(self) -> Dict[str, Any]:
         """تهيئة كاشف الشذوذ"""
@@ -583,7 +655,11 @@ class PerformanceMonitor:
 
     def _initialize_alerting_system(self) -> Dict[str, Any]:
         """تهيئة نظام التنبيه"""
-        return {"channels": ["slack", "email", "pagerduty"], "rate_limiting": True, "escalation_enabled": True}
+        return {
+            "channels": ["slack", "email", "pagerduty"],
+            "rate_limiting": True,
+            "escalation_enabled": True,
+        }
 
     async def _cleanup_old_metrics(self) -> None:
         """تنظيف المقاييس القديمة"""
@@ -595,7 +671,9 @@ class PerformanceMonitor:
         # إزالة التنبيهات القديمة المحلولة
         cutoff_time = datetime.utcnow() - timedelta(hours=24)
         self.active_alerts = [
-            alert for alert in self.active_alerts if alert.timestamp > cutoff_time or not alert.auto_resolved
+            alert
+            for alert in self.active_alerts
+            if alert.timestamp > cutoff_time or not alert.auto_resolved
         ]
 
     async def _finalize_deployment_monitoring(self, deployment_id: str) -> None:
@@ -627,17 +705,33 @@ class PerformanceMonitor:
                 [
                     snapshot
                     for snapshot in self.metric_history
-                    if any(model_id in snapshot.model_id for model_id in config.get("models", {}).keys())
+                    if any(
+                        model_id in snapshot.model_id
+                        for model_id in config.get("models", {}).keys()
+                    )
                 ]
             ),
-            "alerts_triggered": len([alert for alert in self.active_alerts if deployment_id in alert.alert_id]),
+            "alerts_triggered": len(
+                [
+                    alert
+                    for alert in self.active_alerts
+                    if deployment_id in alert.alert_id
+                ]
+            ),
             "anomalies_detected": sum(
                 len(snapshot.anomalies_detected)
                 for snapshot in self.metric_history
-                if any(model_id in snapshot.model_id for model_id in config.get("models", {}).keys())
+                if any(
+                    model_id in snapshot.model_id
+                    for model_id in config.get("models", {}).keys()
+                )
             ),
             "auto_resolutions": len(
-                [alert for alert in self.active_alerts if deployment_id in alert.alert_id and alert.auto_resolved]
+                [
+                    alert
+                    for alert in self.active_alerts
+                    if deployment_id in alert.alert_id and alert.auto_resolved
+                ]
             ),
         }
 

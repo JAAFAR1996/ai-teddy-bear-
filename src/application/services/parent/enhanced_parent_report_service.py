@@ -23,7 +23,9 @@ try:
     NLP_AVAILABLE = True
 except ImportError:
     NLP_AVAILABLE = False
-    logger.warning("⚠️ NLP libraries not available. Install with: pip install spacy nltk")
+    logger.warning(
+        "⚠️ NLP libraries not available. Install with: pip install spacy nltk"
+    )
 
 # LLM Integration
 try:
@@ -33,7 +35,9 @@ try:
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
-    logger.warning("⚠️ LLM libraries not available. Install with: pip install openai anthropic")
+    logger.warning(
+        "⚠️ LLM libraries not available. Install with: pip install openai anthropic"
+    )
 
 
 @dataclass
@@ -233,7 +237,9 @@ class EnhancedParentReportService:
 """,
         }
 
-    async def analyze_progress(self, child_id: int, period_days: int = 7) -> ProgressMetrics:
+    async def analyze_progress(
+        self, child_id: int, period_days: int = 7
+    ) -> ProgressMetrics:
         """
         تحليل تقدم الطفل باستخدام NLP متقدم
 
@@ -249,7 +255,9 @@ class EnhancedParentReportService:
         # جلب بيانات التفاعل
         end_date = datetime.now()
         start_date = end_date - timedelta(days=period_days)
-        interactions = await self._get_interactions_with_text(child_id, start_date, end_date)
+        interactions = await self._get_interactions_with_text(
+            child_id, start_date, end_date
+        )
 
         if not interactions:
             self.logger.warning(f"لا توجد تفاعلات للطفل {child_id}")
@@ -259,13 +267,21 @@ class EnhancedParentReportService:
         conversation_texts = self._extract_conversation_texts(interactions)
 
         # تحليل متعدد الطبقات باستخدام NLP
-        vocabulary_analysis = await self._analyze_vocabulary_development(conversation_texts)
-        emotional_analysis = await self._analyze_emotional_intelligence(conversation_texts)
-        cognitive_analysis = await self._analyze_cognitive_development(conversation_texts)
+        vocabulary_analysis = await self._analyze_vocabulary_development(
+            conversation_texts
+        )
+        emotional_analysis = await self._analyze_emotional_intelligence(
+            conversation_texts
+        )
+        cognitive_analysis = await self._analyze_cognitive_development(
+            conversation_texts
+        )
         behavioral_analysis = await self._analyze_behavioral_patterns(interactions)
 
         # تحديد المخاوف والعلامات الحمراء
-        concerns = self._identify_developmental_concerns(vocabulary_analysis, emotional_analysis, cognitive_analysis)
+        concerns = self._identify_developmental_concerns(
+            vocabulary_analysis, emotional_analysis, cognitive_analysis
+        )
 
         # إنشاء المقاييس الشاملة
         metrics = ProgressMetrics(
@@ -310,7 +326,9 @@ class EnhancedParentReportService:
         self.logger.info(f"✅ اكتمل تحليل التقدم المتقدم للطفل {child_id}")
         return metrics
 
-    async def generate_and_store_report(self, child_id: int, period_days: int = 7) -> Dict[str, Any]:
+    async def generate_and_store_report(
+        self, child_id: int, period_days: int = 7
+    ) -> Dict[str, Any]:
         """
         توليد وحفظ تقرير شامل للطفل
         """
@@ -349,7 +367,9 @@ class EnhancedParentReportService:
 
         for category in categories:
             try:
-                recommendation = await self._generate_category_recommendation(category, metrics, child_info)
+                recommendation = await self._generate_category_recommendation(
+                    category, metrics, child_info
+                )
                 if recommendation:
                     recommendations.append(recommendation)
             except Exception as e:
@@ -448,7 +468,9 @@ class EnhancedParentReportService:
 
         return response.choices[0].message.content
 
-    async def store_analysis_results(self, metrics: ProgressMetrics, recommendations: List[LLMRecommendation]) -> str:
+    async def store_analysis_results(
+        self, metrics: ProgressMetrics, recommendations: List[LLMRecommendation]
+    ) -> str:
         """حفظ نتائج التحليل في جدول parent_reports"""
         if not self.db:
             raise Exception("خدمة قاعدة البيانات غير متوفرة")
@@ -497,7 +519,11 @@ class EnhancedParentReportService:
         doc = self.nlp(all_text)
 
         # استخراج الكلمات وتحليل التعقيد
-        words = [token.lemma_.lower() for token in doc if token.is_alpha and not token.is_stop]
+        words = [
+            token.lemma_.lower()
+            for token in doc
+            if token.is_alpha and not token.is_stop
+        ]
         unique_words = list(set(words))
 
         # حساب تعقيد المفردات
@@ -505,11 +531,15 @@ class EnhancedParentReportService:
 
         # تحليل بنية الجملة
         sentences = list(doc.sents)
-        avg_sentence_length = sum(len(sent) for sent in sentences) / len(sentences) if sentences else 0
+        avg_sentence_length = (
+            sum(len(sent) for sent in sentences) / len(sentences) if sentences else 0
+        )
 
         return {
             "unique_words": len(unique_words),
-            "new_words": unique_words[-min(5, len(unique_words)) :],  # آخر 5 كلمات كـ "جديدة"
+            "new_words": unique_words[
+                -min(5, len(unique_words)) :
+            ],  # آخر 5 كلمات كـ "جديدة"
             "complexity_score": complexity_score,
             "reading_level": self._estimate_reading_level(complexity_score),
             "avg_sentence_length": avg_sentence_length,
@@ -542,7 +572,9 @@ class EnhancedParentReportService:
             "curiosity_indicators": ["asking questions", "exploring topics"],
         }
 
-    async def _analyze_behavioral_patterns(self, interactions: List[Dict]) -> Dict[str, Any]:
+    async def _analyze_behavioral_patterns(
+        self, interactions: List[Dict]
+    ) -> Dict[str, Any]:
         """تحليل الأنماط السلوكية"""
         return {
             "attention_trends": {"morning": 0.8, "evening": 0.6},
@@ -570,13 +602,25 @@ class EnhancedParentReportService:
             interventions.append("أنشطة تطوير التعاطف")
             urgency_level = max(urgency_level, 1)
 
-        return {"concerns": concerns, "interventions": interventions, "urgency_level": urgency_level}
+        return {
+            "concerns": concerns,
+            "interventions": interventions,
+            "urgency_level": urgency_level,
+        }
 
     # Additional helper methods
 
     def _extract_emotion_words(self, texts: List[str]) -> List[str]:
         """استخراج الكلمات العاطفية"""
-        emotion_keywords = ["happy", "sad", "angry", "scared", "excited", "worried", "calm"]
+        emotion_keywords = [
+            "happy",
+            "sad",
+            "angry",
+            "scared",
+            "excited",
+            "worried",
+            "calm",
+        ]
         found_emotions = []
         for text in texts:
             for emotion in emotion_keywords:
@@ -661,7 +705,9 @@ class EnhancedParentReportService:
                 texts.append(interaction["content"])
         return texts
 
-    async def _get_interactions_with_text(self, child_id: int, start_date: datetime, end_date: datetime) -> List[Dict]:
+    async def _get_interactions_with_text(
+        self, child_id: int, start_date: datetime, end_date: datetime
+    ) -> List[Dict]:
         """جلب التفاعلات مع النصوص للتحليل"""
         if not self.db:
             return []
@@ -686,7 +732,9 @@ class EnhancedParentReportService:
             return {"name": "Unknown", "age": 5}
 
         try:
-            child = await self.db.fetch_one("SELECT * FROM children WHERE id = ?", (child_id,))
+            child = await self.db.fetch_one(
+                "SELECT * FROM children WHERE id = ?", (child_id,)
+            )
             return dict(child) if child else {"name": "Unknown", "age": 5}
         except Exception as e:
             self.logger.error(f"فشل في جلب معلومات الطفل: {e}")
@@ -703,7 +751,9 @@ class EnhancedParentReportService:
             "metrics": metrics,
         }
 
-    def _format_metrics_for_prompt(self, category: str, metrics: ProgressMetrics) -> str:
+    def _format_metrics_for_prompt(
+        self, category: str, metrics: ProgressMetrics
+    ) -> str:
         """تنسيق المقاييس للprompt"""
         return f"""
 - إجمالي الكلمات الفريدة: {metrics.total_unique_words}
@@ -714,7 +764,9 @@ class EnhancedParentReportService:
 - مؤشرات التفكير المجرد: {metrics.abstract_thinking_indicators}
 """
 
-    def _parse_llm_recommendation(self, category: str, response: str) -> LLMRecommendation:
+    def _parse_llm_recommendation(
+        self, category: str, response: str
+    ) -> LLMRecommendation:
         """تحليل استجابة LLM إلى توصية منظمة"""
         try:
             data = json.loads(response)
@@ -738,7 +790,9 @@ class EnhancedParentReportService:
                 priority_level=3,
             )
 
-    def _generate_fallback_recommendations(self, metrics: ProgressMetrics) -> List[LLMRecommendation]:
+    def _generate_fallback_recommendations(
+        self, metrics: ProgressMetrics
+    ) -> List[LLMRecommendation]:
         """توليد توصيات احتياطية عند عدم توفر LLM"""
         recommendations = []
 

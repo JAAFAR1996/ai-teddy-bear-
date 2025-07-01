@@ -7,15 +7,14 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.domain.reporting.models import (
-    ActivityRecommendation,
-    InteractionAnalysis,
-    InterventionRecommendation,
-    LLMRecommendation,
-    RecommendationBundle,
-    UrgencyLevel,
-)
-from src.domain.reporting.services import BehaviorAnalyzer, EmotionAnalyzerService, SkillAnalyzer
+from src.domain.reporting.models import (ActivityRecommendation,
+                                         InteractionAnalysis,
+                                         InterventionRecommendation,
+                                         LLMRecommendation,
+                                         RecommendationBundle, UrgencyLevel)
+from src.domain.reporting.services import (BehaviorAnalyzer,
+                                           EmotionAnalyzerService,
+                                           SkillAnalyzer)
 
 
 class RecommendationService:
@@ -31,7 +30,9 @@ class RecommendationService:
         self.behavior_analyzer = BehaviorAnalyzer()
         self.emotion_analyzer = EmotionAnalyzerService()
 
-    async def generate_llm_recommendations(self, child_id: int, metrics: Any) -> List[LLMRecommendation]:
+    async def generate_llm_recommendations(
+        self, child_id: int, metrics: Any
+    ) -> List[LLMRecommendation]:
         """Generate AI-powered recommendations using LLM"""
         try:
             recommendations = []
@@ -50,21 +51,29 @@ class RecommendationService:
 
             for category in categories:
                 try:
-                    recommendation = await self._generate_cot_recommendation(category, metrics, child_info)
+                    recommendation = await self._generate_cot_recommendation(
+                        category, metrics, child_info
+                    )
                     if recommendation:
                         recommendations.append(recommendation)
                 except Exception as e:
-                    self.logger.warning(f"Failed to generate LLM recommendation for {category}: {e}")
+                    self.logger.warning(
+                        f"Failed to generate LLM recommendation for {category}: {e}"
+                    )
 
             # Fallback to rule-based recommendations if LLM fails
             if not recommendations:
                 recommendations = self._generate_fallback_recommendations_task7(metrics)
 
-            self.logger.info(f"Generated {len(recommendations)} LLM recommendations for child {child_id}")
+            self.logger.info(
+                f"Generated {len(recommendations)} LLM recommendations for child {child_id}"
+            )
             return recommendations
 
         except Exception as e:
-            self.logger.error(f"LLM recommendations generation failed for child {child_id}: {e}")
+            self.logger.error(
+                f"LLM recommendations generation failed for child {child_id}: {e}"
+            )
             return self._generate_fallback_recommendations_task7(metrics)
 
     async def generate_comprehensive_recommendations(
@@ -76,7 +85,9 @@ class RecommendationService:
             activity_recs = self._generate_activity_recommendations(interactions)
 
             # Generate intervention recommendations
-            intervention_recs = self._generate_intervention_recommendations(interactions)
+            intervention_recs = self._generate_intervention_recommendations(
+                interactions
+            )
 
             # Generate LLM recommendations (if available)
             llm_recs = []
@@ -91,7 +102,9 @@ class RecommendationService:
                         "cognitive_development_score": 0.8,
                     },
                 )()
-                llm_recs = await self.generate_llm_recommendations(int(child_id), mock_metrics)
+                llm_recs = await self.generate_llm_recommendations(
+                    int(child_id), mock_metrics
+                )
 
             # Create recommendation bundle
             bundle = RecommendationBundle(
@@ -104,11 +117,15 @@ class RecommendationService:
                 created_at=datetime.now(),
             )
 
-            self.logger.info(f"Generated comprehensive recommendations bundle for child {child_id}")
+            self.logger.info(
+                f"Generated comprehensive recommendations bundle for child {child_id}"
+            )
             return bundle
 
         except Exception as e:
-            self.logger.error(f"Comprehensive recommendations generation failed for child {child_id}: {e}")
+            self.logger.error(
+                f"Comprehensive recommendations generation failed for child {child_id}: {e}"
+            )
             raise
 
     def _generate_activity_recommendations(
@@ -119,7 +136,9 @@ class RecommendationService:
             recommendations = []
 
             # Get activity suggestions from skill analyzer
-            activity_suggestions = self.skill_analyzer.generate_activity_recommendations(interactions)
+            activity_suggestions = (
+                self.skill_analyzer.generate_activity_recommendations(interactions)
+            )
 
             # Convert to ActivityRecommendation objects
             for i, suggestion in enumerate(activity_suggestions[:5]):  # Limit to 5
@@ -149,12 +168,18 @@ class RecommendationService:
             recommendations = []
 
             # Get concerning patterns
-            concerning_patterns = self.emotion_analyzer.identify_concerning_patterns(interactions)
-            urgent_recommendations = self.emotion_analyzer.generate_urgent_recommendations(interactions)
+            concerning_patterns = self.emotion_analyzer.identify_concerning_patterns(
+                interactions
+            )
+            urgent_recommendations = (
+                self.emotion_analyzer.generate_urgent_recommendations(interactions)
+            )
 
             # Create intervention recommendations for concerning patterns
             for i, pattern in enumerate(concerning_patterns):
-                urgency = UrgencyLevel.HIGH if "شديد" in pattern else UrgencyLevel.MEDIUM
+                urgency = (
+                    UrgencyLevel.HIGH if "شديد" in pattern else UrgencyLevel.MEDIUM
+                )
 
                 intervention = InterventionRecommendation(
                     concern_area=pattern,
@@ -202,25 +227,41 @@ class RecommendationService:
                 "cognitive_skills": {
                     "recommendation": "تحفيز التطور المعرفي من خلال الألغاز والألعاب التفكيرية",
                     "reasoning": "النتائج تشير إلى إمكانية تطوير مهارات حل المشكلات",
-                    "steps": ["ألعاب الألغاز البسيطة", "أنشطة التصنيف والترتيب", "ألعاب الذاكرة"],
+                    "steps": [
+                        "ألعاب الألغاز البسيطة",
+                        "أنشطة التصنيف والترتيب",
+                        "ألعاب الذاكرة",
+                    ],
                     "priority": 3,
                 },
                 "social_interaction": {
                     "recommendation": "تعزيز التفاعل الاجتماعي من خلال اللعب الجماعي",
                     "reasoning": "البيانات تظهر حاجة لتطوير المهارات الاجتماعية",
-                    "steps": ["تنظيم جلسات لعب مع أطفال آخرين", "تعليم مهارات المشاركة", "أنشطة العمل الجماعي"],
+                    "steps": [
+                        "تنظيم جلسات لعب مع أطفال آخرين",
+                        "تعليم مهارات المشاركة",
+                        "أنشطة العمل الجماعي",
+                    ],
                     "priority": 4,
                 },
                 "learning_activities": {
                     "recommendation": "أنشطة تعليمية متنوعة لتحفيز الفضول والتعلم",
                     "reasoning": "تحليل الأنشطة يظهر حاجة لتنويع مصادر التعلم",
-                    "steps": ["استكشاف مواضيع جديدة", "التجارب العلمية البسيطة", "الرحلات التعليمية"],
+                    "steps": [
+                        "استكشاف مواضيع جديدة",
+                        "التجارب العلمية البسيطة",
+                        "الرحلات التعليمية",
+                    ],
                     "priority": 2,
                 },
                 "behavioral_support": {
                     "recommendation": "دعم سلوكي إيجابي لتعزيز السلوكيات المرغوبة",
                     "reasoning": "تحليل السلوك يظهر فرص لتعزيز السلوكيات الإيجابية",
-                    "steps": ["نظام مكافآت واضح", "تعزيز السلوك الإيجابي فور حدوثه", "وضع حدود واضحة ومتسقة"],
+                    "steps": [
+                        "نظام مكافآت واضح",
+                        "تعزيز السلوك الإيجابي فور حدوثه",
+                        "وضع حدود واضحة ومتسقة",
+                    ],
                     "priority": 3,
                 },
             }
@@ -242,10 +283,14 @@ class RecommendationService:
             return recommendation
 
         except Exception as e:
-            self.logger.error(f"CoT recommendation generation error for {category}: {e}")
+            self.logger.error(
+                f"CoT recommendation generation error for {category}: {e}"
+            )
             return None
 
-    def _generate_fallback_recommendations_task7(self, metrics: Any) -> List[LLMRecommendation]:
+    def _generate_fallback_recommendations_task7(
+        self, metrics: Any
+    ) -> List[LLMRecommendation]:
         """Generate fallback recommendations when LLM is unavailable"""
         try:
             fallback_recommendations = [
@@ -253,7 +298,11 @@ class RecommendationService:
                     "category": "general_development",
                     "recommendation": "أنشطة تطوير شاملة مناسبة للعمر",
                     "reasoning": "توصيات عامة لدعم التطور الطبيعي للطفل",
-                    "implementation_steps": ["قراءة يومية لمدة 15 دقيقة", "أنشطة فنية وإبداعية", "ألعاب تفاعلية بسيطة"],
+                    "implementation_steps": [
+                        "قراءة يومية لمدة 15 دقيقة",
+                        "أنشطة فنية وإبداعية",
+                        "ألعاب تفاعلية بسيطة",
+                    ],
                     "priority_level": 3,
                     "confidence_score": 0.7,
                 },
@@ -297,7 +346,12 @@ class RecommendationService:
                 return await self.db.get_child_info(child_id)
 
             # Fallback mock data
-            return {"age": 5, "interests": ["stories", "games"], "special_needs": [], "learning_style": "visual"}
+            return {
+                "age": 5,
+                "interests": ["stories", "games"],
+                "special_needs": [],
+                "learning_style": "visual",
+            }
 
         except Exception as e:
             self.logger.error(f"Failed to get child info for {child_id}: {e}")

@@ -8,4 +8,9 @@ from .emotion_analyzer_service import EmotionAnalyzerService
 from .progress_analyzer import ProgressAnalyzer
 from .skill_analyzer import SkillAnalyzer
 
-__all__ = ["ProgressAnalyzer", "EmotionAnalyzerService", "SkillAnalyzer", "BehaviorAnalyzer"]
+__all__ = [
+    "ProgressAnalyzer",
+    "EmotionAnalyzerService",
+    "SkillAnalyzer",
+    "BehaviorAnalyzer",
+]

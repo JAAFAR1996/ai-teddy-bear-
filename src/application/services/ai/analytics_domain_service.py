@@ -9,7 +9,9 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from ..models.analytics_models import AnalyticsData, AnalyticsFilter, ConversationLog, LearningProgress, UsageMetrics
+from ..models.analytics_models import (AnalyticsData, AnalyticsFilter,
+                                       ConversationLog, LearningProgress,
+                                       UsageMetrics)
 from ..models.user_models import ConversationLogEntry
 
 
@@ -17,13 +19,21 @@ class AnalyticsDomainService:
     """Domain service for analytics calculations"""
 
     def calculate_analytics(
-        self, logs: List[ConversationLogEntry], filter_criteria: Optional[AnalyticsFilter] = None
+        self,
+        logs: List[ConversationLogEntry],
+        filter_criteria: Optional[AnalyticsFilter] = None,
     ) -> AnalyticsData:
         """Calculate comprehensive analytics from conversation logs"""
 
         # Filter logs if criteria provided
         if filter_criteria:
-            logs = [log for log in logs if filter_criteria.applies_to_log(self._convert_to_conversation_log(log))]
+            logs = [
+                log
+                for log in logs
+                if filter_criteria.applies_to_log(
+                    self._convert_to_conversation_log(log)
+                )
+            ]
 
         if not logs:
             return self._get_empty_analytics()
@@ -52,11 +62,15 @@ class AnalyticsDomainService:
             usage_metrics=usage_metrics,
         )
 
-    def _calculate_learning_progress(self, logs: List[ConversationLogEntry]) -> LearningProgress:
+    def _calculate_learning_progress(
+        self, logs: List[ConversationLogEntry]
+    ) -> LearningProgress:
         """Calculate learning progress metrics"""
 
         educational_topics = {"education", "science", "math", "learning", "study"}
-        educational_conversations = sum(1 for log in logs if set(log.topics or []) & educational_topics)
+        educational_conversations = sum(
+            1 for log in logs if set(log.topics or []) & educational_topics
+        )
 
         all_topics = set()
         for log in logs:
@@ -69,7 +83,9 @@ class AnalyticsDomainService:
             vocabulary_growth=self._calculate_vocabulary_growth(logs),
         )
 
-    def _calculate_usage_metrics(self, logs: List[ConversationLogEntry]) -> UsageMetrics:
+    def _calculate_usage_metrics(
+        self, logs: List[ConversationLogEntry]
+    ) -> UsageMetrics:
         """Calculate usage pattern metrics"""
 
         total_duration = sum(log.duration_seconds for log in logs)
@@ -91,7 +107,9 @@ class AnalyticsDomainService:
             session_frequency=frequency,
         )
 
-    def _calculate_topic_frequency(self, logs: List[ConversationLogEntry]) -> Dict[str, int]:
+    def _calculate_topic_frequency(
+        self, logs: List[ConversationLogEntry]
+    ) -> Dict[str, int]:
         """Calculate frequency of topics discussed"""
         topic_freq = defaultdict(int)
         for log in logs:
@@ -99,7 +117,9 @@ class AnalyticsDomainService:
                 topic_freq[topic] += 1
         return dict(topic_freq)
 
-    def _calculate_sentiment_breakdown(self, logs: List[ConversationLogEntry]) -> Dict[str, float]:
+    def _calculate_sentiment_breakdown(
+        self, logs: List[ConversationLogEntry]
+    ) -> Dict[str, float]:
         """Calculate average sentiment breakdown"""
         if not logs:
             return {"positive": 0, "neutral": 0, "negative": 0}
@@ -160,16 +180,22 @@ class AnalyticsDomainService:
 
     def _calculate_duration_score(self, logs: List[ConversationLogEntry]) -> float:
         """Calculate score based on appropriate session durations"""
-        appropriate_sessions = sum(1 for log in logs if 5 <= (log.duration_seconds / 60) <= 30)
+        appropriate_sessions = sum(
+            1 for log in logs if 5 <= (log.duration_seconds / 60) <= 30
+        )
         return appropriate_sessions / len(logs) if logs else 0
 
     def _calculate_educational_score(self, logs: List[ConversationLogEntry]) -> float:
         """Calculate educational content engagement score"""
         educational_topics = {"education", "science", "math", "learning", "study"}
-        educational_sessions = sum(1 for log in logs if set(log.topics or []) & educational_topics)
+        educational_sessions = sum(
+            1 for log in logs if set(log.topics or []) & educational_topics
+        )
         return educational_sessions / len(logs) if logs else 0
 
-    def _calculate_daily_trend(self, logs: List[ConversationLogEntry], days: int = 7) -> List[float]:
+    def _calculate_daily_trend(
+        self, logs: List[ConversationLogEntry], days: int = 7
+    ) -> List[float]:
         """Calculate daily usage trend for specified days"""
         if not logs:
             return [0.0] * days
@@ -205,7 +231,9 @@ class AnalyticsDomainService:
 
         return (max(dates) - min(dates)).days + 1
 
-    def _convert_to_conversation_log(self, log_entry: ConversationLogEntry) -> ConversationLog:
+    def _convert_to_conversation_log(
+        self, log_entry: ConversationLogEntry
+    ) -> ConversationLog:
         """Convert database model to domain model"""
         return ConversationLog(
             id=log_entry.id,

@@ -89,11 +89,16 @@ class TrainingPipeline:
         logger.info("🏭 Training Pipeline initialized")
 
     async def train_enhanced_models(
-        self, training_data: Dict[str, Any], previous_performance: Dict[str, Any], learning_strategy: TrainingStrategy
+        self,
+        training_data: Dict[str, Any],
+        previous_performance: Dict[str, Any],
+        learning_strategy: TrainingStrategy,
     ) -> Dict[str, Any]:
         """تدريب النماذج المحسنة"""
 
-        logger.info(f"🚀 Starting enhanced model training with strategy: {learning_strategy.value}")
+        logger.info(
+            f"🚀 Starting enhanced model training with strategy: {learning_strategy.value}"
+        )
 
         # تحديد النماذج التي تحتاج تدريب
         models_to_train = await self._identify_models_for_training(
@@ -101,7 +106,9 @@ class TrainingPipeline:
         )
 
         # إعداد تكوينات التدريب
-        training_configs = await self._prepare_training_configs(models_to_train, learning_strategy, training_data)
+        training_configs = await self._prepare_training_configs(
+            models_to_train, learning_strategy, training_data
+        )
 
         # تشغيل التدريب بشكل متوازي
         training_tasks = [
@@ -137,11 +144,16 @@ class TrainingPipeline:
             "failed_trainings": failed_trainings,
             "model_evaluations": model_evaluations,
             "safety_certifications": safety_certifications,
-            "training_summary": await self._generate_training_summary(successful_models, model_evaluations),
+            "training_summary": await self._generate_training_summary(
+                successful_models, model_evaluations
+            ),
         }
 
     async def _identify_models_for_training(
-        self, training_data: Dict[str, Any], previous_performance: Dict[str, Any], strategy: TrainingStrategy
+        self,
+        training_data: Dict[str, Any],
+        previous_performance: Dict[str, Any],
+        strategy: TrainingStrategy,
     ) -> List[ModelType]:
         """تحديد النماذج التي تحتاج تدريب"""
 
@@ -184,18 +196,27 @@ class TrainingPipeline:
         elif strategy == TrainingStrategy.MULTI_TASK_LEARNING:
             # تدريب نماذج متعددة المهام
             if len(models_to_train) < 2:
-                models_to_train.extend([ModelType.CONVERSATION_MODEL, ModelType.EMOTION_ANALYSIS])
-            logger.info("🎯 Multi-task learning strategy - training interconnected models")
+                models_to_train.extend(
+                    [ModelType.CONVERSATION_MODEL, ModelType.EMOTION_ANALYSIS]
+                )
+            logger.info(
+                "🎯 Multi-task learning strategy - training interconnected models"
+            )
 
         # إزالة التكرارات
         models_to_train = list(set(models_to_train))
 
-        logger.info(f"📋 Identified {len(models_to_train)} models for training: {[m.value for m in models_to_train]}")
+        logger.info(
+            f"📋 Identified {len(models_to_train)} models for training: {[m.value for m in models_to_train]}"
+        )
 
         return models_to_train
 
     async def _prepare_training_configs(
-        self, models_to_train: List[ModelType], strategy: TrainingStrategy, training_data: Dict[str, Any]
+        self,
+        models_to_train: List[ModelType],
+        strategy: TrainingStrategy,
+        training_data: Dict[str, Any],
     ) -> Dict[ModelType, TrainingConfig]:
         """إعداد تكوينات التدريب"""
 
@@ -206,14 +227,18 @@ class TrainingPipeline:
             base_config = self._get_base_training_config(model_type)
 
             # تعديل التكوين حسب الاستراتيجية
-            config = self._adapt_config_for_strategy(base_config, strategy, training_data)
+            config = self._adapt_config_for_strategy(
+                base_config, strategy, training_data
+            )
 
             # إضافة قيود الأمان والخصوصية
             config.safety_constraints = self._get_safety_constraints(model_type)
             config.privacy_settings = self._get_privacy_settings()
 
             # تحسين موارد الحوسبة
-            config.compute_resources = await self._optimize_compute_resources(model_type, strategy)
+            config.compute_resources = await self._optimize_compute_resources(
+                model_type, strategy
+            )
 
             configs[model_type] = config
 
@@ -288,7 +313,10 @@ class TrainingPipeline:
         return base_configs.get(model_type, base_configs[ModelType.CONVERSATION_MODEL])
 
     def _adapt_config_for_strategy(
-        self, config: TrainingConfig, strategy: TrainingStrategy, training_data: Dict[str, Any]
+        self,
+        config: TrainingConfig,
+        strategy: TrainingStrategy,
+        training_data: Dict[str, Any],
     ) -> TrainingConfig:
         """تكييف التكوين حسب الاستراتيجية"""
 
@@ -340,7 +368,11 @@ class TrainingPipeline:
 
         elif model_type == ModelType.CONVERSATION_MODEL:
             base_constraints.update(
-                {"response_safety_check": True, "emotional_appropriateness": True, "educational_value_minimum": 0.6}
+                {
+                    "response_safety_check": True,
+                    "emotional_appropriateness": True,
+                    "educational_value_minimum": 0.6,
+                }
             )
 
         return base_constraints
@@ -359,10 +391,17 @@ class TrainingPipeline:
             "audit_logging": True,
         }
 
-    async def _optimize_compute_resources(self, model_type: ModelType, strategy: TrainingStrategy) -> Dict[str, Any]:
+    async def _optimize_compute_resources(
+        self, model_type: ModelType, strategy: TrainingStrategy
+    ) -> Dict[str, Any]:
         """تحسين موارد الحوسبة"""
 
-        base_resources = {"gpu_count": 1, "memory_gb": 16, "cpu_cores": 8, "storage_gb": 100}
+        base_resources = {
+            "gpu_count": 1,
+            "memory_gb": 16,
+            "cpu_cores": 8,
+            "storage_gb": 100,
+        }
 
         # تعديل الموارد حسب نوع النموذج
         if model_type == ModelType.SPEECH_RECOGNITION:
@@ -383,30 +422,45 @@ class TrainingPipeline:
         return base_resources
 
     async def _train_single_model(
-        self, model_type: ModelType, config: TrainingConfig, training_data: Dict[str, Any]
+        self,
+        model_type: ModelType,
+        config: TrainingConfig,
+        training_data: Dict[str, Any],
     ) -> TrainingResult:
         """تدريب نموذج واحد"""
 
-        training_id = f"{model_type.value}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        training_id = (
+            f"{model_type.value}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+        )
         start_time = datetime.utcnow()
 
-        logger.info(f"🎯 Starting training for {model_type.value} with ID: {training_id}")
+        logger.info(
+            f"🎯 Starting training for {model_type.value} with ID: {training_id}"
+        )
 
         # إعداد البيانات للتدريب
-        prepared_data = await self._prepare_model_data(model_type, training_data, config)
+        prepared_data = await self._prepare_model_data(
+            model_type, training_data, config
+        )
 
         # تشغيل التدريب (محاكاة)
-        training_metrics = await self._execute_training(model_type, config, prepared_data)
+        training_metrics = await self._execute_training(
+            model_type, config, prepared_data
+        )
 
         # تقييم النموذج المدرب
-        validation_results = await self._validate_trained_model(model_type, training_metrics)
+        validation_results = await self._validate_trained_model(
+            model_type, training_metrics
+        )
 
         # فحص الأمان والامتثال
         safety_check = await self._perform_safety_check(model_type, validation_results)
         privacy_check = await self._perform_privacy_check(model_type, training_data)
 
         # حفظ النموذج والتحف
-        model_artifacts = await self._save_model_artifacts(model_type, training_id, training_metrics)
+        model_artifacts = await self._save_model_artifacts(
+            model_type, training_id, training_metrics
+        )
 
         end_time = datetime.utcnow()
 
@@ -421,7 +475,9 @@ class TrainingPipeline:
             validation_results=validation_results,
             safety_certification=safety_check["passed"],
             privacy_compliance=privacy_check["compliant"],
-            resource_usage=await self._calculate_resource_usage(start_time, end_time, config),
+            resource_usage=await self._calculate_resource_usage(
+                start_time, end_time, config
+            ),
         )
 
         # إضافة إلى التاريخ
@@ -434,7 +490,10 @@ class TrainingPipeline:
         return result
 
     async def _prepare_model_data(
-        self, model_type: ModelType, training_data: Dict[str, Any], config: TrainingConfig
+        self,
+        model_type: ModelType,
+        training_data: Dict[str, Any],
+        config: TrainingConfig,
     ) -> Dict[str, Any]:
         """إعداد البيانات للتدريب"""
 
@@ -454,7 +513,11 @@ class TrainingPipeline:
                     "training_samples": 40000,
                     "validation_samples": 10000,
                     "data_quality_score": 0.92,
-                    "preprocessing_applied": ["noise_reduction", "normalization", "augmentation"],
+                    "preprocessing_applied": [
+                        "noise_reduction",
+                        "normalization",
+                        "augmentation",
+                    ],
                 }
             )
 
@@ -465,7 +528,11 @@ class TrainingPipeline:
                     "training_samples": 85000,
                     "validation_samples": 15000,
                     "data_quality_score": 0.88,
-                    "preprocessing_applied": ["tokenization", "safety_filtering", "quality_scoring"],
+                    "preprocessing_applied": [
+                        "tokenization",
+                        "safety_filtering",
+                        "quality_scoring",
+                    ],
                 }
             )
 
@@ -476,7 +543,11 @@ class TrainingPipeline:
                     "training_samples": 150000,
                     "validation_samples": 50000,
                     "data_quality_score": 0.95,
-                    "preprocessing_applied": ["content_analysis", "bias_detection", "safety_labeling"],
+                    "preprocessing_applied": [
+                        "content_analysis",
+                        "bias_detection",
+                        "safety_labeling",
+                    ],
                 }
             )
 
@@ -495,7 +566,10 @@ class TrainingPipeline:
         return data_stats
 
     async def _execute_training(
-        self, model_type: ModelType, config: TrainingConfig, prepared_data: Dict[str, Any]
+        self,
+        model_type: ModelType,
+        config: TrainingConfig,
+        prepared_data: Dict[str, Any],
     ) -> Dict[str, Any]:
         """تنفيذ التدريب"""
 
@@ -517,11 +591,17 @@ class TrainingPipeline:
             noise = np.random.normal(0, 0.02)
 
             epoch_accuracy = min(0.95, max(0.5, base_accuracy + noise))
-            epoch_loss = max(0.1, 2.0 - (epoch / epochs) * 1.5 + np.random.normal(0, 0.1))
+            epoch_loss = max(
+                0.1, 2.0 - (epoch / epochs) * 1.5 + np.random.normal(0, 0.1)
+            )
 
             # مقاييس خاصة بالأطفال
-            safety_score = min(0.99, 0.85 + (epoch / epochs) * 0.14 + np.random.normal(0, 0.01))
-            child_satisfaction = min(0.95, 0.7 + (epoch / epochs) * 0.25 + np.random.normal(0, 0.02))
+            safety_score = min(
+                0.99, 0.85 + (epoch / epochs) * 0.14 + np.random.normal(0, 0.01)
+            )
+            child_satisfaction = min(
+                0.95, 0.7 + (epoch / epochs) * 0.25 + np.random.normal(0, 0.02)
+            )
 
             history["loss"].append(epoch_loss)
             history["accuracy"].append(epoch_accuracy)
@@ -551,13 +631,23 @@ class TrainingPipeline:
 
         # تعديل المقاييس حسب نوع النموذج
         if model_type == ModelType.SAFETY_CLASSIFIER:
-            final_metrics["safety_score"] = min(0.99, final_metrics["safety_score"] + 0.05)
+            final_metrics["safety_score"] = min(
+                0.99, final_metrics["safety_score"] + 0.05
+            )
         elif model_type == ModelType.CONVERSATION_MODEL:
-            final_metrics["child_satisfaction"] = min(0.95, final_metrics["child_satisfaction"] + 0.03)
+            final_metrics["child_satisfaction"] = min(
+                0.95, final_metrics["child_satisfaction"] + 0.03
+            )
 
-        return {"final_metrics": final_metrics, "history": history, "training_completed": True}
+        return {
+            "final_metrics": final_metrics,
+            "history": history,
+            "training_completed": True,
+        }
 
-    async def _validate_trained_model(self, model_type: ModelType, training_metrics: Dict[str, Any]) -> Dict[str, Any]:
+    async def _validate_trained_model(
+        self, model_type: ModelType, training_metrics: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """تقييم النموذج المدرب"""
 
         validation_results = {
@@ -572,7 +662,10 @@ class TrainingPipeline:
                 "7-9": np.random.beta(8, 2),
                 "10-12": np.random.beta(8, 2),
             },
-            "language_performance": {"english": np.random.beta(9, 2), "arabic": np.random.beta(7, 3)},
+            "language_performance": {
+                "english": np.random.beta(9, 2),
+                "arabic": np.random.beta(7, 3),
+            },
         }
 
         # تحسينات خاصة بنوع النموذج
@@ -596,7 +689,9 @@ class TrainingPipeline:
 
         return validation_results
 
-    async def _perform_safety_check(self, model_type: ModelType, validation_results: Dict[str, Any]) -> Dict[str, Any]:
+    async def _perform_safety_check(
+        self, model_type: ModelType, validation_results: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """فحص الأمان"""
 
         safety_checks = {
@@ -610,20 +705,29 @@ class TrainingPipeline:
 
         # فحوصات خاصة بنوع النموذج
         if model_type == ModelType.SAFETY_CLASSIFIER:
-            safety_checks["overall_safety_score"] = max(0.95, safety_checks["overall_safety_score"])
+            safety_checks["overall_safety_score"] = max(
+                0.95, safety_checks["overall_safety_score"]
+            )
 
         # تحديد ما إذا كان النموذج آمناً
         passed = safety_checks["overall_safety_score"] >= 0.90 and all(
-            safety_checks[key] for key in ["content_safety", "bias_check", "privacy_preservation"]
+            safety_checks[key]
+            for key in ["content_safety", "bias_check", "privacy_preservation"]
         )
 
         return {
             "passed": passed,
             "checks": safety_checks,
-            "certification_level": "high" if passed and safety_checks["overall_safety_score"] > 0.95 else "standard",
+            "certification_level": (
+                "high"
+                if passed and safety_checks["overall_safety_score"] > 0.95
+                else "standard"
+            ),
         }
 
-    async def _perform_privacy_check(self, model_type: ModelType, training_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _perform_privacy_check(
+        self, model_type: ModelType, training_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """فحص الخصوصية"""
 
         privacy_checks = {
@@ -661,7 +765,9 @@ class TrainingPipeline:
             "safety_certificate": f"certificates/{training_id}/safety_cert.json",
         }
 
-        logger.info(f"💾 Saved model artifacts for {model_type.value} at {artifacts['model_file']}")
+        logger.info(
+            f"💾 Saved model artifacts for {model_type.value} at {artifacts['model_file']}"
+        )
 
         return artifacts
 
@@ -675,9 +781,12 @@ class TrainingPipeline:
         return {
             "training_duration_hours": duration_hours,
             "gpu_hours": duration_hours * config.compute_resources.get("gpu_count", 1),
-            "memory_gb_hours": duration_hours * config.compute_resources.get("memory_gb", 16),
+            "memory_gb_hours": duration_hours
+            * config.compute_resources.get("memory_gb", 16),
             "storage_gb_used": config.compute_resources.get("storage_gb", 100),
-            "estimated_cost_usd": duration_hours * config.compute_resources.get("gpu_count", 1) * 2.5,  # $2.5/GPU-hour
+            "estimated_cost_usd": duration_hours
+            * config.compute_resources.get("gpu_count", 1)
+            * 2.5,  # $2.5/GPU-hour
         }
 
     def _initialize_compute_cluster(self) -> Dict[str, Any]:
@@ -709,7 +818,9 @@ class TrainingPipeline:
             "artifact_storage": "s3://ai-teddy-models",
         }
 
-    async def _evaluate_trained_models(self, models: Dict[str, TrainingResult]) -> Dict[str, Dict[str, Any]]:
+    async def _evaluate_trained_models(
+        self, models: Dict[str, TrainingResult]
+    ) -> Dict[str, Dict[str, Any]]:
         """تقييم النماذج المدربة"""
         evaluations = {}
 
@@ -717,7 +828,8 @@ class TrainingPipeline:
             evaluations[model_type] = {
                 "performance_grade": self._calculate_grade(result.final_metrics),
                 "improvement_over_baseline": np.random.uniform(0.02, 0.15),
-                "deployment_readiness": result.safety_certification and result.privacy_compliance,
+                "deployment_readiness": result.safety_certification
+                and result.privacy_compliance,
                 "estimated_production_impact": np.random.uniform(0.05, 0.25),
             }
 
@@ -726,7 +838,11 @@ class TrainingPipeline:
     def _calculate_grade(self, metrics: Dict[str, float]) -> str:
         """حساب درجة الأداء"""
         avg_score = np.mean(
-            [metrics.get("accuracy", 0), metrics.get("safety_score", 0), metrics.get("child_satisfaction", 0)]
+            [
+                metrics.get("accuracy", 0),
+                metrics.get("safety_score", 0),
+                metrics.get("child_satisfaction", 0),
+            ]
         )
 
         if avg_score >= 0.90:
@@ -738,7 +854,9 @@ class TrainingPipeline:
         else:
             return "B"
 
-    async def _certify_model_safety(self, models: Dict[str, TrainingResult]) -> Dict[str, Dict[str, Any]]:
+    async def _certify_model_safety(
+        self, models: Dict[str, TrainingResult]
+    ) -> Dict[str, Dict[str, Any]]:
         """شهادة أمان النماذج"""
         certifications = {}
 
@@ -747,7 +865,9 @@ class TrainingPipeline:
                 "safety_certified": result.safety_certification,
                 "privacy_compliant": result.privacy_compliance,
                 "certification_level": (
-                    "enterprise_grade" if result.final_metrics.get("safety_score", 0) > 0.95 else "standard"
+                    "enterprise_grade"
+                    if result.final_metrics.get("safety_score", 0) > 0.95
+                    else "standard"
                 ),
                 "valid_until": datetime.utcnow() + timedelta(days=90),
                 "audit_trail": f"audit_{result.training_id}",
@@ -761,21 +881,37 @@ class TrainingPipeline:
         """إنشاء ملخص التدريب"""
 
         total_training_time = (
-            sum((result.end_time - result.start_time).total_seconds() for result in models.values()) / 3600
+            sum(
+                (result.end_time - result.start_time).total_seconds()
+                for result in models.values()
+            )
+            / 3600
         )  # hours
 
-        total_cost = sum(result.resource_usage.get("estimated_cost_usd", 0) for result in models.values())
+        total_cost = sum(
+            result.resource_usage.get("estimated_cost_usd", 0)
+            for result in models.values()
+        )
 
-        avg_improvement = np.mean([eval_data.get("improvement_over_baseline", 0) for eval_data in evaluations.values()])
+        avg_improvement = np.mean(
+            [
+                eval_data.get("improvement_over_baseline", 0)
+                for eval_data in evaluations.values()
+            ]
+        )
 
         return {
             "models_trained": len(models),
             "total_training_time_hours": total_training_time,
             "total_estimated_cost_usd": total_cost,
             "average_improvement": avg_improvement,
-            "all_models_certified": all(result.safety_certification for result in models.values()),
+            "all_models_certified": all(
+                result.safety_certification for result in models.values()
+            ),
             "deployment_ready_models": sum(
-                1 for eval_data in evaluations.values() if eval_data["deployment_readiness"]
+                1
+                for eval_data in evaluations.values()
+                if eval_data["deployment_readiness"]
             ),
             "expected_production_impact": f"{avg_improvement * 100:.1f}% improvement in child experience",
         }

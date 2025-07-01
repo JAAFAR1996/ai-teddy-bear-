@@ -10,19 +10,20 @@ import shutil
 from pathlib import Path
 from typing import Dict, List
 
+
 class DDDFixer:
     def __init__(self):
         self.src_dir = Path("src")
         self.services_dir = self.src_dir / "application" / "services"
         self.fixed_count = 0
-        
+
     def identify_god_classes(self) -> List[Path]:
         """تحديد God Classes التي تحتاج تقسيم حقيقي"""
         god_classes = []
-        
+
         large_service_files = [
             "accessibility_service.py",
-            "memory_service.py", 
+            "memory_service.py",
             "moderation_service.py",
             "parent_dashboard_service.py",
             "parent_report_service.py",
@@ -30,42 +31,42 @@ class DDDFixer:
             "enhanced_child_interaction_service.py",
             "ar_vr_service.py",
             "advanced_personalization_service.py",
-            "advanced_progress_analyzer.py"
+            "advanced_progress_analyzer.py",
         ]
-        
+
         for filename in large_service_files:
             file_path = self.services_dir / filename
             if file_path.exists():
                 god_classes.append(file_path)
-                
+
         return god_classes
-    
+
     def split_accessibility_service(self, file_path: Path):
         """تقسيم accessibility_service بشكل صحيح"""
         print(f"✓ Processing {file_path.name}...")
-        
+
         # قراءة المحتوى الكامل
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
-        
+
         # إنشاء البنية
         domain_dir = self.src_dir / "domain" / "accessibility"
         app_dir = self.src_dir / "application" / "accessibility"
         infra_dir = self.src_dir / "infrastructure" / "accessibility"
-        
+
         # إنشاء المجلدات
         (domain_dir / "entities").mkdir(parents=True, exist_ok=True)
         (domain_dir / "value_objects").mkdir(parents=True, exist_ok=True)
         (domain_dir / "aggregates").mkdir(parents=True, exist_ok=True)
         (domain_dir / "repositories").mkdir(parents=True, exist_ok=True)
-        
+
         (app_dir / "use_cases").mkdir(parents=True, exist_ok=True)
         (app_dir / "services").mkdir(parents=True, exist_ok=True)
         (app_dir / "dto").mkdir(parents=True, exist_ok=True)
-        
+
         (infra_dir / "persistence").mkdir(parents=True, exist_ok=True)
         (infra_dir / "external_services").mkdir(parents=True, exist_ok=True)
-        
+
         # 1. Value Objects
         value_objects_content = '''#!/usr/bin/env python3
 """
@@ -105,7 +106,7 @@ class LearningAdaptations:
     extended_response_time: bool = False
     structured_routine: bool = False
 '''
-        
+
         # 2. Entities
         entities_content = '''#!/usr/bin/env python3
 """
@@ -153,7 +154,7 @@ class AdaptiveContent:
     effectiveness_score: float = 0.0
     usage_count: int = 0
 '''
-        
+
         # 3. Service (Use Cases)
         service_content = '''#!/usr/bin/env python3
 """
@@ -240,45 +241,51 @@ class AccessibilityService:
         """الحصول على ملف الوصولية"""
         return self.accessibility_profiles.get(child_id)
 '''
-        
+
         # كتابة الملفات
-        with open(domain_dir / "value_objects" / "special_needs.py", 'w', encoding='utf-8') as f:
+        with open(
+            domain_dir / "value_objects" / "special_needs.py", "w", encoding="utf-8"
+        ) as f:
             f.write(value_objects_content)
-            
-        with open(domain_dir / "entities" / "accessibility_profile.py", 'w', encoding='utf-8') as f:
+
+        with open(
+            domain_dir / "entities" / "accessibility_profile.py", "w", encoding="utf-8"
+        ) as f:
             f.write(entities_content)
-            
-        with open(app_dir / "services" / "accessibility_service.py", 'w', encoding='utf-8') as f:
+
+        with open(
+            app_dir / "services" / "accessibility_service.py", "w", encoding="utf-8"
+        ) as f:
             f.write(service_content)
-        
+
         # إنشاء __init__.py files
         self._create_init_files([domain_dir, app_dir, infra_dir])
-        
+
         print(f"✓ Split {file_path.name} into proper DDD structure")
         self.fixed_count += 1
-    
+
     def split_memory_service(self, file_path: Path):
         """تقسيم memory_service بشكل صحيح"""
         print(f"✓ Processing {file_path.name}...")
-        
+
         # قراءة المحتوى الكامل
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
-        
+
         # إنشاء البنية
         domain_dir = self.src_dir / "domain" / "memory"
         app_dir = self.src_dir / "application" / "memory"
         infra_dir = self.src_dir / "infrastructure" / "memory"
-        
+
         # إنشاء المجلدات
         (domain_dir / "entities").mkdir(parents=True, exist_ok=True)
         (domain_dir / "aggregates").mkdir(parents=True, exist_ok=True)
-        
+
         (app_dir / "use_cases").mkdir(parents=True, exist_ok=True)
         (app_dir / "services").mkdir(parents=True, exist_ok=True)
-        
+
         (infra_dir / "persistence").mkdir(parents=True, exist_ok=True)
-        
+
         # إنشاء ملفات أساسية للذاكرة
         memory_entity = '''#!/usr/bin/env python3
 """
@@ -378,42 +385,44 @@ class MemoryService:
 '''
 
         # كتابة الملفات
-        with open(domain_dir / "entities" / "memory.py", 'w', encoding='utf-8') as f:
+        with open(domain_dir / "entities" / "memory.py", "w", encoding="utf-8") as f:
             f.write(memory_entity)
-            
-        with open(app_dir / "services" / "memory_service.py", 'w', encoding='utf-8') as f:
+
+        with open(
+            app_dir / "services" / "memory_service.py", "w", encoding="utf-8"
+        ) as f:
             f.write(memory_service)
-        
+
         # إنشاء __init__.py files
         self._create_init_files([domain_dir, app_dir, infra_dir])
-        
+
         print(f"✓ Split {file_path.name} into proper DDD structure")
         self.fixed_count += 1
-    
+
     def _create_init_files(self, directories: List[Path]):
         """إنشاء ملفات __init__.py"""
         for directory in directories:
             for root, dirs, files in os.walk(directory):
                 root_path = Path(root)
-                if any(f.endswith('.py') for f in files):
+                if any(f.endswith(".py") for f in files):
                     init_file = root_path / "__init__.py"
                     if not init_file.exists():
                         init_file.write_text("# Domain module\n", encoding="utf-8")
-    
+
     def fix_integration(self):
         """إصلاح الدمج الخاطئ"""
         print("=" * 60)
         print("🔧 إصلاح الدمج الخاطئ...")
         print("=" * 60)
-        
+
         # تحديد God Classes
         god_classes = self.identify_god_classes()
         print(f"Found {len(god_classes)} God Classes to fix")
-        
+
         # معالجة كل ملف
         for god_class in god_classes:
             filename = god_class.name
-            
+
             if filename == "accessibility_service.py":
                 self.split_accessibility_service(god_class)
             elif filename == "memory_service.py":
@@ -421,11 +430,12 @@ class MemoryService:
             # يمكن إضافة المزيد من الخدمات هنا
             else:
                 print(f"⚠️ {filename} needs manual splitting")
-        
+
         print("=" * 60)
         print(f"✅ Fixed {self.fixed_count} services successfully!")
         print("=" * 60)
 
+
 if __name__ == "__main__":
     fixer = DDDFixer()
-    fixer.fix_integration() 
+    fixer.fix_integration()

@@ -87,7 +87,9 @@ class SimpleCacheService:
             return
 
         # Find oldest entry
-        oldest_key = min(self._cache.keys(), key=lambda k: self._cache[k][1])  # Sort by timestamp
+        oldest_key = min(
+            self._cache.keys(), key=lambda k: self._cache[k][1]
+        )  # Sort by timestamp
 
         del self._cache[oldest_key]
         self._stats["evictions"] += 1
@@ -100,7 +102,9 @@ class SimpleCacheService:
             @wraps(func)
             async def wrapper(*args, **kwargs):
                 # Generate cache key
-                cache_key = self._generate_cache_key(f"{key_prefix}:{func.__name__}", args, kwargs)
+                cache_key = self._generate_cache_key(
+                    f"{key_prefix}:{func.__name__}", args, kwargs
+                )
 
                 # Try to get from cache
                 cached_result = await self.get(cache_key)

@@ -26,7 +26,11 @@ class EventBus:
     and the Kafka-based event streaming infrastructure.
     """
 
-    def __init__(self, publisher: Optional[KafkaEventPublisher] = None, consumer: Optional[KafkaEventConsumer] = None):
+    def __init__(
+        self,
+        publisher: Optional[KafkaEventPublisher] = None,
+        consumer: Optional[KafkaEventConsumer] = None,
+    ):
         self.publisher = publisher or get_event_publisher()
         self.consumer = consumer or KafkaEventConsumer()
         self._setup_event_handlers()
@@ -37,7 +41,9 @@ class EventBus:
         self.consumer.register_handlers(EVENT_HANDLERS)
         logger.info(f"Registered {len(EVENT_HANDLERS)} event handler types")
 
-    async def publish_domain_event(self, event: DomainEvent, partition_key: Optional[str] = None) -> bool:
+    async def publish_domain_event(
+        self, event: DomainEvent, partition_key: Optional[str] = None
+    ) -> bool:
         """
         Publish a domain event to the event stream
 
@@ -83,7 +89,9 @@ class EventBus:
         try:
             result = await self.publisher.publish_events_batch(events, partition_key)
 
-            logger.info(f"Published {result['success_count']}/{len(events)} domain events")
+            logger.info(
+                f"Published {result['success_count']}/{len(events)} domain events"
+            )
 
             if result["failure_count"] > 0:
                 logger.warning(f"{result['failure_count']} events failed to publish")
@@ -118,7 +126,8 @@ class EventBus:
 
         overall_status = (
             "healthy"
-            if publisher_health["status"] == "healthy" and consumer_health["status"] == "healthy"
+            if publisher_health["status"] == "healthy"
+            and consumer_health["status"] == "healthy"
             else "unhealthy"
         )
 
@@ -132,7 +141,10 @@ class EventBus:
     def get_metrics(self) -> Dict[str, Any]:
         """Get event bus metrics"""
 
-        return {"publisher_metrics": self.publisher.get_metrics(), "consumer_metrics": self.consumer.get_metrics()}
+        return {
+            "publisher_metrics": self.publisher.get_metrics(),
+            "consumer_metrics": self.consumer.get_metrics(),
+        }
 
 
 class DomainEventDispatcher:
@@ -155,7 +167,9 @@ class DomainEventDispatcher:
         """
 
         if not hasattr(aggregate, "clear_events"):
-            logger.warning(f"Aggregate {type(aggregate)} does not support event dispatch")
+            logger.warning(
+                f"Aggregate {type(aggregate)} does not support event dispatch"
+            )
             return
 
         # Get pending events
@@ -170,10 +184,14 @@ class DomainEventDispatcher:
         # Publish events
         result = await self.event_bus.publish_domain_events(events, partition_key)
 
-        logger.info(f"Dispatched {result['success_count']} events from {type(aggregate).__name__}")
+        logger.info(
+            f"Dispatched {result['success_count']} events from {type(aggregate).__name__}"
+        )
 
         if result["failure_count"] > 0:
-            logger.error(f"Failed to dispatch {result['failure_count']} events from {type(aggregate).__name__}")
+            logger.error(
+                f"Failed to dispatch {result['failure_count']} events from {type(aggregate).__name__}"
+            )
 
     def _extract_partition_key(self, aggregate) -> Optional[str]:
         """Extract partition key from aggregate"""
@@ -294,7 +312,11 @@ async def example_usage():
 
     # Create child aggregate
     child = Child.register_new_child(
-        name="Emma", age=7, udid="ESP32-001", parent_id=ParentId(uuid4()), device_id=DeviceId(uuid4())
+        name="Emma",
+        age=7,
+        udid="ESP32-001",
+        parent_id=ParentId(uuid4()),
+        device_id=DeviceId(uuid4()),
     )
 
     # Use context manager for automatic event dispatching
@@ -304,7 +326,9 @@ async def example_usage():
 
         # Add message
         conversation.add_child_message(
-            content="Tell me about lions!", emotion_detected="excited", emotion_confidence=0.85
+            content="Tell me about lions!",
+            emotion_detected="excited",
+            emotion_confidence=0.85,
         )
 
         # Events will be automatically dispatched when exiting context

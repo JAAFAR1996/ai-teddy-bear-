@@ -15,20 +15,24 @@ from opentelemetry import trace
 from prometheus_client import Counter, Gauge, Histogram
 
 from src.infrastructure.config import get_settings
-
 # from src.application.services.core.service_registry import ServiceBase
 from src.infrastructure.observability import trace_async
-from src.infrastructure.security.audit_logger import AuditEventType, AuditLogger
+from src.infrastructure.security.audit_logger import (AuditEventType,
+                                                      AuditLogger)
 
 # from src.application.services.core.circuit_breaker import CircuitBreaker
 
 
 # Metrics
 interaction_counter = Counter(
-    "teddy_interactions_total", "Total number of voice interactions", ["session_type", "emotion", "success"]
+    "teddy_interactions_total",
+    "Total number of voice interactions",
+    ["session_type", "emotion", "success"],
 )
 
-response_time_histogram = Histogram("teddy_response_duration_seconds", "Response time for voice interactions")
+response_time_histogram = Histogram(
+    "teddy_response_duration_seconds", "Response time for voice interactions"
+)
 
 active_sessions_gauge = Gauge("teddy_active_sessions", "Number of active sessions")
 
@@ -114,13 +118,17 @@ class SessionContext:
 
         emotion_counts = {}
         for emotion in self.emotions:
-            emotion_counts[emotion.primary_emotion] = emotion_counts.get(emotion.primary_emotion, 0) + 1
+            emotion_counts[emotion.primary_emotion] = (
+                emotion_counts.get(emotion.primary_emotion, 0) + 1
+            )
 
         return {
             "dominant": max(emotion_counts, key=emotion_counts.get),
             "distribution": emotion_counts,
-            "average_valence": sum(e.valence for e in self.emotions) / len(self.emotions),
-            "average_arousal": sum(e.arousal for e in self.emotions) / len(self.emotions),
+            "average_valence": sum(e.valence for e in self.emotions)
+            / len(self.emotions),
+            "average_arousal": sum(e.arousal for e in self.emotions)
+            / len(self.emotions),
         }
 
 
@@ -151,9 +159,13 @@ class AITeddyBearService(ServiceBase):
         self.active_sessions: Dict[str, SessionContext] = {}
 
         # Circuit breakers for external services
-        self._transcription_breaker = CircuitBreaker(name="transcription", failure_threshold=3, recovery_timeout=30)
+        self._transcription_breaker = CircuitBreaker(
+            name="transcription", failure_threshold=3, recovery_timeout=30
+        )
 
-        self._ai_breaker = CircuitBreaker(name="ai_service", failure_threshold=5, recovery_timeout=60)
+        self._ai_breaker = CircuitBreaker(
+            name="ai_service", failure_threshold=5, recovery_timeout=60
+        )
 
     async def initialize(self) -> None:
         """Initialize service with proper dependency injection"""
@@ -215,7 +227,9 @@ class AITeddyBearService(ServiceBase):
             if service and hasattr(service, "health_check"):
                 try:
                     service_health = await service.health_check()
-                    checks[f"{service_name}_healthy"] = service_health.get("healthy", False)
+                    checks[f"{service_name}_healthy"] = service_health.get(
+                        "healthy", False
+                    )
                 except Exception as e:
                     checks[f"{service_name}_healthy"] = False
 
@@ -234,13 +248,18 @@ class AITeddyBearService(ServiceBase):
             "timestamp": datetime.utcnow().isoformat(),
         }
 
-    async def start_session(self, child_id: str, metadata: Optional[Dict] = None) -> Dict:
+    async def start_session(
+        self, child_id: str, metadata: Optional[Dict] = None
+    ) -> Dict:
         """Start a new interaction session"""
         session_id = str(uuid.uuid4())
 
         # Create session context
         session = SessionContext(
-            child_id=child_id, session_id=session_id, start_time=datetime.utcnow(), metadata=metadata or {}
+            child_id=child_id,
+            session_id=session_id,
+            start_time=datetime.utcnow(),
+            metadata=metadata or {},
         )
 
         # Get child preferences from database
@@ -251,14 +270,21 @@ class AITeddyBearService(ServiceBase):
         # Store session
         self.active_sessions[session_id] = session
         await self.session_manager.create_session(
-            session_id, {"child_id": child_id, "start_time": session.start_time.isoformat(), "preferences": preferences}
+            session_id,
+            {
+                "child_id": child_id,
+                "start_time": session.start_time.isoformat(),
+                "preferences": preferences,
+            },
         )
 
         # Update metrics
         active_sessions_gauge.inc()
 
         # Audit log
-        await self.audit_logger.log_event(AuditEventType.SESSION_START, child_id, {"session_id": session_id})
+        await self.audit_logger.log_event(
+            AuditEventType.SESSION_START, child_id, {"session_id": session_id}
+        )
 
         # Generate welcome message
         welcome_text = await self._generate_welcome_message(child_id, preferences)
@@ -268,7 +294,12 @@ class AITeddyBearService(ServiceBase):
 
         self.logger.info("Session started", session_id=session_id, child_id=child_id)
 
-        return {"session_id": session_id, "message": welcome_text, "audio_data": audio_data, "preferences": preferences}
+        return {
+            "session_id": session_id,
+            "message": welcome_text,
+            "audio_data": audio_data,
+            "preferences": preferences,
+        }
 
     @trace_async
     @response_time_histogram.time()
@@ -288,13 +319,19 @@ class AITeddyBearService(ServiceBase):
             transcription = await self._transcribe_with_fallback(audio_data, session)
 
             # Step 2: Multi-modal emotion analysis
-            emotion_result = await self._analyze_emotions(transcription.text, audio_data, session)
+            emotion_result = await self._analyze_emotions(
+                transcription.text, audio_data, session
+            )
 
             # Step 3: Context-aware response generation
-            response = await self._generate_contextual_response(transcription.text, emotion_result, session)
+            response = await self._generate_contextual_response(
+                transcription.text, emotion_result, session
+            )
 
             # Step 4: Generate voice response
-            audio_response = await self._generate_voice_response(response.text, response.emotion, session)
+            audio_response = await self._generate_voice_response(
+                response.text, response.emotion, session
+            )
 
             # Step 5: Update session and log
             interaction = {
@@ -313,7 +350,9 @@ class AITeddyBearService(ServiceBase):
 
             # Update metrics
             interaction_counter.labels(
-                session_type=response.activity_type.value, emotion=emotion_result.primary_emotion, success="true"
+                session_type=response.activity_type.value,
+                emotion=emotion_result.primary_emotion,
+                success="true",
             ).inc()
 
             # Audit logging
@@ -338,14 +377,23 @@ class AITeddyBearService(ServiceBase):
             }
 
         except Exception as e:
-            self.logger.error("Voice interaction failed", session_id=session_id, error=str(e), exc_info=True)
+            self.logger.error(
+                "Voice interaction failed",
+                session_id=session_id,
+                error=str(e),
+                exc_info=True,
+            )
 
             # Update metrics
-            interaction_counter.labels(session_type="error", emotion="unknown", success="false").inc()
+            interaction_counter.labels(
+                session_type="error", emotion="unknown", success="false"
+            ).inc()
 
             # Fallback response
             fallback_text = self._get_fallback_response(session)
-            fallback_audio = await self._generate_voice_response(fallback_text, "caring", session)
+            fallback_audio = await self._generate_voice_response(
+                fallback_text, "caring", session
+            )
 
             return {
                 "success": False,
@@ -389,15 +437,27 @@ class AITeddyBearService(ServiceBase):
         active_sessions_gauge.dec()
 
         # Audit log
-        await self.audit_logger.log_event(AuditEventType.SESSION_END, session.child_id, summary)
+        await self.audit_logger.log_event(
+            AuditEventType.SESSION_END, session.child_id, summary
+        )
 
-        self.logger.info("Session ended", session_id=session_id, duration_minutes=summary["duration_minutes"])
+        self.logger.info(
+            "Session ended",
+            session_id=session_id,
+            duration_minutes=summary["duration_minutes"],
+        )
 
-        return {"message": goodbye_text, "audio_data": goodbye_audio, "summary": summary}
+        return {
+            "message": goodbye_text,
+            "audio_data": goodbye_audio,
+            "summary": summary,
+        }
 
     # Private helper methods
 
-    async def _transcribe_with_fallback(self, audio_data: bytes, session: SessionContext) -> TranscriptionResult:
+    async def _transcribe_with_fallback(
+        self, audio_data: bytes, session: SessionContext
+    ) -> TranscriptionResult:
         """Transcribe audio with multiple fallback options"""
 
         async def _try_transcription():
@@ -409,7 +469,9 @@ class AITeddyBearService(ServiceBase):
 
             # Fallback to voice service
             if self.voice_service and hasattr(self.voice_service, "transcribe"):
-                return await self.voice_service.transcribe(audio_data, language=session.language_preference)
+                return await self.voice_service.transcribe(
+                    audio_data, language=session.language_preference
+                )
 
             raise ValueError("No transcription service available")
 
@@ -423,7 +485,9 @@ class AITeddyBearService(ServiceBase):
             audio_duration_ms=result.get("duration_ms", 0),
         )
 
-    async def _analyze_emotions(self, text: str, audio_data: bytes, session: SessionContext) -> EmotionResult:
+    async def _analyze_emotions(
+        self, text: str, audio_data: bytes, session: SessionContext
+    ) -> EmotionResult:
         """Analyze emotions from both text and audio"""
 
         if self.emotion_analyzer:
@@ -461,7 +525,9 @@ class AITeddyBearService(ServiceBase):
         # Generate appropriate response
         start_time = datetime.utcnow()
 
-        response_text = await self._generate_response_for_activity(text, emotion, activity_type, session)
+        response_text = await self._generate_response_for_activity(
+            text, emotion, activity_type, session
+        )
 
         processing_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
 
@@ -472,7 +538,9 @@ class AITeddyBearService(ServiceBase):
             processing_time=processing_time,
         )
 
-    async def _generate_voice_response(self, text: str, emotion: str, session: SessionContext) -> bytes:
+    async def _generate_voice_response(
+        self, text: str, emotion: str, session: SessionContext
+    ) -> bytes:
         """Generate voice response with appropriate settings"""
 
         return await self.voice_service.text_to_speech(
@@ -483,7 +551,9 @@ class AITeddyBearService(ServiceBase):
             pitch=0,  # Can be adjusted based on preference
         )
 
-    async def _persist_interaction(self, session: SessionContext, interaction: Dict) -> None:
+    async def _persist_interaction(
+        self, session: SessionContext, interaction: Dict
+    ) -> None:
         """Persist interaction data"""
 
         # Store in session manager (Redis)
@@ -492,7 +562,9 @@ class AITeddyBearService(ServiceBase):
         # Store in database for long-term analysis
         if hasattr(self, "conversation_repository"):
             await self.conversation_repository.add_interaction(
-                child_id=session.child_id, session_id=session.session_id, interaction_data=interaction
+                child_id=session.child_id,
+                session_id=session.session_id,
+                interaction_data=interaction,
             )
 
     async def _get_child_preferences(self, child_id: str) -> Dict:
@@ -534,7 +606,9 @@ class AITeddyBearService(ServiceBase):
         language = preferences.get("language", "en")
         return messages.get(language, messages["en"])
 
-    async def _generate_goodbye_message(self, session: SessionContext, summary: Dict) -> str:
+    async def _generate_goodbye_message(
+        self, session: SessionContext, summary: Dict
+    ) -> str:
         """Generate personalized goodbye message"""
 
         emotion_summary = summary.get("emotion_summary", {})
@@ -559,12 +633,16 @@ class AITeddyBearService(ServiceBase):
         else:
             return "It was wonderful talking with you! See you next time!"
 
-    async def _persist_session_summary(self, session: SessionContext, summary: Dict) -> None:
+    async def _persist_session_summary(
+        self, session: SessionContext, summary: Dict
+    ) -> None:
         """Persist session summary for analytics"""
 
         if hasattr(self, "conversation_repository"):
             await self.conversation_repository.save_session_summary(
-                child_id=session.child_id, session_id=session.session_id, summary_data=summary
+                child_id=session.child_id,
+                session_id=session.session_id,
+                summary_data=summary,
             )
 
     def _get_fallback_response(self, session: SessionContext) -> str:
@@ -585,13 +663,21 @@ class AITeddyBearService(ServiceBase):
         """Determine the appropriate activity type"""
 
         # Check for emotional distress first
-        if emotion.valence < -0.5 or emotion.primary_emotion in ["sad", "upset", "scared"]:
+        if emotion.valence < -0.5 or emotion.primary_emotion in [
+            "sad",
+            "upset",
+            "scared",
+        ]:
             return ActivityType.COMFORT
 
         # Use AI to classify intent
         if self.ai_service:
             intent = await self.ai_service.classify_intent(
-                text, context={"emotion": emotion.to_dict(), "previous_activity": session.current_activity}
+                text,
+                context={
+                    "emotion": emotion.to_dict(),
+                    "previous_activity": session.current_activity,
+                },
             )
 
             activity_map = {
@@ -636,7 +722,11 @@ class AITeddyBearService(ServiceBase):
         return "friendly"
 
     async def _generate_response_for_activity(
-        self, text: str, emotion: EmotionResult, activity_type: ActivityType, session: SessionContext
+        self,
+        text: str,
+        emotion: EmotionResult,
+        activity_type: ActivityType,
+        session: SessionContext,
     ) -> str:
         """Generate response for specific activity type"""
 
@@ -661,10 +751,14 @@ class AITeddyBearService(ServiceBase):
         else:
             return await self._handle_conversation(text, context)
 
-    async def _generate_comfort_response(self, text: str, emotion: EmotionResult, context: Dict) -> str:
+    async def _generate_comfort_response(
+        self, text: str, emotion: EmotionResult, context: Dict
+    ) -> str:
         """Generate comfort response using AI service, not static text"""
         if self.ai_service:
-            return await self.ai_service.generate_comfort_response(text, emotion, context)
+            return await self.ai_service.generate_comfort_response(
+                text, emotion, context
+            )
         return await self._fallback_response(text)
 
     async def _handle_game_interaction(self, text: str, session: SessionContext) -> str:
@@ -673,10 +767,14 @@ class AITeddyBearService(ServiceBase):
             return await self.game_engine.play_game(text, session.child_id)
         return await self._fallback_response(text)
 
-    async def _handle_story_request(self, text: str, emotion: EmotionResult, session: SessionContext) -> str:
+    async def _handle_story_request(
+        self, text: str, emotion: EmotionResult, session: SessionContext
+    ) -> str:
         """Handle story request using story generator, not static text"""
         if self.story_generator:
-            return await self.story_generator.generate_story(text, emotion, session.child_id)
+            return await self.story_generator.generate_story(
+                text, emotion, session.child_id
+            )
         return await self._fallback_response(text)
 
     async def _handle_learning_interaction(self, text: str, context: Dict) -> str:
@@ -701,11 +799,15 @@ class AITeddyBearService(ServiceBase):
         """Fallback response if no service is available"""
         return "عذراً، لا يمكنني معالجة هذا الطلب حالياً. يرجى المحاولة لاحقاً."
 
-    async def _generate_comfort_response(self, text: str, emotion: EmotionResult, context: Dict) -> str:
+    async def _generate_comfort_response(
+        self, text: str, emotion: EmotionResult, context: Dict
+    ) -> str:
         """Generate comforting response for distressed child"""
 
         if self.ai_service:
-            return await self.ai_service.generate_response(text, context={**context, "mode": "comfort"})
+            return await self.ai_service.generate_response(
+                text, context={**context, "mode": "comfort"}
+            )
 
         # Fallback comfort responses
         if emotion.primary_emotion == "sad":
@@ -739,7 +841,9 @@ class AITeddyBearService(ServiceBase):
         language = preferences.get("language", "en")
         return messages.get(language, messages["en"])
 
-    async def _generate_goodbye_message(self, session: SessionContext, summary: Dict) -> str:
+    async def _generate_goodbye_message(
+        self, session: SessionContext, summary: Dict
+    ) -> str:
         """Generate personalized goodbye message"""
 
         emotion_summary = summary.get("emotion_summary", {})
@@ -764,12 +868,16 @@ class AITeddyBearService(ServiceBase):
         else:
             return "It was wonderful talking with you! See you next time!"
 
-    async def _persist_session_summary(self, session: SessionContext, summary: Dict) -> None:
+    async def _persist_session_summary(
+        self, session: SessionContext, summary: Dict
+    ) -> None:
         """Persist session summary for analytics"""
 
         if hasattr(self, "conversation_repository"):
             await self.conversation_repository.save_session_summary(
-                child_id=session.child_id, session_id=session.session_id, summary_data=summary
+                child_id=session.child_id,
+                session_id=session.session_id,
+                summary_data=summary,
             )
 
     def _get_fallback_response(self, session: SessionContext) -> str:
@@ -790,13 +898,21 @@ class AITeddyBearService(ServiceBase):
         """Determine the appropriate activity type"""
 
         # Check for emotional distress first
-        if emotion.valence < -0.5 or emotion.primary_emotion in ["sad", "upset", "scared"]:
+        if emotion.valence < -0.5 or emotion.primary_emotion in [
+            "sad",
+            "upset",
+            "scared",
+        ]:
             return ActivityType.COMFORT
 
         # Use AI to classify intent
         if self.ai_service:
             intent = await self.ai_service.classify_intent(
-                text, context={"emotion": emotion.to_dict(), "previous_activity": session.current_activity}
+                text,
+                context={
+                    "emotion": emotion.to_dict(),
+                    "previous_activity": session.current_activity,
+                },
             )
 
             activity_map = {
@@ -841,7 +957,11 @@ class AITeddyBearService(ServiceBase):
         return "friendly"
 
     async def _generate_response_for_activity(
-        self, text: str, emotion: EmotionResult, activity_type: ActivityType, session: SessionContext
+        self,
+        text: str,
+        emotion: EmotionResult,
+        activity_type: ActivityType,
+        session: SessionContext,
     ) -> str:
         """Generate response for specific activity type"""
 
@@ -866,11 +986,15 @@ class AITeddyBearService(ServiceBase):
         else:
             return await self._handle_conversation(text, context)
 
-    async def _generate_comfort_response(self, text: str, emotion: EmotionResult, context: Dict) -> str:
+    async def _generate_comfort_response(
+        self, text: str, emotion: EmotionResult, context: Dict
+    ) -> str:
         """Generate comforting response for distressed child"""
 
         if self.ai_service:
-            return await self.ai_service.generate_response(text, context={**context, "mode": "comfort"})
+            return await self.ai_service.generate_response(
+                text, context={**context, "mode": "comfort"}
+            )
 
         # Fallback comfort responses
         if emotion.primary_emotion == "sad":
@@ -884,16 +1008,22 @@ class AITeddyBearService(ServiceBase):
         """Handle game interactions"""
 
         if self.game_engine:
-            return await self.game_engine.process_interaction(text, session_id=session.session_id)
+            return await self.game_engine.process_interaction(
+                text, session_id=session.session_id
+            )
 
         return "Let's play a fun game! Can you guess what animal I'm thinking of?"
 
-    async def _handle_story_request(self, text: str, emotion: EmotionResult, session: SessionContext) -> str:
+    async def _handle_story_request(
+        self, text: str, emotion: EmotionResult, session: SessionContext
+    ) -> str:
         """Handle story requests"""
 
         if self.story_generator:
             return await self.story_generator.generate_story(
-                prompt=text, emotion=emotion.primary_emotion, interests=session.metadata.get("interests", [])
+                prompt=text,
+                emotion=emotion.primary_emotion,
+                interests=session.metadata.get("interests", []),
             )
 
         return "Once upon a time, there was a brave little teddy bear who loved making new friends..."
@@ -902,7 +1032,9 @@ class AITeddyBearService(ServiceBase):
         """Handle educational interactions"""
 
         if self.ai_service:
-            return await self.ai_service.generate_response(text, context={**context, "mode": "educational"})
+            return await self.ai_service.generate_response(
+                text, context={**context, "mode": "educational"}
+            )
 
         return "That's a great question! Let me explain it in a fun way..."
 
@@ -911,7 +1043,11 @@ class AITeddyBearService(ServiceBase):
 
         if self.ai_service:
             return await self.ai_service.generate_response(
-                text, context={"mode": "sleep_routine", "language": session.language_preference}
+                text,
+                context={
+                    "mode": "sleep_routine",
+                    "language": session.language_preference,
+                },
             )
 
         return "Let's get ready for bed! Would you like me to tell you a calming bedtime story?"
@@ -920,6 +1056,8 @@ class AITeddyBearService(ServiceBase):
         """Handle general conversation"""
 
         if self.ai_service:
-            return await self.ai_service.generate_response(text, context={**context, "mode": "conversation"})
+            return await self.ai_service.generate_response(
+                text, context={**context, "mode": "conversation"}
+            )
 
         return "That sounds interesting! Tell me more about it."

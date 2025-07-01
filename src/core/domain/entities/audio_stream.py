@@ -59,14 +59,24 @@ class VoiceSettings(BaseModel):
 
     # Voice characteristics
     stability: float = Field(default=0.5, ge=0.0, le=1.0, description="Voice stability")
-    similarity_boost: float = Field(default=0.8, ge=0.0, le=1.0, description="Voice similarity boost")
-    style: float = Field(default=0.0, ge=0.0, le=1.0, description="Voice style strength")
+    similarity_boost: float = Field(
+        default=0.8, ge=0.0, le=1.0, description="Voice similarity boost"
+    )
+    style: float = Field(
+        default=0.0, ge=0.0, le=1.0, description="Voice style strength"
+    )
     use_speaker_boost: bool = Field(default=True, description="Enable speaker boost")
 
     # Additional settings
-    pitch_adjustment: float = Field(default=0.0, ge=-12.0, le=12.0, description="Pitch adjustment in semitones")
-    speed_adjustment: float = Field(default=1.0, ge=0.5, le=2.0, description="Speed multiplier")
-    volume_adjustment: float = Field(default=1.0, ge=0.0, le=2.0, description="Volume multiplier")
+    pitch_adjustment: float = Field(
+        default=0.0, ge=-12.0, le=12.0, description="Pitch adjustment in semitones"
+    )
+    speed_adjustment: float = Field(
+        default=1.0, ge=0.5, le=2.0, description="Speed multiplier"
+    )
+    volume_adjustment: float = Field(
+        default=1.0, ge=0.0, le=2.0, description="Volume multiplier"
+    )
 
     # Emotional tone
     emotional_tone: Optional[str] = Field(None, description="Emotional tone preset")
@@ -97,7 +107,9 @@ class AudioMetrics(BaseModel):
     # Performance metrics
     latency_ms: Optional[float] = Field(None, description="End-to-end latency")
     jitter_ms: Optional[float] = Field(None, description="Jitter in milliseconds")
-    packet_loss_rate: Optional[float] = Field(None, description="Packet loss rate (0-1)")
+    packet_loss_rate: Optional[float] = Field(
+        None, description="Packet loss rate (0-1)"
+    )
 
 
 class AudioChunk(BaseModel):
@@ -105,7 +117,9 @@ class AudioChunk(BaseModel):
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Chunk ID")
     sequence_number: int = Field(..., description="Sequence number in stream")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Chunk timestamp")
+    timestamp: datetime = Field(
+        default_factory=datetime.now, description="Chunk timestamp"
+    )
     duration_ms: float = Field(..., description="Chunk duration in milliseconds")
 
     # Audio data
@@ -132,9 +146,13 @@ class AudioChunk(BaseModel):
 class StreamBuffer(BaseModel):
     """Audio stream buffer management"""
 
-    chunks: List[AudioChunk] = Field(default_factory=list, description="Buffered chunks")
+    chunks: List[AudioChunk] = Field(
+        default_factory=list, description="Buffered chunks"
+    )
     max_chunks: int = Field(default=100, description="Maximum chunks to buffer")
-    target_duration_ms: float = Field(default=1000.0, description="Target buffer duration")
+    target_duration_ms: float = Field(
+        default=1000.0, description="Target buffer duration"
+    )
 
     # Buffer metrics
     total_duration_ms: float = Field(default=0.0, description="Total buffered duration")
@@ -182,13 +200,19 @@ class AudioTranscript(BaseModel):
 
     text: str = Field(..., description="Transcribed text")
     language: str = Field(..., description="Detected language")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Transcription confidence")
+    confidence: float = Field(
+        ..., ge=0.0, le=1.0, description="Transcription confidence"
+    )
 
     # Word-level timing
-    words: List[Dict[str, Any]] = Field(default_factory=list, description="Word timings")
+    words: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Word timings"
+    )
 
     # Alternative transcriptions
-    alternatives: List[Dict[str, Any]] = Field(default_factory=list, description="Alternative transcriptions")
+    alternatives: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Alternative transcriptions"
+    )
 
     # Metadata
     duration_ms: float = Field(..., description="Audio duration")
@@ -209,23 +233,35 @@ class AudioStream(BaseModel):
     direction: StreamDirection = Field(..., description="Stream direction")
     state: StreamState = Field(default=StreamState.IDLE, description="Current state")
     format: AudioFormat = Field(default=AudioFormat.OPUS, description="Audio format")
-    quality: AudioQuality = Field(default=AudioQuality.HIGH, description="Quality preset")
+    quality: AudioQuality = Field(
+        default=AudioQuality.HIGH, description="Quality preset"
+    )
 
     # Content
     text: Optional[str] = Field(None, description="Text for TTS streams")
-    transcript: Optional[AudioTranscript] = Field(None, description="Transcription for STT")
+    transcript: Optional[AudioTranscript] = Field(
+        None, description="Transcription for STT"
+    )
 
     # Voice configuration
-    voice_settings: Optional[VoiceSettings] = Field(None, description="Voice settings for TTS")
+    voice_settings: Optional[VoiceSettings] = Field(
+        None, description="Voice settings for TTS"
+    )
 
     # Audio metrics
-    metrics: AudioMetrics = Field(default_factory=AudioMetrics, description="Stream metrics")
+    metrics: AudioMetrics = Field(
+        default_factory=AudioMetrics, description="Stream metrics"
+    )
 
     # Buffering
-    buffer: StreamBuffer = Field(default_factory=StreamBuffer, description="Stream buffer")
+    buffer: StreamBuffer = Field(
+        default_factory=StreamBuffer, description="Stream buffer"
+    )
 
     # Timing
-    created_at: datetime = Field(default_factory=datetime.now, description="Creation time")
+    created_at: datetime = Field(
+        default_factory=datetime.now, description="Creation time"
+    )
     started_at: Optional[datetime] = Field(None, description="Stream start time")
     ended_at: Optional[datetime] = Field(None, description="Stream end time")
     duration: Optional[timedelta] = Field(None, description="Total duration")
@@ -240,7 +276,9 @@ class AudioStream(BaseModel):
     connection_id: Optional[str] = Field(None, description="Connection identifier")
 
     # Metadata
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata"
+    )
 
     # Methods
 
@@ -255,7 +293,11 @@ class AudioStream(BaseModel):
 
     def stop(self) -> None:
         """Stop the stream"""
-        if self.state in [StreamState.STREAMING, StreamState.PAUSED, StreamState.BUFFERING]:
+        if self.state in [
+            StreamState.STREAMING,
+            StreamState.PAUSED,
+            StreamState.BUFFERING,
+        ]:
             self.state = StreamState.COMPLETED
             self.ended_at = datetime.now()
             if self.started_at:
@@ -271,10 +313,20 @@ class AudioStream(BaseModel):
         if self.state == StreamState.PAUSED:
             self.state = StreamState.STREAMING
 
-    def add_audio_chunk(self, data: bytes, sequence_number: int, duration_ms: float, is_speech: bool = False) -> bool:
+    def add_audio_chunk(
+        self,
+        data: bytes,
+        sequence_number: int,
+        duration_ms: float,
+        is_speech: bool = False,
+    ) -> bool:
         """Add audio chunk to stream"""
         chunk = AudioChunk(
-            sequence_number=sequence_number, duration_ms=duration_ms, data=data, format=self.format, is_speech=is_speech
+            sequence_number=sequence_number,
+            duration_ms=duration_ms,
+            data=data,
+            format=self.format,
+            is_speech=is_speech,
         )
 
         success = self.buffer.add_chunk(chunk)
@@ -283,7 +335,10 @@ class AudioStream(BaseModel):
             self.total_bytes += len(data)
 
             # Auto-transition to streaming state
-            if self.state == StreamState.BUFFERING and self.buffer.get_fill_level() > 0.5:
+            if (
+                self.state == StreamState.BUFFERING
+                and self.buffer.get_fill_level() > 0.5
+            ):
                 self.state = StreamState.STREAMING
 
         return success
@@ -325,12 +380,21 @@ class AudioStream(BaseModel):
 
         if self.started_at:
             if self.ended_at:
-                stats["duration_seconds"] = (self.ended_at - self.started_at).total_seconds()
+                stats["duration_seconds"] = (
+                    self.ended_at - self.started_at
+                ).total_seconds()
             else:
-                stats["duration_seconds"] = (datetime.now() - self.started_at).total_seconds()
+                stats["duration_seconds"] = (
+                    datetime.now() - self.started_at
+                ).total_seconds()
 
             stats["average_bitrate_kbps"] = round(
-                (self.total_bytes * 8 / stats["duration_seconds"] / 1000) if stats["duration_seconds"] > 0 else 0, 2
+                (
+                    (self.total_bytes * 8 / stats["duration_seconds"] / 1000)
+                    if stats["duration_seconds"] > 0
+                    else 0
+                ),
+                2,
             )
 
         if self.metrics.latency_ms:
@@ -375,7 +439,9 @@ class AudioStream(BaseModel):
             "quality": self.quality.value,
             "text": self.text,
             "transcript": self.transcript.dict() if self.transcript else None,
-            "voice_settings": self.voice_settings.dict() if self.voice_settings else None,
+            "voice_settings": (
+                self.voice_settings.dict() if self.voice_settings else None
+            ),
             "metrics": self.metrics.dict(),
             "statistics": self.get_statistics(),
             "quality_score": self.calculate_quality_score(),
@@ -388,7 +454,12 @@ class AudioStream(BaseModel):
 
     def generate_stream_key(self) -> str:
         """Generate unique stream key for caching/routing"""
-        key_parts = [self.session_id, self.direction.value, self.format.value, str(self.metrics.sample_rate)]
+        key_parts = [
+            self.session_id,
+            self.direction.value,
+            self.format.value,
+            str(self.metrics.sample_rate),
+        ]
 
         if self.voice_settings:
             key_parts.append(self.voice_settings.voice_id)
@@ -410,7 +481,9 @@ class AudioStream(BaseModel):
 # Helper functions for audio processing
 
 
-def calculate_audio_metrics(audio_data: np.ndarray, sample_rate: int) -> Dict[str, float]:
+def calculate_audio_metrics(
+    audio_data: np.ndarray, sample_rate: int
+) -> Dict[str, float]:
     """Calculate audio metrics from raw data"""
     # RMS level
     rms = np.sqrt(np.mean(audio_data**2))
@@ -420,7 +493,9 @@ def calculate_audio_metrics(audio_data: np.ndarray, sample_rate: int) -> Dict[st
 
     # Simple SNR estimation (would need noise profile for accurate SNR)
     signal_power = np.mean(audio_data**2)
-    noise_power = np.mean(audio_data[: int(0.1 * len(audio_data))] ** 2)  # First 10% as "noise"
+    noise_power = np.mean(
+        audio_data[: int(0.1 * len(audio_data))] ** 2
+    )  # First 10% as "noise"
 
     if noise_power > 0:
         snr_db = 10 * np.log10(signal_power / noise_power)

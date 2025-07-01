@@ -37,7 +37,8 @@ import spacy
 from sqlalchemy import JSON, Boolean, Column, DateTime, Float, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
-from src.application.services.parent_dashboard_service import ParentDashboardService
+from src.application.services.parent_dashboard_service import \
+    ParentDashboardService
 from src.core.domain.entities.conversation import Conversation, Message
 from src.infrastructure.config import get_config
 from src.infrastructure.security.encryption import EncryptionService

@@ -8,17 +8,10 @@ cloud dependency.
 AI Team Implementation - Task 10
 """
 
-from .edge_ai_manager import (
-    EdgeAIManager,
-    EdgeAudioFeatures,
-    EdgeEmotionResult,
-    EdgeModelConfig,
-    EdgeProcessingMode,
-    EdgeProcessingResult,
-    EdgeSafetyResult,
-    SafetyLevel,
-    WakeWordModel,
-)
+from .edge_ai_manager import (EdgeAIManager, EdgeAudioFeatures,
+                              EdgeEmotionResult, EdgeModelConfig,
+                              EdgeProcessingMode, EdgeProcessingResult,
+                              EdgeSafetyResult, SafetyLevel, WakeWordModel)
 
 __all__ = [
     "EdgeAIManager",

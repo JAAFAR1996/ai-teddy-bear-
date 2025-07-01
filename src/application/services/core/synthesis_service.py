@@ -30,7 +30,8 @@ try:
     try:
     from elevenlabs import ElevenLabs, Voice, VoiceSettings, generate, stream
 except ImportError:
-    from src.infrastructure.external_services.mock.elevenlabs import ElevenLabs, Voice, VoiceSettings, generate, stream
+    from src.infrastructure.external_services.mock.elevenlabs import (
+        ElevenLabs, Voice, VoiceSettings, generate, stream)
 except ImportError:
     ElevenLabs = Voice = VoiceSettings = stream = generate = None
 from openai import AsyncOpenAI

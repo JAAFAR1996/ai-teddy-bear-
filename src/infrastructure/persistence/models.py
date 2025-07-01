@@ -14,21 +14,9 @@ import uuid
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import (
-    Boolean,
-    CheckConstraint,
-    Column,
-    Date,
-    DateTime,
-    Float,
-    ForeignKey,
-    Index,
-    Integer,
-    String,
-    Table,
-    Text,
-    UniqueConstraint,
-)
+from sqlalchemy import (Boolean, CheckConstraint, Column, Date, DateTime,
+                        Float, ForeignKey, Index, Integer, String, Table, Text,
+                        UniqueConstraint)
 from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.event import listens_for
 from sqlalchemy.ext.declarative import declarative_base
@@ -43,7 +31,9 @@ class TimestampMixin:
     """Mixin to add created_at and updated_at timestamps"""
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
 
 
 class UUIDMixin:
@@ -93,8 +83,12 @@ class Child(Base, UUIDMixin, TimestampMixin):
 
     # Profile & Preferences
     personality_traits = Column(JSON, default=list)  # ['curious', 'shy', 'energetic']
-    learning_preferences = Column(JSON, default=dict)  # {'visual': 0.8, 'auditory': 0.6}
-    communication_style = Column(String(50), default="friendly")  # 'formal', 'casual', 'playful'
+    learning_preferences = Column(
+        JSON, default=dict
+    )  # {'visual': 0.8, 'auditory': 0.6}
+    communication_style = Column(
+        String(50), default="friendly"
+    )  # 'formal', 'casual', 'playful'
 
     # Time & Interaction Management
     max_daily_interaction_time = Column(Integer, default=3600)  # seconds
@@ -135,8 +129,12 @@ class Child(Base, UUIDMixin, TimestampMixin):
 
     # Relationships
     parent = relationship("Parent", back_populates="children")
-    conversations = relationship("Conversation", back_populates="child", cascade="all, delete-orphan")
-    interests = relationship("Interest", secondary=child_interests_table, back_populates="children")
+    conversations = relationship(
+        "Conversation", back_populates="child", cascade="all, delete-orphan"
+    )
+    interests = relationship(
+        "Interest", secondary=child_interests_table, back_populates="children"
+    )
     learning_sessions = relationship("LearningSession", back_populates="child")
     emotion_profiles = relationship("EmotionProfile", back_populates="child")
 
@@ -150,7 +148,9 @@ class Child(Base, UUIDMixin, TimestampMixin):
     @validates("max_daily_interaction_time")
     def validate_interaction_time(self, key, time) -> Any:
         if time < 300 or time > 14400:  # 5 minutes to 4 hours
-            raise ValueError("Daily interaction time must be between 5 minutes and 4 hours")
+            raise ValueError(
+                "Daily interaction time must be between 5 minutes and 4 hours"
+            )
         return time
 
     # Hybrid properties for calculated fields
@@ -179,7 +179,9 @@ class Child(Base, UUIDMixin, TimestampMixin):
         Index("idx_child_language", "language_preference"),
         Index("idx_child_last_interaction", "last_interaction"),
         CheckConstraint("age >= 3 AND age <= 18", name="check_age_range"),
-        CheckConstraint("max_daily_interaction_time >= 300", name="check_min_interaction_time"),
+        CheckConstraint(
+            "max_daily_interaction_time >= 300", name="check_min_interaction_time"
+        ),
     )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -188,7 +190,9 @@ class Child(Base, UUIDMixin, TimestampMixin):
             "id": self.id,
             "name": self.name,
             "age": self.age,
-            "date_of_birth": self.date_of_birth.isoformat() if self.date_of_birth else None,
+            "date_of_birth": (
+                self.date_of_birth.isoformat() if self.date_of_birth else None
+            ),
             "gender": self.gender,
             "personality_traits": self.personality_traits,
             "learning_preferences": self.learning_preferences,
@@ -248,7 +252,9 @@ class Conversation(Base, UUIDMixin, TimestampMixin):
     duration_seconds = Column(Integer, default=0)
 
     # Classification
-    interaction_type = Column(String(50), default="general")  # 'educational', 'play', 'emotional_support'
+    interaction_type = Column(
+        String(50), default="general"
+    )  # 'educational', 'play', 'emotional_support'
     topics = Column(JSON, default=list)
     primary_language = Column(String(10), default="en")
 
@@ -289,8 +295,12 @@ class Conversation(Base, UUIDMixin, TimestampMixin):
     # Relationships
     child = relationship("Child", back_populates="conversations")
     parent = relationship("Parent")
-    messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
-    emotional_states = relationship("EmotionalState", back_populates="conversation", cascade="all, delete-orphan")
+    messages = relationship(
+        "Message", back_populates="conversation", cascade="all, delete-orphan"
+    )
+    emotional_states = relationship(
+        "EmotionalState", back_populates="conversation", cascade="all, delete-orphan"
+    )
 
     # Hybrid properties
     @hybrid_property
@@ -321,8 +331,12 @@ class Conversation(Base, UUIDMixin, TimestampMixin):
         Index("idx_conversation_archived", "archived"),
         Index("idx_conversation_parent_visible", "parent_visible"),
         Index("idx_conversation_safety_score", "safety_score"),
-        CheckConstraint("quality_score >= 0.0 AND quality_score <= 1.0", name="check_quality_score"),
-        CheckConstraint("safety_score >= 0.0 AND safety_score <= 1.0", name="check_safety_score"),
+        CheckConstraint(
+            "quality_score >= 0.0 AND quality_score <= 1.0", name="check_quality_score"
+        ),
+        CheckConstraint(
+            "safety_score >= 0.0 AND safety_score <= 1.0", name="check_safety_score"
+        ),
     )
 
 
@@ -368,7 +382,9 @@ class Message(Base, UUIDMixin, TimestampMixin):
         Index("idx_message_timestamp", "timestamp"),
         Index("idx_message_sequence", "conversation_id", "sequence_number"),
         Index("idx_message_flagged", "is_flagged"),
-        UniqueConstraint("conversation_id", "sequence_number", name="uq_conversation_sequence"),
+        UniqueConstraint(
+            "conversation_id", "sequence_number", name="uq_conversation_sequence"
+        ),
     )
 
 
@@ -384,7 +400,9 @@ class EmotionalState(Base, UUIDMixin, TimestampMixin):
     confidence = Column(Float, default=0.0)  # 0.0 to 1.0
 
     # Secondary emotions
-    secondary_emotions = Column(JSON, default=list)  # [{'emotion': 'happy', 'confidence': 0.3}]
+    secondary_emotions = Column(
+        JSON, default=list
+    )  # [{'emotion': 'happy', 'confidence': 0.3}]
 
     # Emotion dimensions
     arousal_level = Column(Float, default=0.0)  # -1.0 (calm) to 1.0 (excited)
@@ -463,7 +481,9 @@ class EmotionProfile(Base, UUIDMixin, TimestampMixin):
     profile_type = Column(String(20), default="daily")  # 'daily', 'weekly', 'monthly'
 
     # Dominant emotions
-    dominant_emotions = Column(JSON, default=list)  # [{'emotion': 'happy', 'percentage': 65}]
+    dominant_emotions = Column(
+        JSON, default=list
+    )  # [{'emotion': 'happy', 'percentage': 65}]
 
     # Emotional patterns
     emotional_stability = Column(Float, default=0.0)  # 0.0 to 1.0
@@ -487,12 +507,16 @@ class EmotionProfile(Base, UUIDMixin, TimestampMixin):
         Index("idx_emotion_profile_child", "child_id"),
         Index("idx_emotion_profile_date", "profile_date"),
         Index("idx_emotion_profile_type", "profile_type"),
-        UniqueConstraint("child_id", "profile_date", "profile_type", name="uq_child_profile_date"),
+        UniqueConstraint(
+            "child_id", "profile_date", "profile_type", name="uq_child_profile_date"
+        ),
     )
 
 
 # Relationship setup for many-to-many
-Interest.children = relationship("Child", secondary=child_interests_table, back_populates="interests")
+Interest.children = relationship(
+    "Child", secondary=child_interests_table, back_populates="interests"
+)
 
 
 # Event listeners for automatic updates

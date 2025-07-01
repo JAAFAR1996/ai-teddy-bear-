@@ -32,23 +32,8 @@ from gtts import gTTS
 
 try:
     import tkinter as tk
-    from tkinter import (
-        BOTH,
-        END,
-        RIGHT,
-        VERTICAL,
-        Button,
-        Frame,
-        Label,
-        Scrollbar,
-        StringVar,
-        Text,
-        Tk,
-        X,
-        Y,
-        messagebox,
-        ttk,
-    )
+    from tkinter import (BOTH, END, RIGHT, VERTICAL, Button, Frame, Label,
+                         Scrollbar, StringVar, Text, Tk, X, Y, messagebox, ttk)
 except Exception as e:
     logger.error(f"Error: {e}")"❌ Tkinter not available")
     sys.exit(1)

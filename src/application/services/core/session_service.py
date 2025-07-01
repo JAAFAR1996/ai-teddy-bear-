@@ -11,14 +11,20 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from src.domain.parentdashboard.models.analytics_models import ConversationLog
-from src.domain.parentdashboard.services.access_control_service import AccessControlService
-from src.domain.parentdashboard.services.content_analysis_service import ContentAnalysisService
+from src.domain.parentdashboard.services.access_control_service import \
+    AccessControlService
+from src.domain.parentdashboard.services.content_analysis_service import \
+    ContentAnalysisService
 
 
 class DashboardSessionService:
     """Application service for session management"""
 
-    def __init__(self, content_service: ContentAnalysisService, access_service: AccessControlService):
+    def __init__(
+        self,
+        content_service: ContentAnalysisService,
+        access_service: AccessControlService,
+    ):
         self.content_service = content_service
         self.access_service = access_service
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -27,7 +33,9 @@ class DashboardSessionService:
         self.active_sessions: Dict[str, Dict] = {}
         self.usage_tracker: Dict[str, List[Dict]] = defaultdict(list)
 
-    async def start_session(self, child_id: str, session_id: Optional[str] = None) -> Dict[str, Any]:
+    async def start_session(
+        self, child_id: str, session_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Start a new conversation session"""
 
         try:
@@ -47,14 +55,22 @@ class DashboardSessionService:
 
             self.logger.info(f"Started session {session_id} for child {child_id}")
 
-            return {"session_id": session_id, "started_at": session_data["started_at"].isoformat(), "status": "active"}
+            return {
+                "session_id": session_id,
+                "started_at": session_data["started_at"].isoformat(),
+                "status": "active",
+            }
 
         except Exception as e:
             self.logger.error(f"Error starting session: {e}")
             return {"error": str(e)}
 
     async def log_interaction(
-        self, session_id: str, child_message: str, assistant_message: str, audio_url: Optional[str] = None
+        self,
+        session_id: str,
+        child_message: str,
+        assistant_message: str,
+        audio_url: Optional[str] = None,
     ) -> bool:
         """Log a conversation interaction"""
 
@@ -84,7 +100,11 @@ class DashboardSessionService:
 
             # Update usage tracker
             self.usage_tracker[session["child_id"]].append(
-                {"timestamp": timestamp, "session_id": session_id, "duration": 1}  # Will be updated on session end
+                {
+                    "timestamp": timestamp,
+                    "session_id": session_id,
+                    "duration": 1,
+                }  # Will be updated on session end
             )
 
             return True
@@ -133,7 +153,9 @@ class DashboardSessionService:
             # Remove from active sessions
             del self.active_sessions[session_id]
 
-            self.logger.info(f"Ended session {session_id}, duration: {duration_seconds}s")
+            self.logger.info(
+                f"Ended session {session_id}, duration: {duration_seconds}s"
+            )
 
             return conversation_log
 
@@ -141,7 +163,9 @@ class DashboardSessionService:
             self.logger.error(f"Error ending session: {e}")
             return None
 
-    async def get_active_sessions(self, child_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def get_active_sessions(
+        self, child_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """Get currently active sessions"""
 
         active = []
@@ -184,16 +208,27 @@ class DashboardSessionService:
             "last_activity": session["last_activity"].isoformat(),
         }
 
-    async def get_usage_stats(self, child_id: str, period_hours: int = 24) -> Dict[str, Any]:
+    async def get_usage_stats(
+        self, child_id: str, period_hours: int = 24
+    ) -> Dict[str, Any]:
         """Get usage statistics for a child"""
 
         cutoff_time = datetime.now() - timedelta(hours=period_hours)
 
         # Filter recent usage
-        recent_usage = [entry for entry in self.usage_tracker[child_id] if entry["timestamp"] >= cutoff_time]
+        recent_usage = [
+            entry
+            for entry in self.usage_tracker[child_id]
+            if entry["timestamp"] >= cutoff_time
+        ]
 
         if not recent_usage:
-            return {"total_sessions": 0, "total_minutes": 0, "average_session_minutes": 0, "period_hours": period_hours}
+            return {
+                "total_sessions": 0,
+                "total_minutes": 0,
+                "average_session_minutes": 0,
+                "period_hours": period_hours,
+            }
 
         total_duration = sum(entry["duration"] for entry in recent_usage)
         unique_sessions = len(set(entry["session_id"] for entry in recent_usage))
@@ -201,7 +236,9 @@ class DashboardSessionService:
         return {
             "total_sessions": unique_sessions,
             "total_minutes": total_duration / 60,
-            "average_session_minutes": (total_duration / unique_sessions / 60) if unique_sessions > 0 else 0,
+            "average_session_minutes": (
+                (total_duration / unique_sessions / 60) if unique_sessions > 0 else 0
+            ),
             "period_hours": period_hours,
             "sessions": recent_usage,
         }

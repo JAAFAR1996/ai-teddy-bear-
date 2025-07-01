@@ -120,7 +120,9 @@ class CacheService:
                 self.cache = RedisCache(redis_url)
                 self.cache_type = "redis"
             except Exception as e:
-                self.logger.warning(f"Redis unavailable, falling back to in-memory cache: {e}")
+                self.logger.warning(
+                    f"Redis unavailable, falling back to in-memory cache: {e}"
+                )
                 self.cache = InMemoryCache()
                 self.cache_type = "memory"
         else:
@@ -137,7 +139,9 @@ class CacheService:
         """Generate cache key for dashboard data"""
         return f"dashboard:{parent_id}"
 
-    def cache_analytics(self, child_id: str, period_days: int, analytics_data: dict, ttl: int = 300) -> None:
+    def cache_analytics(
+        self, child_id: str, period_days: int, analytics_data: dict, ttl: int = 300
+    ) -> None:
         """Cache analytics data for 5 minutes by default"""
         key = self.get_analytics_cache_key(child_id, period_days)
         self.cache.set(key, str(analytics_data), ttl)

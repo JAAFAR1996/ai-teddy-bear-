@@ -206,7 +206,9 @@ class ChildSearchCriteria:
         # Age range
         if self.filters.age_range:
             conditions.append("age BETWEEN ? AND ?")
-            params.extend([self.filters.age_range.min_age, self.filters.age_range.max_age])
+            params.extend(
+                [self.filters.age_range.min_age, self.filters.age_range.max_age]
+            )
 
         # Languages
         if self.filters.languages:

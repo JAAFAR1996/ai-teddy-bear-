@@ -33,12 +33,16 @@ logger = logging.getLogger(__name__)
 class IVoiceService:
     """Voice Service interface (Port)"""
 
-    async def transcribe_audio(self, audio_data: str, language: str = "Arabic") -> Optional[str]:
+    async def transcribe_audio(
+        self, audio_data: str, language: str = "Arabic"
+    ) -> Optional[str]:
         """Transcribe audio to text"""
         # This is an interface method - will be implemented by concrete classes
         pass
 
-    async def synthesize_speech(self, text: str, emotion: str = "neutral", language: str = "Arabic") -> str:
+    async def synthesize_speech(
+        self, text: str, emotion: str = "neutral", language: str = "Arabic"
+    ) -> str:
         """Synthesize text to speech"""
         # This is an interface method - will be implemented by concrete classes
         pass
@@ -126,7 +130,9 @@ class MultiProviderVoiceService(IVoiceService):
         """Initialize ElevenLabs client"""
         try:
             if self.settings.elevenlabs_api_key:
-                self.elevenlabs_client = AsyncElevenLabs(api_key=self.settings.elevenlabs_api_key)
+                self.elevenlabs_client = AsyncElevenLabs(
+                    api_key=self.settings.elevenlabs_api_key
+                )
                 logger.info("✅ ElevenLabs initialized")
             else:
                 self.elevenlabs_client = None
@@ -139,7 +145,8 @@ class MultiProviderVoiceService(IVoiceService):
         try:
             if self.settings.azure_speech_key and self.settings.azure_speech_region:
                 self.azure_speech_config = speechsdk.SpeechConfig(
-                    subscription=self.settings.azure_speech_key, region=self.settings.azure_speech_region
+                    subscription=self.settings.azure_speech_key,
+                    region=self.settings.azure_speech_region,
                 )
                 logger.info("✅ Azure Speech initialized")
             else:
@@ -148,7 +155,9 @@ class MultiProviderVoiceService(IVoiceService):
             logger.error(f"Failed to initialize Azure Speech: {str(e)}")
             self.azure_speech_config = None
 
-    async def transcribe_audio(self, audio_data: str, language: str = "Arabic") -> Optional[str]:
+    async def transcribe_audio(
+        self, audio_data: str, language: str = "Arabic"
+    ) -> Optional[str]:
         """Transcribe audio with fallback providers"""
         start_time = asyncio.get_event_loop().time()
 
@@ -174,11 +183,15 @@ class MultiProviderVoiceService(IVoiceService):
 
                 # 1. Try Whisper (best quality)
                 if self.whisper_model and not transcription:
-                    transcription = await self._transcribe_with_whisper(temp_wav, language)
+                    transcription = await self._transcribe_with_whisper(
+                        temp_wav, language
+                    )
 
                 # 2. Try Azure (good quality)
                 if self.azure_speech_config and not transcription:
-                    transcription = await self._transcribe_with_azure(temp_wav, language)
+                    transcription = await self._transcribe_with_azure(
+                        temp_wav, language
+                    )
 
                 # 3. Fallback to basic recognition
                 if not transcription:
@@ -191,7 +204,9 @@ class MultiProviderVoiceService(IVoiceService):
 
                     # Record metrics
                     processing_time = asyncio.get_event_loop().time() - start_time
-                    await metrics_collector.record_metric("voice_transcription_time", processing_time)
+                    await metrics_collector.record_metric(
+                        "voice_transcription_time", processing_time
+                    )
 
                 return transcription
 
@@ -203,7 +218,9 @@ class MultiProviderVoiceService(IVoiceService):
             logger.error(f"Transcription error: {str(e)}", exc_info=True)
             return None
 
-    async def _transcribe_with_whisper(self, audio_path: str, language: str) -> Optional[str]:
+    async def _transcribe_with_whisper(
+        self, audio_path: str, language: str
+    ) -> Optional[str]:
         """Transcribe using Whisper in executor"""
         try:
             loop = asyncio.get_event_loop()
@@ -214,7 +231,9 @@ class MultiProviderVoiceService(IVoiceService):
             # Run Whisper in executor to avoid blocking
             result = await loop.run_in_executor(
                 None,
-                lambda: self.whisper_model.transcribe(audio_path, language=whisper_lang, task="transcribe", fp16=False),
+                lambda: self.whisper_model.transcribe(
+                    audio_path, language=whisper_lang, task="transcribe", fp16=False
+                ),
             )
 
             return result.get("text", "").strip()
@@ -223,7 +242,9 @@ class MultiProviderVoiceService(IVoiceService):
             logger.error(f"Whisper transcription failed: {str(e)}")
             return None
 
-    async def _transcribe_with_azure(self, audio_path: str, language: str) -> Optional[str]:
+    async def _transcribe_with_azure(
+        self, audio_path: str, language: str
+    ) -> Optional[str]:
         """Transcribe using Azure Speech Services"""
         try:
             # Configure language
@@ -232,7 +253,9 @@ class MultiProviderVoiceService(IVoiceService):
 
             # Create recognizer
             audio_config = speechsdk.AudioConfig(filename=audio_path)
-            recognizer = speechsdk.SpeechRecognizer(speech_config=self.azure_speech_config, audio_config=audio_config)
+            recognizer = speechsdk.SpeechRecognizer(
+                speech_config=self.azure_speech_config, audio_config=audio_config
+            )
 
             # Async recognition
             future = asyncio.Future()
@@ -256,7 +279,9 @@ class MultiProviderVoiceService(IVoiceService):
             logger.error(f"Azure transcription failed: {str(e)}")
             return None
 
-    async def _transcribe_fallback(self, audio_path: str, language: str) -> Optional[str]:
+    async def _transcribe_fallback(
+        self, audio_path: str, language: str
+    ) -> Optional[str]:
         """Fallback transcription using speech_recognition"""
         try:
             import speech_recognition as sr
@@ -281,7 +306,9 @@ class MultiProviderVoiceService(IVoiceService):
             logger.error(f"Fallback transcription failed: {str(e)}")
             return None
 
-    async def synthesize_speech(self, text: str, emotion: str = "neutral", language: str = "Arabic") -> str:
+    async def synthesize_speech(
+        self, text: str, emotion: str = "neutral", language: str = "Arabic"
+    ) -> str:
         """Synthesize speech with emotion support"""
         try:
             # Check cache
@@ -299,7 +326,9 @@ class MultiProviderVoiceService(IVoiceService):
 
             # 2. Try Azure (good quality)
             if self.azure_speech_config and not audio_base64:
-                audio_base64 = await self._synthesize_with_azure(text, emotion, language)
+                audio_base64 = await self._synthesize_with_azure(
+                    text, emotion, language
+                )
 
             # 3. Fallback to gTTS
             if not audio_base64:
@@ -315,7 +344,9 @@ class MultiProviderVoiceService(IVoiceService):
             logger.error(f"Speech synthesis error: {str(e)}", exc_info=True)
             return ""
 
-    async def _synthesize_with_elevenlabs(self, text: str, emotion: str) -> Optional[str]:
+    async def _synthesize_with_elevenlabs(
+        self, text: str, emotion: str
+    ) -> Optional[str]:
         """Synthesize using ElevenLabs with emotion"""
         try:
             # Map emotion to voice settings
@@ -323,7 +354,9 @@ class MultiProviderVoiceService(IVoiceService):
 
             # Generate audio
             audio_bytes = await self.elevenlabs_client.generate(
-                text=text, voice="Rachel", voice_settings=voice_settings  # Or configured voice
+                text=text,
+                voice="Rachel",
+                voice_settings=voice_settings,  # Or configured voice
             )
 
             # Convert to base64
@@ -333,24 +366,33 @@ class MultiProviderVoiceService(IVoiceService):
             logger.error(f"ElevenLabs synthesis failed: {str(e)}")
             return None
 
-    async def _synthesize_with_azure(self, text: str, emotion: str, language: str) -> Optional[str]:
+    async def _synthesize_with_azure(
+        self, text: str, emotion: str, language: str
+    ) -> Optional[str]:
         """Synthesize using Azure with SSML for emotion"""
         try:
             # Configure voice
-            voice_name = "ar-SA-ZariyahNeural" if language == "Arabic" else "en-US-JennyNeural"
+            voice_name = (
+                "ar-SA-ZariyahNeural" if language == "Arabic" else "en-US-JennyNeural"
+            )
 
             # Build SSML with emotion
             ssml = self._build_azure_ssml(text, emotion, voice_name)
 
             # Create synthesizer
             audio_config = speechsdk.audio.AudioOutputConfig(use_default_speaker=False)
-            synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.azure_speech_config, audio_config=audio_config)
+            synthesizer = speechsdk.SpeechSynthesizer(
+                speech_config=self.azure_speech_config, audio_config=audio_config
+            )
 
             # Async synthesis
             future = asyncio.Future()
 
             def handle_result(evt) -> Any:
-                if evt.result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+                if (
+                    evt.result.reason
+                    == speechsdk.ResultReason.SynthesizingAudioCompleted
+                ):
                     audio_data = evt.result.audio_data
                     future.set_result(base64.b64encode(audio_data).decode("utf-8"))
                 else:
@@ -444,7 +486,9 @@ class MultiProviderVoiceService(IVoiceService):
         for path in file_paths:
             if path and os.path.exists(path):
                 try:
-                    await asyncio.get_event_loop().run_in_executor(None, os.unlink, path)
+                    await asyncio.get_event_loop().run_in_executor(
+                        None, os.unlink, path
+                    )
                 except Exception as e:
                     logger.warning(f"Failed to delete temp file {path}: {e}")
 

@@ -8,4 +8,9 @@ from .elevenlabs_client import ElevenLabsClient
 from .openai_speech_client import OpenAISpeechClient
 from .whisper_client import WhisperClient
 
-__all__ = ["ElevenLabsClient", "AzureSpeechClient", "WhisperClient", "OpenAISpeechClient"]
+__all__ = [
+    "ElevenLabsClient",
+    "AzureSpeechClient",
+    "WhisperClient",
+    "OpenAISpeechClient",
+]

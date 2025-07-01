@@ -188,7 +188,9 @@ class AudioIO:
             # Check file size (max 100MB for safety)
             max_size = 100 * 1024 * 1024  # 100MB
             if file_stats.st_size > max_size:
-                raise AudioValidationError(f"Audio file too large: {file_stats.st_size} bytes")
+                raise AudioValidationError(
+                    f"Audio file too large: {file_stats.st_size} bytes"
+                )
 
             # Try to read audio file
             try:
@@ -206,10 +208,14 @@ class AudioIO:
 
                     # Validate audio constraints
                     if metadata.duration > 300:  # 5 minutes max
-                        raise AudioValidationError("Audio file too long (max 5 minutes)")
+                        raise AudioValidationError(
+                            "Audio file too long (max 5 minutes)"
+                        )
 
                     if metadata.sample_rate < 8000 or metadata.sample_rate > 48000:
-                        raise AudioValidationError(f"Unsupported sample rate: {metadata.sample_rate}")
+                        raise AudioValidationError(
+                            f"Unsupported sample rate: {metadata.sample_rate}"
+                        )
 
                     return metadata
 
@@ -257,7 +263,12 @@ class AudioIO:
 
             # Determine output format and parameters
             if format == AudioFormat.WAV:
-                sf.write(filename, processed_audio, quality.value["sample_rate"], subtype="PCM_16")
+                sf.write(
+                    filename,
+                    processed_audio,
+                    quality.value["sample_rate"],
+                    subtype="PCM_16",
+                )
             else:
                 # Convert using pydub for other formats
                 self._save_with_pydub(processed_audio, filename, quality, format)
@@ -278,7 +289,9 @@ class AudioIO:
             self.logger.error(f"Error saving audio: {e}")
             raise AudioProcessingError(f"Failed to save audio: {e}")
 
-    def _process_audio_data(self, audio_data: np.ndarray, sample_rate: int, quality: AudioQuality) -> np.ndarray:
+    def _process_audio_data(
+        self, audio_data: np.ndarray, sample_rate: int, quality: AudioQuality
+    ) -> np.ndarray:
         """Process audio data according to quality settings."""
         try:
             processed = audio_data.copy()
@@ -290,7 +303,9 @@ class AudioIO:
 
             # Resample if needed
             if sample_rate != target_rate:
-                processed = librosa.resample(processed, orig_sr=sample_rate, target_sr=target_rate)
+                processed = librosa.resample(
+                    processed, orig_sr=sample_rate, target_sr=target_rate
+                )
 
             # Normalize audio
             if self.default_config.normalize_audio:
@@ -313,7 +328,10 @@ class AudioIO:
         try:
             # Use librosa to detect non-silent intervals
             intervals = librosa.effects.split(
-                audio_data, top_db=20, frame_length=2048, hop_length=512  # Threshold for silence detection
+                audio_data,
+                top_db=20,
+                frame_length=2048,
+                hop_length=512,  # Threshold for silence detection
             )
 
             if len(intervals) == 0:
@@ -330,7 +348,13 @@ class AudioIO:
             self.logger.warning(f"Error removing silence: {e}")
             return audio_data
 
-    def _save_with_pydub(self, audio_data: np.ndarray, filename: str, quality: AudioQuality, format: AudioFormat):
+    def _save_with_pydub(
+        self,
+        audio_data: np.ndarray,
+        filename: str,
+        quality: AudioQuality,
+        format: AudioFormat,
+    ):
         """Save audio using pydub for format conversion."""
         try:
             # Convert numpy array to pydub AudioSegment
@@ -348,7 +372,10 @@ class AudioIO:
             audio_segment = compress_dynamic_range(audio_segment)
 
             # Export with format-specific parameters
-            export_params = {"format": format.value, "bitrate": quality.value["bitrate"]}
+            export_params = {
+                "format": format.value,
+                "bitrate": quality.value["bitrate"],
+            }
 
             if format == AudioFormat.MP3:
                 export_params.update({"parameters": ["-q:a", "2"]})
@@ -361,7 +388,10 @@ class AudioIO:
             raise AudioProcessingError(f"Error saving with pydub: {e}")
 
     def load_audio(
-        self, filename: str, target_sample_rate: Optional[int] = None, normalize: bool = True
+        self,
+        filename: str,
+        target_sample_rate: Optional[int] = None,
+        normalize: bool = True,
     ) -> Tuple[np.ndarray, int, AudioMetadata]:
         """
         Load audio data from file with enhanced processing.
@@ -387,7 +417,9 @@ class AudioIO:
 
             # Resample if requested
             if target_sample_rate and target_sample_rate != sample_rate:
-                audio_data = librosa.resample(audio_data, orig_sr=sample_rate, target_sr=target_sample_rate)
+                audio_data = librosa.resample(
+                    audio_data, orig_sr=sample_rate, target_sr=target_sample_rate
+                )
                 sample_rate = target_sample_rate
 
             # Normalize if requested
@@ -409,7 +441,10 @@ class AudioIO:
             raise AudioProcessingError(f"Failed to load audio: {e}")
 
     def create_temp_file(
-        self, prefix: str = "audio_", suffix: str = ".wav", format: AudioFormat = AudioFormat.WAV
+        self,
+        prefix: str = "audio_",
+        suffix: str = ".wav",
+        format: AudioFormat = AudioFormat.WAV,
     ) -> str:
         """
         Create temporary audio file with cleanup tracking.
@@ -510,7 +545,9 @@ class AudioIO:
                         else:
                             self._temp_files.discard(temp_file)
                     except Exception as e:
-                        self.logger.warning(f"Error checking temp file {temp_file}: {e}")
+                        self.logger.warning(
+                            f"Error checking temp file {temp_file}: {e}"
+                        )
 
                 # Clean up any untracked audio files
                 for pattern in ["audio_*.wav", "audio_*.mp3", "*.tmp"]:
@@ -521,7 +558,9 @@ class AudioIO:
                                 file.unlink()
                                 count += 1
                         except Exception as e:
-                            self.logger.warning(f"Error removing untracked file {file}: {e}")
+                            self.logger.warning(
+                                f"Error removing untracked file {file}: {e}"
+                            )
 
                 self.logger.info(f"Cleaned up {count} temporary files")
 
@@ -583,7 +622,9 @@ class AudioIO:
             return None
 
     @contextmanager
-    def temp_audio_file(self, format: AudioFormat = AudioFormat.WAV, cleanup_on_exit: bool = True):
+    def temp_audio_file(
+        self, format: AudioFormat = AudioFormat.WAV, cleanup_on_exit: bool = True
+    ):
         """
         Context manager for temporary audio files.
 
@@ -603,7 +644,11 @@ class AudioIO:
                 self._remove_temp_file(temp_file)
 
     def convert_audio_format(
-        self, input_file: str, output_file: str, target_format: AudioFormat, quality: AudioQuality = None
+        self,
+        input_file: str,
+        output_file: str,
+        target_format: AudioFormat,
+        quality: AudioQuality = None,
     ) -> AudioMetadata:
         """
         Convert audio file to different format.
@@ -622,7 +667,9 @@ class AudioIO:
             audio_data, sample_rate, _ = self.load_audio(input_file)
 
             # Save in new format
-            return self.save_audio(audio_data, output_file, sample_rate, target_format, quality)
+            return self.save_audio(
+                audio_data, output_file, sample_rate, target_format, quality
+            )
 
         except Exception as e:
             self.logger.error(f"Error converting audio format: {e}")
@@ -683,7 +730,9 @@ def cleanup_temp_files(int=24) -> None:
         logging.error(f"Error in cleanup_temp_files: {e}")
 
 
-def get_audio_files(directory: str, include_metadata: bool = False) -> List[Union[str, Dict[str, Any]]]:
+def get_audio_files(
+    directory: str, include_metadata: bool = False
+) -> List[Union[str, Dict[str, Any]]]:
     """
     Get list of audio files in directory with optional metadata.
 
@@ -708,14 +757,20 @@ def get_audio_files(directory: str, include_metadata: bool = False) -> List[Unio
                     try:
                         audio_io = AudioIO()
                         metadata = audio_io.validate_audio_file(str(file_path))
-                        audio_files.append({"filepath": str(file_path), "metadata": metadata})
+                        audio_files.append(
+                            {"filepath": str(file_path), "metadata": metadata}
+                        )
                     except Exception as e:
                         logging.warning(f"Error getting metadata for {file_path}: {e}")
-                        audio_files.append({"filepath": str(file_path), "metadata": None})
+                        audio_files.append(
+                            {"filepath": str(file_path), "metadata": None}
+                        )
                 else:
                     audio_files.append(str(file_path))
 
-        return sorted(audio_files, key=lambda x: x if isinstance(x, str) else x["filepath"])
+        return sorted(
+            audio_files, key=lambda x: x if isinstance(x, str) else x["filepath"]
+        )
 
     except Exception as e:
         logging.error(f"Error getting audio files: {e}")
@@ -827,7 +882,9 @@ def validate_audio_for_children(filename: str) -> Dict[str, Any]:
 
         # Check duration (max 5 minutes for children)
         if metadata.duration > 300:
-            validation_results["issues"].append("Audio too long for children (max 5 minutes)")
+            validation_results["issues"].append(
+                "Audio too long for children (max 5 minutes)"
+            )
 
         # Check file size (reasonable limits)
         if metadata.size_bytes > 50 * 1024 * 1024:  # 50MB
@@ -842,4 +899,8 @@ def validate_audio_for_children(filename: str) -> Dict[str, Any]:
         return validation_results
 
     except Exception as e:
-        return {"is_valid": False, "issues": [f"Validation error: {e}"], "metadata": None}
+        return {
+            "is_valid": False,
+            "issues": [f"Validation error: {e}"],
+            "metadata": None,
+        }

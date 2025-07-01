@@ -79,4 +79,7 @@ class Memory:
 
     def should_consolidate(self) -> bool:
         """Check if memory should be consolidated"""
-        return self.importance.value >= MemoryImportance.MEDIUM.value and self.access_count > 1
+        return (
+            self.importance.value >= MemoryImportance.MEDIUM.value
+            and self.access_count > 1
+        )

@@ -109,7 +109,9 @@ class PerformanceMetrics:
         else:
             # Running average
             old_total = self.average_processing_time * (self.total_recordings - 1)
-            self.average_processing_time = (old_total + new_time) / self.total_recordings
+            self.average_processing_time = (
+                old_total + new_time
+            ) / self.total_recordings
 
     def _update_status(self) -> None:
         """Update system status based on metrics."""

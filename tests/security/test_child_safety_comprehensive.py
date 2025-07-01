@@ -20,11 +20,17 @@ class TestChildSafety:
 
     def test_content_filtering_inappropriate(self):
         """فلترة المحتوى غير المناسب للأطفال"""
-        inappropriate_content = ["violent content", "adult themes", "personal information requests"]
+        inappropriate_content = [
+            "violent content",
+            "adult themes",
+            "personal information requests",
+        ]
 
         for content in inappropriate_content:
             # Test content filtering
-            assert self._is_content_filtered(content), f"Content not filtered: {content}"
+            assert self._is_content_filtered(
+                content
+            ), f"Content not filtered: {content}"
 
     def test_parental_consent_required(self):
         """التأكد من موافقة الوالدين لجميع العمليات"""

@@ -10,16 +10,13 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from src.domain.parentdashboard import (
-    AccessControlService,
-    AnalyticsDomainService,
-    ChildProfile,
-    ContentAnalysisService,
-    ParentalControl,
-    ParentUser,
-)
+from src.domain.parentdashboard import (AccessControlService,
+                                        AnalyticsDomainService, ChildProfile,
+                                        ContentAnalysisService,
+                                        ParentalControl, ParentUser)
 from src.infrastructure.persistence.child_repository import ChildRepository
-from src.infrastructure.persistence.conversation_repository import ConversationRepository
+from src.infrastructure.persistence.conversation_repository import \
+    ConversationRepository
 
 
 class DashboardOrchestrator:
@@ -63,7 +60,12 @@ class DashboardOrchestrator:
         return parent
 
     async def create_child_profile(
-        self, parent_id: str, name: str, age: int, interests: List[str], language: str = "en"
+        self,
+        parent_id: str,
+        name: str,
+        age: int,
+        interests: List[str],
+        language: str = "en",
     ) -> ChildProfile:
         """Create child profile with age-appropriate defaults"""
 
@@ -90,7 +92,9 @@ class DashboardOrchestrator:
         self.logger.info(f"Created child profile for {name}, age {age}")
         return child
 
-    async def update_parental_controls(self, child_id: str, controls_data: Dict[str, Any]) -> bool:
+    async def update_parental_controls(
+        self, child_id: str, controls_data: Dict[str, Any]
+    ) -> bool:
         """Update parental controls with validation"""
 
         try:
@@ -116,7 +120,9 @@ class DashboardOrchestrator:
             self.logger.error(f"Error updating parental controls: {e}")
             return False
 
-    async def get_dashboard_data(self, parent_id: str, include_analytics: bool = True) -> Dict[str, Any]:
+    async def get_dashboard_data(
+        self, parent_id: str, include_analytics: bool = True
+    ) -> Dict[str, Any]:
         """Get comprehensive dashboard data for parent"""
 
         try:
@@ -129,7 +135,10 @@ class DashboardOrchestrator:
             }
 
             # Get parent info (would come from parent repository)
-            dashboard_data["parent_info"] = {"id": parent_id, "timezone": "UTC"}  # Would come from database
+            dashboard_data["parent_info"] = {
+                "id": parent_id,
+                "timezone": "UTC",
+            }  # Would come from database
 
             # Get children for parent
             children = await self.child_repository.get_children_by_parent(parent_id)
@@ -155,7 +164,9 @@ class DashboardOrchestrator:
                 dashboard_data["children"].append(child_data)
 
             # Get summary statistics
-            dashboard_data["summary_stats"] = await self._calculate_summary_stats(children)
+            dashboard_data["summary_stats"] = await self._calculate_summary_stats(
+                children
+            )
 
             return dashboard_data
 
@@ -169,10 +180,15 @@ class DashboardOrchestrator:
         try:
             child = await self.child_repository.get_by_id(child_id)
             if not child or not child.is_active:
-                return {"allowed": False, "reason": "Child profile not found or inactive"}
+                return {
+                    "allowed": False,
+                    "reason": "Child profile not found or inactive",
+                }
 
             # Get parental controls
-            controls = ParentalControl(child_id=child_id, **(child.parental_controls or {}))
+            controls = ParentalControl(
+                child_id=child_id, **(child.parental_controls or {})
+            )
 
             # Check access schedule
             # Note: In real implementation, would get schedules from database
@@ -186,11 +202,17 @@ class DashboardOrchestrator:
             # Check time limits
             # Would calculate actual usage from logs
             usage_stats = self.access_service.calculate_time_usage_stats(
-                controls, daily_minutes_used=0, session_minutes_used=0  # Would calculate from today's logs
+                controls,
+                daily_minutes_used=0,
+                session_minutes_used=0,  # Would calculate from today's logs
             )
 
             if self.access_service.should_block_access_time_limit(usage_stats):
-                return {"allowed": False, "reason": "Time limit exceeded", "usage_stats": usage_stats.__dict__}
+                return {
+                    "allowed": False,
+                    "reason": "Time limit exceeded",
+                    "usage_stats": usage_stats.__dict__,
+                }
 
             return {
                 "allowed": True,
@@ -251,7 +273,9 @@ class DashboardOrchestrator:
         # Would check active sessions, etc.
         return {"is_online": False, "last_activity": None, "current_session_minutes": 0}
 
-    async def _calculate_summary_stats(self, children: List[ChildProfile]) -> Dict[str, Any]:
+    async def _calculate_summary_stats(
+        self, children: List[ChildProfile]
+    ) -> Dict[str, Any]:
         """Calculate summary statistics across all children"""
 
         return {

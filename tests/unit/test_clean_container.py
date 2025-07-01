@@ -12,15 +12,12 @@ import pytest
 from src.application.services.ai_service import IAIService
 from src.application.services.child_service import ChildService
 from src.application.services.voice_service import IVoiceService
-from src.infrastructure.modern_container import (
-    Container,
-    ContainerContext,
-    TestContainer,
-    configure_container,
-    container,
-    initialize_container,
-    shutdown_container,
-)
+from src.infrastructure.modern_container import (Container, ContainerContext,
+                                                 TestContainer,
+                                                 configure_container,
+                                                 container,
+                                                 initialize_container,
+                                                 shutdown_container)
 from src.infrastructure.session_manager import SessionManager
 
 
@@ -33,7 +30,11 @@ def test_container():
 @pytest.mark.asyncio
 async def test_container_configuration():
     """Test container configuration"""
-    config = {"database_url": "sqlite+aiosqlite:///:memory:", "debug": True, "openai_api_key": "test-key"}
+    config = {
+        "database_url": "sqlite+aiosqlite:///:memory:",
+        "debug": True,
+        "openai_api_key": "test-key",
+    }
 
     configure_container(**config)
 
@@ -75,7 +76,11 @@ async def test_factory_providers():
 @pytest.mark.asyncio
 async def test_dependency_injection():
     """Test dependency injection between services"""
-    configure_container(database_url="sqlite+aiosqlite:///:memory:", openai_api_key="test-key", debug=True)
+    configure_container(
+        database_url="sqlite+aiosqlite:///:memory:",
+        openai_api_key="test-key",
+        debug=True,
+    )
 
     # Get a service that depends on other services
     try:
@@ -120,7 +125,11 @@ async def test_container_overrides():
 @pytest.mark.asyncio
 async def test_container_context_manager():
     """Test container context manager"""
-    config = {"database_url": "sqlite+aiosqlite:///:memory:", "debug": True, "openai_api_key": "test-key"}
+    config = {
+        "database_url": "sqlite+aiosqlite:///:memory:",
+        "debug": True,
+        "openai_api_key": "test-key",
+    }
 
     try:
         async with ContainerContext(**config) as ctx_container:
@@ -203,8 +212,14 @@ async def test_configuration_from_env():
         container.config.from_env("TEDDY", delimiter="_")
 
         # Verify configuration
-        assert container.config.provided["database_url"]() == test_env["TEDDY_DATABASE_URL"]
-        assert container.config.provided["openai_api_key"]() == test_env["TEDDY_OPENAI_API_KEY"]
+        assert (
+            container.config.provided["database_url"]()
+            == test_env["TEDDY_DATABASE_URL"]
+        )
+        assert (
+            container.config.provided["openai_api_key"]()
+            == test_env["TEDDY_OPENAI_API_KEY"]
+        )
 
     finally:
         # Restore original environment

@@ -89,7 +89,9 @@ class RBACManager:
             UserRole.ADMIN: set(Permission),  # All permissions
         }
 
-    async def check_permission(self, user_id: str, permission: Permission, resource_id: Optional[str] = None) -> bool:
+    async def check_permission(
+        self, user_id: str, permission: Permission, resource_id: Optional[str] = None
+    ) -> bool:
         """Check if user has specific permission"""
         user = self.users.get(user_id)
         if not user or not user.is_active:

@@ -59,7 +59,9 @@ class ContentAnalysisService:
             "smoking",
         }
 
-    def analyze_conversation_content(self, conversation: ConversationLog, controls: ParentalControl) -> Dict[str, Any]:
+    def analyze_conversation_content(
+        self, conversation: ConversationLog, controls: ParentalControl
+    ) -> Dict[str, Any]:
         """Analyze conversation content for moderation issues"""
 
         analysis = {
@@ -92,7 +94,9 @@ class ContentAnalysisService:
             analysis["requires_parent_attention"] = True
 
         # Check topic violations
-        topic_violations = self._check_topic_violations(conversation.topics_discussed, controls)
+        topic_violations = self._check_topic_violations(
+            conversation.topics_discussed, controls
+        )
         if topic_violations:
             analysis["topic_violations"] = topic_violations
             analysis["alerts_needed"].append(
@@ -104,7 +108,9 @@ class ContentAnalysisService:
             )
 
         # Check sentiment concerns
-        sentiment_issues = self._analyze_sentiment_concerns(conversation.sentiment_scores)
+        sentiment_issues = self._analyze_sentiment_concerns(
+            conversation.sentiment_scores
+        )
         if sentiment_issues:
             analysis["sentiment_concerns"] = sentiment_issues
             analysis["requires_parent_attention"] = True
@@ -165,7 +171,13 @@ class ContentAnalysisService:
         factors["educational"] = 1.0 if conversation.has_educational_content() else 0.5
 
         # Weighted average
-        weights = {"duration": 0.2, "engagement": 0.2, "sentiment": 0.3, "diversity": 0.15, "educational": 0.15}
+        weights = {
+            "duration": 0.2,
+            "engagement": 0.2,
+            "sentiment": 0.3,
+            "diversity": 0.15,
+            "educational": 0.15,
+        }
 
         return sum(factors[k] * weights[k] for k in factors)
 
@@ -178,7 +190,9 @@ class ContentAnalysisService:
 
         # Filter recent conversations
         cutoff_date = datetime.now() - timedelta(days=days_window)
-        recent_conversations = [conv for conv in conversations if conv.timestamp >= cutoff_date]
+        recent_conversations = [
+            conv for conv in conversations if conv.timestamp >= cutoff_date
+        ]
 
         if not recent_conversations:
             return patterns
@@ -262,7 +276,9 @@ class ContentAnalysisService:
 
         return flags
 
-    def _check_topic_violations(self, topics: List[str], controls: ParentalControl) -> List[str]:
+    def _check_topic_violations(
+        self, topics: List[str], controls: ParentalControl
+    ) -> List[str]:
         """Check for topic violations against parental controls"""
 
         violations = []
@@ -272,7 +288,9 @@ class ContentAnalysisService:
 
         return violations
 
-    def _analyze_sentiment_concerns(self, sentiment_scores: Dict[str, float]) -> List[str]:
+    def _analyze_sentiment_concerns(
+        self, sentiment_scores: Dict[str, float]
+    ) -> List[str]:
         """Analyze sentiment for concerning patterns"""
 
         concerns = []
@@ -302,13 +320,19 @@ class ContentAnalysisService:
         early_convs = sorted_convs[:mid_point]
         recent_convs = sorted_convs[mid_point:]
 
-        early_avg = sum(conv.sentiment_scores.get("positive", 0) for conv in early_convs) / len(early_convs)
+        early_avg = sum(
+            conv.sentiment_scores.get("positive", 0) for conv in early_convs
+        ) / len(early_convs)
 
-        recent_avg = sum(conv.sentiment_scores.get("positive", 0) for conv in recent_convs) / len(recent_convs)
+        recent_avg = sum(
+            conv.sentiment_scores.get("positive", 0) for conv in recent_convs
+        ) / len(recent_convs)
 
         return recent_avg < early_avg - 0.2  # Significant decline
 
-    def _detect_repetitive_concerns(self, conversations: List[ConversationLog]) -> List[str]:
+    def _detect_repetitive_concerns(
+        self, conversations: List[ConversationLog]
+    ) -> List[str]:
         """Detect repeatedly discussed concerning topics"""
 
         concerning_topics = {"sad", "scared", "bullying", "alone", "angry"}
@@ -322,12 +346,25 @@ class ContentAnalysisService:
 
         # Return topics mentioned in more than half of conversations
         threshold = len(conversations) // 2
-        return [topic for topic, count in topic_counts.items() if count >= threshold and count >= 2]
+        return [
+            topic
+            for topic, count in topic_counts.items()
+            if count >= threshold and count >= 2
+        ]
 
-    def _detect_isolation_indicators(self, conversations: List[ConversationLog]) -> bool:
+    def _detect_isolation_indicators(
+        self, conversations: List[ConversationLog]
+    ) -> bool:
         """Detect indicators of social isolation"""
 
-        isolation_keywords = {"lonely", "alone", "no friends", "nobody likes me", "by myself", "no one to play with"}
+        isolation_keywords = {
+            "lonely",
+            "alone",
+            "no friends",
+            "nobody likes me",
+            "by myself",
+            "no one to play with",
+        }
 
         isolation_mentions = 0
         for conv in conversations:

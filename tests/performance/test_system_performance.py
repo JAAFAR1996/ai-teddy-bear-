@@ -47,7 +47,10 @@ class TestSystemPerformance(PerformanceTestCase):
         start_time = time.time()
 
         # Create test users
-        users = [self.test_data_builder.create_child(age=random.randint(3, 12)) for _ in range(num_users)]
+        users = [
+            self.test_data_builder.create_child(age=random.randint(3, 12))
+            for _ in range(num_users)
+        ]
 
         # Start performance tracking
         self.start_performance_tracking()
@@ -60,7 +63,9 @@ class TestSystemPerformance(PerformanceTestCase):
                 op_start = time.perf_counter()
 
                 try:
-                    await self.interaction_service.process(child_id=user.id, message=self.faker.sentence())
+                    await self.interaction_service.process(
+                        child_id=user.id, message=self.faker.sentence()
+                    )
 
                     op_duration = (time.perf_counter() - op_start) * 1000
                     operation_times.append(op_duration)
@@ -90,7 +95,9 @@ class TestSystemPerformance(PerformanceTestCase):
         # Assert performance criteria
         assert duration < 30, f"Test took {duration}s, expected < 30s"
         assert error_rate < 0.01, f"Error rate {error_rate*100}% exceeds 1%"
-        assert successful_users >= num_users * 0.99, f"Only {successful_users}/{num_users} users succeeded"
+        assert (
+            successful_users >= num_users * 0.99
+        ), f"Only {successful_users}/{num_users} users succeeded"
 
         # Check system resources
         cpu_percent = psutil.cpu_percent(interval=1)
@@ -178,7 +185,9 @@ class TestSystemPerformance(PerformanceTestCase):
 
             # Process multiple interactions
             for _ in range(10):
-                await self.interaction_service.process(child_id=child.id, message=self.faker.sentence())
+                await self.interaction_service.process(
+                    child_id=child.id, message=self.faker.sentence()
+                )
 
             # Cleanup
             await self.cleanup_service.cleanup_child_session(child.id)
@@ -200,7 +209,9 @@ class TestSystemPerformance(PerformanceTestCase):
         memory_increase = final_memory - initial_memory
 
         # Assert - التحقق من عدم وجود تسريب
-        assert memory_increase < 50, f"Memory leak detected: {memory_increase:.2f}MB increase"
+        assert (
+            memory_increase < 50
+        ), f"Memory leak detected: {memory_increase:.2f}MB increase"
 
         # Check memory stability (no continuous growth)
         if len(memory_samples) > 2:
@@ -209,7 +220,9 @@ class TestSystemPerformance(PerformanceTestCase):
             slope, _ = np.polyfit(x, memory_samples, 1)
 
             # Slope should be near zero (< 0.5 MB per 100 iterations)
-            assert abs(slope) < 0.5, f"Memory growth detected: {slope:.2f}MB per 100 iterations"
+            assert (
+                abs(slope) < 0.5
+            ), f"Memory growth detected: {slope:.2f}MB per 100 iterations"
 
         print(f"\nMemory Leak Test:")
         print(f"- Initial Memory: {initial_memory:.2f}MB")
@@ -233,17 +246,23 @@ class TestSystemPerformance(PerformanceTestCase):
             },
             {
                 "name": "Batch child lookup",
-                "query": lambda: self.data_repository.get_children_batch([c.id for c in children[:10]]),
+                "query": lambda: self.data_repository.get_children_batch(
+                    [c.id for c in children[:10]]
+                ),
                 "expected_ms": 20,
             },
             {
                 "name": "Children by parent",
-                "query": lambda: self.data_repository.get_children_by_parent(children[0].parent_id),
+                "query": lambda: self.data_repository.get_children_by_parent(
+                    children[0].parent_id
+                ),
                 "expected_ms": 15,
             },
             {
                 "name": "Recent interactions",
-                "query": lambda: self.data_repository.get_recent_interactions(children[0].id, limit=50),
+                "query": lambda: self.data_repository.get_recent_interactions(
+                    children[0].id, limit=50
+                ),
                 "expected_ms": 25,
             },
         ]
@@ -268,12 +287,16 @@ class TestSystemPerformance(PerformanceTestCase):
                 avg_latency < test["expected_ms"]
             ), f"{test['name']} avg latency {avg_latency:.2f}ms exceeds {test['expected_ms']}ms"
 
-            results.append({"query": test["name"], "avg_ms": avg_latency, "p95_ms": p95_latency})
+            results.append(
+                {"query": test["name"], "avg_ms": avg_latency, "p95_ms": p95_latency}
+            )
 
         # Print results
         print("\nDatabase Query Performance:")
         for result in results:
-            print(f"- {result['query']}: avg={result['avg_ms']:.2f}ms, p95={result['p95_ms']:.2f}ms")
+            print(
+                f"- {result['query']}: avg={result['avg_ms']:.2f}ms, p95={result['p95_ms']:.2f}ms"
+            )
 
     @pytest.mark.performance
     async def test_api_endpoint_response_times(self):
@@ -286,7 +309,11 @@ class TestSystemPerformance(PerformanceTestCase):
                 "data": {"child_id": "test", "message": "Hello"},
                 "expected_ms": 100,
             },
-            {"endpoint": "/api/v1/children/{child_id}", "method": "GET", "expected_ms": 50},
+            {
+                "endpoint": "/api/v1/children/{child_id}",
+                "method": "GET",
+                "expected_ms": 50,
+            },
             {
                 "endpoint": "/api/v1/safety/check",
                 "method": "POST",
@@ -304,9 +331,13 @@ class TestSystemPerformance(PerformanceTestCase):
 
                 # Simulate API call
                 if test["method"] == "POST":
-                    response = await self.simulate_api_call(test["endpoint"], method="POST", data=test.get("data", {}))
+                    response = await self.simulate_api_call(
+                        test["endpoint"], method="POST", data=test.get("data", {})
+                    )
                 else:
-                    response = await self.simulate_api_call(test["endpoint"], method="GET")
+                    response = await self.simulate_api_call(
+                        test["endpoint"], method="GET"
+                    )
 
                 response_time = (time.perf_counter() - start) * 1000
                 response_times.append(response_time)
@@ -330,7 +361,9 @@ class TestSystemPerformance(PerformanceTestCase):
         """Generate random audio data for testing"""
         return bytes(random.randint(0, 255) for _ in range(size))
 
-    async def simulate_api_call(self, endpoint: str, method: str = "GET", data: Dict = None):
+    async def simulate_api_call(
+        self, endpoint: str, method: str = "GET", data: Dict = None
+    ):
         """Simulate API call for testing"""
         # Simulate network latency
         await asyncio.sleep(random.uniform(0.001, 0.01))

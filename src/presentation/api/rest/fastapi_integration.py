@@ -9,7 +9,8 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import (Depends, FastAPI, HTTPException, WebSocket,
+                     WebSocketDisconnect)
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
@@ -42,7 +43,9 @@ def get_websocket_manager() -> ModernWebSocketManager:
     """Get WebSocket manager instance"""
     global websocket_manager
     if websocket_manager is None:
-        config = WebSocketConfig(heartbeat_interval=30, max_connections=1000, connection_timeout=300)
+        config = WebSocketConfig(
+            heartbeat_interval=30, max_connections=1000, connection_timeout=300
+        )
         websocket_manager = ModernWebSocketManager(config)
     return websocket_manager
 
@@ -52,7 +55,9 @@ def get_audio_streamer() -> ModernAudioStreamer:
     global audio_streamer
     if audio_streamer is None:
         ws_manager = get_websocket_manager()
-        config = AudioStreamConfig(sample_rate=16000, enable_real_time_processing=True, streaming_enabled=True)
+        config = AudioStreamConfig(
+            sample_rate=16000, enable_real_time_processing=True, streaming_enabled=True
+        )
         audio_streamer = ModernAudioStreamer(ws_manager, None, config)
     return audio_streamer
 
@@ -223,12 +228,16 @@ def create_streaming_app() -> FastAPI:
 
     @app.websocket("/ws/audio/{session_id}")
     async def websocket_audio_endpoint(
-        websocket: WebSocket, session_id: str, audio_streamer: ModernAudioStreamer = Depends(get_audio_streamer)
+        websocket: WebSocket,
+        session_id: str,
+        audio_streamer: ModernAudioStreamer = Depends(get_audio_streamer),
     ):
         """Main WebSocket endpoint for audio streaming - replaces TODO placeholder"""
         logger.info(f"🎵 New audio stream connection: {session_id}")
 
-        await audio_streamer.handle_audio_stream(websocket=websocket, session_id=session_id, child=None)
+        await audio_streamer.handle_audio_stream(
+            websocket=websocket, session_id=session_id, child=None
+        )
 
     # ================== REST API ENDPOINTS ==================
 
@@ -268,7 +277,10 @@ def create_streaming_app() -> FastAPI:
         """Health check endpoint"""
         return {
             "status": "healthy",
-            "services": {"websocket_manager": "operational", "audio_streamer": "operational"},
+            "services": {
+                "websocket_manager": "operational",
+                "audio_streamer": "operational",
+            },
             "active_connections": len(ws_manager.connections),
             "active_audio_sessions": len(audio_streamer.sessions),
             "timestamp": datetime.utcnow().isoformat(),

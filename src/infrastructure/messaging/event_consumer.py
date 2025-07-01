@@ -70,7 +70,11 @@ class KafkaEventConsumer:
     - Metrics and monitoring
     """
 
-    def __init__(self, config: Optional[KafkaConsumerConfig] = None, max_concurrent_events: int = 10):
+    def __init__(
+        self,
+        config: Optional[KafkaConsumerConfig] = None,
+        max_concurrent_events: int = 10,
+    ):
         self.config = config or KAFKA_CONFIG[1]  # Consumer config
         self.max_concurrent_events = max_concurrent_events
 
@@ -141,9 +145,13 @@ class KafkaEventConsumer:
 
         # Wait for ongoing processing to complete
         try:
-            await asyncio.wait_for(self._wait_for_processing_completion(), timeout=timeout)
+            await asyncio.wait_for(
+                self._wait_for_processing_completion(), timeout=timeout
+            )
         except asyncio.TimeoutError:
-            logger.warning(f"Timeout waiting for processing completion after {timeout}s")
+            logger.warning(
+                f"Timeout waiting for processing completion after {timeout}s"
+            )
 
         # Close consumer
         if self._consumer:
@@ -164,7 +172,9 @@ class KafkaEventConsumer:
             consumer = KafkaConsumer(
                 *topics,
                 **self.config.to_kafka_config(),
-                value_deserializer=lambda m: json.loads(m.decode("utf-8")) if m else None,
+                value_deserializer=lambda m: (
+                    json.loads(m.decode("utf-8")) if m else None
+                ),
                 key_deserializer=lambda m: m.decode("utf-8") if m else None,
             )
 
@@ -186,7 +196,8 @@ class KafkaEventConsumer:
                     # Poll for messages with timeout
                     loop = asyncio.get_event_loop()
                     message_batch = await loop.run_in_executor(
-                        None, lambda: self._consumer.poll(timeout_ms=1000, max_records=100)
+                        None,
+                        lambda: self._consumer.poll(timeout_ms=1000, max_records=100),
                     )
 
                     if not message_batch:
@@ -196,7 +207,9 @@ class KafkaEventConsumer:
                     for topic_partition, messages in message_batch.items():
                         for message in messages:
                             # Create processing task
-                            task = asyncio.create_task(self._process_message_with_semaphore(message))
+                            task = asyncio.create_task(
+                                self._process_message_with_semaphore(message)
+                            )
                             active_tasks.add(task)
 
                             # Clean up completed tasks
@@ -219,7 +232,9 @@ class KafkaEventConsumer:
         finally:
             # Wait for remaining tasks to complete
             if active_tasks:
-                logger.info(f"Waiting for {len(active_tasks)} active tasks to complete...")
+                logger.info(
+                    f"Waiting for {len(active_tasks)} active tasks to complete..."
+                )
                 await asyncio.gather(*active_tasks, return_exceptions=True)
 
     async def _process_message_with_semaphore(self, message) -> None:
@@ -243,7 +258,11 @@ class KafkaEventConsumer:
                 key=message.key,
                 headers={k: v for k, v in message.headers} if message.headers else {},
                 value=message.value,
-                event_type=message.value.get("event_type", "unknown") if message.value else "unknown",
+                event_type=(
+                    message.value.get("event_type", "unknown")
+                    if message.value
+                    else "unknown"
+                ),
             )
 
             self._metrics["events_consumed"] += 1
@@ -252,7 +271,9 @@ class KafkaEventConsumer:
             handlers = self._event_handlers.get(consumed_event.event_type, [])
 
             if not handlers:
-                logger.warning(f"No handlers registered for event type: {consumed_event.event_type}")
+                logger.warning(
+                    f"No handlers registered for event type: {consumed_event.event_type}"
+                )
                 return
 
             # Process with all handlers
@@ -282,7 +303,9 @@ class KafkaEventConsumer:
             self._metrics["total_processing_time"] += processing_time
 
             # Update offset tracking
-            self._metrics["last_processed_offset"][f"{message.topic}-{message.partition}"] = message.offset
+            self._metrics["last_processed_offset"][
+                f"{message.topic}-{message.partition}"
+            ] = message.offset
 
             logger.debug(
                 f"Processed event {consumed_event.event_type} "
@@ -330,7 +353,10 @@ class KafkaEventConsumer:
         """Determine if offsets should be committed"""
 
         # Commit every 100 processed events or every 30 seconds
-        return self._metrics["events_processed"] % 100 == 0 or (datetime.utcnow().timestamp() % 30) < 1
+        return (
+            self._metrics["events_processed"] % 100 == 0
+            or (datetime.utcnow().timestamp() % 30) < 1
+        )
 
     async def _commit_offsets(self) -> None:
         """Commit current offsets"""
@@ -370,15 +396,23 @@ class KafkaEventConsumer:
     def get_metrics(self) -> Dict[str, Any]:
         """Get consumption metrics"""
 
-        total_events = self._metrics["events_processed"] + self._metrics["events_failed"]
+        total_events = (
+            self._metrics["events_processed"] + self._metrics["events_failed"]
+        )
 
         return {
             "events_consumed": self._metrics["events_consumed"],
             "events_processed": self._metrics["events_processed"],
             "events_failed": self._metrics["events_failed"],
-            "success_rate": (self._metrics["events_processed"] / total_events if total_events > 0 else 0.0),
+            "success_rate": (
+                self._metrics["events_processed"] / total_events
+                if total_events > 0
+                else 0.0
+            ),
             "average_processing_time": (
-                self._metrics["total_processing_time"] / total_events if total_events > 0 else 0.0
+                self._metrics["total_processing_time"] / total_events
+                if total_events > 0
+                else 0.0
             ),
             "last_processed_offsets": self._metrics["last_processed_offset"],
             "is_running": self._running,
@@ -407,4 +441,8 @@ class KafkaEventConsumer:
 
         except Exception as e:
             logger.error(f"Health check failed: {e}")
-            return {"status": "unhealthy", "error": str(e), "last_check": datetime.utcnow().isoformat()}
+            return {
+                "status": "unhealthy",
+                "error": str(e),
+                "last_check": datetime.utcnow().isoformat(),
+            }

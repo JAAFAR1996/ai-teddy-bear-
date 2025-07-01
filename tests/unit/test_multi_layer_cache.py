@@ -15,15 +15,8 @@ import pytest
 # Test imports
 try:
     from src.infrastructure.caching_advanced.multi_layer_cache import (
-        CacheConfig,
-        CacheLayer,
-        CacheMetrics,
-        ContentType,
-        L1MemoryCache,
-        L2RedisCache,
-        L3CDNCache,
-        MultiLayerCache,
-    )
+        CacheConfig, CacheLayer, CacheMetrics, ContentType, L1MemoryCache,
+        L2RedisCache, L3CDNCache, MultiLayerCache)
 
     CACHE_AVAILABLE = True
 except ImportError:
@@ -74,7 +67,9 @@ class TestCacheConfig:
 
     def test_custom_config(self):
         """Test custom configuration."""
-        config = CacheConfig(l1_max_size_mb=128, l2_ttl_seconds=7200, compression_threshold_bytes=2048)
+        config = CacheConfig(
+            l1_max_size_mb=128, l2_ttl_seconds=7200, compression_threshold_bytes=2048
+        )
 
         assert config.l1_max_size_mb == 128
         assert config.l2_ttl_seconds == 7200
@@ -93,7 +88,9 @@ class TestL1MemoryCache:
     async def test_basic_operations(self, l1_cache):
         """Test basic cache operations."""
         # Test set and get
-        result = await l1_cache.set("test_key", "test_value", ContentType.AI_RESPONSE, 300)
+        result = await l1_cache.set(
+            "test_key", "test_value", ContentType.AI_RESPONSE, 300
+        )
         assert result is True
 
         value = await l1_cache.get("test_key")
@@ -110,7 +107,9 @@ class TestL1MemoryCache:
     async def test_ttl_expiration(self, l1_cache):
         """Test TTL expiration."""
         # Set with very short TTL
-        await l1_cache.set("expire_key", "expire_value", ContentType.AI_RESPONSE, 1)  # 1 second
+        await l1_cache.set(
+            "expire_key", "expire_value", ContentType.AI_RESPONSE, 1
+        )  # 1 second
 
         # Should be available immediately
         value = await l1_cache.get("expire_key")
@@ -182,13 +181,17 @@ class TestMultiLayerCache:
             return "computed_value"
 
         # First call should compute and cache
-        result = await multi_layer_cache.get_with_fallback("fallback_key", ContentType.AI_RESPONSE, compute_fn)
+        result = await multi_layer_cache.get_with_fallback(
+            "fallback_key", ContentType.AI_RESPONSE, compute_fn
+        )
 
         assert result == "computed_value"
         assert compute_calls == 1
 
         # Second call should use cache
-        result = await multi_layer_cache.get_with_fallback("fallback_key", ContentType.AI_RESPONSE, compute_fn)
+        result = await multi_layer_cache.get_with_fallback(
+            "fallback_key", ContentType.AI_RESPONSE, compute_fn
+        )
 
         assert result == "computed_value"
         assert compute_calls == 1  # Should not compute again
@@ -196,7 +199,9 @@ class TestMultiLayerCache:
     @pytest.mark.asyncio
     async def test_multi_layer_set(self, multi_layer_cache):
         """Test setting values across multiple layers."""
-        result = await multi_layer_cache.set_multi_layer("multi_key", "multi_value", ContentType.AI_RESPONSE)
+        result = await multi_layer_cache.set_multi_layer(
+            "multi_key", "multi_value", ContentType.AI_RESPONSE
+        )
 
         assert result is True
 
@@ -209,10 +214,14 @@ class TestMultiLayerCache:
     async def test_cache_invalidation(self, multi_layer_cache):
         """Test cache invalidation."""
         # Set value
-        await multi_layer_cache.set_multi_layer("invalid_key", "invalid_value", ContentType.AI_RESPONSE)
+        await multi_layer_cache.set_multi_layer(
+            "invalid_key", "invalid_value", ContentType.AI_RESPONSE
+        )
 
         # Verify it's cached
-        value = await multi_layer_cache.get_with_fallback("invalid_key", ContentType.AI_RESPONSE)
+        value = await multi_layer_cache.get_with_fallback(
+            "invalid_key", ContentType.AI_RESPONSE
+        )
         assert value == "invalid_value"
 
         # Invalidate
@@ -220,7 +229,9 @@ class TestMultiLayerCache:
         assert result is True
 
         # Should not be in cache anymore
-        value = await multi_layer_cache.get_with_fallback("invalid_key", ContentType.AI_RESPONSE)
+        value = await multi_layer_cache.get_with_fallback(
+            "invalid_key", ContentType.AI_RESPONSE
+        )
         assert value is None
 
     @pytest.mark.asyncio
@@ -245,7 +256,9 @@ class TestMultiLayerCache:
         """Test cache decorator functionality."""
         call_count = 0
 
-        @multi_layer_cache.cached(content_type=ContentType.AI_RESPONSE, key_prefix="test_decorator")
+        @multi_layer_cache.cached(
+            content_type=ContentType.AI_RESPONSE, key_prefix="test_decorator"
+        )
         async def expensive_function(param):
             nonlocal call_count
             call_count += 1
@@ -270,11 +283,17 @@ class TestMultiLayerCache:
     async def test_performance_metrics(self, multi_layer_cache):
         """Test performance metrics collection."""
         # Perform some operations
-        await multi_layer_cache.set_multi_layer("metrics_key", "metrics_value", ContentType.AI_RESPONSE)
+        await multi_layer_cache.set_multi_layer(
+            "metrics_key", "metrics_value", ContentType.AI_RESPONSE
+        )
 
-        await multi_layer_cache.get_with_fallback("metrics_key", ContentType.AI_RESPONSE)
+        await multi_layer_cache.get_with_fallback(
+            "metrics_key", ContentType.AI_RESPONSE
+        )
 
-        await multi_layer_cache.get_with_fallback("nonexistent_key", ContentType.AI_RESPONSE)
+        await multi_layer_cache.get_with_fallback(
+            "nonexistent_key", ContentType.AI_RESPONSE
+        )
 
         # Get metrics
         metrics = multi_layer_cache.get_performance_metrics()
@@ -292,21 +311,31 @@ class TestMultiLayerCache:
     async def test_content_type_strategies(self, multi_layer_cache):
         """Test different content type caching strategies."""
         # Test static assets (should use L3)
-        await multi_layer_cache.set_multi_layer("static_key", "static_content", ContentType.STATIC_ASSETS)
+        await multi_layer_cache.set_multi_layer(
+            "static_key", "static_content", ContentType.STATIC_ASSETS
+        )
 
         # Test user session (should not use L3)
         await multi_layer_cache.set_multi_layer(
-            "session_key", {"user_id": "123", "data": "session_data"}, ContentType.USER_SESSION
+            "session_key",
+            {"user_id": "123", "data": "session_data"},
+            ContentType.USER_SESSION,
         )
 
         # Test model weights (should use L2 and L3, not L1)
-        await multi_layer_cache.set_multi_layer("model_key", {"weights": "large_model_data"}, ContentType.MODEL_WEIGHTS)
+        await multi_layer_cache.set_multi_layer(
+            "model_key", {"weights": "large_model_data"}, ContentType.MODEL_WEIGHTS
+        )
 
         # Verify values are retrievable
-        static_value = await multi_layer_cache.get_with_fallback("static_key", ContentType.STATIC_ASSETS)
+        static_value = await multi_layer_cache.get_with_fallback(
+            "static_key", ContentType.STATIC_ASSETS
+        )
         assert static_value == "static_content"
 
-        session_value = await multi_layer_cache.get_with_fallback("session_key", ContentType.USER_SESSION)
+        session_value = await multi_layer_cache.get_with_fallback(
+            "session_key", ContentType.USER_SESSION
+        )
         assert session_value["user_id"] == "123"
 
 

@@ -6,59 +6,57 @@ Creates complete Domain-Driven Design structure with base classes
 """
 
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
-from datetime import datetime
+
 
 class DDDStructureCreator:
     """Creates the complete DDD directory structure and base classes"""
-    
+
     def __init__(self, project_root: str = "."):
         self.project_root = Path(project_root)
-        
+
     def create_complete_structure(self):
         """Create the complete DDD structure"""
         print("🏗️ Creating DDD Structure...")
-        
+
         # Create directories
         self._create_directories()
-        
+
         # Create base classes
         self._create_domain_base_classes()
         self._create_application_base_classes()
         self._create_infrastructure_base_classes()
         self._create_presentation_base_classes()
-        
+
         # Create configuration files
         self._create_config_files()
-        
+
         print("✅ DDD Structure created successfully!")
-    
+
     def _create_directories(self):
         """Create all DDD directories"""
         directories = [
             # Source root
             "src",
-            
             # Domain Layer (Pure Business Logic)
             "src/domain",
             "src/domain/entities",
-            "src/domain/value_objects", 
+            "src/domain/value_objects",
             "src/domain/services",
             "src/domain/repositories",
             "src/domain/events",
             "src/domain/exceptions",
-            
             # Application Layer (Use Cases)
             "src/application",
             "src/application/commands",
-            "src/application/queries", 
+            "src/application/queries",
             "src/application/handlers",
             "src/application/dto",
             "src/application/ports",
             "src/application/ports/inbound",
             "src/application/ports/outbound",
-            
             # Infrastructure Layer (External Dependencies)
             "src/infrastructure",
             "src/infrastructure/persistence",
@@ -68,7 +66,6 @@ class DDDStructureCreator:
             "src/infrastructure/messaging",
             "src/infrastructure/external_services",
             "src/infrastructure/config",
-            
             # Presentation Layer (API/UI)
             "src/presentation",
             "src/presentation/api",
@@ -76,71 +73,66 @@ class DDDStructureCreator:
             "src/presentation/api/graphql",
             "src/presentation/websocket",
             "src/presentation/grpc",
-            
             # Shared Kernel
             "src/shared",
             "src/shared/kernel",
             "src/shared/types",
             "src/shared/utils",
-            
             # Tests following same structure
             "tests",
             "tests/unit",
             "tests/unit/domain",
-            "tests/unit/application", 
+            "tests/unit/application",
             "tests/unit/infrastructure",
             "tests/integration",
             "tests/e2e",
             "tests/performance",
-            
             # Scripts and tools
             "scripts",
             "scripts/migration",
             "scripts/deployment",
-            
             # Docker configuration
             "docker",
-            
             # Kubernetes configuration
             "kubernetes",
             "kubernetes/base",
             "kubernetes/overlays",
             "kubernetes/overlays/development",
-            "kubernetes/overlays/staging", 
-            "kubernetes/overlays/production"
+            "kubernetes/overlays/staging",
+            "kubernetes/overlays/production",
         ]
-        
+
         for directory in directories:
             dir_path = self.project_root / directory
             dir_path.mkdir(parents=True, exist_ok=True)
-            
+
             # Create __init__.py for Python packages
-            if directory.startswith('src/') and not directory.endswith('.py'):
-                init_file = dir_path / '__init__.py'
+            if directory.startswith("src/") and not directory.endswith(".py"):
+                init_file = dir_path / "__init__.py"
                 if not init_file.exists():
                     init_content = self._get_init_content(directory)
                     init_file.write_text(init_content)
-    
+
     def _get_init_content(self, directory: str) -> str:
         """Get appropriate __init__.py content for directory"""
-        
+
         layer_docs = {
             "src/domain": '"""Domain Layer - Pure Business Logic"""',
             "src/application": '"""Application Layer - Use Cases and Orchestration"""',
-            "src/infrastructure": '"""Infrastructure Layer - External Dependencies"""', 
+            "src/infrastructure": '"""Infrastructure Layer - External Dependencies"""',
             "src/presentation": '"""Presentation Layer - API and User Interface"""',
-            "src/shared": '"""Shared Kernel - Common Components"""'
+            "src/shared": '"""Shared Kernel - Common Components"""',
         }
-        
+
         for layer, doc in layer_docs.items():
             if directory.startswith(layer):
-                return f'{doc}\n'
-        
+                return f"{doc}\n"
+
         return '"""AI Teddy Bear - DDD Module"""\n'
-    
+
     def _create_domain_base_classes(self):
         """Create domain layer base classes"""
-        
+
         # Base Entity
         entity_content = '''"""
 🎯 Domain Entity Base Classes
@@ -206,10 +198,10 @@ class AggregateRoot(Entity):
         self.version += 1
         self.mark_as_modified()
 '''
-        
+
         entity_file = self.project_root / "src/domain/entities/base.py"
         entity_file.write_text(entity_content)
-        
+
         # Value Objects
         value_object_content = '''"""
 💎 Domain Value Objects
@@ -281,10 +273,10 @@ class Language(ValueObject):
         if len(self.code) != 2:
             raise ValueError("Language code must be 2 characters")
 '''
-        
+
         vo_file = self.project_root / "src/domain/value_objects/__init__.py"
         vo_file.write_text(value_object_content)
-        
+
         # Domain Services
         service_content = '''"""
 ⚙️ Domain Services
@@ -320,13 +312,13 @@ class IAIInteractionService(Protocol):
         """Calculate child's emotional state from audio"""
         ...
 '''
-        
+
         service_file = self.project_root / "src/domain/services/__init__.py"
         service_file.write_text(service_content)
-    
+
     def _create_application_base_classes(self):
         """Create application layer base classes"""
-        
+
         # Commands and Queries (CQRS)
         cqrs_content = '''"""
 📋 CQRS Commands and Queries
@@ -398,10 +390,10 @@ class GetConversationHistoryQuery(Query):
     child_id: UUID
     limit: int = 50
 '''
-        
+
         cqrs_file = self.project_root / "src/application/commands/__init__.py"
         cqrs_file.write_text(cqrs_content)
-        
+
         # DTOs
         dto_content = '''"""
 📦 Data Transfer Objects
@@ -454,13 +446,13 @@ class AIResponseDto:
     processing_time_ms: int
     confidence_score: float
 '''
-        
+
         dto_file = self.project_root / "src/application/dto/__init__.py"
         dto_file.write_text(dto_content)
-    
+
     def _create_infrastructure_base_classes(self):
         """Create infrastructure layer base classes"""
-        
+
         # Repository interfaces
         repo_content = '''"""
 🗄️ Repository Interfaces and Implementations
@@ -523,10 +515,13 @@ class IConversationRepository(Repository):
         """Get recent conversations"""
         pass
 '''
-        
-        repo_file = self.project_root / "src/infrastructure/persistence/repositories/__init__.py"
+
+        repo_file = (
+            self.project_root
+            / "src/infrastructure/persistence/repositories/__init__.py"
+        )
         repo_file.write_text(repo_content)
-        
+
         # AI Service interfaces
         ai_content = '''"""
 🤖 AI Service Interfaces
@@ -583,13 +578,13 @@ class IEmotionService(Protocol):
         """Analyze emotion from text"""
         ...
 '''
-        
+
         ai_file = self.project_root / "src/infrastructure/ai/__init__.py"
         ai_file.write_text(ai_content)
-    
+
     def _create_presentation_base_classes(self):
         """Create presentation layer base classes"""
-        
+
         api_content = '''"""
 🌐 API Base Classes
 Lead Architect: جعفر أديب
@@ -660,15 +655,15 @@ class BaseWebSocketHandler(ABC):
         for client in self.connected_clients.values():
             await client.send_json(message.__dict__)
 '''
-        
+
         api_file = self.project_root / "src/presentation/api/__init__.py"
         api_file.write_text(api_content)
-    
+
     def _create_config_files(self):
         """Create configuration files"""
-        
+
         # Docker configuration
-        dockerfile_content = '''# AI Teddy Bear - Production Dockerfile
+        dockerfile_content = """# AI Teddy Bear - Production Dockerfile
 # Lead Architect: جعفر أديب
 
 FROM python:3.11-slim
@@ -701,14 +696,14 @@ EXPOSE 8000
 
 # Start application
 CMD ["python", "-m", "src.main"]
-'''
-        
+"""
+
         dockerfile = self.project_root / "docker/Dockerfile"
         dockerfile.parent.mkdir(exist_ok=True)
         dockerfile.write_text(dockerfile_content)
-        
+
         # Docker Compose
-        compose_content = '''version: '3.8'
+        compose_content = """version: '3.8'
 
 services:
   ai-teddy:
@@ -760,13 +755,13 @@ volumes:
 networks:
   teddy-network:
     driver: bridge
-'''
-        
+"""
+
         compose_file = self.project_root / "docker/docker-compose.yml"
         compose_file.write_text(compose_content)
-        
+
         # GitHub Actions workflow
-        workflow_content = '''name: CI/CD Pipeline
+        workflow_content = """name: CI/CD Pipeline
 
 on:
   push:
@@ -824,22 +819,23 @@ jobs:
     - name: Push to registry
       run: |
         echo "Would push to container registry"
-'''
-        
+"""
+
         workflow_dir = self.project_root / ".github/workflows"
         workflow_dir.mkdir(parents=True, exist_ok=True)
         workflow_file = workflow_dir / "ci.yml"
         workflow_file.write_text(workflow_content)
+
 
 def main():
     """Main execution"""
     print("🏗️ DDD Structure Creator")
     print("Lead Architect: جعفر أديب")
     print("=" * 40)
-    
+
     creator = DDDStructureCreator()
     creator.create_complete_structure()
-    
+
     print("\n✅ Complete DDD structure created!")
     print("\n📁 Created directories:")
     print("  - src/domain (entities, value objects, services)")
@@ -850,5 +846,6 @@ def main():
     print("  - docker/ (containerization)")
     print("  - kubernetes/ (orchestration)")
 
+
 if __name__ == "__main__":
-    main() 
+    main()

@@ -5,7 +5,8 @@ Base Test Classes - كلاسات الأساس لجميع الاختبارات
 import asyncio
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Awaitable, Callable, Dict, Generic, List, Optional, TypeVar
+from typing import (Any, Awaitable, Callable, Dict, Generic, List, Optional,
+                    TypeVar)
 
 import pytest
 import structlog
@@ -14,7 +15,8 @@ from hypothesis import strategies as st
 
 from .bdd import ActionExecutor, TestContextBuilder
 from .builders import MockFactory, TestDataBuilder
-from .validators import AgeAppropriateContentGenerator, ContentSafetyValidator, COPPAComplianceChecker
+from .validators import (AgeAppropriateContentGenerator,
+                         ContentSafetyValidator, COPPAComplianceChecker)
 
 T = TypeVar("T")
 
@@ -35,7 +37,9 @@ class BaseTestCase(ABC, Generic[T]):
         # Setup test context
         self.test_context = {
             "test_id": self.faker.uuid4(),
-            "test_name": self._testMethodName if hasattr(self, "_testMethodName") else "unknown",
+            "test_name": (
+                self._testMethodName if hasattr(self, "_testMethodName") else "unknown"
+            ),
             "start_time": self.test_start_time,
         }
 
@@ -121,8 +125,19 @@ class ChildSafetyTestCase(BaseTestCase):
             "violence": ["fight", "hurt", "kill", "weapon", "blood"],
             "inappropriate_language": ["damn", "hell", "stupid", "hate"],
             "adult_content": ["dating", "romance", "kiss", "adult"],
-            "personal_info": ["my address is", "my phone number", "my email", "my school", "my parent's name"],
-            "dangerous_behavior": ["don't tell your parents", "keep this secret", "meet me at", "send me a photo"],
+            "personal_info": [
+                "my address is",
+                "my phone number",
+                "my email",
+                "my school",
+                "my parent's name",
+            ],
+            "dangerous_behavior": [
+                "don't tell your parents",
+                "keep this secret",
+                "meet me at",
+                "send me a photo",
+            ],
         }
 
         self.safe_topics = {
@@ -141,7 +156,9 @@ class ChildSafetyTestCase(BaseTestCase):
     def generate_unsafe_content(self, violation_type: str) -> str:
         """توليد محتوى غير آمن للاختبار negative cases"""
         base_sentence = self.faker.sentence()
-        unsafe_word = self.faker.random_choice(self.unsafe_patterns.get(violation_type, ["unsafe"]))
+        unsafe_word = self.faker.random_choice(
+            self.unsafe_patterns.get(violation_type, ["unsafe"])
+        )
         return f"{base_sentence} {unsafe_word}"
 
     def assert_content_safe(self, content: str, age: int):
@@ -164,7 +181,12 @@ class PerformanceTestCase(BaseTestCase):
     @pytest.fixture(autouse=True)
     async def setup_performance(self):
         """Setup خاص باختبارات الأداء"""
-        self.performance_metrics = {"start_time": None, "end_time": None, "operations": [], "memory_samples": []}
+        self.performance_metrics = {
+            "start_time": None,
+            "end_time": None,
+            "operations": [],
+            "memory_samples": [],
+        }
 
         # Performance thresholds
         self.thresholds = {
@@ -185,7 +207,9 @@ class PerformanceTestCase(BaseTestCase):
         import psutil
 
         self.performance_metrics["start_time"] = time.perf_counter()
-        self.performance_metrics["start_memory"] = psutil.Process().memory_info().rss / 1024 / 1024
+        self.performance_metrics["start_memory"] = (
+            psutil.Process().memory_info().rss / 1024 / 1024
+        )
         self.performance_metrics["start_cpu"] = psutil.cpu_percent(interval=0.1)
 
     def stop_performance_tracking(self) -> Dict[str, Any]:
@@ -197,7 +221,10 @@ class PerformanceTestCase(BaseTestCase):
 
         self.performance_metrics["end_time"] = time.perf_counter()
 
-        duration = self.performance_metrics["end_time"] - self.performance_metrics["start_time"]
+        duration = (
+            self.performance_metrics["end_time"]
+            - self.performance_metrics["start_time"]
+        )
         end_memory = psutil.Process().memory_info().rss / 1024 / 1024
         memory_increase = end_memory - self.performance_metrics["start_memory"]
 
@@ -222,7 +249,11 @@ class PerformanceTestCase(BaseTestCase):
     def record_operation(self, operation_name: str, duration_ms: float):
         """تسجيل عملية للتحليل"""
         self.performance_metrics["operations"].append(
-            {"name": operation_name, "duration_ms": duration_ms, "timestamp": datetime.utcnow()}
+            {
+                "name": operation_name,
+                "duration_ms": duration_ms,
+                "timestamp": datetime.utcnow(),
+            }
         )
 
     def assert_performance_within_limits(self, metrics: Dict[str, Any]):

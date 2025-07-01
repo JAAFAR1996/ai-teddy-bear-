@@ -16,7 +16,8 @@ try:
     from reportlab.lib.pagesizes import A4, letter
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.pdfgen import canvas
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer,
+                                    Table, TableStyle)
 
     PDF_AVAILABLE = True
 except ImportError:
@@ -57,14 +58,18 @@ class PDFGenerator:
             self.logger.error(f"PDF creation error: {e}")
             return self.create_text_report(progress)
 
-    def _build_pdf_content(self, progress: ChildProgress, charts: Dict[str, str]) -> list:
+    def _build_pdf_content(
+        self, progress: ChildProgress, charts: Dict[str, str]
+    ) -> list:
         """Build PDF content structure"""
         try:
             story = []
             styles = getSampleStyleSheet()
 
             # Title
-            title = Paragraph(f"تقرير تقدم الطفل - {progress.child_name}", styles["Title"])
+            title = Paragraph(
+                f"تقرير تقدم الطفل - {progress.child_name}", styles["Title"]
+            )
             story.append(title)
             story.append(Spacer(1, 12))
 
@@ -121,7 +126,9 @@ class PDFGenerator:
 
             # Charts placeholders (in real implementation, embed actual charts)
             for chart_name in charts.keys():
-                story.append(Paragraph(f"الرسم البياني: {chart_name}", styles["Heading3"]))
+                story.append(
+                    Paragraph(f"الرسم البياني: {chart_name}", styles["Heading3"])
+                )
                 story.append(Spacer(1, 100))  # Placeholder space for chart
 
             return story

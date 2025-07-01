@@ -14,58 +14,96 @@ from prometheus_client import Counter, Gauge, Histogram, Info, Summary
 logger = structlog.get_logger(__name__)
 
 # Error Metrics
-error_counter = Counter("ai_teddy_errors_total", "Total number of errors", ["error_code", "category", "severity"])
+error_counter = Counter(
+    "ai_teddy_errors_total",
+    "Total number of errors",
+    ["error_code", "category", "severity"],
+)
 
 exception_counter = Counter(
-    "ai_teddy_exceptions_total", "Total number of exceptions", ["exception_type", "service", "method"]
+    "ai_teddy_exceptions_total",
+    "Total number of exceptions",
+    ["exception_type", "service", "method"],
 )
 
 # Performance Metrics
 request_duration = Histogram(
-    "ai_teddy_request_duration_seconds", "Request duration in seconds", ["method", "endpoint", "status"]
+    "ai_teddy_request_duration_seconds",
+    "Request duration in seconds",
+    ["method", "endpoint", "status"],
 )
 
-response_time = Summary("ai_teddy_response_time_seconds", "Response time summary", ["service", "operation"])
+response_time = Summary(
+    "ai_teddy_response_time_seconds", "Response time summary", ["service", "operation"]
+)
 
 # Business Metrics
-active_children = Gauge("ai_teddy_active_children", "Number of currently active children")
+active_children = Gauge(
+    "ai_teddy_active_children", "Number of currently active children"
+)
 
 interactions_counter = Counter(
-    "ai_teddy_interactions_total", "Total number of child interactions", ["interaction_type", "child_age_group"]
+    "ai_teddy_interactions_total",
+    "Total number of child interactions",
+    ["interaction_type", "child_age_group"],
 )
 
 voice_messages_processed = Counter(
-    "ai_teddy_voice_messages_total", "Total voice messages processed", ["status", "language"]
+    "ai_teddy_voice_messages_total",
+    "Total voice messages processed",
+    ["status", "language"],
 )
 
 # Security Metrics
-auth_attempts = Counter("ai_teddy_auth_attempts_total", "Authentication attempts", ["method", "result"])
+auth_attempts = Counter(
+    "ai_teddy_auth_attempts_total", "Authentication attempts", ["method", "result"]
+)
 
 security_violations = Counter(
-    "ai_teddy_security_violations_total", "Security violations detected", ["violation_type", "severity"]
+    "ai_teddy_security_violations_total",
+    "Security violations detected",
+    ["violation_type", "severity"],
 )
 
 # Infrastructure Metrics
-database_connections = Gauge("ai_teddy_database_connections", "Current database connections", ["database", "pool"])
+database_connections = Gauge(
+    "ai_teddy_database_connections",
+    "Current database connections",
+    ["database", "pool"],
+)
 
-cache_operations = Counter("ai_teddy_cache_operations_total", "Cache operations", ["operation", "cache_name", "result"])
+cache_operations = Counter(
+    "ai_teddy_cache_operations_total",
+    "Cache operations",
+    ["operation", "cache_name", "result"],
+)
 
 circuit_breaker_state = Gauge(
-    "ai_teddy_circuit_breaker_state", "Circuit breaker state (0=closed, 1=open, 2=half-open)", ["service"]
+    "ai_teddy_circuit_breaker_state",
+    "Circuit breaker state (0=closed, 1=open, 2=half-open)",
+    ["service"],
 )
 
 # Child Safety Metrics
-content_filtered = Counter("ai_teddy_content_filtered_total", "Content filtered for safety", ["filter_type", "reason"])
+content_filtered = Counter(
+    "ai_teddy_content_filtered_total",
+    "Content filtered for safety",
+    ["filter_type", "reason"],
+)
 
 parental_consent_requests = Counter(
-    "ai_teddy_parental_consent_requests_total", "Parental consent requests", ["action", "status"]
+    "ai_teddy_parental_consent_requests_total",
+    "Parental consent requests",
+    ["action", "status"],
 )
 
 # System Info
 system_info = Info("ai_teddy_system", "System information")
 
 # Initialize system info
-system_info.info({"version": "2.0.0", "environment": "production", "region": "us-east-1"})
+system_info.info(
+    {"version": "2.0.0", "environment": "production", "region": "us-east-1"}
+)
 
 
 # Decorators for automatic metric collection
@@ -85,7 +123,9 @@ def track_request_duration(endpoint: str):
                 raise
             finally:
                 duration = time.time() - start_time
-                request_duration.labels(method=func.__name__, endpoint=endpoint, status=status).observe(duration)
+                request_duration.labels(
+                    method=func.__name__, endpoint=endpoint, status=status
+                ).observe(duration)
 
         @wraps(func)
         def sync_wrapper(*args, **kwargs):
@@ -99,7 +139,9 @@ def track_request_duration(endpoint: str):
                 raise
             finally:
                 duration = time.time() - start_time
-                request_duration.labels(method=func.__name__, endpoint=endpoint, status=status).observe(duration)
+                request_duration.labels(
+                    method=func.__name__, endpoint=endpoint, status=status
+                ).observe(duration)
 
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
@@ -117,7 +159,11 @@ def track_exceptions(service: str):
             try:
                 return await func(*args, **kwargs)
             except Exception as e:
-                exception_counter.labels(exception_type=type(e).__name__, service=service, method=func.__name__).inc()
+                exception_counter.labels(
+                    exception_type=type(e).__name__,
+                    service=service,
+                    method=func.__name__,
+                ).inc()
                 raise
 
         @wraps(func)
@@ -125,7 +171,11 @@ def track_exceptions(service: str):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                exception_counter.labels(exception_type=type(e).__name__, service=service, method=func.__name__).inc()
+                exception_counter.labels(
+                    exception_type=type(e).__name__,
+                    service=service,
+                    method=func.__name__,
+                ).inc()
                 raise
 
         if asyncio.iscoroutinefunction(func):
@@ -142,7 +192,9 @@ class MetricsCollector:
     def record_interaction(interaction_type: str, child_age: int) -> None:
         """تسجيل تفاعل طفل"""
         age_group = MetricsCollector._get_age_group(child_age)
-        interactions_counter.labels(interaction_type=interaction_type, child_age_group=age_group).inc()
+        interactions_counter.labels(
+            interaction_type=interaction_type, child_age_group=age_group
+        ).inc()
 
     @staticmethod
     def record_voice_message(status: str, language: str = "ar") -> None:
@@ -158,7 +210,9 @@ class MetricsCollector:
     @staticmethod
     def record_security_violation(violation_type: str, severity: str) -> None:
         """تسجيل انتهاك أمني"""
-        security_violations.labels(violation_type=violation_type, severity=severity).inc()
+        security_violations.labels(
+            violation_type=violation_type, severity=severity
+        ).inc()
 
     @staticmethod
     def update_database_connections(database: str, pool: str, count: int) -> None:
@@ -169,7 +223,9 @@ class MetricsCollector:
     def record_cache_operation(operation: str, cache_name: str, hit: bool) -> None:
         """تسجيل عملية cache"""
         result = "hit" if hit else "miss"
-        cache_operations.labels(operation=operation, cache_name=cache_name, result=result).inc()
+        cache_operations.labels(
+            operation=operation, cache_name=cache_name, result=result
+        ).inc()
 
     @staticmethod
     def update_circuit_breaker(service: str, state: str) -> None:
@@ -203,10 +259,14 @@ class MetricsCollector:
 
 
 # Health check metrics
-health_check_counter = Counter("ai_teddy_health_checks_total", "Health check attempts", ["service", "result"])
+health_check_counter = Counter(
+    "ai_teddy_health_checks_total", "Health check attempts", ["service", "result"]
+)
 
 last_successful_health_check = Gauge(
-    "ai_teddy_last_successful_health_check_timestamp", "Timestamp of last successful health check", ["service"]
+    "ai_teddy_last_successful_health_check_timestamp",
+    "Timestamp of last successful health check",
+    ["service"],
 )
 
 
@@ -247,7 +307,9 @@ class PerformanceTracker:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.start_time:
             duration = time.time() - self.start_time
-            operation_latency.labels(operation=self.operation, service=self.service).observe(duration)
+            operation_latency.labels(
+                operation=self.operation, service=self.service
+            ).observe(duration)
 
 
 # Export all metrics

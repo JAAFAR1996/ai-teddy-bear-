@@ -106,17 +106,23 @@ class AudioProcessor:
         self.dc_filter = signal.butter(4, 80, btype="highpass", fs=fs, output="sos")
 
         # Bandpass filter for voice enhancement (300-3400 Hz)
-        self.voice_filter = signal.butter(4, [300, 3400], btype="bandpass", fs=fs, output="sos")
+        self.voice_filter = signal.butter(
+            4, [300, 3400], btype="bandpass", fs=fs, output="sos"
+        )
 
         # Anti-aliasing filter
-        self.antialiasing_filter = signal.butter(8, fs * 0.45, btype="lowpass", fs=fs, output="sos")
+        self.antialiasing_filter = signal.butter(
+            8, fs * 0.45, btype="lowpass", fs=fs, output="sos"
+        )
 
         # Notch filter for 50/60 Hz hum removal
         self.notch_filter_50 = signal.iirnotch(50, 30, fs)
         self.notch_filter_60 = signal.iirnotch(60, 30, fs)
 
         # De-emphasis filter
-        self.deemphasis_filter = signal.butter(2, 4000, btype="lowpass", fs=fs, output="sos")
+        self.deemphasis_filter = signal.butter(
+            2, 4000, btype="lowpass", fs=fs, output="sos"
+        )
 
     def _setup_vad(self) -> Any:
         """Set up Voice Activity Detection."""
@@ -147,7 +153,9 @@ class AudioProcessor:
             return await self._process_realtime_async(audio_data)
         else:
             # Run CPU-intensive processing in thread pool
-            return await loop.run_in_executor(self.executor, self.process_audio, audio_data)
+            return await loop.run_in_executor(
+                self.executor, self.process_audio, audio_data
+            )
 
     async def _process_realtime_async(self, audio_data: np.ndarray) -> np.ndarray:
         """Process audio in real-time with minimal latency."""
@@ -161,7 +169,9 @@ class AudioProcessor:
                 chunk = np.pad(chunk, (0, chunk_size - len(chunk)), "constant")
 
             # Process chunk
-            processed = await asyncio.get_event_loop().run_in_executor(self.executor, self._process_chunk, chunk)
+            processed = await asyncio.get_event_loop().run_in_executor(
+                self.executor, self._process_chunk, chunk
+            )
             processed_chunks.append(processed)
 
             # Small delay to prevent blocking
@@ -240,7 +250,9 @@ class AudioProcessor:
         """Remove DC offset from audio signal."""
         return audio_data - np.mean(audio_data)
 
-    def _apply_preemphasis(self, audio_data: np.ndarray, alpha: float = 0.97) -> np.ndarray:
+    def _apply_preemphasis(
+        self, audio_data: np.ndarray, alpha: float = 0.97
+    ) -> np.ndarray:
         """Apply pre-emphasis filter to boost high frequencies."""
         return np.append(audio_data[0], audio_data[1:] - alpha * audio_data[:-1])
 
@@ -248,14 +260,18 @@ class AudioProcessor:
         """Apply spectral subtraction for noise reduction."""
         try:
             # Estimate noise profile from first 0.5 seconds or 10% of audio
-            noise_sample_len = min(int(0.5 * self.config.sample_rate), len(audio_data) // 10)
+            noise_sample_len = min(
+                int(0.5 * self.config.sample_rate), len(audio_data) // 10
+            )
 
             if noise_sample_len > 0:
                 noise_sample = audio_data[:noise_sample_len]
 
                 # Compute noise spectrum
                 noise_fft = np.abs(rfft(noise_sample))
-                noise_profile = np.mean(noise_fft.reshape(-1, len(noise_fft) // 10), axis=0)
+                noise_profile = np.mean(
+                    noise_fft.reshape(-1, len(noise_fft) // 10), axis=0
+                )
 
                 # Apply spectral subtraction
                 audio_fft = rfft(audio_data)
@@ -264,7 +280,9 @@ class AudioProcessor:
 
                 # Interpolate noise profile to match audio spectrum size
                 noise_profile_interp = np.interp(
-                    np.linspace(0, 1, len(audio_mag)), np.linspace(0, 1, len(noise_profile)), noise_profile
+                    np.linspace(0, 1, len(audio_mag)),
+                    np.linspace(0, 1, len(noise_profile)),
+                    noise_profile,
                 )
 
                 # Subtract noise with oversubtraction factor
@@ -333,21 +351,27 @@ class AudioProcessor:
         above_threshold = envelope > threshold
 
         if np.any(above_threshold):
-            gain[above_threshold] = (threshold + (envelope[above_threshold] - threshold) / ratio) / envelope[
-                above_threshold
-            ]
+            gain[above_threshold] = (
+                threshold + (envelope[above_threshold] - threshold) / ratio
+            ) / envelope[above_threshold]
 
         return audio_data * gain
 
-    def _soft_limit(self, audio_data: np.ndarray, threshold: float = 0.95) -> np.ndarray:
+    def _soft_limit(
+        self, audio_data: np.ndarray, threshold: float = 0.95
+    ) -> np.ndarray:
         """Apply soft limiting to prevent clipping."""
         # Soft clipping using tanh
         over_threshold = np.abs(audio_data) > threshold
         if np.any(over_threshold):
-            audio_data[over_threshold] = threshold * np.tanh(audio_data[over_threshold] / threshold)
+            audio_data[over_threshold] = threshold * np.tanh(
+                audio_data[over_threshold] / threshold
+            )
         return audio_data
 
-    def _apply_noise_gate(self, audio_data: np.ndarray, threshold: Optional[float] = None) -> np.ndarray:
+    def _apply_noise_gate(
+        self, audio_data: np.ndarray, threshold: Optional[float] = None
+    ) -> np.ndarray:
         """Apply noise gate to remove low-level noise."""
         if threshold is None:
             threshold = self.noise_gate_threshold
@@ -362,13 +386,17 @@ class AudioProcessor:
 
         return audio_data * gate_mask
 
-    def _normalize_chunk(self, chunk: np.ndarray, target_level: float = 0.7) -> np.ndarray:
+    def _normalize_chunk(
+        self, chunk: np.ndarray, target_level: float = 0.7
+    ) -> np.ndarray:
         """Normalize audio chunk to target level."""
         if np.max(np.abs(chunk)) > 0:
             return chunk * (target_level / np.max(np.abs(chunk)))
         return chunk
 
-    def normalize_volume(self, audio_data: np.ndarray, target_dBFS: float = -20.0) -> np.ndarray:
+    def normalize_volume(
+        self, audio_data: np.ndarray, target_dBFS: float = -20.0
+    ) -> np.ndarray:
         """Normalize audio volume to target dBFS level."""
         try:
             if not np.any(audio_data):
@@ -438,7 +466,10 @@ class AudioProcessor:
         return voice_segments
 
     def segment_audio(
-        self, audio_data: np.ndarray, segment_duration: float = 1.0, overlap: float = 0.1
+        self,
+        audio_data: np.ndarray,
+        segment_duration: float = 1.0,
+        overlap: float = 0.1,
     ) -> List[np.ndarray]:
         """Segment audio into overlapping chunks for streaming."""
         segment_samples = int(segment_duration * self.config.sample_rate)
@@ -472,7 +503,9 @@ class AudioProcessor:
             frame_length = int(0.02 * self.config.sample_rate)  # 20ms frames
             hop_length = frame_length // 2
 
-            energy = librosa.feature.rms(y=audio_data, frame_length=frame_length, hop_length=hop_length)[0]
+            energy = librosa.feature.rms(
+                y=audio_data, frame_length=frame_length, hop_length=hop_length
+            )[0]
 
             # Find silent frames
             silent_frames = energy < threshold
@@ -510,7 +543,9 @@ class AudioProcessor:
             self.logger.error(f"Error detecting silence: {e}")
             return []
 
-    def trim_silence(self, audio_data: np.ndarray, threshold: float = 0.01, margin: int = 100) -> np.ndarray:
+    def trim_silence(
+        self, audio_data: np.ndarray, threshold: float = 0.01, margin: int = 100
+    ) -> np.ndarray:
         """Trim silence from start and end of audio with margin."""
         try:
             if not np.any(audio_data):
@@ -564,7 +599,11 @@ class AudioProcessor:
 
                 if noise_samples:
                     noise_power = np.mean(np.square(noise_samples))
-                    snr = 10 * np.log10(signal_power / noise_power) if noise_power > 0 else 60
+                    snr = (
+                        10 * np.log10(signal_power / noise_power)
+                        if noise_power > 0
+                        else 60
+                    )
                 else:
                     snr = 60  # Assume good SNR if no noise detected
             else:
@@ -613,13 +652,20 @@ class AudioProcessor:
             )
 
     def convert_format(
-        self, audio_data: np.ndarray, target_format: AudioFormat, target_sample_rate: Optional[int] = None
+        self,
+        audio_data: np.ndarray,
+        target_format: AudioFormat,
+        target_sample_rate: Optional[int] = None,
     ) -> bytes:
         """Convert audio to different format."""
         try:
             if target_sample_rate and target_sample_rate != self.config.sample_rate:
                 # Resample audio
-                audio_data = librosa.resample(audio_data, orig_sr=self.config.sample_rate, target_sr=target_sample_rate)
+                audio_data = librosa.resample(
+                    audio_data,
+                    orig_sr=self.config.sample_rate,
+                    target_sr=target_sample_rate,
+                )
 
             # Convert to bytes
             buffer = io.BytesIO()
@@ -645,7 +691,9 @@ class AudioProcessor:
             raise
 
     async def process_stream(
-        self, audio_stream: AsyncGenerator[bytes, None], chunk_callback: Optional[Callable[[np.ndarray], None]] = None
+        self,
+        audio_stream: AsyncGenerator[bytes, None],
+        chunk_callback: Optional[Callable[[np.ndarray], None]] = None,
     ) -> AsyncGenerator[np.ndarray, None]:
         """Process audio stream in real-time."""
         buffer = bytearray()
@@ -660,10 +708,15 @@ class AudioProcessor:
                 buffer = buffer[chunk_size:]
 
                 # Convert to numpy array
-                chunk = np.frombuffer(chunk_bytes, dtype=np.int16).astype(np.float32) / 32767
+                chunk = (
+                    np.frombuffer(chunk_bytes, dtype=np.int16).astype(np.float32)
+                    / 32767
+                )
 
                 # Process chunk
-                processed = await self.process_audio_async(chunk, ProcessingMode.REALTIME)
+                processed = await self.process_audio_async(
+                    chunk, ProcessingMode.REALTIME
+                )
 
                 # Callback if provided
                 if chunk_callback:
@@ -691,7 +744,9 @@ class AudioProcessor:
 
 
 # Convenience functions for backwards compatibility
-def process_audio(audio_data: np.ndarray, config: Optional[AudioConfig] = None) -> np.ndarray:
+def process_audio(
+    audio_data: np.ndarray, config: Optional[AudioConfig] = None
+) -> np.ndarray:
     """Process audio data with default configuration."""
     processor = AudioProcessor(config)
     try:
@@ -700,13 +755,17 @@ def process_audio(audio_data: np.ndarray, config: Optional[AudioConfig] = None) 
         processor.cleanup()
 
 
-def remove_noise(audio_data: np.ndarray, noise_filter: Optional[Tuple[np.ndarray, np.ndarray]] = None) -> np.ndarray:
+def remove_noise(
+    audio_data: np.ndarray, noise_filter: Optional[Tuple[np.ndarray, np.ndarray]] = None
+) -> np.ndarray:
     """Remove background noise using spectral subtraction."""
     processor = AudioProcessor()
     return processor._spectral_noise_reduction(audio_data)
 
 
-def remove_clicks(audio_data: np.ndarray, click_filter: Optional[Tuple[np.ndarray, np.ndarray]] = None) -> np.ndarray:
+def remove_clicks(
+    audio_data: np.ndarray, click_filter: Optional[Tuple[np.ndarray, np.ndarray]] = None
+) -> np.ndarray:
     """Remove clicks and pops from audio."""
     # Use median filter for click removal
     from scipy.signal import medfilt
@@ -734,7 +793,9 @@ def normalize_volume(audio_data: np.ndarray) -> np.ndarray:
     return processor.normalize_volume(audio_data)
 
 
-def detect_silence(audio_data: np.ndarray, threshold: float = 0.01, min_duration: int = 100) -> List[Tuple[int, int]]:
+def detect_silence(
+    audio_data: np.ndarray, threshold: float = 0.01, min_duration: int = 100
+) -> List[Tuple[int, int]]:
     """Detect silent segments in audio."""
     processor = AudioProcessor()
     return processor.detect_silence(audio_data, threshold, min_duration)
@@ -802,7 +863,9 @@ if __name__ == "__main__":
             self.assertEqual(len(processed), len(self.noisy_signal))
 
             # Check that processing reduces noise
-            original_snr = 20 * np.log10(np.std(self.tone) / np.std(self.noisy_signal - self.tone))
+            original_snr = 20 * np.log10(
+                np.std(self.tone) / np.std(self.noisy_signal - self.tone)
+            )
             processed_noise = processed - self.tone
             processed_snr = 20 * np.log10(np.std(self.tone) / np.std(processed_noise))
 
@@ -841,7 +904,9 @@ if __name__ == "__main__":
         def test_trim_silence(self) -> Any:
             """Test silence trimming."""
             # Add silence to beginning and end
-            padded_signal = np.concatenate([self.silent_signal[:1000], self.tone, self.silent_signal[:1000]])
+            padded_signal = np.concatenate(
+                [self.silent_signal[:1000], self.tone, self.silent_signal[:1000]]
+            )
 
             trimmed = self.processor.trim_silence(padded_signal)
 
@@ -854,7 +919,9 @@ if __name__ == "__main__":
         def test_voice_activity_detection(self) -> Any:
             """Test VAD functionality."""
             # Create signal with speech and silence
-            signal = np.concatenate([self.silent_signal[:1000], self.tone, self.silent_signal[:1000]])
+            signal = np.concatenate(
+                [self.silent_signal[:1000], self.tone, self.silent_signal[:1000]]
+            )
 
             # Convert to int16 for VAD
             signal_int16 = (signal * 32767).astype(np.int16)
@@ -885,7 +952,9 @@ if __name__ == "__main__":
 
         def test_segment_audio(self) -> Any:
             """Test audio segmentation."""
-            segments = self.processor.segment_audio(self.tone, segment_duration=0.1, overlap=0.02)
+            segments = self.processor.segment_audio(
+                self.tone, segment_duration=0.1, overlap=0.02
+            )
 
             # Should create multiple segments
             self.assertGreater(len(segments), 5)
@@ -909,7 +978,9 @@ if __name__ == "__main__":
 
         async def test_async_processing(self):
             """Test asynchronous audio processing."""
-            processed = await self.processor.process_audio_async(self.noisy_signal, ProcessingMode.REALTIME)
+            processed = await self.processor.process_audio_async(
+                self.noisy_signal, ProcessingMode.REALTIME
+            )
 
             self.assertEqual(len(processed), len(self.noisy_signal))
 

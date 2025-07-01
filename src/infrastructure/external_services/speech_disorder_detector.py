@@ -13,12 +13,20 @@ class SpeechFeatures:
     @staticmethod
     def extract_pitch_features(audio_data: np.array, sr: int) -> Dict:
         """استخراج خصائص النبرة"""
-        f0, voiced_flag, _ = librosa.pyin(audio_data, fmin=librosa.note_to_hz("C2"), fmax=librosa.note_to_hz("C7"))
+        f0, voiced_flag, _ = librosa.pyin(
+            audio_data, fmin=librosa.note_to_hz("C2"), fmax=librosa.note_to_hz("C7")
+        )
 
         f0_clean = f0[~np.isnan(f0)]
 
         if len(f0_clean) == 0:
-            return {"pitch_mean": 0, "pitch_std": 0, "pitch_min": 0, "pitch_max": 0, "pitch_range": 0}
+            return {
+                "pitch_mean": 0,
+                "pitch_std": 0,
+                "pitch_min": 0,
+                "pitch_max": 0,
+                "pitch_range": 0,
+            }
 
         return {
             "pitch_mean": np.mean(f0_clean),
@@ -32,7 +40,9 @@ class SpeechFeatures:
     def extract_voice_quality_features(audio_data: np.array, sr: int) -> Dict:
         """استخراج خصائص جودة الصوت"""
         # Jitter (عدم انتظام النبرة)
-        f0, voiced_flag, _ = librosa.pyin(audio_data, fmin=librosa.note_to_hz("C2"), fmax=librosa.note_to_hz("C7"))
+        f0, voiced_flag, _ = librosa.pyin(
+            audio_data, fmin=librosa.note_to_hz("C2"), fmax=librosa.note_to_hz("C7")
+        )
 
         f0_clean = f0[~np.isnan(f0)]
 
@@ -113,7 +123,9 @@ class SpeechDisorderDetector:
         frame_length = int(0.025 * sr)  # 25ms
 
         # حساب الطاقة لكل إطار
-        energy = librosa.feature.rms(y=audio_data, frame_length=frame_length, hop_length=hop_length)[0]
+        energy = librosa.feature.rms(
+            y=audio_data, frame_length=frame_length, hop_length=hop_length
+        )[0]
 
         # كشف التكرارات السريعة
         energy_diff = np.diff(energy)
@@ -153,7 +165,9 @@ class SpeechDisorderDetector:
 
         # تقدير معدل الكلام (مقطع/دقيقة)
         # متوسط 1.5 مقطع لكل كلمة في العربية
-        words_per_minute = (syllable_count / 1.5) / duration_minutes if duration_minutes > 0 else 0
+        words_per_minute = (
+            (syllable_count / 1.5) / duration_minutes if duration_minutes > 0 else 0
+        )
 
         return words_per_minute
 
@@ -206,7 +220,9 @@ class SpeechDisorderDetector:
         # تحليل آخر 10 تسجيلات
         recent_indicators = self.disorder_indicators[-10:]
 
-        high_risk_count = sum(1 for ind in recent_indicators if ind["risk_level"] in ["متوسط", "مرتفع"])
+        high_risk_count = sum(
+            1 for ind in recent_indicators if ind["risk_level"] in ["متوسط", "مرتفع"]
+        )
 
         # تنبيه إذا كان أكثر من 30% من التسجيلات تظهر مخاطر
         if high_risk_count >= 3:
@@ -257,9 +273,13 @@ class SpeechDisorderDetector:
         for concern, count in concern_counts.items():
             if count >= 3:
                 if "تأتأة" in concern:
-                    recommendations.append("ينصح بممارسة تمارين التنفس العميق والتحدث ببطء")
+                    recommendations.append(
+                        "ينصح بممارسة تمارين التنفس العميق والتحدث ببطء"
+                    )
                 elif "معدل كلام" in concern:
-                    recommendations.append("ممارسة القراءة بصوت عالٍ مع التركيز على الوتيرة المناسبة")
+                    recommendations.append(
+                        "ممارسة القراءة بصوت عالٍ مع التركيز على الوتيرة المناسبة"
+                    )
                 elif "توقفات" in concern:
                     recommendations.append("تشجيع الطفل على التحدث بجمل قصيرة وبسيطة")
 

@@ -7,20 +7,27 @@ from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.core.domain.entities.conversation import Conversation, Message
-from src.infrastructure.persistence.base_sqlite_repository import BaseSQLiteRepository
-from src.infrastructure.persistence.conversation_repository import ConversationRepository
+from src.infrastructure.persistence.base_sqlite_repository import \
+    BaseSQLiteRepository
+from src.infrastructure.persistence.conversation_repository import \
+    ConversationRepository
 
-from ...application.services.conversation.conversation_analytics_service import ConversationAnalyticsService
-from ...application.services.conversation.conversation_export_service import ConversationExportService
-from ...application.services.conversation.conversation_maintenance_service import ConversationMaintenanceService
-from ...application.services.conversation.conversation_search_service import ConversationSearchService
-
+from ...application.services.conversation.conversation_analytics_service import \
+    ConversationAnalyticsService
+from ...application.services.conversation.conversation_export_service import \
+    ConversationExportService
+from ...application.services.conversation.conversation_maintenance_service import \
+    ConversationMaintenanceService
+from ...application.services.conversation.conversation_search_service import \
+    ConversationSearchService
 # Import specialized services
 from .conversation_core_repository import ConversationCoreRepository
 from .conversation_schema_manager import ConversationSchemaManager
 
 
-class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], ConversationRepository):
+class ConversationSQLiteRepository(
+    BaseSQLiteRepository[Conversation, str], ConversationRepository
+):
     """
     Clean coordinator for conversation repository operations.
     Replaces the original God Class by delegating to specialized services.
@@ -29,7 +36,9 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
     def __init__(
         self,
         session_factory,
-        db_path: str = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data", "teddyai.db"),
+        db_path: str = os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "data", "teddyai.db"
+        ),
     ):
         """Initialize conversation repository coordinator."""
         self.session_factory = session_factory
@@ -43,7 +52,9 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
         # Create connection
         connection = sqlite3.connect(db_path, check_same_thread=False)
 
-        super().__init__(connection=connection, table_name="conversations", entity_class=Conversation)
+        super().__init__(
+            connection=connection, table_name="conversations", entity_class=Conversation
+        )
 
         # Initialize specialized services
         self.schema_manager = ConversationSchemaManager(connection)
@@ -88,7 +99,9 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
         limit: Optional[int] = None,
     ) -> List[Conversation]:
         """Retrieve conversations for a specific child."""
-        return await self.core_repository.get_conversations_by_child(child_id, start_date, end_date, limit)
+        return await self.core_repository.get_conversations_by_child(
+            child_id, start_date, end_date, limit
+        )
 
     # === Analytics Operations ===
 
@@ -100,13 +113,17 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
         group_by: str = "day",
     ) -> Dict[str, Any]:
         """Generate comprehensive conversation analytics."""
-        return await self.analytics_service.get_conversation_analytics(child_id, start_date, end_date, group_by)
+        return await self.analytics_service.get_conversation_analytics(
+            child_id, start_date, end_date, group_by
+        )
 
     async def get_conversation_statistics(self) -> Dict[str, Any]:
         """Get overall conversation statistics."""
         return await self.analytics_service.get_conversation_statistics()
 
-    async def generate_daily_summary(self, date: date, child_id: Optional[str] = None) -> Dict[str, Any]:
+    async def generate_daily_summary(
+        self, date: date, child_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Generate daily conversation summary."""
         return await self.analytics_service.generate_daily_summary(date, child_id)
 
@@ -145,7 +162,9 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
         self, query: str, child_id: Optional[str] = None, search_in: List[str] = None
     ) -> List[Tuple[Conversation, List[Message]]]:
         """Full-text search in conversation messages."""
-        raw_results = await self.search_service.search_conversation_content(query, child_id, search_in)
+        raw_results = await self.search_service.search_conversation_content(
+            query, child_id, search_in
+        )
 
         # Convert raw results to proper entities
         results = []
@@ -156,7 +175,12 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
                 type(
                     "Message",
                     (),
-                    {"id": msg["id"], "role": msg["role"], "content": msg["content"], "timestamp": msg["timestamp"]},
+                    {
+                        "id": msg["id"],
+                        "role": msg["role"],
+                        "content": msg["content"],
+                        "timestamp": msg["timestamp"],
+                    },
                 )()
                 for msg in messages_data
             ]
@@ -167,22 +191,40 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
     async def find_conversations_requiring_review(self) -> List[Conversation]:
         """Find conversations that may require manual review."""
         conv_data_list = await self.search_service.get_conversations_requiring_review()
-        return [self.core_repository._deserialize_conversation_from_db(data) for data in conv_data_list]
+        return [
+            self.core_repository._deserialize_conversation_from_db(data)
+            for data in conv_data_list
+        ]
 
-    async def get_active_conversations(self, inactive_threshold_minutes: int = 30) -> List[Conversation]:
+    async def get_active_conversations(
+        self, inactive_threshold_minutes: int = 30
+    ) -> List[Conversation]:
         """Get currently active conversations."""
-        conv_data_list = await self.search_service.get_active_conversations(inactive_threshold_minutes)
-        return [self.core_repository._deserialize_conversation_from_db(data) for data in conv_data_list]
+        conv_data_list = await self.search_service.get_active_conversations(
+            inactive_threshold_minutes
+        )
+        return [
+            self.core_repository._deserialize_conversation_from_db(data)
+            for data in conv_data_list
+        ]
 
     # === Maintenance Operations ===
 
-    async def delete_old_conversations(self, retention_days: int = 90, exclude_flagged: bool = True) -> int:
+    async def delete_old_conversations(
+        self, retention_days: int = 90, exclude_flagged: bool = True
+    ) -> int:
         """Delete old conversations."""
-        return await self.maintenance_service.delete_old_conversations(retention_days, exclude_flagged)
+        return await self.maintenance_service.delete_old_conversations(
+            retention_days, exclude_flagged
+        )
 
-    async def archive_conversations(self, days_old: int = 30, archive_path: str = "archives/") -> int:
+    async def archive_conversations(
+        self, days_old: int = 30, archive_path: str = "archives/"
+    ) -> int:
         """Archive old conversations to storage."""
-        return await self.maintenance_service.archive_conversations(days_old, archive_path)
+        return await self.maintenance_service.archive_conversations(
+            days_old, archive_path
+        )
 
     async def optimize_conversation_performance(self) -> Dict[str, Any]:
         """Analyze and suggest optimizations for conversation performance."""
@@ -191,7 +233,10 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
     # === Utility Methods ===
 
     def _calculate_time_range(
-        self, time_range: str, custom_start: Optional[datetime] = None, custom_end: Optional[datetime] = None
+        self,
+        time_range: str,
+        custom_start: Optional[datetime] = None,
+        custom_end: Optional[datetime] = None,
     ) -> Tuple[datetime, datetime]:
         """Calculate start and end dates for time range queries."""
         now = datetime.now()
@@ -225,7 +270,9 @@ class ConversationSQLiteRepository(BaseSQLiteRepository[Conversation, str], Conv
         """Get conversation by ID (alias for get_by_id)."""
         return await self.get_by_id(conversation_id)
 
-    async def aggregate(self, field: str, operation: str, criteria: Optional[List] = None) -> Any:
+    async def aggregate(
+        self, field: str, operation: str, criteria: Optional[List] = None
+    ) -> Any:
         """Perform aggregation operations on conversation data."""
         try:
             cursor = self._connection.cursor()

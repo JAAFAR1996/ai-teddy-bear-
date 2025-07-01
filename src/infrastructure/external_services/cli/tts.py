@@ -15,8 +15,16 @@ def parse_args(args: Optional[list] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Text-to-speech conversion")
     parser.add_argument("text", type=str, help="Text to convert to speech")
     parser.add_argument("-o", "--output", type=str, help="Output audio file path")
-    parser.add_argument("-l", "--language", type=str, default="en", help="Language code (default: en)")
-    parser.add_argument("-s", "--speed", type=float, default=1.0, help="Speech speed multiplier (default: 1.0)")
+    parser.add_argument(
+        "-l", "--language", type=str, default="en", help="Language code (default: en)"
+    )
+    parser.add_argument(
+        "-s",
+        "--speed",
+        type=float,
+        default=1.0,
+        help="Speech speed multiplier (default: 1.0)",
+    )
     parser.add_argument("--no-cache", action="store_true", help="Disable TTS caching")
     parser.add_argument("--play", action="store_true", help="Play the generated audio")
     return parser.parse_args(args)

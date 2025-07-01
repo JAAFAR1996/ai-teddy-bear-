@@ -10,7 +10,8 @@ from typing import Any, Dict, Optional
 try:
     from elevenlabs import VoiceSettings
 except ImportError:
-    from src.infrastructure.external_services.mock.elevenlabs import VoiceSettings
+    from src.infrastructure.external_services.mock.elevenlabs import \
+        VoiceSettings
 
 
 class EmotionalTone(Enum):
@@ -93,8 +94,15 @@ class VoiceProfile:
 
     def get_voice_settings(self, emotion: EmotionalTone) -> VoiceSettings:
         """Get voice settings for specific emotion"""
-        return self.emotional_settings.get(emotion, self.emotional_settings.get(EmotionalTone.CALM))
+        return self.emotional_settings.get(
+            emotion, self.emotional_settings.get(EmotionalTone.CALM)
+        )
 
     def is_valid(self) -> bool:
         """Validate voice profile"""
-        return bool(self.id) and bool(self.name) and bool(self.voice_id) and self.emotional_settings
+        return (
+            bool(self.id)
+            and bool(self.name)
+            and bool(self.voice_id)
+            and self.emotional_settings
+        )

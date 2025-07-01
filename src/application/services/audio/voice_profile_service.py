@@ -10,7 +10,8 @@ from typing import Dict, List, Optional
 
 from elevenlabs import VoiceSettings
 
-from src.domain.audio.models.voice_models import EmotionalTone, Language, VoiceProfile
+from src.domain.audio.models.voice_models import (EmotionalTone, Language,
+                                                  VoiceProfile)
 
 
 class VoiceProfileService:
@@ -165,16 +166,36 @@ class VoiceProfileService:
     def _create_emotional_settings(self) -> Dict[EmotionalTone, VoiceSettings]:
         """Create emotional voice settings"""
         return {
-            EmotionalTone.HAPPY: VoiceSettings(stability=0.3, similarity_boost=0.7, style=0.4),
-            EmotionalTone.CALM: VoiceSettings(stability=0.5, similarity_boost=0.5, style=0.2),
-            EmotionalTone.CURIOUS: VoiceSettings(stability=0.4, similarity_boost=0.6, style=0.5),
-            EmotionalTone.SUPPORTIVE: VoiceSettings(stability=0.6, similarity_boost=0.4, style=0.3),
-            EmotionalTone.PLAYFUL: VoiceSettings(stability=0.2, similarity_boost=0.8, style=0.6),
-            EmotionalTone.SLEEPY: VoiceSettings(stability=0.7, similarity_boost=0.3, style=0.1),
-            EmotionalTone.EXCITED: VoiceSettings(stability=0.1, similarity_boost=0.9, style=0.8),
-            EmotionalTone.STORYTELLING: VoiceSettings(stability=0.4, similarity_boost=0.5, style=0.4),
-            EmotionalTone.EDUCATIONAL: VoiceSettings(stability=0.6, similarity_boost=0.5, style=0.3),
-            EmotionalTone.COMFORTING: VoiceSettings(stability=0.7, similarity_boost=0.4, style=0.2),
+            EmotionalTone.HAPPY: VoiceSettings(
+                stability=0.3, similarity_boost=0.7, style=0.4
+            ),
+            EmotionalTone.CALM: VoiceSettings(
+                stability=0.5, similarity_boost=0.5, style=0.2
+            ),
+            EmotionalTone.CURIOUS: VoiceSettings(
+                stability=0.4, similarity_boost=0.6, style=0.5
+            ),
+            EmotionalTone.SUPPORTIVE: VoiceSettings(
+                stability=0.6, similarity_boost=0.4, style=0.3
+            ),
+            EmotionalTone.PLAYFUL: VoiceSettings(
+                stability=0.2, similarity_boost=0.8, style=0.6
+            ),
+            EmotionalTone.SLEEPY: VoiceSettings(
+                stability=0.7, similarity_boost=0.3, style=0.1
+            ),
+            EmotionalTone.EXCITED: VoiceSettings(
+                stability=0.1, similarity_boost=0.9, style=0.8
+            ),
+            EmotionalTone.STORYTELLING: VoiceSettings(
+                stability=0.4, similarity_boost=0.5, style=0.4
+            ),
+            EmotionalTone.EDUCATIONAL: VoiceSettings(
+                stability=0.6, similarity_boost=0.5, style=0.3
+            ),
+            EmotionalTone.COMFORTING: VoiceSettings(
+                stability=0.7, similarity_boost=0.4, style=0.2
+            ),
         }
 
     def _serialize_profile(self, profile: VoiceProfile) -> Dict:
@@ -202,7 +223,9 @@ class VoiceProfileService:
         try:
             # Reconstruct emotional settings
             emotional_settings = {}
-            for emotion_str, settings_data in data.get("emotional_settings", {}).items():
+            for emotion_str, settings_data in data.get(
+                "emotional_settings", {}
+            ).items():
                 emotion = EmotionalTone(emotion_str)
                 settings = VoiceSettings(
                     stability=settings_data["stability"],

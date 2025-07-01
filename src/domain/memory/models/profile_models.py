@@ -44,11 +44,17 @@ class ConversationSummary:
             emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
 
         # Return emotions sorted by frequency
-        return sorted(emotion_counts.keys(), key=lambda e: emotion_counts[e], reverse=True)[:3]
+        return sorted(
+            emotion_counts.keys(), key=lambda e: emotion_counts[e], reverse=True
+        )[:3]
 
     def was_engaging(self) -> bool:
         """Check if conversation was engaging"""
-        return self.engagement_level > 0.7 and self.duration_minutes > 5 and len(self.topics_discussed) > 1
+        return (
+            self.engagement_level > 0.7
+            and self.duration_minutes > 5
+            and len(self.topics_discussed) > 1
+        )
 
 
 @dataclass
@@ -99,7 +105,9 @@ class ChildMemoryProfile:
 
         # Keep only top 20 topics
         if len(self.favorite_topics) > 20:
-            sorted_topics = sorted(self.favorite_topics.items(), key=lambda x: x[1], reverse=True)
+            sorted_topics = sorted(
+                self.favorite_topics.items(), key=lambda x: x[1], reverse=True
+            )
             self.favorite_topics = dict(sorted_topics[:20])
 
     def learn_concept(self, concept: str, timestamp: Optional[datetime] = None) -> None:
@@ -113,7 +121,9 @@ class ChildMemoryProfile:
         proficiency = max(0.0, min(1.0, proficiency))
         self.skills_developed[skill] = proficiency
 
-    def add_vocabulary_word(self, word: str, timestamp: Optional[datetime] = None) -> None:
+    def add_vocabulary_word(
+        self, word: str, timestamp: Optional[datetime] = None
+    ) -> None:
         """Add new vocabulary word"""
         word_time = timestamp or datetime.now()
         # Check if word already exists
@@ -130,7 +140,9 @@ class ChildMemoryProfile:
     def get_recent_vocabulary(self, days: int = 30) -> List[str]:
         """Get vocabulary learned in recent days"""
         cutoff = datetime.now() - datetime.timedelta(days=days)
-        return [word for word, timestamp in self.vocabulary_growth if timestamp > cutoff]
+        return [
+            word for word, timestamp in self.vocabulary_growth if timestamp > cutoff
+        ]
 
     def get_learning_velocity(self) -> Dict[str, float]:
         """Calculate learning velocity metrics"""
@@ -152,4 +164,6 @@ class ChildMemoryProfile:
     def is_active_learner(self) -> bool:
         """Check if child is actively learning"""
         velocity = self.get_learning_velocity()
-        return velocity["concepts_per_week"] > 1.0 or velocity["vocabulary_per_week"] > 5.0
+        return (
+            velocity["concepts_per_week"] > 1.0 or velocity["vocabulary_per_week"] > 5.0
+        )

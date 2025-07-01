@@ -10,18 +10,9 @@ from typing import Optional
 import structlog
 from PySide6.QtCore import QTimer, Signal, pyqtSlot
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import (
-    QCheckBox,
-    QComboBox,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QProgressBar,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import (QCheckBox, QComboBox, QGridLayout, QGroupBox,
+                               QHBoxLayout, QLabel, QProgressBar, QPushButton,
+                               QVBoxLayout, QWidget)
 
 from ..audio.audio_config import AudioConfig
 from ..audio.audio_engine import AudioProcessingEngine
@@ -49,7 +40,9 @@ class ModernAudioWidget(QWidget):
         """Initialize audio components"""
         self.config = AudioConfig()
         self.recorder = AudioRecorder(self.config)
-        self.audio_processor = AudioProcessingEngine(sample_rate=self.config.sample_rate)
+        self.audio_processor = AudioProcessingEngine(
+            sample_rate=self.config.sample_rate
+        )
 
         # Waveform visualization
         self.waveform_widget = WaveformWidget()
@@ -110,7 +103,9 @@ class ModernAudioWidget(QWidget):
         layout.addWidget(QLabel("Processing Level:"), 1, 0)
         self.processing_level_combo = QComboBox()
         self.processing_level_combo.addItems(["auto", "low", "medium", "high"])
-        self.processing_level_combo.currentTextChanged.connect(self._update_processing_level)
+        self.processing_level_combo.currentTextChanged.connect(
+            self._update_processing_level
+        )
         layout.addWidget(self.processing_level_combo, 1, 1)
 
         return group
@@ -307,7 +302,9 @@ class ModernAudioWidget(QWidget):
                 "timestamp": datetime.now().isoformat(),
             }
 
-            asyncio.create_task(self.message_sender.send_audio_message(wav_data, metadata))
+            asyncio.create_task(
+                self.message_sender.send_audio_message(wav_data, metadata)
+            )
 
         except Exception as e:
             logger.error("Failed to send audio", error=str(e))
@@ -328,7 +325,9 @@ class ModernAudioWidget(QWidget):
     def _update_recording_info(self) -> Any:
         """Update recording information"""
         if self.config.recording_start_time:
-            elapsed = (datetime.now() - self.config.recording_start_time).total_seconds()
+            elapsed = (
+                datetime.now() - self.config.recording_start_time
+            ).total_seconds()
             minutes = int(elapsed // 60)
             seconds = int(elapsed % 60)
             self.duration_label.setText(f"{minutes}:{seconds:02d}")

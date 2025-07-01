@@ -48,7 +48,11 @@ class UserClaims:
 class JWTManager:
     """Enhanced JWT manager with refresh tokens"""
 
-    def __init__(self, secret_key: Optional[str] = None, redis_client: Optional[redis.Redis] = None):
+    def __init__(
+        self,
+        secret_key: Optional[str] = None,
+        redis_client: Optional[redis.Redis] = None,
+    ):
         self.secret_key = secret_key or secrets.token_urlsafe(64)
         self.redis_client = redis_client
         self.algorithm = "HS256"
@@ -93,8 +97,12 @@ class JWTManager:
         }
 
         # Generate tokens
-        access_token = jwt.encode(access_payload, self.secret_key, algorithm=self.algorithm)
-        refresh_token = jwt.encode(refresh_payload, self.secret_key, algorithm=self.algorithm)
+        access_token = jwt.encode(
+            access_payload, self.secret_key, algorithm=self.algorithm
+        )
+        refresh_token = jwt.encode(
+            refresh_payload, self.secret_key, algorithm=self.algorithm
+        )
 
         # Store refresh token
         await self._store_refresh_token(refresh_token, claims.user_id)
@@ -149,7 +157,9 @@ class JWTManager:
 
         try:
             # Decode refresh token
-            payload = jwt.decode(refresh_token, self.secret_key, algorithms=[self.algorithm])
+            payload = jwt.decode(
+                refresh_token, self.secret_key, algorithms=[self.algorithm]
+            )
 
             # Verify token type
             if payload.get("token_type") != "refresh":
@@ -199,7 +209,9 @@ class JWTManager:
         if self.redis_client:
             # Store in Redis with expiration
             await self.redis_client.setex(
-                f"refresh_token:{user_id}", int(self.refresh_token_expire.total_seconds()), token
+                f"refresh_token:{user_id}",
+                int(self.refresh_token_expire.total_seconds()),
+                token,
             )
 
     async def _is_refresh_token_valid(self, token: str, user_id: str) -> bool:
@@ -246,7 +258,9 @@ class JWTManager:
 _jwt_manager: Optional[JWTManager] = None
 
 
-def get_jwt_manager(secret_key: Optional[str] = None, redis_client: Optional[redis.Redis] = None) -> JWTManager:
+def get_jwt_manager(
+    secret_key: Optional[str] = None, redis_client: Optional[redis.Redis] = None
+) -> JWTManager:
     """Get global JWT manager"""
     global _jwt_manager
     if _jwt_manager is None:
@@ -257,18 +271,27 @@ def get_jwt_manager(secret_key: Optional[str] = None, redis_client: Optional[red
 # Convenience functions
 
 
-async def authenticate_parent(user_id: str, username: str, email: str, family_id: str) -> TokenPair:
+async def authenticate_parent(
+    user_id: str, username: str, email: str, family_id: str
+) -> TokenPair:
     """Create tokens for parent"""
     jwt_manager = get_jwt_manager()
 
     claims = UserClaims(
-        user_id=user_id, username=username, email=email, role="parent", family_id=family_id, is_parent=True
+        user_id=user_id,
+        username=username,
+        email=email,
+        role="parent",
+        family_id=family_id,
+        is_parent=True,
     )
 
     return await jwt_manager.create_token_pair(claims)
 
 
-async def authenticate_child(user_id: str, username: str, email: str, family_id: str, device_id: str) -> TokenPair:
+async def authenticate_child(
+    user_id: str, username: str, email: str, family_id: str, device_id: str
+) -> TokenPair:
     """Create tokens for child"""
     jwt_manager = get_jwt_manager()
 

@@ -27,7 +27,11 @@ class DatabaseException(InfrastructureException):
     """خطأ في قاعدة البيانات"""
 
     def __init__(
-        self, operation: str, table_name: Optional[str] = None, original_error: Optional[Exception] = None, **kwargs
+        self,
+        operation: str,
+        table_name: Optional[str] = None,
+        original_error: Optional[Exception] = None,
+        **kwargs,
     ):
         message = f"Database error during {operation}"
         if table_name:
@@ -48,7 +52,11 @@ class ExternalServiceException(InfrastructureException):
     """خطأ في خدمة خارجية"""
 
     def __init__(
-        self, service_name: str, status_code: Optional[int] = None, response_body: Optional[str] = None, **kwargs
+        self,
+        service_name: str,
+        status_code: Optional[int] = None,
+        response_body: Optional[str] = None,
+        **kwargs,
     ):
         message = f"External service '{service_name}' error"
         if status_code:
@@ -69,7 +77,13 @@ class ExternalServiceException(InfrastructureException):
 class CircuitBreakerOpenException(InfrastructureException):
     """Circuit breaker مفتوح"""
 
-    def __init__(self, service_name: str, failure_count: int, last_failure_time: datetime, **kwargs):
+    def __init__(
+        self,
+        service_name: str,
+        failure_count: int,
+        last_failure_time: datetime,
+        **kwargs,
+    ):
         super().__init__(
             message=f"Circuit breaker is OPEN for service '{service_name}'",
             error_code="CIRCUIT_BREAKER_OPEN",

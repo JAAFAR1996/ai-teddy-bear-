@@ -17,25 +17,14 @@ import pytest
 # Test imports
 try:
     from src.infrastructure.graphql.authentication import (
-        AuthConfig,
-        AuthenticationService,
-        Permission,
-        User,
-        UserRole,
-        create_auth_config,
-    )
+        AuthConfig, AuthenticationService, Permission, User, UserRole,
+        create_auth_config)
     from src.infrastructure.graphql.federation_gateway import (
-        FederationConfig,
-        GraphQLFederationGateway,
-        ServiceConfig,
-        create_default_federation_config,
-    )
+        FederationConfig, GraphQLFederationGateway, ServiceConfig,
+        create_default_federation_config)
     from src.infrastructure.graphql.service_resolvers import (
-        AIServiceResolvers,
-        ChildServiceResolvers,
-        MonitoringServiceResolvers,
-        SafetyServiceResolvers,
-    )
+        AIServiceResolvers, ChildServiceResolvers, MonitoringServiceResolvers,
+        SafetyServiceResolvers)
 
     FEDERATION_AVAILABLE = True
 except ImportError:
@@ -47,8 +36,12 @@ def federation_config():
     """Test federation configuration."""
     return FederationConfig(
         services=[
-            ServiceConfig(name="child_service", url="http://localhost:8001", schema_path="/schema"),
-            ServiceConfig(name="ai_service", url="http://localhost:8002", schema_path="/schema"),
+            ServiceConfig(
+                name="child_service", url="http://localhost:8001", schema_path="/schema"
+            ),
+            ServiceConfig(
+                name="ai_service", url="http://localhost:8002", schema_path="/schema"
+            ),
         ],
         enable_authentication=True,
         enable_caching=True,
@@ -104,7 +97,9 @@ class TestFederationConfig:
         """Test custom configuration."""
         services = [ServiceConfig("test_service", "http://test:8000", "/schema")]
 
-        config = FederationConfig(services=services, enable_authentication=False, rate_limit_requests=200)
+        config = FederationConfig(
+            services=services, enable_authentication=False, rate_limit_requests=200
+        )
 
         assert len(config.services) == 1
         assert config.enable_authentication is False
@@ -117,7 +112,11 @@ class TestServiceConfig:
     def test_service_config_creation(self):
         """Test service configuration creation."""
         config = ServiceConfig(
-            name="test_service", url="http://localhost:8000", schema_path="/graphql", timeout=60, retry_attempts=5
+            name="test_service",
+            url="http://localhost:8000",
+            schema_path="/graphql",
+            timeout=60,
+            retry_attempts=5,
         )
 
         assert config.name == "test_service"
@@ -148,7 +147,9 @@ class TestGraphQLFederationGateway:
     async def test_service_health_check(self, federation_gateway):
         """Test service health checking."""
         # Mock successful health check
-        federation_gateway.http_client.get.return_value.__aenter__.return_value.status_code = 200
+        federation_gateway.http_client.get.return_value.__aenter__.return_value.status_code = (
+            200
+        )
 
         config = federation_gateway.services["child_service"]
         healthy = await federation_gateway._check_single_service_health(config)
@@ -172,7 +173,9 @@ class TestGraphQLFederationGateway:
     async def test_federated_query_execution(self, federation_gateway):
         """Test federated query execution."""
         # Mock service responses
-        federation_gateway.http_client.post.return_value.__aenter__.return_value.status_code = 200
+        federation_gateway.http_client.post.return_value.__aenter__.return_value.status_code = (
+            200
+        )
         federation_gateway.http_client.post.return_value.__aenter__.return_value.json = AsyncMock(
             return_value={"data": {"child": {"name": "Test Child", "age": 7}}}
         )
@@ -205,7 +208,9 @@ class TestAuthentication:
     async def test_user_authentication(self, auth_service):
         """Test user authentication."""
         # Create user first
-        await auth_service.create_user("authuser", "auth@example.com", "password123", UserRole.PARENT)
+        await auth_service.create_user(
+            "authuser", "auth@example.com", "password123", UserRole.PARENT
+        )
 
         # Test successful authentication
         user = await auth_service.authenticate_user("authuser", "password123")
@@ -219,7 +224,9 @@ class TestAuthentication:
     @pytest.mark.asyncio
     async def test_jwt_token_creation(self, auth_service):
         """Test JWT token creation and verification."""
-        user = await auth_service.create_user("tokenuser", "token@example.com", "password123", UserRole.PARENT)
+        user = await auth_service.create_user(
+            "tokenuser", "token@example.com", "password123", UserRole.PARENT
+        )
 
         # Create token
         token = await auth_service.create_access_token(user)
@@ -234,12 +241,16 @@ class TestAuthentication:
     @pytest.mark.asyncio
     async def test_api_key_creation(self, auth_service):
         """Test API key creation and verification."""
-        user = await auth_service.create_user("apikeyuser", "apikey@example.com", "password123", UserRole.SERVICE)
+        user = await auth_service.create_user(
+            "apikeyuser", "apikey@example.com", "password123", UserRole.SERVICE
+        )
 
         permissions = {Permission.READ_CHILD, Permission.WRITE_CHILD}
 
         # Create API key
-        api_key = await auth_service.create_api_key(user.id, "Test API Key", permissions)
+        api_key = await auth_service.create_api_key(
+            user.id, "Test API Key", permissions
+        )
 
         assert api_key.name == "Test API Key"
         assert api_key.permissions == permissions
@@ -271,11 +282,15 @@ class TestAuthentication:
 
         # Test admin permissions
         assert auth_service.check_permission(admin_user, Permission.READ_CHILD) is True
-        assert auth_service.check_permission(admin_user, Permission.ADMIN_SYSTEM) is False
+        assert (
+            auth_service.check_permission(admin_user, Permission.ADMIN_SYSTEM) is False
+        )
 
         # Test parent permissions
         assert auth_service.check_permission(parent_user, Permission.READ_CHILD) is True
-        assert auth_service.check_permission(parent_user, Permission.DELETE_CHILD) is False
+        assert (
+            auth_service.check_permission(parent_user, Permission.DELETE_CHILD) is False
+        )
 
         # Test child access
         assert auth_service.check_child_access(parent_user, "child-123") is True
@@ -309,7 +324,9 @@ class TestServiceResolvers:
     @pytest.mark.asyncio
     async def test_monitoring_service_resolvers(self):
         """Test monitoring service resolvers."""
-        usage_stats = await MonitoringServiceResolvers.get_usage_statistics("child-123", "daily")
+        usage_stats = await MonitoringServiceResolvers.get_usage_statistics(
+            "child-123", "daily"
+        )
         assert usage_stats is not None
         assert usage_stats.total_session_time > 0
 
@@ -328,7 +345,8 @@ class TestPerformanceMonitoring:
     async def test_query_monitoring(self):
         """Test query performance monitoring."""
         try:
-            from src.infrastructure.graphql.performance_monitor import create_performance_monitor
+            from src.infrastructure.graphql.performance_monitor import \
+                create_performance_monitor
 
             monitor = create_performance_monitor(enable_prometheus=False)
 
@@ -365,7 +383,8 @@ class TestPerformanceMonitoring:
     async def test_service_call_recording(self):
         """Test service call metrics recording."""
         try:
-            from src.infrastructure.graphql.performance_monitor import create_performance_monitor
+            from src.infrastructure.graphql.performance_monitor import \
+                create_performance_monitor
 
             monitor = create_performance_monitor(enable_prometheus=False)
 
@@ -408,7 +427,9 @@ class TestErrorHandling:
     async def test_service_error_handling(self, federation_gateway):
         """Test handling of service errors."""
         # Mock service error
-        federation_gateway.http_client.post.return_value.__aenter__.return_value.status_code = 500
+        federation_gateway.http_client.post.return_value.__aenter__.return_value.status_code = (
+            500
+        )
         federation_gateway.http_client.post.return_value.__aenter__.return_value.text = AsyncMock(
             return_value="Internal Server Error"
         )
@@ -417,7 +438,9 @@ class TestErrorHandling:
         config = federation_gateway.services["child_service"]
 
         with pytest.raises(Exception):
-            await federation_gateway._query_service(config, "query { child { name } }", {}, None)
+            await federation_gateway._query_service(
+                config, "query { child { name } }", {}, None
+            )
 
     @pytest.mark.asyncio
     async def test_authentication_errors(self, auth_service):
@@ -461,7 +484,9 @@ class TestCacheIntegration:
         if not auth_service.cache:
             pytest.skip("Cache not available")
 
-        user = await auth_service.create_user("cacheuser", "cache@example.com", "password123", UserRole.PARENT)
+        user = await auth_service.create_user(
+            "cacheuser", "cache@example.com", "password123", UserRole.PARENT
+        )
 
         token = await auth_service.create_access_token(user)
 
@@ -482,7 +507,9 @@ class TestFederationIntegration:
     async def test_full_query_flow(self, federation_gateway):
         """Test complete query flow through federation."""
         # Mock all service responses
-        federation_gateway.http_client.post.return_value.__aenter__.return_value.status_code = 200
+        federation_gateway.http_client.post.return_value.__aenter__.return_value.status_code = (
+            200
+        )
         federation_gateway.http_client.post.return_value.__aenter__.return_value.json = AsyncMock(
             return_value={
                 "data": {
@@ -490,7 +517,9 @@ class TestFederationIntegration:
                         "id": "123",
                         "name": "Test Child",
                         "age": 7,
-                        "aiProfile": {"personalityTraits": [{"name": "Curious", "score": 0.85}]},
+                        "aiProfile": {
+                            "personalityTraits": [{"name": "Curious", "score": 0.85}]
+                        },
                     }
                 }
             }

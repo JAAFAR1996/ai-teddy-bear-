@@ -63,7 +63,9 @@ class ConversationSearchService:
                 # Create conversation object if not exists
                 if conv_id not in conversations:
                     conv_data = {
-                        k: v for k, v in row_dict.items() if k not in ["message_id", "content", "role", "msg_timestamp"]
+                        k: v
+                        for k, v in row_dict.items()
+                        if k not in ["message_id", "content", "role", "msg_timestamp"]
                     }
                     conversations[conv_id] = conv_data
 
@@ -208,7 +210,9 @@ class ConversationSearchService:
             self.logger.error(f"Error finding conversations requiring review: {e}")
             raise
 
-    async def get_active_conversations(self, inactive_threshold_minutes: int = 30) -> List[Dict[str, Any]]:
+    async def get_active_conversations(
+        self, inactive_threshold_minutes: int = 30
+    ) -> List[Dict[str, Any]]:
         """Get currently active conversations."""
         try:
             cursor = self.connection.cursor()

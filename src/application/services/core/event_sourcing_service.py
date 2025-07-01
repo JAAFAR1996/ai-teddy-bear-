@@ -12,7 +12,8 @@ from typing import Any, AsyncIterator, Dict, List, Optional, Type, TypeVar
 
 from ...infrastructure.messaging.event_bus_integration import EventBus
 from ...shared.kernel import AggregateRoot, DomainEvent
-from .event_sourcing_repository import EventSourcingRepository, EventSourcingRepositoryImpl
+from .event_sourcing_repository import (EventSourcingRepository,
+                                        EventSourcingRepositoryImpl)
 from .event_store import EventStore, StoredEvent, get_event_store
 from .snapshot_store import SnapshotStore, get_snapshot_store
 
@@ -39,7 +40,9 @@ class EventSourcingService:
 
         if aggregate_type not in self._repositories:
             self._repositories[aggregate_type] = EventSourcingRepositoryImpl(
-                aggregate_type=aggregate_type, event_store=self.event_store, snapshot_store=self.snapshot_store
+                aggregate_type=aggregate_type,
+                event_store=self.event_store,
+                snapshot_store=self.snapshot_store,
             )
 
         return self._repositories[aggregate_type]
@@ -58,20 +61,28 @@ class EventSourcingService:
         # Publish events to event bus
         await self._publish_domain_events(events)
 
-        logger.info(f"Saved aggregate {aggregate.id} and published {len(events)} events")
+        logger.info(
+            f"Saved aggregate {aggregate.id} and published {len(events)} events"
+        )
 
-    async def load_aggregate(self, aggregate_type: Type[T], aggregate_id: str) -> Optional[T]:
+    async def load_aggregate(
+        self, aggregate_type: Type[T], aggregate_id: str
+    ) -> Optional[T]:
         """Load aggregate by ID"""
 
         repository = self.get_repository(aggregate_type)
         aggregate = await repository.load(aggregate_id)
 
         if aggregate:
-            logger.info(f"Loaded aggregate {aggregate_id} of type {aggregate_type.__name__}")
+            logger.info(
+                f"Loaded aggregate {aggregate_id} of type {aggregate_type.__name__}"
+            )
 
         return aggregate
 
-    async def replay_events(self, stream_id: str, from_version: int = 0) -> AsyncIterator[StoredEvent]:
+    async def replay_events(
+        self, stream_id: str, from_version: int = 0
+    ) -> AsyncIterator[StoredEvent]:
         """Replay events from stream"""
 
         events = await self.event_store.load_events(stream_id, from_version)
@@ -81,7 +92,9 @@ class EventSourcingService:
 
         logger.info(f"Replayed {len(events)} events from {stream_id}")
 
-    async def create_projection(self, stream_pattern: str, projection_handler: callable) -> Dict[str, Any]:
+    async def create_projection(
+        self, stream_pattern: str, projection_handler: callable
+    ) -> Dict[str, Any]:
         """Create projection from event streams"""
 
         projection_data = {}
@@ -113,8 +126,12 @@ class EventSourcingService:
             "exists": True,
             "version": version,
             "event_count": len(events),
-            "first_event_timestamp": first_event.metadata.timestamp if first_event else None,
-            "last_event_timestamp": last_event.metadata.timestamp if last_event else None,
+            "first_event_timestamp": (
+                first_event.metadata.timestamp if first_event else None
+            ),
+            "last_event_timestamp": (
+                last_event.metadata.timestamp if last_event else None
+            ),
         }
 
     async def backup_stream(self, stream_id: str) -> List[Dict[str, Any]]:
@@ -141,7 +158,9 @@ class EventSourcingService:
 
         return backup_data
 
-    async def restore_stream(self, stream_id: str, backup_data: List[Dict[str, Any]]) -> None:
+    async def restore_stream(
+        self, stream_id: str, backup_data: List[Dict[str, Any]]
+    ) -> None:
         """Restore event stream from backup"""
 
         # Create domain events from backup

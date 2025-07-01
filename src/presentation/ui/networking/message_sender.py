@@ -91,7 +91,9 @@ class EnterpriseMessageSender(QObject):
 
         return await self._send_message_with_retry(message_id, message_data)
 
-    async def _send_message_with_retry(self, message_id: str, message_data: dict) -> str:
+    async def _send_message_with_retry(
+        self, message_id: str, message_data: dict
+    ) -> str:
         """Send message with automatic retry logic"""
         try:
             # Store message for potential retry
@@ -144,7 +146,12 @@ class EnterpriseMessageSender(QObject):
 
         # Send each chunk
         for idx, chunk in enumerate(chunks):
-            chunk_message = {"type": "chunk_data", "message_id": message_id, "chunk_index": idx, "chunk_data": chunk}
+            chunk_message = {
+                "type": "chunk_data",
+                "message_id": message_id,
+                "chunk_index": idx,
+                "chunk_data": chunk,
+            }
 
             self.websocket_client.send_message(chunk_message)
 
@@ -177,16 +184,25 @@ class EnterpriseMessageSender(QObject):
             if "audio_data" in message_data:
                 audio_data = message_data["audio_data"]
                 compressed_data = gzip.compress(audio_data.encode("utf-8"))
-                message_data["audio_data"] = base64.b64encode(compressed_data).decode("utf-8")
+                message_data["audio_data"] = base64.b64encode(compressed_data).decode(
+                    "utf-8"
+                )
                 message_data["compressed"] = True
-                message_data["compression_ratio"] = len(compressed_data) / len(audio_data.encode("utf-8"))
+                message_data["compression_ratio"] = len(compressed_data) / len(
+                    audio_data.encode("utf-8")
+                )
 
-                logger.debug("Message compressed", compression_ratio=message_data["compression_ratio"])
+                logger.debug(
+                    "Message compressed",
+                    compression_ratio=message_data["compression_ratio"],
+                )
 
             return message_data
 
         except Exception as e:
-            logger.warning("Failed to compress message, sending uncompressed", error=str(e))
+            logger.warning(
+                "Failed to compress message, sending uncompressed", error=str(e)
+            )
             return message_data
 
     def _queue_for_retry(dict) -> None:
@@ -198,7 +214,9 @@ class EnterpriseMessageSender(QObject):
             self.retry_queue.append(message_data)
 
             logger.info(
-                "Message queued for retry", message_id=message_data["id"], attempt=message_data["retry_attempts"]
+                "Message queued for retry",
+                message_id=message_data["id"],
+                attempt=message_data["retry_attempts"],
             )
         else:
             logger.error("Max retry attempts reached", message_id=message_data["id"])
@@ -220,13 +238,20 @@ class EnterpriseMessageSender(QObject):
             message_data = self.retry_queue.pop(0)
 
             try:
-                asyncio.create_task(self._send_message_with_retry(message_data["id"], message_data))
+                asyncio.create_task(
+                    self._send_message_with_retry(message_data["id"], message_data)
+                )
             except Exception as e:
-                logger.error("Retry failed", message_id=message_data["id"], error=str(e))
+                logger.error(
+                    "Retry failed", message_id=message_data["id"], error=str(e)
+                )
 
     def _on_connection_restored(self) -> Any:
         """Handle connection restoration"""
-        logger.info("Connection restored, processing retry queue", pending_count=len(self.retry_queue))
+        logger.info(
+            "Connection restored, processing retry queue",
+            pending_count=len(self.retry_queue),
+        )
         self.connection_restored.emit()
 
         # Process retry queue immediately

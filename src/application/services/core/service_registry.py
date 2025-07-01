@@ -120,10 +120,18 @@ class ServiceRegistry:
             raise ValueError(f"Service '{name}' already registered")
 
         self._services[name] = ServiceInfo(
-            name=name, service_class=service_class, priority=priority, dependencies=dependencies or []
+            name=name,
+            service_class=service_class,
+            priority=priority,
+            dependencies=dependencies or [],
         )
 
-        logger.info("Service registered", name=name, class_name=service_class.__name__, priority=priority.name)
+        logger.info(
+            "Service registered",
+            name=name,
+            class_name=service_class.__name__,
+            priority=priority.name,
+        )
 
     async def initialize(self) -> None:
         """Initialize all services in dependency order"""
@@ -131,7 +139,9 @@ class ServiceRegistry:
             # Calculate initialization order
             self._initialization_order = self._calculate_init_order()
 
-            logger.info("Starting service initialization", order=self._initialization_order)
+            logger.info(
+                "Starting service initialization", order=self._initialization_order
+            )
 
             # Initialize services
             for service_name in self._initialization_order:
@@ -140,7 +150,9 @@ class ServiceRegistry:
             # Start health checks
             for service_name, info in self._services.items():
                 if info.state == ServiceState.READY:
-                    info._health_check_task = asyncio.create_task(self._health_check_loop(service_name))
+                    info._health_check_task = asyncio.create_task(
+                        self._health_check_loop(service_name)
+                    )
 
             logger.info("All services initialized")
 
@@ -326,19 +338,25 @@ class ServiceRegistry:
                 else:
                     if info.state == ServiceState.READY:
                         info.state = ServiceState.DEGRADED
-                        logger.warning(f"Service degraded: {service_name}", health=health)
+                        logger.warning(
+                            f"Service degraded: {service_name}", health=health
+                        )
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Health check failed for service: {service_name}", error=str(e))
+                logger.error(
+                    f"Health check failed for service: {service_name}", error=str(e)
+                )
 
     def get_status(self) -> Dict[str, Any]:
         """Get status of all services"""
         return {
             name: {
                 "state": info.state.value,
-                "initialized_at": info.initialized_at.isoformat() if info.initialized_at else None,
+                "initialized_at": (
+                    info.initialized_at.isoformat() if info.initialized_at else None
+                ),
                 "error": info.error,
                 "dependencies": info.dependencies,
                 "priority": info.priority.name,

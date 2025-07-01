@@ -153,20 +153,27 @@ class ChildProfile:
     def interaction_summary(self) -> Dict[str, Any]:
         """Get interaction summary."""
         today_conversations = [
-            conv for conv in self.conversation_history if conv.timestamp.date() == datetime.now().date()
+            conv
+            for conv in self.conversation_history
+            if conv.timestamp.date() == datetime.now().date()
         ]
 
         return {
             "total_conversations": self.total_conversations,
             "today_conversations": len(today_conversations),
             "last_seen": self.last_seen.isoformat() if self.last_seen else None,
-            "session_duration": self.current_session.duration_minutes if self.current_session else 0,
+            "session_duration": (
+                self.current_session.duration_minutes if self.current_session else 0
+            ),
             "learning_subjects": list(self.learning_progress.keys()),
             "favorite_activities": self.favorite_activities[:3],  # Top 3
         }
 
     def add_conversation(
-        self, child_input: str, ai_response: str, interaction_type: InteractionType = InteractionType.CONVERSATION
+        self,
+        child_input: str,
+        ai_response: str,
+        interaction_type: InteractionType = InteractionType.CONVERSATION,
     ) -> None:
         """Add new conversation entry."""
         entry = ConversationEntry(
@@ -188,7 +195,10 @@ class ChildProfile:
     def start_session(self, session_id: str) -> None:
         """Start new session."""
         self.current_session = SessionData(
-            session_id=session_id, started_at=datetime.now(), device_id=self.device_id, child_id=self.child_id
+            session_id=session_id,
+            started_at=datetime.now(),
+            device_id=self.device_id,
+            child_id=self.child_id,
         )
 
     def end_session(self) -> None:

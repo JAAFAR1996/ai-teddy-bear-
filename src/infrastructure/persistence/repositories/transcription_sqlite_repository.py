@@ -12,12 +12,15 @@ from datetime import datetime
 
 from src.core.domain.entities.transcription import Transcription
 from src.infrastructure.persistence.base import BaseRepository
-from src.infrastructure.persistence.base_sqlite_repository import BaseSQLiteRepository
+from src.infrastructure.persistence.base_sqlite_repository import \
+    BaseSQLiteRepository
 
 
 class TranscriptionSQLiteRepository(BaseSQLiteRepository):
     def __init__(self, connection):
-        super().__init__(connection, table_name="transcriptions", entity_class=Transcription)
+        super().__init__(
+            connection, table_name="transcriptions", entity_class=Transcription
+        )
 
     def _get_table_schema(self) -> str:
         """Get the CREATE TABLE SQL statement for transcriptions"""
@@ -54,7 +57,9 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
 
         # If no duration provided, try to get it from file
         if transcription.duration is None and transcription.audio_file_path:
-            transcription.duration = self._get_audio_duration(transcription.audio_file_path)
+            transcription.duration = self._get_audio_duration(
+                transcription.audio_file_path
+            )
 
         # Default model used if not specified
         if transcription.model_used is None:

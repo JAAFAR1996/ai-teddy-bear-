@@ -20,14 +20,16 @@ import numpy as np
 
 from .audit_logger import SecurityAuditLogger
 from .data_encryption import DataClassification
-
 # Core imports
-from .homomorphic_encryption import EncryptedData, HEConfig, HEProcessingResult, HomomorphicEncryption, ProcessingMode
+from .homomorphic_encryption import (EncryptedData, HEConfig,
+                                     HEProcessingResult, HomomorphicEncryption,
+                                     ProcessingMode)
 
 # Audio processing imports
 try:
     from ...audio.audio_processing import AudioConfig, AudioProcessor
-    from ...domain.services.advanced_emotion_analyzer import AdvancedEmotionAnalyzer
+    from ...domain.services.advanced_emotion_analyzer import \
+        AdvancedEmotionAnalyzer
 
     AUDIO_PROCESSING_AVAILABLE = True
 except ImportError:
@@ -69,13 +71,22 @@ class SecureAudioFeatureExtractor:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def extract_and_encrypt_features(
-        self, audio_data: np.ndarray, child_id: str, feature_types: Optional[List[str]] = None
+        self,
+        audio_data: np.ndarray,
+        child_id: str,
+        feature_types: Optional[List[str]] = None,
     ) -> SecureAudioFeatures:
         """Extract audio features and immediately encrypt them."""
         if not AUDIO_PROCESSING_AVAILABLE:
             raise RuntimeError("Audio processing not available")
 
-        feature_types = feature_types or ["mfcc", "spectral_centroid", "pitch", "energy", "tempo"]
+        feature_types = feature_types or [
+            "mfcc",
+            "spectral_centroid",
+            "pitch",
+            "energy",
+            "tempo",
+        ]
 
         # Log feature extraction start
         await self.audit_logger.log_security_event(
@@ -93,7 +104,9 @@ class SecureAudioFeatureExtractor:
             features = await self._extract_audio_features(audio_data, feature_types)
 
             # Immediately encrypt features
-            encrypted_features = await self.he_service.encrypt_voice_features(features, child_id)
+            encrypted_features = await self.he_service.encrypt_voice_features(
+                features, child_id
+            )
 
             # Create secure container
             secure_features = SecureAudioFeatures(
@@ -126,7 +139,9 @@ class SecureAudioFeatureExtractor:
             self.logger.error(f"Secure feature extraction failed: {e}")
             raise
 
-    async def _extract_audio_features(self, audio_data: np.ndarray, feature_types: List[str]) -> np.ndarray:
+    async def _extract_audio_features(
+        self, audio_data: np.ndarray, feature_types: List[str]
+    ) -> np.ndarray:
         """Extract specified audio features."""
         import librosa
 
@@ -143,7 +158,11 @@ class SecureAudioFeatureExtractor:
 
             elif feature_type == "pitch":
                 pitches, magnitudes = librosa.piptrack(y=audio_data, sr=16000)
-                pitch_mean = np.mean(pitches[pitches > 0]) if len(pitches[pitches > 0]) > 0 else 0
+                pitch_mean = (
+                    np.mean(pitches[pitches > 0])
+                    if len(pitches[pitches > 0]) > 0
+                    else 0
+                )
                 features_list.append(pitch_mean)
 
             elif feature_type == "energy":
@@ -172,7 +191,9 @@ class PrivacyPreservingEmotionAnalyzer:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def analyze_emotions_privately(
-        self, secure_features: SecureAudioFeatures, analysis_mode: ProcessingMode = ProcessingMode.EMOTION_ANALYSIS
+        self,
+        secure_features: SecureAudioFeatures,
+        analysis_mode: ProcessingMode = ProcessingMode.EMOTION_ANALYSIS,
     ) -> PrivacyPreservingResult:
         """Analyze emotions while preserving complete privacy."""
         # Verify processing permissions
@@ -197,7 +218,9 @@ class PrivacyPreservingEmotionAnalyzer:
             )
 
             # Generate privacy-preserving recommendations
-            recommendations = self._generate_secure_recommendations(emotion_result, secure_features)
+            recommendations = self._generate_secure_recommendations(
+                emotion_result, secure_features
+            )
 
             # Create comprehensive result
             result = PrivacyPreservingResult(
@@ -252,7 +275,9 @@ class PrivacyPreservingEmotionAnalyzer:
             recommendations.append("Monitor behavioral pattern changes")
 
         if emotion_result.processing_time_ms > 100:
-            recommendations.append("Consider optimizing processing for better responsiveness")
+            recommendations.append(
+                "Consider optimizing processing for better responsiveness"
+            )
 
         return recommendations
 
@@ -269,7 +294,10 @@ class HEIntegrationService:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def process_audio_securely(
-        self, audio_data: np.ndarray, child_id: str, analysis_options: Optional[Dict[str, Any]] = None
+        self,
+        audio_data: np.ndarray,
+        child_id: str,
+        analysis_options: Optional[Dict[str, Any]] = None,
     ) -> PrivacyPreservingResult:
         """Complete secure audio processing pipeline."""
         analysis_options = analysis_options or {}
@@ -293,7 +321,9 @@ class HEIntegrationService:
 
             # Step 2: Analyze emotions privately
             processing_mode = self._get_processing_mode(analysis_options)
-            result = await self.emotion_analyzer.analyze_emotions_privately(secure_features, processing_mode)
+            result = await self.emotion_analyzer.analyze_emotions_privately(
+                secure_features, processing_mode
+            )
 
             # Log pipeline success
             await self.audit_logger.log_security_event(
@@ -301,7 +331,9 @@ class HEIntegrationService:
                 details={
                     "total_processing_time_ms": result.emotion_analysis.processing_time_ms,
                     "privacy_level": result.privacy_level,
-                    "operations_count": len(result.emotion_analysis.operations_performed),
+                    "operations_count": len(
+                        result.emotion_analysis.operations_performed
+                    ),
                 },
                 classification=DataClassification.RESTRICTED,
             )
@@ -318,7 +350,9 @@ class HEIntegrationService:
             raise
 
     async def batch_process_audio_securely(
-        self, audio_batch: List[Tuple[np.ndarray, str]], analysis_options: Optional[Dict[str, Any]] = None
+        self,
+        audio_batch: List[Tuple[np.ndarray, str]],
+        analysis_options: Optional[Dict[str, Any]] = None,
     ) -> List[PrivacyPreservingResult]:
         """Process multiple audio samples securely in batch."""
         tasks = []
@@ -380,7 +414,11 @@ class HEIntegrationService:
                 "scalable_architecture": True,
                 "optimized_memory_usage": True,
             },
-            "compliance": {"privacy_by_design": True, "data_minimization": True, "secure_computation": True},
+            "compliance": {
+                "privacy_by_design": True,
+                "data_minimization": True,
+                "secure_computation": True,
+            },
             "timestamp": datetime.now().isoformat(),
         }
 

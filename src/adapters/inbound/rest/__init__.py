@@ -19,4 +19,10 @@ from .health_controller import HealthController
 from .learning_controller import LearningController
 from .safety_controller import SafetyController
 
-__all__ = ["ChildController", "ConversationController", "LearningController", "SafetyController", "HealthController"]
+__all__ = [
+    "ChildController",
+    "ConversationController",
+    "LearningController",
+    "SafetyController",
+    "HealthController",
+]

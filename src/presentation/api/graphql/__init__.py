@@ -1,63 +1,43 @@
 # GraphQL Federation module exports for AI Teddy Bear project
 
 try:
-    from .federation_gateway import (
-        FederationConfig,
-        GraphQLFederationGateway,
-        ServiceConfig,
-        create_default_federation_config,
-        create_federation_gateway,
-    )
+    from .federation_gateway import (FederationConfig,
+                                     GraphQLFederationGateway, ServiceConfig,
+                                     create_default_federation_config,
+                                     create_federation_gateway)
 
     FEDERATION_GATEWAY_AVAILABLE = True
 except ImportError:
     FEDERATION_GATEWAY_AVAILABLE = False
 
 try:
-    from .authentication import (
-        APIKey,
-        AuthConfig,
-        AuthenticationService,
-        GraphQLAuthenticator,
-        Permission,
-        User,
-        UserRole,
-        create_auth_config,
-        create_auth_service,
-    )
+    from .authentication import (APIKey, AuthConfig, AuthenticationService,
+                                 GraphQLAuthenticator, Permission, User,
+                                 UserRole, create_auth_config,
+                                 create_auth_service)
 
     AUTHENTICATION_AVAILABLE = True
 except ImportError:
     AUTHENTICATION_AVAILABLE = False
 
 try:
-    from .service_resolvers import (
-        AIProfile,
-        AIServiceResolvers,
-        Child,
-        ChildServiceResolvers,
-        Conversation,
-        EmotionSnapshot,
-        EntityResolver,
-        LearningProgress,
-        MonitoringServiceResolvers,
-        SafetyServiceResolvers,
-        schema,
-    )
+    from .service_resolvers import (AIProfile, AIServiceResolvers, Child,
+                                    ChildServiceResolvers, Conversation,
+                                    EmotionSnapshot, EntityResolver,
+                                    LearningProgress,
+                                    MonitoringServiceResolvers,
+                                    SafetyServiceResolvers, schema)
 
     SERVICE_RESOLVERS_AVAILABLE = True
 except ImportError:
     SERVICE_RESOLVERS_AVAILABLE = False
 
 try:
-    from .performance_monitor import (
-        GraphQLPerformanceMonitor,
-        PerformanceAlert,
-        QueryComplexityAnalyzer,
-        QueryMetrics,
-        ServiceMetrics,
-        create_performance_monitor,
-    )
+    from .performance_monitor import (GraphQLPerformanceMonitor,
+                                      PerformanceAlert,
+                                      QueryComplexityAnalyzer, QueryMetrics,
+                                      ServiceMetrics,
+                                      create_performance_monitor)
 
     PERFORMANCE_MONITOR_AVAILABLE = True
 except ImportError:

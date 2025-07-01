@@ -29,7 +29,6 @@ except ImportError:
     GRAPHQL_FEDERATION_AVAILABLE = False
 
 import httpx
-
 # FastAPI and async
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware

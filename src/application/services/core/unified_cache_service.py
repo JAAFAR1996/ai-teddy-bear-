@@ -45,19 +45,25 @@ class UnifiedCacheService:
     def cached(str="") -> None:
         """دالة مدموجة من cache_service.py"""
         # RESOLVED: تنفيذ الدالة من cache_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من cache_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من cache_service.py"
+        )
         pass
 
     def decorator(Callable) -> None:
         """دالة مدموجة من cache_service.py"""
         # RESOLVED: تنفيذ الدالة من cache_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من cache_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من cache_service.py"
+        )
         pass
 
     def _generate_cache_key():
         """دالة مدموجة من cache_service.py"""
         # RESOLVED: تنفيذ الدالة من cache_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من cache_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من cache_service.py"
+        )
         pass
 
     # ----- من simple_cache_service.py -----
@@ -65,25 +71,33 @@ class UnifiedCacheService:
     def cached(str="") -> None:
         """دالة مدموجة من simple_cache_service.py"""
         # RESOLVED: تنفيذ الدالة من simple_cache_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من simple_cache_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من simple_cache_service.py"
+        )
         pass
 
     def decorator(Callable) -> None:
         """دالة مدموجة من simple_cache_service.py"""
         # RESOLVED: تنفيذ الدالة من simple_cache_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من simple_cache_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من simple_cache_service.py"
+        )
         pass
 
     def _generate_cache_key():
         """دالة مدموجة من simple_cache_service.py"""
         # RESOLVED: تنفيذ الدالة من simple_cache_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من simple_cache_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من simple_cache_service.py"
+        )
         pass
 
     def get_stats(self) -> Dict[str, Any]:
         """دالة مدموجة من simple_cache_service.py"""
         # RESOLVED: تنفيذ الدالة من simple_cache_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من simple_cache_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من simple_cache_service.py"
+        )
         pass
 
     # ==========================================

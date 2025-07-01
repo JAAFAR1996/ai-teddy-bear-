@@ -62,7 +62,10 @@ class ChildEngagementInsight:
         if self.metrics.total_interaction_time < 0:
             raise ValueError("Total interaction time cannot be negative")
 
-        if self.metrics.time_utilization_percentage < 0 or self.metrics.time_utilization_percentage > 100:
+        if (
+            self.metrics.time_utilization_percentage < 0
+            or self.metrics.time_utilization_percentage > 100
+        ):
             raise ValueError("Time utilization percentage must be between 0 and 100")
 
     def _generate_recommendations(self) -> None:
@@ -70,20 +73,28 @@ class ChildEngagementInsight:
         recommendations = []
 
         if self.metrics.needs_engagement_reminder():
-            recommendations.append("Consider sending a gentle reminder to engage with the AI assistant")
+            recommendations.append(
+                "Consider sending a gentle reminder to engage with the AI assistant"
+            )
 
         if self.metrics.is_under_utilization_threshold():
-            recommendations.append("Child may benefit from shorter, more frequent interactions")
+            recommendations.append(
+                "Child may benefit from shorter, more frequent interactions"
+            )
         elif self.metrics.is_over_utilization_threshold():
             recommendations.append("Consider increasing daily interaction time limit")
 
         if self.engagement_level == EngagementLevel.LOW:
-            recommendations.append("Try introducing new topics or activities to boost engagement")
+            recommendations.append(
+                "Try introducing new topics or activities to boost engagement"
+            )
 
         if self.metrics.interaction_streak == 0:
             recommendations.append("Schedule regular interaction times to build habits")
 
-        self.recommendations.extend([r for r in recommendations if r not in self.recommendations])
+        self.recommendations.extend(
+            [r for r in recommendations if r not in self.recommendations]
+        )
 
     def is_at_risk(self) -> bool:
         """Check if child is at risk of disengagement"""

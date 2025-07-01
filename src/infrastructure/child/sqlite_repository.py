@@ -12,12 +12,17 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from src.core.domain.entities.child import Child
-from src.infrastructure.persistence.base import BulkOperationResult, QueryOptions, SearchCriteria, SortOrder
-from src.infrastructure.persistence.base_sqlite_repository import BaseSQLiteRepository
+from src.infrastructure.persistence.base import (BulkOperationResult,
+                                                 QueryOptions, SearchCriteria,
+                                                 SortOrder)
+from src.infrastructure.persistence.base_sqlite_repository import \
+    BaseSQLiteRepository
 from src.infrastructure.persistence.child_repository import ChildRepository
 
 
-class ChildSQLiteRepositoryRefactored(BaseSQLiteRepository[Child, int], ChildRepository):
+class ChildSQLiteRepositoryRefactored(
+    BaseSQLiteRepository[Child, int], ChildRepository
+):
     """
     Refactored SQLite implementation of Child Repository
     Following Clean Architecture with separated concerns
@@ -26,7 +31,9 @@ class ChildSQLiteRepositoryRefactored(BaseSQLiteRepository[Child, int], ChildRep
     def __init__(
         self,
         session_factory,
-        db_path: str = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data", "teddyai.db"),
+        db_path: str = os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "data", "teddyai.db"
+        ),
     ):
         self.session_factory = session_factory
 
@@ -38,7 +45,9 @@ class ChildSQLiteRepositoryRefactored(BaseSQLiteRepository[Child, int], ChildRep
         # Create connection
         connection = sqlite3.connect(db_path, check_same_thread=False)
 
-        super().__init__(connection=connection, table_name="children", entity_class=Child)
+        super().__init__(
+            connection=connection, table_name="children", entity_class=Child
+        )
 
     async def initialize(self):
         """Initialize repository (no-op for backwards compatibility)"""
@@ -87,7 +96,9 @@ class ChildSQLiteRepositoryRefactored(BaseSQLiteRepository[Child, int], ChildRep
 
                 columns = ", ".join(data.keys())
                 placeholders = ", ".join(["?" for _ in data])
-                sql = f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
+                sql = (
+                    f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
+                )
 
                 cursor.execute(sql, list(data.values()))
 
@@ -162,7 +173,12 @@ class ChildSQLiteRepositoryRefactored(BaseSQLiteRepository[Child, int], ChildRep
             params = []
 
             if options and hasattr(options, "sort_by") and options.sort_by:
-                order = "DESC" if hasattr(options, "sort_order") and options.sort_order == SortOrder.DESC else "ASC"
+                order = (
+                    "DESC"
+                    if hasattr(options, "sort_order")
+                    and options.sort_order == SortOrder.DESC
+                    else "ASC"
+                )
                 sql += f" ORDER BY {options.sort_by} {order}"
 
             if options and hasattr(options, "limit") and options.limit:
@@ -184,11 +200,19 @@ class ChildSQLiteRepositoryRefactored(BaseSQLiteRepository[Child, int], ChildRep
 
     async def find_by_name(self, name: str) -> Optional[Child]:
         """Delegate to original implementation"""
-        return await super().find_by_name(name) if hasattr(super(), "find_by_name") else None
+        return (
+            await super().find_by_name(name)
+            if hasattr(super(), "find_by_name")
+            else None
+        )
 
     async def find_by_age_range(self, min_age: int, max_age: int) -> List[Child]:
         """Delegate to original implementation"""
-        return await super().find_by_age_range(min_age, max_age) if hasattr(super(), "find_by_age_range") else []
+        return (
+            await super().find_by_age_range(min_age, max_age)
+            if hasattr(super(), "find_by_age_range")
+            else []
+        )
 
     # ======= HELPER METHODS =======
 
@@ -260,7 +284,9 @@ class ChildSQLiteRepositoryRefactored(BaseSQLiteRepository[Child, int], ChildRep
         # Parse date fields
         if "date_of_birth" in data and data["date_of_birth"]:
             try:
-                data["date_of_birth"] = datetime.fromisoformat(data["date_of_birth"]).date()
+                data["date_of_birth"] = datetime.fromisoformat(
+                    data["date_of_birth"]
+                ).date()
             except (ValueError, TypeError):
                 data["date_of_birth"] = None
 

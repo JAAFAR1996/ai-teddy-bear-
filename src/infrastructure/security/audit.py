@@ -70,7 +70,10 @@ class AuditService:
 
     def _calculate_risk_score(self, event_type: AuditEventType, details: Dict) -> str:
         """Calculate risk score based on event type and details"""
-        high_risk_events = [AuditEventType.PERMISSION_CHANGED, AuditEventType.SECURITY_ALERT]
+        high_risk_events = [
+            AuditEventType.PERMISSION_CHANGED,
+            AuditEventType.SECURITY_ALERT,
+        ]
 
         if event_type in high_risk_events:
             return "HIGH"

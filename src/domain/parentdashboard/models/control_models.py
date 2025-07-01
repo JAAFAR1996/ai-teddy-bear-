@@ -33,13 +33,25 @@ class AccessScheduleType(Enum):
         elif self == AccessScheduleType.SCHOOL_DAYS:
             # Monday-Friday 3PM-8PM
             return [
-                {"day": day, "start_hour": 15, "start_minute": 0, "end_hour": 20, "end_minute": 0}
+                {
+                    "day": day,
+                    "start_hour": 15,
+                    "start_minute": 0,
+                    "end_hour": 20,
+                    "end_minute": 0,
+                }
                 for day in range(5)  # 0-4 (Mon-Fri)
             ]
         elif self == AccessScheduleType.WEEKENDS:
             # Saturday-Sunday 9AM-9PM
             return [
-                {"day": day, "start_hour": 9, "start_minute": 0, "end_hour": 21, "end_minute": 0}
+                {
+                    "day": day,
+                    "start_hour": 9,
+                    "start_minute": 0,
+                    "end_hour": 21,
+                    "end_minute": 0,
+                }
                 for day in [5, 6]  # Sat, Sun
             ]
         return []
@@ -55,7 +67,14 @@ class ContentFilterLevel(Enum):
     def get_blocked_topics(self) -> List[str]:
         """Get topics blocked at this level"""
         if self == ContentFilterLevel.STRICT:
-            return ["violence", "adult_content", "personal_info", "social_media", "dating", "politics"]
+            return [
+                "violence",
+                "adult_content",
+                "personal_info",
+                "social_media",
+                "dating",
+                "politics",
+            ]
         elif self == ContentFilterLevel.MODERATE:
             return ["violence", "adult_content", "personal_info"]
         else:  # RELAXED
@@ -70,9 +89,18 @@ class ParentalControl:
     max_daily_minutes: int = 60
     max_session_minutes: int = 30
     allowed_topics: List[str] = field(
-        default_factory=lambda: ["education", "science", "art", "music", "games", "stories"]
+        default_factory=lambda: [
+            "education",
+            "science",
+            "art",
+            "music",
+            "games",
+            "stories",
+        ]
     )
-    blocked_topics: List[str] = field(default_factory=lambda: ["violence", "adult_content", "personal_info"])
+    blocked_topics: List[str] = field(
+        default_factory=lambda: ["violence", "adult_content", "personal_info"]
+    )
     content_filter_level: str = "strict"
     require_parent_approval: bool = False
     enable_voice_recording: bool = True
@@ -98,7 +126,9 @@ class ParentalControl:
         if self.max_daily_minutes <= 0 or self.max_daily_minutes > 480:  # Max 8 hours
             raise ValueError("Daily time limit must be between 1-480 minutes")
 
-        if self.max_session_minutes <= 0 or self.max_session_minutes > 120:  # Max 2 hours
+        if (
+            self.max_session_minutes <= 0 or self.max_session_minutes > 120
+        ):  # Max 2 hours
             raise ValueError("Session time limit must be between 1-120 minutes")
 
         if self.max_session_minutes > self.max_daily_minutes:
@@ -125,7 +155,9 @@ class ParentalControl:
 
     def should_alert_for_topic(self, topic: str) -> bool:
         """Check if should alert for this topic"""
-        return self.alert_settings.get("content_moderation", True) and not self.is_topic_allowed(topic)
+        return self.alert_settings.get(
+            "content_moderation", True
+        ) and not self.is_topic_allowed(topic)
 
 
 class AccessSchedule(Base):
@@ -149,7 +181,10 @@ class AccessSchedule(Base):
         current_day = now.weekday()
         current_time = now.time()
 
-        return current_day == self.day_of_week and self.start_time <= current_time <= self.end_time
+        return (
+            current_day == self.day_of_week
+            and self.start_time <= current_time <= self.end_time
+        )
 
     def get_minutes_until_access(self) -> Optional[int]:
         """Get minutes until access is allowed"""
@@ -220,4 +255,8 @@ class TimeUsageStats:
 
     def get_usage_percentage(self) -> float:
         """Get daily usage percentage"""
-        return (self.daily_minutes_used / self.daily_limit) * 100 if self.daily_limit > 0 else 0
+        return (
+            (self.daily_minutes_used / self.daily_limit) * 100
+            if self.daily_limit > 0
+            else 0
+        )

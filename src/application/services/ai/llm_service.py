@@ -51,7 +51,10 @@ class LLMService:
                     self._client.chat.completions.create(
                         model="gpt-4-1106-preview",
                         messages=[
-                            {"role": "system", "content": self._create_system_prompt(context)},
+                            {
+                                "role": "system",
+                                "content": self._create_system_prompt(context),
+                            },
                             {"role": "user", "content": context.get("user_input", "")},
                         ],
                         max_tokens=150,

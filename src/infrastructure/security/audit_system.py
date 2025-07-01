@@ -160,7 +160,10 @@ class SecurityAuditLogger:
         """Assess threat level for event"""
 
         # High threat events
-        if event.event_type in [SecurityEventType.UNAUTHORIZED_ACCESS, SecurityEventType.SUSPICIOUS_ACTIVITY]:
+        if event.event_type in [
+            SecurityEventType.UNAUTHORIZED_ACCESS,
+            SecurityEventType.SUSPICIOUS_ACTIVITY,
+        ]:
             return ThreatLevel.HIGH
 
         # Medium threat events
@@ -172,7 +175,10 @@ class SecurityAuditLogger:
             return ThreatLevel.MEDIUM
 
         # Child-related events get special handling
-        if event.event_type in [SecurityEventType.CHILD_INTERACTION, SecurityEventType.AUDIO_RECORDING]:
+        if event.event_type in [
+            SecurityEventType.CHILD_INTERACTION,
+            SecurityEventType.AUDIO_RECORDING,
+        ]:
             return ThreatLevel.MEDIUM if event.sensitive_data else ThreatLevel.LOW
 
         return ThreatLevel.LOW
@@ -184,7 +190,9 @@ class SecurityAuditLogger:
             if event.event_type == pattern["event_type"]:
                 # Count recent similar events
                 recent_count = await self._count_recent_events(
-                    event.ip_address or event.user_id, pattern["event_type"], pattern["window_seconds"]
+                    event.ip_address or event.user_id,
+                    pattern["event_type"],
+                    pattern["window_seconds"],
                 )
 
                 if recent_count >= pattern["threshold"]:
@@ -208,7 +216,9 @@ class SecurityAuditLogger:
                         count=recent_count,
                     )
 
-    async def _count_recent_events(self, identifier: str, event_type: SecurityEventType, window_seconds: int) -> int:
+    async def _count_recent_events(
+        self, identifier: str, event_type: SecurityEventType, window_seconds: int
+    ) -> int:
         """Count recent events for threat detection"""
 
         if not identifier:
@@ -341,7 +351,9 @@ def get_audit_logger() -> SecurityAuditLogger:
 # Convenience functions
 
 
-async def log_child_interaction(user_id: str, device_id: str, interaction_type: str, **kwargs) -> str:
+async def log_child_interaction(
+    user_id: str, device_id: str, interaction_type: str, **kwargs
+) -> str:
     """Log child interaction"""
     audit_logger = get_audit_logger()
 
@@ -355,7 +367,9 @@ async def log_child_interaction(user_id: str, device_id: str, interaction_type: 
     )
 
 
-async def log_audio_recording(user_id: str, device_id: str, duration: int, **kwargs) -> str:
+async def log_audio_recording(
+    user_id: str, device_id: str, duration: int, **kwargs
+) -> str:
     """Log audio recording"""
     audit_logger = get_audit_logger()
 
@@ -368,12 +382,23 @@ async def log_audio_recording(user_id: str, device_id: str, duration: int, **kwa
     )
 
 
-async def log_login_attempt(user_id: str, username: str, ip_address: str, result: str, **kwargs) -> str:
+async def log_login_attempt(
+    user_id: str, username: str, ip_address: str, result: str, **kwargs
+) -> str:
     """Log login attempt"""
     audit_logger = get_audit_logger()
 
-    event_type = SecurityEventType.LOGIN_SUCCESS if result == "success" else SecurityEventType.LOGIN_FAILURE
+    event_type = (
+        SecurityEventType.LOGIN_SUCCESS
+        if result == "success"
+        else SecurityEventType.LOGIN_FAILURE
+    )
 
     return await audit_logger.log_event(
-        event_type=event_type, user_id=user_id, username=username, ip_address=ip_address, result=result, details=kwargs
+        event_type=event_type,
+        user_id=user_id,
+        username=username,
+        ip_address=ip_address,
+        result=result,
+        details=kwargs,
     )

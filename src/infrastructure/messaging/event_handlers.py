@@ -10,14 +10,9 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from ...domain.events import (
-    ChildProfileUpdated,
-    ChildRegistered,
-    ConversationEnded,
-    ConversationStarted,
-    EmotionDetected,
-    SafetyViolationDetected,
-)
+from ...domain.events import (ChildProfileUpdated, ChildRegistered,
+                              ConversationEnded, ConversationStarted,
+                              EmotionDetected, SafetyViolationDetected)
 from .event_consumer import ConsumedEvent, EventHandler
 
 logger = logging.getLogger(__name__)
@@ -43,14 +38,18 @@ class ChildRegisteredHandler(EventHandler):
             await self._send_welcome_notification(child_id, name)
             await self._initialize_analytics_tracking(child_id)
 
-            logger.info(f"Successfully processed child registration for {name} (ID: {child_id})")
+            logger.info(
+                f"Successfully processed child registration for {name} (ID: {child_id})"
+            )
             return True
 
         except Exception as e:
             logger.error(f"Failed to process child registration: {e}")
             return False
 
-    async def _setup_child_environment(self, child_id: str, name: str, age: int) -> None:
+    async def _setup_child_environment(
+        self, child_id: str, name: str, age: int
+    ) -> None:
         """Setup environment for new child"""
 
         # Create personalized content directories
@@ -102,14 +101,18 @@ class SafetyViolationHandler(EventHandler):
             # Update child safety profile
             await self._update_safety_profile(child_id, violation_type)
 
-            logger.warning(f"Safety violation processed for child {child_id}: {violation_type}")
+            logger.warning(
+                f"Safety violation processed for child {child_id}: {violation_type}"
+            )
             return True
 
         except Exception as e:
             logger.error(f"CRITICAL: Failed to process safety violation: {e}")
             return False
 
-    async def _escalate_immediately(self, child_id: str, violation_type: str, details: str) -> None:
+    async def _escalate_immediately(
+        self, child_id: str, violation_type: str, details: str
+    ) -> None:
         """Immediate escalation for critical violations"""
 
         # Block child account temporarily
@@ -117,7 +120,9 @@ class SafetyViolationHandler(EventHandler):
         # Alert parents immediately
         logger.critical(f"IMMEDIATE ESCALATION for child {child_id}: {violation_type}")
 
-    async def _log_safety_incident(self, child_id: str, violation_type: str, details: str, severity: str) -> None:
+    async def _log_safety_incident(
+        self, child_id: str, violation_type: str, details: str, severity: str
+    ) -> None:
         """Log safety incident for compliance"""
 
         # Store in audit log
@@ -125,7 +130,9 @@ class SafetyViolationHandler(EventHandler):
         # Create incident report
         logger.info(f"Logged safety incident: {violation_type} (severity: {severity})")
 
-    async def _notify_parents(self, child_id: str, violation_type: str, details: str, severity: str) -> None:
+    async def _notify_parents(
+        self, child_id: str, violation_type: str, details: str, severity: str
+    ) -> None:
         """Notify parents about safety violation"""
 
         # Send immediate notification
@@ -211,7 +218,9 @@ class ConversationAnalyticsHandler(EventHandler):
         # Track AI performance
         # Monitor response quality
         # Update system metrics
-        logger.debug(f"Tracking response generated: processing_time={processing_time}ms")
+        logger.debug(
+            f"Tracking response generated: processing_time={processing_time}ms"
+        )
 
 
 class EmotionAnalyticsHandler(EventHandler):
@@ -241,14 +250,18 @@ class EmotionAnalyticsHandler(EventHandler):
             if emotion in ["sad", "frustrated", "anxious"] and confidence > 0.7:
                 await self._check_emotional_wellbeing(child_id, emotion, confidence)
 
-            logger.info(f"Processed emotion detection: {emotion} (confidence: {confidence}) for child {child_id}")
+            logger.info(
+                f"Processed emotion detection: {emotion} (confidence: {confidence}) for child {child_id}"
+            )
             return True
 
         except Exception as e:
             logger.error(f"Failed to process emotion detection: {e}")
             return False
 
-    async def _update_emotional_profile(self, child_id: str, emotion: str, confidence: float) -> None:
+    async def _update_emotional_profile(
+        self, child_id: str, emotion: str, confidence: float
+    ) -> None:
         """Update child's emotional profile"""
 
         # Store emotion data
@@ -256,7 +269,9 @@ class EmotionAnalyticsHandler(EventHandler):
         # Calculate emotional stability metrics
         logger.info(f"Updating emotional profile for child {child_id}: {emotion}")
 
-    async def _adapt_voice_settings(self, child_id: str, emotion: str, confidence: float) -> None:
+    async def _adapt_voice_settings(
+        self, child_id: str, emotion: str, confidence: float
+    ) -> None:
         """Adapt voice settings based on detected emotion"""
 
         # Adjust voice parameters
@@ -264,7 +279,9 @@ class EmotionAnalyticsHandler(EventHandler):
         # Modify interaction approach
         logger.info(f"Adapting voice settings for emotion: {emotion}")
 
-    async def _track_emotional_patterns(self, child_id: str, emotion: str, confidence: float, context: str) -> None:
+    async def _track_emotional_patterns(
+        self, child_id: str, emotion: str, confidence: float, context: str
+    ) -> None:
         """Track emotional patterns for analysis"""
 
         # Store pattern data
@@ -272,7 +289,9 @@ class EmotionAnalyticsHandler(EventHandler):
         # Generate insights
         logger.debug(f"Tracking emotional pattern: {emotion} in context: {context}")
 
-    async def _check_emotional_wellbeing(self, child_id: str, emotion: str, confidence: float) -> None:
+    async def _check_emotional_wellbeing(
+        self, child_id: str, emotion: str, confidence: float
+    ) -> None:
         """Check if emotional intervention is needed"""
 
         # Analyze emotional trends
@@ -328,7 +347,9 @@ class ParentNotificationHandler(EventHandler):
         # Possibly phone call for critical issues
         logger.warning(f"Sending immediate parent notification: {event_data}")
 
-    async def _send_high_priority_notification(self, event_data: Dict[str, Any]) -> None:
+    async def _send_high_priority_notification(
+        self, event_data: Dict[str, Any]
+    ) -> None:
         """Send high priority notification (push, email)"""
 
         # Push notification

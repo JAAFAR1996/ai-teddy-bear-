@@ -41,14 +41,18 @@ class NetworkAdapter:
             start_time = time.time()
 
             # Try to reach the server
-            response = self.session.get(f"{self.server_url}/health", timeout=self.connection_timeout)
+            response = self.session.get(
+                f"{self.server_url}/health", timeout=self.connection_timeout
+            )
 
             end_time = time.time()
             self.last_response_time = (end_time - start_time) * 1000  # Convert to ms
 
             if response.status_code == 200:
                 self.is_connected = True
-                logger.info(f" Connection test passed ({self.last_response_time:.1f}ms)")
+                logger.info(
+                    f" Connection test passed ({self.last_response_time:.1f}ms)"
+                )
                 return True
             else:
                 logger.warning(f" Server returned status {response.status_code}")
@@ -69,7 +73,9 @@ class NetworkAdapter:
             logger.error(f" Connection test failed: {e}")
             return False
 
-    def send_post_request(self, endpoint: str, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def send_post_request(
+        self, endpoint: str, data: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Send POST request to server."""
         try:
             url = f"{self.server_url}{endpoint}"
@@ -84,7 +90,9 @@ class NetworkAdapter:
 
             if self.is_connected:
                 # Real request
-                response = self.session.post(url, json=data, timeout=self.request_timeout)
+                response = self.session.post(
+                    url, json=data, timeout=self.request_timeout
+                )
 
                 end_time = time.time()
                 self.last_response_time = (end_time - start_time) * 1000
@@ -116,7 +124,9 @@ class NetworkAdapter:
             logger.error(f" Request failed: {e}")
             return None
 
-    def send_get_request(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+    def send_get_request(
+        self, endpoint: str, params: Optional[Dict[str, Any]] = None
+    ) -> Optional[Dict[str, Any]]:
         """Send GET request to server."""
         try:
             url = f"{self.server_url}{endpoint}"
@@ -127,7 +137,9 @@ class NetworkAdapter:
 
             if self.is_connected:
                 # Real request
-                response = self.session.get(url, params=params, timeout=self.request_timeout)
+                response = self.session.get(
+                    url, params=params, timeout=self.request_timeout
+                )
 
                 end_time = time.time()
                 self.last_response_time = (end_time - start_time) * 1000
@@ -166,7 +178,9 @@ class NetworkAdapter:
             logger.error(f" WebSocket send failed: {e}")
             return False
 
-    def upload_audio(self, audio_data: bytes, metadata: Dict[str, Any]) -> Optional[str]:
+    def upload_audio(
+        self, audio_data: bytes, metadata: Dict[str, Any]
+    ) -> Optional[str]:
         """Upload audio data to server."""
         try:
             endpoint = "/api/audio/upload"
@@ -243,7 +257,11 @@ class NetworkAdapter:
     def send_heartbeat(self, device_info: Dict[str, Any]) -> bool:
         """Send heartbeat to server."""
         try:
-            heartbeat_data = {"type": "heartbeat", "device_info": device_info, "timestamp": datetime.now().isoformat()}
+            heartbeat_data = {
+                "type": "heartbeat",
+                "device_info": device_info,
+                "timestamp": datetime.now().isoformat(),
+            }
 
             response = self.send_post_request("/api/device/heartbeat", heartbeat_data)
             return response is not None
@@ -263,7 +281,9 @@ class NetworkAdapter:
             "retry_attempts": self.retry_attempts,
         }
 
-    def _generate_mock_response(self, endpoint: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_mock_response(
+        self, endpoint: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Generate mock response for testing."""
         request_type = data.get("type", "unknown")
 
@@ -286,7 +306,11 @@ class NetworkAdapter:
             }
 
         elif request_type == "heartbeat":
-            return {"type": "heartbeat_response", "status": "ok", "server_time": datetime.now().isoformat()}
+            return {
+                "type": "heartbeat_response",
+                "status": "ok",
+                "server_time": datetime.now().isoformat(),
+            }
 
         else:
             return {
@@ -296,7 +320,9 @@ class NetworkAdapter:
                 "timestamp": datetime.now().isoformat(),
             }
 
-    def _generate_mock_get_response(self, endpoint: str, params: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    def _generate_mock_get_response(
+        self, endpoint: str, params: Optional[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """Generate mock GET response."""
         if endpoint == "/health":
             return {
@@ -316,7 +342,11 @@ class NetworkAdapter:
             }
 
         else:
-            return {"status": "ok", "data": None, "timestamp": datetime.now().isoformat()}
+            return {
+                "status": "ok",
+                "data": None,
+                "timestamp": datetime.now().isoformat(),
+            }
 
     def __del__(self):
         """Cleanup on destruction."""

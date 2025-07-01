@@ -75,10 +75,19 @@ class TestDataBuilder:
 
     def __init__(self):
         self.faker = Faker()
-        self._created_entities = {"children": [], "parents": [], "devices": [], "interactions": []}
+        self._created_entities = {
+            "children": [],
+            "parents": [],
+            "devices": [],
+            "interactions": [],
+        }
 
     def create_child(
-        self, name: Optional[str] = None, age: Optional[int] = None, parent_id: Optional[str] = None, **kwargs
+        self,
+        name: Optional[str] = None,
+        age: Optional[int] = None,
+        parent_id: Optional[str] = None,
+        **kwargs,
     ) -> TestChild:
         """Create a test child"""
         child = TestChild(
@@ -91,10 +100,16 @@ class TestDataBuilder:
         return child
 
     def create_parent(
-        self, name: Optional[str] = None, email: Optional[str] = None, children_count: int = 0, **kwargs
+        self,
+        name: Optional[str] = None,
+        email: Optional[str] = None,
+        children_count: int = 0,
+        **kwargs,
     ) -> TestParent:
         """Create a test parent"""
-        parent = TestParent(name=name or self.faker.name(), email=email or self.faker.email(), **kwargs)
+        parent = TestParent(
+            name=name or self.faker.name(), email=email or self.faker.email(), **kwargs
+        )
 
         # Create children if requested
         for _ in range(children_count):
@@ -104,7 +119,9 @@ class TestDataBuilder:
         self._created_entities["parents"].append(parent)
         return parent
 
-    def create_family(self, children_count: int = 2, parent_count: int = 2) -> Dict[str, Any]:
+    def create_family(
+        self, children_count: int = 2, parent_count: int = 2
+    ) -> Dict[str, Any]:
         """Create a complete family unit"""
         parents = [self.create_parent() for _ in range(parent_count)]
         children = []
@@ -118,7 +135,11 @@ class TestDataBuilder:
         return {"parents": parents, "children": children}
 
     def create_interaction(
-        self, child_id: Optional[str] = None, message: Optional[str] = None, response: Optional[str] = None, **kwargs
+        self,
+        child_id: Optional[str] = None,
+        message: Optional[str] = None,
+        response: Optional[str] = None,
+        **kwargs,
     ) -> Dict[str, Any]:
         """Create a test interaction"""
         interaction = {
@@ -167,25 +188,38 @@ class TestDataBuilder:
 
     def cleanup(self):
         """Clean up all created entities"""
-        self._created_entities = {"children": [], "parents": [], "devices": [], "interactions": []}
+        self._created_entities = {
+            "children": [],
+            "parents": [],
+            "devices": [],
+            "interactions": [],
+        }
 
 
 class MockFactory:
     """Factory for creating mock objects"""
 
     @staticmethod
-    def create_mock(spec: Optional[Type[T]] = None, async_mock: bool = False, **kwargs) -> T:
+    def create_mock(
+        spec: Optional[Type[T]] = None, async_mock: bool = False, **kwargs
+    ) -> T:
         """Create a mock object"""
         mock_class = AsyncMock if async_mock else Mock
         return mock_class(spec=spec, **kwargs)
 
     @staticmethod
-    def create_ai_service_mock(default_response: str = "This is a safe AI response for testing") -> AsyncMock:
+    def create_ai_service_mock(
+        default_response: str = "This is a safe AI response for testing",
+    ) -> AsyncMock:
         """Create a mock AI service"""
         mock = AsyncMock()
         mock.generate_response.return_value = default_response
         mock.check_content_safety.return_value = {"is_safe": True, "confidence": 0.95}
-        mock.get_model_info.return_value = {"model": "gpt-4", "version": "2024-01", "max_tokens": 4096}
+        mock.get_model_info.return_value = {
+            "model": "gpt-4",
+            "version": "2024-01",
+            "max_tokens": 4096,
+        }
         return mock
 
     @staticmethod

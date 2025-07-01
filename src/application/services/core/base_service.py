@@ -21,7 +21,11 @@ class BaseService(ABC, Generic[T]):
         self._logger = logger or logging.getLogger(self.__class__.__name__)
 
     async def _log_operation(
-        self, operation: str, entity_id: UUID = None, details: dict = None, level: int = logging.INFO
+        self,
+        operation: str,
+        entity_id: UUID = None,
+        details: dict = None,
+        level: int = logging.INFO,
     ) -> None:
         """Log an operation with standardized format."""
         log_entry = {
@@ -58,26 +62,39 @@ class BaseService(ABC, Generic[T]):
             await self._log_operation("get", id)
             return entity
         except Exception as e:
-            await self._log_operation("get_failed", id, {"error": str(e)}, logging.ERROR)
+            await self._log_operation(
+                "get_failed", id, {"error": str(e)}, logging.ERROR
+            )
             raise
 
     async def create(self, entity: T) -> T:
         """Create entity with logging."""
         try:
-            created = await self._handle_transaction(lambda: self._repository.create(entity))
-            await self._log_operation("create", getattr(created, "id", None), {"type": type(entity).__name__})
+            created = await self._handle_transaction(
+                lambda: self._repository.create(entity)
+            )
+            await self._log_operation(
+                "create", getattr(created, "id", None), {"type": type(entity).__name__}
+            )
             return created
         except Exception as e:
             await self._log_operation(
-                "create_failed", None, {"type": type(entity).__name__, "error": str(e)}, logging.ERROR
+                "create_failed",
+                None,
+                {"type": type(entity).__name__, "error": str(e)},
+                logging.ERROR,
             )
             raise
 
     async def update(self, entity: T) -> T:
         """Update entity with logging."""
         try:
-            updated = await self._handle_transaction(lambda: self._repository.update(entity))
-            await self._log_operation("update", getattr(updated, "id", None), {"type": type(entity).__name__})
+            updated = await self._handle_transaction(
+                lambda: self._repository.update(entity)
+            )
+            await self._log_operation(
+                "update", getattr(updated, "id", None), {"type": type(entity).__name__}
+            )
             return updated
         except Exception as e:
             await self._log_operation(
@@ -95,7 +112,9 @@ class BaseService(ABC, Generic[T]):
             await self._log_operation("delete", id)
             return result
         except Exception as e:
-            await self._log_operation("delete_failed", id, {"error": str(e)}, logging.ERROR)
+            await self._log_operation(
+                "delete_failed", id, {"error": str(e)}, logging.ERROR
+            )
             raise
 
     async def exists(self, id: UUID) -> bool:
@@ -103,7 +122,9 @@ class BaseService(ABC, Generic[T]):
         try:
             return await self._repository.exists(id)
         except Exception as e:
-            await self._log_operation("exists_check_failed", id, {"error": str(e)}, logging.ERROR)
+            await self._log_operation(
+                "exists_check_failed", id, {"error": str(e)}, logging.ERROR
+            )
             raise
 
     async def list(self, filters: dict = None, limit: int = 100, offset: int = 0):
@@ -111,9 +132,21 @@ class BaseService(ABC, Generic[T]):
         try:
             entities = await self._repository.list(filters, limit, offset)
             await self._log_operation(
-                "list", None, {"filters": filters, "limit": limit, "offset": offset, "count": len(entities)}
+                "list",
+                None,
+                {
+                    "filters": filters,
+                    "limit": limit,
+                    "offset": offset,
+                    "count": len(entities),
+                },
             )
             return entities
         except Exception as e:
-            await self._log_operation("list_failed", None, {"filters": filters, "error": str(e)}, logging.ERROR)
+            await self._log_operation(
+                "list_failed",
+                None,
+                {"filters": filters, "error": str(e)},
+                logging.ERROR,
+            )
             raise

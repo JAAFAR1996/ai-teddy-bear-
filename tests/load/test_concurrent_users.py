@@ -50,7 +50,11 @@ class ConcurrentUserTest:
                 await asyncio.sleep(0.5)  # Simulate thinking time
 
             end_time = time.time()
-            return {"user_id": user_id, "status": "success", "duration": end_time - start_time}
+            return {
+                "user_id": user_id,
+                "status": "success",
+                "duration": end_time - start_time,
+            }
 
         except Exception as e:
             return {"user_id": user_id, "status": "error", "error": str(e)}
@@ -63,12 +67,21 @@ class ConcurrentUserTest:
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             # Analyze results
-            successful = sum(1 for r in results if isinstance(r, dict) and r.get("status") == "success")
+            successful = sum(
+                1
+                for r in results
+                if isinstance(r, dict) and r.get("status") == "success"
+            )
             failed = len(results) - successful
 
             if successful > 0:
                 avg_duration = (
-                    sum(r["duration"] for r in results if isinstance(r, dict) and "duration" in r) / successful
+                    sum(
+                        r["duration"]
+                        for r in results
+                        if isinstance(r, dict) and "duration" in r
+                    )
+                    / successful
                 )
             else:
                 avg_duration = 0

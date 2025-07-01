@@ -9,17 +9,11 @@ import os
 from typing import Any, Dict, Optional
 
 from ..exception_handling.global_exception_handler import (
-    ChildSafetyException,
-    CircuitBreakerStrategy,
-    CorrelationContext,
-    ExternalServiceException,
-    RetryStrategy,
-    TeddyBearException,
-    handle_exceptions,
-    set_child_context,
-)
-from .safe_expression_parser import SecurityLevel, create_safe_parser, safe_eval
-
+    ChildSafetyException, CircuitBreakerStrategy, CorrelationContext,
+    ExternalServiceException, RetryStrategy, TeddyBearException,
+    handle_exceptions, set_child_context)
+from .safe_expression_parser import (SecurityLevel, create_safe_parser,
+                                     safe_eval)
 # Import secure components
 from .secrets_manager import SecretType, create_secrets_manager
 
@@ -57,7 +51,9 @@ class SecureAPIService:
     async def initialize(self):
         """Initialize with secure secrets management"""
         # Create secrets manager
-        self.secrets_manager = create_secrets_manager(environment=os.environ.get("TEDDY_ENV", "development"))
+        self.secrets_manager = create_secrets_manager(
+            environment=os.environ.get("TEDDY_ENV", "development")
+        )
         await self.secrets_manager.initialize()
 
         # Pre-load frequently used secrets into memory (still encrypted)
@@ -80,10 +76,14 @@ class SecureAPIService:
     async def call_ai(self, prompt: str) -> str:
         """Make API call with secure key management"""
         # Get key from secrets manager (with caching)
-        api_key = await self.secrets_manager.get_secret("openai_api_key", use_cache=True)  # Uses encrypted cache
+        api_key = await self.secrets_manager.get_secret(
+            "openai_api_key", use_cache=True
+        )  # Uses encrypted cache
 
         if not api_key:
-            raise ExternalServiceException(service_name="OpenAI", message="API key not available")
+            raise ExternalServiceException(
+                service_name="OpenAI", message="API key not available"
+            )
 
         headers = {"Authorization": f"Bearer {api_key}"}
         # ... make API call
@@ -136,15 +136,20 @@ class SecureCalculator:
             logger.warning(f"Invalid expression: {expression} - {e}")
             return None
 
-    def calculate_with_variables(self, expression: str, variables: Dict[str, Any]) -> Optional[Any]:
+    def calculate_with_variables(
+        self, expression: str, variables: Dict[str, Any]
+    ) -> Optional[Any]:
         """Safe calculation with variables"""
         # Parse with context
         result = self.strict_parser.parse(
-            expression, context={"variables": variables, "allowed_names": set(variables.keys())}
+            expression,
+            context={"variables": variables, "allowed_names": set(variables.keys())},
         )
 
         if result.success:
-            logger.info(f"Expression evaluated successfully in {result.execution_time_ms}ms")
+            logger.info(
+                f"Expression evaluated successfully in {result.execution_time_ms}ms"
+            )
             return result.value
         else:
             logger.warning(f"Expression rejected: {result.error}")
@@ -211,9 +216,14 @@ class SecureChildService:
 
     @handle_exceptions(
         recovery_strategy=RetryStrategy(max_retries=3, base_delay=1.0),
-        fallback_value={"response": "I'm having trouble understanding. Let's try again!", "safe": True},
+        fallback_value={
+            "response": "I'm having trouble understanding. Let's try again!",
+            "safe": True,
+        },
     )
-    async def process_child_message(self, child_id: str, message: str) -> Dict[str, Any]:
+    async def process_child_message(
+        self, child_id: str, message: str
+    ) -> Dict[str, Any]:
         """Secure message processing with proper exception handling"""
 
         # Set child context for exception handling
@@ -224,7 +234,11 @@ class SecureChildService:
             self.correlation_id = correlation_id
             logger.info(
                 "Processing child message",
-                extra={"child_id": child_id, "correlation_id": correlation_id, "message_length": len(message)},
+                extra={
+                    "child_id": child_id,
+                    "correlation_id": correlation_id,
+                    "message_length": len(message),
+                },
             )
 
             try:
@@ -245,13 +259,21 @@ class SecureChildService:
                 # Save to database with proper error handling
                 await self._save_interaction(child_id, message, response)
 
-                return {"response": response, "correlation_id": correlation_id, "safe": True}
+                return {
+                    "response": response,
+                    "correlation_id": correlation_id,
+                    "safe": True,
+                }
 
             except ChildSafetyException as e:
                 # Child safety issues get special handling
                 logger.critical(
                     "Child safety violation detected",
-                    extra={"exception": e.to_dict(), "child_id": child_id, "correlation_id": correlation_id},
+                    extra={
+                        "exception": e.to_dict(),
+                        "child_id": child_id,
+                        "correlation_id": correlation_id,
+                    },
                 )
                 # Alert parents/moderators immediately
                 await self._alert_safety_team(e)
@@ -266,7 +288,8 @@ class SecureChildService:
             except ExternalServiceException as e:
                 # External service failures are retried automatically by decorator
                 logger.error(
-                    "External service error", extra={"exception": e.to_dict(), "correlation_id": correlation_id}
+                    "External service error",
+                    extra={"exception": e.to_dict(), "correlation_id": correlation_id},
                 )
                 raise  # Let decorator handle retry
 
@@ -283,14 +306,20 @@ class SecureChildService:
                     exc_info=True,  # Include stack trace
                 )
                 raise TeddyBearException(
-                    message="Unexpected error during message processing", cause=e, correlation_id=correlation_id
+                    message="Unexpected error during message processing",
+                    cause=e,
+                    correlation_id=correlation_id,
                 )
 
     async def _generate_ai_response(self, message: str) -> str:
         """AI response with circuit breaker"""
 
         # Circuit breaker prevents cascade failures
-        @handle_exceptions(recovery_strategy=CircuitBreakerStrategy(failure_threshold=5, recovery_timeout=60.0))
+        @handle_exceptions(
+            recovery_strategy=CircuitBreakerStrategy(
+                failure_threshold=5, recovery_timeout=60.0
+            )
+        )
         async def call_ai():
             # Actual AI call here
             return "AI generated response"
@@ -314,9 +343,17 @@ class SecureChildService:
             # Database operation
             pass
         except asyncio.TimeoutError:
-            raise TimeoutException(operation="database_save", timeout_seconds=5.0, correlation_id=self.correlation_id)
+            raise TimeoutException(
+                operation="database_save",
+                timeout_seconds=5.0,
+                correlation_id=self.correlation_id,
+            )
         except Exception as e:
-            raise DatabaseException(message="Failed to save interaction", cause=e, correlation_id=self.correlation_id)
+            raise DatabaseException(
+                message="Failed to save interaction",
+                cause=e,
+                correlation_id=self.correlation_id,
+            )
 
     async def _alert_safety_team(self, exception: ChildSafetyException):
         """Alert safety team about violations"""
@@ -332,16 +369,12 @@ class SecureChildService:
 async def demonstrate_migrations():
     """Show how to migrate from insecure to secure patterns"""
 
-    print("=== API Keys Migration ===")
-
     # ❌ Don't do this
     insecure_service = InsecureAPIService()
 
     # ✅ Do this instead
     secure_service = SecureAPIService()
     await secure_service.initialize()
-
-    print("\n=== Expression Evaluation Migration ===")
 
     # ❌ Don't do this
     insecure_calc = InsecureCalculator()
@@ -350,13 +383,11 @@ async def demonstrate_migrations():
     # ✅ Do this instead
     secure_calc = SecureCalculator()
     result = secure_calc.calculate("2 + 3 * 4")  # Safe!
-    print(f"Safe calculation result: {result}")
 
     # With variables
-    result = secure_calc.calculate_with_variables("age * 2 + score", {"age": 10, "score": 85})
-    print(f"Safe calculation with variables: {result}")
-
-    print("\n=== Exception Handling Migration ===")
+    result = secure_calc.calculate_with_variables(
+        "age * 2 + score", {"age": 10, "score": 85}
+    )
 
     # ❌ Don't do this
     insecure_child_service = InsecureChildService()
@@ -365,8 +396,9 @@ async def demonstrate_migrations():
     secure_child_service = SecureChildService()
 
     # Process a message
-    result = await secure_child_service.process_child_message(child_id="child_123", message="Hello teddy bear!")
-    print(f"Secure processing result: {result}")
+    result = await secure_child_service.process_child_message(
+        child_id="child_123", message="Hello teddy bear!"
+    )
 
 
 # ============================================================================
@@ -403,5 +435,5 @@ SECURITY_QUICK_REFERENCE = """
 
 
 if __name__ == "__main__":
-    print(SECURITY_QUICK_REFERENCE)
+
     asyncio.run(demonstrate_migrations())

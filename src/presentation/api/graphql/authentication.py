@@ -261,7 +261,12 @@ class AuthenticationService:
         self.logger.info("Default users initialized")
 
     async def create_user(
-        self, username: str, email: str, password: str, role: UserRole, parent_id: Optional[str] = None
+        self,
+        username: str,
+        email: str,
+        password: str,
+        role: UserRole,
+        parent_id: Optional[str] = None,
     ) -> User:
         """Create new user."""
         if not JWT_AVAILABLE:
@@ -270,11 +275,14 @@ class AuthenticationService:
         # Validate password
         if len(password) < self.config.password_min_length:
             raise HTTPException(
-                status_code=400, detail=f"Password must be at least {self.config.password_min_length} characters"
+                status_code=400,
+                detail=f"Password must be at least {self.config.password_min_length} characters",
             )
 
         # Check if username exists
-        existing_user = next((u for u in self.users.values() if u.username == username), None)
+        existing_user = next(
+            (u for u in self.users.values() if u.username == username), None
+        )
         if existing_user:
             raise HTTPException(status_code=400, detail="Username already exists")
 
@@ -307,7 +315,10 @@ class AuthenticationService:
 
         # Check rate limiting
         if await self._is_rate_limited(username):
-            raise HTTPException(status_code=429, detail="Too many login attempts. Please try again later.")
+            raise HTTPException(
+                status_code=429,
+                detail="Too many login attempts. Please try again later.",
+            )
 
         # Find user
         user = next((u for u in self.users.values() if u.username == username), None)
@@ -318,7 +329,9 @@ class AuthenticationService:
 
         # Verify password
         stored_password = self._get_stored_password(user.id)
-        if not stored_password or not self.pwd_context.verify(password, stored_password):
+        if not stored_password or not self.pwd_context.verify(
+            password, stored_password
+        ):
             await self._record_login_attempt(username, False)
             return None
 
@@ -339,16 +352,21 @@ class AuthenticationService:
             "username": user.username,
             "role": user.role.value,
             "permissions": [p.value for p in user.permissions],
-            "exp": datetime.utcnow() + timedelta(hours=self.config.jwt_expiration_hours),
+            "exp": datetime.utcnow()
+            + timedelta(hours=self.config.jwt_expiration_hours),
             "iat": datetime.utcnow(),
             "type": "access",
         }
 
-        token = jwt.encode(payload, self.config.jwt_secret_key, algorithm=self.config.jwt_algorithm)
+        token = jwt.encode(
+            payload, self.config.jwt_secret_key, algorithm=self.config.jwt_algorithm
+        )
 
         # Cache token for quick validation
         if self.cache:
-            await self.cache.set_multi_layer(f"token:{user.id}", token, ContentType.USER_SESSION)
+            await self.cache.set_multi_layer(
+                f"token:{user.id}", token, ContentType.USER_SESSION
+            )
 
         return token
 
@@ -362,7 +380,9 @@ class AuthenticationService:
 
         # Cache with expiration
         if self.cache:
-            await self.cache.set_multi_layer(f"refresh:{token}", user.id, ContentType.USER_SESSION)
+            await self.cache.set_multi_layer(
+                f"refresh:{token}", user.id, ContentType.USER_SESSION
+            )
 
         return token
 
@@ -374,12 +394,18 @@ class AuthenticationService:
         try:
             # Check cache first
             if self.cache:
-                cached_user_id = await self.cache.get_with_fallback(f"token_user:{token}", ContentType.USER_SESSION)
+                cached_user_id = await self.cache.get_with_fallback(
+                    f"token_user:{token}", ContentType.USER_SESSION
+                )
                 if cached_user_id:
                     return self.users.get(cached_user_id)
 
             # Decode token
-            payload = jwt.decode(token, self.config.jwt_secret_key, algorithms=[self.config.jwt_algorithm])
+            payload = jwt.decode(
+                token,
+                self.config.jwt_secret_key,
+                algorithms=[self.config.jwt_algorithm],
+            )
 
             user_id = payload.get("sub")
             token_type = payload.get("type")
@@ -393,7 +419,9 @@ class AuthenticationService:
 
             # Cache successful verification
             if self.cache:
-                await self.cache.set_multi_layer(f"token_user:{token}", user_id, ContentType.USER_SESSION)
+                await self.cache.set_multi_layer(
+                    f"token_user:{token}", user_id, ContentType.USER_SESSION
+                )
 
             return user
 
@@ -405,12 +433,22 @@ class AuthenticationService:
             return None
 
     async def create_api_key(
-        self, user_id: str, name: str, permissions: Set[Permission], expires_at: Optional[datetime] = None
+        self,
+        user_id: str,
+        name: str,
+        permissions: Set[Permission],
+        expires_at: Optional[datetime] = None,
     ) -> APIKey:
         """Create API key for user."""
         key = secrets.token_urlsafe(self.config.api_key_length)
 
-        api_key = APIKey(key=key, name=name, user_id=user_id, permissions=permissions, expires_at=expires_at)
+        api_key = APIKey(
+            key=key,
+            name=name,
+            user_id=user_id,
+            permissions=permissions,
+            expires_at=expires_at,
+        )
 
         self.api_keys[key] = api_key
 
@@ -536,10 +574,15 @@ class GraphQLAuthenticator:
                 user = getattr(wrapper, "_current_user", None)
 
                 if not user:
-                    raise HTTPException(status_code=401, detail="Authentication required")
+                    raise HTTPException(
+                        status_code=401, detail="Authentication required"
+                    )
 
                 if not self.auth_service.check_permission(user, permission):
-                    raise HTTPException(status_code=403, detail=f"Permission required: {permission.value}")
+                    raise HTTPException(
+                        status_code=403,
+                        detail=f"Permission required: {permission.value}",
+                    )
 
                 return await func(*args, **kwargs)
 
@@ -556,10 +599,14 @@ class GraphQLAuthenticator:
                 child_id = kwargs.get(child_id_param)
 
                 if not user:
-                    raise HTTPException(status_code=401, detail="Authentication required")
+                    raise HTTPException(
+                        status_code=401, detail="Authentication required"
+                    )
 
                 if not self.auth_service.check_child_access(user, child_id):
-                    raise HTTPException(status_code=403, detail="Access denied to child resource")
+                    raise HTTPException(
+                        status_code=403, detail="Access denied to child resource"
+                    )
 
                 return await func(*args, **kwargs)
 
@@ -575,7 +622,10 @@ def create_auth_config(jwt_secret_key: Optional[str] = None) -> AuthConfig:
         jwt_secret_key = secrets.token_urlsafe(32)
 
     return AuthConfig(
-        jwt_secret_key=jwt_secret_key, jwt_expiration_hours=24, refresh_token_days=30, enable_rate_limiting=True
+        jwt_secret_key=jwt_secret_key,
+        jwt_expiration_hours=24,
+        refresh_token_days=30,
+        enable_rate_limiting=True,
     )
 
 

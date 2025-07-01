@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from src.core.domain.entities.conversation import Conversation
-from src.infrastructure.persistence.base_sqlite_repository import BaseSQLiteRepository
+from src.infrastructure.persistence.base_sqlite_repository import \
+    BaseSQLiteRepository
 
 
 class ConversationCoreRepository:
@@ -63,7 +64,9 @@ class ConversationCoreRepository:
         """Get conversation by session ID."""
         try:
             cursor = self.connection.cursor()
-            sql = f"SELECT * FROM {self.table_name} WHERE session_id = ? AND archived = 0"
+            sql = (
+                f"SELECT * FROM {self.table_name} WHERE session_id = ? AND archived = 0"
+            )
             cursor.execute(sql, (session_id,))
 
             row = cursor.fetchone()
@@ -72,7 +75,9 @@ class ConversationCoreRepository:
             return None
 
         except sqlite3.Error as e:
-            self.logger.error(f"Error retrieving conversation by session {session_id}: {e}")
+            self.logger.error(
+                f"Error retrieving conversation by session {session_id}: {e}"
+            )
             raise
 
     async def update(self, conversation: Conversation) -> Conversation:
@@ -89,7 +94,9 @@ class ConversationCoreRepository:
             update_values = [v for k, v in data.items() if k != "id"]
             update_values.append(data["id"])
 
-            sql = f"UPDATE {self.table_name} SET {', '.join(update_fields)} WHERE id = ?"
+            sql = (
+                f"UPDATE {self.table_name} SET {', '.join(update_fields)} WHERE id = ?"
+            )
 
             cursor.execute(sql, update_values)
             self.connection.commit()
@@ -148,10 +155,14 @@ class ConversationCoreRepository:
             return [self._deserialize_conversation_from_db(dict(row)) for row in rows]
 
         except sqlite3.Error as e:
-            self.logger.error(f"Error retrieving conversations for child {child_id}: {e}")
+            self.logger.error(
+                f"Error retrieving conversations for child {child_id}: {e}"
+            )
             raise
 
-    def _serialize_conversation_for_db(self, conversation: Conversation) -> Dict[str, Any]:
+    def _serialize_conversation_for_db(
+        self, conversation: Conversation
+    ) -> Dict[str, Any]:
         """Serialize conversation entity for database storage."""
         data = conversation.__dict__.copy() if hasattr(conversation, "__dict__") else {}
 

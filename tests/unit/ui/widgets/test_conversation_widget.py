@@ -74,7 +74,9 @@ class TestConversationWidget:
         message_types = ["user", "ai", "system", "error"]
 
         for msg_type in message_types:
-            conversation_widget.add_message("Sender", f"Message of type {msg_type}", message_type=msg_type)
+            conversation_widget.add_message(
+                "Sender", f"Message of type {msg_type}", message_type=msg_type
+            )
 
         assert len(conversation_widget.message_history) == 4
         for i, msg_type in enumerate(message_types):
@@ -191,7 +193,12 @@ class TestConversationWidget:
 
     def test_metadata_formatting(self, conversation_widget):
         """Test metadata formatting for display"""
-        metadata = {"session_id": "test123", "processing_time": 1.234, "confidence": 0.95, "irrelevant_key": "ignored"}
+        metadata = {
+            "session_id": "test123",
+            "processing_time": 1.234,
+            "confidence": 0.95,
+            "irrelevant_key": "ignored",
+        }
 
         formatted = conversation_widget._format_metadata(metadata)
 

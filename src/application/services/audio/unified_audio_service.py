@@ -55,7 +55,8 @@ from scipy import signal
 from scipy.io import wavfile
 from textblob import TextBlob
 
-from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer
+from src.application.services.ai.emotion_analyzer_service import \
+    EmotionAnalyzer
 from src.application.services.streaming_service import StreamingService
 from src.core.application.interfaces.services import IAIService
 from src.core.domain.entities.audio_stream import AudioStream
@@ -136,7 +137,9 @@ class UnifiedAudioService:
             region = os.environ.get("AZURE_SPEECH_REGION", "eastus")
 
             if key:
-                self.azure_speech_config = speechsdk.SpeechConfig(subscription=key, region=region)
+                self.azure_speech_config = speechsdk.SpeechConfig(
+                    subscription=key, region=region
+                )
                 self.logger.info("✅ Azure Speech initialized")
             else:
                 self.logger.warning("Azure Speech key not found")
@@ -173,7 +176,13 @@ class UnifiedAudioService:
 
     def _build_azure_ssml(self, text: str, emotion: str, voice_name: str) -> str:
         """بناء SSML لـ Azure"""
-        emotion_styles = {"happy": "cheerful", "sad": "sad", "excited": "excited", "calm": "calm", "neutral": "neutral"}
+        emotion_styles = {
+            "happy": "cheerful",
+            "sad": "sad",
+            "excited": "excited",
+            "calm": "calm",
+            "neutral": "neutral",
+        }
 
         style = emotion_styles.get(emotion, "neutral")
 
@@ -216,25 +225,33 @@ class UnifiedAudioService:
     def get_speech_segments(self, audio_data: np.ndarray) -> List[tuple]:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من voice_interaction_service.py"
+        )
         pass
 
     def _init_voice_synthesis(self) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من voice_interaction_service.py"
+        )
         pass
 
     def _init_speech_recognition(self) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من voice_interaction_service.py"
+        )
         pass
 
     def _load_voice_profiles(self) -> Dict[str, VoiceProfile]:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من voice_interaction_service.py"
+        )
         pass
 
     def set_streaming_service(self, streaming_service: "StreamingService") -> None:
@@ -244,19 +261,25 @@ class UnifiedAudioService:
     def _input_callback(self, indata, frames, time_info, status) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من voice_interaction_service.py"
+        )
         pass
 
     def _output_callback(self, outdata, frames, time_info, status) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من voice_interaction_service.py"
+        )
         pass
 
     def _get_azure_voice_name(self, emotion: EmotionalTone) -> str:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من voice_interaction_service.py"
+        )
         pass
 
     def set_ai_service(self, ai_service) -> None:
@@ -266,25 +289,33 @@ class UnifiedAudioService:
     def is_arabic(text) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من voice_interaction_service.py"
+        )
         pass
 
     def is_english(text) -> Any:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من voice_interaction_service.py"
+        )
         pass
 
     def get_emotion_from_sentiment(sentiment: str) -> EmotionalTone:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من voice_interaction_service.py"
+        )
         pass
 
     def get_time_based_emotion() -> EmotionalTone:
         """دالة مدموجة من voice_interaction_service.py"""
         # RESOLVED: تنفيذ الدالة من voice_interaction_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من voice_interaction_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من voice_interaction_service.py"
+        )
         pass
 
     # ----- من synthesis_service.py -----
@@ -292,37 +323,49 @@ class UnifiedAudioService:
     def is_empty(self) -> bool:
         """دالة مدموجة من synthesis_service.py"""
         # RESOLVED: تنفيذ الدالة من synthesis_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من synthesis_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من synthesis_service.py"
+        )
         pass
 
     def size(self) -> int:
         """دالة مدموجة من synthesis_service.py"""
         # RESOLVED: تنفيذ الدالة من synthesis_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من synthesis_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من synthesis_service.py"
+        )
         pass
 
     def _update_stats(self, provider: VoiceProvider, processing_time: float) -> None:
         """دالة مدموجة من synthesis_service.py"""
         # RESOLVED: تنفيذ الدالة من synthesis_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من synthesis_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من synthesis_service.py"
+        )
         pass
 
     def set_character(self, character_id: str) -> bool:
         """دالة مدموجة من synthesis_service.py"""
         # RESOLVED: تنفيذ الدالة من synthesis_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من synthesis_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من synthesis_service.py"
+        )
         pass
 
     def get_available_characters(self) -> List[Dict[str, Any]]:
         """دالة مدموجة من synthesis_service.py"""
         # RESOLVED: تنفيذ الدالة من synthesis_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من synthesis_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من synthesis_service.py"
+        )
         pass
 
     def get_performance_metrics(self) -> Dict[str, Any]:
         """دالة مدموجة من synthesis_service.py"""
         # RESOLVED: تنفيذ الدالة من synthesis_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من synthesis_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من synthesis_service.py"
+        )
         pass
 
     # ----- من transcription_service.py -----
@@ -330,55 +373,73 @@ class UnifiedAudioService:
     def device(self) -> str:
         """دالة مدموجة من transcription_service.py"""
         # RESOLVED: تنفيذ الدالة من transcription_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من transcription_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من transcription_service.py"
+        )
         pass
 
     def add_chunk(self, audio_chunk: np.ndarray) -> None:
         """دالة مدموجة من transcription_service.py"""
         # RESOLVED: تنفيذ الدالة من transcription_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من transcription_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من transcription_service.py"
+        )
         pass
 
     def _detect_activity(self, audio_chunk: np.ndarray) -> bool:
         """دالة مدموجة من transcription_service.py"""
         # RESOLVED: تنفيذ الدالة من transcription_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من transcription_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من transcription_service.py"
+        )
         pass
 
     def get_ready_chunk(self) -> Optional[np.ndarray]:
         """دالة مدموجة من transcription_service.py"""
         # RESOLVED: تنفيذ الدالة من transcription_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من transcription_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من transcription_service.py"
+        )
         pass
 
     def duration(self) -> float:
         """دالة مدموجة من transcription_service.py"""
         # RESOLVED: تنفيذ الدالة من transcription_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من transcription_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من transcription_service.py"
+        )
         pass
 
     def clear(self) -> None:
         """دالة مدموجة من transcription_service.py"""
         # RESOLVED: تنفيذ الدالة من transcription_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من transcription_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من transcription_service.py"
+        )
         pass
 
     def _calculate_confidence(self, segments: list) -> float:
         """دالة مدموجة من transcription_service.py"""
         # RESOLVED: تنفيذ الدالة من transcription_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من transcription_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من transcription_service.py"
+        )
         pass
 
     def _update_stats(self, result: Dict[str, Any], processing_time: float) -> None:
         """دالة مدموجة من transcription_service.py"""
         # RESOLVED: تنفيذ الدالة من transcription_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من transcription_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من transcription_service.py"
+        )
         pass
 
     def get_performance_metrics(self) -> Dict[str, Any]:
         """دالة مدموجة من transcription_service.py"""
         # RESOLVED: تنفيذ الدالة من transcription_service.py
-        raise NotImplementedError("Implementation needed: تنفيذ الدالة من transcription_service.py")
+        raise NotImplementedError(
+            "Implementation needed: تنفيذ الدالة من transcription_service.py"
+        )
         pass
 
     # ==========================================

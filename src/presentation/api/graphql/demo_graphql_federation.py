@@ -18,11 +18,10 @@ logger = logging.getLogger(__name__)
 
 # Demo imports
 try:
-    from src.infrastructure.graphql.authentication import create_auth_config, create_auth_service
+    from src.infrastructure.graphql.authentication import (create_auth_config,
+                                                           create_auth_service)
     from src.infrastructure.graphql.federation_gateway import (
-        create_default_federation_config,
-        create_federation_gateway,
-    )
+        create_default_federation_config, create_federation_gateway)
 
     FEDERATION_AVAILABLE = True
 except Exception as e:
@@ -108,7 +107,9 @@ class FederationDemoSystem:
             logger.info(f"Query: {query_info['query'].strip()}")
 
             try:
-                result = await self.gateway._execute_federated_query(query_info["query"], query_info["variables"])
+                result = await self.gateway._execute_federated_query(
+                    query_info["query"], query_info["variables"]
+                )
                 logger.info(f"✅ Result: {json.dumps(result, indent=2, default=str)}")
             except Exception as e:
                 logger.error(f"❌ Error: {e}")
@@ -153,7 +154,9 @@ class FederationDemoSystem:
 
         try:
             result = await self.gateway._execute_federated_query(federated_query, {})
-            logger.info(f"✅ Federated Result: {json.dumps(result, indent=2, default=str)}")
+            logger.info(
+                f"✅ Federated Result: {json.dumps(result, indent=2, default=str)}"
+            )
         except Exception as e:
             logger.error(f"❌ Error: {e}")
 
@@ -185,7 +188,9 @@ class FederationDemoSystem:
 
         # Create API key
         logger.info("🔑 Creating API key...")
-        api_key = await self.auth_service.create_api_key(user.id, "Demo API Key", user.permissions)
+        api_key = await self.auth_service.create_api_key(
+            user.id, "Demo API Key", user.permissions
+        )
         logger.info(f"✅ API key created: {api_key.name}")
 
     async def demo_performance_metrics(self):

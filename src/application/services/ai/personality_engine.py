@@ -32,7 +32,10 @@ class PersonalityEngine(ServiceBase):
 
     async def health_check(self) -> Dict:
         """Health check"""
-        return {"healthy": self._state == self.ServiceState.READY, "service": "personality_engine"}
+        return {
+            "healthy": self._state == self.ServiceState.READY,
+            "service": "personality_engine",
+        }
 
     def _load_personalities(self) -> Dict[str, Dict]:
         """Load personality configurations"""
@@ -62,7 +65,12 @@ class PersonalityEngine(ServiceBase):
                 "traits": ["ودود", "مرح", "فضولي", "مشجع"],
                 "speaking_style": "لطيف ومشجع",
                 "interests": ["القصص", "الألعاب", "التعلم", "المغامرات"],
-                "catchphrases": ["ما شاء الله!", "دعني أفكر في ذلك...", "يا له من أمر مثير!", "أنت تقوم بعمل رائع!"],
+                "catchphrases": [
+                    "ما شاء الله!",
+                    "دعني أفكر في ذلك...",
+                    "يا له من أمر مثير!",
+                    "أنت تقوم بعمل رائع!",
+                ],
                 "response_patterns": {
                     ResponseMode.EDUCATIONAL: "هيا نتعلم شيئاً ممتعاً عن {topic}!",
                     ResponseMode.PLAYFUL: "يا له من أمر ممتع! ماذا لو نقوم بـ {activity}؟",
@@ -97,7 +105,11 @@ class PersonalityEngine(ServiceBase):
             self.logger.info(f"Active personality set to: {personality_id}")
 
     def format_response(
-        self, content: str, personality_id: str, response_mode: ResponseMode, context: Dict[str, str]
+        self,
+        content: str,
+        personality_id: str,
+        response_mode: ResponseMode,
+        context: Dict[str, str],
     ) -> str:
         """Format response according to personality"""
         personality = self.get_personality(personality_id)
@@ -127,7 +139,10 @@ class PersonalityEngine(ServiceBase):
         return random.choice(catchphrases) if catchphrases else ""
 
     def enhance_with_personality(
-        self, response: str, personality_id: Optional[str] = None, add_catchphrase: bool = False
+        self,
+        response: str,
+        personality_id: Optional[str] = None,
+        add_catchphrase: bool = False,
     ) -> str:
         """Enhance a response with personality traits"""
         personality_id = personality_id or self.active_personality

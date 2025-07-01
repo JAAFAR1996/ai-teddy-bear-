@@ -7,9 +7,20 @@ class VoiceEnhancements:
     """تحسينات الاستجابة الصوتية للطفل"""
 
     def __init__(self):
-        self.encouragement_phrases = ["أحسنت يا بطل!", "رائع جداً!", "أنت ذكي جداً!", "ممتاز يا صغيري!", "واو، هذا رائع!"]
+        self.encouragement_phrases = [
+            "أحسنت يا بطل!",
+            "رائع جداً!",
+            "أنت ذكي جداً!",
+            "ممتاز يا صغيري!",
+            "واو، هذا رائع!",
+        ]
 
-        self.guidance_phrases = ["دعني أساعدك في هذا", "لا بأس، سنتعلم معاً", "هيا نحاول مرة أخرى", "أنت تتحسن كل يوم"]
+        self.guidance_phrases = [
+            "دعني أساعدك في هذا",
+            "لا بأس، سنتعلم معاً",
+            "هيا نحاول مرة أخرى",
+            "أنت تتحسن كل يوم",
+        ]
 
     def add_encouragement(self, response_text: str, child_emotion: str) -> str:
         """إضافة رسائل تشجيعية للرد"""
@@ -73,7 +84,9 @@ class ChildExperienceOptimizer:
             text = f"يا {child_data['name']}، {text}"
 
         # إضافة تشجيع
-        text = self.voice_enhancements.add_encouragement(text, child_data.get("emotion", "neutral"))
+        text = self.voice_enhancements.add_encouragement(
+            text, child_data.get("emotion", "neutral")
+        )
 
         # إضافة مؤثرات
         text = self.voice_enhancements.add_sound_effects(text, "general")
@@ -91,7 +104,9 @@ class ChildExperienceOptimizer:
 
     def track_engagement(float) -> None:
         """تتبع مستوى التفاعل"""
-        self.interaction_history.append({"type": interaction_type, "quality": response_quality, "timestamp": "now"})
+        self.interaction_history.append(
+            {"type": interaction_type, "quality": response_quality, "timestamp": "now"}
+        )
 
         # الاحتفاظ بآخر 50 تفاعل فقط
         if len(self.interaction_history) > 50:

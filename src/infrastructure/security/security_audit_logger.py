@@ -117,7 +117,9 @@ class SecurityEvent:
         if not self.event_id:
             # Generate unique event ID
             timestamp_str = self.timestamp.isoformat()
-            event_data = f"{timestamp_str}:{self.event_type.value}:{self.user_id or 'anonymous'}"
+            event_data = (
+                f"{timestamp_str}:{self.event_type.value}:{self.user_id or 'anonymous'}"
+            )
             self.event_id = hashlib.sha256(event_data.encode()).hexdigest()[:16]
 
 
@@ -176,7 +178,10 @@ class SecurityAuditLogger:
                 "threat_level": ThreatLevel.MEDIUM,
             },
             "unauthorized_access_pattern": {
-                "event_types": [SecurityEventType.UNAUTHORIZED_ACCESS, SecurityEventType.PERMISSION_DENIED],
+                "event_types": [
+                    SecurityEventType.UNAUTHORIZED_ACCESS,
+                    SecurityEventType.PERMISSION_DENIED,
+                ],
                 "threshold": 3,
                 "time_window": 60,  # 1 minute
                 "threat_level": ThreatLevel.HIGH,
@@ -189,15 +194,32 @@ class SecurityAuditLogger:
             },
         }
 
-    def _initialize_compliance_mapping(self) -> Dict[SecurityEventType, List[ComplianceStandard]]:
+    def _initialize_compliance_mapping(
+        self,
+    ) -> Dict[SecurityEventType, List[ComplianceStandard]]:
         """Initialize compliance standard mapping"""
         return {
             SecurityEventType.CHILD_INTERACTION: [ComplianceStandard.COPPA],
-            SecurityEventType.AUDIO_RECORDING: [ComplianceStandard.COPPA, ComplianceStandard.GDPR],
-            SecurityEventType.DATA_ACCESS: [ComplianceStandard.GDPR, ComplianceStandard.CCPA],
-            SecurityEventType.DATA_MODIFICATION: [ComplianceStandard.GDPR, ComplianceStandard.CCPA],
-            SecurityEventType.DATA_DELETION: [ComplianceStandard.GDPR, ComplianceStandard.CCPA],
-            SecurityEventType.FAMILY_CREATION: [ComplianceStandard.COPPA, ComplianceStandard.GDPR],
+            SecurityEventType.AUDIO_RECORDING: [
+                ComplianceStandard.COPPA,
+                ComplianceStandard.GDPR,
+            ],
+            SecurityEventType.DATA_ACCESS: [
+                ComplianceStandard.GDPR,
+                ComplianceStandard.CCPA,
+            ],
+            SecurityEventType.DATA_MODIFICATION: [
+                ComplianceStandard.GDPR,
+                ComplianceStandard.CCPA,
+            ],
+            SecurityEventType.DATA_DELETION: [
+                ComplianceStandard.GDPR,
+                ComplianceStandard.CCPA,
+            ],
+            SecurityEventType.FAMILY_CREATION: [
+                ComplianceStandard.COPPA,
+                ComplianceStandard.GDPR,
+            ],
             SecurityEventType.DEVICE_REGISTRATION: [ComplianceStandard.COPPA],
             SecurityEventType.LOGIN_SUCCESS: [ComplianceStandard.SOX],
             SecurityEventType.CONFIGURATION_CHANGE: [ComplianceStandard.SOX],
@@ -214,7 +236,8 @@ class SecurityAuditLogger:
             },
             {
                 "name": "child_safety_alert",
-                "condition": lambda event: event.event_type == SecurityEventType.CHILD_INTERACTION
+                "condition": lambda event: event.event_type
+                == SecurityEventType.CHILD_INTERACTION
                 and event.threat_level in [ThreatLevel.HIGH, ThreatLevel.CRITICAL],
                 "alert_immediately": True,
                 "notification_channels": ["parent", "child_safety_team"],
@@ -222,7 +245,10 @@ class SecurityAuditLogger:
             {
                 "name": "data_breach_indicator",
                 "condition": lambda event: event.event_type
-                in [SecurityEventType.UNAUTHORIZED_ACCESS, SecurityEventType.DATA_ACCESS]
+                in [
+                    SecurityEventType.UNAUTHORIZED_ACCESS,
+                    SecurityEventType.DATA_ACCESS,
+                ]
                 and event.threat_level == ThreatLevel.HIGH,
                 "alert_immediately": True,
                 "notification_channels": ["security_team", "legal", "ciso"],
@@ -315,13 +341,19 @@ class SecurityAuditLogger:
 
         # Determine threat level based on event type and context
         if event.result != "success":
-            if event.event_type in [SecurityEventType.LOGIN_FAILURE, SecurityEventType.UNAUTHORIZED_ACCESS]:
+            if event.event_type in [
+                SecurityEventType.LOGIN_FAILURE,
+                SecurityEventType.UNAUTHORIZED_ACCESS,
+            ]:
                 event.threat_level = ThreatLevel.MEDIUM
             elif event.event_type == SecurityEventType.PERMISSION_DENIED:
                 event.threat_level = ThreatLevel.LOW
 
         # Special handling for child-related events
-        if event.event_type in [SecurityEventType.CHILD_INTERACTION, SecurityEventType.AUDIO_RECORDING]:
+        if event.event_type in [
+            SecurityEventType.CHILD_INTERACTION,
+            SecurityEventType.AUDIO_RECORDING,
+        ]:
             event.sensitive_data_involved = True
             event.data_retention_days = 2555  # 7 years for child data
 
@@ -382,12 +414,17 @@ class SecurityAuditLogger:
 
         if event.threat_level == ThreatLevel.CRITICAL:
             return "immediate_lockdown"
-        elif event.event_type == SecurityEventType.RATE_LIMIT_EXCEEDED and event.threat_level == ThreatLevel.HIGH:
+        elif (
+            event.event_type == SecurityEventType.RATE_LIMIT_EXCEEDED
+            and event.threat_level == ThreatLevel.HIGH
+        ):
             return "temporary_ip_block"
         elif event.event_type == SecurityEventType.LOGIN_FAILURE:
             # Check recent failures
             recent_failures = await self._count_recent_events(
-                event.user_id or event.ip_address, SecurityEventType.LOGIN_FAILURE, 300  # 5 minutes
+                event.user_id or event.ip_address,
+                SecurityEventType.LOGIN_FAILURE,
+                300,  # 5 minutes
             )
             if recent_failures >= 5:
                 return "account_lockout"
@@ -401,7 +438,9 @@ class SecurityAuditLogger:
             if event.event_type in pattern["event_types"]:
                 # Count recent events matching this pattern
                 count = await self._count_recent_events(
-                    event.user_id or event.ip_address, event.event_type, pattern["time_window"]
+                    event.user_id or event.ip_address,
+                    event.event_type,
+                    pattern["time_window"],
                 )
 
                 if count >= pattern["threshold"]:
@@ -480,7 +519,9 @@ class SecurityAuditLogger:
                 self.correlation_map[event.correlation_id] = []
             self.correlation_map[event.correlation_id].append(event.event_id)
 
-    async def _count_recent_events(self, identifier: str, event_type: SecurityEventType, time_window: int) -> int:
+    async def _count_recent_events(
+        self, identifier: str, event_type: SecurityEventType, time_window: int
+    ) -> int:
         """Count recent events for threat detection"""
 
         # This is a simplified implementation
@@ -492,7 +533,10 @@ class SecurityAuditLogger:
             if (
                 entry.event.timestamp >= cutoff_time
                 and entry.event.event_type == event_type
-                and (entry.event.user_id == identifier or entry.event.ip_address == identifier)
+                and (
+                    entry.event.user_id == identifier
+                    or entry.event.ip_address == identifier
+                )
             ):
                 count += 1
 
@@ -537,7 +581,11 @@ class SecurityAuditLogger:
         """Get device information"""
 
         # Placeholder - would fetch from device registry
-        return {"device_type": "teddy_bear", "model": "v2.0", "last_seen": datetime.utcnow().isoformat()}
+        return {
+            "device_type": "teddy_bear",
+            "model": "v2.0",
+            "last_seen": datetime.utcnow().isoformat(),
+        }
 
     def _start_background_tasks(self) -> Any:
         """Start background monitoring tasks"""
@@ -570,7 +618,10 @@ class SecurityAuditLogger:
         # Filter events by compliance standard and date range
         relevant_events = []
         for entry in self.event_buffer:
-            if standard in entry.event.compliance_flags and start_date <= entry.event.timestamp <= end_date:
+            if (
+                standard in entry.event.compliance_flags
+                and start_date <= entry.event.timestamp <= end_date
+            ):
                 relevant_events.append(entry)
 
         return {
@@ -578,15 +629,21 @@ class SecurityAuditLogger:
             "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
             "total_events": len(relevant_events),
             "event_types": {
-                event_type.value: len([e for e in relevant_events if e.event.event_type == event_type])
+                event_type.value: len(
+                    [e for e in relevant_events if e.event.event_type == event_type]
+                )
                 for event_type in SecurityEventType
             },
             "risk_summary": {
                 "total_risk_score": sum(e.risk_score for e in relevant_events),
                 "average_risk_score": (
-                    sum(e.risk_score for e in relevant_events) / len(relevant_events) if relevant_events else 0
+                    sum(e.risk_score for e in relevant_events) / len(relevant_events)
+                    if relevant_events
+                    else 0
                 ),
-                "high_risk_events": len([e for e in relevant_events if e.risk_score >= 7.0]),
+                "high_risk_events": len(
+                    [e for e in relevant_events if e.risk_score >= 7.0]
+                ),
             },
         }
 
@@ -595,7 +652,9 @@ class SecurityAuditLogger:
 _audit_logger: Optional[SecurityAuditLogger] = None
 
 
-def get_security_audit_logger(storage_backend: Optional[Any] = None) -> SecurityAuditLogger:
+def get_security_audit_logger(
+    storage_backend: Optional[Any] = None,
+) -> SecurityAuditLogger:
     """Get global security audit logger"""
     global _audit_logger
     if _audit_logger is None:
@@ -607,12 +666,20 @@ def get_security_audit_logger(storage_backend: Optional[Any] = None) -> Security
 
 
 async def log_child_interaction(
-    user_id: str, device_id: str, interaction_type: str, duration: Optional[int] = None, **kwargs
+    user_id: str,
+    device_id: str,
+    interaction_type: str,
+    duration: Optional[int] = None,
+    **kwargs,
 ) -> str:
     """Log child interaction event"""
     audit_logger = get_security_audit_logger()
 
-    details = {"interaction_type": interaction_type, "duration_seconds": duration, **kwargs}
+    details = {
+        "interaction_type": interaction_type,
+        "duration_seconds": duration,
+        **kwargs,
+    }
 
     return await audit_logger.log_security_event(
         event_type=SecurityEventType.CHILD_INTERACTION,
@@ -623,11 +690,17 @@ async def log_child_interaction(
     )
 
 
-async def log_audio_recording(user_id: str, device_id: str, session_id: str, audio_duration: int, **kwargs) -> str:
+async def log_audio_recording(
+    user_id: str, device_id: str, session_id: str, audio_duration: int, **kwargs
+) -> str:
     """Log audio recording event"""
     audit_logger = get_security_audit_logger()
 
-    details = {"audio_duration_seconds": audio_duration, "audio_encrypted": True, **kwargs}
+    details = {
+        "audio_duration_seconds": audio_duration,
+        "audio_encrypted": True,
+        **kwargs,
+    }
 
     return await audit_logger.log_security_event(
         event_type=SecurityEventType.AUDIO_RECORDING,
@@ -645,7 +718,11 @@ async def log_login_attempt(
     """Log login attempt"""
     audit_logger = get_security_audit_logger()
 
-    event_type = SecurityEventType.LOGIN_SUCCESS if result == "success" else SecurityEventType.LOGIN_FAILURE
+    event_type = (
+        SecurityEventType.LOGIN_SUCCESS
+        if result == "success"
+        else SecurityEventType.LOGIN_FAILURE
+    )
 
     return await audit_logger.log_security_event(
         event_type=event_type,

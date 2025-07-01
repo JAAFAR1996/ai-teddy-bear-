@@ -23,12 +23,13 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from src.presentation.ui.audio.audio_config import AudioConfig
-
 # === CORE UI COMPONENTS (من المكونات الجديدة المفصولة) ===
 from src.presentation.ui.audio.audio_engine import AudioProcessingEngine
 from src.presentation.ui.audio.audio_recorder import AudioRecorder
-from src.presentation.ui.main_window import ModernTeddyUI, TeddyMainWindow, main
-from src.presentation.ui.networking.message_sender import EnterpriseMessageSender
+from src.presentation.ui.main_window import (ModernTeddyUI, TeddyMainWindow,
+                                             main)
+from src.presentation.ui.networking.message_sender import \
+    EnterpriseMessageSender
 from src.presentation.ui.networking.websocket_client import WebSocketClient
 from src.presentation.ui.widgets.audio_widget import ModernAudioWidget
 from src.presentation.ui.widgets.conversation_widget import ConversationWidget
@@ -46,76 +47,26 @@ except ImportError:
 
 # === ADDITIONAL IMPORTS (PySide6 للاستيرادات المباشرة) ===
 try:
-    from PySide6.QtCore import (
-        QDateTime,
-        QEasingCurve,
-        QObject,
-        QPoint,
-        QPropertyAnimation,
-        QRect,
-        QRunnable,
-        QSettings,
-        QSize,
-        Qt,
-        QThread,
-        QThreadPool,
-        QTimer,
-        QUrl,
-        Signal,
-    )
+    from PySide6.QtCore import (QDateTime, QEasingCurve, QObject, QPoint,
+                                QPropertyAnimation, QRect, QRunnable,
+                                QSettings, QSize, Qt, QThread, QThreadPool,
+                                QTimer, QUrl, Signal)
     from PySide6.QtGui import QAction as QGuiAction
-    from PySide6.QtGui import (
-        QBrush,
-        QColor,
-        QDesktopServices,
-        QFont,
-        QGradient,
-        QIcon,
-        QLinearGradient,
-        QMovie,
-        QPainter,
-        QPalette,
-        QPen,
-        QPixmap,
-        QSyntaxHighlighter,
-        QTextCharFormat,
-        QTextCursor,
-    )
-    from PySide6.QtWidgets import (
-        QAction,
-        QApplication,
-        QCheckBox,
-        QComboBox,
-        QDialog,
-        QFrame,
-        QGridLayout,
-        QGroupBox,
-        QHBoxLayout,
-        QHeaderView,
-        QLabel,
-        QLineEdit,
-        QListWidget,
-        QMainWindow,
-        QMenuBar,
-        QMessageBox,
-        QProgressBar,
-        QPushButton,
-        QScrollArea,
-        QSizePolicy,
-        QSlider,
-        QSpacerItem,
-        QSpinBox,
-        QSplitter,
-        QStatusBar,
-        QStyle,
-        QSystemTrayIcon,
-        QTableWidget,
-        QTableWidgetItem,
-        QTabWidget,
-        QTextEdit,
-        QVBoxLayout,
-        QWidget,
-    )
+    from PySide6.QtGui import (QBrush, QColor, QDesktopServices, QFont,
+                               QGradient, QIcon, QLinearGradient, QMovie,
+                               QPainter, QPalette, QPen, QPixmap,
+                               QSyntaxHighlighter, QTextCharFormat,
+                               QTextCursor)
+    from PySide6.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox,
+                                   QDialog, QFrame, QGridLayout, QGroupBox,
+                                   QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+                                   QListWidget, QMainWindow, QMenuBar,
+                                   QMessageBox, QProgressBar, QPushButton,
+                                   QScrollArea, QSizePolicy, QSlider,
+                                   QSpacerItem, QSpinBox, QSplitter,
+                                   QStatusBar, QStyle, QSystemTrayIcon,
+                                   QTableWidget, QTableWidgetItem, QTabWidget,
+                                   QTextEdit, QVBoxLayout, QWidget)
 
     PYSIDE6_AVAILABLE = True
 except ImportError:

@@ -13,8 +13,12 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from ...domain.events.child_events import ChildProfileUpdated, ChildRegistered, SafetyViolationDetected
-from ...domain.events.conversation_events import ConversationEnded, ConversationStarted, MessageReceived
+from ...domain.events.child_events import (ChildProfileUpdated,
+                                           ChildRegistered,
+                                           SafetyViolationDetected)
+from ...domain.events.conversation_events import (ConversationEnded,
+                                                  ConversationStarted,
+                                                  MessageReceived)
 from ...shared.kernel import DomainEvent
 
 logger = logging.getLogger(__name__)
@@ -122,7 +126,9 @@ class ChildProjectionManager:
         )
 
         # Calculate initial profile completeness
-        read_model.profile_completeness = self._calculate_profile_completeness(read_model)
+        read_model.profile_completeness = self._calculate_profile_completeness(
+            read_model
+        )
 
         self.read_models[child_id] = read_model
 
@@ -147,7 +153,9 @@ class ChildProjectionManager:
                 setattr(read_model, key, value)
 
         read_model.updated_at = event.updated_at
-        read_model.profile_completeness = self._calculate_profile_completeness(read_model)
+        read_model.profile_completeness = self._calculate_profile_completeness(
+            read_model
+        )
 
         logger.info(f"Child read model updated for {child_id}")
 
@@ -161,7 +169,9 @@ class ChildProjectionManager:
         if child_model:
             child_model.safety_violations_count += 1
             child_model.safety_score = max(0, child_model.safety_score - 10)
-            child_model.safety_status = self._calculate_safety_status(child_model.safety_score)
+            child_model.safety_status = self._calculate_safety_status(
+                child_model.safety_score
+            )
             child_model.last_safety_check = event.occurred_at
 
         # Update safety metrics
@@ -178,7 +188,9 @@ class ChildProjectionManager:
 
         # Update violation categories
         category = event.violation_type
-        safety_metrics.violation_categories[category] = safety_metrics.violation_categories.get(category, 0) + 1
+        safety_metrics.violation_categories[category] = (
+            safety_metrics.violation_categories.get(category, 0) + 1
+        )
 
         logger.warning(f"Safety violation recorded for child {child_id}")
 
@@ -190,7 +202,10 @@ class ChildProjectionManager:
 
         # Create conversation summary
         summary = ConversationSummaryReadModel(
-            id=conversation_id, child_id=child_id, started_at=event.started_at, topic=event.initial_topic
+            id=conversation_id,
+            child_id=child_id,
+            started_at=event.started_at,
+            topic=event.initial_topic,
         )
 
         self.conversation_summaries[conversation_id] = summary
@@ -241,10 +256,14 @@ class ChildProjectionManager:
         required_fields = ["name", "age", "parent_id", "device_id"]
         optional_fields = ["preferences"]
 
-        required_score = sum(1 for field in required_fields if getattr(read_model, field, None))
+        required_score = sum(
+            1 for field in required_fields if getattr(read_model, field, None)
+        )
         optional_score = 1 if read_model.preferences else 0
 
-        total_score = (required_score / len(required_fields)) * 0.8 + (optional_score / len(optional_fields)) * 0.2
+        total_score = (required_score / len(required_fields)) * 0.8 + (
+            optional_score / len(optional_fields)
+        ) * 0.2
 
         return round(total_score * 100, 1)
 
@@ -277,9 +296,13 @@ class ChildProjectionManager:
 
     def get_children_by_parent(self, parent_id: str) -> List[ChildReadModel]:
         """Get all children for a parent"""
-        return [model for model in self.read_models.values() if model.parent_id == parent_id]
+        return [
+            model for model in self.read_models.values() if model.parent_id == parent_id
+        ]
 
-    def get_conversation_summary(self, conversation_id: str) -> Optional[ConversationSummaryReadModel]:
+    def get_conversation_summary(
+        self, conversation_id: str
+    ) -> Optional[ConversationSummaryReadModel]:
         """Get conversation summary by ID"""
         return self.conversation_summaries.get(conversation_id)
 
@@ -288,7 +311,10 @@ class ChildProjectionManager:
         return self.safety_metrics.get(child_id)
 
     def search_children(
-        self, name_pattern: Optional[str] = None, age_range: Optional[tuple] = None, parent_id: Optional[str] = None
+        self,
+        name_pattern: Optional[str] = None,
+        age_range: Optional[tuple] = None,
+        parent_id: Optional[str] = None,
     ) -> List[ChildReadModel]:
         """Search children by criteria"""
 
@@ -327,7 +353,9 @@ class ChildProjectionManager:
         if not self.read_models:
             return 0.0
 
-        total_conversations = sum(m.conversation_count for m in self.read_models.values())
+        total_conversations = sum(
+            m.conversation_count for m in self.read_models.values()
+        )
         return total_conversations / len(self.read_models)
 
     def _get_safety_status_distribution(self) -> Dict[str, int]:

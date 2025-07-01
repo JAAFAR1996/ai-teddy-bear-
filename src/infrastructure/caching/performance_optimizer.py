@@ -79,7 +79,9 @@ class PerformanceOptimizer:
                 memory_usage_mb=metrics_data.get("memory_usage_mb", 0.0),
                 cache_size=metrics_data.get("l1_stats", {}).get("size", 0),
                 evictions_per_hour=metrics_data.get("evictions", 0),
-                error_rate=metrics_data.get("cache_efficiency", {}).get("error_rate", 0.0),
+                error_rate=metrics_data.get("cache_efficiency", {}).get(
+                    "error_rate", 0.0
+                ),
             )
 
             # Add to history
@@ -87,7 +89,9 @@ class PerformanceOptimizer:
 
             # Keep only recent metrics
             cutoff_time = datetime.now() - timedelta(hours=self.analysis_window_hours)
-            self.metrics_history = [m for m in self.metrics_history if m.timestamp > cutoff_time]
+            self.metrics_history = [
+                m for m in self.metrics_history if m.timestamp > cutoff_time
+            ]
 
             return metrics
 
@@ -146,7 +150,9 @@ class PerformanceOptimizer:
             "performance_score": self._calculate_performance_score(stats),
         }
 
-    def generate_optimization_recommendations(self, cache_system, current_config) -> List[OptimizationRecommendation]:
+    def generate_optimization_recommendations(
+        self, cache_system, current_config
+    ) -> List[OptimizationRecommendation]:
         """Generate optimization recommendations based on performance analysis."""
         recommendations = []
 
@@ -309,12 +315,16 @@ class PerformanceOptimizer:
 
         # Calculate weighted score
         total_score = (
-            hit_rate_score * hit_rate_weight + latency_score * latency_weight + throughput_score * throughput_weight
+            hit_rate_score * hit_rate_weight
+            + latency_score * latency_weight
+            + throughput_score * throughput_weight
         )
 
         return round(total_score, 1)
 
-    def generate_performance_report(self, cache_system, current_config) -> Dict[str, Any]:
+    def generate_performance_report(
+        self, cache_system, current_config
+    ) -> Dict[str, Any]:
         """Generate comprehensive performance report."""
         # Record current metrics
         current_metrics = self.record_metrics(cache_system)
@@ -323,7 +333,9 @@ class PerformanceOptimizer:
         trends_analysis = self.analyze_performance_trends()
 
         # Generate recommendations
-        recommendations = self.generate_optimization_recommendations(cache_system, current_config)
+        recommendations = self.generate_optimization_recommendations(
+            cache_system, current_config
+        )
 
         # Create summary
         summary = {
@@ -340,7 +352,9 @@ class PerformanceOptimizer:
             summary["overall_health"] = "FAIR"
 
         # Count critical issues
-        summary["critical_issues"] = len([r for r in recommendations if r.priority == "HIGH"])
+        summary["critical_issues"] = len(
+            [r for r in recommendations if r.priority == "HIGH"]
+        )
 
         return {
             "report_timestamp": datetime.now().isoformat(),
@@ -348,7 +362,9 @@ class PerformanceOptimizer:
             "current_metrics": asdict(current_metrics) if current_metrics else None,
             "trends_analysis": trends_analysis,
             "recommendations": [asdict(r) for r in recommendations],
-            "next_analysis_suggested": (datetime.now() + timedelta(hours=1)).isoformat(),
+            "next_analysis_suggested": (
+                datetime.now() + timedelta(hours=1)
+            ).isoformat(),
         }
 
     def export_metrics_csv(self, filepath: str) -> bool:
@@ -432,7 +448,9 @@ class CacheHealthMonitor:
             )
 
         # Check memory usage
-        memory_pct = (latest_metrics.memory_usage_mb / current_config.l1_max_size_mb) * 100
+        memory_pct = (
+            latest_metrics.memory_usage_mb / current_config.l1_max_size_mb
+        ) * 100
         if memory_pct > self.alert_thresholds["memory_usage_max_pct"]:
             alerts.append(
                 {
@@ -446,7 +464,9 @@ class CacheHealthMonitor:
         return {
             "health_check_timestamp": datetime.now().isoformat(),
             "overall_status": (
-                "CRITICAL" if any(a["level"] == "CRITICAL" for a in alerts) else "WARNING" if alerts else "HEALTHY"
+                "CRITICAL"
+                if any(a["level"] == "CRITICAL" for a in alerts)
+                else "WARNING" if alerts else "HEALTHY"
             ),
             "alerts": alerts,
             "metrics_summary": {

@@ -15,15 +15,14 @@ import sounddevice as sd
 from src.application.services.streaming_service import StreamingService
 from src.core.application.interfaces.services import IAIService
 from src.core.domain.entities.audio_stream import AudioStream
-
 # Domain imports
-from src.domain.audio.models import AudioConfig, EmotionalTone, Language, VoiceProfile
+from src.domain.audio.models import (AudioConfig, EmotionalTone, Language,
+                                     VoiceProfile)
 from src.domain.audio.services import AudioProcessor, VoiceActivityDetector
 from src.infrastructure.config import get_config
 
 from .voice_profile_service import VoiceProfileService
 from .voice_recognition_service import VoiceRecognitionService
-
 # Application service imports
 from .voice_synthesis_service import VoiceSynthesisService
 
@@ -47,7 +46,9 @@ class VoiceInteractionService:
         # Initialize application services
         self.voice_synthesis = VoiceSynthesisService(self.config)
         self.voice_recognition = VoiceRecognitionService(self.config)
-        self.voice_profile_service = VoiceProfileService(storage_path="data/voice_profiles", config=self.config)
+        self.voice_profile_service = VoiceProfileService(
+            storage_path="data/voice_profiles", config=self.config
+        )
 
         # External service references
         self.streaming_service: Optional[StreamingService] = None
@@ -60,10 +61,16 @@ class VoiceInteractionService:
         # Audio streams and buffers
         self.input_stream = None
         self.output_stream = None
-        self.audio_buffer = deque(maxlen=int(self.audio_config.sample_rate * self.audio_config.max_recording_duration))
+        self.audio_buffer = deque(
+            maxlen=int(
+                self.audio_config.sample_rate * self.audio_config.max_recording_duration
+            )
+        )
 
         # Storage paths
-        self.recordings_path = Path(getattr(self.config, "RECORDINGS_PATH", "data/recordings"))
+        self.recordings_path = Path(
+            getattr(self.config, "RECORDINGS_PATH", "data/recordings")
+        )
         self.recordings_path.mkdir(parents=True, exist_ok=True)
 
         # Initialize emotion analyzer integration
@@ -72,10 +79,13 @@ class VoiceInteractionService:
     def _init_emotion_integration(self):
         """Initialize emotion analysis integration"""
         try:
-            from src.application.services.ai.emotion_analyzer_service import EmotionAnalyzer
+            from src.application.services.ai.emotion_analyzer_service import \
+                EmotionAnalyzer
             from src.domain.emotion_config import EmotionConfig
 
-            emotion_config = EmotionConfig(api_key=getattr(self.config, "HUME_API_KEY", ""))
+            emotion_config = EmotionConfig(
+                api_key=getattr(self.config, "HUME_API_KEY", "")
+            )
             self.emotion_analyzer = EmotionAnalyzer(emotion_config.api_key)
         except ImportError:
             self.logger.warning("Emotion analyzer not available")
@@ -102,7 +112,9 @@ class VoiceInteractionService:
             self.logger.error(f"Failed to initialize profiles: {e}")
             return {}
 
-    async def start_voice_interaction(self, profile_id: str, session_id: str) -> Dict[str, Any]:
+    async def start_voice_interaction(
+        self, profile_id: str, session_id: str
+    ) -> Dict[str, Any]:
         """Start voice interaction session"""
         try:
             # Validate inputs
@@ -125,7 +137,9 @@ class VoiceInteractionService:
             self.is_recording = True
             asyncio.create_task(self._recording_loop(session_id))
 
-            self.logger.info(f"Started voice interaction: {profile_id}, session: {session_id}")
+            self.logger.info(
+                f"Started voice interaction: {profile_id}, session: {session_id}"
+            )
             return {"status": "success", "profile": profile_id, "session": session_id}
 
         except Exception as e:
@@ -156,7 +170,10 @@ class VoiceInteractionService:
 
             # Use voice synthesis service
             audio_data = await self.voice_synthesis.synthesize_speech(
-                text=text, voice_profile=self.current_profile, emotion=emotion, stream_output=stream_output
+                text=text,
+                voice_profile=self.current_profile,
+                emotion=emotion,
+                stream_output=stream_output,
             )
 
             # Apply voice adjustments if needed
@@ -190,7 +207,9 @@ class VoiceInteractionService:
             return {"error": str(e), "text": ""}
 
     async def detect_wake_word(
-        self, wake_words: List[str] = ["hey teddy", "hello teddy", "مرحبا دبدوب"], sensitivity: float = 0.5
+        self,
+        wake_words: List[str] = ["hey teddy", "hello teddy", "مرحبا دبدوب"],
+        sensitivity: float = 0.5,
     ) -> bool:
         """Detect wake word in audio stream"""
         try:
@@ -253,7 +272,10 @@ class VoiceInteractionService:
         try:
             if isinstance(audio_data, bytes):
                 # Convert bytes to numpy array
-                audio_array = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+                audio_array = (
+                    np.frombuffer(audio_data, dtype=np.int16).astype(np.float32)
+                    / 32768.0
+                )
             else:
                 audio_array = audio_data
 
@@ -265,7 +287,9 @@ class VoiceInteractionService:
         except Exception as e:
             self.logger.error(f"Audio playback error: {e}")
 
-    async def save_recording(self, audio_data: np.ndarray, session_id: str, metadata: Optional[Dict] = None) -> str:
+    async def save_recording(
+        self, audio_data: np.ndarray, session_id: str, metadata: Optional[Dict] = None
+    ) -> str:
         """Save audio recording with metadata"""
         try:
             from datetime import datetime
@@ -334,7 +358,9 @@ class VoiceInteractionService:
                 return audio_data
 
             # Convert bytes to numpy array
-            audio_array = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+            audio_array = (
+                np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+            )
 
             # Apply pitch adjustment
             if self.current_profile.pitch_adjustment != 0:
@@ -366,13 +392,19 @@ class VoiceInteractionService:
 
             # Start input stream
             self.input_stream = sd.InputStream(
-                callback=self._input_callback, samplerate=sample_rate, channels=channels, blocksize=chunk_size
+                callback=self._input_callback,
+                samplerate=sample_rate,
+                channels=channels,
+                blocksize=chunk_size,
             )
             self.input_stream.start()
 
             # Start output stream
             self.output_stream = sd.OutputStream(
-                callback=self._output_callback, samplerate=sample_rate, channels=channels, blocksize=chunk_size
+                callback=self._output_callback,
+                samplerate=sample_rate,
+                channels=channels,
+                blocksize=chunk_size,
             )
             self.output_stream.start()
 
@@ -420,7 +452,9 @@ class VoiceInteractionService:
         try:
             if len(self.audio_buffer) >= self.audio_config.chunk_size:
                 # Extract chunk
-                chunk = np.array(list(self.audio_buffer)[: self.audio_config.chunk_size])
+                chunk = np.array(
+                    list(self.audio_buffer)[: self.audio_config.chunk_size]
+                )
 
                 # Remove processed data
                 for _ in range(self.audio_config.chunk_size):
@@ -452,7 +486,9 @@ class VoiceInteractionService:
             if not self.current_profile:
                 await self.initialize_default_profiles()
 
-            audio_data = await self.synthesize_speech(test_text, emotion, stream_output=False)
+            audio_data = await self.synthesize_speech(
+                test_text, emotion, stream_output=False
+            )
             return audio_data is not None
 
         except Exception as e:

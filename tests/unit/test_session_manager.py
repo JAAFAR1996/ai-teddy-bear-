@@ -9,9 +9,11 @@ from datetime import datetime, timedelta
 
 import pytest
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 
-from src.infrastructure.session_manager import Session, SessionManager, SessionStatus
+from src.infrastructure.session_manager import (Session, SessionManager,
+                                                SessionStatus)
 
 
 @pytest.fixture
@@ -25,7 +27,9 @@ async def db_session():
         await conn.run_sync(Session.metadata.create_all)
 
     # Create session factory
-    async_session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async_session_factory = async_sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False
+    )
 
     # Provide session
     async with async_session_factory() as session:

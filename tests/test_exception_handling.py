@@ -8,22 +8,16 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.domain.exceptions.base import (
-    ErrorContext,
-    ErrorSeverity,
-    ExternalServiceException,
-    InappropriateContentException,
-    ValidationException,
-)
-from src.infrastructure.decorators import (
-    RetryConfig,
-    child_safe,
-    handle_exceptions,
-    validate_input,
-    with_circuit_breaker,
-    with_retry,
-)
-from src.infrastructure.exception_handling import CircuitBreaker, CircuitState, GlobalExceptionHandler
+from src.domain.exceptions.base import (ErrorContext, ErrorSeverity,
+                                        ExternalServiceException,
+                                        InappropriateContentException,
+                                        ValidationException)
+from src.infrastructure.decorators import (RetryConfig, child_safe,
+                                           handle_exceptions, validate_input,
+                                           with_circuit_breaker, with_retry)
+from src.infrastructure.exception_handling import (CircuitBreaker,
+                                                   CircuitState,
+                                                   GlobalExceptionHandler)
 
 
 class TestExceptionHandling:
@@ -62,12 +56,18 @@ class TestExceptionHandling:
         """اختبار decorator with_retry"""
         call_count = 0
 
-        @with_retry(config=RetryConfig(max_attempts=3, initial_delay=0.1, exponential_backoff=False))
+        @with_retry(
+            config=RetryConfig(
+                max_attempts=3, initial_delay=0.1, exponential_backoff=False
+            )
+        )
         async def flaky_function():
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise ExternalServiceException(service_name="TestService", status_code=503)
+                raise ExternalServiceException(
+                    service_name="TestService", status_code=503
+                )
             return {"success": True, "attempts": call_count}
 
         result = await flaky_function()
@@ -77,7 +77,9 @@ class TestExceptionHandling:
 
     def test_circuit_breaker(self):
         """اختبار Circuit Breaker"""
-        breaker = CircuitBreaker(service_name="test_service", failure_threshold=2, timeout_seconds=1)
+        breaker = CircuitBreaker(
+            service_name="test_service", failure_threshold=2, timeout_seconds=1
+        )
 
         # حالة البداية - مغلق
         assert breaker.state == CircuitState.CLOSED
@@ -137,7 +139,10 @@ class TestExceptionHandling:
                 "name": lambda n: isinstance(n, str) and len(n) > 0,
                 "age": lambda a: isinstance(a, int) and 0 < a < 150,
             },
-            error_messages={"name": "Name must be a non-empty string", "age": "Age must be between 1 and 149"},
+            error_messages={
+                "name": "Name must be a non-empty string",
+                "age": "Age must be between 1 and 149",
+            },
         )
         async def create_user(name: str, age: int):
             return {"name": name, "age": age}
@@ -180,7 +185,10 @@ class TestExceptionHandling:
     def test_error_context(self):
         """اختبار ErrorContext"""
         context = ErrorContext(
-            child_id="child123", user_id="parent456", session_id="session789", additional_data={"age": 7}
+            child_id="child123",
+            user_id="parent456",
+            session_id="session789",
+            additional_data={"age": 7},
         )
 
         # تحويل لـ dict
@@ -193,7 +201,9 @@ class TestExceptionHandling:
     def test_exception_hierarchy(self):
         """اختبار Exception Hierarchy"""
         # InappropriateContentException
-        exc = InappropriateContentException(content_type="text", violation_reason="Contains inappropriate language")
+        exc = InappropriateContentException(
+            content_type="text", violation_reason="Contains inappropriate language"
+        )
         assert exc.severity == ErrorSeverity.CRITICAL
         assert exc.recoverable is False
         assert exc.error_code == "INAPPROPRIATE_CONTENT"
@@ -208,7 +218,9 @@ class TestExceptionHandling:
     async def test_circuit_breaker_recovery(self):
         """اختبار استرداد Circuit Breaker"""
         breaker = CircuitBreaker(
-            service_name="recovery_test", failure_threshold=1, timeout_seconds=0.5  # نصف ثانية للاختبار السريع
+            service_name="recovery_test",
+            failure_threshold=1,
+            timeout_seconds=0.5,  # نصف ثانية للاختبار السريع
         )
 
         call_count = 0

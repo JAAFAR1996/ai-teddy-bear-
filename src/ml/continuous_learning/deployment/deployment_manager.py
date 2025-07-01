@@ -87,7 +87,10 @@ class DeploymentManager:
         logger.info("🚀 Deployment Manager initialized")
 
     async def deploy_models(
-        self, models: Dict[str, Any], strategy: Dict[str, Any], ab_test_evidence: Optional[Dict[str, Any]] = None
+        self,
+        models: Dict[str, Any],
+        strategy: Dict[str, Any],
+        ab_test_evidence: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """نشر النماذج المحسنة"""
 
@@ -95,7 +98,9 @@ class DeploymentManager:
         logger.info(f"🚀 Starting model deployment with ID: {deployment_id}")
 
         # إعداد تكوين النشر
-        deployment_config = await self._prepare_deployment_config(strategy, ab_test_evidence)
+        deployment_config = await self._prepare_deployment_config(
+            strategy, ab_test_evidence
+        )
 
         # التحقق من الأمان قبل النشر
         safety_check = await self._pre_deployment_safety_check(models)
@@ -108,7 +113,9 @@ class DeploymentManager:
 
         # تنفيذ النشر
         try:
-            deployment_results = await self._execute_deployment(deployment_id, models, deployment_config)
+            deployment_results = await self._execute_deployment(
+                deployment_id, models, deployment_config
+            )
 
             # بدء المراقبة
             await self._start_deployment_monitoring(deployment_id, deployment_results)
@@ -129,7 +136,10 @@ class DeploymentManager:
             return {"success": False, "deployment_id": deployment_id, "error": str(e)}
 
     async def run_ab_test(
-        self, control_models: Dict[str, Any], treatment_models: Dict[str, Any], config: Dict[str, Any]
+        self,
+        control_models: Dict[str, Any],
+        treatment_models: Dict[str, Any],
+        config: Dict[str, Any],
     ) -> Dict[str, Any]:
         """تشغيل اختبار A/B"""
 
@@ -140,8 +150,12 @@ class DeploymentManager:
         test_config = await self._prepare_ab_test_config(config)
 
         # نشر النماذج للاختبار
-        control_deployment = await self._deploy_control_models(test_id, control_models, test_config)
-        treatment_deployment = await self._deploy_treatment_models(test_id, treatment_models, test_config)
+        control_deployment = await self._deploy_control_models(
+            test_id, control_models, test_config
+        )
+        treatment_deployment = await self._deploy_treatment_models(
+            test_id, treatment_models, test_config
+        )
 
         # تشغيل الاختبار
         test_results = await self._run_ab_test_experiment(
@@ -193,7 +207,12 @@ class DeploymentManager:
             health_check_interval_minutes=1,
             rollback_threshold=strategy.get("rollback_threshold", 0.02),
             monitoring_duration_hours=48,
-            safety_gates=["safety_score_check", "response_time_check", "error_rate_check", "child_satisfaction_check"],
+            safety_gates=[
+                "safety_score_check",
+                "response_time_check",
+                "error_rate_check",
+                "child_satisfaction_check",
+            ],
             performance_thresholds={
                 "safety_score": 0.95,
                 "response_time_ms": 2000,
@@ -202,7 +221,9 @@ class DeploymentManager:
             },
         )
 
-    async def _pre_deployment_safety_check(self, models: Dict[str, Any]) -> Dict[str, Any]:
+    async def _pre_deployment_safety_check(
+        self, models: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """فحص الأمان قبل النشر"""
 
         safety_checks = {
@@ -250,7 +271,9 @@ class DeploymentManager:
         deployment_results = {}
 
         for model_name, model_data in models.items():
-            result = await self._deploy_single_model(deployment_id, model_name, model_data, config)
+            result = await self._deploy_single_model(
+                deployment_id, model_name, model_data, config
+            )
             deployment_results[model_name] = result
 
             # إضافة إلى النشر النشط
@@ -259,14 +282,20 @@ class DeploymentManager:
         return deployment_results
 
     async def _deploy_single_model(
-        self, deployment_id: str, model_name: str, model_data: Any, config: DeploymentConfig
+        self,
+        deployment_id: str,
+        model_name: str,
+        model_data: Any,
+        config: DeploymentConfig,
     ) -> DeploymentResult:
         """نشر نموذج واحد"""
 
         model_deployment_id = f"{deployment_id}_{model_name}"
         start_time = datetime.utcnow()
 
-        logger.info(f"📦 Deploying model {model_name} with strategy {config.strategy.value}")
+        logger.info(
+            f"📦 Deploying model {model_name} with strategy {config.strategy.value}"
+        )
 
         # محاكاة عملية النشر
         await asyncio.sleep(2)  # محاكاة وقت النشر
@@ -302,7 +331,9 @@ class DeploymentManager:
 
         return result
 
-    async def _execute_canary_deployment(self, result: DeploymentResult, config: DeploymentConfig) -> None:
+    async def _execute_canary_deployment(
+        self, result: DeploymentResult, config: DeploymentConfig
+    ) -> None:
         """تنفيذ نشر الكناري"""
 
         # البدء بنسبة ترافيك صغيرة
@@ -325,11 +356,15 @@ class DeploymentManager:
             # زيادة الترافيك تدريجياً
             if current_traffic < 100:
                 current_traffic = min(100, current_traffic + 10)
-                await asyncio.sleep(config.rollout_duration_hours * 3600 / 10)  # توزيع الوقت
+                await asyncio.sleep(
+                    config.rollout_duration_hours * 3600 / 10
+                )  # توزيع الوقت
             else:
                 break
 
-    async def _execute_blue_green_deployment(self, result: DeploymentResult, config: DeploymentConfig) -> None:
+    async def _execute_blue_green_deployment(
+        self, result: DeploymentResult, config: DeploymentConfig
+    ) -> None:
         """تنفيذ النشر الأزرق-الأخضر"""
 
         # نشر البيئة الخضراء (الجديدة)
@@ -347,7 +382,9 @@ class DeploymentManager:
             # التراجع للبيئة الزرقاء
             await self._trigger_rollback(result, health_check["issues"])
 
-    async def _execute_rolling_deployment(self, result: DeploymentResult, config: DeploymentConfig) -> None:
+    async def _execute_rolling_deployment(
+        self, result: DeploymentResult, config: DeploymentConfig
+    ) -> None:
         """تنفيذ النشر المتدرج"""
 
         # نشر تدريجي عبر العقد
@@ -369,9 +406,13 @@ class DeploymentManager:
                 break
 
             # تحديث نسبة الترافيك
-            result.traffic_percentage = min(100, (i + nodes_per_batch) / len(nodes_to_update) * 100)
+            result.traffic_percentage = min(
+                100, (i + nodes_per_batch) / len(nodes_to_update) * 100
+            )
 
-    async def _perform_health_check(self, result: DeploymentResult, config: DeploymentConfig) -> Dict[str, Any]:
+    async def _perform_health_check(
+        self, result: DeploymentResult, config: DeploymentConfig
+    ) -> Dict[str, Any]:
         """إجراء فحص الصحة"""
 
         # محاكاة مقاييس الأداء
@@ -396,16 +437,24 @@ class DeploymentManager:
             current_value = current_metrics.get(metric.replace("_ms", ""), 0)
 
             if metric == "response_time_ms" and current_value > threshold:
-                issues.append(f"Response time {current_value:.0f}ms exceeds threshold {threshold}ms")
+                issues.append(
+                    f"Response time {current_value:.0f}ms exceeds threshold {threshold}ms"
+                )
                 healthy = False
             elif metric == "error_rate" and current_value > threshold:
-                issues.append(f"Error rate {current_value:.3f} exceeds threshold {threshold}")
+                issues.append(
+                    f"Error rate {current_value:.3f} exceeds threshold {threshold}"
+                )
                 healthy = False
             elif metric == "safety_score" and current_value < threshold:
-                issues.append(f"Safety score {current_value:.3f} below threshold {threshold}")
+                issues.append(
+                    f"Safety score {current_value:.3f} below threshold {threshold}"
+                )
                 healthy = False
             elif metric == "child_satisfaction" and current_value < threshold:
-                issues.append(f"Child satisfaction {current_value:.3f} below threshold {threshold}")
+                issues.append(
+                    f"Child satisfaction {current_value:.3f} below threshold {threshold}"
+                )
                 healthy = False
 
         return {
@@ -416,7 +465,9 @@ class DeploymentManager:
             "gates_passed": len(config.safety_gates) - len(issues),
         }
 
-    async def _trigger_rollback(self, result: DeploymentResult, issues: List[str]) -> None:
+    async def _trigger_rollback(
+        self, result: DeploymentResult, issues: List[str]
+    ) -> None:
         """تشغيل التراجع"""
 
         logger.warning(f"🔄 Triggering rollback for {result.deployment_id}: {issues}")
@@ -439,18 +490,24 @@ class DeploymentManager:
 
         logger.info(f"✅ Rollback completed for {result.deployment_id}")
 
-    async def _start_deployment_monitoring(self, deployment_id: str, results: Dict[str, DeploymentResult]) -> None:
+    async def _start_deployment_monitoring(
+        self, deployment_id: str, results: Dict[str, DeploymentResult]
+    ) -> None:
         """بدء مراقبة النشر"""
 
         logger.info(f"👁️ Starting deployment monitoring for {deployment_id}")
 
         # إعداد مراقبة مستمرة
-        monitoring_task = asyncio.create_task(self._continuous_monitoring(deployment_id, results))
+        monitoring_task = asyncio.create_task(
+            self._continuous_monitoring(deployment_id, results)
+        )
 
         # تخزين مهمة المراقبة
         self.monitoring.setdefault("active_tasks", {})[deployment_id] = monitoring_task
 
-    async def _continuous_monitoring(self, deployment_id: str, results: Dict[str, DeploymentResult]) -> None:
+    async def _continuous_monitoring(
+        self, deployment_id: str, results: Dict[str, DeploymentResult]
+    ) -> None:
         """مراقبة مستمرة للنشر"""
 
         monitoring_duration = 48 * 3600  # 48 ساعة
@@ -486,7 +543,9 @@ class DeploymentManager:
 
                         # فحص الحاجة للتدخل
                         if not health_check["healthy"]:
-                            await self._handle_monitoring_alert(deployment_id, model_name, health_check)
+                            await self._handle_monitoring_alert(
+                                deployment_id, model_name, health_check
+                            )
 
                 await asyncio.sleep(check_interval)
 
@@ -503,7 +562,13 @@ class DeploymentManager:
             "duration_hours": config.get("duration_hours", 6),
             "traffic_split": config.get("traffic_split", 0.1),
             "metrics_to_track": config.get(
-                "metrics_to_track", ["child_satisfaction", "safety_score", "response_accuracy", "engagement_time"]
+                "metrics_to_track",
+                [
+                    "child_satisfaction",
+                    "safety_score",
+                    "response_accuracy",
+                    "engagement_time",
+                ],
             ),
             "sample_size_per_group": config.get("sample_size_per_group", 1000),
             "significance_level": config.get("significance_level", 0.05),
@@ -545,7 +610,9 @@ class DeploymentManager:
     ) -> Dict[str, Any]:
         """تشغيل تجربة A/B"""
 
-        logger.info(f"🧪 Running A/B test experiment for {config['duration_hours']} hours")
+        logger.info(
+            f"🧪 Running A/B test experiment for {config['duration_hours']} hours"
+        )
 
         # محاكاة تشغيل الاختبار
         await asyncio.sleep(2)  # محاكاة وقت الاختبار
@@ -558,10 +625,15 @@ class DeploymentManager:
             "test_id": test_id,
             "control_metrics": control_metrics,
             "treatment_metrics": treatment_metrics,
-            "sample_sizes": {"control": config["sample_size_per_group"], "treatment": config["sample_size_per_group"]},
+            "sample_sizes": {
+                "control": config["sample_size_per_group"],
+                "treatment": config["sample_size_per_group"],
+            },
         }
 
-    async def _collect_ab_test_metrics(self, group: str, config: Dict[str, Any]) -> Dict[str, float]:
+    async def _collect_ab_test_metrics(
+        self, group: str, config: Dict[str, Any]
+    ) -> Dict[str, float]:
         """جمع مقاييس اختبار A/B"""
 
         # محاكاة مقاييس الأداء
@@ -586,7 +658,9 @@ class DeploymentManager:
                 "learning_effectiveness": np.random.beta(7, 3),
             }
 
-    async def _analyze_ab_test_results(self, test_results: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_ab_test_results(
+        self, test_results: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """تحليل نتائج اختبار A/B"""
 
         control_metrics = test_results["control_metrics"]
@@ -611,24 +685,31 @@ class DeploymentManager:
             }
 
             # محاكاة الدلالة الإحصائية
-            p_value = np.random.uniform(0.01, 0.1) if abs(percentage_change) > 2 else np.random.uniform(0.1, 0.5)
+            p_value = (
+                np.random.uniform(0.01, 0.1)
+                if abs(percentage_change) > 2
+                else np.random.uniform(0.1, 0.5)
+            )
             statistical_significance[metric] = {
                 "p_value": p_value,
                 "significant": p_value < 0.05,
-                "effect_size": abs(difference) / np.sqrt((control_value + treatment_value) / 2),
+                "effect_size": abs(difference)
+                / np.sqrt((control_value + treatment_value) / 2),
             }
 
         # تحديد التوصية الإجمالية
         significant_improvements = sum(
             1
             for metric, stats in statistical_significance.items()
-            if stats["significant"] and metric_differences[metric]["percentage_change"] > 0
+            if stats["significant"]
+            and metric_differences[metric]["percentage_change"] > 0
         )
 
         significant_degradations = sum(
             1
             for metric, stats in statistical_significance.items()
-            if stats["significant"] and metric_differences[metric]["percentage_change"] < 0
+            if stats["significant"]
+            and metric_differences[metric]["percentage_change"] < 0
         )
 
         if significant_improvements > significant_degradations:
@@ -645,7 +726,9 @@ class DeploymentManager:
             "significant_degradations": significant_degradations,
             "recommendation": recommendation,
             "confidence_level": 0.95,
-            "overall_p_value": np.mean([stats["p_value"] for stats in statistical_significance.values()]),
+            "overall_p_value": np.mean(
+                [stats["p_value"] for stats in statistical_significance.values()]
+            ),
         }
 
     def _initialize_infrastructure(self) -> Dict[str, Any]:
@@ -659,7 +742,12 @@ class DeploymentManager:
 
     def _initialize_monitoring(self) -> Dict[str, Any]:
         """تهيئة المراقبة"""
-        return {"prometheus_enabled": True, "grafana_dashboards": True, "alerting_rules": 15, "active_tasks": {}}
+        return {
+            "prometheus_enabled": True,
+            "grafana_dashboards": True,
+            "alerting_rules": 15,
+            "active_tasks": {},
+        }
 
     def _initialize_load_balancer(self) -> Dict[str, Any]:
         """تهيئة موازن الأحمال"""
@@ -671,7 +759,9 @@ class DeploymentManager:
         }
 
     # Placeholder methods for infrastructure operations
-    async def _update_traffic_percentage(self, deployment_id: str, percentage: float) -> None:
+    async def _update_traffic_percentage(
+        self, deployment_id: str, percentage: float
+    ) -> None:
         """تحديث نسبة الترافيك"""
         logger.info(f"📊 Updating traffic to {percentage}% for {deployment_id}")
 
@@ -687,7 +777,9 @@ class DeploymentManager:
         """الحصول على عقد النشر"""
         return [f"node-{i}" for i in range(10)]
 
-    async def _update_nodes_batch(self, result: DeploymentResult, nodes: List[str]) -> None:
+    async def _update_nodes_batch(
+        self, result: DeploymentResult, nodes: List[str]
+    ) -> None:
         """تحديث دفعة من العقد"""
         logger.info(f"📦 Updating {len(nodes)} nodes for {result.deployment_id}")
 
@@ -703,9 +795,13 @@ class DeploymentManager:
         """تنظيف موارد اختبار A/B"""
         logger.info(f"🧹 Cleaning up A/B test resources for {test_id}")
 
-    async def _handle_monitoring_alert(self, deployment_id: str, model_name: str, health_check: Dict[str, Any]) -> None:
+    async def _handle_monitoring_alert(
+        self, deployment_id: str, model_name: str, health_check: Dict[str, Any]
+    ) -> None:
         """التعامل مع تنبيه المراقبة"""
-        logger.warning(f"⚠️ Monitoring alert for {deployment_id}/{model_name}: {health_check['issues']}")
+        logger.warning(
+            f"⚠️ Monitoring alert for {deployment_id}/{model_name}: {health_check['issues']}"
+        )
 
     async def _handle_deployment_failure(self, deployment_id: str, error: str) -> None:
         """التعامل مع فشل النشر"""

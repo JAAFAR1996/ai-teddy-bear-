@@ -8,16 +8,10 @@ multiple workers and services.
 AI Team Implementation - Task 11
 """
 
-from .distributed_processor import (
-    AIServiceType,
-    ChildContext,
-    ConversationRequest,
-    ConversationResponse,
-    DistributedAIProcessor,
-    MockAIServices,
-    ProcessingMetrics,
-    ProcessingPriority,
-)
+from .distributed_processor import (AIServiceType, ChildContext,
+                                    ConversationRequest, ConversationResponse,
+                                    DistributedAIProcessor, MockAIServices,
+                                    ProcessingMetrics, ProcessingPriority)
 
 __all__ = [
     "DistributedAIProcessor",

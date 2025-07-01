@@ -96,7 +96,9 @@ class ISecretsProvider(ABC):
     """Interface for secret providers"""
 
     @abstractmethod
-    async def get_secret(self, name: str, version: Optional[str] = None) -> Optional[SecretValue]:
+    async def get_secret(
+        self, name: str, version: Optional[str] = None
+    ) -> Optional[SecretValue]:
         """Retrieve a secret"""
         pass
 
@@ -126,11 +128,15 @@ class HashiCorpVaultProvider(ISecretsProvider):
 
     def __init__(self, config: Dict[str, Any]):
         self.config = config
-        self.client = hvac.Client(url=config.get("url", "http://localhost:8200"), token=config.get("token"))
+        self.client = hvac.Client(
+            url=config.get("url", "http://localhost:8200"), token=config.get("token")
+        )
         self.mount_point = config.get("mount_point", "secret")
         self.path_prefix = config.get("path_prefix", "ai-teddy")
 
-    async def get_secret(self, name: str, version: Optional[str] = None) -> Optional[SecretValue]:
+    async def get_secret(
+        self, name: str, version: Optional[str] = None
+    ) -> Optional[SecretValue]:
         """Retrieve secret from Vault"""
         try:
             path = f"{self.path_prefix}/{name}"
@@ -141,7 +147,9 @@ class HashiCorpVaultProvider(ISecretsProvider):
                     path=path, version=int(version), mount_point=self.mount_point
                 )
             else:
-                response = self.client.secrets.kv.read_secret_version(path=path, mount_point=self.mount_point)
+                response = self.client.secrets.kv.read_secret_version(
+                    path=path, mount_point=self.mount_point
+                )
 
             if response and "data" in response and "data" in response["data"]:
                 data = response["data"]["data"]
@@ -196,7 +204,9 @@ class HashiCorpVaultProvider(ISecretsProvider):
         """Delete secret from Vault"""
         try:
             path = f"{self.path_prefix}/{name}"
-            self.client.secrets.kv.delete_metadata_and_all_versions(path=path, mount_point=self.mount_point)
+            self.client.secrets.kv.delete_metadata_and_all_versions(
+                path=path, mount_point=self.mount_point
+            )
             await self._audit_log("delete_secret", name)
             return True
         except Exception as e:
@@ -224,7 +234,9 @@ class HashiCorpVaultProvider(ISecretsProvider):
     async def list_secrets(self) -> List[SecretMetadata]:
         """List all secrets in Vault"""
         try:
-            response = self.client.secrets.kv.list_secrets(path=self.path_prefix, mount_point=self.mount_point)
+            response = self.client.secrets.kv.list_secrets(
+                path=self.path_prefix, mount_point=self.mount_point
+            )
 
             secrets = []
             if response and "data" in response and "keys" in response["data"]:
@@ -238,7 +250,9 @@ class HashiCorpVaultProvider(ISecretsProvider):
             logger.error(f"Failed to list secrets from Vault: {e}")
             return []
 
-    async def _audit_log(self, action: str, secret_name: str, metadata: Optional[SecretMetadata] = None):
+    async def _audit_log(
+        self, action: str, secret_name: str, metadata: Optional[SecretMetadata] = None
+    ):
         """Log audit entry"""
         audit_entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -263,7 +277,9 @@ class AWSSecretsManagerProvider(ISecretsProvider):
         )
         self.prefix = config.get("prefix", "ai-teddy")
 
-    async def get_secret(self, name: str, version: Optional[str] = None) -> Optional[SecretValue]:
+    async def get_secret(
+        self, name: str, version: Optional[str] = None
+    ) -> Optional[SecretValue]:
         """Retrieve secret from AWS Secrets Manager"""
         try:
             secret_id = f"{self.prefix}/{name}"
@@ -283,7 +299,9 @@ class AWSSecretsManagerProvider(ISecretsProvider):
                         name=name,
                         provider=SecretProvider.AWS_SECRETS_MANAGER,
                         secret_type=SecretType[secret_data.get("type", "API_KEY")],
-                        created_at=response.get("CreatedDate", datetime.now(timezone.utc)),
+                        created_at=response.get(
+                            "CreatedDate", datetime.now(timezone.utc)
+                        ),
                         updated_at=datetime.now(timezone.utc),
                         version=1,
                         tags=secret_data.get("tags", {}),
@@ -321,7 +339,9 @@ class AWSSecretsManagerProvider(ISecretsProvider):
             except ClientError as e:
                 if e.response["Error"]["Code"] == "ResourceExistsException":
                     # Update existing secret
-                    self.client.put_secret_value(SecretId=secret_id, SecretString=json.dumps(secret_data))
+                    self.client.put_secret_value(
+                        SecretId=secret_id, SecretString=json.dumps(secret_data)
+                    )
                 else:
                     raise
 
@@ -337,7 +357,8 @@ class AWSSecretsManagerProvider(ISecretsProvider):
         try:
             secret_id = f"{self.prefix}/{name}"
             self.client.delete_secret(
-                SecretId=secret_id, ForceDeleteWithoutRecovery=self.config.get("force_delete", False)
+                SecretId=secret_id,
+                ForceDeleteWithoutRecovery=self.config.get("force_delete", False),
             )
             await self._audit_log("delete_secret", name)
             return True
@@ -378,7 +399,9 @@ class AWSSecretsManagerProvider(ISecretsProvider):
             logger.error(f"Failed to list secrets from AWS: {e}")
             return []
 
-    async def _audit_log(self, action: str, secret_name: str, metadata: Optional[SecretMetadata] = None):
+    async def _audit_log(
+        self, action: str, secret_name: str, metadata: Optional[SecretMetadata] = None
+    ):
         """Log audit entry"""
         audit_entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -415,7 +438,9 @@ class LocalEncryptedProvider(ISecretsProvider):
             os.chmod(key_file, 0o600)
             return key
 
-    async def get_secret(self, name: str, version: Optional[str] = None) -> Optional[SecretValue]:
+    async def get_secret(
+        self, name: str, version: Optional[str] = None
+    ) -> Optional[SecretValue]:
         """Get secret from encrypted local storage"""
         try:
             secret_file = self.secrets_dir / f"{name}.secret"
@@ -451,7 +476,11 @@ class LocalEncryptedProvider(ISecretsProvider):
                     "created_at": metadata.created_at.isoformat(),
                     "updated_at": metadata.updated_at.isoformat(),
                     "rotation_interval_days": metadata.rotation_interval_days,
-                    "last_rotated_at": metadata.last_rotated_at.isoformat() if metadata.last_rotated_at else None,
+                    "last_rotated_at": (
+                        metadata.last_rotated_at.isoformat()
+                        if metadata.last_rotated_at
+                        else None
+                    ),
                     "version": metadata.version,
                     "tags": metadata.tags,
                     "description": metadata.description,
@@ -532,7 +561,9 @@ class LocalEncryptedProvider(ISecretsProvider):
             logger.error(f"Failed to list local secrets: {e}")
             return []
 
-    async def _audit_log(self, action: str, secret_name: str, metadata: Optional[SecretMetadata] = None):
+    async def _audit_log(
+        self, action: str, secret_name: str, metadata: Optional[SecretMetadata] = None
+    ):
         """Log audit entry"""
         audit_entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -557,18 +588,28 @@ class SecretsManager:
     def _initialize_providers(self):
         """Initialize configured providers"""
         if self.config.vault_config:
-            self.providers[SecretProvider.HASHICORP_VAULT] = HashiCorpVaultProvider(self.config.vault_config)
+            self.providers[SecretProvider.HASHICORP_VAULT] = HashiCorpVaultProvider(
+                self.config.vault_config
+            )
 
         if self.config.aws_config:
-            self.providers[SecretProvider.AWS_SECRETS_MANAGER] = AWSSecretsManagerProvider(self.config.aws_config)
+            self.providers[SecretProvider.AWS_SECRETS_MANAGER] = (
+                AWSSecretsManagerProvider(self.config.aws_config)
+            )
 
         # Always have local provider as fallback
         self.providers[SecretProvider.LOCAL_ENCRYPTED] = LocalEncryptedProvider(
-            {"secrets_dir": "./secrets", "secure_delete": self.config.secure_delete_enabled}
+            {
+                "secrets_dir": "./secrets",
+                "secure_delete": self.config.secure_delete_enabled,
+            }
         )
 
     async def get_secret(
-        self, name: str, provider: Optional[SecretProvider] = None, use_cache: bool = True
+        self,
+        name: str,
+        provider: Optional[SecretProvider] = None,
+        use_cache: bool = True,
     ) -> Optional[str]:
         """Get secret value"""
         try:
@@ -576,7 +617,9 @@ class SecretsManager:
             if use_cache and name in self.cache:
                 cached = self.cache[name]
                 # Check if cache is still valid
-                cache_age = (datetime.now(timezone.utc) - cached.metadata.updated_at).total_seconds()
+                cache_age = (
+                    datetime.now(timezone.utc) - cached.metadata.updated_at
+                ).total_seconds()
                 if cache_age < self.config.cache_ttl_seconds:
                     return cached.value.get_secret_value()
 
@@ -648,7 +691,10 @@ class SecretsManager:
             return False
 
     async def rotate_secret(
-        self, name: str, new_value: Optional[str] = None, provider: Optional[SecretProvider] = None
+        self,
+        name: str,
+        new_value: Optional[str] = None,
+        provider: Optional[SecretProvider] = None,
     ) -> bool:
         """Rotate a secret"""
         try:
@@ -676,7 +722,9 @@ class SecretsManager:
             logger.error(f"Failed to rotate secret {name}: {e}")
             return False
 
-    async def delete_secret(self, name: str, provider: Optional[SecretProvider] = None) -> bool:
+    async def delete_secret(
+        self, name: str, provider: Optional[SecretProvider] = None
+    ) -> bool:
         """Delete a secret"""
         try:
             provider = provider or self.config.default_provider
@@ -701,7 +749,9 @@ class SecretsManager:
             logger.error(f"Failed to delete secret {name}: {e}")
             return False
 
-    async def list_secrets(self, provider: Optional[SecretProvider] = None) -> List[SecretMetadata]:
+    async def list_secrets(
+        self, provider: Optional[SecretProvider] = None
+    ) -> List[SecretMetadata]:
         """List all secrets"""
         try:
             provider = provider or self.config.default_provider
@@ -724,7 +774,9 @@ class SecretsManager:
         days_since_rotation = (datetime.now(timezone.utc) - last_rotation).days
 
         if days_since_rotation >= metadata.rotation_interval_days:
-            logger.warning(f"Secret {metadata.name} needs rotation (last rotated {days_since_rotation} days ago)")
+            logger.warning(
+                f"Secret {metadata.name} needs rotation (last rotated {days_since_rotation} days ago)"
+            )
 
             # Schedule immediate rotation
             if metadata.name not in self.rotation_tasks:
@@ -737,7 +789,9 @@ class SecretsManager:
             self.rotation_tasks[name].cancel()
 
         # Schedule rotation
-        rotation_delay = metadata.rotation_interval_days * 24 * 3600  # Convert to seconds
+        rotation_delay = (
+            metadata.rotation_interval_days * 24 * 3600
+        )  # Convert to seconds
         task = asyncio.create_task(self._rotation_scheduler(name, rotation_delay))
         self.rotation_tasks[name] = task
 
@@ -818,9 +872,15 @@ def create_secrets_manager(
     """Create a configured secrets manager instance"""
 
     config = SecretConfig(
-        default_provider=SecretProvider.HASHICORP_VAULT if vault_url else SecretProvider.LOCAL_ENCRYPTED,
+        default_provider=(
+            SecretProvider.HASHICORP_VAULT
+            if vault_url
+            else SecretProvider.LOCAL_ENCRYPTED
+        ),
         auto_rotation_enabled=environment == "production",
-        rotation_check_interval_hours=24 if environment == "production" else 168,  # Weekly in dev
+        rotation_check_interval_hours=(
+            24 if environment == "production" else 168
+        ),  # Weekly in dev
         cache_ttl_seconds=300 if environment == "production" else 3600,  # 1 hour in dev
         audit_enabled=True,
         secure_delete_enabled=True,

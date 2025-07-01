@@ -9,7 +9,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, WebSocket, WebSocketDisconnect, status
+from fastapi import (Depends, FastAPI, HTTPException, WebSocket,
+                     WebSocketDisconnect, status)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, validator
@@ -20,17 +21,13 @@ from src.application.services.voice_service import VoiceService
 from src.core.domain.entities.child import Child
 from src.domain.value_objects import ChildAge, ChildName, DeviceId
 from src.infrastructure.config import Settings
-from src.infrastructure.modern_container import (
-    Provide,
-    container,
-    get_ai_service,
-    get_child_service,
-    get_session_manager,
-    get_voice_service,
-    initialize_container,
-    inject,
-    shutdown_container,
-)
+from src.infrastructure.modern_container import (Provide, container,
+                                                 get_ai_service,
+                                                 get_child_service,
+                                                 get_session_manager,
+                                                 get_voice_service,
+                                                 initialize_container, inject,
+                                                 shutdown_container)
 from src.infrastructure.monitoring.metrics import metrics_collector
 from src.infrastructure.security.api_key_validator import APIKeyValidator
 from src.infrastructure.security.rate_limiter import RateLimiterMiddleware
@@ -44,7 +41,9 @@ logger = logging.getLogger(__name__)
 class RegisterDeviceRequest(BaseModel):
     """Device registration request with validation"""
 
-    device_id: str = Field(..., min_length=5, max_length=50, pattern="^ESP32_[A-Z0-9_]+$")
+    device_id: str = Field(
+        ..., min_length=5, max_length=50, pattern="^ESP32_[A-Z0-9_]+$"
+    )
     firmware_version: str = Field(..., pattern="^\\d+\\.\\d+\\.\\d+$")
     hardware_info: Dict[str, Any] = Field(default_factory=dict)
 
@@ -151,7 +150,11 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.utcnow(),
         "version": "3.0.0",
-        "services": {"ai": "operational", "voice": "operational", "database": "operational"},
+        "services": {
+            "ai": "operational",
+            "voice": "operational",
+            "database": "operational",
+        },
     }
 
 
@@ -165,13 +168,21 @@ async def get_metrics():
 
 
 @app.post(
-    "/api/v1/devices/register", response_model=Dict[str, Any], status_code=status.HTTP_201_CREATED, tags=["devices"]
+    "/api/v1/devices/register",
+    response_model=Dict[str, Any],
+    status_code=status.HTTP_201_CREATED,
+    tags=["devices"],
 )
-async def register_device(request: RegisterDeviceRequest, child_service: ChildService = Depends(get_child_service)):
+async def register_device(
+    request: RegisterDeviceRequest,
+    child_service: ChildService = Depends(get_child_service),
+):
     """Register a new ESP32 device"""
     try:
         result = await child_service.register_device(
-            device_id=request.device_id, firmware_version=request.firmware_version, hardware_info=request.hardware_info
+            device_id=request.device_id,
+            firmware_version=request.firmware_version,
+            hardware_info=request.hardware_info,
         )
 
         logger.info(f"Device registered: {request.device_id}")
@@ -205,10 +216,15 @@ async def process_audio(
         # Get child profile
         child = await child_service.get_by_device_id(request.device_id)
         if not child:
-            raise HTTPException(status_code=404, detail=f"No child profile found for device {request.device_id}")
+            raise HTTPException(
+                status_code=404,
+                detail=f"No child profile found for device {request.device_id}",
+            )
 
         # Process audio to text
-        transcribed_text = await voice_service.transcribe_audio(audio_data=request.audio, language=child.language)
+        transcribed_text = await voice_service.transcribe_audio(
+            audio_data=request.audio, language=child.language
+        )
 
         if not transcribed_text:
             raise HTTPException(status_code=422, detail="Could not transcribe audio")
@@ -242,7 +258,10 @@ async def process_audio(
             learning_points=ai_response.learning_points,
             session_id=ai_response.session_id,
             timestamp=datetime.utcnow(),
-            metadata={"audio_response": response_audio, "transcribed_text": transcribed_text},
+            metadata={
+                "audio_response": response_audio,
+                "transcribed_text": transcribed_text,
+            },
         )
 
     except HTTPException:
@@ -256,7 +275,10 @@ async def process_audio(
 
 
 @app.post("/api/v1/children", status_code=status.HTTP_201_CREATED, tags=["children"])
-async def create_child_profile(request: ChildProfileRequest, child_service: ChildService = Depends(get_child_service)):
+async def create_child_profile(
+    request: ChildProfileRequest,
+    child_service: ChildService = Depends(get_child_service),
+):
     """Create a new child profile"""
     try:
         child = await child_service.create_child(
@@ -268,7 +290,11 @@ async def create_child_profile(request: ChildProfileRequest, child_service: Chil
         )
 
         logger.info(f"Child profile created: {child.id}")
-        return {"status": "success", "child_id": str(child.id), "device_id": request.device_id}
+        return {
+            "status": "success",
+            "child_id": str(child.id),
+            "device_id": request.device_id,
+        }
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -278,11 +304,15 @@ async def create_child_profile(request: ChildProfileRequest, child_service: Chil
 
 
 @app.get("/api/v1/children/{device_id}", tags=["children"])
-async def get_child_profile(device_id: str, child_service: ChildService = Depends(get_child_service)):
+async def get_child_profile(
+    device_id: str, child_service: ChildService = Depends(get_child_service)
+):
     """Get child profile by device ID"""
     child = await child_service.get_by_device_id(device_id)
     if not child:
-        raise HTTPException(status_code=404, detail=f"No child profile found for device {device_id}")
+        raise HTTPException(
+            status_code=404, detail=f"No child profile found for device {device_id}"
+        )
 
     return child.to_dict()
 
@@ -336,9 +366,13 @@ async def websocket_endpoint(
             if data.get("type") == "voice_message":
                 child = await child_service.get_by_device_id(device_id)
                 if child:
-                    response = await ai_service.generate_response(message=data.get("message"), child=child)
+                    response = await ai_service.generate_response(
+                        message=data.get("message"), child=child
+                    )
 
-                    await websocket.send_json({"type": "ai_response", "data": response.to_dict()})
+                    await websocket.send_json(
+                        {"type": "ai_response", "data": response.to_dict()}
+                    )
 
     except WebSocketDisconnect:
         manager.disconnect(device_id)

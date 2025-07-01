@@ -6,4 +6,6 @@ class StartConversationUseCase:
         self.conversation_service = conversation_service
 
     async def execute(self, child_id: str, initial_message: str):
-        return await self.conversation_service.start_conversation(child_id, initial_message)
+        return await self.conversation_service.start_conversation(
+            child_id, initial_message
+        )

@@ -19,7 +19,9 @@ logger = structlog.get_logger(__name__)
 
 # Prometheus Metrics
 error_counter = Counter(
-    "teddy_bear_errors_total", "Total number of errors", ["error_type", "severity", "child_safety_related"]
+    "teddy_bear_errors_total",
+    "Total number of errors",
+    ["error_type", "severity", "child_safety_related"],
 )
 
 response_time_histogram = Histogram(
@@ -29,7 +31,9 @@ response_time_histogram = Histogram(
     buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0),
 )
 
-active_children_gauge = Gauge("teddy_bear_active_children", "Number of currently active children")
+active_children_gauge = Gauge(
+    "teddy_bear_active_children", "Number of currently active children"
+)
 
 safety_violations_counter = Counter(
     "teddy_bear_safety_violations_total",
@@ -37,11 +41,17 @@ safety_violations_counter = Counter(
     ["violation_type", "age_group", "action_taken"],
 )
 
-websocket_connections_gauge = Gauge("teddy_bear_websocket_connections", "Number of active WebSocket connections")
+websocket_connections_gauge = Gauge(
+    "teddy_bear_websocket_connections", "Number of active WebSocket connections"
+)
 
-ai_requests_counter = Counter("teddy_bear_ai_requests_total", "Total number of AI requests", ["model", "status"])
+ai_requests_counter = Counter(
+    "teddy_bear_ai_requests_total", "Total number of AI requests", ["model", "status"]
+)
 
-cache_operations_counter = Counter("teddy_bear_cache_operations_total", "Cache operations", ["operation", "status"])
+cache_operations_counter = Counter(
+    "teddy_bear_cache_operations_total", "Cache operations", ["operation", "status"]
+)
 
 
 @dataclass
@@ -172,7 +182,9 @@ class AlertManager:
             try:
                 await handler(alert)
             except Exception as e:
-                logger.error("Alert handler failed", handler=handler.__name__, error=str(e))
+                logger.error(
+                    "Alert handler failed", handler=handler.__name__, error=str(e)
+                )
 
     async def send_critical_alert(self, details: Dict[str, Any]):
         """Send a critical alert"""
@@ -233,7 +245,9 @@ class ComprehensiveMonitor:
 
         for name, check in self.health_checks.items():
             try:
-                result = await asyncio.wait_for(check["func"](), timeout=5.0)  # 5 second timeout
+                result = await asyncio.wait_for(
+                    check["func"](), timeout=5.0
+                )  # 5 second timeout
                 results[name] = result
 
                 # Update state
@@ -257,12 +271,17 @@ class ComprehensiveMonitor:
 
             except asyncio.TimeoutError:
                 results[name] = HealthCheckResult(
-                    service=name, status="unhealthy", latency_ms=5000, error_message="Health check timeout"
+                    service=name,
+                    status="unhealthy",
+                    latency_ms=5000,
+                    error_message="Health check timeout",
                 )
                 check["consecutive_failures"] += 1
 
             except Exception as e:
-                results[name] = HealthCheckResult(service=name, status="unhealthy", latency_ms=0, error_message=str(e))
+                results[name] = HealthCheckResult(
+                    service=name, status="unhealthy", latency_ms=0, error_message=str(e)
+                )
                 check["consecutive_failures"] += 1
 
         return results
@@ -272,7 +291,9 @@ class ComprehensiveMonitor:
         while True:
             try:
                 # Get violation statistics
-                stats = await self.metrics_aggregator.get_violation_stats(window_minutes=5)
+                stats = await self.metrics_aggregator.get_violation_stats(
+                    window_minutes=5
+                )
 
                 # Alert on spike in violations
                 if stats["total"] > 10:
@@ -343,17 +364,27 @@ class ComprehensiveMonitor:
         violation_stats = await self.metrics_aggregator.get_violation_stats()
 
         # Calculate overall health
-        unhealthy_services = [name for name, result in health_results.items() if result.status == "unhealthy"]
+        unhealthy_services = [
+            name
+            for name, result in health_results.items()
+            if result.status == "unhealthy"
+        ]
 
         overall_health = "healthy"
         if unhealthy_services:
-            critical_unhealthy = [name for name in unhealthy_services if self.health_checks[name]["critical"]]
+            critical_unhealthy = [
+                name
+                for name in unhealthy_services
+                if self.health_checks[name]["critical"]
+            ]
             overall_health = "critical" if critical_unhealthy else "degraded"
 
         return {
             "overall_health": overall_health,
             "timestamp": datetime.utcnow().isoformat(),
-            "health_checks": {name: result.to_dict() for name, result in health_results.items()},
+            "health_checks": {
+                name: result.to_dict() for name, result in health_results.items()
+            },
             "recent_alerts": [a.to_dict() for a in recent_alerts],
             "safety_violations": violation_stats,
             "unhealthy_services": unhealthy_services,
@@ -378,7 +409,9 @@ class HealthChecks:
             latency = (datetime.utcnow() - start_time).total_seconds() * 1000
 
             return HealthCheckResult(
-                service="database", status="healthy" if latency < 100 else "degraded", latency_ms=latency
+                service="database",
+                status="healthy" if latency < 100 else "degraded",
+                latency_ms=latency,
             )
 
         except Exception as e:
@@ -414,7 +447,10 @@ class HealthChecks:
                 service="redis",
                 status=status,
                 latency_ms=latency,
-                metadata={"used_memory_mb": used_memory_mb, "connected_clients": info.get("connected_clients", 0)},
+                metadata={
+                    "used_memory_mb": used_memory_mb,
+                    "connected_clients": info.get("connected_clients", 0),
+                },
             )
 
         except Exception as e:
@@ -448,7 +484,10 @@ class HealthChecks:
                 service="ai_service",
                 status=status,
                 latency_ms=latency,
-                metadata={"model": ai_service.model_name, "response_length": len(response) if response else 0},
+                metadata={
+                    "model": ai_service.model_name,
+                    "response_length": len(response) if response else 0,
+                },
             )
 
         except Exception as e:

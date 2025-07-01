@@ -71,7 +71,9 @@ class EmergencyResponseSystem:
 
         # إنشاء معالج لملف سجل الطوارئ
         emergency_handler = logging.FileHandler("logs/emergency_response.log")
-        emergency_formatter = logging.Formatter("%(asctime)s - EMERGENCY - %(levelname)s - %(message)s")
+        emergency_formatter = logging.Formatter(
+            "%(asctime)s - EMERGENCY - %(levelname)s - %(message)s"
+        )
         emergency_handler.setFormatter(emergency_formatter)
         logger.addHandler(emergency_handler)
 
@@ -102,7 +104,9 @@ class EmergencyResponseSystem:
         with open("config/emergency_config.json", "w") as f:
             json.dump(default_config, f, indent=2)
 
-    async def report_api_key_exposure(self, exposed_keys: List[str], source: str = "automated_scan") -> str:
+    async def report_api_key_exposure(
+        self, exposed_keys: List[str], source: str = "automated_scan"
+    ) -> str:
         """الإبلاغ عن تسريب مفاتيح API"""
         incident_id = self._generate_incident_id()
 
@@ -218,7 +222,9 @@ class EmergencyResponseSystem:
             ],
         }
 
-        with open(f"logs/key_replacement_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", "w") as f:
+        with open(
+            f"logs/key_replacement_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json", "w"
+        ) as f:
             json.dump(replacement_instructions, f, indent=2)
 
     async def _notify_security_team(self, incident: SecurityIncident) -> None:
@@ -305,7 +311,9 @@ class EmergencyResponseSystem:
         return None
 
     def get_all_incidents(
-        self, threat_level: Optional[ThreatLevel] = None, resolved: Optional[bool] = None
+        self,
+        threat_level: Optional[ThreatLevel] = None,
+        resolved: Optional[bool] = None,
     ) -> List[Dict[str, Any]]:
         """الحصول على جميع الحوادث مع إمكانية التصفية"""
         incidents = []
@@ -347,7 +355,9 @@ async def main():
         "AIzaSyCXDVCTFdvbzSiXf6JjHZAsAFxexo3OMbQ",
     ]
 
-    incident_id = await emergency_response.report_api_key_exposure(exposed_keys, "manual_security_audit")
+    incident_id = await emergency_response.report_api_key_exposure(
+        exposed_keys, "manual_security_audit"
+    )
 
     logger.info(f"✅ تم إنشاء حادث أمني: {incident_id}")
 

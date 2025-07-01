@@ -78,10 +78,14 @@ class APISecurityGateway:
         limit_key = f"{rule_key}:{client_ip}"
 
         # Check rate limit
-        is_allowed = await self._check_rate_limit_key(limit_key, rule.requests, rule.window_seconds)
+        is_allowed = await self._check_rate_limit_key(
+            limit_key, rule.requests, rule.window_seconds
+        )
 
         if not is_allowed:
-            logger.warning("Rate limit exceeded", ip=client_ip, rule=rule.name, endpoint=endpoint)
+            logger.warning(
+                "Rate limit exceeded", ip=client_ip, rule=rule.name, endpoint=endpoint
+            )
 
             return {"allowed": False, "retry_after": rule.window_seconds}
 
@@ -94,16 +98,28 @@ class APISecurityGateway:
 
         # Check blocked IPs
         if client_ip in self.blocked_ips:
-            return {"allowed": False, "status_code": 403, "message": "IP address blocked"}
+            return {
+                "allowed": False,
+                "status_code": 403,
+                "message": "IP address blocked",
+            }
 
         # DDoS detection
         if await self._detect_ddos():
             self.blocked_ips.add(client_ip)
-            return {"allowed": False, "status_code": 429, "message": "DDoS attack detected"}
+            return {
+                "allowed": False,
+                "status_code": 429,
+                "message": "DDoS attack detected",
+            }
 
         # Threat detection
         if await self._detect_threats(request):
-            return {"allowed": False, "status_code": 403, "message": "Security threat detected"}
+            return {
+                "allowed": False,
+                "status_code": 403,
+                "message": "Security threat detected",
+            }
 
         return {"allowed": True}
 
@@ -270,7 +286,10 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         if not rate_limit_result["allowed"]:
             return JSONResponse(
                 status_code=429,
-                content={"error": "Rate limit exceeded", "retry_after": rate_limit_result.get("retry_after", 60)},
+                content={
+                    "error": "Rate limit exceeded",
+                    "retry_after": rate_limit_result.get("retry_after", 60),
+                },
             )
 
         # Process request
@@ -286,7 +305,9 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 _security_gateway: Optional[APISecurityGateway] = None
 
 
-def get_security_gateway(redis_client: Optional[redis.Redis] = None) -> APISecurityGateway:
+def get_security_gateway(
+    redis_client: Optional[redis.Redis] = None,
+) -> APISecurityGateway:
     """Get global security gateway instance"""
     global _security_gateway
     if _security_gateway is None:

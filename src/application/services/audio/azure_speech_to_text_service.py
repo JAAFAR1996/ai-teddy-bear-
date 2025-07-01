@@ -13,7 +13,8 @@ import sqlite3
 import azure.cognitiveservices.speech as speechsdk
 
 from src.core.domain.entities.transcription import Transcription
-from src.infrastructure.persistence.transcription_sqlite_repository import TranscriptionSQLiteRepository
+from src.infrastructure.persistence.transcription_sqlite_repository import \
+    TranscriptionSQLiteRepository
 
 
 class AzureSpeechToTextService:

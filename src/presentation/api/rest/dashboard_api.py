@@ -35,7 +35,11 @@ async def get_progress_data(child_id: str):
 @router.get("/dashboard/{child_id}/speech")
 async def get_speech_analysis(child_id: str):
     """تحليل النطق API"""
-    speech_data = {"concerns": [], "overall_score": 85, "recommendations": ["النطق واضح ومفهوم"]}
+    speech_data = {
+        "concerns": [],
+        "overall_score": 85,
+        "recommendations": ["النطق واضح ومفهوم"],
+    }
     return JSONResponse(content=speech_data)
 
 
@@ -49,7 +53,17 @@ async def send_parent_alert(alert_data: dict):
 async def get_alerts_history(child_id: str):
     """تاريخ التنبيهات"""
     alerts = [
-        {"date": "2024-01-01", "type": "speech", "severity": "low", "message": "ملاحظة بسيطة في النطق"},
-        {"date": "2024-01-03", "type": "emotion", "severity": "medium", "message": "تقلبات في المزاج"},
+        {
+            "date": "2024-01-01",
+            "type": "speech",
+            "severity": "low",
+            "message": "ملاحظة بسيطة في النطق",
+        },
+        {
+            "date": "2024-01-03",
+            "type": "emotion",
+            "severity": "medium",
+            "message": "تقلبات في المزاج",
+        },
     ]
     return JSONResponse(content=alerts)

@@ -11,29 +11,14 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 
 from src.infrastructure.exception_handling.global_exception_handler import (
-    ChildSafetyException,
-    CircuitBreakerStrategy,
-    CorrelationContext,
-    ExternalServiceException,
-    RetryStrategy,
-    SecurityException,
-    TeddyBearException,
-    global_exception_handler,
-    handle_exceptions,
-)
+    ChildSafetyException, CircuitBreakerStrategy, CorrelationContext,
+    ExternalServiceException, RetryStrategy, SecurityException,
+    TeddyBearException, global_exception_handler, handle_exceptions)
 from src.infrastructure.security.safe_expression_parser import (
-    EvaluationError,
-    SecurityLevel,
-    ValidationError,
-    create_safe_parser,
-    safe_eval,
-)
+    EvaluationError, SecurityLevel, ValidationError, create_safe_parser,
+    safe_eval)
 from src.infrastructure.security.secrets_manager import (
-    SecretMetadata,
-    SecretProvider,
-    SecretType,
-    create_secrets_manager,
-)
+    SecretMetadata, SecretProvider, SecretType, create_secrets_manager)
 
 # ============================================================================
 # Tests for Secrets Management
@@ -47,7 +32,8 @@ class TestSecretsManagement:
     async def secrets_manager(self, tmp_path):
         """Create a test secrets manager"""
         manager = create_secrets_manager(
-            environment="testing", vault_url=None  # Use local encrypted provider for tests
+            environment="testing",
+            vault_url=None,  # Use local encrypted provider for tests
         )
         # Override secrets directory to use temp path
         local_provider = manager.providers[SecretProvider.LOCAL_ENCRYPTED]
@@ -60,7 +46,9 @@ class TestSecretsManagement:
         """Test setting and retrieving secrets"""
         # Set a secret
         success = await secrets_manager.set_secret(
-            name="test_api_key", value="super_secret_key_123", secret_type=SecretType.API_KEY
+            name="test_api_key",
+            value="super_secret_key_123",
+            secret_type=SecretType.API_KEY,
         )
         assert success is True
 
@@ -73,7 +61,9 @@ class TestSecretsManagement:
         """Test that secrets are encrypted at rest"""
         # Set a secret
         await secrets_manager.set_secret(
-            name="sensitive_password", value="my_password_123", secret_type=SecretType.PASSWORD
+            name="sensitive_password",
+            value="my_password_123",
+            secret_type=SecretType.PASSWORD,
         )
 
         # Check the file is encrypted
@@ -92,10 +82,14 @@ class TestSecretsManagement:
     async def test_secret_rotation(self, secrets_manager):
         """Test secret rotation"""
         # Set initial secret
-        await secrets_manager.set_secret(name="rotating_key", value="initial_value", rotation_interval_days=1)
+        await secrets_manager.set_secret(
+            name="rotating_key", value="initial_value", rotation_interval_days=1
+        )
 
         # Rotate the secret
-        success = await secrets_manager.rotate_secret(name="rotating_key", new_value="rotated_value")
+        success = await secrets_manager.rotate_secret(
+            name="rotating_key", new_value="rotated_value"
+        )
         assert success is True
 
         # Verify new value
@@ -171,7 +165,11 @@ class TestSafeExpressionParser:
         """Test expressions with variables"""
         parser = create_safe_parser()
         result = parser.parse(
-            "age * 2 + bonus", context={"variables": {"age": 10, "bonus": 5}, "allowed_names": {"age", "bonus"}}
+            "age * 2 + bonus",
+            context={
+                "variables": {"age": 10, "bonus": 5},
+                "allowed_names": {"age", "bonus"},
+            },
         )
         assert result.success is True
         assert result.value == 25
@@ -271,7 +269,9 @@ class TestExceptionHandling:
         """Test child safety exception handling"""
         with pytest.raises(ChildSafetyException) as exc_info:
             raise ChildSafetyException(
-                content_type="text", content_snippet="inappropriate content", child_id="child_123"
+                content_type="text",
+                content_snippet="inappropriate content",
+                child_id="child_123",
             )
 
         exception = exc_info.value
@@ -284,12 +284,16 @@ class TestExceptionHandling:
         """Test retry strategy for failed operations"""
         call_count = 0
 
-        @handle_exceptions(recovery_strategy=RetryStrategy(max_retries=3, base_delay=0.01))
+        @handle_exceptions(
+            recovery_strategy=RetryStrategy(max_retries=3, base_delay=0.01)
+        )
         async def flaky_operation():
             nonlocal call_count
             call_count += 1
             if call_count < 3:
-                raise ExternalServiceException(service_name="TestService", message="Temporary failure")
+                raise ExternalServiceException(
+                    service_name="TestService", message="Temporary failure"
+                )
             return "success"
 
         # Should retry and eventually succeed
@@ -308,12 +312,16 @@ class TestExceptionHandling:
         """Test circuit breaker pattern"""
         failure_count = 0
 
-        circuit_breaker = CircuitBreakerStrategy(failure_threshold=3, recovery_timeout=0.1)
+        circuit_breaker = CircuitBreakerStrategy(
+            failure_threshold=3, recovery_timeout=0.1
+        )
 
         # Simulate failures
         for i in range(5):
             try:
-                await circuit_breaker.recover(ExternalServiceException("TestService", "Failed"))
+                await circuit_breaker.recover(
+                    ExternalServiceException("TestService", "Failed")
+                )
             except ExternalServiceException:
                 failure_count += 1
 
@@ -403,7 +411,9 @@ class TestSecurityIntegration:
         local_provider.secrets_dir.mkdir()
 
         # Store API key securely
-        await secrets_manager.set_secret("test_api_key", "secure_key_123", secret_type=SecretType.API_KEY)
+        await secrets_manager.set_secret(
+            "test_api_key", "secure_key_123", secret_type=SecretType.API_KEY
+        )
 
         # Retrieve and use
         @handle_exceptions(recovery_strategy=RetryStrategy())
@@ -441,11 +451,17 @@ class TestSecurityIntegration:
         """Test complete child safety flow with exceptions"""
 
         class ChildInteractionService:
-            @handle_exceptions(fallback_value={"response": "Let's play a game!", "safe": True})
+            @handle_exceptions(
+                fallback_value={"response": "Let's play a game!", "safe": True}
+            )
             async def process_message(self, child_id: str, message: str):
                 # Simulate content check
                 if "inappropriate" in message.lower():
-                    raise ChildSafetyException(content_type="message", content_snippet=message[:20], child_id=child_id)
+                    raise ChildSafetyException(
+                        content_type="message",
+                        content_snippet=message[:20],
+                        child_id=child_id,
+                    )
 
                 # Safe processing
                 return {"response": f"You said: {message}", "safe": True}
@@ -503,7 +519,12 @@ class TestSecurityPerformance:
 
         parser = create_safe_parser()
 
-        expressions = ["2 + 2", "10 * 5 + 3 - 2", "sum([1, 2, 3, 4, 5])", "max(10, 20, 30) + min(5, 3, 1)"]
+        expressions = [
+            "2 + 2",
+            "10 * 5 + 3 - 2",
+            "sum([1, 2, 3, 4, 5])",
+            "max(10, 20, 30) + min(5, 3, 1)",
+        ]
 
         for expr in expressions:
             start = time.time()

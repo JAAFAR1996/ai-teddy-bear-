@@ -87,7 +87,9 @@ class SmartFuzzer:
     """
 
     def __init__(
-        self, mutation_engine: Optional[MutationEngine] = None, coverage_tracker: Optional[CoverageTracker] = None
+        self,
+        mutation_engine: Optional[MutationEngine] = None,
+        coverage_tracker: Optional[CoverageTracker] = None,
     ):
         self.mutation_engine = mutation_engine or MutationEngine()
         self.coverage_tracker = coverage_tracker or CoverageTracker()
@@ -167,7 +169,10 @@ class SmartFuzzer:
             logger.info(f"Starting {strategy.value} fuzzing")
 
             strategy_results = await self._run_strategy_specific_fuzzing(
-                target_function, strategy, max_iterations // len(strategies), timeout_seconds // len(strategies)
+                target_function,
+                strategy,
+                max_iterations // len(strategies),
+                timeout_seconds // len(strategies),
             )
 
             all_results.extend(strategy_results)
@@ -175,7 +180,9 @@ class SmartFuzzer:
             # Check for critical findings
             for result in strategy_results:
                 if result.vulnerability_found or result.safety_violation:
-                    critical_findings.append(f"{strategy.value}: {result.test_input[:100]}...")
+                    critical_findings.append(
+                        f"{strategy.value}: {result.test_input[:100]}..."
+                    )
 
         # Calculate session metrics
         total_tests = len(all_results)
@@ -198,13 +205,18 @@ class SmartFuzzer:
         )
 
         logger.info(
-            f"Fuzzing complete: {vulnerabilities} vulnerabilities, " f"{safety_violations} safety violations found"
+            f"Fuzzing complete: {vulnerabilities} vulnerabilities, "
+            f"{safety_violations} safety violations found"
         )
 
         return session
 
     async def _run_strategy_specific_fuzzing(
-        self, target_function, strategy: FuzzingStrategy, max_iterations: int, timeout_seconds: int
+        self,
+        target_function,
+        strategy: FuzzingStrategy,
+        max_iterations: int,
+        timeout_seconds: int,
     ) -> List[FuzzResult]:
         """Run fuzzing for a specific strategy"""
         results = []
@@ -219,7 +231,9 @@ class SmartFuzzer:
             test_input, context = await self._generate_test_input(strategy)
 
             # Execute test
-            result = await self._execute_fuzz_test(target_function, test_input, context, strategy)
+            result = await self._execute_fuzz_test(
+                target_function, test_input, context, strategy
+            )
 
             results.append(result)
 
@@ -228,12 +242,16 @@ class SmartFuzzer:
                 # Generate similar inputs to explore the vulnerability
                 similar_inputs = await self._generate_similar_inputs(test_input)
                 for similar_input in similar_inputs[:5]:  # Test 5 similar inputs
-                    similar_result = await self._execute_fuzz_test(target_function, similar_input, context, strategy)
+                    similar_result = await self._execute_fuzz_test(
+                        target_function, similar_input, context, strategy
+                    )
                     results.append(similar_result)
 
         return results
 
-    async def _generate_test_input(self, strategy: FuzzingStrategy) -> Tuple[str, ChildContext]:
+    async def _generate_test_input(
+        self, strategy: FuzzingStrategy
+    ) -> Tuple[str, ChildContext]:
         """Generate test input based on fuzzing strategy"""
         if strategy == FuzzingStrategy.CHILD_SAFETY:
             return await self._generate_child_safety_input()
@@ -253,7 +271,13 @@ class SmartFuzzer:
             base_input = random.choice(self.inappropriate_content)
         else:
             base_input = random.choice(
-                ["tell me a story", "help with homework", "play a game", "I'm feeling sad", "what's the weather like"]
+                [
+                    "tell me a story",
+                    "help with homework",
+                    "play a game",
+                    "I'm feeling sad",
+                    "what's the weather like",
+                ]
             )
 
         # Apply mutations
@@ -275,7 +299,9 @@ class SmartFuzzer:
             base_input = "normal user input"
 
         # Apply security-focused mutations
-        mutated_input = await self.mutation_engine.mutate_for_security_testing(base_input)
+        mutated_input = await self.mutation_engine.mutate_for_security_testing(
+            base_input
+        )
 
         context = ChildContext(age=8, emotion="neutral")
         return mutated_input, context
@@ -293,7 +319,9 @@ class SmartFuzzer:
         base_input = random.choice(base_inputs)
         mutated_input = await self.mutation_engine.ai_guided_mutation(base_input)
 
-        context = ChildContext(age=random.randint(3, 12), emotion=random.choice(self.emotion_states))
+        context = ChildContext(
+            age=random.randint(3, 12), emotion=random.choice(self.emotion_states)
+        )
 
         return mutated_input, context
 
@@ -320,12 +348,18 @@ class SmartFuzzer:
         chars = string.ascii_letters + string.digits + string.punctuation + " "
         base_input = "".join(random.choice(chars) for _ in range(length))
 
-        context = ChildContext(age=random.randint(3, 12), emotion=random.choice(self.emotion_states))
+        context = ChildContext(
+            age=random.randint(3, 12), emotion=random.choice(self.emotion_states)
+        )
 
         return base_input, context
 
     async def _execute_fuzz_test(
-        self, target_function, test_input: str, context: ChildContext, strategy: FuzzingStrategy
+        self,
+        target_function,
+        test_input: str,
+        context: ChildContext,
+        strategy: FuzzingStrategy,
     ) -> FuzzResult:
         """Execute a single fuzz test"""
         start_time = asyncio.get_event_loop().time()
@@ -345,9 +379,13 @@ class SmartFuzzer:
             coverage_increase = coverage_after > coverage_before
 
             # Analyze response for safety and security
-            safety_analysis = await self._analyze_response_safety(test_input, response, context)
+            safety_analysis = await self._analyze_response_safety(
+                test_input, response, context
+            )
 
-            security_analysis = await self._analyze_response_security(test_input, response)
+            security_analysis = await self._analyze_response_security(
+                test_input, response
+            )
 
             execution_time = (asyncio.get_event_loop().time() - start_time) * 1000
 
@@ -378,7 +416,9 @@ class SmartFuzzer:
                 coverage_increase=False,
             )
 
-    async def _analyze_response_safety(self, input_text: str, response: Any, context: ChildContext) -> Dict[str, Any]:
+    async def _analyze_response_safety(
+        self, input_text: str, response: Any, context: ChildContext
+    ) -> Dict[str, Any]:
         """Analyze response for child safety issues"""
         if not response:
             return {"is_safe": False, "reason": "No response generated"}
@@ -386,19 +426,33 @@ class SmartFuzzer:
         response_text = str(response).lower()
 
         # Check for inappropriate content
-        inappropriate_keywords = ["violence", "adult", "inappropriate", "scary", "harmful"]
+        inappropriate_keywords = [
+            "violence",
+            "adult",
+            "inappropriate",
+            "scary",
+            "harmful",
+        ]
 
         for keyword in inappropriate_keywords:
             if keyword in response_text:
-                return {"is_safe": False, "reason": f"Inappropriate content detected: {keyword}"}
+                return {
+                    "is_safe": False,
+                    "reason": f"Inappropriate content detected: {keyword}",
+                }
 
         # Check age-appropriateness
         if not self._is_age_appropriate(response_text, context.age):
-            return {"is_safe": False, "reason": f"Not age-appropriate for {context.age} year old"}
+            return {
+                "is_safe": False,
+                "reason": f"Not age-appropriate for {context.age} year old",
+            }
 
         return {"is_safe": True, "reason": "Content appears safe"}
 
-    async def _analyze_response_security(self, input_text: str, response: Any) -> Dict[str, Any]:
+    async def _analyze_response_security(
+        self, input_text: str, response: Any
+    ) -> Dict[str, Any]:
         """Analyze response for security vulnerabilities"""
         if not response:
             return {"vulnerability_found": False}
@@ -406,7 +460,17 @@ class SmartFuzzer:
         response_text = str(response)
 
         # Check for information disclosure
-        sensitive_patterns = ["password", "token", "secret", "key", "admin", "database", "sql", "error", "exception"]
+        sensitive_patterns = [
+            "password",
+            "token",
+            "secret",
+            "key",
+            "admin",
+            "database",
+            "sql",
+            "error",
+            "exception",
+        ]
 
         for pattern in sensitive_patterns:
             if pattern.lower() in response_text.lower():
@@ -505,8 +569,12 @@ class SmartFuzzer:
             assert response is not None, "System must always provide a response"
 
             # Check response safety
-            safety_analysis = await self._analyze_response_safety(mutated_input, response, context)
-            assert safety_analysis["is_safe"], f"Unsafe response: {safety_analysis['reason']}"
+            safety_analysis = await self._analyze_response_safety(
+                mutated_input, response, context
+            )
+            assert safety_analysis[
+                "is_safe"
+            ], f"Unsafe response: {safety_analysis['reason']}"
 
             # Check age appropriateness
             assert self._is_age_appropriate(

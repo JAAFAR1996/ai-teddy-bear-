@@ -6,7 +6,6 @@ Auto-generated from God Class refactoring
 
 import asyncio
 import logging
-
 # Original imports
 import os
 import uuid

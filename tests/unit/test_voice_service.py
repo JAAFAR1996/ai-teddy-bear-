@@ -16,16 +16,13 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 
 # Import voice service components
-from src.application.services.voice_service import (
-    AudioFormat,
-    AudioRequest,
-    STTProvider,
-    TranscriptionResult,
-    VoiceService,
-    VoiceServiceConfig,
-    WhisperModel,
-    create_voice_service,
-)
+from src.application.services.voice_service import (AudioFormat, AudioRequest,
+                                                    STTProvider,
+                                                    TranscriptionResult,
+                                                    VoiceService,
+                                                    VoiceServiceConfig,
+                                                    WhisperModel,
+                                                    create_voice_service)
 
 # ================ TEST FIXTURES ================
 
@@ -126,7 +123,14 @@ class TestVoiceServiceInitialization:
 
     def test_factory_function(self):
         """Test factory function creates service correctly"""
-        with patch.dict(os.environ, {"STT_PROVIDER": "whisper", "WHISPER_MODEL": "small", "MAX_AUDIO_DURATION": "60"}):
+        with patch.dict(
+            os.environ,
+            {
+                "STT_PROVIDER": "whisper",
+                "WHISPER_MODEL": "small",
+                "MAX_AUDIO_DURATION": "60",
+            },
+        ):
             service = create_voice_service()
 
             assert isinstance(service, VoiceService)
@@ -148,14 +152,18 @@ class TestAudioFormatHandling:
     @pytest.mark.asyncio
     async def test_wav_passthrough(self, voice_service, sample_wav_data):
         """Test WAV audio passes through without conversion"""
-        wav_data, duration = await voice_service._convert_to_wav(sample_wav_data, AudioFormat.WAV)
+        wav_data, duration = await voice_service._convert_to_wav(
+            sample_wav_data, AudioFormat.WAV
+        )
 
         assert wav_data == sample_wav_data
         assert 0.9 <= duration <= 1.1
 
     @pytest.mark.asyncio
     @patch("src.application.services.voice_service.PYDUB_AVAILABLE", True)
-    async def test_mp3_to_wav_conversion_with_pydub(self, voice_service, sample_mp3_data):
+    async def test_mp3_to_wav_conversion_with_pydub(
+        self, voice_service, sample_mp3_data
+    ):
         """Test MP3 to WAV conversion using pydub"""
         with patch("src.application.services.voice_service.AudioSegment") as mock_audio:
             # Mock pydub conversion
@@ -170,9 +178,13 @@ class TestAudioFormatHandling:
 
             # Mock the WAV export
             with patch("builtins.open", create=True) as mock_open:
-                mock_open.return_value.__enter__.return_value.getvalue.return_value = b"wav_data"
+                mock_open.return_value.__enter__.return_value.getvalue.return_value = (
+                    b"wav_data"
+                )
 
-                wav_data, duration = await voice_service._convert_with_pydub(sample_mp3_data, AudioFormat.MP3)
+                wav_data, duration = await voice_service._convert_with_pydub(
+                    sample_mp3_data, AudioFormat.MP3
+                )
 
                 assert duration == 1.0
                 mock_audio.from_file.assert_called_once()
@@ -185,13 +197,17 @@ class TestTranscriptionFunctionality:
     """Test core transcription functionality"""
 
     @pytest.mark.asyncio
-    async def test_transcribe_audio_with_base64_input(self, voice_service, sample_wav_data):
+    async def test_transcribe_audio_with_base64_input(
+        self, voice_service, sample_wav_data
+    ):
         """Test transcription with base64 encoded audio"""
         # Encode audio to base64
         audio_base64 = base64.b64encode(sample_wav_data).decode("utf-8")
 
         # Mock the transcription provider
-        with patch.object(voice_service, "_transcribe_with_provider") as mock_transcribe:
+        with patch.object(
+            voice_service, "_transcribe_with_provider"
+        ) as mock_transcribe:
             mock_transcribe.return_value = ("مرحباً دبدوب", 0.9, [], {"test": True})
 
             result = await voice_service.transcribe_audio(
@@ -205,9 +221,13 @@ class TestTranscriptionFunctionality:
             assert result.provider in ["whisper", "fallback"]
 
     @pytest.mark.asyncio
-    async def test_transcribe_audio_with_bytes_input(self, voice_service, sample_wav_data):
+    async def test_transcribe_audio_with_bytes_input(
+        self, voice_service, sample_wav_data
+    ):
         """Test transcription with raw bytes"""
-        with patch.object(voice_service, "_transcribe_with_provider") as mock_transcribe:
+        with patch.object(
+            voice_service, "_transcribe_with_provider"
+        ) as mock_transcribe:
             mock_transcribe.return_value = ("أهلاً وسهلاً", 0.85, [], {})
 
             result = await voice_service.transcribe_audio(
@@ -220,7 +240,9 @@ class TestTranscriptionFunctionality:
     @pytest.mark.asyncio
     async def test_transcribe_empty_audio_returns_fallback(self, voice_service):
         """Test transcription with empty audio returns fallback"""
-        result = await voice_service.transcribe_audio(audio_data=b"", format=AudioFormat.WAV)
+        result = await voice_service.transcribe_audio(
+            audio_data=b"", format=AudioFormat.WAV
+        )
 
         assert result.text == "مرحباً دبدوب"  # Fallback text
         assert result.confidence == 0.0
@@ -230,7 +252,9 @@ class TestTranscriptionFunctionality:
     @pytest.mark.asyncio
     async def test_transcribe_invalid_base64_returns_fallback(self, voice_service):
         """Test transcription with invalid base64 returns fallback"""
-        result = await voice_service.transcribe_audio(audio_data="invalid_base64_!@#$", format=AudioFormat.WAV)
+        result = await voice_service.transcribe_audio(
+            audio_data="invalid_base64_!@#$", format=AudioFormat.WAV
+        )
 
         assert result.provider == "fallback"
         assert "error" in result.metadata
@@ -242,7 +266,9 @@ class TestTranscriptionFunctionality:
         with patch.object(voice_service, "_convert_to_wav") as mock_convert:
             mock_convert.return_value = (b"wav_data", 60.0)  # 60 seconds
 
-            result = await voice_service.transcribe_audio(audio_data=b"test_data", format=AudioFormat.WAV)
+            result = await voice_service.transcribe_audio(
+                audio_data=b"test_data", format=AudioFormat.WAV
+            )
 
             # Should return fallback due to duration error
             assert result.provider == "fallback"
@@ -255,7 +281,9 @@ class TestMockTranscription:
     @pytest.mark.asyncio
     async def test_mock_transcription_returns_arabic_text(self, voice_service):
         """Test mock transcription returns appropriate Arabic text"""
-        text, confidence, segments, metadata = await voice_service._transcribe_mock(b"test_audio", "ar")
+        text, confidence, segments, metadata = await voice_service._transcribe_mock(
+            b"test_audio", "ar"
+        )
 
         assert isinstance(text, str)
         assert len(text) > 0
@@ -276,7 +304,9 @@ class TestESP32AudioProcessing:
     """Test ESP32-specific audio processing"""
 
     @pytest.mark.asyncio
-    async def test_process_esp32_audio_request(self, voice_service, sample_audio_request):
+    async def test_process_esp32_audio_request(
+        self, voice_service, sample_audio_request
+    ):
         """Test processing ESP32 audio request"""
         with patch.object(voice_service, "transcribe_audio") as mock_transcribe:
             mock_result = TranscriptionResult(
@@ -382,12 +412,18 @@ class TestErrorHandling:
     """Test error handling and fallback mechanisms"""
 
     @pytest.mark.asyncio
-    async def test_transcription_error_returns_fallback(self, voice_service, sample_wav_data):
+    async def test_transcription_error_returns_fallback(
+        self, voice_service, sample_wav_data
+    ):
         """Test that transcription errors return fallback results"""
-        with patch.object(voice_service, "_transcribe_with_provider") as mock_transcribe:
+        with patch.object(
+            voice_service, "_transcribe_with_provider"
+        ) as mock_transcribe:
             mock_transcribe.side_effect = Exception("Transcription failed")
 
-            result = await voice_service.transcribe_audio(audio_data=sample_wav_data, format=AudioFormat.WAV)
+            result = await voice_service.transcribe_audio(
+                audio_data=sample_wav_data, format=AudioFormat.WAV
+            )
 
             assert result.provider == "fallback"
             assert result.confidence == 0.0
@@ -400,7 +436,9 @@ class TestErrorHandling:
         with patch.object(voice_service, "_convert_to_wav") as mock_convert:
             mock_convert.side_effect = Exception("Conversion failed")
 
-            result = await voice_service.transcribe_audio(audio_data=b"invalid_audio", format=AudioFormat.MP3)
+            result = await voice_service.transcribe_audio(
+                audio_data=b"invalid_audio", format=AudioFormat.MP3
+            )
 
             assert result.provider == "fallback"
             assert "error" in result.metadata
@@ -413,7 +451,9 @@ class TestVoiceServiceIntegration:
     """Integration tests for voice service components"""
 
     @pytest.mark.asyncio
-    async def test_full_pipeline_with_mock_providers(self, voice_service, sample_wav_data):
+    async def test_full_pipeline_with_mock_providers(
+        self, voice_service, sample_wav_data
+    ):
         """Test full audio processing pipeline"""
         audio_base64 = base64.b64encode(sample_wav_data).decode("utf-8")
 
@@ -439,13 +479,17 @@ class TestPerformance:
     """Test performance characteristics"""
 
     @pytest.mark.asyncio
-    async def test_transcription_performance_reasonable(self, voice_service, sample_wav_data):
+    async def test_transcription_performance_reasonable(
+        self, voice_service, sample_wav_data
+    ):
         """Test that transcription performance is reasonable"""
         import time
 
         start_time = time.time()
 
-        result = await voice_service.transcribe_audio(audio_data=sample_wav_data, format=AudioFormat.WAV)
+        result = await voice_service.transcribe_audio(
+            audio_data=sample_wav_data, format=AudioFormat.WAV
+        )
 
         end_time = time.time()
         actual_time = (end_time - start_time) * 1000  # Convert to ms

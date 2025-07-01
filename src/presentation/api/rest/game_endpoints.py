@@ -42,7 +42,10 @@ async def start_game(request: GameStartRequest):
 
         # بدء اللعبة
         intro = engine.start_game(
-            game_type=game_type, child_name=request.child_name, age=request.age, topic=request.topic
+            game_type=game_type,
+            child_name=request.child_name,
+            age=request.age,
+            topic=request.topic,
         )
 
         # حفظ الجلسة

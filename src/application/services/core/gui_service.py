@@ -68,9 +68,14 @@ class GUIManagementService:
 
                 self.gui_components["status_label"].config(text=text, fg=color)
 
-            if "led_canvas" in self.gui_components and "led_circle" in self.gui_components:
+            if (
+                "led_canvas" in self.gui_components
+                and "led_circle" in self.gui_components
+            ):
                 led_color = status_data.get("hardware", {}).get("led_status", "red")
-                self.gui_components["led_canvas"].itemconfig(self.gui_components["led_circle"], fill=led_color)
+                self.gui_components["led_canvas"].itemconfig(
+                    self.gui_components["led_circle"], fill=led_color
+                )
 
             if "volume_label" in self.gui_components:
                 volume = status_data.get("hardware", {}).get("volume_level", 50)
@@ -110,7 +115,10 @@ class GUIManagementService:
             if not viz_data.get("is_active", False):
                 return
 
-            if "audio_visualizer" in self.gui_components and "visualizer_bars" in self.gui_components:
+            if (
+                "audio_visualizer" in self.gui_components
+                and "visualizer_bars" in self.gui_components
+            ):
                 heights = viz_data.get("bar_heights", [])
                 colors = viz_data.get("colors", [])
                 bars = self.gui_components["visualizer_bars"]
@@ -118,8 +126,12 @@ class GUIManagementService:
                 for i, (height, color) in enumerate(zip(heights, colors)):
                     if i < len(bars):
                         y_top = 70 - height
-                        self.gui_components["audio_visualizer"].coords(bars[i], i * 10 + 5, y_top, i * 10 + 13, 70)
-                        self.gui_components["audio_visualizer"].itemconfig(bars[i], fill=color, outline=color)
+                        self.gui_components["audio_visualizer"].coords(
+                            bars[i], i * 10 + 5, y_top, i * 10 + 13, 70
+                        )
+                        self.gui_components["audio_visualizer"].itemconfig(
+                            bars[i], fill=color, outline=color
+                        )
 
         except Exception as e:
             logger.error(f" Audio visualization update failed: {e}")
@@ -142,7 +154,9 @@ class GUIManagementService:
         try:
             if "conv_text" in self.gui_components:
                 timestamp = tk.time.strftime("%H:%M:%S")
-                conv_entry = f"[{timestamp}] : {user_msg}\n[{timestamp}] : {ai_response}\n\n"
+                conv_entry = (
+                    f"[{timestamp}] : {user_msg}\n[{timestamp}] : {ai_response}\n\n"
+                )
 
                 self.gui_components["conv_text"].insert("end", conv_entry)
                 self.gui_components["conv_text"].see("end")
@@ -187,12 +201,18 @@ class GUIManagementService:
         header.pack_propagate(False)
 
         tk.Label(
-            header, text=" AI Teddy Bear - ESP32 Simulator", font=("Arial", 18, "bold"), fg="white", bg="#34495e"
+            header,
+            text=" AI Teddy Bear - ESP32 Simulator",
+            font=("Arial", 18, "bold"),
+            fg="white",
+            bg="#34495e",
         ).pack(pady=25)
 
     def _create_status_panel(self) -> None:
         """Create device status panel."""
-        status_frame = tk.LabelFrame(self.root, text="Device Status", bg="#ecf0f1", font=("Arial", 12, "bold"))
+        status_frame = tk.LabelFrame(
+            self.root, text="Device Status", bg="#ecf0f1", font=("Arial", 12, "bold")
+        )
         status_frame.pack(fill="x", padx=15, pady=10)
 
         # LED Status with Audio Visualizer
@@ -200,21 +220,29 @@ class GUIManagementService:
         led_frame.pack(pady=10)
 
         # LED Canvas
-        led_canvas = tk.Canvas(led_frame, width=80, height=80, bg="#ecf0f1", highlightthickness=0)
+        led_canvas = tk.Canvas(
+            led_frame, width=80, height=80, bg="#ecf0f1", highlightthickness=0
+        )
         led_canvas.pack(side="left", padx=20)
-        led_circle = led_canvas.create_oval(15, 15, 65, 65, fill="red", outline="white", width=3)
+        led_circle = led_canvas.create_oval(
+            15, 15, 65, 65, fill="red", outline="white", width=3
+        )
 
         self.gui_components["led_canvas"] = led_canvas
         self.gui_components["led_circle"] = led_circle
 
         # Audio Visualizer
-        audio_visualizer = tk.Canvas(led_frame, width=200, height=80, bg="#2c3e50", highlightthickness=0)
+        audio_visualizer = tk.Canvas(
+            led_frame, width=200, height=80, bg="#2c3e50", highlightthickness=0
+        )
         audio_visualizer.pack(side="left", padx=20)
 
         visualizer_bars = []
         for i in range(20):
             x = i * 10 + 5
-            bar = audio_visualizer.create_rectangle(x, 70, x + 8, 70, fill="#3498db", outline="#3498db")
+            bar = audio_visualizer.create_rectangle(
+                x, 70, x + 8, 70, fill="#3498db", outline="#3498db"
+            )
             visualizer_bars.append(bar)
 
         self.gui_components["audio_visualizer"] = audio_visualizer
@@ -224,21 +252,45 @@ class GUIManagementService:
         info_frame = tk.Frame(led_frame, bg="#ecf0f1")
         info_frame.pack(side="left", fill="both", expand=True)
 
-        tk.Label(info_frame, text=f"Device: {self.device_id}", bg="#ecf0f1", font=("Arial", 10)).pack(anchor="w")
-        tk.Label(info_frame, text="Server: http://127.0.0.1:8000", bg="#ecf0f1", font=("Arial", 10)).pack(anchor="w")
+        tk.Label(
+            info_frame,
+            text=f"Device: {self.device_id}",
+            bg="#ecf0f1",
+            font=("Arial", 10),
+        ).pack(anchor="w")
+        tk.Label(
+            info_frame,
+            text="Server: http://127.0.0.1:8000",
+            bg="#ecf0f1",
+            font=("Arial", 10),
+        ).pack(anchor="w")
 
-        status_label = tk.Label(info_frame, text=" POWERED OFF", bg="#ecf0f1", font=("Arial", 12, "bold"), fg="red")
+        status_label = tk.Label(
+            info_frame,
+            text=" POWERED OFF",
+            bg="#ecf0f1",
+            font=("Arial", 12, "bold"),
+            fg="red",
+        )
         status_label.pack(anchor="w", pady=5)
 
-        wifi_label = tk.Label(info_frame, text=" WiFi: Disconnected", bg="#ecf0f1", font=("Arial", 10))
+        wifi_label = tk.Label(
+            info_frame, text=" WiFi: Disconnected", bg="#ecf0f1", font=("Arial", 10)
+        )
         wifi_label.pack(anchor="w")
 
         server_status_label = tk.Label(
-            info_frame, text=" Server: Disconnected", bg="#ecf0f1", font=("Arial", 10), fg="red"
+            info_frame,
+            text=" Server: Disconnected",
+            bg="#ecf0f1",
+            font=("Arial", 10),
+            fg="red",
         )
         server_status_label.pack(anchor="w")
 
-        volume_label = tk.Label(info_frame, text=" Volume: 50%", bg="#ecf0f1", font=("Arial", 10))
+        volume_label = tk.Label(
+            info_frame, text=" Volume: 50%", bg="#ecf0f1", font=("Arial", 10)
+        )
         volume_label.pack(anchor="w")
 
         self.gui_components["status_label"] = status_label
@@ -248,7 +300,9 @@ class GUIManagementService:
 
     def _create_control_panel(self) -> None:
         """Create control panel."""
-        control_frame = tk.LabelFrame(self.root, text="Main Controls", bg="#ecf0f1", font=("Arial", 12, "bold"))
+        control_frame = tk.LabelFrame(
+            self.root, text="Main Controls", bg="#ecf0f1", font=("Arial", 12, "bold")
+        )
         control_frame.pack(fill="x", padx=15, pady=10)
 
         buttons_frame = tk.Frame(control_frame, bg="#ecf0f1")
@@ -271,23 +325,33 @@ class GUIManagementService:
 
     def _create_child_panel(self) -> None:
         """Create child profile panel."""
-        child_frame = tk.LabelFrame(self.root, text="Child Profile", bg="#ecf0f1", font=("Arial", 12, "bold"))
+        child_frame = tk.LabelFrame(
+            self.root, text="Child Profile", bg="#ecf0f1", font=("Arial", 12, "bold")
+        )
         child_frame.pack(fill="x", padx=15, pady=10)
 
         profile_frame = tk.Frame(child_frame, bg="#ecf0f1")
         profile_frame.pack(pady=10)
 
         # Child Info
-        tk.Label(profile_frame, text="Name:", bg="#ecf0f1").grid(row=0, column=0, sticky="w", padx=5)
+        tk.Label(profile_frame, text="Name:", bg="#ecf0f1").grid(
+            row=0, column=0, sticky="w", padx=5
+        )
         child_name = tk.Entry(profile_frame, width=20)
         child_name.grid(row=0, column=1, padx=5)
 
-        tk.Label(profile_frame, text="Age:", bg="#ecf0f1").grid(row=0, column=2, sticky="w", padx=5)
+        tk.Label(profile_frame, text="Age:", bg="#ecf0f1").grid(
+            row=0, column=2, sticky="w", padx=5
+        )
         child_age = tk.Spinbox(profile_frame, from_=2, to=12, width=5)
         child_age.grid(row=0, column=3, padx=5)
 
         save_button = tk.Button(
-            profile_frame, text=" Save Profile", command=self._on_save_profile, bg="#9b59b6", fg="white"
+            profile_frame,
+            text=" Save Profile",
+            command=self._on_save_profile,
+            bg="#9b59b6",
+            fg="white",
         )
         save_button.grid(row=0, column=4, padx=10)
 
@@ -296,7 +360,9 @@ class GUIManagementService:
 
     def _create_activity_panel(self) -> None:
         """Create activity monitoring panel."""
-        activity_frame = tk.LabelFrame(self.root, text="Activity Monitor", bg="#ecf0f1", font=("Arial", 12, "bold"))
+        activity_frame = tk.LabelFrame(
+            self.root, text="Activity Monitor", bg="#ecf0f1", font=("Arial", 12, "bold")
+        )
         activity_frame.pack(fill="both", expand=True, padx=15, pady=10)
 
         # Tabs
@@ -308,7 +374,9 @@ class GUIManagementService:
         notebook.add(log_frame, text=" Activity Log")
 
         log_text = tk.Text(log_frame, height=8, font=("Arial", 9))
-        log_scrollbar = tk.Scrollbar(log_frame, orient="vertical", command=log_text.yview)
+        log_scrollbar = tk.Scrollbar(
+            log_frame, orient="vertical", command=log_text.yview
+        )
         log_text.configure(yscrollcommand=log_scrollbar.set)
         log_text.pack(side="left", fill="both", expand=True)
         log_scrollbar.pack(side="right", fill="y")
@@ -318,7 +386,9 @@ class GUIManagementService:
         notebook.add(conv_frame, text=" Conversations")
 
         conv_text = tk.Text(conv_frame, height=8, font=("Arial", 9))
-        conv_scrollbar = tk.Scrollbar(conv_frame, orient="vertical", command=conv_text.yview)
+        conv_scrollbar = tk.Scrollbar(
+            conv_frame, orient="vertical", command=conv_text.yview
+        )
         conv_text.configure(yscrollcommand=conv_scrollbar.set)
         conv_text.pack(side="left", fill="both", expand=True)
         conv_scrollbar.pack(side="right", fill="y")
@@ -328,7 +398,12 @@ class GUIManagementService:
 
     def _create_features_panel(self) -> None:
         """Create features panel."""
-        features_frame = tk.LabelFrame(self.root, text="Advanced Features", bg="#ecf0f1", font=("Arial", 12, "bold"))
+        features_frame = tk.LabelFrame(
+            self.root,
+            text="Advanced Features",
+            bg="#ecf0f1",
+            font=("Arial", 12, "bold"),
+        )
         features_frame.pack(fill="x", padx=15, pady=10)
 
         features_grid = tk.Frame(features_frame, bg="#ecf0f1")
@@ -343,7 +418,14 @@ class GUIManagementService:
         ]
 
         for i, (text, command) in enumerate(test_buttons):
-            btn = tk.Button(features_grid, text=text, command=command, bg="#3498db", fg="white", width=12)
+            btn = tk.Button(
+                features_grid,
+                text=text,
+                command=command,
+                bg="#3498db",
+                fg="white",
+                width=12,
+            )
             btn.grid(row=0, column=i, padx=5, pady=5)
 
     def _on_power_button(self) -> None:

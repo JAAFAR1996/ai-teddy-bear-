@@ -10,10 +10,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ..application.services.memory.memory_storage_service import MemoryStorageService
-
+from ..application.services.memory.memory_storage_service import \
+    MemoryStorageService
 # Import refactored components
-from ..domain.memory.models import ChildMemoryProfile, ConversationSummary, Memory, MemoryImportance, MemoryType
+from ..domain.memory.models import (ChildMemoryProfile, ConversationSummary,
+                                    Memory, MemoryImportance, MemoryType)
 from ..infrastructure.memory.memory_repository import MemoryRepository
 from ..infrastructure.memory.vector_memory_store import VectorMemoryStore
 
@@ -36,7 +37,9 @@ class MemoryService:
         # Initialize components
         self.repository = MemoryRepository(self.data_path / "memories.db")
         self.vector_store = VectorMemoryStore()
-        self.storage_service = MemoryStorageService(self.repository, self.vector_store, redis_client)
+        self.storage_service = MemoryStorageService(
+            self.repository, self.vector_store, redis_client
+        )
 
         self.logger.info("Memory service coordinator initialized")
 
@@ -62,12 +65,24 @@ class MemoryService:
         except Exception as e:
             self.logger.error(f"Failed to load memories: {e}")
 
-    async def store_interaction(self, session_id: str, user_message: str, ai_response: str, metadata: Dict[str, Any]):
+    async def store_interaction(
+        self,
+        session_id: str,
+        user_message: str,
+        ai_response: str,
+        metadata: Dict[str, Any],
+    ):
         """Store an interaction in memory (delegates to storage service)"""
-        await self.storage_service.store_interaction(session_id, user_message, ai_response, metadata)
+        await self.storage_service.store_interaction(
+            session_id, user_message, ai_response, metadata
+        )
 
     async def recall_memories(
-        self, child_id: str, query: str, memory_types: Optional[List[MemoryType]] = None, limit: int = 5
+        self,
+        child_id: str,
+        query: str,
+        memory_types: Optional[List[MemoryType]] = None,
+        limit: int = 5,
     ) -> List[Memory]:
         """Recall relevant memories for a child"""
         try:
@@ -93,7 +108,9 @@ class MemoryService:
             self.logger.error(f"Failed to recall memories: {e}")
             return []
 
-    async def get_conversation_context(self, child_id: str, include_summary: bool = True) -> Dict[str, Any]:
+    async def get_conversation_context(
+        self, child_id: str, include_summary: bool = True
+    ) -> Dict[str, Any]:
         """Get conversation context from memory"""
         try:
             # Get recent memories from storage service
@@ -129,7 +146,9 @@ class MemoryService:
         """Get child memory profile"""
         return await self.repository.get_child_profile(child_id)
 
-    async def update_child_profile(self, child_id: str, interaction_data: Dict[str, Any]):
+    async def update_child_profile(
+        self, child_id: str, interaction_data: Dict[str, Any]
+    ):
         """Update child profile with new interaction data"""
         try:
             profile = await self.get_child_profile(child_id)
@@ -166,9 +185,13 @@ class MemoryService:
         importance_threshold: Optional[MemoryImportance] = None,
     ) -> int:
         """Forget old or unimportant memories (delegates to storage service)"""
-        return await self.storage_service.forget_memories(child_id, older_than_days, importance_threshold)
+        return await self.storage_service.forget_memories(
+            child_id, older_than_days, importance_threshold
+        )
 
-    async def export_memories(self, child_id: str, format: str = "json") -> Optional[str]:
+    async def export_memories(
+        self, child_id: str, format: str = "json"
+    ) -> Optional[str]:
         """Export memories for a child"""
         try:
             memories = await self.repository.get_memories_by_child(child_id)
@@ -216,12 +239,16 @@ def calculate_memory_similarity(memory1: Memory, memory2: Memory) -> float:
     shared_emotions = set(memory1.emotions) & set(memory2.emotions)
 
     topic_sim = len(shared_topics) / max(len(memory1.topics) + len(memory2.topics), 1)
-    emotion_sim = len(shared_emotions) / max(len(memory1.emotions) + len(memory2.emotions), 1)
+    emotion_sim = len(shared_emotions) / max(
+        len(memory1.emotions) + len(memory2.emotions), 1
+    )
 
     return (topic_sim + emotion_sim) / 2
 
 
-def generate_memory_graph(memories: List[Memory], threshold: float = 0.5) -> Dict[str, List[str]]:
+def generate_memory_graph(
+    memories: List[Memory], threshold: float = 0.5
+) -> Dict[str, List[str]]:
     """Generate a graph of related memories"""
     graph = {}
 

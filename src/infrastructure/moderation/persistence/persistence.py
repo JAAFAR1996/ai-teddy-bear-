@@ -7,7 +7,6 @@ Auto-generated from God Class refactoring
 import asyncio
 import logging
 import re
-
 # Original imports
 import uuid
 from dataclasses import dataclass

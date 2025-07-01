@@ -8,7 +8,9 @@ from typing import Any, Callable, Dict, Optional
 import requests
 import structlog
 
-from ....domain.esp32.models import ConnectionStatus, NetworkConnection, ServerConnection, WiFiSecurityType, WiFiStatus
+from ....domain.esp32.models import (ConnectionStatus, NetworkConnection,
+                                     ServerConnection, WiFiSecurityType,
+                                     WiFiStatus)
 
 logger = structlog.get_logger(__name__)
 
@@ -25,11 +27,15 @@ class NetworkCommunicationService:
 
         logger.info(f" Network service initialized: {server_url}")
 
-    def register_connection_callback(self, name: str, callback: Callable[[NetworkConnection], None]) -> None:
+    def register_connection_callback(
+        self, name: str, callback: Callable[[NetworkConnection], None]
+    ) -> None:
         """Register callback for connection status changes."""
         self.connection_callbacks[name] = callback
 
-    async def connect_wifi(self, ssid: str = "TeddyBear_Network", password: str = "teddy123") -> bool:
+    async def connect_wifi(
+        self, ssid: str = "TeddyBear_Network", password: str = "teddy123"
+    ) -> bool:
         """Connect to WiFi network."""
         try:
             logger.info(f" Connecting to WiFi: {ssid}")
@@ -141,7 +147,10 @@ class NetworkCommunicationService:
     async def register_device(self, device_info: Dict[str, Any]) -> bool:
         """Register device with server."""
         try:
-            registration_message = {"type": "device_registration", "device_info": device_info}
+            registration_message = {
+                "type": "device_registration",
+                "device_info": device_info,
+            }
 
             response = await self.send_message(registration_message)
 
@@ -166,7 +175,11 @@ class NetworkCommunicationService:
                 "signal_strength": self.network.wifi.signal_strength,
                 "signal_quality": self.network.wifi.signal_quality,
                 "ip_address": self.network.wifi.ip_address,
-                "connected_at": self.network.wifi.connected_at.isoformat() if self.network.wifi.connected_at else None,
+                "connected_at": (
+                    self.network.wifi.connected_at.isoformat()
+                    if self.network.wifi.connected_at
+                    else None
+                ),
             },
             "server": {
                 "status": self.network.server.status.value,
@@ -175,7 +188,11 @@ class NetworkCommunicationService:
                 "response_time": self.network.server.response_time,
                 "is_healthy": self.network.server.is_healthy,
                 "error_count": self.network.server.error_count,
-                "last_ping": self.network.server.last_ping.isoformat() if self.network.server.last_ping else None,
+                "last_ping": (
+                    self.network.server.last_ping.isoformat()
+                    if self.network.server.last_ping
+                    else None
+                ),
             },
             "overall": {
                 "is_fully_connected": self.network.is_fully_connected,
@@ -187,7 +204,9 @@ class NetworkCommunicationService:
         """Start network monitoring."""
         if not self.monitoring_active:
             self.monitoring_active = True
-            self.monitor_thread = threading.Thread(target=self._monitor_connections, daemon=True)
+            self.monitor_thread = threading.Thread(
+                target=self._monitor_connections, daemon=True
+            )
             self.monitor_thread.start()
             logger.info(" Network monitoring started")
 
@@ -217,7 +236,9 @@ class NetworkCommunicationService:
             logger.error(f"Server test failed: {e}")
             return False
 
-    async def _simulate_server_request(self, message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    async def _simulate_server_request(
+        self, message: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Simulate server request for testing."""
         time.sleep(0.1)  # Simulate network latency
 
@@ -239,7 +260,11 @@ class NetworkCommunicationService:
                 "emotion": "happy",
             }
         else:
-            return {"type": "generic_response", "status": "received", "timestamp": datetime.now().isoformat()}
+            return {
+                "type": "generic_response",
+                "status": "received",
+                "timestamp": datetime.now().isoformat(),
+            }
 
     def _monitor_connections(self) -> None:
         """Monitor network connections health."""

@@ -64,7 +64,11 @@ class SMSService:
         try:
             # في بيئة التطوير، نحاكي الإرسال
             if not self.account_sid or self.account_sid == "your_twilio_sid":
-                self.logger.info("SMS simulated (no Twilio credentials)", phone=phone_number, message=message[:50])
+                self.logger.info(
+                    "SMS simulated (no Twilio credentials)",
+                    phone=phone_number,
+                    message=message[:50],
+                )
                 return True
 
             # الإرسال الفعلي عبر Twilio هنا

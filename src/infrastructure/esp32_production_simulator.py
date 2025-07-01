@@ -18,24 +18,14 @@ from typing import Any, Dict, Optional
 
 try:
     from PySide6 import QtCore, QtGui, QtWidgets
-    from PySide6.QtCore import QPropertyAnimation, QThread, QTimer, Signal, Slot
+    from PySide6.QtCore import (QPropertyAnimation, QThread, QTimer, Signal,
+                                Slot)
     from PySide6.QtGui import QColor, QFont, QIcon, QPalette
-    from PySide6.QtWidgets import (
-        QApplication,
-        QGroupBox,
-        QHBoxLayout,
-        QInputDialog,
-        QLabel,
-        QMainWindow,
-        QMessageBox,
-        QProgressBar,
-        QPushButton,
-        QSplitter,
-        QStatusBar,
-        QTextEdit,
-        QVBoxLayout,
-        QWidget,
-    )
+    from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout,
+                                   QInputDialog, QLabel, QMainWindow,
+                                   QMessageBox, QProgressBar, QPushButton,
+                                   QSplitter, QStatusBar, QTextEdit,
+                                   QVBoxLayout, QWidget)
 except Exception as e:
     logger.error(f"Error: {e}")"❌ PySide6 not installed. Installing...")
     import subprocess

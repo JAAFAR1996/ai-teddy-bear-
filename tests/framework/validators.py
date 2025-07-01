@@ -34,8 +34,14 @@ class ContentSafetyValidator:
                 r"\b(kill|hurt|fight|weapon|gun|knife|blood|die|death)\b",
                 r"\b(punch|kick|hit|attack|destroy)\b",
             ],
-            "inappropriate_language": [r"\b(damn|hell|stupid|hate|ugly|dumb|idiot)\b", r"\b(shut up|go away)\b"],
-            "adult_content": [r"\b(sex|kiss|date|boyfriend|girlfriend|love|marry)\b", r"\b(pregnant|baby|romance)\b"],
+            "inappropriate_language": [
+                r"\b(damn|hell|stupid|hate|ugly|dumb|idiot)\b",
+                r"\b(shut up|go away)\b",
+            ],
+            "adult_content": [
+                r"\b(sex|kiss|date|boyfriend|girlfriend|love|marry)\b",
+                r"\b(pregnant|baby|romance)\b",
+            ],
             "personal_info": [
                 r"(my|your) (address|phone|email|school|parent)",
                 r"(where|what) (do you live|is your address|school do you go)",
@@ -57,7 +63,13 @@ class ContentSafetyValidator:
         # Age-appropriate content guidelines
         self.age_guidelines = {
             (3, 5): {
-                "allowed_topics": ["colors", "shapes", "animals", "family", "simple_stories"],
+                "allowed_topics": [
+                    "colors",
+                    "shapes",
+                    "animals",
+                    "family",
+                    "simple_stories",
+                ],
                 "max_complexity": "simple",
                 "forbidden": ["violence", "scary_content", "complex_emotions"],
             },
@@ -86,7 +98,9 @@ class ContentSafetyValidator:
                         confidence=0.95,
                         violation_type=violation_type,
                         reason=f"Content contains {violation_type} related terms",
-                        suggested_alternative=self._generate_safe_alternative(violation_type, age),
+                        suggested_alternative=self._generate_safe_alternative(
+                            violation_type, age
+                        ),
                     )
 
         # Check age appropriateness
@@ -100,12 +114,16 @@ class ContentSafetyValidator:
                         confidence=0.90,
                         violation_type="age_inappropriate",
                         reason=f"Content not suitable for age {age}",
-                        suggested_alternative=self._generate_age_appropriate_alternative(age),
+                        suggested_alternative=self._generate_age_appropriate_alternative(
+                            age
+                        ),
                     )
 
         # Content is safe
         return ContentValidationResult(
-            is_safe=True, confidence=0.98, metadata={"age": age, "content_length": len(content)}
+            is_safe=True,
+            confidence=0.98,
+            metadata={"age": age, "content_length": len(content)},
         )
 
     def _get_age_group(self, age: int) -> Optional[Dict[str, Any]]:
@@ -125,7 +143,9 @@ class ContentSafetyValidator:
             "dangerous_requests": "Let's talk to a trusted adult about this!",
             "scary_content": "How about a happy story instead?",
         }
-        return alternatives.get(violation_type, "Let's talk about something fun and safe!")
+        return alternatives.get(
+            violation_type, "Let's talk about something fun and safe!"
+        )
 
 
 class AgeAppropriateContentGenerator:
@@ -139,7 +159,10 @@ class AgeAppropriateContentGenerator:
                     "What color is the {object}?",
                     "The {animal} says {sound}!",
                 ],
-                "stories": ["Once upon a time, there was a happy {animal}", "The little {object} went on an adventure"],
+                "stories": [
+                    "Once upon a time, there was a happy {animal}",
+                    "The little {object} went on an adventure",
+                ],
                 "games": ["Let's play peek-a-boo!", "Can you jump like a {animal}?"],
             },
             5: {
@@ -164,7 +187,10 @@ class AgeAppropriateContentGenerator:
                     "The adventurers discovered a {discovery}",
                     "Together, they solved the mystery of {mystery}",
                 ],
-                "games": ["Let's solve this puzzle together", "Can you guess the riddle?"],
+                "games": [
+                    "Let's solve this puzzle together",
+                    "Can you guess the riddle?",
+                ],
             },
             12: {
                 "educational": [
@@ -172,8 +198,14 @@ class AgeAppropriateContentGenerator:
                     "In history, we learn about {event}",
                     "The scientific method helps us understand {phenomenon}",
                 ],
-                "stories": ["The young hero faced challenges with courage", "Through teamwork, they achieved {goal}"],
-                "games": ["Let's play a strategy game", "Can you solve this logic puzzle?"],
+                "stories": [
+                    "The young hero faced challenges with courage",
+                    "Through teamwork, they achieved {goal}",
+                ],
+                "games": [
+                    "Let's play a strategy game",
+                    "Can you solve this logic puzzle?",
+                ],
             },
         }
 
@@ -202,7 +234,9 @@ class AgeAppropriateContentGenerator:
         age_key = min(self.content_templates.keys(), key=lambda x: abs(x - age))
 
         # Get templates for age and topic
-        templates = self.content_templates[age_key].get(topic, self.content_templates[age_key]["educational"])
+        templates = self.content_templates[age_key].get(
+            topic, self.content_templates[age_key]["educational"]
+        )
 
         # Select random template
         template = fake.random_element(templates)
@@ -248,7 +282,9 @@ class COPPAComplianceChecker:
         for field, value in data.items():
             if field not in self.allowed_data_fields:
                 if self._contains_personal_info(str(value)):
-                    violations.append({"field": field, "type": "personal_info", "severity": "high"})
+                    violations.append(
+                        {"field": field, "type": "personal_info", "severity": "high"}
+                    )
 
         # Check for exact age storage (should be age groups)
         if "age" in data and isinstance(data["age"], int):
@@ -262,7 +298,11 @@ class COPPAComplianceChecker:
                     }
                 )
 
-        return {"compliant": len(violations) == 0, "violations": violations, "checked_at": datetime.utcnow()}
+        return {
+            "compliant": len(violations) == 0,
+            "violations": violations,
+            "checked_at": datetime.utcnow(),
+        }
 
     def _contains_personal_info(self, text: str) -> bool:
         """Check if text contains personal information"""
@@ -273,7 +313,13 @@ class COPPAComplianceChecker:
 
     def check_parental_consent(self, consent_data: Dict[str, Any]) -> bool:
         """Verify parental consent is properly obtained"""
-        required_fields = ["parent_id", "child_id", "consent_timestamp", "consent_type", "verification_method"]
+        required_fields = [
+            "parent_id",
+            "child_id",
+            "consent_timestamp",
+            "consent_type",
+            "verification_method",
+        ]
 
         # Check all required fields present
         for field in required_fields:

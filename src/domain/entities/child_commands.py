@@ -17,7 +17,8 @@ from uuid import uuid4
 from ...domain.events.event_sourcing_examples import ChildAggregateExample
 from ...domain.events.event_sourcing_service import get_event_sourcing_service
 from ...domain.value_objects import ChildId, DeviceId, ParentId
-from .command_bus import Command, CommandHandler, CommandResult, get_command_bus
+from .command_bus import (Command, CommandHandler, CommandResult,
+                          get_command_bus)
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +126,9 @@ class RegisterChildCommandHandler(CommandHandler):
 
         except Exception as e:
             logger.error(f"Failed to register child: {e}")
-            return CommandResult(success=False, message=f"Child registration failed: {str(e)}")
+            return CommandResult(
+                success=False, message=f"Child registration failed: {str(e)}"
+            )
 
 
 class UpdateChildProfileCommandHandler(CommandHandler):
@@ -159,7 +162,9 @@ class UpdateChildProfileCommandHandler(CommandHandler):
 
         try:
             # Load existing child
-            child = await self.event_sourcing_service.load_aggregate(ChildAggregateExample, command.child_id)
+            child = await self.event_sourcing_service.load_aggregate(
+                ChildAggregateExample, command.child_id
+            )
 
             if not child:
                 return CommandResult(success=False, message="Child not found")
@@ -180,7 +185,9 @@ class UpdateChildProfileCommandHandler(CommandHandler):
 
         except Exception as e:
             logger.error(f"Failed to update child profile: {e}")
-            return CommandResult(success=False, message=f"Profile update failed: {str(e)}")
+            return CommandResult(
+                success=False, message=f"Profile update failed: {str(e)}"
+            )
 
 
 class ReportSafetyViolationCommandHandler(CommandHandler):
@@ -212,7 +219,9 @@ class ReportSafetyViolationCommandHandler(CommandHandler):
 
         try:
             # Load child
-            child = await self.event_sourcing_service.load_aggregate(ChildAggregateExample, command.child_id)
+            child = await self.event_sourcing_service.load_aggregate(
+                ChildAggregateExample, command.child_id
+            )
 
             if not child:
                 return CommandResult(success=False, message="Child not found")
@@ -223,7 +232,9 @@ class ReportSafetyViolationCommandHandler(CommandHandler):
             # Save violation
             await self.event_sourcing_service.save_aggregate(child)
 
-            logger.warning(f"Safety violation reported for child {command.child_id}: {command.violation_type}")
+            logger.warning(
+                f"Safety violation reported for child {command.child_id}: {command.violation_type}"
+            )
 
             return CommandResult(
                 success=True,
@@ -237,7 +248,9 @@ class ReportSafetyViolationCommandHandler(CommandHandler):
 
         except Exception as e:
             logger.error(f"Failed to report safety violation: {e}")
-            return CommandResult(success=False, message=f"Safety violation reporting failed: {str(e)}")
+            return CommandResult(
+                success=False, message=f"Safety violation reporting failed: {str(e)}"
+            )
 
 
 def register_child_command_handlers() -> Any:
@@ -248,8 +261,12 @@ def register_child_command_handlers() -> Any:
     # Register handlers
     command_bus.register_handler(RegisterChildCommand, RegisterChildCommandHandler())
 
-    command_bus.register_handler(UpdateChildProfileCommand, UpdateChildProfileCommandHandler())
+    command_bus.register_handler(
+        UpdateChildProfileCommand, UpdateChildProfileCommandHandler()
+    )
 
-    command_bus.register_handler(ReportSafetyViolationCommand, ReportSafetyViolationCommandHandler())
+    command_bus.register_handler(
+        ReportSafetyViolationCommand, ReportSafetyViolationCommandHandler()
+    )
 
     logger.info("Child command handlers registered successfully")

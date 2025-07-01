@@ -15,18 +15,26 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from src.application.services.child.child_analytics_service import ChildAnalyticsService
-from src.application.services.child.child_bulk_operations_service import ChildBulkOperationsService
-from src.application.services.child.child_interaction_service import ChildInteractionService
-from src.application.services.child.child_search_service import ChildSearchService
+from src.application.services.child.child_analytics_service import \
+    ChildAnalyticsService
+from src.application.services.child.child_bulk_operations_service import \
+    ChildBulkOperationsService
+from src.application.services.child.child_interaction_service import \
+    ChildInteractionService
+from src.application.services.child.child_search_service import \
+    ChildSearchService
 from src.core.domain.entities.child import Child
-
 # Import refactored services
-from src.domain.child.services.child_analytics_service import ChildAnalyticsDomainService
-from src.domain.child.services.child_family_service import ChildFamilyDomainService
-from src.domain.child.services.child_interaction_service import ChildInteractionDomainService
-from src.infrastructure.persistence.base import QueryOptions, SearchCriteria, SortOrder
-from src.infrastructure.persistence.base_sqlite_repository import BaseSQLiteRepository
+from src.domain.child.services.child_analytics_service import \
+    ChildAnalyticsDomainService
+from src.domain.child.services.child_family_service import \
+    ChildFamilyDomainService
+from src.domain.child.services.child_interaction_service import \
+    ChildInteractionDomainService
+from src.infrastructure.persistence.base import (QueryOptions, SearchCriteria,
+                                                 SortOrder)
+from src.infrastructure.persistence.base_sqlite_repository import \
+    BaseSQLiteRepository
 from src.infrastructure.persistence.child_repository import ChildRepository
 
 
@@ -41,7 +49,9 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
     def __init__(
         self,
         session_factory,
-        db_path: str = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data", "teddyai.db"),
+        db_path: str = os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "data", "teddyai.db"
+        ),
     ):
         self.session_factory = session_factory
 
@@ -53,7 +63,9 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
         # Create connection
         connection = sqlite3.connect(db_path, check_same_thread=False)
 
-        super().__init__(connection=connection, table_name="children", entity_class=Child)
+        super().__init__(
+            connection=connection, table_name="children", entity_class=Child
+        )
 
         # Initialize domain services
         self.analytics_domain_service = ChildAnalyticsDomainService()
@@ -62,8 +74,12 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
 
         # Initialize application services
         self.search_service = ChildSearchService(self)
-        self.analytics_service = ChildAnalyticsService(self, self.analytics_domain_service)
-        self.interaction_service = ChildInteractionService(self, self.interaction_domain_service)
+        self.analytics_service = ChildAnalyticsService(
+            self, self.analytics_domain_service
+        )
+        self.interaction_service = ChildInteractionService(
+            self, self.interaction_domain_service
+        )
         self.bulk_operations_service = ChildBulkOperationsService(self)
 
     async def initialize(self):
@@ -113,7 +129,9 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
 
                 columns = ", ".join(data.keys())
                 placeholders = ", ".join(["?" for _ in data])
-                sql = f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
+                sql = (
+                    f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
+                )
 
                 cursor.execute(sql, list(data.values()))
 
@@ -188,7 +206,12 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
             params = []
 
             if options and hasattr(options, "sort_by") and options.sort_by:
-                order = "DESC" if hasattr(options, "sort_order") and options.sort_order == SortOrder.DESC else "ASC"
+                order = (
+                    "DESC"
+                    if hasattr(options, "sort_order")
+                    and options.sort_order == SortOrder.DESC
+                    else "ASC"
+                )
                 sql += f" ORDER BY {options.sort_by} {order}"
 
             if options and hasattr(options, "limit") and options.limit:
@@ -251,9 +274,13 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
         return await self.search_service.full_text_search(query)
 
     # Interaction Operations - Delegate to Interaction Service
-    async def update_interaction_time(self, child_id: str, additional_time: int) -> bool:
+    async def update_interaction_time(
+        self, child_id: str, additional_time: int
+    ) -> bool:
         """Update interaction time - delegated to interaction service"""
-        return await self.interaction_service.update_interaction_time(child_id, additional_time)
+        return await self.interaction_service.update_interaction_time(
+            child_id, additional_time
+        )
 
     async def get_children_over_time_limit(self) -> List[Child]:
         """Get children over time limit - delegated to interaction service"""
@@ -273,9 +300,16 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
         """Bulk update settings - delegated to bulk operations service"""
         return await self.bulk_operations_service.bulk_update_settings(updates)
 
-    async def aggregate(self, field: str, operation: str, criteria: Optional[List[SearchCriteria]] = None) -> Any:
+    async def aggregate(
+        self,
+        field: str,
+        operation: str,
+        criteria: Optional[List[SearchCriteria]] = None,
+    ) -> Any:
         """Aggregate data - delegated to bulk operations service"""
-        return await self.bulk_operations_service.aggregate_data(field, operation, criteria)
+        return await self.bulk_operations_service.aggregate_data(
+            field, operation, criteria
+        )
 
     # ========== BACKWARD COMPATIBILITY METHODS ==========
 
@@ -357,7 +391,9 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
         # Parse date fields
         if "date_of_birth" in data and data["date_of_birth"]:
             try:
-                data["date_of_birth"] = datetime.fromisoformat(data["date_of_birth"]).date()
+                data["date_of_birth"] = datetime.fromisoformat(
+                    data["date_of_birth"]
+                ).date()
             except (ValueError, TypeError):
                 data["date_of_birth"] = None
 

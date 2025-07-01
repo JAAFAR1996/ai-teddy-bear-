@@ -9,7 +9,8 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from ..shared.base import AggregateRoot, DomainEvent, DomainException, Entity, EntityId, ValueObject
+from ..shared.base import (AggregateRoot, DomainEvent, DomainException, Entity,
+                           EntityId, ValueObject)
 
 
 # Entity IDs
@@ -55,7 +56,9 @@ class ChildAgeGroup(Enum):
         elif 9 <= age <= 12:
             return cls.MIDDLE_CHILDHOOD
         else:
-            raise DomainException(f"Age {age} is not within supported range (3-12)", "INVALID_AGE_RANGE")
+            raise DomainException(
+                f"Age {age} is not within supported range (3-12)", "INVALID_AGE_RANGE"
+            )
 
 
 class InteractionMode(Enum):
@@ -86,7 +89,9 @@ class ChildName(ValueObject):
 
     def validate(self):
         if not self.first_name or len(self.first_name.strip()) < 2:
-            raise DomainException("Child name must be at least 2 characters", "INVALID_NAME")
+            raise DomainException(
+                "Child name must be at least 2 characters", "INVALID_NAME"
+            )
 
         if len(self.first_name) > 50:
             raise DomainException("Child name too long", "NAME_TOO_LONG")
@@ -115,7 +120,9 @@ class ChildPreferences(ValueObject):
 
     def validate(self):
         if self.language not in ["en", "ar", "es", "fr"]:
-            raise DomainException(f"Unsupported language: {self.language}", "INVALID_LANGUAGE")
+            raise DomainException(
+                f"Unsupported language: {self.language}", "INVALID_LANGUAGE"
+            )
 
         if len(self.favorite_topics) > 10:
             raise DomainException("Too many favorite topics", "TOO_MANY_TOPICS")
@@ -134,7 +141,9 @@ class SafetySettings(ValueObject):
 
     def validate(self):
         if self.content_filter_level not in ["strict", "moderate", "relaxed"]:
-            raise DomainException("Invalid content filter level", "INVALID_FILTER_LEVEL")
+            raise DomainException(
+                "Invalid content filter level", "INVALID_FILTER_LEVEL"
+            )
 
         if not 0 <= self.allowed_hours_start <= 23:
             raise DomainException("Invalid start hour", "INVALID_START_HOUR")
@@ -143,10 +152,14 @@ class SafetySettings(ValueObject):
             raise DomainException("Invalid end hour", "INVALID_END_HOUR")
 
         if self.allowed_hours_start >= self.allowed_hours_end:
-            raise DomainException("Start hour must be before end hour", "INVALID_HOUR_RANGE")
+            raise DomainException(
+                "Start hour must be before end hour", "INVALID_HOUR_RANGE"
+            )
 
         if self.max_conversation_minutes < 5 or self.max_conversation_minutes > 120:
-            raise DomainException("Conversation limit must be between 5-120 minutes", "INVALID_TIME_LIMIT")
+            raise DomainException(
+                "Conversation limit must be between 5-120 minutes", "INVALID_TIME_LIMIT"
+            )
 
 
 @dataclass(frozen=True)
@@ -166,7 +179,9 @@ class VoiceData(ValueObject):
             raise DomainException("Invalid voice duration", "INVALID_DURATION")
 
         if self.format not in ["wav", "mp3", "opus"]:
-            raise DomainException(f"Unsupported audio format: {self.format}", "INVALID_FORMAT")
+            raise DomainException(
+                f"Unsupported audio format: {self.format}", "INVALID_FORMAT"
+            )
 
 
 # Entities
@@ -193,13 +208,17 @@ class VoiceInteraction(Entity[VoiceInteractionId]):
     def set_response(self, response: str, safety_score: float):
         """Set the teddy's response after safety check"""
         if safety_score < 0 or safety_score > 1:
-            raise DomainException("Safety score must be between 0 and 1", "INVALID_SAFETY_SCORE")
+            raise DomainException(
+                "Safety score must be between 0 and 1", "INVALID_SAFETY_SCORE"
+            )
 
         self.teddy_response = response
         self.safety_score = safety_score
 
         self.add_domain_event(
-            ResponseGeneratedEvent(interaction_id=self.id, response=response, safety_score=safety_score)
+            ResponseGeneratedEvent(
+                interaction_id=self.id, response=response, safety_score=safety_score
+            )
         )
 
     def mark_as_inappropriate(self, reason: str):
@@ -210,7 +229,9 @@ class VoiceInteraction(Entity[VoiceInteractionId]):
 
         self.add_domain_event(
             InappropriateContentDetectedEvent(
-                interaction_id=self.id, reason=reason, original_message=self.child_message
+                interaction_id=self.id,
+                reason=reason,
+                original_message=self.child_message,
             )
         )
 
@@ -238,7 +259,10 @@ class Conversation(Entity[ConversationId]):
     def add_interaction(self, interaction: VoiceInteraction):
         """Add an interaction to the conversation"""
         if self.status != ConversationStatus.ACTIVE:
-            raise DomainException("Cannot add interaction to non-active conversation", "CONVERSATION_NOT_ACTIVE")
+            raise DomainException(
+                "Cannot add interaction to non-active conversation",
+                "CONVERSATION_NOT_ACTIVE",
+            )
 
         self.interactions.append(interaction)
 
@@ -248,14 +272,18 @@ class Conversation(Entity[ConversationId]):
 
         self.add_domain_event(
             InteractionAddedEvent(
-                conversation_id=self.id, interaction_id=interaction.id, message=interaction.child_message
+                conversation_id=self.id,
+                interaction_id=interaction.id,
+                message=interaction.child_message,
             )
         )
 
     def end_conversation(self, reason: str = "normal"):
         """End the conversation"""
         if self.status != ConversationStatus.ACTIVE:
-            raise DomainException("Conversation already ended", "CONVERSATION_ALREADY_ENDED")
+            raise DomainException(
+                "Conversation already ended", "CONVERSATION_ALREADY_ENDED"
+            )
 
         self.ended_at = datetime.now(timezone.utc)
         self.status = ConversationStatus.COMPLETED
@@ -278,7 +306,9 @@ class Conversation(Entity[ConversationId]):
         self.status = ConversationStatus.INTERRUPTED
 
         self.add_domain_event(
-            ConversationInterruptedEvent(conversation_id=self.id, child_id=self.child_id, reason=reason)
+            ConversationInterruptedEvent(
+                conversation_id=self.id, child_id=self.child_id, reason=reason
+            )
         )
 
     @property
@@ -316,7 +346,11 @@ class Child(AggregateRoot[ChildId]):
         self.device_id: Optional[str] = None
 
         # Raise creation event
-        self.raise_event(ChildRegisteredEvent(child_id=id, parent_id=parent_id, name=name.display_name, age=age))
+        self.raise_event(
+            ChildRegisteredEvent(
+                child_id=id, parent_id=parent_id, name=name.display_name, age=age
+            )
+        )
 
     @property
     def age(self) -> int:
@@ -347,22 +381,39 @@ class Child(AggregateRoot[ChildId]):
             )
         )
 
-    def start_conversation(self, mode: InteractionMode = InteractionMode.VOICE) -> Conversation:
+    def start_conversation(
+        self, mode: InteractionMode = InteractionMode.VOICE
+    ) -> Conversation:
         """Start a new conversation"""
         if self.active_conversation:
-            raise DomainException("Child already has an active conversation", "CONVERSATION_ALREADY_ACTIVE")
+            raise DomainException(
+                "Child already has an active conversation",
+                "CONVERSATION_ALREADY_ACTIVE",
+            )
 
         # Check time restrictions
         current_hour = datetime.now(timezone.utc).hour
-        if not (self.safety_settings.allowed_hours_start <= current_hour < self.safety_settings.allowed_hours_end):
-            raise DomainException("Outside allowed conversation hours", "OUTSIDE_ALLOWED_HOURS")
+        if not (
+            self.safety_settings.allowed_hours_start
+            <= current_hour
+            < self.safety_settings.allowed_hours_end
+        ):
+            raise DomainException(
+                "Outside allowed conversation hours", "OUTSIDE_ALLOWED_HOURS"
+            )
 
-        conversation = Conversation(id=ConversationId(), child_id=self.id, interaction_mode=mode)
+        conversation = Conversation(
+            id=ConversationId(), child_id=self.id, interaction_mode=mode
+        )
 
         self.active_conversation = conversation.id
         self.last_interaction_at = datetime.now(timezone.utc)
 
-        self.raise_event(ConversationStartedEvent(child_id=self.id, conversation_id=conversation.id, mode=mode.value))
+        self.raise_event(
+            ConversationStartedEvent(
+                child_id=self.id, conversation_id=conversation.id, mode=mode.value
+            )
+        )
 
         return conversation
 
@@ -381,7 +432,9 @@ class Child(AggregateRoot[ChildId]):
 
         self.raise_event(
             ChildPreferencesUpdatedEvent(
-                child_id=self.id, old_preferences=old_preferences, new_preferences=new_preferences
+                child_id=self.id,
+                old_preferences=old_preferences,
+                new_preferences=new_preferences,
             )
         )
 
@@ -389,7 +442,9 @@ class Child(AggregateRoot[ChildId]):
         """Update safety settings"""
         self.safety_settings = new_settings
 
-        self.raise_event(SafetySettingsUpdatedEvent(child_id=self.id, new_settings=new_settings))
+        self.raise_event(
+            SafetySettingsUpdatedEvent(child_id=self.id, new_settings=new_settings)
+        )
 
     def register_device(self, device_id: str):
         """Register a device for this child"""
@@ -409,7 +464,12 @@ class ChildRegisteredEvent(DomainEvent):
     age: int
 
     def get_event_data(self) -> Dict[str, Any]:
-        return {"child_id": str(self.child_id), "parent_id": str(self.parent_id), "name": self.name, "age": self.age}
+        return {
+            "child_id": str(self.child_id),
+            "parent_id": str(self.parent_id),
+            "name": self.name,
+            "age": self.age,
+        }
 
 
 @dataclass
@@ -441,7 +501,11 @@ class ConversationStartedEvent(DomainEvent):
     mode: str
 
     def get_event_data(self) -> Dict[str, Any]:
-        return {"child_id": str(self.child_id), "conversation_id": str(self.conversation_id), "mode": self.mode}
+        return {
+            "child_id": str(self.child_id),
+            "conversation_id": str(self.conversation_id),
+            "mode": self.mode,
+        }
 
 
 @dataclass
@@ -473,7 +537,11 @@ class ConversationInterruptedEvent(DomainEvent):
     reason: str
 
     def get_event_data(self) -> Dict[str, Any]:
-        return {"conversation_id": str(self.conversation_id), "child_id": str(self.child_id), "reason": self.reason}
+        return {
+            "conversation_id": str(self.conversation_id),
+            "child_id": str(self.child_id),
+            "reason": self.reason,
+        }
 
 
 @dataclass
