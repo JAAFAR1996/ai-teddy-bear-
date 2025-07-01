@@ -43,7 +43,7 @@ SpeechRecognition==3.10.0         # Speech recognition
 gtts==2.4.0                       # Google Text-to-Speech
 
 # ================== SECURITY & ENCRYPTION ==================
-cryptography==41.0.8              # Modern cryptography
+cryptography==43.0.3              # Modern cryptography
 passlib[bcrypt]==1.7.4            # Password hashing
 pyjwt==2.8.0                      # JWT tokens
 python-jose[cryptography]==3.3.0  # JOSE tokens

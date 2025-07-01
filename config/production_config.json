@@ -1,0 +1,293 @@
+{
+  "environment": "production",
+  "version": "2.0.0",
+  "api": {
+    "baseUrl": "https://api.aiteddybear.com",
+    "version": "v1",
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "retryDelay": 1000
+  },
+  "websocket": {
+    "url": "wss://ws.aiteddybear.com",
+    "reconnectInterval": 5000,
+    "maxReconnectAttempts": 10,
+    "heartbeatInterval": 30000
+  },
+  "security": {
+    "encryption": {
+      "algorithm": "AES-256-GCM",
+      "keyRotationDays": 30,
+      "rsaKeySize": 4096
+    },
+    "authentication": {
+      "jwtExpiresIn": "24h",
+      "refreshTokenExpiresIn": "30d",
+      "sessionTimeout": 3600000,
+      "maxLoginAttempts": 5,
+      "lockoutDuration": 900000
+    },
+    "contentModeration": {
+      "enabled": true,
+      "strictMode": true,
+      "emergencyKeywords": [
+        "يؤلم", "خائف", "مساعدة", "طوارئ",
+        "hurts", "scared", "help", "emergency"
+      ]
+    }
+  },
+  "features": {
+    "voiceInteraction": {
+      "enabled": true,
+      "languages": ["ar", "en"],
+      "defaultLanguage": "ar",
+      "voiceActivityDetection": true,
+      "noiseSuppression": true,
+      "echoCancellation": true
+    },
+    "ai": {
+      "model": "gpt-4",
+      "temperature": 0.7,
+      "maxTokens": 500,
+      "contextWindow": 4000,
+      "safetyLevel": "strict"
+    },
+    "analytics": {
+      "enabled": true,
+      "realTimeUpdates": true,
+      "dataRetentionDays": 90,
+      "anonymizeData": true
+    },
+    "reports": {
+      "autoGenerate": true,
+      "dailyReportTime": "20:00",
+      "weeklyReportDay": "sunday",
+      "monthlyReportDay": 1,
+      "formats": ["pdf", "email"]
+    }
+  },
+  "performance": {
+    "caching": {
+      "enabled": true,
+      "provider": "redis",
+      "ttl": 3600,
+      "maxSize": "1GB"
+    },
+    "rateLimit": {
+      "enabled": true,
+      "windowMs": 900000,
+      "maxRequests": 100,
+      "skipSuccessfulRequests": false
+    },
+    "optimization": {
+      "compression": true,
+      "minification": true,
+      "lazyLoading": true,
+      "cdnEnabled": true
+    }
+  },
+  "monitoring": {
+    "logging": {
+      "level": "info",
+      "format": "json",
+      "destination": "cloudwatch",
+      "retentionDays": 30
+    },
+    "metrics": {
+      "enabled": true,
+      "provider": "prometheus",
+      "interval": 60,
+      "customMetrics": true
+    },
+    "alerts": {
+      "enabled": true,
+      "channels": ["email", "sms", "slack"],
+      "criticalThreshold": {
+        "errorRate": 0.05,
+        "responseTime": 2000,
+        "availability": 0.995
+      }
+    },
+    "healthCheck": {
+      "enabled": true,
+      "interval": 30,
+      "timeout": 5000,
+      "endpoints": [
+        "/health",
+        "/api/v1/health",
+        "/ws/health"
+      ]
+    }
+  },
+  "database": {
+    "primary": {
+      "type": "postgresql",
+      "host": "${DB_HOST}",
+      "port": 5432,
+      "database": "aiteddybear_prod",
+      "ssl": true,
+      "poolSize": 20,
+      "idleTimeout": 10000
+    },
+    "replica": {
+      "enabled": true,
+      "hosts": ["${DB_REPLICA_1}", "${DB_REPLICA_2}"],
+      "loadBalancing": "round-robin"
+    },
+    "backup": {
+      "enabled": true,
+      "schedule": "0 2 * * *",
+      "retention": 30,
+      "destination": "s3://backups/database"
+    }
+  },
+  "storage": {
+    "provider": "s3",
+    "bucket": "aiteddybear-prod",
+    "region": "us-east-1",
+    "encryption": true,
+    "versioning": true,
+    "lifecycle": {
+      "audio": {
+        "transitionToIA": 30,
+        "transitionToGlacier": 90,
+        "expiration": 365
+      },
+      "reports": {
+        "transitionToIA": 60,
+        "expiration": 730
+      }
+    }
+  },
+  "esp32": {
+    "firmware": {
+      "currentVersion": "1.2.0",
+      "updateChannel": "stable",
+      "autoUpdate": true,
+      "updateWindow": "02:00-04:00"
+    },
+    "audio": {
+      "sampleRate": 16000,
+      "bitDepth": 16,
+      "channels": 1,
+      "codec": "opus",
+      "compressionLevel": 5
+    },
+    "network": {
+      "protocol": "mqtt",
+      "qos": 1,
+      "keepAlive": 60,
+      "cleanSession": true
+    }
+  },
+  "compliance": {
+    "gdpr": {
+      "enabled": true,
+      "dataRetention": 365,
+      "rightToErasure": true,
+      "dataPortability": true
+    },
+    "coppa": {
+      "enabled": true,
+      "ageVerification": true,
+      "parentalConsent": true,
+      "dataMinimization": true
+    },
+    "encryption": {
+      "atRest": true,
+      "inTransit": true,
+      "keyManagement": "hsm"
+    }
+  },
+  "deployment": {
+    "region": "us-east-1",
+    "multiRegion": true,
+    "autoScaling": {
+      "enabled": true,
+      "minInstances": 3,
+      "maxInstances": 50,
+      "targetCPU": 70,
+      "targetMemory": 80
+    },
+    "loadBalancer": {
+      "type": "application",
+      "healthCheckPath": "/health",
+      "stickySession": true
+    },
+    "cdn": {
+      "provider": "cloudfront",
+      "caching": true,
+      "compression": true,
+      "geoRestriction": false
+    }
+  },
+  "integrations": {
+    "analytics": {
+      "googleAnalytics": {
+        "enabled": true,
+        "trackingId": "${GA_TRACKING_ID}"
+      },
+      "mixpanel": {
+        "enabled": true,
+        "projectToken": "${MIXPANEL_TOKEN}"
+      }
+    },
+    "payment": {
+      "stripe": {
+        "enabled": true,
+        "publicKey": "${STRIPE_PUBLIC_KEY}",
+        "webhookSecret": "${STRIPE_WEBHOOK_SECRET}"
+      }
+    },
+    "communication": {
+      "twilio": {
+        "enabled": true,
+        "accountSid": "${TWILIO_ACCOUNT_SID}",
+        "authToken": "${TWILIO_AUTH_TOKEN}"
+      },
+      "sendgrid": {
+        "enabled": true,
+        "apiKey": "${SENDGRID_API_KEY}"
+      }
+    },
+    "monitoring": {
+      "sentry": {
+        "enabled": true,
+        "dsn": "${SENTRY_DSN}",
+        "environment": "production",
+        "tracesSampleRate": 0.1
+      },
+      "datadog": {
+        "enabled": true,
+        "apiKey": "${DATADOG_API_KEY}",
+        "site": "datadoghq.com"
+      }
+    }
+  },
+  "featureFlags": {
+    "provider": "launchdarkly",
+    "sdkKey": "${LAUNCHDARKLY_SDK_KEY}",
+    "flags": {
+      "newDashboard": true,
+      "advancedAnalytics": true,
+      "voiceCloning": false,
+      "multiLanguageStories": true,
+      "realTimeTranslation": true,
+      "3dAvatars": false,
+      "parentalControls": true,
+      "offlineMode": true
+    }
+  },
+  "maintenance": {
+    "window": {
+      "day": "sunday",
+      "startTime": "02:00",
+      "duration": 2
+    },
+    "notification": {
+      "enabled": true,
+      "advanceNotice": 24,
+      "channels": ["email", "in-app"]
+    }
+  }
+} 
