@@ -3,9 +3,7 @@ Advanced Educational Value Evaluator for Child Content
 """
 
 import asyncio
-import re
-from dataclasses import dataclass
-from typing import Dict, List, Set
+from typing import Dict, List
 
 from .models import EducationalValueResult
 

@@ -3,8 +3,6 @@
 """
 
 import asyncio
-from datetime import datetime
-from unittest.mock import Mock, patch
 
 import pytest
 
@@ -14,7 +12,7 @@ from src.domain.exceptions.base import (ErrorContext, ErrorSeverity,
                                         ValidationException)
 from src.infrastructure.decorators import (RetryConfig, child_safe,
                                            handle_exceptions, validate_input,
-                                           with_circuit_breaker, with_retry)
+                                           with_retry)
 from src.infrastructure.exception_handling import (CircuitBreaker,
                                                    CircuitState,
                                                    GlobalExceptionHandler)

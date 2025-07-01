@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 #!/usr/bin/env python3
 """
@@ -7,22 +7,15 @@ UnifiedMonitoringService
 تم الإنشاء: 2025-06-30 05:25:00
 """
 
-import asyncio
 import hashlib
-import json
 import logging
 import sqlite3
 import time
-import traceback
-from abc import ABC, abstractmethod
 from collections import defaultdict, deque
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime
+from typing import Any, Dict, List
 
 import psutil
-import structlog
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +23,9 @@ logger = logging.getLogger(__name__)
 class UnifiedMonitoringService:
     """
     خدمة موحدة تجمع وظائف متعددة من:
-        - deprecated\services\monitoring_services\issue_tracker_service.py
-    - deprecated\services\monitoring_services\rate_monitor_service.py
-    - deprecated\services\monitoring_services\simple_health_service.py
+    - deprecated/services/monitoring_services/issue_tracker_service.py
+    - deprecated/services/monitoring_services/rate_monitor_service.py
+    - deprecated/services/monitoring_services/simple_health_service.py
     """
 
     def __init__(self):

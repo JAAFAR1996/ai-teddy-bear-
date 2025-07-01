@@ -18,18 +18,12 @@ from pydantic import BaseModel, Field, validator
 from src.application.services.ai_service import AIService
 from src.application.services.child_service import ChildService
 from src.application.services.voice_service import VoiceService
-from src.core.domain.entities.child import Child
-from src.domain.value_objects import ChildAge, ChildName, DeviceId
-from src.infrastructure.config import Settings
-from src.infrastructure.modern_container import (Provide, container,
+from src.infrastructure.modern_container import (container,
                                                  get_ai_service,
                                                  get_child_service,
-                                                 get_session_manager,
                                                  get_voice_service,
-                                                 initialize_container, inject,
-                                                 shutdown_container)
+                                                 initialize_container, shutdown_container)
 from src.infrastructure.monitoring.metrics import metrics_collector
-from src.infrastructure.security.api_key_validator import APIKeyValidator
 from src.infrastructure.security.rate_limiter import RateLimiterMiddleware
 from src.infrastructure.security.request_id import RequestIdMiddleware
 
@@ -44,7 +38,7 @@ class RegisterDeviceRequest(BaseModel):
     device_id: str = Field(
         ..., min_length=5, max_length=50, pattern="^ESP32_[A-Z0-9_]+$"
     )
-    firmware_version: str = Field(..., pattern="^\\d+\\.\\d+\\.\\d+$")
+    firmware_version: str = Field(..., pattern=r"^\d+\.\d+\.\d+$")
     hardware_info: Dict[str, Any] = Field(default_factory=dict)
 
     @validator("device_id")

@@ -7,7 +7,7 @@ Domain service for analytics calculations and business logic.
 
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from ..models.analytics_models import (AnalyticsData, AnalyticsFilter,
                                        ConversationLog, LearningProgress,

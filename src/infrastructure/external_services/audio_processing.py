@@ -14,7 +14,6 @@ This module provides comprehensive audio signal processing capabilities includin
 import asyncio
 import io
 import logging
-import time
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -768,7 +767,6 @@ def remove_clicks(
 ) -> np.ndarray:
     """Remove clicks and pops from audio."""
     # Use median filter for click removal
-    from scipy.signal import medfilt
 
     window_size = 5
 

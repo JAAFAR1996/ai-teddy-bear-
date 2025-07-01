@@ -2,12 +2,10 @@
 
 import logging
 import os
-from typing import Optional, Union
 
 import numpy as np
 import soundfile as sf
 
-from .state_manager import state_manager
 
 
 class AudioRecorder:

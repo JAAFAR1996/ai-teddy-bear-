@@ -162,13 +162,13 @@ class ModernOpenAIService(IAIService):
             # Check memory cache first (fastest)
             cached_response = self._check_memory_cache(cache_key)
             if cached_response:
-                logger.info(f"🎯 Memory cache hit - response time: <1ms")
+                logger.info("🎯 Memory cache hit - response time: <1ms")
                 return cached_response
 
             # Check persistent cache
             persistent_cached = await self.cache.get(f"ai_response_{cache_key}")
             if persistent_cached:
-                logger.info(f"🎯 Persistent cache hit")
+                logger.info("🎯 Persistent cache hit")
                 response = AIResponseModel(**json.loads(persistent_cached))
                 response.cached = True
                 # Store in memory for next time
@@ -244,7 +244,7 @@ class ModernOpenAIService(IAIService):
             )
             return ai_response
 
-        except RateLimitError as e:
+        except RateLimitError:
             self.rate_limit_count += 1
             logger.warning(f"⚠️ OpenAI rate limit hit (#{self.rate_limit_count})")
             return await self.fallback_service.create_rate_limit_fallback(

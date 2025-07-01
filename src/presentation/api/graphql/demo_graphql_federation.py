@@ -145,7 +145,7 @@ class FederationDemoSystem:
         }
         """
 
-        logger.info(f"📝 Federated Query:")
+        logger.info("📝 Federated Query:")
         logger.info(federated_query.strip())
 
         # Analyze which services are needed

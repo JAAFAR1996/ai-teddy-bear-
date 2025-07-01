@@ -6,9 +6,7 @@ from typing import Any, Dict, List, Optional
 
 import structlog
 
-from ....domain.esp32.models import (ChildProfile, ConversationEntry,
-                                     InteractionType, LearningProgress,
-                                     SessionData)
+from ....domain.esp32.models import (ChildProfile, InteractionType, SessionData)
 
 logger = structlog.get_logger(__name__)
 

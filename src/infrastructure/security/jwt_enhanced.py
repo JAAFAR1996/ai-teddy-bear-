@@ -16,7 +16,6 @@ Author: Jaafar Adeeb - Security Lead
 
 import hashlib
 import secrets
-import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
@@ -300,8 +299,8 @@ class EnhancedJWTManager:
             # In a real system, this would mark all user tokens as revoked
             # For now, we'll add user to a revoked users set
             if self.redis_client:
-                await self.redis_client.sadd(f"revoked_users", user_id)
-                await self.redis_client.expire(f"revoked_users", 86400 * 30)  # 30 days
+                await self.redis_client.sadd("revoked_users", user_id)
+                await self.redis_client.expire("revoked_users", 86400 * 30)  # 30 days
 
             logger.info("All user tokens revoked", user_id=user_id)
             return True

@@ -5,11 +5,10 @@ AI Teddy Bear Project - Security Module
 
 import asyncio
 import hashlib
-import hmac
 import json
 import logging
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 

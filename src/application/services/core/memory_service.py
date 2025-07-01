@@ -3,9 +3,7 @@ Enhanced Memory Service Coordinator - Uses refactored components
 This replaces the original God Class with a clean coordinator
 """
 
-import asyncio
 import logging
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -13,8 +11,7 @@ from typing import Any, Dict, List, Optional
 from ..application.services.memory.memory_storage_service import \
     MemoryStorageService
 # Import refactored components
-from ..domain.memory.models import (ChildMemoryProfile, ConversationSummary,
-                                    Memory, MemoryImportance, MemoryType)
+from ..domain.memory.models import (ChildMemoryProfile, Memory, MemoryImportance, MemoryType)
 from ..infrastructure.memory.memory_repository import MemoryRepository
 from ..infrastructure.memory.vector_memory_store import VectorMemoryStore
 

@@ -5,24 +5,19 @@ Comprehensive exception hierarchy with recovery strategies
 
 import asyncio
 import contextvars
-import json
-import logging
-import sys
-import traceback
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum, auto
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, Optional, Type
 
 # For alerts
 import aiohttp
 # Structured logging setup
 import structlog
 from prometheus_client import Counter, Gauge, Histogram
-from pythonjsonlogger import jsonlogger
 
 # Setup structured logger
 structlog.configure(
@@ -381,7 +376,7 @@ class RetryStrategy(RecoveryStrategy):
                 await asyncio.sleep(delay)
                 # Retry operation here
                 return None
-            except Exception as e:
+            except Exception:
                 if attempt == self.max_retries - 1:
                     raise
                 continue
@@ -674,7 +669,7 @@ def handle_exceptions(
             handler = GlobalExceptionHandler()
             try:
                 return func(*args, **kwargs)
-            except Exception as e:
+            except Exception:
                 # Sync version would need different handling
                 raise
 

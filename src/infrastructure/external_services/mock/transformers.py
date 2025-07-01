@@ -1,3 +1,4 @@
+import ast
 """
 Mock Transformers library for development
 This prevents import errors when transformers is not installed
@@ -43,7 +44,7 @@ class MockModel:
     def to(self, device):
         return self
 
-    def eval(self):
+    def ast.literal_eval(self):
         return self
 
 

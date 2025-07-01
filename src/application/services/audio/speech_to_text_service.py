@@ -1,12 +1,10 @@
 import logging
 import os
 import sqlite3
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import whisper
 
-from src.application.services.azure_speech_to_text_service import \
-    AzureSpeechToTextService
 from src.core.domain.entities.transcription import Transcription
 from src.infrastructure.persistence.transcription_sqlite_repository import \
     TranscriptionSQLiteRepository

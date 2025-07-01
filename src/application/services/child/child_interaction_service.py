@@ -5,8 +5,7 @@ Domain service for child interaction and time management business logic.
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import List, Optional, Tuple
+from datetime import datetime
 
 from src.core.domain.entities.child import Child
 

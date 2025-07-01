@@ -8,8 +8,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from src.core.domain.entities.conversation import Conversation
-from src.infrastructure.persistence.base_sqlite_repository import \
-    BaseSQLiteRepository
 
 
 class ConversationCoreRepository:

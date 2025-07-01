@@ -2,14 +2,13 @@
 
 from contextlib import contextmanager
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import structlog
 from sqlalchemy import MetaData, create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
-from ....domain.emotion.models import (EmotionAnalytics, EmotionResult,
-                                       ParentalReport)
+from ....domain.emotion.models import (EmotionAnalytics, EmotionResult)
 
 logger = structlog.get_logger(__name__)
 

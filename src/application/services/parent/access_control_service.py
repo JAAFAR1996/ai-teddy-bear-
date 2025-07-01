@@ -5,7 +5,7 @@ Access Control Domain Service
 Domain service for managing access control and parental controls.
 """
 
-from datetime import datetime, time, timedelta
+from datetime import datetime, time
 from typing import List, Optional, Tuple
 
 from ..models.control_models import (AccessSchedule, AccessScheduleType,

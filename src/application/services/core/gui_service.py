@@ -1,13 +1,11 @@
 ﻿"""GUI management service for ESP32 teddy bear simulator."""
 
-import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict
 
 import structlog
 
-from ....domain.esp32.models import AudioVisualization, ESP32Device
 
 logger = structlog.get_logger(__name__)
 

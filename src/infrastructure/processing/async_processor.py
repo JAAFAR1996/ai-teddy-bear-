@@ -11,18 +11,14 @@ import json
 import logging
 import signal
 import sys
-import threading
 import time
-import traceback
 import uuid
-import weakref
 from collections import defaultdict, deque
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-from contextvars import ContextVar
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Union
 
 # Third-party imports for audio/image processing
 try:

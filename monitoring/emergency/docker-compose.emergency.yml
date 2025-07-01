@@ -439,16 +439,13 @@ services:
 
 # الأسرار الآمنة
 secrets:
-  grafana-admin-password:
-    file: ./secrets/grafana-admin-password.txt
+  grafana-admin-password: ${PASSWORD}
   grafana-secret-key:
     file: ./secrets/grafana-secret-key.txt
-  postgres-grafana-password:
-    file: ./secrets/postgres-grafana-password.txt
+  postgres-grafana-password: ${PASSWORD}
   database-url:
     file: ./secrets/database-url.txt
-  jwt-secret:
-    file: ./secrets/jwt-secret.txt
+  jwt-secret: ${SECRET}
 
 # إعدادات إضافية
 x-logging: &default-logging

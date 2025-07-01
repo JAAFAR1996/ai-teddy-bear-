@@ -5,14 +5,10 @@ Generated from: accessibility_service.py
 """
 
 import logging
-from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from ...domain.accessibility.entities.accessibility_profile import (
-    AccessibilityProfile, AdaptiveContent)
-from ...domain.accessibility.value_objects.special_need_type import \
-    SpecialNeedType
-from ..dto.accessibility_dto import AccessibilityProfileDTO, AdaptiveContentDTO
+    AccessibilityProfile)
 
 logger = logging.getLogger(__name__)
 

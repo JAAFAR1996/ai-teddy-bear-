@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict
 
 
 class LLMProvider(Enum):

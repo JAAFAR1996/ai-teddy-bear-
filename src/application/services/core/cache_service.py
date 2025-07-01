@@ -1,3 +1,5 @@
+import ast
+
 """
 Cache Service
 ============
@@ -5,7 +7,6 @@ Cache Service
 Infrastructure service for caching operations.
 Supports both in-memory and Redis implementations.
 """
-
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Optional
@@ -67,7 +68,6 @@ class RedisCache(CacheInterface):
         self.logger = logging.getLogger(self.__class__.__name__)
         try:
             self._client = redis.from_url(redis_url)
-            # Test connection
             self._client.ping()
             self.logger.info("Redis cache initialized successfully")
         except Exception as e:
@@ -113,8 +113,6 @@ class CacheService:
 
     def __init__(self, redis_url: Optional[str] = None):
         self.logger = logging.getLogger(self.__class__.__name__)
-
-        # Try Redis first, fallback to in-memory
         if redis_url:
             try:
                 self.cache = RedisCache(redis_url)
@@ -128,7 +126,6 @@ class CacheService:
         else:
             self.cache = InMemoryCache()
             self.cache_type = "memory"
-
         self.logger.info(f"Cache service initialized with {self.cache_type} backend")
 
     def get_analytics_cache_key(self, child_id: str, period_days: int) -> str:
@@ -152,19 +149,16 @@ class CacheService:
         cached = self.cache.get(key)
         if cached:
             try:
-                return eval(cached)  # In production, use proper serialization
+                return ast.literal_ast.literal_eval(cached)
             except Exception as e:
                 self.logger.error(f"Error deserializing cached analytics: {e}")
         return None
 
     def invalidate_child_cache(self, child_id: str) -> None:
         """Invalidate all cache entries for a child"""
-        # In a full implementation, would use pattern matching
-        # For now, just clear common periods
         for period in [7, 14, 30, 90]:
             key = self.get_analytics_cache_key(child_id, period)
             self.cache.delete(key)
-
         self.logger.info(f"Invalidated cache for child {child_id}")
 
     def get_cache_stats(self) -> dict:

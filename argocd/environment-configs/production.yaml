@@ -88,26 +88,26 @@ type: Opaque
 stringData:
   # Database Secrets
   DATABASE_URL: "postgresql://teddy_user:${DB_PASSWORD}@postgresql.ai-teddy-production.svc.cluster.local:5432/teddy_bear_db"
-  DATABASE_PASSWORD: "${DB_PASSWORD}"
-  DATABASE_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+  DATABASE_PASSWORD: ${PASSWORD}
+  DATABASE_ROOT_PASSWORD: ${PASSWORD}
   
   # Redis Secrets
   REDIS_URL: "redis://redis.ai-teddy-production.svc.cluster.local:6379"
-  REDIS_PASSWORD: "${REDIS_PASSWORD}"
+  REDIS_PASSWORD: ${PASSWORD}
   
   # JWT Secrets
   JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
-  JWT_REFRESH_SECRET: "${JWT_REFRESH_SECRET}"
+  JWT_REFRESH_SECRET: ${SECRET}
   
   # AI Service Secrets
-  OPENAI_API_KEY: "${OPENAI_API_KEY}"
-  HUGGINGFACE_API_TOKEN: "${HUGGINGFACE_API_TOKEN}"
-  ELEVENLABS_API_KEY: "${ELEVENLABS_API_KEY}"
-  HUME_API_KEY: "${HUME_API_KEY}"
+  OPENAI_API_KEY: ${API_KEY}
+  HUGGINGFACE_API_TOKEN: ${TOKEN}
+  ELEVENLABS_API_KEY: ${API_KEY}
+  HUME_API_KEY: ${API_KEY}
   
   # External Services
-  GITHUB_TOKEN: "${GITHUB_TOKEN}"
-  DOCKER_REGISTRY_TOKEN: "${DOCKER_REGISTRY_TOKEN}"
+  GITHUB_TOKEN: ${TOKEN}
+  DOCKER_REGISTRY_TOKEN: ${TOKEN}
   SLACK_WEBHOOK_URL: "${SLACK_WEBHOOK_URL}"
   
   # Encryption Keys
@@ -115,8 +115,8 @@ stringData:
   AES_ENCRYPTION_KEY: "${AES_KEY}"
   
   # Monitoring Secrets
-  PROMETHEUS_BEARER_TOKEN: "${PROMETHEUS_TOKEN}"
-  GRAFANA_ADMIN_PASSWORD: "${GRAFANA_PASSWORD}"
+  PROMETHEUS_BEARER_TOKEN: ${TOKEN}
+  GRAFANA_ADMIN_PASSWORD: ${PASSWORD}
   
   # Certificate Secrets
   TLS_CERT: "${TLS_CERT}"
@@ -194,7 +194,7 @@ metadata:
   labels:
     environment: production
     app.kubernetes.io/name: argocd-deployer
-automountServiceAccountToken: true
+automountServiceAccountToken: ${TOKEN}
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1

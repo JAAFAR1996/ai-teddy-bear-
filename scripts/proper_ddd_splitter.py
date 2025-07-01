@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Proper DDD Splitter - تقسيم صحيح للـ God Classes
 ===============================================
@@ -9,10 +8,11 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 
 class ProperDDDSplitter:
+
     def __init__(self):
         self.src_dir = Path("src")
         self.services_dir = self.src_dir / "application" / "services"
@@ -21,13 +21,12 @@ class ProperDDDSplitter:
 
     def log(self, message: str):
         """تسجيل الرسائل"""
-        print(f"✓ {message}")
+        logger.info(f"✓ {message}")
         self.report.append(message)
 
     def identify_god_classes(self) -> List[Tuple[Path, int]]:
         """تحديد God Classes مع عدد الأسطر"""
         god_classes = []
-
         large_files = [
             "accessibility_service.py",
             "memory_service.py",
@@ -40,61 +39,48 @@ class ProperDDDSplitter:
             "advanced_personalization_service.py",
             "advanced_progress_analyzer.py",
         ]
-
         for filename in large_files:
             file_path = self.services_dir / filename
             if file_path.exists():
                 try:
                     with open(file_path, "r", encoding="utf-8") as f:
                         lines = len(f.readlines())
-                    if lines > 300:  # ملفات أكبر من 300 سطر
+                    if lines > 300:
                         god_classes.append((file_path, lines))
                 except Exception as e:
                     self.log(f"خطأ في قراءة {filename}: {e}")
-
         return sorted(god_classes, key=lambda x: x[1], reverse=True)
 
     def split_accessibility_service(self, file_path: Path, lines_count: int):
         """تقسيم accessibility_service بشكل صحيح"""
         self.log(f"تقسيم {file_path.name} ({lines_count} سطر)...")
-
-        # قراءة المحتوى الكامل
         with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
-
         domain_name = "accessibility"
-
-        # إنشاء البنية الصحيحة
         domain_dir = self.src_dir / "domain" / domain_name
         app_dir = self.src_dir / "application" / domain_name
         infra_dir = self.src_dir / "infrastructure" / domain_name
-
-        # إنشاء المجلدات
         (domain_dir / "entities").mkdir(parents=True, exist_ok=True)
         (domain_dir / "value_objects").mkdir(parents=True, exist_ok=True)
         (domain_dir / "aggregates").mkdir(parents=True, exist_ok=True)
         (domain_dir / "repositories").mkdir(parents=True, exist_ok=True)
-
         (app_dir / "services").mkdir(parents=True, exist_ok=True)
         (app_dir / "use_cases").mkdir(parents=True, exist_ok=True)
         (app_dir / "dto").mkdir(parents=True, exist_ok=True)
-
         (infra_dir / "persistence").mkdir(parents=True, exist_ok=True)
         (infra_dir / "external_services").mkdir(parents=True, exist_ok=True)
-
-        # 1. Value Objects - استخراج Enums والثوابت
-        value_objects_content = f'''#!/usr/bin/env python3
-"""
+        value_objects_content = f"""#!/usr/bin/env python3
+""\"
 Accessibility Domain - Value Objects
 Generated from: {file_path.name}
-"""
+""\"
 
 from enum import Enum
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 class SpecialNeedType(Enum):
-    """أنواع الاحتياجات الخاصة"""
+    ""\"أنواع الاحتياجات الخاصة""\"
     AUTISM = "autism"
     ADHD = "adhd"  
     SPEECH_DELAY = "speech_delay"
@@ -108,7 +94,7 @@ class SpecialNeedType(Enum):
 
 @dataclass
 class SensoryPreferences:
-    """التفضيلات الحسية"""
+    ""\"التفضيلات الحسية""\"
     sound_level: str = "normal"
     visual_stimulation: str = "normal"
     interaction_pace: str = "normal"
@@ -127,20 +113,18 @@ class SensoryPreferences:
 
 @dataclass
 class LearningAdaptations:
-    """تكييفات التعلم"""
+    ""\"تكييفات التعلم""\"
     repeat_instructions: bool = False
     visual_cues: bool = False
     simplified_language: bool = False
     extended_response_time: bool = False
     structured_routine: bool = False
-'''
-
-        # 2. Entities - استخراج الكيانات الرئيسية
-        entities_content = f'''#!/usr/bin/env python3
 """
+        entities_content = f"""#!/usr/bin/env python3
+""\"
 Accessibility Domain - Entities
 Generated from: {file_path.name}
-"""
+""\"
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -151,7 +135,7 @@ from ..value_objects.special_need_type import SpecialNeedType, SensoryPreference
 
 @dataclass
 class AccessibilityProfile:
-    """ملف الوصولية للطفل - كيان رئيسي"""
+    ""\"ملف الوصولية للطفل - كيان رئيسي""\"
     child_id: str
     special_needs: List[str] = field(default_factory=list)
     communication_level: str = "verbal"
@@ -176,24 +160,24 @@ class AccessibilityProfile:
             self.learning_adaptations = LearningAdaptations()
     
     def update_last_modified(self):
-        """تحديث تاريخ آخر تعديل"""
+        ""\"تحديث تاريخ آخر تعديل""\"
         self.last_updated = datetime.now().isoformat()
     
     def add_special_need(self, need_type: str):
-        """إضافة احتياج خاص جديد"""
+        ""\"إضافة احتياج خاص جديد""\"
         if need_type not in self.special_needs:
             self.special_needs.append(need_type)
             self.update_last_modified()
     
     def remove_special_need(self, need_type: str):
-        """إزالة احتياج خاص"""
+        ""\"إزالة احتياج خاص""\"
         if need_type in self.special_needs:
             self.special_needs.remove(need_type)
             self.update_last_modified()
 
 @dataclass
 class AdaptiveContent:
-    """محتوى متكيف للاحتياجات الخاصة"""
+    ""\"محتوى متكيف للاحتياجات الخاصة""\"
     content_id: str
     original_content: Dict
     adapted_content: Dict
@@ -210,21 +194,19 @@ class AdaptiveContent:
             self.created_at = datetime.now().isoformat()
     
     def increment_usage(self):
-        """زيادة عداد الاستخدام"""
+        ""\"زيادة عداد الاستخدام""\"
         self.usage_count += 1
     
     def update_effectiveness(self, score: float):
-        """تحديث نتيجة الفعالية"""
+        ""\"تحديث نتيجة الفعالية""\"
         if 0.0 <= score <= 1.0:
             self.effectiveness_score = score
-'''
-
-        # 3. Use Cases - حالات الاستخدام
-        use_case_content = f'''#!/usr/bin/env python3
 """
+        use_case_content = f"""#!/usr/bin/env python3
+""\"
 Accessibility Use Cases
 Generated from: {file_path.name}
-"""
+""\"
 
 import logging
 from typing import Dict, List, Optional
@@ -237,14 +219,14 @@ from ...domain.{domain_name}.value_objects.special_need_type import SpecialNeedT
 logger = logging.getLogger(__name__)
 
 class CreateAccessibilityProfileUseCase:
-    """حالة استخدام: إنشاء ملف وصولية"""
+    ""\"حالة استخدام: إنشاء ملف وصولية""\"
     
     def __init__(self, repository):
         self.repository = repository
     
     def execute(self, child_id: str, special_needs: List[str], 
                 communication_level: str = "verbal") -> AccessibilityProfile:
-        """تنفيذ إنشاء ملف الوصولية"""
+        ""\"تنفيذ إنشاء ملف الوصولية""\"
         try:
             # التحقق من صحة البيانات
             if not child_id:
@@ -273,14 +255,14 @@ class CreateAccessibilityProfileUseCase:
             raise
 
 class AdaptContentUseCase:
-    """حالة استخدام: تكييف المحتوى"""
+    ""\"حالة استخدام: تكييف المحتوى""\"
     
     def __init__(self, repository, adaptation_service):
         self.repository = repository
         self.adaptation_service = adaptation_service
     
     def execute(self, child_id: str, original_content: Dict) -> Dict:
-        """تنفيذ تكييف المحتوى"""
+        ""\"تنفيذ تكييف المحتوى""\"
         try:
             # الحصول على ملف الوصولية
             profile = self.repository.get_by_child_id(child_id)
@@ -299,21 +281,19 @@ class AdaptContentUseCase:
         except Exception as e:
             logger.error(f"خطأ في تكييف المحتوى: {{e}}")
             return original_content
-'''
-
-        # 4. DTOs - كائنات نقل البيانات
-        dto_content = f'''#!/usr/bin/env python3
 """
+        dto_content = f"""#!/usr/bin/env python3
+""\"
 Accessibility DTOs
 Generated from: {file_path.name}
-"""
+""\"
 
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 @dataclass
 class AccessibilityProfileDTO:
-    """DTO لملف الوصولية"""
+    ""\"DTO لملف الوصولية""\"
     child_id: str
     special_needs: List[str]
     communication_level: str
@@ -327,7 +307,7 @@ class AccessibilityProfileDTO:
 
 @dataclass
 class AdaptiveContentDTO:
-    """DTO للمحتوى المتكيف"""
+    ""\"DTO للمحتوى المتكيف""\"
     content_id: str
     original_content: Dict
     adapted_content: Dict
@@ -337,20 +317,18 @@ class AdaptiveContentDTO:
 
 @dataclass
 class AccessibilityReportDTO:
-    """DTO لتقرير الوصولية"""
+    ""\"DTO لتقرير الوصولية""\"
     child_id: str
     assessment_date: str
     accessibility_score: float
     recommendations: List[str]
     progress_notes: List[str]
-'''
-
-        # 5. Application Service - خدمة التطبيق
-        app_service_content = f'''#!/usr/bin/env python3
 """
+        app_service_content = f"""#!/usr/bin/env python3
+""\"
 Accessibility Application Service
 Generated from: {file_path.name}
-"""
+""\"
 
 import logging
 from typing import Dict, List, Optional
@@ -363,7 +341,7 @@ from .dto.accessibility_dto import AccessibilityProfileDTO
 logger = logging.getLogger(__name__)
 
 class AccessibilityApplicationService:
-    """خدمة تطبيق الوصولية"""
+    ""\"خدمة تطبيق الوصولية""\"
     
     def __init__(self, repository, adaptation_service):
         self.repository = repository
@@ -372,7 +350,7 @@ class AccessibilityApplicationService:
         self.adapt_content_use_case = AdaptContentUseCase(repository, adaptation_service)
     
     def create_accessibility_profile(self, child_id: str, special_needs: List[str]) -> AccessibilityProfileDTO:
-        """إنشاء ملف وصولية جديد"""
+        ""\"إنشاء ملف وصولية جديد""\"
         try:
             profile = self.create_profile_use_case.execute(child_id, special_needs)
             return self._profile_to_dto(profile)
@@ -381,7 +359,7 @@ class AccessibilityApplicationService:
             raise
     
     def adapt_content_for_child(self, child_id: str, content: Dict) -> Dict:
-        """تكييف المحتوى للطفل"""
+        ""\"تكييف المحتوى للطفل""\"
         try:
             return self.adapt_content_use_case.execute(child_id, content)
         except Exception as e:
@@ -389,7 +367,7 @@ class AccessibilityApplicationService:
             return content
     
     def get_accessibility_profile(self, child_id: str) -> Optional[AccessibilityProfileDTO]:
-        """الحصول على ملف الوصولية"""
+        ""\"الحصول على ملف الوصولية""\"
         try:
             profile = self.repository.get_by_child_id(child_id)
             return self._profile_to_dto(profile) if profile else None
@@ -398,7 +376,7 @@ class AccessibilityApplicationService:
             return None
     
     def _profile_to_dto(self, profile) -> AccessibilityProfileDTO:
-        """تحويل Profile إلى DTO"""
+        ""\"تحويل Profile إلى DTO""\"
         return AccessibilityProfileDTO(
             child_id=profile.child_id,
             special_needs=profile.special_needs,
@@ -411,58 +389,42 @@ class AccessibilityApplicationService:
             support_level=profile.support_level,
             communication_aids=profile.communication_aids
         )
-'''
-
-        # كتابة الملفات
+"""
         files_created = []
-
-        # Value Objects
         vo_file = domain_dir / "value_objects" / "special_need_type.py"
         with open(vo_file, "w", encoding="utf-8") as f:
             f.write(value_objects_content)
         files_created.append(
             f"domain/value_objects/special_need_type.py ({len(value_objects_content.splitlines())} lines)"
         )
-
-        # Entities
         entity_file = domain_dir / "entities" / "accessibility_profile.py"
         with open(entity_file, "w", encoding="utf-8") as f:
             f.write(entities_content)
         files_created.append(
             f"domain/entities/accessibility_profile.py ({len(entities_content.splitlines())} lines)"
         )
-
-        # Use Cases
         uc_file = app_dir / "use_cases" / "accessibility_use_cases.py"
         with open(uc_file, "w", encoding="utf-8") as f:
             f.write(use_case_content)
         files_created.append(
             f"application/use_cases/accessibility_use_cases.py ({len(use_case_content.splitlines())} lines)"
         )
-
-        # DTOs
         dto_file = app_dir / "dto" / "accessibility_dto.py"
         with open(dto_file, "w", encoding="utf-8") as f:
             f.write(dto_content)
         files_created.append(
             f"application/dto/accessibility_dto.py ({len(dto_content.splitlines())} lines)"
         )
-
-        # Application Service
         service_file = app_dir / "services" / "accessibility_application_service.py"
         with open(service_file, "w", encoding="utf-8") as f:
             f.write(app_service_content)
         files_created.append(
             f"application/services/accessibility_application_service.py ({len(app_service_content.splitlines())} lines)"
         )
-
-        # إنشاء __init__.py files
         self._create_init_files([domain_dir, app_dir, infra_dir])
-
         self.log(f"تم تقسيم {file_path.name} إلى {len(files_created)} ملف:")
         for file_info in files_created:
             self.log(f"  - {file_info}")
-
         self.split_count += 1
         return files_created
 
@@ -480,11 +442,9 @@ class AccessibilityApplicationService:
         """نقل الملف الأصلي إلى legacy"""
         legacy_dir = self.src_dir / "legacy" / "god_classes"
         legacy_dir.mkdir(parents=True, exist_ok=True)
-
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         new_name = f"{file_path.stem}_{timestamp}{file_path.suffix}"
         legacy_path = legacy_dir / new_name
-
         try:
             shutil.copy2(file_path, legacy_path)
             self.log(f"نُسخ الملف الأصلي إلى: legacy/god_classes/{new_name}")
@@ -495,44 +455,30 @@ class AccessibilityApplicationService:
 
     def run_splitting(self):
         """تشغيل عملية التقسيم الكاملة"""
-        print("=" * 70)
-        print("🔧 بدء تقسيم God Classes الصحيح...")
-        print("=" * 70)
-
-        # تحديد God Classes
+        logger.info("=" * 70)
+        logger.info("🔧 بدء تقسيم God Classes الصحيح...")
+        logger.info("=" * 70)
         god_classes = self.identify_god_classes()
-
         if not god_classes:
             self.log("لم يتم العثور على God Classes للتقسيم")
             return
-
         self.log(f"تم العثور على {len(god_classes)} ملف كبير للتقسيم:")
         for file_path, lines in god_classes:
             self.log(f"  - {file_path.name}: {lines} سطر")
-
-        # تقسيم الملفات
         total_files_created = 0
-
         for file_path, lines in god_classes:
             filename = file_path.name
-
             if filename == "accessibility_service.py":
                 files_created = self.split_accessibility_service(file_path, lines)
                 total_files_created += len(files_created)
-
-                # نسخ الملف الأصلي إلى legacy
                 self.move_original_to_legacy(file_path)
-
-            # يمكن إضافة المزيد من الخدمات هنا
             else:
                 self.log(f"⚠️ {filename} يحتاج تقسيم يدوي (لم يتم تطبيقه بعد)")
-
-        print("=" * 70)
-        print(f"✅ انتهى التقسيم بنجاح!")
-        print(f"   - ملفات مُقسمة: {self.split_count}")
-        print(f"   - ملفات جديدة: {total_files_created}")
-        print("=" * 70)
-
+        logger.info("=" * 70)
+        logger.info("✅ انتهى التقسيم بنجاح!")
+        logger.info(f"   - ملفات مُقسمة: {self.split_count}")
+        logger.info(f"   - ملفات جديدة: {total_files_created}")
+        logger.info("=" * 70)
         return self.report
 
 

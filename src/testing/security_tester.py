@@ -7,15 +7,11 @@ vulnerabilities specific to child safety systems.
 """
 
 import asyncio
-import base64
-import hashlib
-import json
 import logging
-import re
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -144,10 +140,10 @@ class SecurityTester:
 
         self.path_traversal_payloads = [
             "../../../etc/passwd",
-            "..\\..\\..\\windows\\system32\\config\\sam",
+            r"..\..\..\windows\system32\config\sam",
             "../../../../home/children/private_data",
             "../../../var/log/child_conversations",
-            "..\\..\\AppData\\Local\\child_profiles",
+            r"..\..\AppData\Local\child_profiles",
         ]
 
     async def run_comprehensive_security_test(

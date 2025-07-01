@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 import structlog
-from sqlalchemy.orm import Session
 
 from ...domain.emotion.models import EmotionResult
 

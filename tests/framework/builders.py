@@ -5,17 +5,15 @@ Test Data Builders and Mock Factory - بناة بيانات الاختبار و�
 import random
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, TypeVar
-from unittest.mock import AsyncMock, MagicMock, Mock
+from unittest.mock import AsyncMock, Mock
 
 from faker import Faker
 
 from src.domain.entities.child import Child
-from src.domain.entities.device import Device
-from src.domain.entities.interaction import Interaction
 from src.domain.entities.parent import Parent
-from src.domain.value_objects import ChildAge, DeviceId, ParentId
+from src.domain.value_objects import ChildAge, ParentId
 
 T = TypeVar("T")
 

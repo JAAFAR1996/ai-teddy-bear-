@@ -1,21 +1,21 @@
-#!/usr/bin/env python3
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 Comprehensive Architecture Analyzer for AI-TEDDY-BEAR
 أداة تحليل شاملة لإعادة هيكلة المشروع حسب Clean Architecture
 """
-
 import hashlib
-import json
 import os
-import re
-import shutil
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List
 
 
 class ArchitectureAnalyzer:
+
     def __init__(self, base_path: str = "."):
         self.base_path = Path(base_path)
         self.analysis_report = {
@@ -46,14 +46,11 @@ class ArchitectureAnalyzer:
 
     def scan_for_duplicates(self) -> Dict:
         """فحص شامل للتكرارات في المشروع"""
-        print("🔍 بدء فحص التكرارات الشامل...")
-
+        logger.info("🔍 بدء فحص التكرارات الشامل...")
         file_hashes = defaultdict(list)
         file_names = defaultdict(list)
         service_files = defaultdict(list)
         config_files = defaultdict(list)
-
-        # استثناء المجلدات التي لا نريد فحصها
         exclude_dirs = {
             ".git",
             "__pycache__",
@@ -63,35 +60,21 @@ class ArchitectureAnalyzer:
             "deprecated",
             ".pytest_cache",
         }
-
         for root, dirs, files in os.walk(self.base_path):
-            # إزالة المجلدات المستثناة
             dirs[:] = [d for d in dirs if d not in exclude_dirs]
-
             for file in files:
                 file_path = Path(root) / file
                 relative_path = file_path.relative_to(self.base_path)
-
-                # تخطي الملفات المولدة والثنائية
                 if file.endswith((".pyc", ".pyo", ".log", ".tmp", ".cache")):
                     continue
-
                 self.analysis_report["statistics"]["total_files"] += 1
-
-                # فحص التكرار بـ hash
                 file_hash = self.calculate_file_hash(file_path)
                 if file_hash:
                     file_hashes[file_hash].append(str(relative_path))
-
-                # فحص التكرار بالاسم
                 file_names[file].append(str(relative_path))
-
-                # تحديد الخدمات
                 if "service" in file.lower() and file.endswith(".py"):
                     service_type = self.extract_service_type(file)
                     service_files[service_type].append(str(relative_path))
-
-                # تحديد ملفات التكوين
                 if any(
                     config_indicator in file.lower()
                     for config_indicator in [
@@ -105,19 +88,16 @@ class ArchitectureAnalyzer:
                 ):
                     config_type = self.extract_config_type(file)
                     config_files[config_type].append(str(relative_path))
-
-        # تحليل النتائج
         self._analyze_hash_duplicates(file_hashes)
         self._analyze_name_duplicates(file_names)
         self._analyze_service_duplicates(service_files)
         self._analyze_config_duplicates(config_files)
-
         return self.analysis_report["duplicates"]
 
     def calculate_file_hash(self, file_path: Path) -> str:
         """حساب hash للملف"""
         try:
-            if file_path.stat().st_size > 10 * 1024 * 1024:  # تخطي الملفات الكبيرة
+            if file_path.stat().st_size > 10 * 1024 * 1024:
                 return ""
             with open(file_path, "rb") as f:
                 return hashlib.md5(f.read()).hexdigest()
@@ -135,7 +115,6 @@ class ArchitectureAnalyzer:
             "auth": ["auth", "authentication", "security"],
             "websocket": ["websocket", "ws_service", "realtime"],
         }
-
         filename_lower = filename.lower()
         for service_type, patterns in service_patterns.items():
             if any(pattern in filename_lower for pattern in patterns):
@@ -213,8 +192,7 @@ class ArchitectureAnalyzer:
 
     def evaluate_files(self) -> Dict:
         """تقييم جودة وأهمية الملفات (1-10)"""
-        print("📊 تقييم جودة الملفات...")
-
+        logger.info("📊 تقييم جودة الملفات...")
         critical_files = [
             "main.py",
             "app.py",
@@ -224,10 +202,8 @@ class ArchitectureAnalyzer:
             "package.json",
             "docker-compose.yml",
         ]
-
         for duplicate_group in self.analysis_report["duplicates"]["files"]:
             if duplicate_group["type"] == "identical_content":
-                # تقييم الملفات المتطابقة
                 for file_path in duplicate_group["files"]:
                     score = self._calculate_file_score(file_path, critical_files)
                     self.analysis_report["evaluation"][file_path] = {
@@ -237,43 +213,32 @@ class ArchitectureAnalyzer:
                         "total_score": score["total"],
                         "recommendation": score["recommendation"],
                     }
-
         return self.analysis_report["evaluation"]
 
     def _calculate_file_score(self, file_path: str, critical_files: List[str]) -> Dict:
         """حساب نقاط الملف"""
         path_obj = Path(file_path)
-
-        # نقاط الجودة (1-10)
-        quality_score = 5  # افتراضي
+        quality_score = 5
         if "test" in file_path.lower():
             quality_score += 2
         if "deprecated" in file_path.lower() or "old" in file_path.lower():
             quality_score -= 3
         if path_obj.suffix == ".py":
             quality_score += 1
-
-        # نقاط الأهمية (1-10)
-        importance_score = 5  # افتراضي
+        importance_score = 5
         if any(critical in path_obj.name for critical in critical_files):
             importance_score += 3
         if "src/" in file_path or "application/" in file_path:
             importance_score += 2
         if "deprecated/" in file_path or "backup/" in file_path:
             importance_score -= 4
-
-        # نقاط الحداثة (1-10)
-        recency_score = 7  # افتراضي للملفات الموجودة
+        recency_score = 7
         try:
             file_stat = Path(self.base_path / file_path).stat()
-            # الملفات المعدلة حديثاً تحصل على نقاط أكثر
             recency_score = min(10, max(1, recency_score))
-        except:
+        except Exception:
             recency_score = 5
-
         total_score = (quality_score + importance_score + recency_score) / 3
-
-        # التوصية
         if total_score >= 8:
             recommendation = "KEEP"
         elif total_score >= 6:
@@ -282,7 +247,6 @@ class ArchitectureAnalyzer:
             recommendation = "MERGE"
         else:
             recommendation = "DEPRECATED"
-
         return {
             "quality": min(10, max(1, quality_score)),
             "importance": min(10, max(1, importance_score)),
@@ -293,13 +257,11 @@ class ArchitectureAnalyzer:
 
     def classify_files(self) -> Dict:
         """تصنيف الملفات حسب الإجراء المطلوب"""
-        print("📂 تصنيف الملفات...")
-
+        logger.info("📂 تصنيف الملفات...")
         for file_path, evaluation in self.analysis_report["evaluation"].items():
             category = evaluation["recommendation"]
             if category == "REVIEW":
-                category = "MERGE"  # نضع المراجعة في فئة الدمج
-
+                category = "MERGE"
             self.analysis_report["classification"][category].append(
                 {
                     "file": file_path,
@@ -307,13 +269,10 @@ class ArchitectureAnalyzer:
                     "reason": self._get_classification_reason(evaluation),
                 }
             )
-
-        # ترتيب كل فئة حسب النقاط
         for category in self.analysis_report["classification"]:
             self.analysis_report["classification"][category].sort(
                 key=lambda x: x["score"], reverse=True
             )
-
         return self.analysis_report["classification"]
 
     def _get_classification_reason(self, evaluation: Dict) -> str:
@@ -330,55 +289,43 @@ class ArchitectureAnalyzer:
 
     def propose_merge_strategy(self) -> Dict:
         """اقتراح استراتيجية الدمج"""
-        print("🔄 اقتراح استراتيجية الدمج...")
-
-        # استراتيجيات الدمج للخدمات
+        logger.info("🔄 اقتراح استراتيجية الدمج...")
         for service_group in self.analysis_report["duplicates"]["services"]:
             service_type = service_group["service_type"]
             files = service_group["files"]
-
-            # اختيار الملف الأساسي (الأعلى تقييماً)
             best_file = self._select_best_file(files)
             other_files = [f for f in files if f != best_file]
-
             self.analysis_report["merge_strategy"][service_type] = {
                 "primary_file": best_file,
                 "files_to_merge": other_files,
                 "merge_approach": self._get_merge_approach(service_type),
                 "unique_features": self._extract_unique_features(files),
             }
-
-        # استراتيجيات الدمج للتكوين
         for config_group in self.analysis_report["duplicates"]["configs"]:
             config_type = config_group["config_type"]
             files = config_group["files"]
-
             best_file = self._select_best_file(files)
             other_files = [f for f in files if f != best_file]
-
             self.analysis_report["merge_strategy"][f"config_{config_type}"] = {
                 "primary_file": best_file,
                 "files_to_merge": other_files,
                 "merge_approach": "merge_configurations",
                 "validation_needed": True,
             }
-
         return self.analysis_report["merge_strategy"]
 
     def _select_best_file(self, files: List[str]) -> str:
         """اختيار أفضل ملف من المجموعة"""
         best_score = 0
         best_file = files[0]
-
         for file_path in files:
             if file_path in self.analysis_report["evaluation"]:
                 score = self.analysis_report["evaluation"][file_path]["total_score"]
                 if score > best_score:
                     best_score = score
                     best_file = file_path
-            elif "src/" in file_path:  # تفضيل ملفات src
+            elif "src/" in file_path:
                 best_file = file_path
-
         return best_file
 
     def _get_merge_approach(self, service_type: str) -> str:
@@ -396,7 +343,6 @@ class ArchitectureAnalyzer:
 
     def _extract_unique_features(self, files: List[str]) -> List[str]:
         """استخراج الميزات الفريدة من الملفات"""
-        # هذه دالة مبسطة - في الواقع نحتاج تحليل محتوى الملفات
         features = []
         for file_path in files:
             if "async" in file_path.lower():
@@ -409,8 +355,7 @@ class ArchitectureAnalyzer:
 
     def propose_clean_architecture(self) -> Dict:
         """اقتراح هيكل Clean Architecture نهائي"""
-        print("🏗️ اقتراح هيكل Clean Architecture...")
-
+        logger.info("🏗️ اقتراح هيكل Clean Architecture...")
         proposed_structure = {
             "src/": {
                 "domain/": {
@@ -471,7 +416,6 @@ class ArchitectureAnalyzer:
                 "reports/": [],
             },
         }
-
         self.analysis_report["proposed_structure"] = proposed_structure
         return proposed_structure
 
@@ -479,17 +423,10 @@ class ArchitectureAnalyzer:
         """حساب نقاط نظافة المشروع (0-100)"""
         total_files = self.analysis_report["statistics"]["total_files"]
         total_duplicates = self.analysis_report["statistics"]["total_duplicates"]
-
         if total_files == 0:
             return 0
-
-        # نقاط أساسية
         base_score = 50
-
-        # خصم نقاط على التكرارات
-        duplication_penalty = min(40, (total_duplicates / total_files) * 100)
-
-        # مكافآت على البنية الجيدة
+        duplication_penalty = min(40, total_duplicates / total_files * 100)
         structure_bonus = 0
         if any("domain/" in str(f) for f in Path(self.base_path).rglob("*.py")):
             structure_bonus += 10
@@ -497,18 +434,15 @@ class ArchitectureAnalyzer:
             structure_bonus += 10
         if any("infrastructure/" in str(f) for f in Path(self.base_path).rglob("*.py")):
             structure_bonus += 10
-
         clean_score = int(base_score - duplication_penalty + structure_bonus)
         self.analysis_report["statistics"]["clean_score"] = max(
             0, min(100, clean_score)
         )
-
         return self.analysis_report["statistics"]["clean_score"]
 
     def generate_comprehensive_report(self) -> str:
         """إنشاء تقرير شامل"""
         clean_score = self.calculate_clean_score()
-
         report = f"""
 # 🏗️ تقرير التحليل الشامل لمشروع AI-TEDDY-BEAR
 **التاريخ**: {self.analysis_report['timestamp']}
@@ -525,56 +459,37 @@ class ArchitectureAnalyzer:
 
 ### 📄 ملفات متطابقة تماماً
 """
-
         for duplicate in self.analysis_report["duplicates"]["files"]:
             if duplicate["type"] == "identical_content":
                 report += f"""
 **الملفات المتطابقة**:
-{chr(10).join(f"- `{f}`" for f in duplicate["files"])}
-**الإجراء**: {duplicate["action_needed"]}
+{chr(10).join(f'- `{f}`' for f in duplicate['files'])}
+**الإجراء**: {duplicate['action_needed']}
 """
-
-        report += f"""
-### 🔧 خدمات مكررة
-"""
+        report += "\n### 🔧 خدمات مكررة\n"
         for service in self.analysis_report["duplicates"]["services"]:
             report += f"""
-**نوع الخدمة**: {service["service_type"]}
-**عدد النسخ**: {service["count"]}
-**الملفات**: {', '.join(f"`{f}`" for f in service["files"])}
+**نوع الخدمة**: {service['service_type']}
+**عدد النسخ**: {service['count']}
+**الملفات**: {', '.join(f'`{f}`' for f in service['files'])}
 """
-
-        report += f"""
-## 📂 التصنيف المقترح
-
-### ✅ KEEP - احتفظ بها
-"""
+        report += "\n## 📂 التصنيف المقترح\n\n### ✅ KEEP - احتفظ بها\n"
         for item in self.analysis_report["classification"]["KEEP"]:
             report += f"- `{item['file']}` (نقاط: {item['score']})\n"
-
-        report += f"""
-### 🔄 MERGE - ادمجها
-"""
+        report += "\n### 🔄 MERGE - ادمجها\n"
         for item in self.analysis_report["classification"]["MERGE"]:
             report += f"- `{item['file']}` (نقاط: {item['score']})\n"
-
-        report += f"""
-### 📦 DEPRECATED - انقلها للمهملات
-"""
+        report += "\n### 📦 DEPRECATED - انقلها للمهملات\n"
         for item in self.analysis_report["classification"]["DEPRECATED"]:
             report += f"- `{item['file']}` (نقاط: {item['score']})\n"
-
-        report += f"""
-## 🔄 استراتيجية الدمج المقترحة
-"""
+        report += "\n## 🔄 استراتيجية الدمج المقترحة\n"
         for strategy_name, strategy in self.analysis_report["merge_strategy"].items():
             report += f"""
 ### {strategy_name}
 - **الملف الأساسي**: `{strategy['primary_file']}`
-- **ملفات للدمج**: {', '.join(f"`{f}`" for f in strategy['files_to_merge'])}
+- **ملفات للدمج**: {', '.join(f'`{f}`' for f in strategy['files_to_merge'])}
 - **نهج الدمج**: {strategy['merge_approach']}
 """
-
         report += f"""
 ## 🏗️ الهيكل النهائي المقترح (Clean Architecture)
 
@@ -628,29 +543,16 @@ src/
 **تم إنشاؤه بواسطة**: ArchitectureAnalyzer Pro
 **التوقيت**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 """
-
         return report
 
     def run_comprehensive_analysis(self) -> Dict:
         """تشغيل التحليل الشامل"""
-        print("🚀 بدء التحليل الشامل للمشروع...")
-
-        # الخطوة 1: فحص التكرارات
+        logger.info("🚀 بدء التحليل الشامل للمشروع...")
         self.scan_for_duplicates()
-
-        # الخطوة 2: تقييم الملفات
         self.evaluate_files()
-
-        # الخطوة 3: تصنيف الملفات
         self.classify_files()
-
-        # الخطوة 4: اقتراح استراتيجية الدمج
         self.propose_merge_strategy()
-
-        # الخطوة 5: اقتراح الهيكل النهائي
         self.propose_clean_architecture()
-
-        # الخطوة 6: إنشاء التقرير
         report_content = self.generate_comprehensive_report()
         report_path = (
             self.base_path
@@ -659,36 +561,30 @@ src/
             / "COMPREHENSIVE_ARCHITECTURE_ANALYSIS.md"
         )
         report_path.parent.mkdir(parents=True, exist_ok=True)
-
         with open(report_path, "w", encoding="utf-8") as f:
             f.write(report_content)
-
-        print(f"✅ تم إنشاء التقرير الشامل: {report_path}")
+        logger.info(f"✅ تم إنشاء التقرير الشامل: {report_path}")
         return self.analysis_report
 
 
 def main():
     """الدالة الرئيسية"""
     analyzer = ArchitectureAnalyzer()
-
     try:
-        print("=" * 60)
-        print("🏗️  COMPREHENSIVE ARCHITECTURE ANALYZER")
-        print("🎯  AI-TEDDY-BEAR PROJECT RESTRUCTURING")
-        print("=" * 60)
-
+        logger.info("=" * 60)
+        logger.info("🏗️  COMPREHENSIVE ARCHITECTURE ANALYZER")
+        logger.info("🎯  AI-TEDDY-BEAR PROJECT RESTRUCTURING")
+        logger.info("=" * 60)
         report = analyzer.run_comprehensive_analysis()
-
-        print(f"\n🎉 تم إكمال التحليل الشامل!")
-        print(f"📊 إجمالي الملفات: {report['statistics']['total_files']}")
-        print(f"🔄 التكرارات: {report['statistics']['total_duplicates']}")
-        print(f"🏆 نقاط النظافة: {report['statistics']['clean_score']}/100")
-        print(
-            f"📋 التقرير الكامل: deleted/reports/COMPREHENSIVE_ARCHITECTURE_ANALYSIS.md"
+        logger.info("\n🎉 تم إكمال التحليل الشامل!")
+        logger.info(f"📊 إجمالي الملفات: {report['statistics']['total_files']}")
+        logger.info(f"🔄 التكرارات: {report['statistics']['total_duplicates']}")
+        logger.info(f"🏆 نقاط النظافة: {report['statistics']['clean_score']}/100")
+        logger.info(
+            "📋 التقرير الكامل: deleted/reports/COMPREHENSIVE_ARCHITECTURE_ANALYSIS.md"
         )
-
     except Exception as e:
-        print(f"❌ خطأ في التحليل: {e}")
+        logger.info(f"❌ خطأ في التحليل: {e}")
         import traceback
 
         traceback.print_exc()

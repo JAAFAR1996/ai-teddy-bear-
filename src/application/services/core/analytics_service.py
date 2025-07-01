@@ -7,9 +7,8 @@ Application service for analytics processing and reporting.
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from src.domain.parentdashboard.models.analytics_models import AnalyticsFilter
 from src.domain.parentdashboard.services.analytics_domain_service import \
     AnalyticsDomainService
 from src.infrastructure.persistence.conversation_repository import \

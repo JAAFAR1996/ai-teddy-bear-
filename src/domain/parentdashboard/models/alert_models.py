@@ -6,10 +6,9 @@ Domain models for alert system including types, severity levels, and alert entit
 """
 
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional
 
 from sqlalchemy import JSON, Column, DateTime, ForeignKey, String
 from sqlalchemy.ext.declarative import declarative_base

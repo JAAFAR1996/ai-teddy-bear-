@@ -5,7 +5,7 @@ global:
   smtp_smarthost: 'localhost:587'
   smtp_from: 'security-alerts@teddybear.ai'
   smtp_auth_username: 'security@teddybear.ai'
-  smtp_auth_password: 'secure_email_password'
+  smtp_auth_password: ${PASSWORD}
   slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
 
 # توجيه التنبيهات حسب الخطورة
@@ -62,7 +62,7 @@ receivers:
       - url: 'http://emergency-response:8080/webhook/general'
         send_resolved: true
         http_config:
-          bearer_token: 'emergency_webhook_token'
+          bearer_token: ${TOKEN}
         title: '🚨 Teddy Bear Security Alert'
         text: |
           {{ range .Alerts }}

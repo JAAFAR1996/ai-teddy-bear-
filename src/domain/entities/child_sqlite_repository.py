@@ -12,7 +12,7 @@ import json
 import os
 import sqlite3
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from src.application.services.child.child_analytics_service import \

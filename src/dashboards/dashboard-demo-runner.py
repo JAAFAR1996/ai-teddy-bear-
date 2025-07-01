@@ -1,27 +1,15 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
-
-# ===================================================================
-# 🧸 AI Teddy Bear - Real-time Dashboard Demo Runner
-# Enterprise Analytics Dashboard Live Demonstration
-# Analytics Team Lead: Senior Data Engineer
-# Date: January 2025
-# ===================================================================
-
 import structlog
 
 logger = structlog.get_logger(__name__)
-
 import asyncio
-import json
-import os
 import random
-import sys
 import time
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any
 
 
 class DashboardDemoRunner:
@@ -29,10 +17,8 @@ class DashboardDemoRunner:
 
     def __init__(self):
         self.demo_running = True
-        self.refresh_interval = 5  # seconds
-        self.demo_duration = 60  # seconds
-
-        # Initialize metrics
+        self.refresh_interval = 5
+        self.demo_duration = 60
         self.metrics = {
             "safety_score": 98.5,
             "active_conversations": 1247,
@@ -49,7 +35,6 @@ class DashboardDemoRunner:
             "auto_resolved_issues": 12,
             "uptime": "99.95%",
         }
-
         self.alerts = [
             {
                 "id": 1,
@@ -66,13 +51,11 @@ class DashboardDemoRunner:
                 "timestamp": datetime.now() - timedelta(minutes=30),
             },
         ]
-
         logger.info("🧸 AI Teddy Bear Dashboard Demo initialized successfully!")
 
     def clear_screen(self) -> Any:
         """مسح الشاشة"""
-        # استخدام طريقة آمنة لمسح الشاشة
-        print("\n" * 100)  # طريقة آمنة بدلاً من os.system
+        logger.info("\n" * 100)
 
     def get_status_emoji(
         self, value: float, good_threshold: float, warning_threshold: float
@@ -96,28 +79,19 @@ class DashboardDemoRunner:
 
     def simulate_real_time_updates(self) -> Any:
         """محاكاة التحديثات في الوقت الفعلي"""
-        # تحديث درجة الأمان
         self.metrics["safety_score"] = max(
             95, min(100, self.metrics["safety_score"] + random.uniform(-0.5, 0.5))
         )
-
-        # تحديث المحادثات النشطة
         self.metrics["active_conversations"] = max(
             800,
             min(1500, self.metrics["active_conversations"] + random.randint(-20, 20)),
         )
-
-        # تحديث وقت الاستجابة
         self.metrics["avg_response_time"] = max(
             120, min(500, self.metrics["avg_response_time"] + random.randint(-30, 30))
         )
-
-        # تحديث صحة النظام
         self.metrics["system_health"] = max(
             90, min(100, self.metrics["system_health"] + random.uniform(-0.3, 0.3))
         )
-
-        # تحديث معدل النمو
         self.metrics["conversation_growth"] = max(
             -5, min(25, self.metrics["conversation_growth"] + random.uniform(-2, 2))
         )
@@ -141,8 +115,6 @@ class DashboardDemoRunner:
         """عرض مؤشرات الأداء الرئيسية"""
         logger.info("📊 KEY PERFORMANCE INDICATORS")
         logger.info("-" * 50)
-
-        # Child Safety Score
         safety_emoji = self.get_status_emoji(self.metrics["safety_score"], 95, 85)
         logger.info(
             f"🛡️  Child Safety Score:     {self.metrics['safety_score']:.1f}% {safety_emoji}"
@@ -151,8 +123,6 @@ class DashboardDemoRunner:
             f"    Target: >95% • Status: {'EXCELLENT' if self.metrics['safety_score'] >= 95 else 'GOOD' if self.metrics['safety_score'] >= 85 else 'NEEDS ATTENTION'}"
         )
         logger.info()
-
-        # Active Conversations
         growth_sign = "↗️" if self.metrics["conversation_growth"] > 0 else "↘️"
         logger.info(
             f"💬 Active Conversations:   {self.metrics['active_conversations']:,} users"
@@ -161,8 +131,6 @@ class DashboardDemoRunner:
             f"    Growth: {growth_sign} {self.metrics['conversation_growth']:+.1f}% from yesterday"
         )
         logger.info()
-
-        # AI Response Time
         response_emoji = self.get_response_time_emoji(self.metrics["avg_response_time"])
         logger.info(
             f"⚡ AI Response Time:       {self.metrics['avg_response_time']}ms {response_emoji}"
@@ -171,8 +139,6 @@ class DashboardDemoRunner:
             f"    Target: <500ms • Status: {'EXCELLENT' if self.metrics['avg_response_time'] < 200 else 'GOOD' if self.metrics['avg_response_time'] < 500 else 'NEEDS ATTENTION'}"
         )
         logger.info()
-
-        # System Health
         health_emoji = self.get_status_emoji(self.metrics["system_health"], 95, 85)
         logger.info(
             f"🖥️  System Health:         {self.metrics['system_health']:.1f}% {health_emoji}"
@@ -186,8 +152,6 @@ class DashboardDemoRunner:
         """عرض المقاييس التفصيلية"""
         logger.debug("🔍 DETAILED METRICS")
         logger.info("-" * 50)
-
-        # Child Safety & Compliance
         logger.info("👶 Child Safety & Compliance:")
         logger.info(
             f"   • Children Protected:     {self.metrics['children_protected']:,}"
@@ -202,8 +166,6 @@ class DashboardDemoRunner:
             f"   • Auto-resolved Issues:   {self.metrics['auto_resolved_issues']}"
         )
         logger.info()
-
-        # System Performance
         logger.info("📈 System Performance:")
         logger.info(f"   • System Uptime:          {self.metrics['uptime']}")
         logger.info(f"   • Healthy Services:       {self.metrics['healthy_services']}")
@@ -212,13 +174,10 @@ class DashboardDemoRunner:
         )
         logger.info(f"   • Critical Services:      {self.metrics['critical_services']}")
         logger.info()
-
-        # Service Health Visualization
         total = self.metrics["total_services"]
-        healthy_pct = (self.metrics["healthy_services"] / total) * 100
-        warning_pct = (self.metrics["warning_services"] / total) * 100
-        critical_pct = (self.metrics["critical_services"] / total) * 100
-
+        healthy_pct = self.metrics["healthy_services"] / total * 100
+        warning_pct = self.metrics["warning_services"] / total * 100
+        critical_pct = self.metrics["critical_services"] / total * 100
         logger.info("🎯 Service Health Distribution:")
         logger.info(f"   🟢 Healthy:  {'█' * int(healthy_pct // 3)} {healthy_pct:.1f}%")
         logger.warning(
@@ -233,7 +192,6 @@ class DashboardDemoRunner:
         """عرض التنبيهات"""
         logger.info("🚨 REAL-TIME ALERTS")
         logger.info("-" * 50)
-
         if not self.alerts:
             logger.info("✅ No active alerts - All systems operating normally")
         else:
@@ -241,10 +199,8 @@ class DashboardDemoRunner:
                 severity_emoji = {"critical": "🔴", "warning": "🟡", "info": "🔵"}.get(
                     alert["severity"], "⚪"
                 )
-
                 time_ago = datetime.now() - alert["timestamp"]
                 minutes_ago = int(time_ago.total_seconds() / 60)
-
                 logger.info(
                     f"{severity_emoji} {alert['severity'].upper()}: {alert['title']}"
                 )
@@ -291,8 +247,6 @@ class DashboardDemoRunner:
     async def run_demo_cycle(self):
         """تشغيل دورة واحدة من العرض التوضيحي"""
         self.clear_screen()
-
-        # Display all dashboard sections
         self.display_header()
         self.display_kpis()
         self.display_detailed_metrics()
@@ -300,11 +254,7 @@ class DashboardDemoRunner:
         self.display_alerts()
         self.display_quick_actions()
         self.display_footer()
-
-        # Simulate real-time updates
         self.simulate_real_time_updates()
-
-        # Wait for next refresh
         await asyncio.sleep(self.refresh_interval)
 
     async def run_demo(self):
@@ -315,21 +265,15 @@ class DashboardDemoRunner:
         )
         logger.info("Press Ctrl+C to stop the demo at any time")
         logger.info()
-
         await asyncio.sleep(2)
-
         start_time = time.time()
         cycle_count = 0
-
         try:
-            while self.demo_running and (time.time() - start_time) < self.demo_duration:
+            while self.demo_running and time.time() - start_time < self.demo_duration:
                 await self.run_demo_cycle()
                 cycle_count += 1
-
         except KeyboardInterrupt:
             logger.info("\n\n🛑 Demo stopped by user")
-
-        # Demo completion summary
         self.clear_screen()
         logger.info("=" * 80)
         logger.info("🎉 AI TEDDY BEAR DASHBOARD DEMO COMPLETED")

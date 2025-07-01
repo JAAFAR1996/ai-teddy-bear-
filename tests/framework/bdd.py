@@ -4,7 +4,7 @@ BDD Test Helpers - أدوات اختبار BDD (Behavior-Driven Development)
 
 import asyncio
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 import structlog
 

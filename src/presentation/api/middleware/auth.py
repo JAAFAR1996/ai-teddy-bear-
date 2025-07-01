@@ -1,7 +1,6 @@
 from functools import wraps
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-import jwt
 from flask import jsonify, request
 
 
@@ -42,7 +41,7 @@ def require_parent_auth(f) -> Any:
             # Mock parent ID for testing
             request.parent_id = "parent_123"
 
-        except Exception as e:
+        except Exception:
             return jsonify({"error": "Invalid token"}), 401
 
         return f(*args, **kwargs)
@@ -65,7 +64,7 @@ def require_child_auth(f) -> Any:
             # Mock token validation - replace with actual JWT decode
             request.child_id = "child_123"
 
-        except Exception as e:
+        except Exception:
             return jsonify({"error": "Invalid token"}), 401
 
         return f(*args, **kwargs)

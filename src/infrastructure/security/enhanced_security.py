@@ -6,9 +6,6 @@ OWASP compliant security with advanced threat protection
 """
 
 import asyncio
-import hashlib
-import hmac
-import json
 import re
 import secrets
 import time
@@ -29,9 +26,6 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from fastapi import HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 logger = structlog.get_logger()
 

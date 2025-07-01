@@ -3,9 +3,9 @@ Voice Domain Models
 Core audio domain models, enums and value objects
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Dict
 
 try:
     from elevenlabs import VoiceSettings

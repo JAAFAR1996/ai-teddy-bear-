@@ -1,22 +1,22 @@
-#!/usr/bin/env python3
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 Service Organizer Analyzer
 أداة تحليل وتنظيم الخدمات المكررة حسب Clean Architecture
 """
-
-import json
-import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List
 
 
 class ServiceOrganizerAnalyzer:
+
     def __init__(self, base_path: str = "."):
         self.base_path = Path(base_path)
         self.services = {
-            # الخدمات الـ43 المكررة من التحليل السابق
             "other_services": [
                 "src/adapters/edge/edge_ai_integration_service.py",
                 "src/application/main_service.py",
@@ -76,9 +76,7 @@ class ServiceOrganizerAnalyzer:
                 "tests/unit/test_voice_service.py",
             ],
         }
-
         self.categorized_services = {
-            # تصنيف الخدمات حسب Clean Architecture
             "domain_services": [],
             "application_services": [],
             "infrastructure_services": [],
@@ -86,45 +84,37 @@ class ServiceOrganizerAnalyzer:
             "deprecated_services": [],
             "test_services": [],
         }
-
         self.organization_plan = {}
 
     def categorize_services_by_functionality(self) -> Dict:
         """تصنيف الخدمات حسب الوظيفة"""
-        print("🔍 تصنيف الخدمات حسب الوظيفة...")
-
+        logger.info("🔍 تصنيف الخدمات حسب الوظيفة...")
         functional_groups = {
-            "ai_ml": [],  # خدمات الذكاء الاصطناعي
-            "audio_processing": [],  # معالجة الصوت
-            "communication": [],  # التواصل (SMS, Email, Push)
-            "personalization": [],  # التخصيص والشخصيات
-            "monitoring": [],  # المراقبة والصحة
-            "data_management": [],  # إدارة البيانات
-            "security": [],  # الأمان والتشفير
-            "ui_presentation": [],  # واجهات المستخدم
-            "infrastructure": [],  # البنية التحتية
-            "parent_features": [],  # ميزات الوالدين
-            "child_features": [],  # ميزات الطفل
-            "deprecated": [],  # خدمات قديمة أو مكررة
+            "ai_ml": [],
+            "audio_processing": [],
+            "communication": [],
+            "personalization": [],
+            "monitoring": [],
+            "data_management": [],
+            "security": [],
+            "ui_presentation": [],
+            "infrastructure": [],
+            "parent_features": [],
+            "child_features": [],
+            "deprecated": [],
         }
-
-        # تصنيف كل خدمة
         all_services = (
             self.services["other_services"]
             + self.services["ai_services"]
             + self.services["audio_services"]
         )
-
         for service_path in all_services:
             service_name = Path(service_path).stem
-
-            # تصنيف بناءً على اسم الخدمة
             if any(
                 ai_term in service_name.lower()
                 for ai_term in ["ai", "llm", "gpt", "ml", "intelligence"]
             ):
                 functional_groups["ai_ml"].append(service_path)
-
             elif any(
                 audio_term in service_name.lower()
                 for audio_term in [
@@ -138,25 +128,21 @@ class ServiceOrganizerAnalyzer:
                 ]
             ):
                 functional_groups["audio_processing"].append(service_path)
-
             elif any(
                 comm_term in service_name.lower()
                 for comm_term in ["email", "sms", "push", "notification", "streaming"]
             ):
                 functional_groups["communication"].append(service_path)
-
             elif any(
                 person_term in service_name.lower()
                 for person_term in ["personalization", "personality", "accessibility"]
             ):
                 functional_groups["personalization"].append(service_path)
-
             elif any(
                 monitor_term in service_name.lower()
                 for monitor_term in ["health", "monitor", "rate", "issue_tracker"]
             ):
                 functional_groups["monitoring"].append(service_path)
-
             elif any(
                 data_term in service_name.lower()
                 for data_term in [
@@ -168,53 +154,43 @@ class ServiceOrganizerAnalyzer:
                 ]
             ):
                 functional_groups["data_management"].append(service_path)
-
             elif any(
                 sec_term in service_name.lower()
                 for sec_term in ["security", "he_integration", "moderation"]
             ):
                 functional_groups["security"].append(service_path)
-
             elif any(
                 parent_term in service_name.lower()
                 for parent_term in ["parent", "dashboard", "report"]
             ):
                 functional_groups["parent_features"].append(service_path)
-
             elif any(
                 child_term in service_name.lower()
                 for child_term in ["child", "interaction", "story", "conversation"]
             ):
                 functional_groups["child_features"].append(service_path)
-
             elif any(
                 infra_term in service_name.lower()
                 for infra_term in ["external", "service_registry", "scheduler", "base"]
             ):
                 functional_groups["infrastructure"].append(service_path)
-
             elif any(
                 ui_term in service_name.lower()
                 for ui_term in ["graphql", "resolver", "presentation"]
             ):
                 functional_groups["ui_presentation"].append(service_path)
-
             elif any(
                 test_term in service_path.lower()
                 for test_term in ["test", "simple_", "edge_ai"]
             ):
                 functional_groups["deprecated"].append(service_path)
-
             else:
-                # خدمات عامة أو غير مصنفة
                 functional_groups["infrastructure"].append(service_path)
-
         return functional_groups
 
     def create_clean_architecture_plan(self, functional_groups: Dict) -> Dict:
         """إنشاء خطة إعادة التنظيم حسب Clean Architecture"""
-        print("🏗️ إنشاء خطة Clean Architecture...")
-
+        logger.info("🏗️ إنشاء خطة Clean Architecture...")
         clean_arch_plan = {
             "src/domain/services/": [],
             "src/application/services/core/": [],
@@ -228,8 +204,6 @@ class ServiceOrganizerAnalyzer:
             "src/presentation/services/": [],
             "deprecated/services/": [],
         }
-
-        # ربط المجموعات الوظيفية بطبقات Clean Architecture
         mapping = {
             "child_features": "src/domain/services/",
             "ai_ml": "src/application/services/ai/",
@@ -244,20 +218,15 @@ class ServiceOrganizerAnalyzer:
             "ui_presentation": "src/presentation/services/",
             "deprecated": "deprecated/services/",
         }
-
         for group, services in functional_groups.items():
             target_location = mapping.get(group, "src/application/services/core/")
             clean_arch_plan[target_location].extend(services)
-
         return clean_arch_plan
 
     def detect_duplicate_functionalities(self, functional_groups: Dict) -> Dict:
         """اكتشاف الخدمات المكررة الوظائف"""
-        print("🔄 اكتشاف الخدمات المكررة...")
-
+        logger.info("🔄 اكتشاف الخدمات المكررة...")
         duplicates = {}
-
-        # فحص خدمات AI المكررة
         ai_services = functional_groups["ai_ml"]
         if len(ai_services) > 1:
             duplicates["ai_services"] = {
@@ -269,8 +238,6 @@ class ServiceOrganizerAnalyzer:
                 ],
                 "merge_strategy": "consolidate_into_unified_ai_service",
             }
-
-        # فحص خدمات الصوت المكررة
         audio_services = functional_groups["audio_processing"]
         if len(audio_services) > 1:
             duplicates["audio_services"] = {
@@ -282,8 +249,6 @@ class ServiceOrganizerAnalyzer:
                 ],
                 "merge_strategy": "merge_audio_processing_pipeline",
             }
-
-        # فحص خدمات المراقبة المكررة
         monitoring_services = functional_groups["monitoring"]
         if len(monitoring_services) > 1:
             duplicates["monitoring_services"] = {
@@ -295,8 +260,6 @@ class ServiceOrganizerAnalyzer:
                 ],
                 "merge_strategy": "unified_monitoring_service",
             }
-
-        # فحص خدمات التخزين المؤقت المكررة
         cache_services = [
             s for s in functional_groups["data_management"] if "cache" in s.lower()
         ]
@@ -310,33 +273,26 @@ class ServiceOrganizerAnalyzer:
                 ],
                 "merge_strategy": "unified_caching_layer",
             }
-
         return duplicates
 
     def _select_primary_service(self, services: List[str], service_type: str) -> str:
         """اختيار الخدمة الأساسية من مجموعة"""
-        # أولوية للخدمات في src/application/services/
         app_services = [
             s
             for s in services
             if "src/application/services/" in s and "test" not in s.lower()
         ]
         if app_services:
-            # اختر الأحدث أو الأكثر شمولية
             for service in app_services:
                 if "modern" in service.lower() or "enhanced" in service.lower():
                     return service
             return app_services[0]
-
-        # إذا لم توجد خدمات تطبيق، اختر أي خدمة
         return services[0] if services else ""
 
     def generate_merge_operations(self, duplicates: Dict) -> List[Dict]:
         """إنشاء عمليات الدمج المطلوبة"""
-        print("📋 إنشاء عمليات الدمج...")
-
+        logger.info("📋 إنشاء عمليات الدمج...")
         operations = []
-
         for service_group, info in duplicates.items():
             operation = {
                 "group": service_group,
@@ -347,7 +303,6 @@ class ServiceOrganizerAnalyzer:
                 "backup_location": f"deprecated/services/{service_group}/",
             }
             operations.append(operation)
-
         return operations
 
     def _get_clean_arch_location(self, service_path: str) -> str:
@@ -375,41 +330,32 @@ class ServiceOrganizerAnalyzer:
 
     def execute_service_organization(self, operations: List[Dict]) -> Dict:
         """تنفيذ عمليات تنظيم الخدمات"""
-        print("🚀 بدء تنفيذ تنظيم الخدمات...")
-
+        logger.info("🚀 بدء تنفيذ تنظيم الخدمات...")
         results = {
             "operations_completed": [],
             "files_moved": 0,
             "directories_created": 0,
             "errors": [],
         }
-
         for operation in operations:
             try:
-                # إنشاء المجلدات المطلوبة
                 target_dir = Path(self.base_path / operation["target_location"])
                 backup_dir = Path(self.base_path / operation["backup_location"])
-
                 target_dir.mkdir(parents=True, exist_ok=True)
                 backup_dir.mkdir(parents=True, exist_ok=True)
                 results["directories_created"] += 2
-
-                # نقل الخدمات المكررة إلى النسخ الاحتياطي
                 for service_path in operation["services_to_merge"]:
                     source_file = Path(self.base_path / service_path)
                     if source_file.exists():
                         backup_file = backup_dir / source_file.name
                         shutil.move(str(source_file), str(backup_file))
                         results["files_moved"] += 1
-
-                # نقل الخدمة الأساسية إلى موقعها الصحيح في Clean Architecture
                 primary_service = Path(self.base_path / operation["primary_service"])
                 if primary_service.exists():
                     target_file = target_dir / primary_service.name
-                    if primary_service != target_file:  # تجنب نقل الملف إلى نفسه
+                    if primary_service != target_file:
                         shutil.move(str(primary_service), str(target_file))
                         results["files_moved"] += 1
-
                 results["operations_completed"].append(
                     {
                         "group": operation["group"],
@@ -418,16 +364,13 @@ class ServiceOrganizerAnalyzer:
                         "backup": operation["backup_location"],
                     }
                 )
-
-                print(
+                logger.info(
                     f"  ✅ {operation['group']}: {len(operation['services_to_merge']) + 1} ملفات"
                 )
-
             except Exception as e:
                 error_msg = f"خطأ في {operation['group']}: {str(e)}"
                 results["errors"].append(error_msg)
-                print(f"  ❌ {error_msg}")
-
+                logger.info(f"  ❌ {error_msg}")
         return results
 
     def generate_organization_report(
@@ -435,7 +378,6 @@ class ServiceOrganizerAnalyzer:
     ) -> str:
         """إنشاء تقرير شامل لتنظيم الخدمات"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
         report = f"""
 # 🏗️ تقرير تنظيم الخدمات المكررة - AI-TEDDY-BEAR
 **التاريخ**: {timestamp}
@@ -451,21 +393,13 @@ class ServiceOrganizerAnalyzer:
 ## 🔍 التصنيف الوظيفي للخدمات
 
 """
-
         for group, services in functional_groups.items():
             if services:
-                report += f"""
-### 🎯 {group.replace('_', ' ').title()} ({len(services)} خدمات)
-"""
+                report += f"\n### 🎯 {group.replace('_', ' ').title()} ({len(services)} خدمات)\n"
                 for service in services:
                     service_name = Path(service).stem
                     report += f"- `{service_name}` → `{service}`\n"
-
-        report += f"""
-## 🔄 الخدمات المكررة المكتشفة
-
-"""
-
+        report += "\n## 🔄 الخدمات المكررة المكتشفة\n\n"
         for group, info in duplicates.items():
             report += f"""
 ### {group.replace('_', ' ').title()}
@@ -474,10 +408,9 @@ class ServiceOrganizerAnalyzer:
 - **استراتيجية الدمج**: {info['merge_strategy']}
 
 **الملفات المكررة**:
-{chr(10).join(f"  - `{Path(s).stem}`" for s in info['duplicates'])}
+{chr(10).join(f'  - `{Path(s).stem}`' for s in info['duplicates'])}
 """
-
-        report += f"""
+        report += """
 ## 🏗️ البنية الجديدة (Clean Architecture)
 
 ```
@@ -505,7 +438,6 @@ src/
 ## ✅ العمليات المكتملة
 
 """
-
         for operation in results["operations_completed"]:
             report += f"""
 ### {operation['group'].replace('_', ' ').title()}
@@ -513,15 +445,10 @@ src/
 - **الموقع الجديد**: `{operation['target']}`
 - **النسخ الاحتياطي**: `{operation['backup']}`
 """
-
         if results["errors"]:
-            report += f"""
-## ⚠️ الأخطاء والتحديات
-
-"""
+            report += "\n## ⚠️ الأخطاء والتحديات\n\n"
             for error in results["errors"]:
                 report += f"- ❌ {error}\n"
-
         report += f"""
 ## 🎯 التوصيات للمرحلة التالية
 
@@ -553,32 +480,19 @@ find src/ -name "*.py" -exec grep -l "from.*services" {{}} \\;
 **تم إنشاؤه بواسطة**: ServiceOrganizerAnalyzer v1.0
 **التوقيت**: {timestamp}
 """
-
         return report
 
     def run_complete_organization(self) -> Dict:
         """تشغيل التنظيم الكامل للخدمات"""
-        print("=" * 60)
-        print("🏗️  SERVICE ORGANIZER ANALYZER")
-        print("🎯  ORGANIZING 43 DUPLICATE SERVICES")
-        print("=" * 60)
-
-        # الخطوة 1: تصنيف الخدمات وظيفياً
+        logger.info("=" * 60)
+        logger.info("🏗️  SERVICE ORGANIZER ANALYZER")
+        logger.info("🎯  ORGANIZING 43 DUPLICATE SERVICES")
+        logger.info("=" * 60)
         functional_groups = self.categorize_services_by_functionality()
-
-        # الخطوة 2: إنشاء خطة Clean Architecture
         clean_arch_plan = self.create_clean_architecture_plan(functional_groups)
-
-        # الخطوة 3: اكتشاف التكرارات
         duplicates = self.detect_duplicate_functionalities(functional_groups)
-
-        # الخطوة 4: إنشاء عمليات الدمج
         operations = self.generate_merge_operations(duplicates)
-
-        # الخطوة 5: تنفيذ التنظيم
         results = self.execute_service_organization(operations)
-
-        # الخطوة 6: إنشاء التقرير
         report_content = self.generate_organization_report(
             functional_groups, duplicates, results
         )
@@ -586,18 +500,15 @@ find src/ -name "*.py" -exec grep -l "from.*services" {{}} \\;
             self.base_path / "deleted" / "reports" / "SERVICE_ORGANIZATION_REPORT.md"
         )
         report_path.parent.mkdir(parents=True, exist_ok=True)
-
         with open(report_path, "w", encoding="utf-8") as f:
             f.write(report_content)
-
-        print(f"\n🎉 تم إكمال تنظيم الخدمات!")
-        print(
+        logger.info("\n🎉 تم إكمال تنظيم الخدمات!")
+        logger.info(
             f"📊 خدمات معالجة: {sum(len(services) for services in functional_groups.values())}"
         )
-        print(f"🔄 ملفات منقولة: {results['files_moved']}")
-        print(f"📁 مجلدات منشأة: {results['directories_created']}")
-        print(f"📋 التقرير: {report_path}")
-
+        logger.info(f"🔄 ملفات منقولة: {results['files_moved']}")
+        logger.info(f"📁 مجلدات منشأة: {results['directories_created']}")
+        logger.info(f"📋 التقرير: {report_path}")
         return {
             "functional_groups": functional_groups,
             "duplicates": duplicates,
@@ -609,13 +520,11 @@ find src/ -name "*.py" -exec grep -l "from.*services" {{}} \\;
 def main():
     """الدالة الرئيسية"""
     organizer = ServiceOrganizerAnalyzer()
-
     try:
         result = organizer.run_complete_organization()
-        print(f"\n✅ تم تنظيم الخدمات بنجاح!")
-
+        logger.info("\n✅ تم تنظيم الخدمات بنجاح!")
     except Exception as e:
-        print(f"❌ خطأ في تنظيم الخدمات: {e}")
+        logger.info(f"❌ خطأ في تنظيم الخدمات: {e}")
         import traceback
 
         traceback.print_exc()

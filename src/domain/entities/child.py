@@ -2,7 +2,7 @@
 Child Entity - Main Aggregate Root
 """
 
-from typing import Any, Optional
+from typing import Optional
 from uuid import UUID
 
 from .base import AggregateRoot, DomainEvent

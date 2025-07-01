@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from ...domain.value_objects import ChildId, ParentId
 from .query_bus import Query, QueryHandler, QueryResult, get_query_bus
 
 logger = logging.getLogger(__name__)

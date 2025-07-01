@@ -17,7 +17,6 @@ from uuid import uuid4
 from kafka import KafkaProducer
 from kafka.errors import KafkaError, KafkaTimeoutError
 
-from ..domain.events import DomainEvent
 from ..shared.kernel import DomainEvent as BaseDomainEvent
 from .kafka_config import KAFKA_CONFIG, KafkaProducerConfig, KafkaTopics
 

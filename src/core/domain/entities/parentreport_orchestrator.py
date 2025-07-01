@@ -10,7 +10,7 @@ Orchestrator pattern for coordinating parentreport operations
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 
 class ParentreportContext:

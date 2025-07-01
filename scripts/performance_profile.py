@@ -5,12 +5,10 @@ import json
 import logging
 import os
 import pstats
-import sys
 import time
 import tracemalloc
 from typing import Any, Callable, Dict, List
 
-from memory_profiler import profile
 
 
 class PerformanceProfiler:

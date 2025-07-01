@@ -1,7 +1,5 @@
 """Audio Transcription Service"""
 
-import asyncio
-import threading
 from dataclasses import dataclass
 from enum import Enum
 from queue import Queue

@@ -5,9 +5,7 @@ AI Team Implementation - Task 10 Tests
 Author: AI Team Lead
 """
 
-import asyncio
 import time
-from unittest.mock import AsyncMock, Mock, patch
 
 import numpy as np
 import pytest

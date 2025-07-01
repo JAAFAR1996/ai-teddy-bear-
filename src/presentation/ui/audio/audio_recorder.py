@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 """
 Audio Recorder for AI Teddy Bear UI

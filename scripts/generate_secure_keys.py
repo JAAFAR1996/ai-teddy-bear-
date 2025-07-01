@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 🔐 Secure Key Generator for AI Teddy Bear
 Generates cryptographically secure keys for production use
 """
-
-import base64
 import os
 import secrets
 
@@ -44,31 +45,26 @@ def save_keys_to_file(keys: dict, filename: str = "generated_keys.env"):
         f.write("# GENERATED SECURE KEYS\n")
         f.write("# Copy these to your .env file and DELETE this file\n")
         f.write("# Generated at: " + str(os.popen("date").read().strip()) + "\n\n")
-
         for key, value in keys.items():
             f.write(f"{key}={value}\n")
-
-    print(f"✅ Keys generated and saved to {filename}")
-    print("⚠️  IMPORTANT: Copy these keys to your .env file and DELETE this file!")
+    logger.info(f"✅ Keys generated and saved to {filename}")
+    logger.info("⚠️  IMPORTANT: Copy these keys to your .env file and DELETE this file!")
 
 
 def main():
     """Main execution"""
-    print("🔐 Generating secure keys for AI Teddy Bear...")
-
+    logger.info("🔐 Generating secure keys for AI Teddy Bear...")
     keys = generate_all_keys()
     save_keys_to_file(keys)
-
-    print("\n📋 Generated Keys:")
-    print("-" * 50)
+    logger.info("\n📋 Generated Keys:")
+    logger.info("-" * 50)
     for key in keys:
-        print(f"• {key}")
-
-    print("\n🔒 Security Notes:")
-    print("• These keys are cryptographically secure")
-    print("• Store them in a secure password manager")
-    print("• Never commit them to version control")
-    print("• Rotate them regularly in production")
+        logger.info(f"• {key}")
+    logger.info("\n🔒 Security Notes:")
+    logger.info("• These keys are cryptographically secure")
+    logger.info("• Store them in a secure password manager")
+    logger.info("• Never commit them to version control")
+    logger.info("• Rotate them regularly in production")
 
 
 if __name__ == "__main__":

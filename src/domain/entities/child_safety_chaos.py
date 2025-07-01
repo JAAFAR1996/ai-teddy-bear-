@@ -5,15 +5,13 @@ Comprehensive safety system resilience testing for AI Teddy Bear
 """
 
 import asyncio
-import json
 import logging
-import random
 import time
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import Any, Dict, Optional
 
 import requests
-from chaostoolkit.types import Configuration, Experiment, Journal
+from chaostoolkit.types import Configuration, Experiment
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

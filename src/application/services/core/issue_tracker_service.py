@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 #!/usr/bin/env python3
 """
@@ -6,14 +6,13 @@ from typing import Any, Dict, List, Optional
 تسجيل وتتبع الأخطاء مع Stacktrace وسجلات تفصيلية
 """
 
-import asyncio
 import hashlib
 import json
 import sqlite3
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict
 
 import structlog
 
@@ -174,7 +173,7 @@ class IssueTrackerService:
             content = f"{title}:{error_type}"
             hash_object = hashlib.md5(content.encode())
             return f"ISS-{hash_object.hexdigest()[:8].upper()}"
-        except Exception as e:
+        except Exception:
             return f"ISS-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
 
     async def get_issue_statistics(self) -> Dict:

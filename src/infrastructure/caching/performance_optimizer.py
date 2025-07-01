@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 """
 Performance Optimizer for Multi-Layer Caching System.
@@ -10,14 +10,11 @@ Performance Team Implementation - Task 12
 Author: Performance Team Lead
 """
 
-import asyncio
-import json
 import logging
 import statistics
-import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 

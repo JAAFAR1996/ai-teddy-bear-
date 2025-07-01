@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 #!/usr/bin/env python3
 """
@@ -8,14 +8,12 @@ from typing import Any, Dict, List, Optional
 
 import asyncio
 import json
-import logging
-import smtplib
 from email import encoders
 from email.mime.base import MIMEBase as MimeBase
 from email.mime.multipart import MIMEMultipart as MimeMultipart
 from email.mime.text import MIMEText as MimeText
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import aiosmtplib
 import structlog

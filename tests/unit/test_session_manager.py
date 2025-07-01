@@ -4,7 +4,6 @@
 Testing the new SQLite-based session management
 """
 
-import asyncio
 from datetime import datetime, timedelta
 
 import pytest

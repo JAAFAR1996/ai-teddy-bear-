@@ -1,7 +1,5 @@
-import pytest
 
-from src.core.domain.services.content_moderator import (AgeAppropriateRule,
-                                                        ContentModerator,
+from src.core.domain.services.content_moderator import (ContentModerator,
                                                         ProfanityRule)
 
 

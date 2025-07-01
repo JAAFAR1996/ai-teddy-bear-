@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +15,6 @@ Author: API Team Lead
 """
 
 import os
-import sys
-from pathlib import Path
 
 
 def check_file_exists(file_path: str, description: str) -> bool:
@@ -98,7 +96,7 @@ def verify_implementation() -> Any:
                 total_files += 1
                 logger.info(f"   📄 {file_path}: {lines:,} lines")
 
-    logger.info(f"\n📈 Total Implementation:")
+    logger.info("\n📈 Total Implementation:")
     logger.info(f"   Files: {total_files}")
     logger.info(f"   Lines of Code: {total_lines:,}")
 

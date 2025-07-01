@@ -8,15 +8,13 @@ import time
 from dataclasses import dataclass
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
 import structlog
 
-from src.domain.exceptions.base import (AITeddyBearException,
-                                        AuthenticationException,
+from src.domain.exceptions.base import (AuthenticationException,
                                         CircuitBreakerOpenException,
                                         DatabaseException, ErrorContext,
-                                        ErrorSeverity,
                                         ExternalServiceException,
                                         InappropriateContentException,
                                         ParentalConsentRequiredException,
@@ -24,7 +22,6 @@ from src.domain.exceptions.base import (AITeddyBearException,
 from src.infrastructure.exception_handling.global_handler import (
     CircuitBreaker, get_global_exception_handler)
 from src.infrastructure.monitoring.metrics import (MetricsCollector,
-                                                   exception_counter,
                                                    track_request_duration)
 
 logger = structlog.get_logger(__name__)

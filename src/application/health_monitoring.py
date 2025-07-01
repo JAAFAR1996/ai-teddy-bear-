@@ -3,23 +3,18 @@ Health Monitoring Service - Production Ready 2025
 Monitors child health metrics and provides early intervention alerts
 """
 
-import asyncio
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import structlog
 from prometheus_client import Counter, Histogram
 
 from src.infrastructure.config import get_settings
-from src.infrastructure.external_services import (EmailService,
-                                                  PushNotificationService,
-                                                  SMSService)
 # from src.application.services.core.service_registry import ServiceBase
 from src.infrastructure.observability import trace_async
-from src.infrastructure.security.audit_logger import (AuditEventType,
-                                                      AuditLogger)
+from src.infrastructure.security.audit_logger import (AuditEventType)
 
 # Metrics
 health_alerts = Counter(

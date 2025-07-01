@@ -3,12 +3,8 @@
 Tests for ESP32 audio processing via FastAPI endpoints
 """
 
-import asyncio
 import base64
 import io
-import json
-import tempfile
-from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
@@ -17,10 +13,8 @@ from fastapi.testclient import TestClient
 
 # Import the FastAPI app and components
 from src.api.endpoints.voice import router as voice_router
-from src.application.services.voice_service import (AudioFormat,
-                                                    TranscriptionResult,
-                                                    VoiceService,
-                                                    VoiceServiceConfig)
+from src.application.services.voice_service import (TranscriptionResult,
+                                                    VoiceService)
 
 # ================ TEST SETUP ================
 

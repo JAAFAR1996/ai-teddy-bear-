@@ -14,7 +14,6 @@ import sounddevice as sd
 
 from src.application.services.streaming_service import StreamingService
 from src.core.application.interfaces.services import IAIService
-from src.core.domain.entities.audio_stream import AudioStream
 # Domain imports
 from src.domain.audio.models import (AudioConfig, EmotionalTone, Language,
                                      VoiceProfile)

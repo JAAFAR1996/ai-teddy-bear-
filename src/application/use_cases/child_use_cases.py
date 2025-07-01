@@ -7,12 +7,10 @@ These orchestrate business operations while keeping the domain pure.
 """
 
 from dataclasses import dataclass
-from datetime import date
 from typing import Optional
 
 from ...domain.entities import Child
-from ...domain.value_objects import ChildId, ParentId
-from ...shared.kernel import DomainEvent
+from ...domain.value_objects import ChildId
 from ..dto import (ChildProfileResponse, RegisterChildRequest,
                    RegisterChildResponse, UpdateChildProfileRequest)
 from ..ports.outbound import ChildRepositoryPort, EventPublisherPort

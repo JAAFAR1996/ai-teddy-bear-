@@ -7,13 +7,11 @@ Parent Dashboard Coordinator - Single Responsibility
 
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, Optional
+from typing import Dict
 
 from .child_data_analyzer import ChildDataAnalyzer, DateRange
 from .parent_auth_service import ParentAuthenticationService, ParentCredentials
-from .parent_notification_service import (Notification, NotificationPriority,
-                                          NotificationType,
-                                          ParentNotificationService)
+from .parent_notification_service import (ParentNotificationService)
 from .report_generator_service import (ChildProgress, ReportFormat,
                                        ReportGeneratorService)
 

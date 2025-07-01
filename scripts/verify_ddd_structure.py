@@ -1,19 +1,19 @@
-#!/usr/bin/env python3
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 Verify DDD Structure Script
 ===========================
 Check if DDD integration is correct and find issues
 """
-
 import os
 from pathlib import Path
 
 
 def check_file_completeness():
     """فحص اكتمال الملفات"""
-    print("🔍 فحص اكتمال الملفات...")
-
-    # فحص الملفات الأصلية الكبيرة
+    logger.info("🔍 فحص اكتمال الملفات...")
     services_dir = Path("src/application/services")
     god_classes = [
         "accessibility_service.py",
@@ -22,44 +22,35 @@ def check_file_completeness():
         "parent_dashboard_service.py",
         "parent_report_service.py",
     ]
-
     for filename in god_classes:
         file_path = services_dir / filename
         if file_path.exists():
             with open(file_path, "r", encoding="utf-8") as f:
                 lines = len(f.readlines())
-            print(f"📄 {filename}: {lines} lines (God Class)")
+            logger.info(f"📄 {filename}: {lines} lines (God Class)")
         else:
-            print(f"❌ {filename}: Missing")
-
-    # فحص الملفات الجديدة
-    print("\n🔍 فحص الملفات المدمجة...")
-
+            logger.info(f"❌ {filename}: Missing")
+    logger.info("\n🔍 فحص الملفات المدمجة...")
     domains = ["accessibility", "memory", "moderation"]
     for domain in domains:
         domain_dir = Path(f"src/domain/{domain}")
         app_dir = Path(f"src/application/{domain}")
-
         if domain_dir.exists():
             files_count = len(list(domain_dir.rglob("*.py")))
-            print(f"📁 {domain} domain: {files_count} files")
+            logger.info(f"📁 {domain} domain: {files_count} files")
         else:
-            print(f"❌ {domain} domain: Missing")
-
+            logger.info(f"❌ {domain} domain: Missing")
         if app_dir.exists():
             files_count = len(list(app_dir.rglob("*.py")))
-            print(f"📁 {domain} application: {files_count} files")
+            logger.info(f"📁 {domain} application: {files_count} files")
         else:
-            print(f"❌ {domain} application: Missing")
+            logger.info(f"❌ {domain} application: Missing")
 
 
 def check_imports():
     """فحص الاستدعاءات"""
-    print("\n🔗 فحص الاستدعاءات...")
-
-    # البحث عن استدعاءات مكسورة
+    logger.info("\n🔗 فحص الاستدعاءات...")
     broken_imports = []
-
     for root, dirs, files in os.walk("src"):
         for file in files:
             if file.endswith(".py"):
@@ -67,37 +58,29 @@ def check_imports():
                 try:
                     with open(file_path, "r", encoding="utf-8") as f:
                         content = f.read()
-
-                    # البحث عن استدعاءات _ddd
                     if "_ddd" in content:
                         broken_imports.append(str(file_path))
-
-                    # البحث عن استدعاءات ملفات غير موجودة
                     if "from src.domain." in content:
                         lines = content.split("\n")
                         for line in lines:
                             if "from src.domain." in line and "import" in line:
-                                print(
+                                logger.info(
                                     f"📝 Found import: {line.strip()} in {file_path.name}"
                                 )
-
                 except Exception as e:
-                    print(f"⚠️ Error reading {file_path}: {e}")
-
+                    logger.info(f"⚠️ Error reading {file_path}: {e}")
     if broken_imports:
-        print(f"\n❌ Found {len(broken_imports)} files with broken imports:")
+        logger.info(f"\n❌ Found {len(broken_imports)} files with broken imports:")
         for imp in broken_imports:
-            print(f"   - {imp}")
+            logger.info(f"   - {imp}")
     else:
-        print("✅ No broken imports found")
+        logger.info("✅ No broken imports found")
 
 
 def check_file_sizes():
     """فحص أحجام الملفات"""
-    print("\n📏 فحص أحجام الملفات...")
-
+    logger.info("\n📏 فحص أحجام الملفات...")
     large_files = []
-
     for root, dirs, files in os.walk("src"):
         for file in files:
             if file.endswith(".py"):
@@ -105,19 +88,16 @@ def check_file_sizes():
                 try:
                     with open(file_path, "r", encoding="utf-8") as f:
                         lines = len(f.readlines())
-
                     if lines > 300:
                         large_files.append((str(file_path), lines))
-
                 except Exception:
                     continue
-
     if large_files:
-        print(f"⚠️ Found {len(large_files)} large files (>300 lines):")
+        logger.info(f"⚠️ Found {len(large_files)} large files (>300 lines):")
         for file_path, lines in sorted(large_files, key=lambda x: x[1], reverse=True):
-            print(f"   - {file_path}: {lines} lines")
+            logger.info(f"   - {file_path}: {lines} lines")
     else:
-        print("✅ All files are appropriately sized")
+        logger.info("✅ All files are appropriately sized")
 
 
 def generate_fix_report():
@@ -149,26 +129,22 @@ def generate_fix_report():
 2. التحقق من عمل جميع الاستدعاءات
 3. نقل الملفات الكبيرة إلى legacy بعد التقسيم
 """
-
     with open("DDD_STRUCTURE_VERIFICATION_REPORT.md", "w", encoding="utf-8") as f:
         f.write(report)
-
-    print("\n📄 تم إنشاء تقرير الفحص: DDD_STRUCTURE_VERIFICATION_REPORT.md")
+    logger.info("\n📄 تم إنشاء تقرير الفحص: DDD_STRUCTURE_VERIFICATION_REPORT.md")
 
 
 def main():
-    print("=" * 60)
-    print("🔍 فحص بنية DDD...")
-    print("=" * 60)
-
+    logger.info("=" * 60)
+    logger.info("🔍 فحص بنية DDD...")
+    logger.info("=" * 60)
     check_file_completeness()
     check_imports()
     check_file_sizes()
     generate_fix_report()
-
-    print("\n" + "=" * 60)
-    print("✅ انتهى الفحص!")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("✅ انتهى الفحص!")
+    logger.info("=" * 60)
 
 
 if __name__ == "__main__":

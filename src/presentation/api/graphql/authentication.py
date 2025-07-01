@@ -11,15 +11,12 @@ API Team Implementation - Task 13
 Author: API Team Lead
 """
 
-import asyncio
-import hashlib
-import json
 import logging
 import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set
 
 # JWT and security
 try:
@@ -31,7 +28,7 @@ except ImportError:
     JWT_AVAILABLE = False
 
 # FastAPI security
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.api_key import APIKeyHeader, APIKeyQuery
 

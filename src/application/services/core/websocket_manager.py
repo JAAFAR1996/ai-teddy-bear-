@@ -4,11 +4,9 @@ Real WebSocket connection management with heartbeat and lifecycle handling
 """
 
 import asyncio
-import json
 import logging
-import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Callable, Dict, Optional, Set
 
 from fastapi import WebSocket, WebSocketDisconnect

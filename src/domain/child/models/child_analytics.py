@@ -7,7 +7,7 @@ Contains domain models for child analytics and engagement insights.
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 
 class EngagementLevel(Enum):

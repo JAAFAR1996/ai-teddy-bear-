@@ -1,8 +1,11 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import secrets
 import string
 
-from dotenv import set_key
 
 
 def generate_secret(length: int = 32) -> str:
@@ -22,10 +25,7 @@ def generate_env_file(output_path: str = ".env"):
 
     :param output_path: Path to the .env file
     """
-    # Ensure the directory exists
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-
-    # Configuration for generating secrets
     env_secrets = {
         "OPENAI_API_KEY": generate_secret(48),
         "ELEVENLABS_API_KEY": generate_secret(48),
@@ -34,8 +34,6 @@ def generate_env_file(output_path: str = ".env"):
         "SECRET_KEY": secrets.token_hex(32),
         "DEBUG_SECRET_KEY": secrets.token_hex(16),
     }
-
-    # Default configuration values
     default_config = {
         "LLM_PROVIDER": "gpt-4",
         "LLM_SAFETY_LEVEL": "2",
@@ -55,28 +53,18 @@ def generate_env_file(output_path: str = ".env"):
         "REDIS_HOST": "localhost",
         "REDIS_PORT": "6379",
     }
-
     try:
-        # Write to .env file
         with open(output_path, "w") as f:
-            # Write secrets
             for key, value in env_secrets.items():
                 f.write(f"{key}={value}\n")
-
-            # Write default configuration
             for key, value in default_config.items():
                 f.write(f"{key}={value}\n")
-
-        print(f"Secure .env file generated at {output_path}")
-
-        # Optional: Set environment variables
+        logger.info(f"Secure .env file generated at {output_path}")
         for key, value in env_secrets.items():
             os.environ[key] = value
-
         return env_secrets
-
     except Exception as e:
-        print(f"Error generating .env file: {e}")
+        logger.info(f"Error generating .env file: {e}")
         return None
 
 
@@ -94,9 +82,7 @@ def main():
         default=".env",
         help="Path to the output .env file (default: .env)",
     )
-
     args = parser.parse_args()
-
     generate_env_file(args.output)
 
 

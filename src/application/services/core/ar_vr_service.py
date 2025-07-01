@@ -4,13 +4,12 @@
 تجارب تفاعلية ثلاثية الأبعاد للأطفال
 """
 
-import base64
 import json
 import logging
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 logger = logging.getLogger(__name__)
 

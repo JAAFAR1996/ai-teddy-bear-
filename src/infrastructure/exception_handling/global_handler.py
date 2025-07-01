@@ -9,8 +9,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type
 
 import structlog
 
@@ -19,8 +18,7 @@ from src.domain.exceptions.base import (AITeddyBearException,
                                         ErrorCategory, ErrorContext,
                                         ErrorSeverity)
 from src.infrastructure.monitoring.alert_manager import AlertManager
-from src.infrastructure.monitoring.metrics import (MetricsCollector,
-                                                   circuit_breaker_state,
+from src.infrastructure.monitoring.metrics import (circuit_breaker_state,
                                                    error_counter)
 
 logger = structlog.get_logger(__name__)

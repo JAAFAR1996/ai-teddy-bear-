@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 """
 UnifiedCacheService
-خدمة موحدة تم دمجها من عدة ملفات منفصلة
+خدمة Cache موحدة تم دمجها من عدة ملفات منفصلة
+
+تجمع وظائف من:
+- deprecated/services/cache_services/cache_service.py
+- deprecated/services/cache_services/simple_cache_service.py
+
 تم الإنشاء: 2025-06-30 05:25:00
 """
 
-import asyncio
-import hashlib
 import logging
-import pickle
-import time
-from abc import ABC, abstractmethod
-from functools import wraps
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List
 
-import aioredis
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +20,8 @@ logger = logging.getLogger(__name__)
 class UnifiedCacheService:
     """
     خدمة موحدة تجمع وظائف متعددة من:
-        - deprecated\services\cache_services\cache_service.py
-    - deprecated\services\cache_services\simple_cache_service.py
+    - deprecated/services/cache_services/cache_service.py
+    - deprecated/services/cache_services/simple_cache_service.py
     """
 
     def __init__(self):

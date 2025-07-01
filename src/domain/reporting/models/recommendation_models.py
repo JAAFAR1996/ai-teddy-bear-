@@ -6,7 +6,7 @@ Models for various types of recommendations and interventions
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import List
 
 from .report_models import UrgencyLevel
 

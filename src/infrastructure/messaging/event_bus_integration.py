@@ -5,7 +5,6 @@
 Integration between Domain Events and Kafka Event System
 """
 
-import asyncio
 import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -308,7 +307,7 @@ async def example_usage():
     from uuid import uuid4
 
     from ...domain.aggregates.child_aggregate import Child
-    from ...domain.value_objects import ChildId, DeviceId, ParentId
+    from ...domain.value_objects import DeviceId, ParentId
 
     # Create child aggregate
     child = Child.register_new_child(

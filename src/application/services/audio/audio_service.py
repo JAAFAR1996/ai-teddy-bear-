@@ -3,13 +3,12 @@
 import random
 import threading
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 import structlog
 
 from ....domain.esp32.models import (AudioQuality, AudioSettings,
-                                     AudioVisualization, MicrophoneSettings,
-                                     RecognitionLanguage, SpeechRecognition)
+                                     AudioVisualization, RecognitionLanguage, SpeechRecognition)
 
 logger = structlog.get_logger(__name__)
 

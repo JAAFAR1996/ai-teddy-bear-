@@ -4,20 +4,16 @@
 Testing the new dependency-injector based container
 """
 
-import asyncio
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 
 import pytest
 
 from src.application.services.ai_service import IAIService
-from src.application.services.child_service import ChildService
 from src.application.services.voice_service import IVoiceService
-from src.infrastructure.modern_container import (Container, ContainerContext,
+from src.infrastructure.modern_container import (ContainerContext,
                                                  TestContainer,
                                                  configure_container,
-                                                 container,
-                                                 initialize_container,
-                                                 shutdown_container)
+                                                 container)
 from src.infrastructure.session_manager import SessionManager
 
 

@@ -5,14 +5,13 @@ Lead Architect: جعفر أديب (Jaafar Adeeb)
 Enterprise-grade DataLoader pattern with intelligent caching and batching
 """
 
-import asyncio
 import hashlib
 import json
 import time
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar, Union
+from datetime import datetime
+from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar
 
 try:
     from aiodataloader import DataLoader

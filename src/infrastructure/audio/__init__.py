@@ -46,31 +46,16 @@ except ImportError:
     import logging
 
     logger = logging.getLogger(__name__)
-
-
-# Import main enhanced audio manager
 try:
-    # Import domain models
-    from ...domain.audio.models import (AudioFormatType, AudioQualityMode,
-                                        AudioSession, AudioSessionType,
-                                        AudioSystemConfig)
-    from .audio_manager import (AudioSystemError, EnhancedAudioManager,
-                                create_audio_manager, create_child_safe_config,
-                                create_high_quality_config,
-                                create_low_latency_config, get_audio_manager,
-                                get_default_config, shutdown_audio_manager)
+    from .audio_manager import (EnhancedAudioManager,
+                                create_child_safe_config)
 
-    # Alias for backward compatibility
     AudioManager = EnhancedAudioManager
     ENHANCED_AUDIO_AVAILABLE = True
 except Exception as e:
     logger.warning(f"⚠️ Enhanced audio manager not available: {e}")
     ENHANCED_AUDIO_AVAILABLE = False
-
-# Modern audio manager removed - use EnhancedAudioManager directly
 MODERN_AUDIO_AVAILABLE = False
-
-# Import audio processing components (optional)
 try:
     from .audio_processing import (AudioProcessor, detect_silence,
                                    get_audio_stats, normalize_volume,
@@ -79,8 +64,6 @@ try:
     AUDIO_PROCESSING_AVAILABLE = True
 except ImportError:
     AUDIO_PROCESSING_AVAILABLE = False
-
-# Import audio I/O components (optional)
 try:
     from .audio_io import (AudioFormat, AudioIO, AudioMetadata, AudioQuality,
                            cleanup_temp_files, get_audio_duration,
@@ -89,16 +72,12 @@ try:
     AUDIO_IO_AVAILABLE = True
 except ImportError:
     AUDIO_IO_AVAILABLE = False
-
-# Import TTS components (optional)
 try:
     from .tts_playback import TTSPlayback, cleanup_tts_cache
 
     TTS_AVAILABLE = True
 except ImportError:
     TTS_AVAILABLE = False
-
-# Import state management (optional)
 try:
     from .state_manager import (AudioState, StateChangeEvent, StateManager,
                                 state_manager)
@@ -106,8 +85,6 @@ try:
     STATE_MANAGER_AVAILABLE = True
 except ImportError:
     STATE_MANAGER_AVAILABLE = False
-
-# Import emotion analysis (optional)
 try:
     from .hume_emotion_analyzer import (ChildVoiceEmotion,
                                         HumeSpeechEmotionAnalyzer)
@@ -115,12 +92,7 @@ try:
     EMOTION_ANALYSIS_AVAILABLE = True
 except ImportError:
     EMOTION_ANALYSIS_AVAILABLE = False
-
-
-# Export main classes and functions
 __all__ = []
-
-# Enhanced Audio Manager exports
 if ENHANCED_AUDIO_AVAILABLE:
     __all__.extend(
         [
@@ -140,10 +112,6 @@ if ENHANCED_AUDIO_AVAILABLE:
             "shutdown_audio_manager",
         ]
     )
-
-# Modern Audio Manager exports removed - no longer needed
-
-# Audio processing exports
 if AUDIO_PROCESSING_AVAILABLE:
     __all__.extend(
         [
@@ -155,8 +123,6 @@ if AUDIO_PROCESSING_AVAILABLE:
             "get_audio_stats",
         ]
     )
-
-# Audio I/O exports
 if AUDIO_IO_AVAILABLE:
     __all__.extend(
         [
@@ -170,21 +136,12 @@ if AUDIO_IO_AVAILABLE:
             "get_audio_format",
         ]
     )
-
-# TTS exports
 if TTS_AVAILABLE:
     __all__.extend(["TTSPlayback", "cleanup_tts_cache"])
-
-# State management exports
 if STATE_MANAGER_AVAILABLE:
     __all__.extend(["state_manager", "AudioState", "StateChangeEvent", "StateManager"])
-
-# Emotion analysis exports
 if EMOTION_ANALYSIS_AVAILABLE:
     __all__.extend(["HumeSpeechEmotionAnalyzer", "ChildVoiceEmotion"])
-
-
-# Convenience functions
 
 
 def get_system_info() -> dict:
@@ -209,12 +166,7 @@ def create_default_audio_manager():
         raise ImportError("No audio manager implementation available")
 
 
-# Modern audio manager creation removed - use EnhancedAudioManager directly
-
-
-# For backward compatibility with existing code
 if ENHANCED_AUDIO_AVAILABLE:
-    # Create global instance (use with caution in production)
     _default_audio_manager = None
 
     def get_default_audio_manager():
@@ -231,38 +183,30 @@ if ENHANCED_AUDIO_AVAILABLE:
             _default_audio_manager.cleanup()
             _default_audio_manager = None
 
-    # Add to exports
     __all__.extend(["get_default_audio_manager", "shutdown_default_audio_manager"])
-
-
-# Version info
 __version__ = "2.0.0"
 __author__ = "AI Teddy Bear Team"
 __license__ = "MIT"
 
 
-# Module initialization message
 def _print_init_status():
     """Print module initialization status."""
     available_components = []
     if ENHANCED_AUDIO_AVAILABLE:
         available_components.append("Enhanced Audio Manager")
-    # Modern Audio Manager removed
     if AUDIO_PROCESSING_AVAILABLE:
         available_components.append("Audio Processing")
     if EMOTION_ANALYSIS_AVAILABLE:
         available_components.append("Emotion Analysis")
-
     if available_components:
-        print(
+        logger.info(
             f"🎵 Audio System v{__version__} - Available: {', '.join(available_components)}"
         )
     else:
-        print(
+        logger.info(
             f"⚠️ Audio System v{__version__} - Limited functionality (no components available)"
         )
 
 
-# Print status only if running directly
 if __name__ != "__main__":
     _print_init_status()

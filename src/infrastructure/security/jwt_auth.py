@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 """
 🔐 Enhanced JWT Authentication with Refresh Tokens
@@ -8,10 +8,9 @@ Author: Jaafar Adeeb - Security Lead
 """
 
 import secrets
-import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Set
+from typing import Optional, Set
 
 import jwt
 import redis.asyncio as redis

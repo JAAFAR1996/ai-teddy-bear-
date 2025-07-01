@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 """
 Enterprise Message Sender for AI Teddy Bear
@@ -12,7 +12,7 @@ import json
 import platform
 import uuid
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 import structlog
 from PySide6.QtCore import QObject, QTimer, Signal

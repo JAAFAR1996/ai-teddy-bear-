@@ -1,28 +1,25 @@
-#!/usr/bin/env python3
 """
 🔧 حل المشاكل المتبقية في خدمات التطبيق
 إنشاء المودولات والملفات المفقودة لتحقيق 100% نجاح
 """
 
-import os
 from pathlib import Path
-from typing import Dict, List
 
 
 class ServiceFixer:
+
     def __init__(self):
         self.src_path = Path("src")
         self.fixes_applied = []
 
     def create_ai_service_interface(self):
         """إنشاء AI service interface المفقود"""
-        print("🤖 إنشاء AI Service Interface...")
-
-        interface_content = '''"""
+        logger.info("🤖 إنشاء AI Service Interface...")
+        interface_content = """""\"
 AI Service Interface
 ===================
 Interface for AI services in the Teddy Bear system
-"""
+""\"
 
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List
@@ -30,14 +27,14 @@ from dataclasses import dataclass
 from enum import Enum
 
 class AIModelType(Enum):
-    """AI model types"""
+    ""\"AI model types""\"
     OPENAI_GPT = "openai_gpt"
     CLAUDE = "claude"
     GEMINI = "gemini"
     LOCAL = "local"
 
 class ResponseMode(Enum):
-    """Response generation modes"""
+    ""\"Response generation modes""\"
     CONVERSATIONAL = "conversational"
     EDUCATIONAL = "educational"
     STORYTELLING = "storytelling"
@@ -45,7 +42,7 @@ class ResponseMode(Enum):
 
 @dataclass
 class AIRequest:
-    """AI request data structure"""
+    ""\"AI request data structure""\"
     message: str
     child_id: Optional[str] = None
     context: Dict[str, Any] = None
@@ -58,7 +55,7 @@ class AIRequest:
 
 @dataclass
 class AIResponse:
-    """AI response data structure"""
+    ""\"AI response data structure""\"
     text: str
     confidence: float
     safety_score: float
@@ -70,40 +67,40 @@ class AIResponse:
             self.metadata = {}
 
 class IAIService(ABC):
-    """Interface for AI services"""
+    ""\"Interface for AI services""\"
     
     @abstractmethod
     async def generate_response(
         self, 
         request: AIRequest
     ) -> AIResponse:
-        """Generate AI response for child interaction"""
+        ""\"Generate AI response for child interaction""\"
         pass
     
     @abstractmethod
     async def check_safety(self, message: str) -> float:
-        """Check message safety score (0-1)"""
+        ""\"Check message safety score (0-1)""\"
         pass
     
     @abstractmethod
     def get_available_models(self) -> List[str]:
-        """Get list of available AI models"""
+        ""\"Get list of available AI models""\"
         pass
     
     @abstractmethod
     def get_service_status(self) -> Dict[str, Any]:
-        """Get service health status"""
+        ""\"Get service health status""\"
         pass
 
 class BaseAIService(IAIService):
-    """Base implementation for AI services"""
+    ""\"Base implementation for AI services""\"
     
     def __init__(self, model_type: AIModelType = AIModelType.OPENAI_GPT):
         self.model_type = model_type
         self.safety_threshold = 0.7
     
     async def check_safety(self, message: str) -> float:
-        """Basic safety check implementation"""
+        ""\"Basic safety check implementation""\"
         # Simple keyword-based safety check
         unsafe_keywords = ['violence', 'hate', 'inappropriate']
         
@@ -115,50 +112,49 @@ class BaseAIService(IAIService):
         return 0.9
     
     def get_available_models(self) -> List[str]:
-        """Default available models"""
+        ""\"Default available models""\"
         return ["gpt-3.5-turbo", "gpt-4", "claude-3"]
     
     def get_service_status(self) -> Dict[str, Any]:
-        """Default service status"""
+        ""\"Default service status""\"
         return {
             "status": "healthy",
             "model_type": self.model_type.value,
             "safety_threshold": self.safety_threshold
         }
-'''
-
+"""
         try:
             interface_dir = (
                 self.src_path / "application" / "services" / "ai" / "interfaces"
             )
             interface_dir.mkdir(parents=True, exist_ok=True)
-
-            # Create __init__.py
             init_file = interface_dir / "__init__.py"
             init_file.write_text(
-                '"""\nAI Service Interfaces\n"""\n\nfrom .ai_service_interface import IAIService, BaseAIService, AIRequest, AIResponse\n\n__all__ = ["IAIService", "BaseAIService", "AIRequest", "AIResponse"]\n',
+                """""\"
+AI Service Interfaces
+""\"
+
+from .ai_service_interface import IAIService, BaseAIService, AIRequest, AIResponse
+
+__all__ = ["IAIService", "BaseAIService", "AIRequest", "AIResponse"]
+""",
                 encoding="utf-8",
             )
-
-            # Create the interface file
             interface_file = interface_dir / "ai_service_interface.py"
             interface_file.write_text(interface_content, encoding="utf-8")
-
             self.fixes_applied.append("Created AI service interface")
-            print("  ✅ تم إنشاء AI service interface")
-
+            logger.info("  ✅ تم إنشاء AI service interface")
         except Exception as e:
-            print(f"  ❌ خطأ في إنشاء AI interface: {e}")
+            logger.info(f"  ❌ خطأ في إنشاء AI interface: {e}")
 
     def create_transcription_service(self):
         """إنشاء transcription service المفقود"""
-        print("🎵 إنشاء Transcription Service...")
-
-        transcription_content = '''"""
+        logger.info("🎵 إنشاء Transcription Service...")
+        transcription_content = """""\"
 Audio Transcription Service
 ==========================
 Service for converting speech to text
-"""
+""\"
 
 import asyncio
 from typing import Optional, Dict, Any, List
@@ -169,14 +165,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 class TranscriptionProvider(Enum):
-    """Transcription service providers"""
+    ""\"Transcription service providers""\"
     OPENAI_WHISPER = "openai_whisper"
     AZURE_SPEECH = "azure_speech"
     GOOGLE_SPEECH = "google_speech"
     LOCAL_WHISPER = "local_whisper"
 
 class AudioFormat(Enum):
-    """Supported audio formats"""
+    ""\"Supported audio formats""\"
     WAV = "wav"
     MP3 = "mp3"
     OGG = "ogg"
@@ -184,7 +180,7 @@ class AudioFormat(Enum):
 
 @dataclass
 class TranscriptionRequest:
-    """Transcription request data"""
+    ""\"Transcription request data""\"
     audio_data: bytes
     format: AudioFormat = AudioFormat.WAV
     language: str = "ar"
@@ -193,7 +189,7 @@ class TranscriptionRequest:
 
 @dataclass
 class TranscriptionResult:
-    """Transcription result data"""
+    ""\"Transcription result data""\"
     text: str
     confidence: float
     language: str
@@ -205,7 +201,7 @@ class TranscriptionResult:
             self.metadata = {}
 
 class TranscriptionService:
-    """Audio transcription service"""
+    ""\"Audio transcription service""\"
     
     def __init__(
         self, 
@@ -219,7 +215,7 @@ class TranscriptionService:
         self, 
         request: TranscriptionRequest
     ) -> TranscriptionResult:
-        """Transcribe audio to text"""
+        ""\"Transcribe audio to text""\"
         try:
             logger.info(f"Transcribing audio with {self.provider.value}")
             
@@ -257,7 +253,7 @@ class TranscriptionService:
             )
     
     def _get_mock_transcription(self, request: TranscriptionRequest) -> str:
-        """Mock transcription for testing"""
+        ""\"Mock transcription for testing""\"
         # Simple mock based on audio size
         audio_size = len(request.audio_data)
         
@@ -277,7 +273,7 @@ class TranscriptionService:
                 return "Hello, how are you? I want to play with you."
     
     async def check_audio_quality(self, audio_data: bytes) -> Dict[str, Any]:
-        """Check audio quality metrics"""
+        ""\"Check audio quality metrics""\"
         return {
             "quality_score": 0.8,
             "noise_level": 0.2,
@@ -286,11 +282,11 @@ class TranscriptionService:
         }
     
     def get_supported_languages(self) -> List[str]:
-        """Get list of supported languages"""
+        ""\"Get list of supported languages""\"
         return self.supported_languages
     
     def get_service_info(self) -> Dict[str, Any]:
-        """Get service information"""
+        ""\"Get service information""\"
         return {
             "provider": self.provider.value,
             "supported_languages": self.supported_languages,
@@ -299,18 +295,18 @@ class TranscriptionService:
         }
 
 class TranscriptionServiceFactory:
-    """Factory for creating transcription services"""
+    ""\"Factory for creating transcription services""\"
     
     @staticmethod
     def create_service(
         provider: TranscriptionProvider = TranscriptionProvider.OPENAI_WHISPER
     ) -> TranscriptionService:
-        """Create transcription service instance"""
+        ""\"Create transcription service instance""\"
         return TranscriptionService(provider)
     
     @staticmethod
     def get_available_providers() -> List[TranscriptionProvider]:
-        """Get available transcription providers"""
+        ""\"Get available transcription providers""\"
         return list(TranscriptionProvider)
 
 # Convenience function
@@ -318,7 +314,7 @@ async def transcribe_audio_simple(
     audio_data: bytes, 
     language: str = "ar"
 ) -> str:
-    """Simple transcription function"""
+    ""\"Simple transcription function""\"
     service = TranscriptionService()
     request = TranscriptionRequest(
         audio_data=audio_data,
@@ -326,8 +322,7 @@ async def transcribe_audio_simple(
     )
     result = await service.transcribe_audio(request)
     return result.text
-'''
-
+"""
         try:
             transcription_file = (
                 self.src_path
@@ -337,22 +332,19 @@ async def transcribe_audio_simple(
                 / "transcription_service.py"
             )
             transcription_file.write_text(transcription_content, encoding="utf-8")
-
             self.fixes_applied.append("Created transcription service")
-            print("  ✅ تم إنشاء transcription service")
-
+            logger.info("  ✅ تم إنشاء transcription service")
         except Exception as e:
-            print(f"  ❌ خطأ في إنشاء transcription service: {e}")
+            logger.info(f"  ❌ خطأ في إنشاء transcription service: {e}")
 
     def create_models_module(self):
         """إنشاء models module للخدمات"""
-        print("📊 إنشاء Models Module...")
-
-        models_content = '''"""
+        logger.info("📊 إنشاء Models Module...")
+        models_content = """""\"
 Application Service Models
 =========================
 Shared models and data structures for application services
-"""
+""\"
 
 from dataclasses import dataclass, field
 from typing import Dict, Any, Optional, List
@@ -361,14 +353,14 @@ from enum import Enum
 import uuid
 
 class ServiceStatus(Enum):
-    """Service status enumeration"""
+    ""\"Service status enumeration""\"
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
     UNKNOWN = "unknown"
 
 class RequestType(Enum):
-    """Request type enumeration"""
+    ""\"Request type enumeration""\"
     VOICE_INTERACTION = "voice_interaction"
     TEXT_MESSAGE = "text_message"
     MEDIA_UPLOAD = "media_upload"
@@ -376,7 +368,7 @@ class RequestType(Enum):
 
 @dataclass
 class ServiceRequest:
-    """Base service request model"""
+    ""\"Base service request model""\"
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     type: RequestType = RequestType.VOICE_INTERACTION
     timestamp: datetime = field(default_factory=datetime.now)
@@ -386,7 +378,7 @@ class ServiceRequest:
 
 @dataclass
 class ServiceResponse:
-    """Base service response model"""
+    ""\"Base service response model""\"
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     request_id: Optional[str] = None
     success: bool = True
@@ -397,7 +389,7 @@ class ServiceResponse:
 
 @dataclass
 class ChildProfile:
-    """Child profile model"""
+    ""\"Child profile model""\"
     id: str
     name: str
     age: int
@@ -409,7 +401,7 @@ class ChildProfile:
 
 @dataclass
 class SessionContext:
-    """Session context model"""
+    ""\"Session context model""\"
     session_id: str
     child_id: str
     started_at: datetime = field(default_factory=datetime.now)
@@ -419,7 +411,7 @@ class SessionContext:
 
 @dataclass
 class VoiceMessage:
-    """Voice message model"""
+    ""\"Voice message model""\"
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     audio_data: Optional[bytes] = None
     transcribed_text: Optional[str] = None
@@ -431,7 +423,7 @@ class VoiceMessage:
 
 @dataclass
 class TextMessage:
-    """Text message model"""
+    ""\"Text message model""\"
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     text: str = ""
     language: str = "ar"
@@ -440,7 +432,7 @@ class TextMessage:
 
 @dataclass
 class AIGenerationRequest:
-    """AI generation request model"""
+    ""\"AI generation request model""\"
     message: str
     child_profile: Optional[ChildProfile] = None
     session_context: Optional[SessionContext] = None
@@ -449,7 +441,7 @@ class AIGenerationRequest:
 
 @dataclass
 class AIGenerationResponse:
-    """AI generation response model"""
+    ""\"AI generation response model""\"
     generated_text: str
     confidence: float
     safety_score: float
@@ -459,7 +451,7 @@ class AIGenerationResponse:
 
 @dataclass
 class ParentReport:
-    """Parent report model"""
+    ""\"Parent report model""\"
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     child_id: str
     report_type: str = "daily"
@@ -474,7 +466,7 @@ class ParentReport:
 
 @dataclass
 class ServiceHealth:
-    """Service health model"""
+    ""\"Service health model""\"
     service_name: str
     status: ServiceStatus
     last_check: datetime = field(default_factory=datetime.now)
@@ -485,7 +477,7 @@ class ServiceHealth:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 class ErrorCode(Enum):
-    """Error codes for service operations"""
+    ""\"Error codes for service operations""\"
     VALIDATION_ERROR = "VALIDATION_ERROR"
     AUTHENTICATION_ERROR = "AUTHENTICATION_ERROR"
     AUTHORIZATION_ERROR = "AUTHORIZATION_ERROR"
@@ -497,7 +489,7 @@ class ErrorCode(Enum):
 
 @dataclass
 class ServiceError:
-    """Service error model"""
+    ""\"Service error model""\"
     code: ErrorCode
     message: str
     details: Optional[str] = None
@@ -507,7 +499,7 @@ class ServiceError:
 
 # Utility functions
 def create_success_response(data: Dict[str, Any], request_id: Optional[str] = None) -> ServiceResponse:
-    """Create a successful service response"""
+    ""\"Create a successful service response""\"
     return ServiceResponse(
         request_id=request_id,
         success=True,
@@ -515,7 +507,7 @@ def create_success_response(data: Dict[str, Any], request_id: Optional[str] = No
     )
 
 def create_error_response(error: ServiceError, request_id: Optional[str] = None) -> ServiceResponse:
-    """Create an error service response"""
+    ""\"Create an error service response""\"
     return ServiceResponse(
         request_id=request_id,
         success=False,
@@ -524,7 +516,7 @@ def create_error_response(error: ServiceError, request_id: Optional[str] = None)
     )
 
 def validate_child_profile(profile: ChildProfile) -> List[str]:
-    """Validate child profile data"""
+    ""\"Validate child profile data""\"
     errors = []
     
     if not profile.name or len(profile.name.strip()) < 2:
@@ -537,27 +529,23 @@ def validate_child_profile(profile: ChildProfile) -> List[str]:
         errors.append("Unsupported language")
     
     return errors
-'''
-
+"""
         try:
             models_file = self.src_path / "application" / "services" / "models.py"
             models_file.write_text(models_content, encoding="utf-8")
-
             self.fixes_applied.append("Created models module")
-            print("  ✅ تم إنشاء models module")
-
+            logger.info("  ✅ تم إنشاء models module")
         except Exception as e:
-            print(f"  ❌ خطأ في إنشاء models: {e}")
+            logger.info(f"  ❌ خطأ في إنشاء models: {e}")
 
     def create_use_cases_module(self):
         """إنشاء use cases module للخدمات الأساسية"""
-        print("🎯 إنشاء Use Cases Module...")
-
-        use_cases_content = '''"""
+        logger.info("🎯 إنشاء Use Cases Module...")
+        use_cases_content = """""\"
 Core Use Cases
 ==============
 Business use cases for the AI Teddy Bear application
-"""
+""\"
 
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List
@@ -567,29 +555,29 @@ import logging
 logger = logging.getLogger(__name__)
 
 class UseCase(ABC):
-    """Base use case interface"""
+    ""\"Base use case interface""\"
     
     @abstractmethod
     async def execute(self, request: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute the use case"""
+        ""\"Execute the use case""\"
         pass
 
 @dataclass
 class VoiceInteractionRequest:
-    """Voice interaction use case request"""
+    ""\"Voice interaction use case request""\"
     child_id: str
     audio_data: bytes
     session_id: Optional[str] = None
     language: str = "ar"
 
 class VoiceInteractionUseCase(UseCase):
-    """Handle voice interaction with child"""
+    ""\"Handle voice interaction with child""\"
     
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
     
     async def execute(self, request: VoiceInteractionRequest) -> Dict[str, Any]:
-        """Process voice interaction"""
+        ""\"Process voice interaction""\"
         try:
             self.logger.info(f"Processing voice interaction for child {request.child_id}")
             
@@ -621,38 +609,38 @@ class VoiceInteractionUseCase(UseCase):
             }
     
     async def _transcribe_audio(self, audio_data: bytes, language: str) -> str:
-        """Transcribe audio to text"""
+        ""\"Transcribe audio to text""\"
         # Mock implementation
         return "مرحبا، كيف حالك؟"
     
     async def _check_safety(self, text: str) -> float:
-        """Check text safety"""
+        ""\"Check text safety""\"
         # Mock implementation
         return 0.95
     
     async def _generate_response(self, text: str, child_id: str) -> str:
-        """Generate AI response"""
+        ""\"Generate AI response""\"
         # Mock implementation
         return "مرحبا! أنا بخير، شكراً لسؤالك. كيف يمكنني مساعدتك اليوم؟"
     
     async def _text_to_speech(self, text: str, language: str) -> bytes:
-        """Convert text to speech"""
+        ""\"Convert text to speech""\"
         # Mock implementation
         return b"mock_audio_data"
 
 @dataclass
 class ChildRegistrationRequest:
-    """Child registration use case request"""
+    ""\"Child registration use case request""\"
     name: str
     age: int
     language: str = "ar"
     parent_id: Optional[str] = None
 
 class ChildRegistrationUseCase(UseCase):
-    """Register a new child"""
+    ""\"Register a new child""\"
     
     async def execute(self, request: ChildRegistrationRequest) -> Dict[str, Any]:
-        """Register new child"""
+        ""\"Register new child""\"
         try:
             # Validate input
             if not request.name or len(request.name.strip()) < 2:
@@ -681,28 +669,28 @@ class ChildRegistrationUseCase(UseCase):
             }
     
     async def _create_child_profile(self, request: ChildRegistrationRequest) -> str:
-        """Create child profile in database"""
+        ""\"Create child profile in database""\"
         # Mock implementation
         import uuid
         return str(uuid.uuid4())
     
     async def _setup_default_preferences(self, child_id: str, request: ChildRegistrationRequest):
-        """Setup default preferences for child"""
+        ""\"Setup default preferences for child""\"
         # Mock implementation
         pass
 
 @dataclass
 class ParentReportRequest:
-    """Parent report generation request"""
+    ""\"Parent report generation request""\"
     child_id: str
     period_days: int = 7
     report_type: str = "weekly"
 
 class GenerateParentReportUseCase(UseCase):
-    """Generate report for parents"""
+    ""\"Generate report for parents""\"
     
     async def execute(self, request: ParentReportRequest) -> Dict[str, Any]:
-        """Generate parent report"""
+        ""\"Generate parent report""\"
         try:
             # Gather interaction data
             interactions = await self._get_interactions(request.child_id, request.period_days)
@@ -736,27 +724,27 @@ class GenerateParentReportUseCase(UseCase):
             }
     
     async def _get_interactions(self, child_id: str, period_days: int) -> List[Dict]:
-        """Get child interactions from database"""
+        ""\"Get child interactions from database""\"
         # Mock implementation
         return []
     
     async def _analyze_educational_progress(self, interactions: List[Dict]) -> Dict:
-        """Analyze educational progress"""
+        ""\"Analyze educational progress""\"
         # Mock implementation
         return {"progress_score": 0.8, "topics_covered": ["math", "science"]}
     
     async def _check_safety_incidents(self, interactions: List[Dict]) -> Dict:
-        """Check for safety incidents"""
+        ""\"Check for safety incidents""\"
         # Mock implementation
         return {"incidents_count": 0, "safety_score": 0.95}
     
     async def _generate_recommendations(self, interactions: List[Dict]) -> List[str]:
-        """Generate recommendations for parents"""
+        ""\"Generate recommendations for parents""\"
         # Mock implementation
         return ["Continue educational activities", "Encourage creative play"]
 
 class UseCaseFactory:
-    """Factory for creating use case instances"""
+    ""\"Factory for creating use case instances""\"
     
     @staticmethod
     def create_voice_interaction() -> VoiceInteractionUseCase:
@@ -772,7 +760,7 @@ class UseCaseFactory:
 
 # Convenience functions
 async def process_voice_interaction(child_id: str, audio_data: bytes, language: str = "ar") -> Dict[str, Any]:
-    """Process voice interaction - convenience function"""
+    ""\"Process voice interaction - convenience function""\"
     use_case = UseCaseFactory.create_voice_interaction()
     request = VoiceInteractionRequest(
         child_id=child_id,
@@ -782,7 +770,7 @@ async def process_voice_interaction(child_id: str, audio_data: bytes, language: 
     return await use_case.execute(request)
 
 async def register_child(name: str, age: int, language: str = "ar") -> Dict[str, Any]:
-    """Register child - convenience function"""
+    ""\"Register child - convenience function""\"
     use_case = UseCaseFactory.create_child_registration()
     request = ChildRegistrationRequest(
         name=name,
@@ -790,36 +778,27 @@ async def register_child(name: str, age: int, language: str = "ar") -> Dict[str,
         language=language
     )
     return await use_case.execute(request)
-'''
-
+"""
         try:
             use_cases_dir = (
                 self.src_path / "application" / "services" / "core" / "use_cases"
             )
             use_cases_dir.mkdir(parents=True, exist_ok=True)
-
-            # Create __init__.py
             init_file = use_cases_dir / "__init__.py"
             init_file.write_text(
                 '"""\nCore Use Cases\n"""\n\nfrom .use_cases import *\n',
                 encoding="utf-8",
             )
-
-            # Create use cases file
             use_cases_file = use_cases_dir / "use_cases.py"
             use_cases_file.write_text(use_cases_content, encoding="utf-8")
-
             self.fixes_applied.append("Created use cases module")
-            print("  ✅ تم إنشاء use cases module")
-
+            logger.info("  ✅ تم إنشاء use cases module")
         except Exception as e:
-            print(f"  ❌ خطأ في إنشاء use cases: {e}")
+            logger.info(f"  ❌ خطأ في إنشاء use cases: {e}")
 
     def install_missing_dependencies(self):
         """محاولة تثبيت المكتبات المفقودة"""
-        print("📦 تثبيت Dependencies المفقودة...")
-
-        # Create a requirements file with missing dependencies
+        logger.info("📦 تثبيت Dependencies المفقودة...")
         requirements_content = """# Missing dependencies for AI Teddy Bear
 # These are mock/optional dependencies for development
 
@@ -842,16 +821,13 @@ async def register_child(name: str, age: int, language: str = "ar") -> Dict[str,
 # Note: These are commented out to avoid installation errors
 # Uncomment and install when needed: pip install -r requirements-optional.txt
 """
-
         try:
             req_file = Path("requirements-optional.txt")
             req_file.write_text(requirements_content, encoding="utf-8")
-
-            # Create a mock elevenlabs module for testing
-            mock_elevenlabs_content = '''"""
+            mock_elevenlabs_content = """""\"
 Mock ElevenLabs module for development/testing
 This is a placeholder to prevent import errors
-"""
+""\"
 
 class Voice:
     def __init__(self, voice_id: str, name: str = ""):
@@ -864,12 +840,12 @@ class VoiceSettings:
         self.similarity_boost = similarity_boost
 
 def generate(text: str, voice: Voice, voice_settings: VoiceSettings = None):
-    """Mock generate function"""
+    ""\"Mock generate function""\"
     # Return mock audio data
     return b"mock_audio_data_for_testing"
 
 def voices():
-    """Mock voices function"""
+    ""\"Mock voices function""\"
     return [
         Voice("voice1", "Arabic Voice"),
         Voice("voice2", "English Voice")
@@ -881,35 +857,28 @@ class Client:
         self.api_key = api_key
     
     def generate(self, text: str, voice: str, voice_settings: dict = None):
-        return b"mock_audio_data"
-'''
-
-            # Create mock elevenlabs in a temporary location
+        return b"mock_audio_data\"
+"""
             mock_dir = self.src_path / "infrastructure" / "external_services" / "mock"
             mock_dir.mkdir(parents=True, exist_ok=True)
-
             mock_file = mock_dir / "elevenlabs.py"
             mock_file.write_text(mock_elevenlabs_content, encoding="utf-8")
-
             self.fixes_applied.append("Created mock dependencies")
-            print("  ✅ تم إنشاء mock dependencies")
-            print("  📄 ملف requirements-optional.txt تم إنشاؤه")
-
+            logger.info("  ✅ تم إنشاء mock dependencies")
+            logger.info("  📄 ملف requirements-optional.txt تم إنشاؤه")
         except Exception as e:
-            print(f"  ❌ خطأ في إنشاء dependencies: {e}")
+            logger.info(f"  ❌ خطأ في إنشاء dependencies: {e}")
 
     def fix_all_services(self):
         """إصلاح جميع خدمات التطبيق"""
-        print("🚀 بدء إصلاح جميع خدمات التطبيق...")
-        print("=" * 60)
-
+        logger.info("🚀 بدء إصلاح جميع خدمات التطبيق...")
+        logger.info("=" * 60)
         self.create_ai_service_interface()
         self.create_transcription_service()
         self.create_models_module()
         self.create_use_cases_module()
         self.install_missing_dependencies()
-
-        print(f"\n✅ تم تطبيق {len(self.fixes_applied)} إصلاح")
+        logger.info(f"\n✅ تم تطبيق {len(self.fixes_applied)} إصلاح")
         return self.fixes_applied
 
 
@@ -917,12 +886,10 @@ def main():
     """تشغيل إصلاح الخدمات"""
     fixer = ServiceFixer()
     fixes = fixer.fix_all_services()
-
-    print(f"\n📋 ملخص الإصلاحات:")
+    logger.info("\n📋 ملخص الإصلاحات:")
     for fix in fixes:
-        print(f"  - {fix}")
-
-    print(f"\n🎯 الآن يمكن إعادة تشغيل الاختبار لرؤية التحسن!")
+        logger.info(f"  - {fix}")
+    logger.info("\n🎯 الآن يمكن إعادة تشغيل الاختبار لرؤية التحسن!")
 
 
 if __name__ == "__main__":

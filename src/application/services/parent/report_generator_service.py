@@ -10,7 +10,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -323,7 +323,7 @@ class ReportGeneratorService:
         template += "</div>"
 
         if progress.concerning_patterns:
-            template += f"""
+            template += """
             <div class="concerns">
                 <h3>⚠️ نقاط تحتاج انتباه</h3>
                 <ul>
@@ -333,7 +333,7 @@ class ReportGeneratorService:
             template += "</ul></div>"
 
         if progress.recommended_activities:
-            template += f"""
+            template += """
             <div class="recommendations">
                 <h3>💡 الأنشطة المُوصى بها</h3>
                 <ul>

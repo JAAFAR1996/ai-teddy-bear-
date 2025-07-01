@@ -6,7 +6,6 @@ Generated from: accessibility_service.py
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional
 
 
 class SpecialNeedType(Enum):

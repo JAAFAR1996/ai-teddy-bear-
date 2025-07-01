@@ -3,12 +3,11 @@
 Memory-only cache service for testing without Redis dependency
 """
 
-import asyncio
 import hashlib
 import logging
 import time
 from functools import wraps
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 

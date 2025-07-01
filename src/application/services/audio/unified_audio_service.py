@@ -7,74 +7,32 @@ UnifiedAudioService
 تم الإنشاء: 2025-06-30 05:25:00
 """
 
-import asyncio
-import base64
-import io
-import json
 import logging
 import os
-import re
-import struct
-import tempfile
-import time
-import uuid
-import wave
-from abc import ABC, abstractmethod
 from collections import deque
-from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
-from pathlib import Path
-from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-import aiofiles
 import azure.cognitiveservices.speech as speechsdk
-import librosa
-import noisereduce as nr
 import numpy as np
-import pyrubberband as pyrb
-import sounddevice as sd
-import soundfile as sf
-import speech_recognition as sr
-import torch
-import torchaudio
 import webrtcvad
 import whisper
-from core.domain.value_objects import EmotionalTone, Language
-from core.infrastructure.caching.cache_service import CacheService
-from core.infrastructure.config import Settings
-from core.infrastructure.monitoring.metrics import metrics_collector
-from elevenlabs import ElevenLabs, Voice, VoiceSettings, generate, stream
+from core.domain.value_objects import EmotionalTone
+from elevenlabs import VoiceSettings
 from elevenlabs.client import AsyncElevenLabs
-from gtts import gTTS
-from langdetect import detect
-from openai import AsyncOpenAI
-from pydub import AudioSegment
-from pydub.effects import normalize
-from scipy import signal
-from scipy.io import wavfile
-from textblob import TextBlob
 
-from src.application.services.ai.emotion_analyzer_service import \
-    EmotionAnalyzer
 from src.application.services.streaming_service import StreamingService
-from src.core.application.interfaces.services import IAIService
-from src.core.domain.entities.audio_stream import AudioStream
-from src.core.domain.entities.child import Child, ChildPreferences
-from src.domain.emotion_config import EmotionConfig
-from src.domain.value_objects import Confidence, EmotionalTone
-from src.infrastructure.config import get_config
+from src.domain.value_objects import EmotionalTone
 
 logger = logging.getLogger(__name__)
 
 
 class UnifiedAudioService:
     """
-    خدمة موحدة تجمع وظائف متعددة من:
-        - deprecated\services\audio_services\voice_service.py
-    - deprecated\services\audio_services\voice_interaction_service.py
-    - deprecated\services\audio_services\synthesis_service.py
-    - deprecated\services\audio_services\transcription_service.py
+        خدمة موحدة تجمع وظائف متعددة من:
+            - deprecated/services/audio_services/voice_service.py
+    - deprecated/services/audio_services/voice_interaction_service.py
+    - deprecated/services/audio_services/synthesis_service.py
+    - deprecated/services/audio_services/transcription_service.py
     """
 
     def __init__(self):

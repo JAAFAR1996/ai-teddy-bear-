@@ -1,6 +1,5 @@
 ﻿"""Audio driver for ESP32 teddy bear simulator."""
 
-import threading
 import time
 from typing import Any, Dict, Optional
 

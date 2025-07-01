@@ -3,15 +3,12 @@
 Comprehensive tests for Speech-to-Text functionality
 """
 
-import asyncio
 import base64
 import os
 import struct
-import tempfile
 import wave
 from io import BytesIO
-from pathlib import Path
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 

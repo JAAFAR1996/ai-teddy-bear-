@@ -3,8 +3,6 @@ import logging
 import os
 import platform
 import socket
-import subprocess
-import sys
 from typing import Any, Dict
 
 import psutil
@@ -46,13 +44,13 @@ class SystemDiagnostics:
                 "hardware": {
                     "cpu_count": os.cpu_count(),
                     "memory": {
-                        "total": psutil.virtual_memory().total / (1024**3),  # GB
-                        "available": psutil.virtual_memory().available / (1024**3),
+                        "total": psutil.virtual_memory().total / 1024**3,
+                        "available": psutil.virtual_memory().available / 1024**3,
                         "percent_used": psutil.virtual_memory().percent,
                     },
                     "disk": {
-                        "total": psutil.disk_usage("/").total / (1024**3),
-                        "free": psutil.disk_usage("/").free / (1024**3),
+                        "total": psutil.disk_usage("/").total / 1024**3,
+                        "free": psutil.disk_usage("/").free / 1024**3,
                         "percent_used": psutil.disk_usage("/").percent,
                     },
                 },
@@ -80,9 +78,7 @@ class SystemDiagnostics:
             "redis",
             "sqlalchemy",
         ]
-
         dependency_status = {}
-
         for dep in dependencies:
             try:
                 module = __import__(dep)
@@ -92,7 +88,6 @@ class SystemDiagnostics:
                 }
             except (ImportError, AttributeError):
                 dependency_status[dep] = {"installed": False, "version": None}
-
         return dependency_status
 
     def gpu_diagnostics(self) -> Dict[str, Any]:
@@ -144,13 +139,9 @@ class SystemDiagnostics:
         """
         try:
             diagnostics = self.run_comprehensive_diagnostics()
-
-            # Ensure directory exists
             os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-
             with open(output_path, "w") as f:
                 json.dump(diagnostics, f, indent=4)
-
             self._logger.info(f"Diagnostic report exported to {output_path}")
         except Exception as e:
             self._logger.error(f"Error exporting diagnostics: {e}")
@@ -173,15 +164,11 @@ def main():
     parser.add_argument(
         "-p", "--print", action="store_true", help="Print diagnostic report to console"
     )
-
     args = parser.parse_args()
-
     diagnostics = SystemDiagnostics()
     report = diagnostics.run_comprehensive_diagnostics()
-
     if args.print:
-        print(json.dumps(report, indent=4))
-
+        logger.info(json.dumps(report, indent=4))
     diagnostics.export_diagnostics(args.output)
 
 

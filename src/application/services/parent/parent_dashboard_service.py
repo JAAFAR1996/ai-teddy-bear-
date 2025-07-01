@@ -9,10 +9,8 @@ This service now delegates to specialized components following Clean Architectur
 Migrated from 1295-line God Class to organized, maintainable architecture.
 """
 
-import asyncio
 import logging
 import os
-from dataclasses import asdict
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
@@ -21,8 +19,7 @@ from src.application.services.parentdashboard import (
     DashboardAlertService, DashboardAnalyticsService, DashboardOrchestrator,
     DashboardSessionService)
 # Domain imports
-from src.domain.parentdashboard import (AccessControlService, Alert,
-                                        AlertSeverity, AlertType,
+from src.domain.parentdashboard import (AccessControlService, AlertSeverity, AlertType,
                                         AnalyticsDomainService, ChildProfile,
                                         ContentAnalysisService,
                                         ParentalControl, ParentUser)

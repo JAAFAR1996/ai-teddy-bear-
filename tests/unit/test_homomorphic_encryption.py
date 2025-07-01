@@ -5,9 +5,8 @@ Security Team Implementation - Task 9 Tests
 Author: Security Team Lead
 """
 
-import asyncio
 import hashlib
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 
 import numpy as np
 import pytest

@@ -13,8 +13,7 @@ import hashlib
 import logging
 import time
 from dataclasses import dataclass, field
-from functools import lru_cache
-from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from typing import Any, AsyncIterator, Dict, List, Optional
 
 import numpy as np
 import structlog

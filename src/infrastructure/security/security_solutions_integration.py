@@ -1,3 +1,4 @@
+import ast
 """
 Security Solutions Integration
 Demonstrates how to integrate all security components together
@@ -221,10 +222,10 @@ async def main():
     # Example 4: Safe expression evaluation
     try:
         # Safe mathematical expression
-        result = safe_eval("2 + 3 * 4")
+        result = safe_ast.literal_eval("2 + 3 * 4")
 
         # Blocked dangerous expression
-        result = safe_eval("__import__('os').system('ls')")
+        result = safe_ast.literal_eval("__import__('os').system('ls')")
     except ValueError as e:
 
     # Example 5: Configuration access
@@ -315,7 +316,7 @@ class SecurityMigrationGuide:
         print(
             """
         # Before (INSECURE):
-        result = eval(user_input)
+        result = ast.literal_eval(user_input)
         
         # After (SECURE):
         parser = create_safe_parser()

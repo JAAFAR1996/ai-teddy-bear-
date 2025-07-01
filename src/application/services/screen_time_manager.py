@@ -139,14 +139,14 @@ class ScreenTimeManager:
         settings = self.get_child_settings(child_id)
 
         if not self._is_allowed_time(settings):
-            logger.info(f"⛔ وقت غير مسموح للعب. تعال لنلعب في وقت آخر!")
+            logger.info("⛔ وقت غير مسموح للعب. تعال لنلعب في وقت آخر!")
             return False
 
         today = datetime.now().strftime("%Y-%m-%d")
         daily_used = self._get_daily_usage(child_id, today)
 
         if daily_used >= settings.daily_limit_minutes:
-            logger.info(f"📅 انتهى وقت اللعب لليوم! سنلعب مرة أخرى غداً 🌙")
+            logger.info("📅 انتهى وقت اللعب لليوم! سنلعب مرة أخرى غداً 🌙")
             return False
 
         session = UsageSession(

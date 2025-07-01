@@ -5,7 +5,7 @@ Analyzes skill development and learning patterns
 
 import logging
 from collections import Counter
-from typing import Any, Dict, List
+from typing import List
 
 from ..models.report_models import InteractionAnalysis, SkillAnalysis
 

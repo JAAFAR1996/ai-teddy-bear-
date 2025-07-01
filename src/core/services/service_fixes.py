@@ -1,18 +1,18 @@
-#!/usr/bin/env python3
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 🔧 إصلاح الخدمات المفقودة - AI Teddy Bear
 حل المشاكل المحددة في خدمات التطبيق
 """
-
-import os
 from pathlib import Path
 
 
 def create_ai_interface():
     """إنشاء AI service interface"""
-    print("🤖 إنشاء AI Service Interface...")
-
-    content = '''"""AI Service Interface"""
+    logger.info("🤖 إنشاء AI Service Interface...")
+    content = """""\"AI Service Interface""\"
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
 from dataclasses import dataclass
@@ -48,26 +48,20 @@ class BaseAIService(IAIService):
     
     def get_available_models(self) -> List[str]:
         return ["gpt-3.5-turbo", "gpt-4"]
-'''
-
-    # Create directory
+"""
     interface_dir = Path("src/application/services/ai/interfaces")
     interface_dir.mkdir(parents=True, exist_ok=True)
-
-    # Create files
     (interface_dir / "__init__.py").write_text(
         "from .ai_service_interface import *\n", encoding="utf-8"
     )
     (interface_dir / "ai_service_interface.py").write_text(content, encoding="utf-8")
-
-    print("  ✅ تم إنشاء AI service interface")
+    logger.info("  ✅ تم إنشاء AI service interface")
 
 
 def create_transcription_service():
     """إنشاء transcription service"""
-    print("🎵 إنشاء Transcription Service...")
-
-    content = '''"""Audio Transcription Service"""
+    logger.info("🎵 إنشاء Transcription Service...")
+    content = """""\"Audio Transcription Service""\"
 from typing import Optional
 from dataclasses import dataclass
 
@@ -96,18 +90,16 @@ class TranscriptionService:
     
     def get_supported_languages(self):
         return ["ar", "en", "fr", "es"]
-'''
-
+"""
     file_path = Path("src/application/services/audio/transcription_service.py")
     file_path.write_text(content, encoding="utf-8")
-    print("  ✅ تم إنشاء transcription service")
+    logger.info("  ✅ تم إنشاء transcription service")
 
 
 def create_models_module():
     """إنشاء models module"""
-    print("📊 إنشاء Models Module...")
-
-    content = '''"""Application Service Models"""
+    logger.info("📊 إنشاء Models Module...")
+    content = """""\"Application Service Models""\"
 from dataclasses import dataclass
 from typing import Dict, Any, Optional, List
 from datetime import datetime
@@ -154,18 +146,16 @@ def create_success_response(data: Dict[str, Any]) -> ServiceResponse:
 
 def create_error_response(error: str) -> ServiceResponse:
     return ServiceResponse(id="", success=False, error_message=error)
-'''
-
+"""
     file_path = Path("src/application/services/models.py")
     file_path.write_text(content, encoding="utf-8")
-    print("  ✅ تم إنشاء models module")
+    logger.info("  ✅ تم إنشاء models module")
 
 
 def create_use_cases():
     """إنشاء use cases module"""
-    print("🎯 إنشاء Use Cases Module...")
-
-    content = '''"""Core Use Cases"""
+    logger.info("🎯 إنشاء Use Cases Module...")
+    content = """""\"Core Use Cases""\"
 from abc import ABC, abstractmethod
 from typing import Dict, Any
 from dataclasses import dataclass
@@ -213,24 +203,20 @@ class UseCaseFactory:
     @staticmethod  
     def create_child_registration():
         return ChildRegistrationUseCase()
-'''
-
+"""
     use_cases_dir = Path("src/application/services/core/use_cases")
     use_cases_dir.mkdir(parents=True, exist_ok=True)
-
     (use_cases_dir / "__init__.py").write_text(
         "from .use_cases import *\n", encoding="utf-8"
     )
     (use_cases_dir / "use_cases.py").write_text(content, encoding="utf-8")
-
-    print("  ✅ تم إنشاء use cases module")
+    logger.info("  ✅ تم إنشاء use cases module")
 
 
 def create_mock_elevenlabs():
     """إنشاء mock elevenlabs للتطوير"""
-    print("🔊 إنشاء Mock ElevenLabs...")
-
-    content = '''"""Mock ElevenLabs for development"""
+    logger.info("🔊 إنشاء Mock ElevenLabs...")
+    content = """""\"Mock ElevenLabs for development""\"
 
 class Voice:
     def __init__(self, voice_id: str, name: str = ""):
@@ -250,30 +236,25 @@ def voices():
         Voice("voice1", "Arabic Voice"),
         Voice("voice2", "English Voice")
     ]
-'''
-
+"""
     mock_dir = Path("src/infrastructure/external_services/mock")
     mock_dir.mkdir(parents=True, exist_ok=True)
-
     (mock_dir / "__init__.py").write_text("", encoding="utf-8")
     (mock_dir / "elevenlabs.py").write_text(content, encoding="utf-8")
-
-    print("  ✅ تم إنشاء mock elevenlabs")
+    logger.info("  ✅ تم إنشاء mock elevenlabs")
 
 
 def main():
     """تشغيل جميع الإصلاحات"""
-    print("🚀 بدء إصلاح الخدمات المفقودة...")
-    print("=" * 50)
-
+    logger.info("🚀 بدء إصلاح الخدمات المفقودة...")
+    logger.info("=" * 50)
     create_ai_interface()
     create_transcription_service()
     create_models_module()
     create_use_cases()
     create_mock_elevenlabs()
-
-    print("\n✅ تم إنشاء جميع الخدمات المفقودة!")
-    print("🎯 يمكن الآن إعادة تشغيل الاختبار")
+    logger.info("\n✅ تم إنشاء جميع الخدمات المفقودة!")
+    logger.info("🎯 يمكن الآن إعادة تشغيل الاختبار")
 
 
 if __name__ == "__main__":

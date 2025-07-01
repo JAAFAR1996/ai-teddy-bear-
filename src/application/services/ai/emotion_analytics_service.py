@@ -2,11 +2,11 @@
 
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 import structlog
 
-from ....domain.emotion.models import (EmotionAnalytics, EmotionInsight,
+from ....domain.emotion.models import (EmotionInsight,
                                        EmotionResult, EmotionTrend,
                                        ParentalReport, RiskAssessment,
                                        RiskLevel)

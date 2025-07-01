@@ -7,7 +7,7 @@ Domain service for analyzing conversation content and detecting issues.
 
 import re
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List
 
 from ..models.alert_models import AlertSeverity, AlertType
 from ..models.analytics_models import ConversationLog

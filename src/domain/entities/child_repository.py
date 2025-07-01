@@ -1,13 +1,12 @@
 # child_repository.py - Enhanced repository for child profiles
 
-import asyncio
 from abc import abstractmethod
-from datetime import date, datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.core.domain.entities.child import (Child, ChildPreferences,
                                             DevelopmentMilestone,
-                                            InteractionStyle, Language,
+                                            Language,
                                             LearningLevel)
 from src.infrastructure.persistence.base import (BaseRepository,
                                                  BulkOperationResult,

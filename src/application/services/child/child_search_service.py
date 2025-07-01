@@ -5,12 +5,11 @@ Application service for child search and filtering operations.
 """
 
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from src.core.domain.entities.child import Child
 from src.domain.child.models.child_search_criteria import (AgeGroup, AgeRange,
-                                                           ChildSearchCriteria,
-                                                           SearchFilters)
+                                                           ChildSearchCriteria)
 from src.infrastructure.persistence.child_repository import ChildRepository
 
 

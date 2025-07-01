@@ -4,10 +4,9 @@
 Orchestrator pattern for coordinating complex cleanup operations
 """
 
-import asyncio
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import structlog
 from dependency_injector.wiring import Provide, inject

@@ -9,9 +9,7 @@ New coordinator size: ~300 lines (76.7% reduction)
 
 import asyncio
 import threading
-import time
 import uuid
-from datetime import datetime
 from typing import Any, Dict, Optional
 
 import structlog
@@ -21,8 +19,7 @@ from ...application.services.esp32 import (AudioManagementService,
                                            DeviceManagementService,
                                            GUIManagementService,
                                            NetworkCommunicationService)
-from ...domain.esp32.models import (AudioSettings, ChildProfile, DeviceStatus,
-                                    ESP32Device, NetworkConnection, PowerState,
+from ...domain.esp32.models import (NetworkConnection, PowerState,
                                     SpeechRecognition)
 from ...infrastructure.esp32 import (AudioDriver, GUIComponents,
                                      HardwareSimulator, NetworkAdapter)

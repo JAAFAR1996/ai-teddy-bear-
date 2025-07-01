@@ -4,7 +4,6 @@ Handles audio enhancement and processing
 """
 
 import logging
-from typing import Optional
 
 import noisereduce as nr
 import numpy as np

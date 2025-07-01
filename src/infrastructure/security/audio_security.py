@@ -7,11 +7,10 @@ Author: Jaafar Adeeb - Security Lead
 
 import base64
 import hashlib
-import os
 import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 import structlog
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM

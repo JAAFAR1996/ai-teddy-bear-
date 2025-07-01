@@ -1,14 +1,13 @@
-#!/usr/bin/env python3
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 🏗️ DDD Structure Creator
 Lead Architect: جعفر أديب
 Creates complete Domain-Driven Design structure with base classes
 """
-
-import os
-from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
 
 
 class DDDStructureCreator:
@@ -19,28 +18,19 @@ class DDDStructureCreator:
 
     def create_complete_structure(self):
         """Create the complete DDD structure"""
-        print("🏗️ Creating DDD Structure...")
-
-        # Create directories
+        logger.info("🏗️ Creating DDD Structure...")
         self._create_directories()
-
-        # Create base classes
         self._create_domain_base_classes()
         self._create_application_base_classes()
         self._create_infrastructure_base_classes()
         self._create_presentation_base_classes()
-
-        # Create configuration files
         self._create_config_files()
-
-        print("✅ DDD Structure created successfully!")
+        logger.info("✅ DDD Structure created successfully!")
 
     def _create_directories(self):
         """Create all DDD directories"""
         directories = [
-            # Source root
             "src",
-            # Domain Layer (Pure Business Logic)
             "src/domain",
             "src/domain/entities",
             "src/domain/value_objects",
@@ -48,7 +38,6 @@ class DDDStructureCreator:
             "src/domain/repositories",
             "src/domain/events",
             "src/domain/exceptions",
-            # Application Layer (Use Cases)
             "src/application",
             "src/application/commands",
             "src/application/queries",
@@ -57,7 +46,6 @@ class DDDStructureCreator:
             "src/application/ports",
             "src/application/ports/inbound",
             "src/application/ports/outbound",
-            # Infrastructure Layer (External Dependencies)
             "src/infrastructure",
             "src/infrastructure/persistence",
             "src/infrastructure/persistence/repositories",
@@ -66,19 +54,16 @@ class DDDStructureCreator:
             "src/infrastructure/messaging",
             "src/infrastructure/external_services",
             "src/infrastructure/config",
-            # Presentation Layer (API/UI)
             "src/presentation",
             "src/presentation/api",
             "src/presentation/api/rest",
             "src/presentation/api/graphql",
             "src/presentation/websocket",
             "src/presentation/grpc",
-            # Shared Kernel
             "src/shared",
             "src/shared/kernel",
             "src/shared/types",
             "src/shared/utils",
-            # Tests following same structure
             "tests",
             "tests/unit",
             "tests/unit/domain",
@@ -87,13 +72,10 @@ class DDDStructureCreator:
             "tests/integration",
             "tests/e2e",
             "tests/performance",
-            # Scripts and tools
             "scripts",
             "scripts/migration",
             "scripts/deployment",
-            # Docker configuration
             "docker",
-            # Kubernetes configuration
             "kubernetes",
             "kubernetes/base",
             "kubernetes/overlays",
@@ -101,12 +83,9 @@ class DDDStructureCreator:
             "kubernetes/overlays/staging",
             "kubernetes/overlays/production",
         ]
-
         for directory in directories:
             dir_path = self.project_root / directory
             dir_path.mkdir(parents=True, exist_ok=True)
-
-            # Create __init__.py for Python packages
             if directory.startswith("src/") and not directory.endswith(".py"):
                 init_file = dir_path / "__init__.py"
                 if not init_file.exists():
@@ -115,7 +94,6 @@ class DDDStructureCreator:
 
     def _get_init_content(self, directory: str) -> str:
         """Get appropriate __init__.py content for directory"""
-
         layer_docs = {
             "src/domain": '"""Domain Layer - Pure Business Logic"""',
             "src/application": '"""Application Layer - Use Cases and Orchestration"""',
@@ -123,21 +101,17 @@ class DDDStructureCreator:
             "src/presentation": '"""Presentation Layer - API and User Interface"""',
             "src/shared": '"""Shared Kernel - Common Components"""',
         }
-
         for layer, doc in layer_docs.items():
             if directory.startswith(layer):
                 return f"{doc}\n"
-
         return '"""AI Teddy Bear - DDD Module"""\n'
 
     def _create_domain_base_classes(self):
         """Create domain layer base classes"""
-
-        # Base Entity
-        entity_content = '''"""
+        entity_content = """""\"
 🎯 Domain Entity Base Classes
 Lead Architect: جعفر أديب
-"""
+""\"
 
 from abc import ABC
 from datetime import datetime
@@ -147,7 +121,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class DomainEvent:
-    """Base class for all domain events"""
+    ""\"Base class for all domain events""\"
     event_id: UUID = field(default_factory=uuid4)
     occurred_at: datetime = field(default_factory=datetime.utcnow)
     event_type: str = field(init=False)
@@ -156,7 +130,7 @@ class DomainEvent:
         self.event_type = self.__class__.__name__
 
 class Entity(ABC):
-    """Base entity class with identity and domain events"""
+    ""\"Base entity class with identity and domain events""\"
     
     def __init__(self, entity_id: Optional[UUID] = None):
         self.id = entity_id or uuid4()
@@ -165,17 +139,17 @@ class Entity(ABC):
         self._domain_events: List[DomainEvent] = []
     
     def add_domain_event(self, event: DomainEvent) -> None:
-        """Add domain event to be published"""
+        ""\"Add domain event to be published""\"
         self._domain_events.append(event)
     
     def clear_domain_events(self) -> List[DomainEvent]:
-        """Clear and return domain events"""
+        ""\"Clear and return domain events""\"
         events = self._domain_events.copy()
         self._domain_events.clear()
         return events
     
     def mark_as_modified(self) -> None:
-        """Mark entity as modified"""
+        ""\"Mark entity as modified""\"
         self.updated_at = datetime.utcnow()
     
     def __eq__(self, other) -> bool:
@@ -187,26 +161,23 @@ class Entity(ABC):
         return hash(self.id)
 
 class AggregateRoot(Entity):
-    """Base aggregate root with additional capabilities"""
+    ""\"Base aggregate root with additional capabilities""\"
     
     def __init__(self, entity_id: Optional[UUID] = None):
         super().__init__(entity_id)
         self.version = 1
     
     def increment_version(self) -> None:
-        """Increment aggregate version for optimistic locking"""
+        ""\"Increment aggregate version for optimistic locking""\"
         self.version += 1
         self.mark_as_modified()
-'''
-
+"""
         entity_file = self.project_root / "src/domain/entities/base.py"
         entity_file.write_text(entity_content)
-
-        # Value Objects
-        value_object_content = '''"""
+        value_object_content = """""\"
 💎 Domain Value Objects
 Lead Architect: جعفر أديب
-"""
+""\"
 
 from abc import ABC
 from dataclasses import dataclass
@@ -214,7 +185,7 @@ from typing import Any
 from uuid import UUID
 
 class ValueObject(ABC):
-    """Base class for value objects"""
+    ""\"Base class for value objects""\"
     
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
@@ -226,7 +197,7 @@ class ValueObject(ABC):
 
 @dataclass(frozen=True)
 class ChildId(ValueObject):
-    """Strong-typed Child identifier"""
+    ""\"Strong-typed Child identifier""\"
     value: UUID
     
     @classmethod
@@ -239,7 +210,7 @@ class ChildId(ValueObject):
 
 @dataclass(frozen=True) 
 class DeviceId(ValueObject):
-    """Strong-typed Device identifier"""
+    ""\"Strong-typed Device identifier""\"
     value: str
     
     def __post_init__(self):
@@ -248,7 +219,7 @@ class DeviceId(ValueObject):
 
 @dataclass(frozen=True)
 class AgeGroup(ValueObject):
-    """Child age group value object"""
+    ""\"Child age group value object""\"
     min_age: int
     max_age: int
     name: str
@@ -260,70 +231,64 @@ class AgeGroup(ValueObject):
             raise ValueError("Min age cannot be greater than max age")
     
     def contains_age(self, age: int) -> bool:
-        """Check if age falls within this group"""
+        ""\"Check if age falls within this group""\"
         return self.min_age <= age <= self.max_age
 
 @dataclass(frozen=True)
 class Language(ValueObject):
-    """Language value object"""
+    ""\"Language value object""\"
     code: str  # ISO 639-1 code
     name: str
     
     def __post_init__(self):
         if len(self.code) != 2:
             raise ValueError("Language code must be 2 characters")
-'''
-
+"""
         vo_file = self.project_root / "src/domain/value_objects/__init__.py"
         vo_file.write_text(value_object_content)
-
-        # Domain Services
-        service_content = '''"""
+        service_content = """""\"
 ⚙️ Domain Services
 Lead Architect: جعفر أديب
-"""
+""\"
 
 from abc import ABC, abstractmethod
 from typing import Protocol
 
 class DomainService(ABC):
-    """Base class for domain services"""
+    ""\"Base class for domain services""\"
     pass
 
 class IChildDomainService(Protocol):
-    """Interface for child-related domain operations"""
+    ""\"Interface for child-related domain operations""\"
     
     def can_interact_safely(self, child_id: str, content: str) -> bool:
-        """Check if child can safely interact with content"""
+        ""\"Check if child can safely interact with content""\"
         ...
     
     def calculate_learning_level(self, child_id: str) -> str:
-        """Calculate appropriate learning level"""
+        ""\"Calculate appropriate learning level""\"
         ...
 
 class IAIInteractionService(Protocol):
-    """Interface for AI interaction domain logic"""
+    ""\"Interface for AI interaction domain logic""\"
     
     def should_escalate_to_parent(self, conversation_data: dict) -> bool:
-        """Determine if conversation should be escalated"""
+        ""\"Determine if conversation should be escalated""\"
         ...
     
     def calculate_emotional_state(self, audio_data: bytes) -> dict:
-        """Calculate child's emotional state from audio"""
+        ""\"Calculate child's emotional state from audio""\"
         ...
-'''
-
+"""
         service_file = self.project_root / "src/domain/services/__init__.py"
         service_file.write_text(service_content)
 
     def _create_application_base_classes(self):
         """Create application layer base classes"""
-
-        # Commands and Queries (CQRS)
-        cqrs_content = '''"""
+        cqrs_content = """""\"
 📋 CQRS Commands and Queries
 Lead Architect: جعفر أديب
-"""
+""\"
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -337,34 +302,34 @@ TResult = TypeVar('TResult')
 
 @dataclass
 class Command(ABC):
-    """Base class for all commands"""
+    ""\"Base class for all commands""\"
     correlation_id: Optional[UUID] = None
 
 @dataclass  
 class Query(ABC):
-    """Base class for all queries"""
+    ""\"Base class for all queries""\"
     correlation_id: Optional[UUID] = None
 
 class CommandHandler(ABC, Generic[TCommand, TResult]):
-    """Base command handler"""
+    ""\"Base command handler""\"
     
     @abstractmethod
     async def handle(self, command: TCommand) -> TResult:
-        """Handle the command"""
+        ""\"Handle the command""\"
         pass
 
 class QueryHandler(ABC, Generic[TQuery, TResult]):
-    """Base query handler"""
+    ""\"Base query handler""\"
     
     @abstractmethod
     async def handle(self, query: TQuery) -> TResult:
-        """Handle the query"""
+        ""\"Handle the query""\"
         pass
 
 # Child-specific commands
 @dataclass
 class RegisterChildCommand(Command):
-    """Command to register a new child"""
+    ""\"Command to register a new child""\"
     name: str
     age: int
     parent_id: UUID
@@ -373,7 +338,7 @@ class RegisterChildCommand(Command):
 
 @dataclass
 class StartConversationCommand(Command):
-    """Command to start a conversation"""
+    ""\"Command to start a conversation""\"
     child_id: UUID
     initial_message: str
     audio_data: Optional[bytes] = None
@@ -381,24 +346,21 @@ class StartConversationCommand(Command):
 # Child-specific queries
 @dataclass
 class GetChildProfileQuery(Query):
-    """Query to get child profile"""
+    ""\"Query to get child profile""\"
     child_id: UUID
 
 @dataclass
 class GetConversationHistoryQuery(Query):
-    """Query to get conversation history"""
+    ""\"Query to get conversation history""\"
     child_id: UUID
     limit: int = 50
-'''
-
+"""
         cqrs_file = self.project_root / "src/application/commands/__init__.py"
         cqrs_file.write_text(cqrs_content)
-
-        # DTOs
-        dto_content = '''"""
+        dto_content = """""\"
 📦 Data Transfer Objects
 Lead Architect: جعفر أديب
-"""
+""\"
 
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Any
@@ -407,7 +369,7 @@ from uuid import UUID
 
 @dataclass
 class ChildProfileDto:
-    """Child profile data transfer object"""
+    ""\"Child profile data transfer object""\"
     id: UUID
     name: str
     age: int
@@ -418,7 +380,7 @@ class ChildProfileDto:
 
 @dataclass
 class ConversationDto:
-    """Conversation data transfer object"""
+    ""\"Conversation data transfer object""\"
     id: UUID
     child_id: UUID
     started_at: datetime
@@ -428,7 +390,7 @@ class ConversationDto:
 
 @dataclass
 class MessageDto:
-    """Message data transfer object"""
+    ""\"Message data transfer object""\"
     id: UUID
     conversation_id: UUID
     content: str
@@ -439,25 +401,22 @@ class MessageDto:
 
 @dataclass
 class AIResponseDto:
-    """AI response data transfer object"""
+    ""\"AI response data transfer object""\"
     text: str
     audio_url: str
     emotion_adjustment: Dict[str, Any]
     processing_time_ms: int
     confidence_score: float
-'''
-
+"""
         dto_file = self.project_root / "src/application/dto/__init__.py"
         dto_file.write_text(dto_content)
 
     def _create_infrastructure_base_classes(self):
         """Create infrastructure layer base classes"""
-
-        # Repository interfaces
-        repo_content = '''"""
+        repo_content = """""\"
 🗄️ Repository Interfaces and Implementations
 Lead Architect: جعفر أديب
-"""
+""\"
 
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, Optional, List
@@ -467,66 +426,63 @@ T = TypeVar('T')
 ID = TypeVar('ID')
 
 class Repository(ABC, Generic[T, ID]):
-    """Base repository interface"""
+    ""\"Base repository interface""\"
     
     @abstractmethod
     async def get_by_id(self, entity_id: ID) -> Optional[T]:
-        """Get entity by ID"""
+        ""\"Get entity by ID""\"
         pass
     
     @abstractmethod
     async def save(self, entity: T) -> T:
-        """Save entity"""
+        ""\"Save entity""\"
         pass
     
     @abstractmethod
     async def delete(self, entity_id: ID) -> bool:
-        """Delete entity"""
+        ""\"Delete entity""\"
         pass
     
     @abstractmethod
     async def list_all(self) -> List[T]:
-        """List all entities"""
+        ""\"List all entities""\"
         pass
 
 class IChildRepository(Repository):
-    """Child repository interface"""
+    ""\"Child repository interface""\"
     
     @abstractmethod
     async def get_by_device_id(self, device_id: str) -> Optional[object]:
-        """Get child by device ID"""
+        ""\"Get child by device ID""\"
         pass
     
     @abstractmethod
     async def get_children_by_parent(self, parent_id: UUID) -> List[object]:
-        """Get children by parent ID"""
+        ""\"Get children by parent ID""\"
         pass
 
 class IConversationRepository(Repository):
-    """Conversation repository interface"""
+    ""\"Conversation repository interface""\"
     
     @abstractmethod
     async def get_active_conversation(self, child_id: UUID) -> Optional[object]:
-        """Get active conversation for child"""
+        ""\"Get active conversation for child""\"
         pass
     
     @abstractmethod
     async def get_recent_conversations(self, child_id: UUID, limit: int) -> List[object]:
-        """Get recent conversations"""
+        ""\"Get recent conversations""\"
         pass
-'''
-
+"""
         repo_file = (
             self.project_root
             / "src/infrastructure/persistence/repositories/__init__.py"
         )
         repo_file.write_text(repo_content)
-
-        # AI Service interfaces
-        ai_content = '''"""
+        ai_content = """""\"
 🤖 AI Service Interfaces
 Lead Architect: جعفر أديب
-"""
+""\"
 
 from abc import ABC, abstractmethod
 from typing import Protocol, Dict, Any, Optional
@@ -534,7 +490,7 @@ from dataclasses import dataclass
 
 @dataclass
 class AIRequest:
-    """AI processing request"""
+    ""\"AI processing request""\"
     text: str
     audio_data: Optional[bytes]
     child_context: Dict[str, Any]
@@ -542,7 +498,7 @@ class AIRequest:
 
 @dataclass
 class AIResponse:
-    """AI processing response"""
+    ""\"AI processing response""\"
     text: str
     audio_url: str
     emotion_detected: Dict[str, float]
@@ -550,45 +506,43 @@ class AIResponse:
     processing_time_ms: int
 
 class IOpenAIService(Protocol):
-    """OpenAI service interface"""
+    ""\"OpenAI service interface""\"
     
     async def generate_response(self, request: AIRequest) -> str:
-        """Generate text response"""
+        ""\"Generate text response""\"
         ...
 
 class ISpeechService(Protocol):
-    """Speech processing service interface"""
+    ""\"Speech processing service interface""\"
     
     async def transcribe_audio(self, audio_data: bytes) -> str:
-        """Transcribe audio to text"""
+        ""\"Transcribe audio to text""\"
         ...
     
     async def synthesize_speech(self, text: str, voice_settings: Dict[str, Any]) -> str:
-        """Synthesize speech from text"""
+        ""\"Synthesize speech from text""\"
         ...
 
 class IEmotionService(Protocol):
-    """Emotion detection service interface"""
+    ""\"Emotion detection service interface""\"
     
     async def analyze_emotion(self, audio_data: bytes) -> Dict[str, float]:
-        """Analyze emotion from audio"""
+        ""\"Analyze emotion from audio""\"
         ...
     
     async def analyze_text_emotion(self, text: str) -> Dict[str, float]:
-        """Analyze emotion from text"""
+        ""\"Analyze emotion from text""\"
         ...
-'''
-
+"""
         ai_file = self.project_root / "src/infrastructure/ai/__init__.py"
         ai_file.write_text(ai_content)
 
     def _create_presentation_base_classes(self):
         """Create presentation layer base classes"""
-
-        api_content = '''"""
+        api_content = """""\"
 🌐 API Base Classes
 Lead Architect: جعفر أديب
-"""
+""\"
 
 from abc import ABC
 from typing import Any, Dict, Optional
@@ -598,7 +552,7 @@ from uuid import UUID
 
 @dataclass
 class APIResponse:
-    """Standard API response format"""
+    ""\"Standard API response format""\"
     success: bool
     data: Optional[Any] = None
     error: Optional[str] = None
@@ -610,22 +564,22 @@ class APIResponse:
             self.timestamp = datetime.utcnow()
 
 class BaseController(ABC):
-    """Base controller for API endpoints"""
+    ""\"Base controller for API endpoints""\"
     
     def __init__(self):
         self.request_count = 0
     
     def success_response(self, data: Any = None) -> APIResponse:
-        """Create success response"""
+        ""\"Create success response""\"
         return APIResponse(success=True, data=data)
     
     def error_response(self, error: str) -> APIResponse:
-        """Create error response"""
+        ""\"Create error response""\"
         return APIResponse(success=False, error=error)
 
 @dataclass
 class WebSocketMessage:
-    """WebSocket message format"""
+    ""\"WebSocket message format""\"
     type: str
     data: Any
     timestamp: datetime = None
@@ -636,33 +590,30 @@ class WebSocketMessage:
             self.timestamp = datetime.utcnow()
 
 class BaseWebSocketHandler(ABC):
-    """Base WebSocket handler"""
+    ""\"Base WebSocket handler""\"
     
     def __init__(self):
         self.connected_clients: Dict[str, Any] = {}
     
     async def on_connect(self, websocket, session_id: str):
-        """Handle client connection"""
+        ""\"Handle client connection""\"
         self.connected_clients[session_id] = websocket
     
     async def on_disconnect(self, session_id: str):
-        """Handle client disconnection"""
+        ""\"Handle client disconnection""\"
         if session_id in self.connected_clients:
             del self.connected_clients[session_id]
     
     async def broadcast(self, message: WebSocketMessage):
-        """Broadcast message to all clients"""
+        ""\"Broadcast message to all clients""\"
         for client in self.connected_clients.values():
             await client.send_json(message.__dict__)
-'''
-
+"""
         api_file = self.project_root / "src/presentation/api/__init__.py"
         api_file.write_text(api_content)
 
     def _create_config_files(self):
         """Create configuration files"""
-
-        # Docker configuration
         dockerfile_content = """# AI Teddy Bear - Production Dockerfile
 # Lead Architect: جعفر أديب
 
@@ -697,12 +648,9 @@ EXPOSE 8000
 # Start application
 CMD ["python", "-m", "src.main"]
 """
-
         dockerfile = self.project_root / "docker/Dockerfile"
         dockerfile.parent.mkdir(exist_ok=True)
         dockerfile.write_text(dockerfile_content)
-
-        # Docker Compose
         compose_content = """version: '3.8'
 
 services:
@@ -756,11 +704,8 @@ networks:
   teddy-network:
     driver: bridge
 """
-
         compose_file = self.project_root / "docker/docker-compose.yml"
         compose_file.write_text(compose_content)
-
-        # GitHub Actions workflow
         workflow_content = """name: CI/CD Pipeline
 
 on:
@@ -818,9 +763,8 @@ jobs:
     
     - name: Push to registry
       run: |
-        echo "Would push to container registry"
+        echo "Would push to container registry\"
 """
-
         workflow_dir = self.project_root / ".github/workflows"
         workflow_dir.mkdir(parents=True, exist_ok=True)
         workflow_file = workflow_dir / "ci.yml"
@@ -829,22 +773,20 @@ jobs:
 
 def main():
     """Main execution"""
-    print("🏗️ DDD Structure Creator")
-    print("Lead Architect: جعفر أديب")
-    print("=" * 40)
-
+    logger.info("🏗️ DDD Structure Creator")
+    logger.info("Lead Architect: جعفر أديب")
+    logger.info("=" * 40)
     creator = DDDStructureCreator()
     creator.create_complete_structure()
-
-    print("\n✅ Complete DDD structure created!")
-    print("\n📁 Created directories:")
-    print("  - src/domain (entities, value objects, services)")
-    print("  - src/application (commands, queries, handlers)")
-    print("  - src/infrastructure (persistence, AI, messaging)")
-    print("  - src/presentation (API, WebSocket, GraphQL)")
-    print("  - tests/ (unit, integration, e2e)")
-    print("  - docker/ (containerization)")
-    print("  - kubernetes/ (orchestration)")
+    logger.info("\n✅ Complete DDD structure created!")
+    logger.info("\n📁 Created directories:")
+    logger.info("  - src/domain (entities, value objects, services)")
+    logger.info("  - src/application (commands, queries, handlers)")
+    logger.info("  - src/infrastructure (persistence, AI, messaging)")
+    logger.info("  - src/presentation (API, WebSocket, GraphQL)")
+    logger.info("  - tests/ (unit, integration, e2e)")
+    logger.info("  - docker/ (containerization)")
+    logger.info("  - kubernetes/ (orchestration)")
 
 
 if __name__ == "__main__":

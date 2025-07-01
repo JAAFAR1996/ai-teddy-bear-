@@ -9,11 +9,10 @@ Uses matplotlib, seaborn, and plotly for different chart types.
 import base64
 import logging
 from io import BytesIO
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import seaborn as sns
 
 

@@ -5,8 +5,8 @@ Domain service for child analytics and engagement insights business logic.
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import List
 
 from src.core.domain.entities.child import Child
 from src.domain.child.models.child_analytics import (ActivityStatistics,

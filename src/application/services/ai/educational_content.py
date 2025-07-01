@@ -4,7 +4,7 @@ Manages educational content for children
 """
 
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import structlog
 from opentelemetry import trace

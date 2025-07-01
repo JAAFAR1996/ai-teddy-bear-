@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncio
 import time
 from typing import List
@@ -15,20 +19,15 @@ class ConcurrentUserTest:
     async def simulate_user_session(self, session: aiohttp.ClientSession, user_id: int):
         """Simulate a complete user session"""
         start_time = time.time()
-
         try:
-            # Login
             async with session.post(
                 f"{self.base_url}/api/v1/auth/login",
                 json={"email": f"user{user_id}@test.com", "password": "test-password"},
             ) as response:
                 if response.status != 200:
                     return {"user_id": user_id, "status": "login_failed"}
-
                 token = (await response.json())["access_token"]
                 headers = {"Authorization": f"Bearer {token}"}
-
-            # Start conversation
             async with session.post(
                 f"{self.base_url}/api/v1/conversations/start",
                 json={"child_id": f"child-{user_id}", "initial_message": "Hello"},
@@ -36,26 +35,21 @@ class ConcurrentUserTest:
             ) as response:
                 if response.status != 200:
                     return {"user_id": user_id, "status": "conversation_failed"}
-
-            # Send messages
             for i in range(3):
                 async with session.post(
                     f"{self.base_url}/api/v1/conversations/active/messages",
-                    json={"text": f"Message {i+1}"},
+                    json={"text": f"Message {i + 1}"},
                     headers=headers,
                 ) as response:
                     if response.status != 200:
                         return {"user_id": user_id, "status": "message_failed"}
-
-                await asyncio.sleep(0.5)  # Simulate thinking time
-
+                await asyncio.sleep(0.5)
             end_time = time.time()
             return {
                 "user_id": user_id,
                 "status": "success",
                 "duration": end_time - start_time,
             }
-
         except Exception as e:
             return {"user_id": user_id, "status": "error", "error": str(e)}
 
@@ -63,17 +57,13 @@ class ConcurrentUserTest:
         """Run concurrent user test"""
         async with aiohttp.ClientSession() as session:
             tasks = [self.simulate_user_session(session, i) for i in range(num_users)]
-
             results = await asyncio.gather(*tasks, return_exceptions=True)
-
-            # Analyze results
             successful = sum(
                 1
                 for r in results
                 if isinstance(r, dict) and r.get("status") == "success"
             )
             failed = len(results) - successful
-
             if successful > 0:
                 avg_duration = (
                     sum(
@@ -85,13 +75,11 @@ class ConcurrentUserTest:
                 )
             else:
                 avg_duration = 0
-
-            print(f"Concurrent Users: {num_users}")
-            print(f"Successful: {successful}")
-            print(f"Failed: {failed}")
-            print(f"Success Rate: {successful/num_users*100:.1f}%")
-            print(f"Average Duration: {avg_duration:.2f}s")
-
+            logger.info(f"Concurrent Users: {num_users}")
+            logger.info(f"Successful: {successful}")
+            logger.info(f"Failed: {failed}")
+            logger.info(f"Success Rate: {successful / num_users * 100:.1f}%")
+            logger.info(f"Average Duration: {avg_duration:.2f}s")
             return results
 
 

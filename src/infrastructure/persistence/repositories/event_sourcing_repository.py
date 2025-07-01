@@ -7,7 +7,7 @@ Repository that rebuilds aggregates from events with snapshots.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Optional, Type, TypeVar
 
 from ...shared.kernel import AggregateRoot, DomainEvent
 from .event_store import EventStore, StoredEvent, get_event_store

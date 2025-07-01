@@ -8,14 +8,13 @@ Performance Team Implementation - Task 12
 Author: Performance Team Lead
 """
 
-import asyncio
 import hashlib
 import json
 import logging
 import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
 
 try:
     from .multi_layer_cache import (CacheConfig, CacheLayer, CacheMetrics,

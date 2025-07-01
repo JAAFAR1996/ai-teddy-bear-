@@ -5,7 +5,6 @@ Value objects for the AI Teddy Bear domain model
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
 
 # ================== EMOTIONAL TONE ENUM ==================
 

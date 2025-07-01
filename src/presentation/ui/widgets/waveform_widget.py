@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 """
 Waveform Visualization Widget for AI Teddy Bear
@@ -6,7 +6,6 @@ Real-time audio waveform display with smooth rendering
 """
 
 import numpy as np
-from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QWidget
 

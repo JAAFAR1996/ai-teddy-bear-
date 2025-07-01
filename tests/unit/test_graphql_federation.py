@@ -5,12 +5,8 @@ API Team Implementation - Task 13
 Author: API Team Lead
 """
 
-import asyncio
-import json
 import os
-from datetime import datetime, timedelta
-from typing import Any, Dict
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 

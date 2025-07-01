@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 
 from src.domain.services.emotion_analyzer import EmotionAnalyzer, EmotionResult
 

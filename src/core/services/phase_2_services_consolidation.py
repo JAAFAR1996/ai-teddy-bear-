@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 🔧 AI Teddy Bear - Phase 2: Services Consolidation
 المرحلة الثانية: توحيد وتنظيم الخدمات
@@ -6,21 +9,18 @@
 الهدف: دمج 19 مجلد services في 6 مجلدات منظمة
 التحسين المتوقع: 68% تقليل في تعقيد Services
 """
-
-import json
 import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, List
 
 
 class ServicesConsolidator:
+
     def __init__(self, project_root: str = "."):
         self.project_root = Path(project_root)
         self.src_path = self.project_root / "src"
-
-        # هيكل الخدمات الجديد
         self.new_services_structure = {
             "ai_services": {
                 "path": "src/application/services/ai",
@@ -97,8 +97,7 @@ class ServicesConsolidator:
 
     def analyze_current_services(self) -> Dict:
         """تحليل الخدمات الحالية"""
-        print("🔍 تحليل الخدمات الحالية...")
-
+        logger.info("🔍 تحليل الخدمات الحالية...")
         services_analysis = {
             "total_service_files": 0,
             "service_directories": [],
@@ -108,23 +107,16 @@ class ServicesConsolidator:
             "unclassified_files": [],
             "complexity_metrics": {},
         }
-
-        # البحث عن ملفات الخدمات
         for root, dirs, files in os.walk(self.src_path):
-            # تحديد مجلدات الخدمات
             for d in dirs:
                 if "service" in d.lower():
                     services_analysis["service_directories"].append(
                         os.path.join(root, d)
                     )
-
-            # تحليل ملفات الخدمات
             for file in files:
                 if file.endswith(".py") and "service" in file.lower():
                     file_path = Path(root) / file
                     services_analysis["total_service_files"] += 1
-
-                    # تصنيف الملف
                     classified = False
                     for category, config in self.new_services_structure.items():
                         if any(
@@ -135,145 +127,115 @@ class ServicesConsolidator:
                             )
                             classified = True
                             break
-
                     if not classified:
                         services_analysis["unclassified_files"].append(str(file_path))
-
-        # حساب مقاييس التعقيد
         services_analysis["complexity_metrics"] = {
             "current_service_dirs": len(services_analysis["service_directories"]),
             "target_service_dirs": len(self.new_services_structure),
-            "complexity_reduction": f"{len(services_analysis['service_directories'])} → {len(self.new_services_structure)} ({((len(services_analysis['service_directories']) - len(self.new_services_structure)) / len(services_analysis['service_directories']) * 100):.0f}% تحسن)",
+            "complexity_reduction": f"{len(services_analysis['service_directories'])} → {len(self.new_services_structure)} ({(len(services_analysis['service_directories']) - len(self.new_services_structure)) / len(services_analysis['service_directories']) * 100:.0f}% تحسن)",
             "files_distribution": {
                 cat: len(files)
                 for cat, files in services_analysis["files_by_category"].items()
             },
         }
-
         return services_analysis
 
     def create_new_service_directories(self):
         """إنشاء هيكل الخدمات الجديد"""
-        print("🏗️ إنشاء هيكل الخدمات الجديد...")
-
+        logger.info("🏗️ إنشاء هيكل الخدمات الجديد...")
         for category, config in self.new_services_structure.items():
             target_dir = Path(config["path"])
             target_dir.mkdir(parents=True, exist_ok=True)
-
-            # إنشاء __init__.py
             init_file = target_dir / "__init__.py"
             if not init_file.exists():
-                init_content = f'''"""
+                init_content = f"""""\"
 {category.replace('_', ' ').title()} Package
-{config["path"].split('/')[-1]} services for AI Teddy Bear
-"""
+{config['path'].split('/')[-1]} services for AI Teddy Bear
+""\"
 
 # TODO: Add service imports after consolidation
-'''
+"""
                 init_file.write_text(init_content, encoding="utf-8")
-
-            print(f"  ✅ تم إنشاء: {config['path']}")
+            logger.info(f"  ✅ تم إنشاء: {config['path']}")
 
     def consolidate_ai_services(self, files: List[str]) -> Dict:
         """توحيد خدمات الذكاء الاصطناعي"""
-        print("🤖 توحيد خدمات الذكاء الاصطناعي...")
-
+        logger.info("🤖 توحيد خدمات الذكاء الاصطناعي...")
         target_dir = Path(self.new_services_structure["ai_services"]["path"])
         consolidation_results = {"moved": 0, "errors": 0, "conflicts": []}
-
         for file_path in files:
             try:
                 src_file = Path(file_path)
                 if src_file.exists():
                     target_file = target_dir / src_file.name
-
-                    # تجنب التعارضات
                     if target_file.exists():
-                        # إنشاء اسم فريد
                         counter = 1
                         while target_file.exists():
-                            name_parts = src_file.stem, counter, src_file.suffix
+                            name_parts = (src_file.stem, counter, src_file.suffix)
                             target_file = (
                                 target_dir
                                 / f"{name_parts[0]}_v{name_parts[1]}{name_parts[2]}"
                             )
                             counter += 1
                         consolidation_results["conflicts"].append(str(src_file))
-
                     shutil.move(str(src_file), str(target_file))
                     consolidation_results["moved"] += 1
-                    print(f"  ✅ نُقل: {src_file.name}")
-
+                    logger.info(f"  ✅ نُقل: {src_file.name}")
             except Exception as e:
                 consolidation_results["errors"] += 1
-                print(f"  ❌ خطأ في نقل {file_path}: {e}")
-
+                logger.info(f"  ❌ خطأ في نقل {file_path}: {e}")
         return consolidation_results
 
     def consolidate_audio_services(self, files: List[str]) -> Dict:
         """توحيد خدمات الصوت"""
-        print("🎵 توحيد خدمات الصوت...")
-
+        logger.info("🎵 توحيد خدمات الصوت...")
         target_dir = Path(self.new_services_structure["audio_services"]["path"])
         results = {"moved": 0, "errors": 0, "conflicts": []}
-
         for file_path in files:
             try:
                 src_file = Path(file_path)
                 if src_file.exists():
                     target_file = target_dir / src_file.name
-
                     if target_file.exists():
                         target_file = (
                             target_dir
                             / f"{src_file.stem}_consolidated{src_file.suffix}"
                         )
                         results["conflicts"].append(str(src_file))
-
                     shutil.move(str(src_file), str(target_file))
                     results["moved"] += 1
-                    print(f"  ✅ نُقل: {src_file.name}")
-
+                    logger.info(f"  ✅ نُقل: {src_file.name}")
             except Exception as e:
                 results["errors"] += 1
-                print(f"  ❌ خطأ: {e}")
-
+                logger.info(f"  ❌ خطأ: {e}")
         return results
 
     def consolidate_category_services(self, category: str, files: List[str]) -> Dict:
         """توحيد خدمات فئة معينة"""
-        print(f"📦 توحيد {category.replace('_', ' ')}...")
-
+        logger.info(f"📦 توحيد {category.replace('_', ' ')}...")
         target_dir = Path(self.new_services_structure[category]["path"])
         results = {"moved": 0, "errors": 0, "conflicts": []}
-
         for file_path in files:
             try:
                 src_file = Path(file_path)
                 if src_file.exists():
                     target_file = target_dir / src_file.name
-
-                    # معالجة التعارضات
                     if target_file.exists():
                         target_file = (
                             target_dir / f"{src_file.stem}_migrated{src_file.suffix}"
                         )
                         results["conflicts"].append(str(src_file))
-
                     shutil.move(str(src_file), str(target_file))
                     results["moved"] += 1
-                    print(f"  ✅ {src_file.name}")
-
+                    logger.info(f"  ✅ {src_file.name}")
             except Exception as e:
                 results["errors"] += 1
-                print(f"  ❌ خطأ: {e}")
-
+                logger.info(f"  ❌ خطأ: {e}")
         return results
 
     def execute_consolidation(self, analysis: Dict) -> Dict:
         """تنفيذ عملية التوحيد"""
-        print("🚀 بدء عملية توحيد الخدمات...")
-
+        logger.info("🚀 بدء عملية توحيد الخدمات...")
         results = {
             "timestamp": datetime.now().isoformat(),
             "categories_processed": {},
@@ -281,29 +243,21 @@ class ServicesConsolidator:
             "total_errors": 0,
             "summary": {},
         }
-
-        # إنشاء الهيكل الجديد
         self.create_new_service_directories()
-
-        # توحيد كل فئة
         for category, files in analysis["files_by_category"].items():
-            if files:  # إذا كان هناك ملفات في هذه الفئة
+            if files:
                 category_results = self.consolidate_category_services(category, files)
                 results["categories_processed"][category] = category_results
                 results["total_moved"] += category_results["moved"]
                 results["total_errors"] += category_results["errors"]
-
-        # معالجة الملفات غير المصنفة
         if analysis["unclassified_files"]:
-            print("📂 معالجة الملفات غير المصنفة...")
+            logger.info("📂 معالجة الملفات غير المصنفة...")
             unclassified_results = self.consolidate_category_services(
                 "core_services", analysis["unclassified_files"]
             )
             results["categories_processed"]["unclassified"] = unclassified_results
             results["total_moved"] += unclassified_results["moved"]
             results["total_errors"] += unclassified_results["errors"]
-
-        # إنشاء ملخص
         results["summary"] = {
             "services_reorganized": results["total_moved"],
             "errors_encountered": results["total_errors"],
@@ -312,7 +266,6 @@ class ServicesConsolidator:
             ],
             "new_structure": list(self.new_services_structure.keys()),
         }
-
         return results
 
     def generate_phase2_report(self, analysis: Dict, results: Dict) -> str:
@@ -355,55 +308,39 @@ class ServicesConsolidator:
 
 def main():
     """البرنامج الرئيسي للمرحلة الثانية"""
-    print("🔧 مرحباً بك في المرحلة الثانية - توحيد الخدمات!")
-    print("=" * 60)
-
+    logger.info("🔧 مرحباً بك في المرحلة الثانية - توحيد الخدمات!")
+    logger.info("=" * 60)
     consolidator = ServicesConsolidator()
-
     try:
-        # تحليل الخدمات الحالية
         analysis = consolidator.analyze_current_services()
-
-        # عرض التحليل
-        print(f"\n📊 نتائج التحليل:")
-        print(
+        logger.info("\n📊 نتائج التحليل:")
+        logger.info(
             f"- مجلدات Services حالياً: {analysis['complexity_metrics']['current_service_dirs']}"
         )
-        print(
+        logger.info(
             f"- مجلدات Services مستهدفة: {analysis['complexity_metrics']['target_service_dirs']}"
         )
-        print(
+        logger.info(
             f"- التحسن المتوقع: {analysis['complexity_metrics']['complexity_reduction']}"
         )
-        print(f"- إجمالي ملفات الخدمات: {analysis['total_service_files']}")
-
-        # تأكيد من المستخدم
+        logger.info(f"- إجمالي ملفات الخدمات: {analysis['total_service_files']}")
         response = input("\n🚀 هل تريد بدء توحيد الخدمات؟ (y/n): ")
-
         if response.lower() == "y":
-            # تنفيذ التوحيد
             results = consolidator.execute_consolidation(analysis)
-
-            # إنشاء التقرير
             report = consolidator.generate_phase2_report(analysis, results)
-
-            # حفظ التقرير
             report_file = "phase_2_services_consolidation_report.md"
             with open(report_file, "w", encoding="utf-8") as f:
                 f.write(report)
-
-            print(f"\n✅ تم إنهاء المرحلة الثانية بنجاح!")
-            print(f"📄 تقرير مفصل في: {report_file}")
-            print(f"🎯 ملفات تم نقلها: {results['total_moved']}")
-            print(
+            logger.info("\n✅ تم إنهاء المرحلة الثانية بنجاح!")
+            logger.info(f"📄 تقرير مفصل في: {report_file}")
+            logger.info(f"🎯 ملفات تم نقلها: {results['total_moved']}")
+            logger.info(
                 f"🚀 التحسن المحقق: {analysis['complexity_metrics']['complexity_reduction']}"
             )
-
         else:
-            print("❌ تم إلغاء العملية")
-
+            logger.info("❌ تم إلغاء العملية")
     except Exception as e:
-        print(f"❌ خطأ في التنفيذ: {e}")
+        logger.info(f"❌ خطأ في التنفيذ: {e}")
 
 
 if __name__ == "__main__":

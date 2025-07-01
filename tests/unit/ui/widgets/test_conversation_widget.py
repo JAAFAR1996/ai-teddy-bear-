@@ -3,10 +3,9 @@ Unit Tests for ConversationWidget - Chat Interface Testing
 """
 
 from datetime import datetime
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
 
 from src.ui.widgets.conversation_widget import ConversationWidget

@@ -4,7 +4,7 @@ Basic Value Objects for AI Teddy Bear
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 
 class EmotionalTone(Enum):

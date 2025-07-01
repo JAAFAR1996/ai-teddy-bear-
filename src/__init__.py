@@ -1,1 +1,1 @@
-# AI Teddy Bear Project - Main Source Package 
+# AI Teddy Bear Project - Main Source Package

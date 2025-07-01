@@ -5,7 +5,7 @@ Generated from: accessibility_service.py
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 
 @dataclass

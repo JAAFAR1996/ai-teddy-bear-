@@ -6,7 +6,7 @@ Production-ready session management with Redis fallback to memory
 import asyncio
 import json
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, Optional, Set
 from uuid import uuid4
 

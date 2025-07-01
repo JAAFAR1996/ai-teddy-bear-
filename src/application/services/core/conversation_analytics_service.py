@@ -1,11 +1,9 @@
 ﻿"""Conversation analytics service."""
 
-import json
 import logging
 import sqlite3
-from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 
 class ConversationAnalyticsService:

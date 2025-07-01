@@ -7,7 +7,6 @@ event replay, projections, and stream management.
 """
 
 import logging
-from datetime import datetime
 from typing import Any, AsyncIterator, Dict, List, Optional, Type, TypeVar
 
 from ...infrastructure.messaging.event_bus_integration import EventBus

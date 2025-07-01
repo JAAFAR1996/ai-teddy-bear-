@@ -7,7 +7,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
-from uuid import UUID
 
 from ..shared.base import (AggregateRoot, DomainEvent, DomainException, Entity,
                            EntityId, ValueObject)

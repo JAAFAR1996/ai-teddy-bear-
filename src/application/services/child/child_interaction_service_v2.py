@@ -1,8 +1,11 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 Child Interaction Service V2 - خدمة تفاعل الأطفال المحسنة
 مثال كامل لاستخدام نظام Exception Handling المتقدم
 """
-
 import asyncio
 from dataclasses import dataclass
 from datetime import datetime
@@ -43,9 +46,7 @@ class ContentFilterService:
 
     async def check(self, content: str) -> SafetyCheckResult:
         """فحص المحتوى للتأكد من ملاءمته للأطفال"""
-        # قائمة الكلمات الممنوعة (مثال بسيط)
         inappropriate_words = ["violence", "scary", "inappropriate"]
-
         content_lower = content.lower()
         for word in inappropriate_words:
             if word in content_lower:
@@ -55,14 +56,12 @@ class ContentFilterService:
                     reason=f"Content contains inappropriate word: {word}",
                     confidence=0.95,
                 )
-
         return SafetyCheckResult(is_safe=True, confidence=0.98)
 
     async def check_age_appropriateness(
         self, content: str, child_age: int
     ) -> SafetyCheckResult:
         """فحص ملاءمة المحتوى لعمر الطفل"""
-        # مثال: محتوى معقد للأطفال الصغار
         if child_age < 6 and len(content.split()) > 50:
             return SafetyCheckResult(
                 is_safe=False,
@@ -70,7 +69,6 @@ class ContentFilterService:
                 reason="Content too complex for young children",
                 confidence=0.85,
             )
-
         return SafetyCheckResult(is_safe=True)
 
 
@@ -94,23 +92,17 @@ class AIService:
     async def generate_response(self, message: str, context: Dict[str, Any]) -> str:
         """توليد رد من AI"""
         try:
-            # محاكاة استدعاء OpenAI API
-            await asyncio.sleep(0.5)  # محاكاة latency
-
-            # محاكاة فشل عشوائي للاختبار
+            await asyncio.sleep(0.5)
             import random
 
-            if random.random() < 0.1:  # 10% failure rate
+            if random.random() < 0.1:
                 raise ExternalServiceException(
                     service_name="OpenAI",
                     status_code=503,
                     response_body="Service temporarily unavailable",
                 )
-
-            # رد بسيط للمثال
             child_name = context.get("child_name", "صديقي")
             return f"مرحباً {child_name}! {message} هذا سؤال رائع!"
-
         except Exception as e:
             if not isinstance(e, ExternalServiceException):
                 raise ExternalServiceException(
@@ -128,11 +120,8 @@ class QuotaService:
     async def check_quota(self, child_id: str) -> Dict[str, Any]:
         """فحص حصة الاستخدام"""
         usage = self.usage.get(child_id, {"count": 0, "last_reset": datetime.utcnow()})
-
-        # إعادة تعيين يومية
         if (datetime.utcnow() - usage["last_reset"]).days >= 1:
             usage = {"count": 0, "last_reset": datetime.utcnow()}
-
         return {
             "current_usage": usage["count"],
             "daily_limit": 100,
@@ -153,15 +142,11 @@ class ChildInteractionServiceV2:
         self.content_filter = ContentFilterService()
         self.ai_service = AIService()
         self.quota_service = QuotaService()
-
-        # تسجيل recovery strategies
         self._register_recovery_strategies()
 
     def _register_recovery_strategies(self):
         """تسجيل استراتيجيات الاسترداد"""
         handler = get_global_exception_handler()
-
-        # استراتيجية لمعالجة المحتوى غير المناسب
         handler.register_recovery_strategy(
             "INAPPROPRIATE_CONTENT",
             lambda e, ctx: {
@@ -169,13 +154,11 @@ class ChildInteractionServiceV2:
                 "filtered": True,
             },
         )
-
-        # استراتيجية لتجاوز الحصة
         handler.register_recovery_strategy(
             "QUOTA_EXCEEDED",
             lambda e, ctx: {
                 "response": "لقد وصلت لحد الأسئلة اليومي. حاول مرة أخرى غداً!",
-                "retry_after": 86400,  # 24 ساعة
+                "retry_after": 86400,
             },
         )
 
@@ -242,16 +225,13 @@ class ChildInteractionServiceV2:
         Returns:
             استجابة آمنة للطفل
         """
-        # إنشاء error context
         error_context = ErrorContext(
             child_id=child_id,
             user_id=auth_context.get("parent_id"),
             session_id=auth_context.get("session_id"),
             additional_data={"child_age": child_age, "message_length": len(message)},
         )
-
         try:
-            # 1. فحص الحصة
             quota_info = await self.quota_service.check_quota(child_id)
             if quota_info["remaining"] <= 0:
                 raise QuotaExceededException(
@@ -261,8 +241,6 @@ class ChildInteractionServiceV2:
                     reset_time=datetime.utcnow().replace(hour=0, minute=0, second=0),
                     context=error_context,
                 )
-
-            # 2. فحص أمان المحتوى
             safety_result = await self.content_filter.check(message)
             if not safety_result.is_safe:
                 raise InappropriateContentException(
@@ -270,59 +248,42 @@ class ChildInteractionServiceV2:
                     violation_reason=safety_result.reason,
                     context=error_context,
                 )
-
-            # 3. فحص ملاءمة العمر
             age_result = await self.content_filter.check_age_appropriateness(
                 message, child_age
             )
             if not age_result.is_safe:
                 raise AgeInappropriateException(
                     child_age=child_age,
-                    content_age_rating=child_age + 3,  # مثال
+                    content_age_rating=child_age + 3,
                     content_description="Complex content",
                     context=error_context,
                 )
-
-            # 4. فحص الصلاحيات الخاصة
             if "special_content" in message.lower():
                 raise ParentalConsentRequiredException(
                     action="access_special_content",
                     reason="Child requested special content access",
                     context=error_context,
                 )
-
-            # 5. توليد الرد من AI
             ai_context = {
                 "child_id": child_id,
                 "child_age": child_age,
                 "child_name": auth_context.get("child_name", "صديقي"),
                 "language": "ar",
             }
-
             response = await self.ai_service.generate_response(message, ai_context)
-
-            # 6. فحص أمان الرد
             response_safety = await self.content_filter.check(response)
             if not response_safety.is_safe:
-                # استخدام رد آمن بديل
                 response = self._get_safe_fallback_response(child_age)
-
-            # 7. تحديث الحصة
             await self.quota_service.increment_usage(child_id)
-
-            # 8. تسجيل metrics
             MetricsCollector.record_interaction(
                 interaction_type="voice_chat", child_age=child_age
             )
-
-            # 9. تسجيل النجاح
             logger.info(
                 "Interaction processed successfully",
                 child_id=child_id,
                 message_length=len(message),
                 response_length=len(response),
             )
-
             return {
                 "success": True,
                 "response": response,
@@ -334,16 +295,12 @@ class ChildInteractionServiceV2:
                     "child_id": child_id,
                 },
             }
-
         except AITeddyBearException:
-            # AITeddyBearException سيتم معالجتها بواسطة decorators
             raise
         except Exception as e:
-            # أي خطأ غير متوقع
             logger.error(
                 "Unexpected error in process_interaction", error=str(e), exc_info=True
             )
-            # سيتم معالجته بواسطة global handler
             raise
 
     def _get_safe_fallback_response(self, child_age: int) -> str:
@@ -369,7 +326,6 @@ class ChildInteractionServiceV2:
         self, child_id: str, auth_context: Dict[str, Any], limit: int = 50
     ) -> Dict[str, Any]:
         """الحصول على تاريخ التفاعلات (للوالدين فقط)"""
-        # التحقق من أن الوالد يملك صلاحية على هذا الطفل
         if child_id not in auth_context.get("children_ids", []):
             from src.domain.exceptions.base import AuthorizationException
 
@@ -378,22 +334,17 @@ class ChildInteractionServiceV2:
                 resource=f"child/{child_id}",
                 required_role="parent_of_child",
             )
-
-        # جلب التاريخ (مثال)
         return {
             "child_id": child_id,
-            "interactions": [],  # سيتم ملؤها من قاعدة البيانات
+            "interactions": [],
             "total_count": 0,
             "limit": limit,
         }
 
 
-# مثال للاستخدام
 async def main():
     """مثال لاستخدام الخدمة"""
     service = ChildInteractionServiceV2()
-
-    # سياق مصادقة وهمي
     auth_context = {
         "authenticated": True,
         "parent_id": "parent123",
@@ -401,28 +352,23 @@ async def main():
         "session_id": "session456",
         "children_ids": ["child789"],
     }
-
     try:
-        # مثال 1: تفاعل ناجح
         result = await service.process_interaction(
             child_id="child789",
             child_age=7,
             message="ما هي الشمس؟",
             auth_context=auth_context,
         )
-        print("Success:", result)
-
-        # مثال 2: محتوى غير مناسب
+        logger.info("Success:", result)
         result = await service.process_interaction(
             child_id="child789",
             child_age=7,
             message="أريد أن أشاهد محتوى violence",
             auth_context=auth_context,
         )
-        print("Filtered:", result)
-
+        logger.info("Filtered:", result)
     except Exception as e:
-        print("Error:", e)
+        logger.info("Error:", e)
 
 
 if __name__ == "__main__":

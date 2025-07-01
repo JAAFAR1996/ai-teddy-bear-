@@ -1,6 +1,5 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
 

@@ -3,9 +3,7 @@ Comprehensive Child Protection Tests - اختبارات شاملة لحماية 
 """
 
 import asyncio
-import random
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
 
 import pytest
 from hypothesis import given
@@ -20,12 +18,7 @@ from src.application.services.incident_service import IncidentService
 from src.application.services.interaction_service import InteractionService
 from src.application.services.notification_service import NotificationService
 from src.application.services.safety_service import SafetyService
-from src.domain.entities.child import Child
-from src.domain.entities.parent import Parent
-from src.domain.exceptions.base import (AgeInappropriateException,
-                                        InappropriateContentException,
-                                        ParentalConsentRequiredException)
-from src.domain.value_objects import ChildAge, DeviceId, ParentId
+from src.domain.exceptions.base import (ParentalConsentRequiredException)
 from src.infrastructure.persistence.repositories import DataRepository
 from tests.framework import ChildSafetyTestCase
 

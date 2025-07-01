@@ -5,7 +5,7 @@ Memory Storage Service - Handles memory persistence and organization
 import asyncio
 import logging
 from collections import defaultdict, deque
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Optional
 
 from ....domain.memory.models import Memory, MemoryImportance, MemoryType

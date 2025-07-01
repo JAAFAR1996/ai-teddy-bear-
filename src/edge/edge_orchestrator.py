@@ -1,5 +1,4 @@
-import asyncio
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from .device_manager import DeviceManager
 from .edge_processor import EdgeProcessor

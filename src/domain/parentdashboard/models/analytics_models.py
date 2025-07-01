@@ -6,10 +6,9 @@ Domain models for analytics data, conversation logs, and learning progress track
 """
 
 import uuid
-from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 
 @dataclass

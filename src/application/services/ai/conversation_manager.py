@@ -8,7 +8,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import structlog
-from core.infrastructure.session_manager import SessionManager
 from opentelemetry import trace
 
 # from src.application.services.core.service_registry import ServiceBase

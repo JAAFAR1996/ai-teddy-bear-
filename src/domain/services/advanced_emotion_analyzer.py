@@ -18,11 +18,8 @@ from ...application.services.emotion import (EmotionAnalysisService,
                                              EmotionAnalyticsService,
                                              EmotionDatabaseService,
                                              EmotionHistoryService)
-from ...domain.emotion.models import (ChildEmotionProfile, EmotionAnalytics,
-                                      EmotionContext, EmotionResult,
-                                      ParentalReport)
-from ...infrastructure.emotion import (AudioEmotionAnalyzer, EmotionRepository,
-                                       TextEmotionAnalyzer)
+from ...domain.emotion.models import (EmotionContext, EmotionResult)
+from ...infrastructure.emotion import (AudioEmotionAnalyzer, TextEmotionAnalyzer)
 
 logger = structlog.get_logger(__name__)
 

@@ -5,8 +5,6 @@
 """
 
 import asyncio
-import logging
-from datetime import datetime, time
 from typing import Optional
 
 import structlog
@@ -14,7 +12,6 @@ from apscheduler.executors.asyncio import AsyncIOExecutor
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.interval import IntervalTrigger
 
 from .data_cleanup_service import preview_cleanup, run_daily_cleanup
 from .notification_service import notify_upcoming_cleanup
@@ -374,7 +371,6 @@ async def trigger_notifications_now():
 
 if __name__ == "__main__":
     # اختبار الخدمة
-    import time
 
     async def test_scheduler():
         logger.info("🧪 Testing Scheduler Service...")

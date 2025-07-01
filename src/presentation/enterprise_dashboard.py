@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 #!/usr/bin/env python3
 """
@@ -11,14 +11,12 @@ Features:
 - Live data updates via WebSocket
 """
 
-import asyncio
-import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import numpy as np
-from PySide6.QtCore import QObject, Qt, QTimer, Signal
-from PySide6.QtGui import QPainter, QPixmap
+from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (QCheckBox, QComboBox, QGridLayout, QGroupBox,
                                QHBoxLayout, QLabel, QListWidget, QProgressBar,
                                QPushButton, QSlider, QSplitter, QTabWidget,

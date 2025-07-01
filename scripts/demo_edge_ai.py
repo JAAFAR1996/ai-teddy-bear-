@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Edge AI System Demo for AI Teddy Bear Project.
 
@@ -14,20 +13,15 @@ import logging
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import numpy as np
 
-# Add project root to path
 sys.path.append(str(Path(__file__).parent.parent))
-
-# Configure logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
-
-# Import Edge AI components
 try:
     from src.adapters.edge.edge_ai_integration_service import \
         EdgeAIIntegrationService
@@ -56,14 +50,12 @@ class EdgeAIDemo:
         """Generate synthetic demo data for testing."""
         return {
             "audio_samples": {
-                "wake_word": np.random.uniform(-0.3, 0.3, 16000),  # Moderate energy
-                "happy_child": np.random.uniform(-0.2, 0.2, 16000),  # Low energy, happy
-                "sad_child": np.random.uniform(-0.1, 0.1, 16000),  # Very low energy
-                "excited_child": np.random.uniform(-0.5, 0.5, 16000),  # High energy
-                "angry_child": np.random.uniform(
-                    -0.4, 0.4, 16000
-                ),  # High energy, erratic
-                "background_noise": np.random.uniform(-0.05, 0.05, 16000),  # Very low
+                "wake_word": np.random.uniform(-0.3, 0.3, 16000),
+                "happy_child": np.random.uniform(-0.2, 0.2, 16000),
+                "sad_child": np.random.uniform(-0.1, 0.1, 16000),
+                "excited_child": np.random.uniform(-0.5, 0.5, 16000),
+                "angry_child": np.random.uniform(-0.4, 0.4, 16000),
+                "background_noise": np.random.uniform(-0.05, 0.05, 16000),
             },
             "text_samples": {
                 "safe": "Hello teddy, how are you today?",
@@ -80,22 +72,20 @@ class EdgeAIDemo:
 
     def print_header(self, title: str) -> None:
         """Print formatted section header."""
-        print(f"\n{'='*60}")
-        print(f" {title}")
-        print(f"{'='*60}")
+        logger.info(f"\n{'=' * 60}")
+        logger.info(f" {title}")
+        logger.info(f"{'=' * 60}")
 
     def print_subheader(self, title: str) -> None:
         """Print formatted subsection header."""
-        print(f"\n{'-'*40}")
-        print(f" {title}")
-        print(f"{'-'*40}")
+        logger.info(f"\n{'-' * 40}")
+        logger.info(f" {title}")
+        logger.info(f"{'-' * 40}")
 
     async def demo_edge_ai_initialization(self) -> None:
         """Demonstrate Edge AI initialization."""
         self.print_subheader("Edge AI Initialization")
-
         try:
-            # Initialize with different configurations
             configs = {
                 "Ultra Low Latency": EdgeModelConfig(
                     processing_mode=EdgeProcessingMode.ULTRA_LOW_LATENCY,
@@ -111,39 +101,30 @@ class EdgeAIDemo:
                     safety_level=SafetyLevel.ENHANCED,
                 ),
             }
-
             for config_name, config in configs.items():
-                print(f"\n🔧 Initializing {config_name} Configuration:")
+                logger.info(f"\n🔧 Initializing {config_name} Configuration:")
                 start_time = time.time()
-
                 manager = EdgeAIManager(config)
                 await manager.initialize()
-
                 init_time = (time.time() - start_time) * 1000
-                print(f"✅ Initialized in {init_time:.2f}ms")
-                print(f"📊 Processing Mode: {config.processing_mode.value}")
-                print(f"🎙️  Wake Word Model: {config.wake_word_model.value}")
-                print(f"🛡️  Safety Level: {config.safety_level.value}")
-
-            # Use balanced config for rest of demo
+                logger.info(f"✅ Initialized in {init_time:.2f}ms")
+                logger.info(f"📊 Processing Mode: {config.processing_mode.value}")
+                logger.info(f"🎙️  Wake Word Model: {config.wake_word_model.value}")
+                logger.info(f"🛡️  Safety Level: {config.safety_level.value}")
             self.edge_ai_manager = EdgeAIManager(configs["Balanced"])
             await self.edge_ai_manager.initialize()
-
         except Exception as e:
-            print(f"❌ Initialization demo failed: {e}")
+            logger.info(f"❌ Initialization demo failed: {e}")
 
     async def demo_wake_word_detection(self) -> None:
         """Demonstrate wake word detection capabilities."""
         self.print_subheader("Wake Word Detection")
-
         try:
             audio_samples = self.demo_data["audio_samples"]
-
             for sample_name, audio_data in audio_samples.items():
-                print(f"\n🎵 Testing: {sample_name}")
-                print(f"📊 Audio shape: {audio_data.shape}")
-                print(f"⚡ Energy level: {np.mean(np.abs(audio_data)):.4f}")
-
+                logger.info(f"\n🎵 Testing: {sample_name}")
+                logger.info(f"📊 Audio shape: {audio_data.shape}")
+                logger.info(f"⚡ Energy level: {np.mean(np.abs(audio_data)):.4f}")
                 start_time = time.time()
                 detected, confidence = (
                     await self.edge_ai_manager.wake_word_detector.detect_wake_word(
@@ -151,38 +132,31 @@ class EdgeAIDemo:
                     )
                 )
                 detection_time = (time.time() - start_time) * 1000
-
-                print(f"🎯 Wake word detected: {'✅ YES' if detected else '❌ NO'}")
-                print(f"🔮 Confidence: {confidence:.3f}")
-                print(f"⏱️  Detection time: {detection_time:.2f}ms")
-
+                logger.info(
+                    f"🎯 Wake word detected: {'✅ YES' if detected else '❌ NO'}"
+                )
+                logger.info(f"🔮 Confidence: {confidence:.3f}")
+                logger.info(f"⏱️  Detection time: {detection_time:.2f}ms")
                 if detected:
-                    print(f"🚀 Would trigger cloud processing!")
-
+                    logger.info("🚀 Would trigger cloud processing!")
         except Exception as e:
-            print(f"❌ Wake word detection demo failed: {e}")
+            logger.info(f"❌ Wake word detection demo failed: {e}")
 
     async def demo_emotion_analysis(self) -> None:
         """Demonstrate emotion analysis on edge."""
         self.print_subheader("Edge Emotion Analysis")
-
         try:
             audio_samples = self.demo_data["audio_samples"]
-
             for sample_name, audio_data in audio_samples.items():
-                print(f"\n🎭 Analyzing emotions: {sample_name}")
-
-                # Extract features first
+                logger.info(f"\n🎭 Analyzing emotions: {sample_name}")
                 features = (
                     await self.edge_ai_manager.feature_extractor.extract_features(
                         audio_data
                     )
                 )
-                print(
+                logger.info(
                     f"📊 Feature extraction time: {features.extraction_time_ms:.2f}ms"
                 )
-
-                # Analyze emotion
                 start_time = time.time()
                 emotion_result = (
                     await self.edge_ai_manager.emotion_analyzer.analyze_emotion(
@@ -190,77 +164,60 @@ class EdgeAIDemo:
                     )
                 )
                 analysis_time = (time.time() - start_time) * 1000
-
-                print(f"😊 Primary emotion: {emotion_result.primary_emotion}")
-                print(f"🔮 Confidence: {emotion_result.confidence:.3f}")
-                print(f"📈 Arousal: {emotion_result.arousal:.3f}")
-                print(f"📊 Valence: {emotion_result.valence:.3f}")
-                print(f"⏱️  Analysis time: {analysis_time:.2f}ms")
-                print(f"🏷️  Model version: {emotion_result.model_version}")
-
-                # Show top 3 emotions
+                logger.info(f"😊 Primary emotion: {emotion_result.primary_emotion}")
+                logger.info(f"🔮 Confidence: {emotion_result.confidence:.3f}")
+                logger.info(f"📈 Arousal: {emotion_result.arousal:.3f}")
+                logger.info(f"📊 Valence: {emotion_result.valence:.3f}")
+                logger.info(f"⏱️  Analysis time: {analysis_time:.2f}ms")
+                logger.info(f"🏷️  Model version: {emotion_result.model_version}")
                 top_emotions = sorted(
                     emotion_result.emotion_scores.items(),
                     key=lambda x: x[1],
                     reverse=True,
                 )[:3]
-                print(
+                logger.info(
                     f"🏆 Top emotions: {', '.join([f'{e}({s:.2f})' for e, s in top_emotions])}"
                 )
-
         except Exception as e:
-            print(f"❌ Emotion analysis demo failed: {e}")
+            logger.info(f"❌ Emotion analysis demo failed: {e}")
 
     async def demo_safety_checking(self) -> None:
         """Demonstrate safety checking capabilities."""
         self.print_subheader("Edge Safety Checking")
-
         try:
-            # Test with different text samples
             text_samples = self.demo_data["text_samples"]
-
-            # Use a basic audio feature for testing
             mock_features = (
                 await self.edge_ai_manager.feature_extractor.extract_features(
                     self.demo_data["audio_samples"]["wake_word"]
                 )
             )
-
             for sample_name, text in text_samples.items():
-                print(f"\n🛡️  Safety check: {sample_name}")
-                print(f"💬 Text: '{text}'")
-
+                logger.info(f"\n🛡️  Safety check: {sample_name}")
+                logger.info(f"💬 Text: '{text}'")
                 start_time = time.time()
                 safety_result = await self.edge_ai_manager.safety_checker.check_safety(
                     mock_features, text
                 )
                 check_time = (time.time() - start_time) * 1000
-
-                print(f"✅ Passed: {'YES' if safety_result.passed else 'NO'}")
-                print(f"⚠️  Risk level: {safety_result.risk_level}")
-                print(f"📊 Safety score: {safety_result.safety_score:.3f}")
-                print(f"⏱️  Check time: {check_time:.2f}ms")
-
+                logger.info(f"✅ Passed: {'YES' if safety_result.passed else 'NO'}")
+                logger.info(f"⚠️  Risk level: {safety_result.risk_level}")
+                logger.info(f"📊 Safety score: {safety_result.safety_score:.3f}")
+                logger.info(f"⏱️  Check time: {check_time:.2f}ms")
                 if safety_result.detected_issues:
-                    print(
+                    logger.info(
                         f"🚨 Issues detected: {', '.join(safety_result.detected_issues)}"
                     )
-
                 if safety_result.requires_cloud_review:
-                    print(f"☁️  Requires cloud review!")
-
+                    logger.info("☁️  Requires cloud review!")
         except Exception as e:
-            print(f"❌ Safety checking demo failed: {e}")
+            logger.info(f"❌ Safety checking demo failed: {e}")
 
     async def demo_complete_processing_pipeline(self) -> None:
         """Demonstrate complete edge processing pipeline."""
         self.print_subheader("Complete Edge Processing Pipeline")
-
         try:
             audio_samples = self.demo_data["audio_samples"]
             text_samples = self.demo_data["text_samples"]
-
-            # Test scenarios
             scenarios = [
                 ("wake_word", "safe", "Normal interaction"),
                 ("excited_child", "emotional", "Excited child"),
@@ -268,175 +225,135 @@ class EdgeAIDemo:
                 ("angry_child", "unsafe", "Potentially concerning"),
                 ("background_noise", "safe", "Background noise only"),
             ]
-
             for audio_key, text_key, description in scenarios:
-                print(f"\n🎬 Scenario: {description}")
-                print(f"🎵 Audio: {audio_key}")
-                print(f"💬 Text: '{text_samples[text_key]}'")
-
+                logger.info(f"\n🎬 Scenario: {description}")
+                logger.info(f"🎵 Audio: {audio_key}")
+                logger.info(f"💬 Text: '{text_samples[text_key]}'")
                 start_time = time.time()
                 result = await self.edge_ai_manager.process_on_edge(
                     self.demo_data["audio_samples"][audio_key], text_samples[text_key]
                 )
                 total_time = (time.time() - start_time) * 1000
-
-                print(f"⏱️  Total processing time: {total_time:.2f}ms")
-                print(
+                logger.info(f"⏱️  Total processing time: {total_time:.2f}ms")
+                logger.info(
                     f"🎯 Wake word detected: {'YES' if result.wake_word_detected else 'NO'}"
                 )
-                print(
+                logger.info(
                     f"☁️  Should process cloud: {'YES' if result.should_process_cloud else 'NO'}"
                 )
-                print(f"🔥 Priority: {result.priority}/10")
-                print(f"🔮 Confidence: {result.confidence:.3f}")
-                print(f"💻 Device load: {result.device_load:.3f}")
-
+                logger.info(f"🔥 Priority: {result.priority}/10")
+                logger.info(f"🔮 Confidence: {result.confidence:.3f}")
+                logger.info(f"💻 Device load: {result.device_load:.3f}")
                 if result.initial_emotion:
-                    print(
+                    logger.info(
                         f"😊 Emotion: {result.initial_emotion.primary_emotion} ({result.initial_emotion.confidence:.3f})"
                     )
-
                 if result.safety_check:
-                    print(
+                    logger.info(
                         f"🛡️  Safety: {'PASS' if result.safety_check.passed else 'FAIL'} ({result.safety_check.safety_score:.3f})"
                     )
-
                 if result.recommendations:
-                    print(
+                    logger.info(
                         f"💡 Recommendations: {', '.join(result.recommendations[:2])}..."
                     )
-
         except Exception as e:
-            print(f"❌ Complete pipeline demo failed: {e}")
+            logger.info(f"❌ Complete pipeline demo failed: {e}")
 
     async def demo_device_optimization(self) -> None:
         """Demonstrate device-specific optimization."""
         self.print_subheader("Device-Specific Optimization")
-
         try:
             device_specs = self.demo_data["device_specs"]
             audio_sample = self.demo_data["audio_samples"]["wake_word"]
-
             for device_name, specs in device_specs.items():
-                print(f"\n📱 Device: {device_name}")
-                print(f"💾 Memory: {specs['memory_mb']}MB")
-                print(f"🖥️  CPU Cores: {specs['cpu_cores']}")
-                print(f"💿 Flash: {specs['flash_mb']}MB")
-
-                # Create optimized manager for this device
+                logger.info(f"\n📱 Device: {device_name}")
+                logger.info(f"💾 Memory: {specs['memory_mb']}MB")
+                logger.info(f"🖥️  CPU Cores: {specs['cpu_cores']}")
+                logger.info(f"💿 Flash: {specs['flash_mb']}MB")
                 config = EdgeModelConfig()
                 device_manager = EdgeAIManager(config)
                 device_manager.optimize_for_device(specs)
                 await device_manager.initialize()
-
-                print(
+                logger.info(
                     f"⚙️  Optimized mode: {device_manager.config.processing_mode.value}"
                 )
-                print(
+                logger.info(
                     f"🎙️  Wake word model: {device_manager.config.wake_word_model.value}"
                 )
-
-                # Test processing speed
                 start_time = time.time()
                 result = await device_manager.process_on_edge(audio_sample)
                 processing_time = (time.time() - start_time) * 1000
-
-                print(f"⏱️  Processing time: {processing_time:.2f}ms")
-                print(
+                logger.info(f"⏱️  Processing time: {processing_time:.2f}ms")
+                logger.info(
                     f"📊 Efficiency rating: {self._calculate_efficiency(processing_time, specs):.1f}/10"
                 )
-
                 await device_manager.cleanup()
-
         except Exception as e:
-            print(f"❌ Device optimization demo failed: {e}")
+            logger.info(f"❌ Device optimization demo failed: {e}")
 
     def _calculate_efficiency(
         self, processing_time_ms: float, specs: Dict[str, Any]
     ) -> float:
         """Calculate efficiency rating based on processing time and device specs."""
-        # Simple efficiency calculation
         base_score = 10.0
-
-        # Penalize for slow processing
         if processing_time_ms > 100:
             base_score -= (processing_time_ms - 100) / 50
-
-        # Bonus for low memory devices
         if specs["memory_mb"] < 512:
             base_score += 1.0
-
         return max(0.0, min(10.0, base_score))
 
     async def demo_integration_service(self) -> None:
         """Demonstrate Edge AI integration service."""
         self.print_subheader("Edge AI Integration Service")
-
         try:
-            # Initialize integration service
             integration_config = EdgeModelConfig(
                 processing_mode=EdgeProcessingMode.BALANCED
             )
             self.integration_service = EdgeAIIntegrationService(integration_config)
             await self.integration_service.initialize()
-
-            print(f"✅ Integration service initialized")
-
-            # Configure for ESP32-S3
+            logger.info("✅ Integration service initialized")
             await self.integration_service.configure_for_device(
                 "ESP32-S3", self.demo_data["device_specs"]["ESP32-S3"]
             )
-
-            # Test integrated processing
             audio_sample = self.demo_data["audio_samples"]["excited_child"]
             child_id = "demo_child_001"
-
-            print(f"\n🔄 Processing audio request...")
-            print(f"👶 Child ID: {child_id}")
-            print(f"🎵 Audio sample: excited_child")
-
+            logger.info("\n🔄 Processing audio request...")
+            logger.info(f"👶 Child ID: {child_id}")
+            logger.info("🎵 Audio sample: excited_child")
             start_time = time.time()
             response = await self.integration_service.process_audio_request(
                 audio_sample, child_id, self.demo_data["device_specs"]["ESP32-S3"]
             )
             total_time = (time.time() - start_time) * 1000
-
-            print(f"⏱️  Total response time: {total_time:.2f}ms")
-            print(f"🎯 Processing source: {response.processing_source}")
-            print(f"💬 Response: {response.response_text[:100]}...")
-            print(f"🔮 Confidence: {response.confidence:.3f}")
-
+            logger.info(f"⏱️  Total response time: {total_time:.2f}ms")
+            logger.info(f"🎯 Processing source: {response.processing_source}")
+            logger.info(f"💬 Response: {response.response_text[:100]}...")
+            logger.info(f"🔮 Confidence: {response.confidence:.3f}")
             if response.emotion_analysis:
                 emotion = response.emotion_analysis.get("primary_emotion", "unknown")
-                print(f"😊 Detected emotion: {emotion}")
-
-            # Get integration statistics
+                logger.info(f"😊 Detected emotion: {emotion}")
             stats = self.integration_service.get_integration_statistics()
-            print(f"\n📊 Integration Statistics:")
-            print(
+            logger.info("\n📊 Integration Statistics:")
+            logger.info(
                 f"   🔵 Total requests: {stats['integration_stats']['total_requests']}"
             )
-            print(
+            logger.info(
                 f"   📱 Edge-only responses: {stats['integration_stats']['edge_only_responses']}"
             )
-            print(
+            logger.info(
                 f"   ☁️  Cloud-assisted: {stats['integration_stats']['cloud_assisted_responses']}"
             )
-            print(
+            logger.info(
                 f"   🔄 Hybrid responses: {stats['integration_stats']['hybrid_responses']}"
             )
-
             await self.integration_service.cleanup()
-
         except Exception as e:
-            print(f"❌ Integration service demo failed: {e}")
+            logger.info(f"❌ Integration service demo failed: {e}")
 
     async def demo_performance_benchmarks(self) -> None:
         """Demonstrate performance benchmarks."""
         self.print_subheader("Performance Benchmarks")
-
         try:
-            # Performance test with different configurations
             configs = {
                 "Ultra Fast": EdgeModelConfig(
                     processing_mode=EdgeProcessingMode.ULTRA_LOW_LATENCY
@@ -448,95 +365,85 @@ class EdgeAIDemo:
                     processing_mode=EdgeProcessingMode.HIGH_ACCURACY
                 ),
             }
-
             audio_sample = self.demo_data["audio_samples"]["wake_word"]
             iterations = 5
-
             for config_name, config in configs.items():
-                print(f"\n🏃 Benchmarking: {config_name}")
-
+                logger.info(f"\n🏃 Benchmarking: {config_name}")
                 manager = EdgeAIManager(config)
                 await manager.initialize()
-
                 times = []
                 for i in range(iterations):
                     start_time = time.time()
                     result = await manager.process_on_edge(audio_sample)
                     end_time = time.time()
                     times.append((end_time - start_time) * 1000)
-
                 avg_time = np.mean(times)
                 min_time = np.min(times)
                 max_time = np.max(times)
                 std_time = np.std(times)
-
-                print(f"   ⏱️  Average: {avg_time:.2f}ms")
-                print(f"   🏆 Best: {min_time:.2f}ms")
-                print(f"   📊 Worst: {max_time:.2f}ms")
-                print(f"   📈 Std Dev: {std_time:.2f}ms")
-                print(f"   🎯 Target: {'✅ MET' if avg_time < 100 else '❌ MISSED'}")
-
-                # Get performance stats
+                logger.info(f"   ⏱️  Average: {avg_time:.2f}ms")
+                logger.info(f"   🏆 Best: {min_time:.2f}ms")
+                logger.info(f"   📊 Worst: {max_time:.2f}ms")
+                logger.info(f"   📈 Std Dev: {std_time:.2f}ms")
+                logger.info(
+                    f"   🎯 Target: {'✅ MET' if avg_time < 100 else '❌ MISSED'}"
+                )
                 stats = manager.get_performance_stats()
-                print(
+                logger.info(
                     f"   📊 Total processed: {stats['processing_stats']['total_processed']}"
                 )
-                print(
+                logger.info(
                     f"   ⚡ Avg processing time: {stats['processing_stats']['average_processing_time']:.2f}ms"
                 )
-
                 await manager.cleanup()
-
         except Exception as e:
-            print(f"❌ Performance benchmark demo failed: {e}")
+            logger.info(f"❌ Performance benchmark demo failed: {e}")
 
     def demo_system_capabilities(self) -> None:
         """Demonstrate system capabilities and limitations."""
         self.print_subheader("System Capabilities")
-
-        print(f"🔧 System Status:")
-        print(f"   📱 Edge AI Available: {'✅ YES' if EDGE_AI_AVAILABLE else '❌ NO'}")
-        print(f"   🧠 TensorFlow Available: {'✅ YES' if TF_AVAILABLE else '❌ NO'}")
-        print(
+        logger.info("🔧 System Status:")
+        logger.info(
+            f"   📱 Edge AI Available: {'✅ YES' if EDGE_AI_AVAILABLE else '❌ NO'}"
+        )
+        logger.info(
+            f"   🧠 TensorFlow Available: {'✅ YES' if TF_AVAILABLE else '❌ NO'}"
+        )
+        logger.info(
             f"   🎵 Audio Processing Available: {'✅ YES' if AUDIO_PROCESSING_AVAILABLE else '❌ NO'}"
         )
-
-        print(f"\n⚡ Processing Capabilities:")
-        print(f"   🎙️  Wake Word Detection: Real-time on device")
-        print(f"   😊 Emotion Analysis: 7 emotions, <100ms")
-        print(f"   🛡️  Safety Checking: Multi-level filtering")
-        print(f"   🔄 Batch Processing: Multiple audio streams")
-        print(f"   📊 Performance Monitoring: Real-time statistics")
-
-        print(f"\n📱 Device Support:")
-        print(f"   🖥️  ESP32-S3: Full support, all features")
-        print(f"   💾 ESP32-C3: Limited support, basic features")
-        print(f"   🔧 Auto-optimization: Based on device specs")
-
-        print(f"\n🔮 AI Models:")
-        print(f"   🎙️  Wake Word: 3 model sizes (1MB-5MB)")
-        print(f"   😊 Emotion: Lightweight TensorFlow Lite")
-        print(f"   🛡️  Safety: Multi-level checking (keyword + ML)")
-        print(f"   📊 Features: MFCC, spectral, temporal analysis")
-
-        print(f"\n⚡ Performance Targets:")
-        print(f"   🏃 Ultra Low Latency: <10ms target")
-        print(f"   ⚖️  Balanced: <50ms target")
-        print(f"   🎯 High Accuracy: <100ms target")
-        print(f"   💾 Memory Usage: <50MB per context")
-        print(f"   🔄 Concurrent Operations: 1000+ simultaneous")
+        logger.info("\n⚡ Processing Capabilities:")
+        logger.info("   🎙️  Wake Word Detection: Real-time on device")
+        logger.info("   😊 Emotion Analysis: 7 emotions, <100ms")
+        logger.info("   🛡️  Safety Checking: Multi-level filtering")
+        logger.info("   🔄 Batch Processing: Multiple audio streams")
+        logger.info("   📊 Performance Monitoring: Real-time statistics")
+        logger.info("\n📱 Device Support:")
+        logger.info("   🖥️  ESP32-S3: Full support, all features")
+        logger.info("   💾 ESP32-C3: Limited support, basic features")
+        logger.info("   🔧 Auto-optimization: Based on device specs")
+        logger.info("\n🔮 AI Models:")
+        logger.info("   🎙️  Wake Word: 3 model sizes (1MB-5MB)")
+        logger.info("   😊 Emotion: Lightweight TensorFlow Lite")
+        logger.info("   🛡️  Safety: Multi-level checking (keyword + ML)")
+        logger.info("   📊 Features: MFCC, spectral, temporal analysis")
+        logger.info("\n⚡ Performance Targets:")
+        logger.info("   🏃 Ultra Low Latency: <10ms target")
+        logger.info("   ⚖️  Balanced: <50ms target")
+        logger.info("   🎯 High Accuracy: <100ms target")
+        logger.info("   💾 Memory Usage: <50MB per context")
+        logger.info("   🔄 Concurrent Operations: 1000+ simultaneous")
 
     async def run_complete_demo(self) -> None:
         """Run the complete Edge AI demonstration."""
         self.print_header("🤖 EDGE AI SYSTEM DEMO - ESP32-S3")
-
         if not EDGE_AI_AVAILABLE:
-            print(f"❌ Edge AI not available: {import_error}")
-            print(f"📦 Install requirements: pip install tensorflow numpy librosa")
+            logger.info(f"❌ Edge AI not available: {import_error}")
+            logger.info(
+                "📦 Install requirements: pip install tensorflow numpy librosa"
+            )
             return
-
         try:
-            # Run all demo sections
             await self.demo_edge_ai_initialization()
             await self.demo_wake_word_detection()
             await self.demo_emotion_analysis()
@@ -546,20 +453,16 @@ class EdgeAIDemo:
             await self.demo_integration_service()
             await self.demo_performance_benchmarks()
             self.demo_system_capabilities()
-
             self.print_header("✅ EDGE AI DEMO COMPLETED SUCCESSFULLY")
-            print(f"🎯 All Edge AI features demonstrated")
-            print(f"⚡ Real-time processing capabilities verified")
-            print(f"📱 ESP32-S3 optimization confirmed")
-            print(f"🤖 AI Team implementation complete")
-
+            logger.info("🎯 All Edge AI features demonstrated")
+            logger.info("⚡ Real-time processing capabilities verified")
+            logger.info("📱 ESP32-S3 optimization confirmed")
+            logger.info("🤖 AI Team implementation complete")
         except Exception as e:
             self.print_header("❌ DEMO FAILED")
-            print(f"Error: {e}")
+            logger.info(f"Error: {e}")
             logger.exception("Demo failed with exception")
-
         finally:
-            # Cleanup
             if self.edge_ai_manager:
                 await self.edge_ai_manager.cleanup()
             if self.integration_service:
@@ -573,5 +476,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    # Run the demo
     asyncio.run(main())

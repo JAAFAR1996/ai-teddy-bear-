@@ -5,12 +5,10 @@ import time
 from datetime import datetime
 from typing import Any, Callable, Dict, Optional
 
-import requests
 import structlog
 
 from ....domain.esp32.models import (ConnectionStatus, NetworkConnection,
-                                     ServerConnection, WiFiSecurityType,
-                                     WiFiStatus)
+                                     WiFiSecurityType)
 
 logger = structlog.get_logger(__name__)
 

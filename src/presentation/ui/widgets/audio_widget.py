@@ -5,7 +5,6 @@ Comprehensive audio interface with recording, processing, and visualization
 
 import asyncio
 from datetime import datetime
-from typing import Optional
 
 import structlog
 from PySide6.QtCore import QTimer, Signal, pyqtSlot

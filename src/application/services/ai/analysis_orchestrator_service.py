@@ -5,7 +5,7 @@ Coordinates complex analysis workflows across multiple domains
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from src.domain.reporting.models import (InteractionAnalysis, ProgressMetrics,
                                          UrgencyLevel)

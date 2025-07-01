@@ -3,7 +3,7 @@
 import logging
 from abc import ABC
 from datetime import datetime
-from typing import Generic, Type, TypeVar
+from typing import Generic, TypeVar
 from uuid import UUID
 
 from ...domain.entities.child import Child

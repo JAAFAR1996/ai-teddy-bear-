@@ -57,7 +57,7 @@ def decode_cursor(encoded_cursor: str) -> Dict[str, Any]:
     try:
         cursor_json = base64.b64decode(encoded_cursor.encode()).decode()
         return json.loads(cursor_json)
-    except Exception as e:
+    except Exception:
         return {"offset": 0}
 
 

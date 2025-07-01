@@ -8,13 +8,11 @@ import json
 import os
 import sqlite3
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from src.core.domain.entities.child import Child
-from src.infrastructure.persistence.base import (BulkOperationResult,
-                                                 QueryOptions, SearchCriteria,
-                                                 SortOrder)
+from src.infrastructure.persistence.base import (QueryOptions, SortOrder)
 from src.infrastructure.persistence.base_sqlite_repository import \
     BaseSQLiteRepository
 from src.infrastructure.persistence.child_repository import ChildRepository

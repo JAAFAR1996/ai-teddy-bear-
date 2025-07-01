@@ -6,7 +6,7 @@ Handles chart creation using matplotlib and seaborn
 import base64
 import io
 import logging
-from typing import Any, Dict, Optional
+from typing import Dict
 
 from src.domain.reporting.models import ChildProgress, EmotionDistribution
 

@@ -4,13 +4,9 @@
 إرسال رسائل نصية قصيرة عبر Twilio وخدمات أخرى
 """
 
-import asyncio
 import json
-import logging
 from pathlib import Path
-from typing import Optional
 
-import httpx
 import structlog
 
 # إعداد logger

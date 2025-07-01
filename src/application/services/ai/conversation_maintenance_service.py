@@ -3,7 +3,7 @@
 import logging
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 
 class ConversationMaintenanceService:

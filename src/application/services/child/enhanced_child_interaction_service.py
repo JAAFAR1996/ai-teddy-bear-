@@ -20,7 +20,7 @@ from src.infrastructure.external_services.advanced_ai_orchestrator import (
     AdvancedAIOrchestrator, ChildRequest, ModelComplexity)
 # Import enhanced components
 from src.infrastructure.external_services.enhanced_audio_processor import (
-    AudioConfig, AudioProcessingResult, EnhancedAudioProcessor)
+    AudioProcessingResult, EnhancedAudioProcessor)
 from src.infrastructure.security.advanced_content_filter import (
     AdvancedContentFilter, ContentAnalysisResult)
 

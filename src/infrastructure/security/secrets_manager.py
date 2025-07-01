@@ -4,26 +4,22 @@ Supports HashiCorp Vault, AWS Secrets Manager, and secure local storage
 """
 
 import asyncio
-import base64
 import json
 import logging
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional
 
 import aiofiles
-import aioredis
 import boto3
 import hvac
 from botocore.exceptions import ClientError
 from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from pydantic import BaseModel, Field, SecretStr, validator
+from pydantic import BaseModel, SecretStr
 
 logger = logging.getLogger(__name__)
 

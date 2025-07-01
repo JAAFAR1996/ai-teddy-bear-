@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -9,10 +9,9 @@ SQLAlchemy Models for AI Teddy Bear Project
 Includes Child, Conversation, Message, and related entities with optimized relationships and indexes
 """
 
-import json
 import uuid
-from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import date, datetime
+from typing import Any, Dict
 
 from sqlalchemy import (Boolean, CheckConstraint, Column, Date, DateTime,
                         Float, ForeignKey, Index, Integer, String, Table, Text,
@@ -21,8 +20,7 @@ from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.event import listens_for
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Session, relationship, validates
-from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship, validates
 
 Base = declarative_base()
 

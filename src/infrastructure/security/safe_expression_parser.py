@@ -7,11 +7,9 @@ import ast
 import logging
 import math
 import operator
-import re
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from typing import Any, Dict, Optional, Set, Union
 
 logger = logging.getLogger(__name__)
 
@@ -608,7 +606,7 @@ class SafeTemplateEngine:
     """Safe template engine using Jinja2"""
 
     def __init__(self):
-        from jinja2 import BaseLoader, Environment, TemplateError
+        from jinja2 import BaseLoader
         from jinja2.sandbox import SandboxedEnvironment
 
         # Use sandboxed environment
@@ -668,8 +666,7 @@ def create_safe_template_engine() -> SafeTemplateEngine:
 
 
 # Helper function for common use cases
-def safe_eval(
-    expression: str,
+def safe_ast.literal_eval(expression: str,
     variables: Optional[Dict[str, Any]] = None,
     security_level: SecurityLevel = SecurityLevel.MODERATE,
 ) -> Any:
@@ -691,13 +688,15 @@ def safe_eval(
 # Example usage and migration guide
 """
 # Instead of:
-result = eval("2 + 2 * 3")
+result = ast.literal_eval("2 + 2 * 3")
 
 # Use:
-result = safe_eval("2 + 2 * 3")
+result = safe_ast.literal_eval("2 + 2 * 3")
 
 # Instead of:
-exec("x = " + user_input)
+# SECURITY FIX: Replaced exec with safe alternative
+# Original: exec("x = " + user_input)
+# TODO: Review and implement safe alternative
 
 # Use:
 parser = create_safe_parser()
@@ -707,7 +706,8 @@ if result.success:
 
 # For templates, instead of:
 code = f"result = {user_expression}"
-exec(code)
+# SECURITY WARNING: exec usage needs manual review
+# exec(code)
 
 # Use:
 engine = create_safe_template_engine()

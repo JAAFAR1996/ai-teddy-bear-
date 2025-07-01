@@ -13,14 +13,11 @@ import asyncio
 import json
 import logging
 import statistics
-import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
-import memory_profiler
 import psutil
 
 logger = logging.getLogger(__name__)
@@ -412,7 +409,7 @@ class PerformanceTester:
                         response = target_function("test stress", context)
 
                     successful_requests += 1
-                except Exception as e:
+                except Exception:
                     error_count += 1
 
             # Run stress level

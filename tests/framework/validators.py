@@ -5,7 +5,7 @@ Content Safety Validators - أدوات التحقق من أمان المحتوى
 import re
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Optional
 
 from faker import Faker
 

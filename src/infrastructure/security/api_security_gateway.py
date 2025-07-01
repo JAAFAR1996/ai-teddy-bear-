@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 """
 🔐 API Security Gateway - Rate Limiting & DDoS Protection
@@ -10,13 +10,12 @@ Author: Jaafar Adeeb - Security Lead
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import redis.asyncio as redis
 import structlog
-from fastapi import HTTPException, Request, status
+from fastapi import Request
 from fastapi.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import JSONResponse
 

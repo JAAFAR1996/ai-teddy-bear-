@@ -7,8 +7,6 @@ logger = logging.getLogger(__name__)
 How to integrate the new modern moderation service into existing codebase
 """
 
-import asyncio
-from typing import Optional
 
 from openai import AsyncOpenAI
 
@@ -77,7 +75,7 @@ async def voice_interaction_moderation(text: str, child_age: int):
     if not is_safe:
         # Generate safe fallback response
         return {
-            "response": f"I didn't understand that. Let's talk about something fun instead!",
+            "response": "I didn't understand that. Let's talk about something fun instead!",
             "moderated": True,
         }
 

@@ -10,15 +10,13 @@ API Team Implementation - Task 13
 Author: API Team Lead
 """
 
-import asyncio
 import hashlib
 import json
 import logging
-import time
 from collections import defaultdict, deque
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 # Monitoring and metrics
 try:

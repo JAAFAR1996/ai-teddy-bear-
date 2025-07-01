@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 import structlog
-from prometheus_client import Counter, Gauge, Histogram, Summary
+from prometheus_client import Counter, Gauge, Histogram
 
 from src.infrastructure.caching.redis_cache import get_redis_client
 from src.infrastructure.external_services.openai_service import get_ai_service

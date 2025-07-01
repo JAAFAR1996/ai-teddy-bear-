@@ -1,379 +1,407 @@
 #!/usr/bin/env python3
 """
-🔍 GitHub Secrets Scanner Setup
-Senior DevOps Engineer: جعفر أديب
-Enterprise-grade secrets scanning for CI/CD pipelines
+🔐 GitHub Secrets Scanner Setup
+إعداد نظام مسح الأسرار والحماية الأمنية لمشروع AI Teddy Bear
 """
 
-import json
+import logging
 import os
 import subprocess
+import sys
 from pathlib import Path
-from typing import Dict, List, Optional
 
-import yaml
+# إعداد logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
-class GitHubSecretsScanner:
-    """إعداد مسح الأسرار في GitHub وCI/CD"""
+def create_github_workflow() -> None:
+    """
+    إنشاء GitHub Actions workflow للمسح الأمني
+    """
+    workflow_content = """name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run weekly security scan
+    - cron: '0 2 * * 1'
+
+jobs:
+  secrets-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     
-    def __init__(self):
-        self.project_root = Path.cwd()
-        self.github_dir = self.project_root / '.github'
-        self.workflows_dir = self.github_dir / 'workflows'
-        
-    def setup_github_workflows(self):
-        """إعداد GitHub Actions workflows للمسح الأمني"""
-        self.workflows_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Security scanning workflow
-        security_workflow = {
-            'name': 'Security Scan',
-            'on': {
-                'push': {'branches': ['main', 'develop']},
-                'pull_request': {'branches': ['main', 'develop']},
-                'schedule': [{'cron': '0 2 * * *'}]  # Daily at 2 AM
-            },
-            'jobs': {
-                'secret-scan': {
-                    'runs-on': 'ubuntu-latest',
-                    'steps': [
-                        {'uses': 'actions/checkout@v4'},
-                        {
-                            'name': 'Install TruffleHog',
-                            'run': 'pip install truffleHog3'
-                        },
-                        {
-                            'name': 'Scan for secrets',
-                            'run': 'trufflehog3 --format json --output secrets-report.json .'
-                        },
-                        {
-                            'name': 'Install git-secrets',
-                            'run': |
-                                'sudo apt-get update && '
-                                'sudo apt-get install -y git-secrets'
-                        },
-                        {
-                            'name': 'Configure git-secrets',
-                            'run': |
-                                'git secrets --register-aws && '
-                                'git secrets --install && '
-                                'git secrets --scan'
-                        },
-                        {
-                            'name': 'Upload security report',
-                            'uses': 'actions/upload-artifact@v4',
-                            'if': 'always()',
-                            'with': {
-                                'name': 'security-report',
-                                'path': 'secrets-report.json'
-                            }
-                        }
-                    ]
-                },
-                'dependency-scan': {
-                    'runs-on': 'ubuntu-latest',
-                    'steps': [
-                        {'uses': 'actions/checkout@v4'},
-                        {
-                            'name': 'Run Snyk security scan',
-                            'uses': 'snyk/actions/python@master',
-                            'env': {'SNYK_TOKEN': '${{ secrets.SNYK_TOKEN }}'}
-                        }
-                    ]
-                }
-            }
-        }
-        
-        with open(self.workflows_dir / 'security-scan.yml', 'w') as f:
-            yaml.dump(security_workflow, f, default_flow_style=False)
-        
-        print("✅ تم إنشاء GitHub Actions workflow للمسح الأمني")
+    - name: Run detect-secrets
+      uses: reviewdog/action-detect-secrets@master
+      with:
+        reporter: github-pr-review
+        github_token: ${{ secrets.GITHUB_TOKEN }}
     
-    def setup_pre_commit_config(self):
-        """إعداد pre-commit hooks للمسح المحلي"""
-        pre_commit_config = {
-            'repos': [
-                {
-                    'repo': 'https://github.com/pre-commit/pre-commit-hooks',
-                    'rev': 'v4.4.0',
-                    'hooks': [
-                        {'id': 'check-yaml'},
-                        {'id': 'end-of-file-fixer'},
-                        {'id': 'trailing-whitespace'},
-                        {'id': 'check-added-large-files'},
-                        {'id': 'check-merge-conflict'}
-                    ]
-                },
-                {
-                    'repo': 'https://github.com/Yelp/detect-secrets',
-                    'rev': 'v1.4.0',
-                    'hooks': [
-                        {
-                            'id': 'detect-secrets',
-                            'args': ['--baseline', '.secrets.baseline']
-                        }
-                    ]
-                },
-                {
-                    'repo': 'https://github.com/trufflesecurity/trufflehog',
-                    'rev': 'v3.63.2',
-                    'hooks': [
-                        {
-                            'id': 'trufflehog',
-                            'name': 'TruffleHog',
-                            'description': 'Detect secrets in your data.',
-                            'entry': 'bash -c "trufflehog git file://. --since-commit HEAD --only-verified --fail"',
-                            'language': 'system',
-                            'stages': ['commit', 'manual']
-                        }
-                    ]
-                }
-            ]
-        }
+    - name: Run Gitleaks
+      uses: zricethezav/gitleaks-action@master
+      with:
+        config-path: .gitleaks.toml
         
-        with open(self.project_root / '.pre-commit-config.yaml', 'w') as f:
-            yaml.dump(pre_commit_config, f, default_flow_style=False)
-        
-        print("✅ تم إنشاء تكوين pre-commit hooks")
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
     
-    def setup_secrets_baseline(self):
-        """إنشاء baseline للأسرار المعروفة"""
-        try:
-            # Run detect-secrets to create baseline
-            result = subprocess.run([
-                'detect-secrets', 'scan', '--baseline', '.secrets.baseline'
-            ], capture_output=True, text=True, cwd=self.project_root)
+    - name: Run Snyk
+      uses: snyk/actions/python@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+"""
+    
+    os.makedirs('.github/workflows', exist_ok=True)
+    with open('.github/workflows/security-scan.yml', 'w') as f:
+        f.write(workflow_content)
+    
+    logger.info("✅ تم إنشاء GitHub Actions workflow للمسح الأمني")
+
+
+def create_precommit_hooks() -> None:
+    """
+    إنشاء تكوين pre-commit hooks للحماية
+    """
+    precommit_content = """repos:
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package.lock.json
+        
+  - repo: https://github.com/zricethezav/gitleaks
+    rev: v8.15.0
+    hooks:
+      - id: gitleaks
+      
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: ['-r', 'src/', '-f', 'json', '-o', 'bandit-report.json']
+        
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+      - id: black
+        language_version: python3.11
+"""
+    
+    with open('.pre-commit-config.yaml', 'w') as f:
+        f.write(precommit_content)
+    
+    logger.info("✅ تم إنشاء تكوين pre-commit hooks")
+
+
+def create_secrets_baseline() -> None:
+    """
+    إنشاء secrets baseline للمقارنة
+    """
+    try:
+        result = subprocess.run([
+            'detect-secrets', 'scan', '--baseline', '.secrets.baseline'
+        ], capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            logger.info("✅ تم إنشاء secrets baseline")
+        else:
+            logger.warning(f"⚠️ تحذير في إنشاء baseline: {result.stderr}")
             
-            if result.returncode == 0:
-                print("✅ تم إنشاء secrets baseline")
-            else:
-                print(f"⚠️ تحذير في إنشاء baseline: {result.stderr}")
-                
-        except FileNotFoundError:
-            print("⚠️ detect-secrets غير مثبت - تخطي إنشاء baseline")
+    except FileNotFoundError:
+        logger.warning("⚠️ detect-secrets غير مثبت - تخطي إنشاء baseline")
+
+
+def create_gitleaks_config() -> None:
+    """
+    إنشاء تكوين Gitleaks للكشف عن التسريبات
+    """
+    gitleaks_config = """[extend]
+useDefault = true
+
+[[rules]]
+description = "AWS Access Key"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["key", "AWS"]
+
+[[rules]]
+description = "AWS Secret Key"
+regex = '''[0-9a-zA-Z/+]{40}'''
+tags = ["secret", "AWS"]
+
+[[rules]]
+description = "API Key"
+regex = '''(?i)(api[_-]?key|apikey)[=:\s]+['\"]?([0-9a-zA-Z\-_]+)['\"]?'''
+tags = ["api", "key"]
+
+[[rules]]
+description = "Database Password"
+regex = '''(?i)(db[_-]?pass|database[_-]?password)[=:\s]+['\"]?([^\s'"]{8,})['\"]?'''
+tags = ["database", "password"]
+
+[allowlist]
+description = "Ignore test files"
+files = ['''tests/.*''', '''test_.*\.py''']
+paths = ['''.*/tests/.*''', '''.*/test_.*''']
+
+[allowlist]
+description = "Ignore example configurations"
+files = ['''.*\.example$''', '''.*\.sample$''']
+"""
     
-    def create_security_policy(self):
-        """إنشاء سياسة الأمان للمشروع"""
-        security_policy = """# Security Policy
+    with open('.gitleaks.toml', 'w') as f:
+        f.write(gitleaks_config)
+    
+    logger.info("✅ تم إنشاء تكوين Gitleaks")
+
+
+def create_security_policy() -> None:
+    """
+    إنشاء سياسة الأمان للمشروع
+    """
+    security_policy = """# Security Policy
 
 ## Supported Versions
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
+| 2025.x  | :white_check_mark: |
+| < 2025  | :x:                |
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability, please report it by:
+إذا اكتشفت ثغرة أمنية، يرجى إبلاغنا فوراً:
 
-1. **DO NOT** create a public GitHub issue
-2. Email security@ai-teddy.com with details
-3. Include steps to reproduce the vulnerability
-4. We will respond within 48 hours
+1. **لا تنشر** الثغرة علناً
+2. أرسل تقريراً مفصلاً إلى: security@aiteddy.com
+3. اتبع الممارسات المسؤولة للكشف
+
+### المعلومات المطلوبة:
+- وصف الثغرة
+- خطوات إعادة الإنتاج
+- التأثير المحتمل
+- إصدار المنتج المتأثر
 
 ## Security Measures
 
-### Secrets Management
-- All secrets are managed through HashiCorp Vault
-- No hardcoded secrets in the codebase
-- Automated secret rotation implemented
-- Regular security audits performed
+- 🔐 تشفير البيانات الحساسة
+- 🔑 إدارة آمنة للمفاتيح
+- 🛡️ مسح أمني مستمر
+- 📋 مراجعة الكود الأمنية
+- 🔄 تحديثات أمنية منتظمة
 
-### CI/CD Security
-- Secrets scanning on every commit
-- Dependency vulnerability scanning
-- Container security scanning
-- Infrastructure as Code security scanning
+## Best Practices
 
-### Access Control
-- Principle of least privilege
-- Multi-factor authentication required
-- Regular access reviews
-- Audit logging enabled
-
-## Security Contact
-
-For security-related inquiries:
-- Email: security@ai-teddy.com
-- PGP Key: [Public Key]
+- استخدم متغيرات البيئة للأسرار
+- فعّل المصادقة الثنائية
+- راجع التبعيات بانتظام
+- احرص على أحدث إصدارات الأمان
 """
-        
-        with open(self.project_root / 'SECURITY.md', 'w') as f:
-            f.write(security_policy)
-        
-        print("✅ تم إنشاء سياسة الأمان")
     
-    def setup_dependabot(self):
-        """إعداد Dependabot لتحديثات الأمان"""
-        dependabot_config = {
-            'version': 2,
-            'updates': [
-                {
-                    'package-ecosystem': 'pip',
-                    'directory': '/',
-                    'schedule': {'interval': 'weekly'},
-                    'open-pull-requests-limit': 10,
-                    'reviewers': ['@ai-teddy/security-team'],
-                    'labels': ['dependencies', 'security']
-                },
-                {
-                    'package-ecosystem': 'npm',
-                    'directory': '/frontend',
-                    'schedule': {'interval': 'weekly'},
-                    'open-pull-requests-limit': 10,
-                    'reviewers': ['@ai-teddy/security-team'],
-                    'labels': ['dependencies', 'security']
-                },
-                {
-                    'package-ecosystem': 'docker',
-                    'directory': '/',
-                    'schedule': {'interval': 'weekly'},
-                    'reviewers': ['@ai-teddy/security-team'],
-                    'labels': ['dependencies', 'security']
-                }
-            ]
-        }
-        
-        with open(self.github_dir / 'dependabot.yml', 'w') as f:
-            yaml.dump(dependabot_config, f, default_flow_style=False)
-        
-        print("✅ تم إعداد Dependabot")
+    with open('SECURITY.md', 'w') as f:
+        f.write(security_policy)
     
-    def create_security_scripts(self):
-        """إنشاء سكريبتات الأمان المساعدة"""
-        scripts_dir = self.project_root / 'scripts' / 'security'
-        scripts_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Secret scanning script
-        scan_script = """#!/bin/bash
-# Security Scanning Script
+    logger.info("✅ تم إنشاء سياسة الأمان")
 
-set -euo pipefail
 
-echo "🔍 بدء المسح الأمني الشامل..."
-
-# TruffleHog scan
-echo "📊 تشغيل TruffleHog..."
-trufflehog git file://. --since-commit HEAD~10 --only-verified --json > trufflehog-report.json
-
-# Detect-secrets scan
-echo "🔍 تشغيل detect-secrets..."
-detect-secrets scan --baseline .secrets.baseline
-
-# Git-secrets scan
-echo "🔐 تشغيل git-secrets..."
-git secrets --scan
-
-# Bandit security scan for Python
-echo "🐍 تشغيل Bandit للكود Python..."
-bandit -r . -f json -o bandit-report.json || true
-
-# Safety check for Python dependencies
-echo "📦 فحص تبعيات Python..."
-safety check --json --output safety-report.json || true
-
-echo "✅ انتهى المسح الأمني"
+def create_dependabot_config() -> None:
+    """
+    إنشاء تكوين Dependabot للتحديثات الأمنية
+    """
+    dependabot_config = """version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - "security-team"
+    assignees:
+      - "maintainer"
+    open-pull-requests-limit: 10
+    
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - "security-team"
+      
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
 """
-        
-        with open(scripts_dir / 'scan.sh', 'w') as f:
-            f.write(scan_script)
-        
-        os.chmod(scripts_dir / 'scan.sh', 0o755)
-        
-        print("✅ تم إنشاء سكريبتات الأمان")
     
-    def setup_codeql_analysis(self):
-        """إعداد تحليل CodeQL للكود"""
-        codeql_workflow = {
-            'name': 'CodeQL',
-            'on': {
-                'push': {'branches': ['main']},
-                'pull_request': {'branches': ['main']},
-                'schedule': [{'cron': '0 6 * * 1'}]  # Weekly on Monday
-            },
-            'jobs': {
-                'analyze': {
-                    'name': 'Analyze',
-                    'runs-on': 'ubuntu-latest',
-                    'permissions': {
-                        'actions': 'read',
-                        'contents': 'read',
-                        'security-events': 'write'
-                    },
-                    'strategy': {
-                        'fail-fast': False,
-                        'matrix': {
-                            'language': ['python', 'javascript']
-                        }
-                    },
-                    'steps': [
-                        {'uses': 'actions/checkout@v4'},
-                        {
-                            'name': 'Initialize CodeQL',
-                            'uses': 'github/codeql-action/init@v2',
-                            'with': {
-                                'languages': '${{ matrix.language }}',
-                                'config-file': './.github/codeql-config.yml'
-                            }
-                        },
-                        {
-                            'name': 'Autobuild',
-                            'uses': 'github/codeql-action/autobuild@v2'
-                        },
-                        {
-                            'name': 'Perform CodeQL Analysis',
-                            'uses': 'github/codeql-action/analyze@v2'
-                        }
-                    ]
-                }
-            }
-        }
-        
-        with open(self.workflows_dir / 'codeql-analysis.yml', 'w') as f:
-            yaml.dump(codeql_workflow, f, default_flow_style=False)
-        
-        # CodeQL configuration
-        codeql_config = {
-            'name': 'AI Teddy CodeQL Config',
-            'queries': [
-                {'uses': 'security-and-quality'},
-                {'uses': 'security-extended'}
-            ],
-            'paths-ignore': [
-                'tests/',
-                'docs/',
-                'scripts/demo_*'
-            ]
-        }
-        
-        with open(self.github_dir / 'codeql-config.yml', 'w') as f:
-            yaml.dump(codeql_config, f, default_flow_style=False)
-        
-        print("✅ تم إعداد تحليل CodeQL")
+    os.makedirs('.github', exist_ok=True)
+    with open('.github/dependabot.yml', 'w') as f:
+        f.write(dependabot_config)
     
-    def run_setup(self):
-        """تشغيل الإعداد الكامل"""
-        print("🚀 بدء إعداد GitHub Secrets Scanner...")
-        
-        self.setup_github_workflows()
-        self.setup_pre_commit_config()
-        self.setup_secrets_baseline()
-        self.create_security_policy()
-        self.setup_dependabot()
-        self.create_security_scripts()
-        self.setup_codeql_analysis()
-        
-        print("\n✅ تم إعداد GitHub Secrets Scanner بنجاح!")
-        print("\n📋 التحقق من الإعداد:")
-        print("1. تثبيت pre-commit: pip install pre-commit")
-        print("2. تفعيل pre-commit: pre-commit install")
-        print("3. تشغيل المسح الأولي: ./scripts/security/scan.sh")
-        print("4. دفع التغييرات إلى GitHub لتفعيل Actions")
+    logger.info("✅ تم إعداد Dependabot")
 
-def main():
-    scanner = GitHubSecretsScanner()
-    scanner.run_setup()
+
+def create_security_scripts() -> None:
+    """
+    إنشاء سكريبتات الأمان المساعدة
+    """
+    os.makedirs('scripts/security', exist_ok=True)
+    
+    # سكريبت المسح الأمني
+    scan_script = """#!/bin/bash
+set -e
+
+echo "🔍 Running comprehensive security scan..."
+
+# Check for secrets
+if command -v detect-secrets &> /dev/null; then
+    echo "📝 Scanning for secrets..."
+    detect-secrets scan --baseline .secrets.baseline
+else
+    echo "⚠️ detect-secrets not installed"
+fi
+
+# Check for vulnerabilities
+if command -v bandit &> /dev/null; then
+    echo "🛡️ Running Bandit security linter..."
+    bandit -r src/ -f json -o bandit-report.json
+else
+    echo "⚠️ bandit not installed"
+fi
+
+# Check dependencies
+if command -v safety &> /dev/null; then
+    echo "📦 Checking dependencies for vulnerabilities..."
+    safety check
+else
+    echo "⚠️ safety not installed"
+fi
+
+echo "✅ Security scan completed"
+"""
+    
+    with open('scripts/security/scan.sh', 'w') as f:
+        f.write(scan_script)
+    
+    os.chmod('scripts/security/scan.sh', 0o755)
+    
+    # سكريبت التنظيف الأمني
+    cleanup_script = """#!/bin/bash
+set -e
+
+echo "🧹 Running security cleanup..."
+
+# Remove temporary files
+find . -name "*.pyc" -delete
+find . -name "__pycache__" -type d -exec rm -rf {} +
+find . -name "*.log" -delete
+
+# Clear sensitive environment files
+if [ -f ".env" ]; then
+    echo "⚠️ Found .env file - should be in .gitignore"
+fi
+
+echo "✅ Security cleanup completed"
+"""
+    
+    with open('scripts/security/cleanup.sh', 'w') as f:
+        f.write(cleanup_script)
+    
+    os.chmod('scripts/security/cleanup.sh', 0o755)
+    
+    logger.info("✅ تم إنشاء سكريبتات الأمان")
+
+
+def create_codeql_config() -> None:
+    """
+    إنشاء تكوين CodeQL للتحليل الأمني
+    """
+    codeql_workflow = """name: "CodeQL"
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 6 * * 1'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python', 'javascript' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+"""
+    
+    with open('.github/workflows/codeql.yml', 'w') as f:
+        f.write(codeql_workflow)
+    
+    logger.info("✅ تم إنشاء تكوين CodeQL")
+
+
+def main() -> None:
+    """
+    الدالة الرئيسية لإعداد GitHub Secrets Scanner
+    """
+    logger.info("🚀 بدء إعداد GitHub Secrets Scanner...")
+    
+    try:
+        create_github_workflow()
+        create_precommit_hooks()
+        create_secrets_baseline()
+        create_gitleaks_config()
+        create_security_policy()
+        create_dependabot_config()
+        create_security_scripts()
+        create_codeql_config()
+        
+        logger.info("\n✅ تم إعداد GitHub Secrets Scanner بنجاح!")
+        logger.info("\n📋 التحقق من الإعداد:")
+        logger.info("1. تثبيت pre-commit: pip install pre-commit")
+        logger.info("2. تفعيل pre-commit: pre-commit install")
+        logger.info("3. تشغيل المسح الأولي: ./scripts/security/scan.sh")
+        logger.info("4. دفع التغييرات إلى GitHub لتفعيل Actions")
+        
+    except Exception as e:
+        logger.error(f"❌ خطأ في الإعداد: {e}")
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main() 

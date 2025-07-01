@@ -12,18 +12,14 @@ Author: Security Team Lead
 """
 
 import asyncio
-import base64
 import hashlib
-import json
 import logging
-import pickle
 import time
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -38,7 +34,7 @@ except ImportError:
 
 # Security imports
 from .audit_logger import SecurityAuditLogger
-from .data_encryption import DataClassification, EncryptionLevel
+from .data_encryption import DataClassification
 
 logger = logging.getLogger(__name__)
 

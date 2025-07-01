@@ -4,8 +4,7 @@ import sqlite3
 from abc import abstractmethod
 from contextlib import contextmanager
 from datetime import datetime
-from typing import (Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar,
-                    Union)
+from typing import (Any, Dict, List, Optional, Tuple, TypeVar)
 
 from src.infrastructure.persistence.base import (BaseRepository,
                                                  BulkOperationResult,

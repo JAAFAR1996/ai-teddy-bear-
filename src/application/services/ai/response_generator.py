@@ -3,9 +3,7 @@ Response Generation Service
 Modern LLM-based response generation for children
 """
 
-import asyncio
-import json
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 import structlog
 from opentelemetry import trace
@@ -14,7 +12,7 @@ from opentelemetry import trace
 from src.infrastructure.observability import trace_async
 
 from .emotion_analyzer import EmotionAnalysis, EmotionCategory
-from .models import AIResponse, EmotionalTone, ResponseMode
+from .models import EmotionalTone, ResponseMode
 
 logger = structlog.get_logger()
 

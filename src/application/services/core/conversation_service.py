@@ -6,9 +6,8 @@ from typing import List, Optional, Tuple
 from uuid import UUID
 
 from ...domain.entities.child import Child
-from ...domain.entities.conversation import (Content, ContentType,
-                                             Conversation, InteractionType,
-                                             Message)
+from ...domain.entities.conversation import (ContentType,
+                                             Conversation, InteractionType)
 from ...domain.repositories.conversation_repository import \
     ConversationRepository
 from .base_service import BaseService

@@ -127,7 +127,7 @@ jobs:
     - name: Run Snyk security scan
       uses: snyk/actions/python@master
       env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        SNYK_TOKEN: ${TOKEN}
       with:
         args: --severity-threshold=high
         
@@ -172,7 +172,7 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
+          POSTGRES_PASSWORD: ${PASSWORD}
           POSTGRES_DB: teddy_bear_test
         options: >-
           --health-cmd pg_isready
@@ -325,7 +325,7 @@ jobs:
       with:
         registry: ${{ env.DOCKER_REGISTRY }}
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${PASSWORD}
         
     - name: Extract metadata
       id: meta

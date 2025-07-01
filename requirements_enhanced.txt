@@ -1,0 +1,74 @@
+# متطلبات النسخة المحسّنة من fixissues.py
+# Enhanced Requirements for fixissues_enhanced.py
+
+# أساسيات Python
+pathlib2>=2.3.7; python_version < "3.4"
+
+# لتحويل AST إلى كود
+astor>=0.8.1
+
+# للاختبارات والجودة
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+
+# أدوات جودة الكود
+black>=23.0.0
+isort>=5.12.0
+flake8>=6.0.0
+mypy>=1.0.0
+
+# Pre-commit hooks
+pre-commit>=3.0.0
+
+# للتحليل المتقدم
+bandit>=1.7.5  # أمان
+safety>=2.3.0  # فحص الثغرات
+
+# للمراقبة والأداء
+psutil>=5.9.0
+memory-profiler>=0.61.0
+
+# للتوثيق
+sphinx>=6.0.0
+sphinx-rtd-theme>=1.2.0
+
+# أدوات إضافية للتطوير
+tqdm>=4.64.0  # شريط التقدم
+rich>=13.0.0  # إخراج ملون محسّن
+click>=8.1.0  # واجهة سطر أوامر محسّنة
+
+# للتحليل النصي المتقدم
+regex>=2023.0.0
+
+# تحسينات الأداء
+ujson>=5.7.0  # JSON parser سريع
+orjson>=3.8.0  # JSON parser أسرع
+
+# للتشفير والأمان
+cryptography>=40.0.0
+passlib>=1.7.4
+
+# أدوات التحليل الثابت
+pylint>=2.17.0
+vulture>=2.7  # للكود غير المستخدم
+radon>=6.0.1  # لتعقيد الكود
+
+# للتوثيق التلقائي
+pydocstyle>=6.3.0
+docformatter>=1.7.0
+
+# أدوات البناء والنشر
+build>=0.10.0
+twine>=4.0.0
+
+# للعمل مع Git
+GitPython>=3.1.31
+
+# أدوات إضافية للتحليل
+astpretty>=3.0.0  # لطباعة AST بصورة جميلة
+pycodestyle>=2.10.0
+pydocstyle>=6.3.0
+
+# للعمل متعدد الخيوط المحسّن
+threadpoolctl>=3.1.0 

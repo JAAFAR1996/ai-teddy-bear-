@@ -3,14 +3,11 @@
 Modern WebSocket and Audio Streaming with FastAPI
 """
 
-import asyncio
 import logging
-import uuid
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from fastapi import (Depends, FastAPI, HTTPException, WebSocket,
-                     WebSocketDisconnect)
+from fastapi import (Depends, FastAPI, WebSocket)
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 

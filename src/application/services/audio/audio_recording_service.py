@@ -7,9 +7,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 
-from ....domain.audio.models import (AudioFormatType, AudioQualityMode,
-                                     AudioSession, AudioSessionType,
-                                     AudioSystemConfig, PerformanceMetrics)
+from ....domain.audio.models import (AudioFormatType, AudioSession, AudioSystemConfig, PerformanceMetrics)
 
 
 class AudioSystemError(Exception):

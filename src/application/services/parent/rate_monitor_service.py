@@ -4,14 +4,13 @@
 مراقبة وتتبع حدود الإشعارات لكل ولي أمر والنظام العام
 """
 
-import asyncio
 import json
 import sqlite3
-from collections import defaultdict, deque
+from collections import deque
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Tuple
 
 import structlog
 
@@ -164,7 +163,7 @@ class RateMonitorService:
 
             return True, "System limits OK"
 
-        except Exception as e:
+        except Exception:
             return False, "System limits check error"
 
     async def _check_parent_weekly_limit(
@@ -198,7 +197,7 @@ class RateMonitorService:
 
             return True, "Parent weekly limit OK"
 
-        except Exception as e:
+        except Exception:
             return False, "Parent limit check error"
 
     async def record_notification(

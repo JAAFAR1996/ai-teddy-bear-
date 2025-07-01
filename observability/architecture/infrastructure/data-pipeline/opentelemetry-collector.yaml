@@ -138,8 +138,7 @@ spec:
           - key: otel-collector-config.yaml
             path: otel-collector-config.yaml
       - name: otel-collector-secrets
-        secret:
-          secretName: otel-collector-certs
+        secret: ${SECRET}
           optional: true
 
 ---

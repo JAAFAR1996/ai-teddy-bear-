@@ -1,7 +1,6 @@
 import uuid
 from typing import Any, Dict, List
 
-import pytest
 
 
 class ChildProfile:

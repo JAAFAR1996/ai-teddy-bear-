@@ -14,8 +14,6 @@ from src.application.services.ai.models.ai_response_models import \
     AIResponseModel
 # Import refactored components
 from src.application.services.ai.refactored_ai_service import \
-    AIService as CompatibilityAIService
-from src.application.services.ai.refactored_ai_service import \
     RefactoredAIService
 from src.core.domain.entities.child import Child
 from src.infrastructure.caching.simple_cache_service import CacheService
@@ -50,7 +48,7 @@ class AIService:
             settings=settings, cache_service=cache_service, provider=provider
         )
 
-        logger.info(f"✅ AI Service initialized (delegating to refactored service)")
+        logger.info("✅ AI Service initialized (delegating to refactored service)")
 
     async def generate_response(
         self,

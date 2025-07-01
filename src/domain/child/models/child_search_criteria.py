@@ -7,7 +7,7 @@ Contains domain models for child search and filtering operations.
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 
 class AgeGroup(Enum):

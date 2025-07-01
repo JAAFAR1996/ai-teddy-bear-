@@ -6,18 +6,13 @@ Uses GPT-4 to generate comprehensive, intelligent test cases
 focusing on child safety, security, and edge cases.
 """
 
-import ast
-import asyncio
-import json
 import logging
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import openai
-from hypothesis import given, settings
-from hypothesis import strategies as st
 
 from ..core.shared.exceptions import TestGenerationError
 from .code_analyzer import CodeAnalyzer

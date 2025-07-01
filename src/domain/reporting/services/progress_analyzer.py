@@ -6,11 +6,10 @@ Analyzes child development progress and metrics
 import logging
 from collections import Counter
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
-from ..models.report_models import (ChildProgress, EmotionDistribution,
-                                    InteractionAnalysis, ProgressMetrics,
-                                    SkillAnalysis, UrgencyLevel)
+from ..models.report_models import (EmotionDistribution,
+                                    InteractionAnalysis, SkillAnalysis)
 
 
 class ProgressAnalyzer:

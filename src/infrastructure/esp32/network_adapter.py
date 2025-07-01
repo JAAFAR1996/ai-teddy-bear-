@@ -1,7 +1,6 @@
 ﻿"""Network adapter for ESP32 teddy bear simulator."""
 
 import json
-import threading
 import time
 from datetime import datetime
 from typing import Any, Dict, Optional
@@ -146,7 +145,7 @@ class NetworkAdapter:
 
                 if response.status_code == 200:
                     result = response.json()
-                    logger.debug(f" Response received")
+                    logger.debug(" Response received")
                     return result
                 else:
                     logger.error(f" Server error: {response.status_code}")

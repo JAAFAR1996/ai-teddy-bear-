@@ -1,18 +1,21 @@
-#!/usr/bin/env python3
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 Comprehensive Fix and Report Generator
 =====================================
 إصلاح شامل للاستدعاءات وإنشاء تقرير نهائي
 """
-
 import os
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 
 class ComprehensiveFixer:
+
     def __init__(self):
         self.src_dir = Path("src")
         self.fixes_applied = []
@@ -23,75 +26,61 @@ class ComprehensiveFixer:
 
     def log(self, message: str):
         """تسجيل العمليات"""
-        print(f"✓ {message}")
+        logger.info(f"✓ {message}")
 
     def fix_imports_in_file(self, file_path: Path) -> List[str]:
         """إصلاح الاستدعاءات في ملف واحد"""
         fixes = []
-
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
-
             original_content = content
-
-            # إصلاح الاستدعاءات النسبية المكسورة
             patterns_to_fix = [
-                # إصلاح استدعاءات use_cases
                 (
-                    r"from \.use_cases\.(\w+) import",
-                    r"from src.application.accessibility.use_cases.\1 import",
+                    "from \\.use_cases\\.(\\w+) import",
+                    "from src.application.accessibility.use_cases.\\1 import",
                 ),
                 (
-                    r"from \.dto\.(\w+) import",
-                    r"from src.application.accessibility.dto.\1 import",
+                    "from \\.dto\\.(\\w+) import",
+                    "from src.application.accessibility.dto.\\1 import",
                 ),
                 (
-                    r"from \.\.value_objects\.(\w+) import",
-                    r"from src.domain.accessibility.value_objects.\1 import",
+                    "from \\.\\.value_objects\\.(\\w+) import",
+                    "from src.domain.accessibility.value_objects.\\1 import",
                 ),
                 (
-                    r"from \.\.entities\.(\w+) import",
-                    r"from src.domain.accessibility.entities.\1 import",
+                    "from \\.\\.entities\\.(\\w+) import",
+                    "from src.domain.accessibility.entities.\\1 import",
                 ),
-                # إزالة استدعاءات _ddd
-                (r"from.*_ddd.*import.*\n", ""),
-                (r"import.*_ddd.*\n", ""),
+                ("from.*_ddd.*import.*\\n", ""),
+                ("import.*_ddd.*\\n", ""),
             ]
-
             for pattern, replacement in patterns_to_fix:
                 if re.search(pattern, content):
                     content = re.sub(pattern, replacement, content)
                     fixes.append(f"Fixed pattern: {pattern}")
-
-            # حفظ الملف المُحدث إذا تم التعديل
             if content != original_content:
                 with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
                 fixes.append("File updated")
-
         except Exception as e:
             fixes.append(f"Error: {e}")
-
         return fixes
 
     def scan_and_fix_all_imports(self):
         """مسح وإصلاح جميع الاستدعاءات"""
         self.log("بدء إصلاح الاستدعاءات...")
-
         python_files = []
         for root, dirs, files in os.walk(self.src_dir):
             for file in files:
                 if file.endswith(".py"):
                     python_files.append(Path(root) / file)
-
         total_fixes = 0
         for file_path in python_files:
             fixes = self.fix_imports_in_file(file_path)
             if fixes:
                 self.fixes_applied.append({"file": str(file_path), "fixes": fixes})
                 total_fixes += len(fixes)
-
         self.log(f"تم إصلاح {total_fixes} استدعاء في {len(self.fixes_applied)} ملف")
 
     def verify_structure_completeness(self) -> Dict:
@@ -102,8 +91,6 @@ class ComprehensiveFixer:
             "large_files_remaining": [],
             "structure_score": 0,
         }
-
-        # فحص Domains المُنشأة
         domain_dir = self.src_dir / "domain"
         if domain_dir.exists():
             for domain in domain_dir.iterdir():
@@ -118,7 +105,6 @@ class ComprehensiveFixer:
                         if (domain / "value_objects").exists()
                         else 0
                     )
-
                     verification["domains_created"].append(
                         {
                             "name": domain.name,
@@ -127,8 +113,6 @@ class ComprehensiveFixer:
                             "complete": entities_count > 0 or vo_count > 0,
                         }
                     )
-
-        # فحص الملفات الكبيرة المتبقية
         services_dir = self.src_dir / "application" / "services"
         if services_dir.exists():
             for file_path in services_dir.glob("*.py"):
@@ -139,25 +123,21 @@ class ComprehensiveFixer:
                         verification["large_files_remaining"].append(
                             {"file": file_path.name, "lines": lines}
                         )
-                except:
+                except Exception:
                     continue
-
-        # حساب نقاط البنية
         complete_domains = sum(
             1 for d in verification["domains_created"] if d["complete"]
         )
         total_domains = len(verification["domains_created"])
         large_files = len(verification["large_files_remaining"])
-
         if total_domains > 0:
             verification["structure_score"] = int(
-                (complete_domains / total_domains) * 100
+                complete_domains / total_domains * 100
             )
             if large_files == 0:
                 verification["structure_score"] = min(
                     verification["structure_score"] + 20, 100
                 )
-
         return verification
 
     def count_lines_recovered(self) -> Dict:
@@ -169,8 +149,6 @@ class ComprehensiveFixer:
             "total_lines_new": 0,
             "recovery_percentage": 0,
         }
-
-        # فحص الملفات الأصلية في legacy
         legacy_dir = self.src_dir / "legacy" / "god_classes"
         if legacy_dir.exists():
             for file_path in legacy_dir.glob("*.py"):
@@ -179,10 +157,8 @@ class ComprehensiveFixer:
                         lines = len(f.readlines())
                     lines_info["original_god_classes"][file_path.name] = lines
                     lines_info["total_lines_original"] += lines
-                except:
+                except Exception:
                     continue
-
-        # فحص الملفات الجديدة
         for domain_dir in (self.src_dir / "domain").glob("*"):
             if domain_dir.is_dir():
                 for file_path in domain_dir.rglob("*.py"):
@@ -192,9 +168,8 @@ class ComprehensiveFixer:
                         rel_path = str(file_path.relative_to(self.src_dir))
                         lines_info["new_files_created"][rel_path] = lines
                         lines_info["total_lines_new"] += lines
-                    except:
+                    except Exception:
                         continue
-
         for app_dir in (self.src_dir / "application").glob("*"):
             if app_dir.is_dir() and app_dir.name not in ["services", "__pycache__"]:
                 for file_path in app_dir.rglob("*.py"):
@@ -204,32 +179,24 @@ class ComprehensiveFixer:
                         rel_path = str(file_path.relative_to(self.src_dir))
                         lines_info["new_files_created"][rel_path] = lines
                         lines_info["total_lines_new"] += lines
-                    except:
+                    except Exception:
                         continue
-
-        # حساب نسبة الاسترداد
         if lines_info["total_lines_original"] > 0:
             lines_info["recovery_percentage"] = int(
-                (lines_info["total_lines_new"] / lines_info["total_lines_original"])
-                * 100
+                lines_info["total_lines_new"] / lines_info["total_lines_original"] * 100
             )
-
         return lines_info
 
     def generate_final_comprehensive_report(self) -> str:
         """إنشاء التقرير الشامل النهائي"""
         self.log("إنشاء التقرير الشامل النهائي...")
-
-        # تشغيل جميع الفحوصات
         self.scan_and_fix_all_imports()
         verification = self.verify_structure_completeness()
         lines_info = self.count_lines_recovered()
-
-        # إنشاء التقرير
         report = f"""# التقرير النهائي الشامل - إصلاح مشكلة الدمج
 ## Final Comprehensive Report - DDD Integration Fix
 
-📅 **تاريخ التقرير**: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+📅 **تاريخ التقرير**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 🎯 **الهدف**: إصلاح مشكلة الدمج وإعادة بناء بنية المشروع وفق DDD
 
 ---
@@ -246,13 +213,10 @@ class ComprehensiveFixer:
 
 #### God Classes المُعالجة:
 """
-
-        # إضافة معلومات الملفات الأصلية
         if lines_info["original_god_classes"]:
             report += "\n**الملفات الأصلية (God Classes)**:\n"
             for filename, lines in lines_info["original_god_classes"].items():
                 report += f"- {filename}: {lines:,} سطر\n"
-
         report += f"""
 #### بنية DDD الجديدة:
 - **Domains منشأة**: {len(verification['domains_created'])}
@@ -271,28 +235,14 @@ class ComprehensiveFixer:
 
 ### Domain Layer
 """
-
         for domain in verification["domains_created"]:
             status = "✅ مكتمل" if domain["complete"] else "⚠️ ناقص"
-            report += f"- **{domain['name']}**: {domain['entities']} entities, {domain['value_objects']} value objects {status}\n"
-
-        report += f"""
-
-### الملفات الجديدة المُنشأة:
+            report += f"""- **{domain['name']}**: {domain['entities']} entities, {domain['value_objects']} value objects {status}
 """
-
+        report += "\n\n### الملفات الجديدة المُنشأة:\n"
         for file_path, lines in lines_info["new_files_created"].items():
             report += f"- `{file_path}`: {lines} سطر\n"
-
-        report += f"""
-
----
-
-## 🔧 الإصلاحات المُطبقة
-
-### استدعاءات تم إصلاحها:
-"""
-
+        report += "\n\n---\n\n## 🔧 الإصلاحات المُطبقة\n\n### استدعاءات تم إصلاحها:\n"
         if self.fixes_applied:
             for fix in self.fixes_applied:
                 report += f"\n**{fix['file']}**:\n"
@@ -300,22 +250,12 @@ class ComprehensiveFixer:
                     report += f"- {fix_detail}\n"
         else:
             report += "✅ لا توجد استدعاءات مكسورة\n"
-
-        report += f"""
-
----
-
-## ⚠️ الملفات المتبقية للمعالجة
-
-### God Classes لم تُقسم بعد:
-"""
-
+        report += "\n\n---\n\n## ⚠️ الملفات المتبقية للمعالجة\n\n### God Classes لم تُقسم بعد:\n"
         if verification["large_files_remaining"]:
             for file_info in verification["large_files_remaining"]:
                 report += f"- **{file_info['file']}**: {file_info['lines']:,} سطر (يحتاج تقسيم)\n"
         else:
             report += "✅ لا توجد ملفات كبيرة متبقية\n"
-
         report += f"""
 
 ---
@@ -345,10 +285,8 @@ class ComprehensiveFixer:
 ### أولوية عالية (هذا الأسبوع):
 1. 🔄 **تقسيم باقي God Classes**:
 """
-
-        for file_info in verification["large_files_remaining"][:3]:  # أول 3 ملفات
+        for file_info in verification["large_files_remaining"][:3]:
             report += f"   - {file_info['file']} ({file_info['lines']:,} سطر)\n"
-
         report += f"""
 2. 🔄 **اختبار البنية الجديدة**
 3. 🔄 **تحديث المراجع في الملفات الأخرى**
@@ -397,37 +335,31 @@ class ComprehensiveFixer:
 
 ---
 
-**📊 آخر تحديث**: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+**📊 آخر تحديث**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 **🎯 الحالة**: في تقدم ممتاز - 60% مكتمل
 """
-
         return report
 
     def run_comprehensive_fix(self):
         """تشغيل الإصلاح الشامل"""
-        print("=" * 80)
-        print("🔧 بدء الإصلاح الشامل وإنشاء التقرير النهائي...")
-        print("=" * 80)
-
-        # إنشاء التقرير الشامل
+        logger.info("=" * 80)
+        logger.info("🔧 بدء الإصلاح الشامل وإنشاء التقرير النهائي...")
+        logger.info("=" * 80)
         report = self.generate_final_comprehensive_report()
-
-        # حفظ التقرير
         report_file = Path("FINAL_COMPREHENSIVE_REPORT.md")
         with open(report_file, "w", encoding="utf-8") as f:
             f.write(report)
-
-        print("=" * 80)
-        print(f"✅ تم إنشاء التقرير الشامل: {report_file}")
-        print("=" * 80)
-
-        # طباعة ملخص سريع
-        print("\n📊 ملخص سريع:")
-        print(f"  - استدعاءات مُصححة: {len(self.fixes_applied)}")
+        logger.info("=" * 80)
+        logger.info(f"✅ تم إنشاء التقرير الشامل: {report_file}")
+        logger.info("=" * 80)
+        logger.info("\n📊 ملخص سريع:")
+        logger.info(f"  - استدعاءات مُصححة: {len(self.fixes_applied)}")
         verification = self.verify_structure_completeness()
-        print(f"  - domains منشأة: {len(verification['domains_created'])}")
-        print(f"  - نقاط البنية: {verification['structure_score']}/100")
-        print(f"  - ملفات كبيرة متبقية: {len(verification['large_files_remaining'])}")
+        logger.info(f"  - domains منشأة: {len(verification['domains_created'])}")
+        logger.info(f"  - نقاط البنية: {verification['structure_score']}/100")
+        logger.info(
+            f"  - ملفات كبيرة متبقية: {len(verification['large_files_remaining'])}"
+        )
 
 
 if __name__ == "__main__":

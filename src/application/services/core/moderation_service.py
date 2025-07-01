@@ -1,16 +1,12 @@
-# Transformers imports patched for development
 # moderation_service.py - Enhanced content moderation for child safety
 import asyncio
 import hashlib
 import json
 import logging
 import os
-import re
 import uuid
 from collections import defaultdict
-from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import anthropic
@@ -24,212 +20,24 @@ try:
 except ImportError:
     from src.infrastructure.external_services.mock.transformers import pipeline
 
-import redis.asyncio as aioredis
 import spacy
-from sqlalchemy import JSON, Boolean, Column, DateTime, Float, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+
+# Import from moderation module
+from .moderation import (
+    ContentCategory,
+    ModerationLog,
+    ModerationResult,
+    ModerationRule,
+    ModerationSeverity,
+    RuleEngine,
+)
 
 from src.application.services.parent_dashboard_service import \
     ParentDashboardService
-from src.core.domain.entities.conversation import Conversation, Message
-from src.domain.exceptions import (ChildSafetyException,
-                                   ExternalServiceException,
-                                   InappropriateContentException)
+from src.core.domain.entities.conversation import Message
+from src.domain.exceptions import (ExternalServiceException)
 from src.infrastructure.config import get_config
 from src.infrastructure.security.encryption import EncryptionService
-
-Base = declarative_base()
-
-
-class ModerationSeverity(Enum):
-    """Severity levels for moderation"""
-
-    SAFE = "safe"
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
-
-class ContentCategory(Enum):
-    """Content categories for moderation"""
-
-    VIOLENCE = "violence"
-    SEXUAL = "sexual"
-    HATE_SPEECH = "hate_speech"
-    SELF_HARM = "self_harm"
-    PROFANITY = "profanity"
-    PERSONAL_INFO = "personal_info"
-    BULLYING = "bullying"
-    DRUGS = "drugs"
-    WEAPONS = "weapons"
-    SCARY_CONTENT = "scary_content"
-    AGE_INAPPROPRIATE = "age_inappropriate"
-    SPAM = "spam"
-    PHISHING = "phishing"
-
-
-@dataclass
-class ModerationResult:
-    """Enhanced moderation result with detailed information"""
-
-    is_safe: bool
-    severity: ModerationSeverity
-    flagged_categories: List[ContentCategory] = field(default_factory=list)
-    confidence_scores: Dict[ContentCategory, float] = field(default_factory=dict)
-    matched_rules: List[str] = field(default_factory=list)
-    context_notes: List[str] = field(default_factory=list)
-    alternative_response: Optional[str] = None
-    should_alert_parent: bool = False
-    timestamp: datetime = field(default_factory=datetime.now)
-
-    @property
-    def overall_score(self) -> float:
-        """Calculate overall moderation score"""
-        if not self.confidence_scores:
-            return 0.0
-        return max(self.confidence_scores.values())
-
-
-@dataclass
-class ModerationRule:
-    """Custom moderation rule"""
-
-    id: str
-    name: str
-    description: str
-    pattern: Optional[str] = None
-    keywords: List[str] = field(default_factory=list)
-    category: ContentCategory = ContentCategory.AGE_INAPPROPRIATE
-    severity: ModerationSeverity = ModerationSeverity.MEDIUM
-    age_range: Tuple[int, int] = (0, 18)
-    languages: List[str] = field(default_factory=lambda: ["en", "ar"])
-    is_regex: bool = False
-    context_required: bool = False
-    enabled: bool = True
-    parent_override: bool = False
-    action: str = "block"  # block, warn, log
-
-
-class ModerationLog(Base):
-    """Database model for moderation logs"""
-
-    __tablename__ = "moderation_logs"
-
-    id = Column(String, primary_key=True)
-    session_id = Column(String)
-    user_id = Column(String)
-    timestamp = Column(DateTime, default=datetime.now)
-    content = Column(String)
-    result = Column(JSON)
-    severity = Column(String)
-    categories = Column(JSON)
-    action_taken = Column(String)
-    parent_notified = Column(Boolean, default=False)
-
-
-class RuleEngine:
-    """Advanced rule engine for content moderation"""
-
-    def __init__(self):
-        self.rules: Dict[str, ModerationRule] = {}
-        self.compiled_patterns: Dict[str, re.Pattern] = {}
-        self._load_default_rules()
-
-    def _load_default_rules(self) -> None:
-        """Load default moderation rules"""
-        default_rules = [
-            ModerationRule(
-                id="personal_info_1",
-                name="Personal Information Detection",
-                description="Detects personal information like phone numbers, addresses",
-                pattern=r"\b\d{3}[-.]?\d{3}[-.]?\d{4}\b|\b\d{5,}\b",
-                category=ContentCategory.PERSONAL_INFO,
-                severity=ModerationSeverity.HIGH,
-                is_regex=True,
-            ),
-            ModerationRule(
-                id="violence_1",
-                name="Violence Keywords",
-                description="Detects violent language",
-                keywords=["kill", "murder", "hurt", "harm", "attack", "fight"],
-                category=ContentCategory.VIOLENCE,
-                severity=ModerationSeverity.HIGH,
-                context_required=True,
-            ),
-            ModerationRule(
-                id="scary_content_1",
-                name="Scary Content for Young Children",
-                description="Content that might scare young children",
-                keywords=["monster", "ghost", "scary", "nightmare", "demon"],
-                category=ContentCategory.SCARY_CONTENT,
-                severity=ModerationSeverity.LOW,
-                age_range=(3, 8),
-            ),
-            ModerationRule(
-                id="bullying_1",
-                name="Bullying Detection",
-                description="Detects bullying language",
-                keywords=["stupid", "dumb", "loser", "hate you", "nobody likes"],
-                category=ContentCategory.BULLYING,
-                severity=ModerationSeverity.MEDIUM,
-            ),
-        ]
-
-        for rule in default_rules:
-            self.add_rule(rule)
-
-    def add_rule(self, rule: ModerationRule) -> None:
-        """Add a moderation rule"""
-        self.rules[rule.id] = rule
-        if rule.pattern and rule.is_regex:
-            self.compiled_patterns[rule.id] = re.compile(rule.pattern, re.IGNORECASE)
-
-    def remove_rule(self, rule_id: str) -> None:
-        """Remove a moderation rule"""
-        if rule_id in self.rules:
-            del self.rules[rule_id]
-            if rule_id in self.compiled_patterns:
-                del self.compiled_patterns[rule_id]
-
-    async def evaluate(
-        self, text: str, age: int = 10, language: str = "en"
-    ) -> List[Tuple[ModerationRule, float]]:
-        """Evaluate text against all rules"""
-        matched_rules = []
-
-        for rule_id, rule in self.rules.items():
-            if not rule.enabled:
-                continue
-
-            # Check age range
-            if not (rule.age_range[0] <= age <= rule.age_range[1]):
-                continue
-
-            # Check language
-            if language not in rule.languages:
-                continue
-
-            confidence = 0.0
-
-            # Check regex pattern
-            if rule.pattern and rule.is_regex and rule_id in self.compiled_patterns:
-                if self.compiled_patterns[rule_id].search(text):
-                    confidence = 0.9
-
-            # Check keywords
-            if rule.keywords:
-                text_lower = text.lower()
-                matches = sum(
-                    1 for keyword in rule.keywords if keyword.lower() in text_lower
-                )
-                if matches > 0:
-                    confidence = max(confidence, min(matches * 0.3, 0.9))
-
-            if confidence > 0:
-                matched_rules.append((rule, confidence))
-
-        return matched_rules
 
 
 class ModerationService:
@@ -1175,39 +983,4 @@ class ModerationService:
 # Utility functions
 
 
-def create_age_appropriate_rule(
-    name: str,
-    keywords: List[str],
-    min_age: int,
-    max_age: int = 18,
-    severity: ModerationSeverity = ModerationSeverity.MEDIUM,
-) -> ModerationRule:
-    """Create an age-appropriate content rule"""
-    return ModerationRule(
-        id=f"age_rule_{name.lower().replace(' ', '_')}",
-        name=name,
-        description=f"Age-appropriate rule for {min_age}-{max_age} years",
-        keywords=keywords,
-        category=ContentCategory.AGE_INAPPROPRIATE,
-        severity=severity,
-        age_range=(min_age, max_age),
-        enabled=True,
-    )
-
-
-def create_topic_filter_rule(
-    topic: str,
-    keywords: List[str],
-    category: ContentCategory,
-    severity: ModerationSeverity = ModerationSeverity.MEDIUM,
-) -> ModerationRule:
-    """Create a topic-based filter rule"""
-    return ModerationRule(
-        id=f"topic_{topic.lower().replace(' ', '_')}",
-        name=f"{topic} Filter",
-        description=f"Filters content related to {topic}",
-        keywords=keywords,
-        category=category,
-        severity=severity,
-        enabled=True,
-    )
+# Helper functions moved to moderation_types.py

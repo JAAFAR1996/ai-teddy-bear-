@@ -2,13 +2,11 @@
 
 import threading
 import time
-from datetime import datetime
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict
 
 import structlog
 
-from ....domain.esp32.models import (DeviceStatus, ESP32Device, HardwareState,
-                                     PowerState)
+from ....domain.esp32.models import (DeviceStatus, ESP32Device, PowerState)
 
 logger = structlog.get_logger(__name__)
 

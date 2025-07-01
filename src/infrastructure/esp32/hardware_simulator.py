@@ -3,7 +3,7 @@
 import random
 import threading
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import structlog
 

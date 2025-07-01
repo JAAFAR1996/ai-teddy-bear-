@@ -3,12 +3,10 @@ Base classes for Domain-Driven Design implementation
 Provides foundation for Entities, Value Objects, Aggregates, and Domain Events
 """
 
-import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from enum import Enum
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
+from typing import Any, Dict, Generic, List, Optional, TypeVar
 from uuid import UUID, uuid4
 
 # Type variables for generic types

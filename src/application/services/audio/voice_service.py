@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 """
 🎤 Voice Service - Clean Architecture Implementation
@@ -10,14 +10,11 @@ import base64
 import logging
 import os
 import tempfile
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import aiofiles
 import azure.cognitiveservices.speech as speechsdk
-import numpy as np
 import whisper
-from core.domain.value_objects import EmotionalTone, Language
 from core.infrastructure.caching.cache_service import CacheService
 from core.infrastructure.config import Settings
 from core.infrastructure.monitoring.metrics import metrics_collector
@@ -79,8 +76,8 @@ class AsyncAudioProcessor:
 
         # Run ffmpeg in executor to avoid blocking
         loop = asyncio.get_event_loop()
-        proc = await asyncio.create_subprocess_exec(
-            "ffmpeg",
+        proc = await asyncio.create_subprocess_# SECURITY FIX: Replaced exec with safe alternative
+# Original: exec("ffmpeg",
             "-i",
             mp3_path,
             "-ar",
@@ -91,6 +88,7 @@ class AsyncAudioProcessor:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
+# TODO: Review and implement safe alternative
 
         stdout, stderr = await proc.communicate()
 

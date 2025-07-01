@@ -6,7 +6,7 @@ Prometheus Metrics - نظام metrics للـ monitoring
 import asyncio
 import time
 from functools import wraps
-from typing import Any, Callable
+from typing import Callable
 
 import structlog
 from prometheus_client import Counter, Gauge, Histogram, Info, Summary
@@ -118,7 +118,7 @@ def track_request_duration(endpoint: str):
             try:
                 result = await func(*args, **kwargs)
                 return result
-            except Exception as e:
+            except Exception:
                 status = "error"
                 raise
             finally:
@@ -134,7 +134,7 @@ def track_request_duration(endpoint: str):
             try:
                 result = func(*args, **kwargs)
                 return result
-            except Exception as e:
+            except Exception:
                 status = "error"
                 raise
             finally:

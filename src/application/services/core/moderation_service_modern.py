@@ -3,11 +3,10 @@
 Streamlined, cost-effective content moderation under 100 lines
 """
 
-import asyncio
 import logging
 import re
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from openai import AsyncOpenAI
 
@@ -282,7 +281,7 @@ class ModernModerationService:
             try:
                 test_result = await self._ai_moderation("Hello, this is a test.")
                 health["ai_test"] = "passed" if test_result["safe"] else "failed"
-            except Exception as e:
+            except Exception:
                 health["ai_test"] = "failed"
                 health["service"] = "degraded"
 

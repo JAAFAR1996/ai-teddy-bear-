@@ -1,6 +1,6 @@
 """WebSocket Package"""
 
-from .manager import WebSocketManager
 from .handlers import router as websocket_router
+from .manager import WebSocketManager
 
-__all__ = ["WebSocketManager", "websocket_router"] 
+__all__ = ["WebSocketManager", "websocket_router"]

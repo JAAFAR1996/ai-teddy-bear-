@@ -1,17 +1,14 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import structlog
 
 logger = structlog.get_logger(__name__)
 
 import contextlib
-import os
-import sqlite3
 import wave
 from datetime import datetime
 
 from src.core.domain.entities.transcription import Transcription
-from src.infrastructure.persistence.base import BaseRepository
 from src.infrastructure.persistence.base_sqlite_repository import \
     BaseSQLiteRepository
 
@@ -47,7 +44,7 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
                 rate = f.getframerate()
                 duration = frames / float(rate)
                 return duration
-        except Exception as e:
+        except Exception:
             return None
 
     def add(self, transcription: Transcription) -> Transcription:

@@ -10,7 +10,7 @@ Orchestrator pattern for coordinating parentdashboard operations
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 
 class ParentdashboardContext:

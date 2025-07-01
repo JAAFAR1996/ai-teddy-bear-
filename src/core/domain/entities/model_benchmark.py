@@ -1,4 +1,3 @@
-import argparse
 import json
 import logging
 import os
@@ -19,10 +18,7 @@ class ModelBenchmark:
         """
         self._logger = logging.getLogger(__name__)
         logging.basicConfig(level=logging.INFO)
-
         self._model_providers = model_providers or ["openai", "anthropic", "google"]
-
-        # Benchmark test prompts
         self._test_prompts = [
             "Tell me a short story about a curious child.",
             "Explain quantum computing in simple terms.",
@@ -43,13 +39,11 @@ class ModelBenchmark:
                 from openai import OpenAI
 
                 client = OpenAI()
-
                 results = {
                     "provider": "OpenAI",
                     "model": "gpt-3.5-turbo",
                     "prompts": [],
                 }
-
                 for prompt in self._test_prompts:
                     start_time = time.time()
                     response = client.chat.completions.create(
@@ -63,7 +57,6 @@ class ModelBenchmark:
                         ],
                     )
                     end_time = time.time()
-
                     results["prompts"].append(
                         {
                             "prompt": prompt,
@@ -72,23 +65,18 @@ class ModelBenchmark:
                             "response_length": len(response.choices[0].message.content),
                         }
                     )
-
                 return results
-
             elif provider == "anthropic":
                 import anthropic
 
                 client = anthropic.Anthropic()
-
                 results = {"provider": "Anthropic", "model": "claude-2", "prompts": []}
-
                 for prompt in self._test_prompts:
                     start_time = time.time()
                     response = client.completions.create(
                         model="claude-2", max_tokens_to_sample=300, prompt=prompt
                     )
                     end_time = time.time()
-
                     results["prompts"].append(
                         {
                             "prompt": prompt,
@@ -97,23 +85,17 @@ class ModelBenchmark:
                             "response_length": len(response.completion),
                         }
                     )
-
                 return results
-
             elif provider == "google":
                 import google.generativeai as genai
 
                 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-
                 results = {"provider": "Google", "model": "gemini-pro", "prompts": []}
-
                 model = genai.GenerativeModel("gemini-pro")
-
                 for prompt in self._test_prompts:
                     start_time = time.time()
                     response = model.generate_content(prompt)
                     end_time = time.time()
-
                     results["prompts"].append(
                         {
                             "prompt": prompt,
@@ -122,12 +104,9 @@ class ModelBenchmark:
                             "response_length": len(response.text),
                         }
                     )
-
                 return results
-
             else:
                 raise ValueError(f"Unsupported provider: {provider}")
-
         except Exception as e:
             self._logger.error(f"Benchmark error for {provider}: {e}")
             return {"provider": provider, "error": str(e)}
@@ -139,11 +118,9 @@ class ModelBenchmark:
         :return: Comprehensive benchmark results
         """
         results = {"timestamp": time.time(), "providers": []}
-
         for provider in self._model_providers:
             provider_results = self._benchmark_llm(provider)
             results["providers"].append(provider_results)
-
         return results
 
     def export_results(
@@ -156,12 +133,9 @@ class ModelBenchmark:
         :param output_path: Path to export results
         """
         try:
-            # Ensure directory exists
             os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-
             with open(output_path, "w") as f:
                 json.dump(results, f, indent=4)
-
             self._logger.info(f"Benchmark results exported to {output_path}")
         except Exception as e:
             self._logger.error(f"Error exporting benchmark results: {e}")
@@ -191,15 +165,11 @@ def main():
     parser.add_argument(
         "--print", action="store_true", help="Print benchmark results to console"
     )
-
     args = parser.parse_args()
-
     benchmark = ModelBenchmark(args.providers)
     results = benchmark.run_benchmarks()
-
     if args.print:
-        print(json.dumps(results, indent=4))
-
+        logger.info(json.dumps(results, indent=4))
     benchmark.export_results(results, args.output)
 
 

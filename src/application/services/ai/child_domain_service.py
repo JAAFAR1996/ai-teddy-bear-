@@ -7,13 +7,11 @@ naturally belong to a single aggregate or entity.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from ..aggregates.child_aggregate import (ConversationLimitExceeded,
-                                          SafetyViolation)
 from ..entities import Child, Conversation
-from ..value_objects import SafetySettings, VoiceProfile
+from ..value_objects import VoiceProfile
 
 
 @dataclass

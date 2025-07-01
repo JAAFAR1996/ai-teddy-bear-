@@ -4,15 +4,13 @@ Enhanced SQLAlchemy Base Repository
 Provides comprehensive CRUD operations, advanced querying, and enterprise features
 """
 
-import asyncio
 import logging
-from abc import ABC, abstractmethod
-from contextlib import asynccontextmanager, contextmanager
-from datetime import datetime, timedelta
-from typing import (Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar,
-                    Union)
+from abc import ABC
+from contextlib import contextmanager
+from datetime import datetime
+from typing import (Any, Dict, List, Optional, Type, TypeVar)
 
-from sqlalchemy import and_, asc, desc, func, or_, text
+from sqlalchemy import and_, asc, desc, func, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.query import Query

@@ -566,10 +566,10 @@ def main() -> Any:
     
     try:
         asyncio.run(app.run())
+    except KeyboardInterrupt:
+        logger.info("\n🛑 Application stopped by user")
     except Exception as e:
-    logger.error(f"Error: {e}")"\n🛑 Application stopped by user")
-    except Exception as e:
-    logger.error(f"Error: {e}")f"\n💥 Application failed: {e}")
+        logger.error(f"\n💥 Application failed: {e}")
         sys.exit(1)
 
 

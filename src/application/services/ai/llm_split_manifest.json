@@ -1,0 +1,37 @@
+{
+  "original_file": "llm_service_factory.py",
+  "split_files": [
+    {
+      "file": "llm_base.py",
+      "lines": 111,
+      "size_kb": 3.05,
+      "checksum": "6d77871ec80b9fad5defd05ab052b4c9"
+    },
+    {
+      "file": "llm_openai_adapter.py",
+      "lines": 113,
+      "size_kb": 3.98,
+      "checksum": "988c4fc77af1961bd36856d92605faea"
+    },
+    {
+      "file": "llm_anthropic_adapter.py",
+      "lines": 121,
+      "size_kb": 4.15,
+      "checksum": "406fce68676d3493fe3b3802f314306a"
+    },
+    {
+      "file": "llm_google_adapter.py",
+      "lines": 122,
+      "size_kb": 4.1,
+      "checksum": "255182ce31b967356d2dfe74486bed08"
+    },
+    {
+      "file": "llm_service_factory.py (new)",
+      "lines": 295,
+      "size_kb": 9.85,
+      "checksum": "432d1642653692fbdcc28306351ddb6d"
+    }
+  ],
+  "total_chunks": 5,
+  "created_at": "2025-01-07"
+}

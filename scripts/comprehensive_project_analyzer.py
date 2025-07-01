@@ -1,694 +1,561 @@
-#!/usr/bin/env python3
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 🔍 Comprehensive Project File Analyzer
 Analyzes every Python file in the project and generates detailed reports
 """
-
 import ast
 import hashlib
-import inspect
 import json
 import os
 import re
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List
 
 
-class ProjectFileAnalyzer:
-    """Comprehensive analyzer for project files"""
-
-    def __init__(self, project_root: str = "."):
-        self.project_root = Path(project_root).resolve()
-        self.analysis_results = {}
-        self.file_hashes = {}
-        self.duplicate_files = defaultdict(list)
-
-        # File type patterns
-        self.file_patterns = {
-            "test": ["test_", "_test", "tests/", "testing/"],
-            "config": ["config", "settings", "constants"],
-            "service": ["service", "services/"],
-            "repository": ["repository", "repositories/", "repo"],
-            "model": ["model", "models/", "entity", "entities/"],
-            "controller": ["controller", "controllers/", "handler", "handlers/"],
-            "utility": ["util", "utils/", "helper", "helpers/"],
-            "domain": ["domain/"],
-            "application": ["application/"],
-            "infrastructure": ["infrastructure/"],
-            "presentation": ["presentation/", "api/", "web/"],
-            "dto": ["dto/", "schemas/"],
-            "exception": ["exception", "error"],
-            "middleware": ["middleware/"],
-            "decorator": ["decorator"],
-            "factory": ["factory"],
-            "builder": ["builder"],
-            "observer": ["observer"],
-            "strategy": ["strategy"],
-            "command": ["command"],
-            "query": ["query"],
+class ComprehensiveProjectAnalyzer:
+    """محلل شامل للمشروع مع قدرات متقدمة"""
+    
+    def __init__(self, project_root: str = '.'):
+        self.project_root = Path(project_root)
+        self.analysis_results = {
+            "timestamp": datetime.now().isoformat(),
+            "total_files": 0,
+            "total_lines": 0,
+            "file_types": defaultdict(int),
+            "duplicate_candidates": [],
+            "large_files": [],
+            "empty_files": [],
+            "test_files": [],
+            "config_files": [],
+            "security_issues": [],
+            "code_quality_issues": [],
+            "dependency_analysis": defaultdict(list),
+            "detailed_analysis": [],
+            "suggested_moves": [],
+            "health_score": 0
         }
-
-    def analyze_ast(self, file_path: str, content: str) -> Dict[str, Any]:
-        """Analyze Python file using AST"""
-        try:
-            tree = ast.parse(content)
-        except SyntaxError as e:
-            return {
-                "error": f"Syntax error: {e}",
-                "classes": [],
-                "functions": [],
-                "imports": [],
-                "async_functions": [],
-                "decorators": [],
-            }
-
-        classes = []
-        functions = []
-        imports = []
-        async_functions = []
-        decorators = []
-
-        for node in ast.walk(tree):
-            if isinstance(node, ast.ClassDef):
-                base_classes = [
-                    base.id if isinstance(base, ast.Name) else str(base)
-                    for base in node.bases
-                ]
-                class_decorators = [
-                    dec.id if isinstance(dec, ast.Name) else str(dec)
-                    for dec in node.decorator_list
-                ]
-                classes.append(
-                    {
-                        "name": node.name,
-                        "line": node.lineno,
-                        "bases": base_classes,
-                        "decorators": class_decorators,
-                        "methods": len(
-                            [n for n in node.body if isinstance(n, ast.FunctionDef)]
-                        ),
-                    }
-                )
-
-            elif isinstance(node, ast.FunctionDef):
-                func_decorators = [
-                    dec.id if isinstance(dec, ast.Name) else str(dec)
-                    for dec in node.decorator_list
-                ]
-                functions.append(
-                    {
-                        "name": node.name,
-                        "line": node.lineno,
-                        "decorators": func_decorators,
-                        "args": len(node.args.args),
-                        "is_async": False,
-                    }
-                )
-
-            elif isinstance(node, ast.AsyncFunctionDef):
-                func_decorators = [
-                    dec.id if isinstance(dec, ast.Name) else str(dec)
-                    for dec in node.decorator_list
-                ]
-                async_functions.append(
-                    {
-                        "name": node.name,
-                        "line": node.lineno,
-                        "decorators": func_decorators,
-                        "args": len(node.args.args),
-                    }
-                )
-
-            elif isinstance(node, ast.Import):
-                for alias in node.names:
-                    imports.append(
-                        {"module": alias.name, "alias": alias.asname, "type": "import"}
-                    )
-
-            elif isinstance(node, ast.ImportFrom):
-                module = node.module or ""
-                for alias in node.names:
-                    imports.append(
-                        {
-                            "module": (
-                                f"{module}.{alias.name}" if module else alias.name
-                            ),
-                            "alias": alias.asname,
-                            "type": "from_import",
-                            "from_module": module,
-                        }
-                    )
-
-        return {
-            "classes": classes,
-            "functions": functions,
-            "imports": imports,
-            "async_functions": async_functions,
-            "total_classes": len(classes),
-            "total_functions": len(functions) + len(async_functions),
-            "total_imports": len(imports),
-        }
-
-    def analyze_content_patterns(self, content: str) -> Dict[str, Any]:
-        """Analyze content for specific patterns"""
-        patterns = {
-            "todo_fixme": len(
-                re.findall(r"(TODO|FIXME|XXX|HACK)", content, re.IGNORECASE)
-            ),
-            "print_statements": len(re.findall(r"\bprint\s*\(", content)),
-            "console_log": len(re.findall(r"console\.log", content)),
-            "hardcoded_urls": len(re.findall(r'https?://[^\s"\']+', content)),
-            "hardcoded_passwords": len(
-                re.findall(
-                    r'(password|pwd|pass)\s*=\s*["\'][^"\']+["\']',
-                    content,
-                    re.IGNORECASE,
-                )
-            ),
-            "sql_queries": len(
-                re.findall(
-                    r"(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP)\s+",
-                    content,
-                    re.IGNORECASE,
-                )
-            ),
-            "api_keys": len(
-                re.findall(
-                    r'(api_key|apikey|secret_key|token)\s*=\s*["\'][^"\']+["\']',
-                    content,
-                    re.IGNORECASE,
-                )
-            ),
-            "has_main": '__name__ == "__main__"' in content,
-            "has_async": "async def" in content or "await " in content,
-            "has_decorators": "@" in content,
-            "has_type_hints": "->" in content or ": " in content,
-            "has_docstrings": '"""' in content or "'''" in content,
-        }
-        return patterns
-
-    def determine_file_type(self, file_path: str, content: str, ast_info: Dict) -> str:
-        """Determine the type of the file based on path and content"""
-        file_path_lower = file_path.lower()
-
-        # Check patterns in order of specificity
-        for file_type, patterns in self.file_patterns.items():
-            for pattern in patterns:
-                if pattern in file_path_lower:
-                    return file_type
-
-        # Check content-based classification
-        if ast_info.get("total_classes", 0) > 0:
-            # Check if it's a model/entity
-            class_names = [cls["name"].lower() for cls in ast_info.get("classes", [])]
-            if any("entity" in name or "model" in name for name in class_names):
-                return "model"
-
-            # Check for service pattern
-            if any("service" in name for name in class_names):
-                return "service"
-
-            # Check for repository pattern
-            if any("repository" in name or "repo" in name for name in class_names):
-                return "repository"
-
-        # Default classification
-        if file_path_lower.endswith("__init__.py"):
-            return "module_init"
-
-        return "utility"
-
-    def determine_importance(
-        self, file_path: str, ast_info: Dict, patterns: Dict
-    ) -> str:
-        """Determine the importance level of the file"""
-        file_path_lower = file_path.lower()
-
-        # Critical files
-        critical_indicators = [
-            "main.py",
-            "app.py",
-            "__init__.py" in file_path and "src/" in file_path,
-            ast_info.get("total_classes", 0) > 3,
-            ast_info.get("total_imports", 0) > 10,
-            "domain/" in file_path_lower and "entities/" in file_path_lower,
-            "security" in file_path_lower,
-            "auth" in file_path_lower,
+        
+        # تحديد الأنماط للتصنيف
+        self.critical_patterns = [
+            'main.py', 'app.py', 'wsgi.py', '__main__.py',
+            'security/', 'auth/', 'child_safety/',
+            'models/', 'entities/', 'api/endpoints/', 'core/domain/'
         ]
-
-        if any(critical_indicators):
-            return "critical"
-
-        # High importance
-        high_indicators = [
-            "service" in file_path_lower,
-            "repository" in file_path_lower,
-            "controller" in file_path_lower,
-            ast_info.get("total_classes", 0) > 1,
-            patterns.get("has_async", False),
-            "infrastructure/" in file_path_lower,
+        
+        self.trash_patterns = [
+            r'.*_old\.py$', r'.*_backup\.py$', r'.*_temp\.py$',
+            r'.*_copy\.py$', r'.*\.pyc$', r'.*~$'
         ]
-
-        if any(high_indicators):
-            return "high"
-
-        # Low importance (likely to be trash or deprecated)
-        low_indicators = [
-            "test" in file_path_lower and patterns.get("todo_fixme", 0) > 3,
-            patterns.get("print_statements", 0) > 5,
-            "old" in file_path_lower,
-            "deprecated" in file_path_lower,
-            "backup" in file_path_lower,
-            "temp" in file_path_lower,
-        ]
-
-        if any(low_indicators):
-            return "low"
-
-        return "medium"
-
-    def suggest_new_location(
-        self, file_path: str, file_type: str, ast_info: Dict
-    ) -> tuple:
-        """Suggest a new location based on DDD architecture"""
-        current_path = Path(file_path)
-
-        # DDD-based suggestions
-        if file_type == "model" or file_type == "entity":
-            if "entities" not in file_path:
-                return (
-                    "src/domain/entities/",
-                    "Domain entities should be in domain layer",
-                )
-
-        elif file_type == "service":
-            # Check if it's domain service or application service
-            if any(
-                "domain" in cls["name"].lower() for cls in ast_info.get("classes", [])
-            ):
-                return "src/domain/services/", "Domain services belong in domain layer"
-            else:
-                return (
-                    "src/application/services/",
-                    "Application services belong in application layer",
-                )
-
-        elif file_type == "repository":
-            if "infrastructure" not in file_path:
-                return (
-                    "src/infrastructure/persistence/",
-                    "Repositories are infrastructure concerns",
-                )
-
-        elif file_type == "controller":
-            if "presentation" not in file_path:
-                return (
-                    "src/presentation/api/",
-                    "Controllers are presentation layer concerns",
-                )
-
-        elif file_type == "dto":
-            if "application" not in file_path:
-                return "src/application/dto/", "DTOs belong in application layer"
-
-        elif file_type == "exception":
-            if "domain" not in file_path:
-                return (
-                    "src/domain/exceptions/",
-                    "Domain exceptions belong in domain layer",
-                )
-
-        return str(current_path.parent) + "/", "Current location is appropriate"
-
-    def find_similar_files(self, file_path: str, content_hash: str) -> List[str]:
-        """Find files with similar names or content"""
-        similar = []
-        file_name = Path(file_path).stem
-
-        for other_path, other_hash in self.file_hashes.items():
-            if other_path == file_path:
+        
+    def analyze_project(self) -> Dict[str, Any]:
+        """تحليل شامل لكل ملف في المشروع"""
+        print("🔍 بدء التحليل الشامل للمشروع...")
+        
+        # جمع كل ملفات Python
+        python_files = list(self.project_root.rglob("*.py"))
+        self.analysis_results["total_files"] = len(python_files)
+        
+        # تحليل كل ملف
+        for idx, file_path in enumerate(python_files, 1):
+            if idx % 50 == 0:
+                print(f"📊 تم تحليل {idx}/{len(python_files)} ملف...")
+            
+            # تجاهل المجلدات غير المهمة
+            if any(skip in str(file_path) for skip in ['.git', '__pycache__', 'node_modules', '.venv', 'venv', 'backup_']):
                 continue
-
-            other_name = Path(other_path).stem
-
-            # Check for similar names
-            if (
-                file_name in other_name or other_name in file_name
-            ) and file_name != other_name:
-                similar.append(other_path)
-
-            # Check for identical content
-            if content_hash == other_hash:
-                similar.append(f"{other_path} (identical content)")
-
-        return similar
-
-    def identify_issues(
-        self, file_path: str, ast_info: Dict, patterns: Dict, file_type: str
-    ) -> List[str]:
-        """Identify potential issues with the file"""
-        issues = []
-
-        # Security issues
-        if patterns.get("hardcoded_passwords", 0) > 0:
-            issues.append("Contains hardcoded passwords - SECURITY RISK")
-
-        if patterns.get("api_keys", 0) > 0:
-            issues.append("Contains hardcoded API keys - SECURITY RISK")
-
-        # Code quality issues
-        if patterns.get("todo_fixme", 0) > 5:
-            issues.append("Too many TODO/FIXME comments")
-
-        if patterns.get("print_statements", 0) > 3:
-            issues.append("Contains debug print statements")
-
-        if ast_info.get("total_functions", 0) > 15:
-            issues.append("File too large - consider splitting")
-
-        if (
-            not patterns.get("has_docstrings", False)
-            and ast_info.get("total_classes", 0) > 0
-        ):
-            issues.append("Missing docstrings")
-
-        if (
-            not patterns.get("has_type_hints", False)
-            and ast_info.get("total_functions", 0) > 0
-        ):
-            issues.append("Missing type hints")
-
-        # Architecture issues
-        if (
-            file_type == "service"
-            and "domain" in file_path
-            and patterns.get("sql_queries", 0) > 0
-        ):
-            issues.append(
-                "Domain service contains SQL queries - violates clean architecture"
-            )
-
-        # Test-related issues
-        if file_type != "test" and "test" not in file_path.lower():
-            test_file_expected = file_path.replace("src/", "tests/").replace(
-                ".py", "_test.py"
-            )
-            if not os.path.exists(test_file_expected):
-                issues.append("No corresponding test file found")
-
-        return issues
-
-    def calculate_content_hash(self, content: str) -> str:
-        """Calculate hash of file content for duplicate detection"""
-        # Normalize content by removing comments and whitespace
-        lines = [
-            line.strip()
-            for line in content.split("\n")
-            if line.strip() and not line.strip().startswith("#")
-        ]
-        normalized = "\n".join(lines)
-        return hashlib.md5(normalized.encode()).hexdigest()[:8]
-
-    def analyze_file(self, file_path: str) -> Dict[str, Any]:
-        """Analyze a single Python file"""
+                
+            self.analyze_python_file(file_path)
+        
+        # حساب الصحة العامة للمشروع
+        self.calculate_project_health()
+        
+        # إنشاء اقتراحات النقل
+        self.generate_move_suggestions()
+        
+        # البحث عن المكررات
+        self.find_duplicates()
+        
+        return self.analysis_results
+    
+    def analyze_python_file(self, file_path: Path) -> None:
+        """تحليل ملف Python واحد بعمق"""
         try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-        except Exception as e:
-            return {"error": f"Could not read file: {e}"}
-
-        # Get file stats
-        file_stat = os.stat(file_path)
-
-        # Calculate content hash
-        content_hash = self.calculate_content_hash(content)
-        self.file_hashes[file_path] = content_hash
-
-        # AST analysis
-        ast_info = self.analyze_ast(file_path, content)
-
-        # Pattern analysis
-        patterns = self.analyze_content_patterns(content)
-
-        # Determine file characteristics
-        file_type = self.determine_file_type(file_path, content, ast_info)
-        importance = self.determine_importance(file_path, ast_info, patterns)
-
-        # Suggest new location
-        suggested_location, move_reason = self.suggest_new_location(
-            file_path, file_type, ast_info
-        )
-
-        # Find similar files
-        similar_files = self.find_similar_files(file_path, content_hash)
-
-        # Identify issues
-        issues = self.identify_issues(file_path, ast_info, patterns, file_type)
-
-        # Extract dependencies
-        dependencies = list(
-            set([imp["module"].split(".")[0] for imp in ast_info.get("imports", [])])
-        )
-
-        return {
-            "file_path": file_path,
-            "analysis": {
+                lines = content.splitlines()
+            
+            # إحصائيات أساسية
+            self.analysis_results["total_lines"] += len(lines)
+            
+            # حساب hash للملف
+            file_hash = hashlib.md5(content.encode()).hexdigest()
+            
+            # تحليل AST إذا أمكن
+            ast_analysis = self.analyze_ast(content)
+            
+            # تحديد نوع وأهمية الملف
+            file_type = self.determine_file_type(file_path, content)
+            importance = self.determine_importance(file_path, content, ast_analysis)
+            
+            # البحث عن المشاكل
+            issues = self.find_issues(content, file_path)
+            
+            # تحليل التبعيات
+            dependencies = self.analyze_dependencies(content, ast_analysis)
+            
+            # إنشاء تقرير الملف
+            file_report = {
+                "path": str(file_path),
+                "relative_path": str(file_path.relative_to(self.project_root)),
                 "type": file_type,
                 "importance": importance,
-                "current_location": str(Path(file_path).parent) + "/",
-                "suggested_location": suggested_location,
-                "reason_for_move": move_reason,
-                "file_stats": {
-                    "lines": len(content.split("\n")),
-                    "size_bytes": len(content.encode()),
-                    "classes": ast_info.get("total_classes", 0),
-                    "functions": ast_info.get("total_functions", 0),
-                    "imports": ast_info.get("total_imports", 0),
-                    "has_tests": "test" in file_path.lower()
-                    or any("test" in similar for similar in similar_files),
-                    "last_modified": datetime.fromtimestamp(
-                        file_stat.st_mtime, tz=timezone.utc
-                    ).isoformat(),
-                },
+                "size": len(content),
+                "lines": len(lines),
+                "hash": file_hash,
+                "ast_analysis": ast_analysis,
                 "dependencies": dependencies,
-                "similar_files": similar_files,
                 "issues": issues,
-                "content_hash": content_hash,
-                "main_purpose": self.extract_main_purpose(content, ast_info),
-                "patterns": patterns,
-                "ast_details": {
-                    "classes": ast_info.get("classes", []),
-                    "functions": ast_info.get("functions", []),
-                    "async_functions": ast_info.get("async_functions", []),
-                },
-            },
+                "suggested_location": self.suggest_location(file_path, file_type),
+                "can_be_deleted": importance == 'trash',
+                "needs_refactoring": len(issues) > 3
+            }
+            
+            # تحديث الإحصائيات
+            self.analysis_results["file_types"][file_type] += 1
+            self.analysis_results["detailed_analysis"].append(file_report)
+            
+            # تصنيف الملفات الخاصة
+            if len(lines) == 0:
+                self.analysis_results["empty_files"].append(str(file_path))
+            elif len(lines) > 500:
+                self.analysis_results["large_files"].append({
+                    "path": str(file_path),
+                    "lines": len(lines)
+                })
+            
+            if 'test_' in str(file_path) or '_test.py' in str(file_path):
+                self.analysis_results["test_files"].append(str(file_path))
+                
+            if 'config' in str(file_path).lower():
+                self.analysis_results["config_files"].append(str(file_path))
+            
+            # تحديث قوائم المشاكل
+            if any(issue.startswith("Security:") for issue in issues):
+                self.analysis_results["security_issues"].append({
+                    "file": str(file_path),
+                    "issues": [i for i in issues if i.startswith("Security:")]
+                })
+            
+            if any(issue.startswith("Quality:") for issue in issues):
+                self.analysis_results["code_quality_issues"].append({
+                    "file": str(file_path),
+                    "issues": [i for i in issues if i.startswith("Quality:")]
+                })
+                
+        except Exception as e:
+            print(f"⚠️ خطأ في تحليل {file_path}: {e}")
+            
+    def analyze_ast(self, content: str) -> Dict[str, Any]:
+        """تحليل AST للملف"""
+        try:
+            tree = ast.parse(content)
+            
+            # جمع المعلومات
+            imports = []
+            import_froms = []
+            classes = []
+            functions = []
+            
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    imports.extend([alias.name for alias in node.names])
+                elif isinstance(node, ast.ImportFrom):
+                    if node.module:
+                        import_froms.append(node.module)
+                elif isinstance(node, ast.ClassDef):
+                    classes.append({
+                        "name": node.name,
+                        "methods": len([n for n in node.body if isinstance(n, ast.FunctionDef)]),
+                        "lines": node.end_lineno - node.lineno if hasattr(node, 'end_lineno') else 0
+                    })
+                elif isinstance(node, ast.FunctionDef):
+                    # تجاهل الميثودز داخل الكلاسات
+                    if not any(isinstance(parent, ast.ClassDef) for parent in ast.walk(tree) if node in getattr(parent, 'body', [])):
+                        functions.append({
+                            "name": node.name,
+                            "args": len(node.args.args),
+                            "lines": node.end_lineno - node.lineno if hasattr(node, 'end_lineno') else 0,
+                            "has_docstring": ast.get_docstring(node) is not None
+                        })
+            
+            return {
+                "imports": imports,
+                "import_froms": import_froms,
+                "classes": classes,
+                "functions": functions,
+                "total_imports": len(imports) + len(import_froms),
+                "total_classes": len(classes),
+                "total_functions": len(functions)
+            }
+            
+        except:
+            return {
+                "imports": [],
+                "import_froms": [],
+                "classes": [],
+                "functions": [],
+                "total_imports": 0,
+                "total_classes": 0,
+                "total_functions": 0
+            }
+    
+    def determine_file_type(self, file_path: Path, content: str) -> str:
+        """تحديد نوع الملف بدقة"""
+        path_str = str(file_path).lower()
+        
+        # الاختبارات
+        if 'test' in path_str or 'spec' in path_str:
+            return 'test'
+        
+        # التكوينات
+        elif any(x in path_str for x in ['config', 'settings', 'env']):
+            return 'config'
+        
+        # النماذج والكيانات
+        elif any(x in path_str for x in ['model', 'entity', 'schema']):
+            return 'model'
+        
+        # الخدمات
+        elif 'service' in path_str or 'manager' in path_str:
+            return 'service'
+        
+        # المستودعات
+        elif 'repository' in path_str or 'repo' in path_str:
+            return 'repository'
+        
+        # التحكم والواجهات
+        elif any(x in path_str for x in ['controller', 'endpoint', 'route', 'api', 'view']):
+            return 'controller'
+        
+        # الأدوات المساعدة
+        elif any(x in path_str for x in ['util', 'helper', 'tool']):
+            return 'utility'
+        
+        # البنية التحتية
+        elif 'infrastructure' in path_str or 'infra' in path_str:
+            return 'infrastructure'
+        
+        # المجال الأساسي
+        elif 'domain' in path_str or 'core' in path_str:
+            return 'domain'
+        
+        # السكريبتات
+        elif 'script' in path_str:
+            return 'script'
+        
+        # التهيئة
+        elif '__init__.py' in str(file_path):
+            return 'init'
+        
+        else:
+            return 'other'
+    
+    def determine_importance(self, file_path: Path, content: str, ast_analysis: Dict) -> str:
+        """تحديد أهمية الملف بناءً على معايير متعددة"""
+        path_str = str(file_path)
+        
+        # ملفات القمامة - احذف فوراً
+        if any(re.match(pattern, path_str) for pattern in self.trash_patterns):
+            return 'trash'
+        
+        # ملفات فارغة
+        if len(content.strip()) == 0:
+            return 'trash'
+        
+        # ملفات مهمة جداً
+        if any(pattern in path_str for pattern in self.critical_patterns):
+            return 'critical'
+        
+        # ملفات الأمان والمصادقة
+        if any(x in path_str.lower() for x in ['security', 'auth', 'permission', 'child_safety']):
+            return 'critical'
+        
+        # ملفات بها منطق معقد
+        if ast_analysis['total_classes'] > 2 or ast_analysis['total_functions'] > 5:
+            return 'high'
+        
+        # خدمات ومستودعات
+        if any(x in path_str for x in ['service', 'repository', 'manager']):
+            return 'high'
+        
+        # ملفات بدون منطق حقيقي
+        if ast_analysis['total_classes'] == 0 and ast_analysis['total_functions'] == 0:
+            if '__init__.py' not in path_str:  # إلا إذا كان ملف تهيئة
+                return 'low'
+        
+        # ملفات مؤقتة أو تجريبية
+        if any(x in path_str.lower() for x in ['test_', 'example', 'demo', 'sample']):
+            if len(content) < 100:  # وصغيرة
+                return 'low'
+        
+        return 'medium'
+    
+    def find_issues(self, content: str, file_path: Path) -> List[str]:
+        """إيجاد جميع المشاكل في الملف"""
+        issues = []
+        
+        # مشاكل أمنية
+        if 'eval(' in content or 'exec(' in content:
+            issues.append("Security: يستخدم eval/exec (خطر أمني)")
+        
+        if re.search(r'(password|secret|key|token)\s*=\s*["\'][^"\']+["\']', content, re.IGNORECASE):
+            issues.append("Security: يحتوي على كلمات سر مضمنة")
+        
+        if 'pickle.loads' in content:
+            issues.append("Security: يستخدم pickle.loads (خطر أمني)")
+        
+        # مشاكل جودة الكود
+        if 'except:' in content or 'except Exception:' in content:
+            issues.append("Quality: معالجة استثناءات عامة")
+        
+        if re.search(r'print\s*\(', content) and 'test' not in str(file_path):
+            issues.append("Quality: يحتوي على print في كود الإنتاج")
+        
+        if 'TODO' in content or 'FIXME' in content or 'XXX' in content:
+            issues.append("Quality: يحتوي على TODO/FIXME")
+        
+        if len(content.splitlines()) > 500:
+            issues.append("Quality: ملف كبير جداً (>500 سطر)")
+        
+        if len(content.strip()) == 0:
+            issues.append("Quality: ملف فارغ")
+        
+        # مشاكل الاستيراد
+        if 'from ..' in content and content.count('from ..') > 5:
+            issues.append("Quality: الكثير من الاستيرادات النسبية")
+        
+        if 'import *' in content:
+            issues.append("Quality: يستخدم import * (غير مستحسن)")
+        
+        # مشاكل الأداء
+        if re.search(r'for .+ in .+:\s*for .+ in .+:', content):
+            if re.search(r'for .+ in .+:\s*for .+ in .+:\s*for .+ in .+:', content):
+                issues.append("Performance: حلقات متداخلة عميقة (3+ مستويات)")
+        
+        # مشاكل التوثيق
+        if not re.search(r'""".*"""', content, re.DOTALL) and len(content) > 200:
+            issues.append("Documentation: لا يحتوي على docstrings")
+        
+        return issues
+    
+    def analyze_dependencies(self, content: str, ast_analysis: Dict) -> Dict[str, List[str]]:
+        """تحليل التبعيات للملف"""
+        dependencies = {
+            "internal": [],
+            "external": [],
+            "circular_risk": []
         }
-
-    def extract_main_purpose(self, content: str, ast_info: Dict) -> str:
-        """Extract the main purpose of the file"""
-        # Try to get from docstring
-        lines = content.strip().split("\n")
-
-        # Check for module docstring
-        if len(lines) > 0 and ('"""' in lines[0] or "'''" in lines[0]):
-            for i, line in enumerate(lines[1:], 1):
-                if '"""' in line or "'''" in line:
-                    docstring = " ".join(lines[: i + 1])
-                    # Clean and extract first meaningful sentence
-                    clean_doc = re.sub(r'["""\']+', "", docstring).strip()
-                    if clean_doc:
-                        return clean_doc.split(".")[0][:100] + (
-                            "..." if len(clean_doc) > 100 else ""
-                        )
-
-        # Infer from classes and functions
-        classes = ast_info.get("classes", [])
-        functions = ast_info.get("functions", [])
-
-        if classes:
-            class_names = [cls["name"] for cls in classes]
-            return f"Defines classes: {', '.join(class_names[:3])}" + (
-                "..." if len(class_names) > 3 else ""
-            )
-
-        if functions:
-            func_names = [
-                func["name"] for func in functions if not func["name"].startswith("_")
-            ][:3]
-            if func_names:
-                return f"Provides functions: {', '.join(func_names)}" + (
-                    "..." if len(functions) > 3 else ""
-                )
-
-        return "Utility module"
-
-    def analyze_project(self) -> Dict[str, Any]:
-        """Analyze all Python files in the project"""
-        python_files = []
-
-        # Find all Python files
-        for root, dirs, files in os.walk(self.project_root):
-            # Skip common ignore directories
-            dirs[:] = [
-                d
-                for d in dirs
-                if not d.startswith(".")
-                and d not in ["__pycache__", "node_modules", "venv", "env"]
-            ]
-
-            for file in files:
-                if file.endswith(".py"):
-                    file_path = os.path.join(root, file)
-                    # Make path relative to project root
-                    rel_path = os.path.relpath(file_path, self.project_root)
-                    python_files.append(rel_path)
-
-        print(f"🔍 Found {len(python_files)} Python files to analyze...")
-
-        # Analyze each file
-        results = {}
-        for i, file_path in enumerate(python_files, 1):
-            print(f"📄 Analyzing {i}/{len(python_files)}: {file_path}")
-            try:
-                results[file_path] = self.analyze_file(file_path)
-            except Exception as e:
-                print(f"❌ Error analyzing {file_path}: {e}")
-                results[file_path] = {"error": str(e)}
-
-        # Generate summary statistics
-        summary = self.generate_summary(results)
-
-        return {
-            "summary": summary,
-            "files": results,
-            "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
-            "total_files_analyzed": len(results),
+        
+        # التبعيات الداخلية
+        for imp in ast_analysis['import_froms']:
+            if imp and (imp.startswith('.') or imp.startswith('src') or imp.startswith('app')):
+                dependencies["internal"].append(imp)
+        
+        # التبعيات الخارجية
+        for imp in ast_analysis['imports']:
+            if imp and not imp.startswith('.'):
+                dependencies["external"].append(imp)
+        
+        # خطر التبعيات الدائرية
+        if len(dependencies["internal"]) > 10:
+            dependencies["circular_risk"].append("الكثير من التبعيات الداخلية")
+        
+        return dependencies
+    
+    def suggest_location(self, file_path: Path, file_type: str) -> str:
+        """اقتراح موقع أفضل للملف"""
+        current_path = str(file_path.relative_to(self.project_root))
+        
+        # خريطة النقل المقترحة
+        type_to_location = {
+            'model': 'src/core/domain/entities/',
+            'service': 'src/core/services/',
+            'repository': 'src/infrastructure/persistence/repositories/',
+            'controller': 'src/api/endpoints/',
+            'test': 'tests/unit/' if 'unit' in current_path else 'tests/',
+            'config': 'configs/',
+            'utility': 'src/shared/utils/',
+            'domain': 'src/core/domain/',
+            'infrastructure': 'src/infrastructure/',
+            'script': 'scripts/',
+            'init': None  # لا تنقل ملفات __init__.py
         }
-
-    def generate_summary(self, results: Dict) -> Dict[str, Any]:
-        """Generate summary statistics"""
-        valid_results = [r for r in results.values() if "error" not in r]
-
-        # Count by type and importance
-        type_counts = defaultdict(int)
-        importance_counts = defaultdict(int)
-        issue_counts = defaultdict(int)
-
-        total_lines = 0
-        total_classes = 0
-        total_functions = 0
-        files_with_issues = 0
-
-        for result in valid_results:
-            analysis = result.get("analysis", {})
-
-            type_counts[analysis.get("type", "unknown")] += 1
-            importance_counts[analysis.get("importance", "unknown")] += 1
-
-            stats = analysis.get("file_stats", {})
-            total_lines += stats.get("lines", 0)
-            total_classes += stats.get("classes", 0)
-            total_functions += stats.get("functions", 0)
-
-            issues = analysis.get("issues", [])
-            if issues:
-                files_with_issues += 1
-
-            for issue in issues:
-                issue_counts[issue] += 1
-
-        return {
-            "total_valid_files": len(valid_results),
-            "total_lines_of_code": total_lines,
-            "total_classes": total_classes,
-            "total_functions": total_functions,
-            "files_with_issues": files_with_issues,
-            "file_types": dict(type_counts),
-            "importance_levels": dict(importance_counts),
-            "common_issues": dict(
-                sorted(issue_counts.items(), key=lambda x: x[1], reverse=True)[:10]
-            ),
-        }
+        
+        suggested = type_to_location.get(file_type)
+        
+        if not suggested or current_path.startswith(suggested):
+            return None  # الملف في المكان الصحيح
+        
+        # إنشاء اسم الملف الجديد
+        filename = file_path.name
+        return suggested + filename
+    
+    def find_duplicates(self) -> None:
+        """البحث عن الملفات المكررة أو المتشابهة"""
+        # تجميع الملفات حسب الـ hash
+        hash_to_files = defaultdict(list)
+        
+        for file_info in self.analysis_results["detailed_analysis"]:
+            hash_to_files[file_info['hash']].append(file_info['path'])
+        
+        # إيجاد المكررات الدقيقة
+        for file_hash, files in hash_to_files.items():
+            if len(files) > 1:
+                self.analysis_results["duplicate_candidates"].append({
+                    "type": "exact",
+                    "hash": file_hash,
+                    "files": files
+                })
+        
+        # البحث عن التشابه الوظيفي
+        function_signatures = defaultdict(list)
+        
+        for file_info in self.analysis_results["detailed_analysis"]:
+            if file_info['ast_analysis']['functions']:
+                for func in file_info['ast_analysis']['functions']:
+                    signature = f"{func['name']}({func['args']})"
+                    function_signatures[signature].append(file_info['path'])
+        
+        # إيجاد الدوال المكررة
+        for signature, files in function_signatures.items():
+            if len(files) > 1:
+                self.analysis_results["duplicate_candidates"].append({
+                    "type": "functional",
+                    "signature": signature,
+                    "files": files
+                })
+    
+    def calculate_project_health(self) -> None:
+        """حساب صحة المشروع العامة"""
+        total_files = len(self.analysis_results["detailed_analysis"])
+        if total_files == 0:
+            self.analysis_results["health_score"] = 0
+            return
+        
+        # حساب النقاط
+        score = 100
+        
+        # خصم نقاط للملفات الفارغة
+        empty_ratio = len(self.analysis_results["empty_files"]) / total_files
+        score -= empty_ratio * 20
+        
+        # خصم نقاط للملفات الكبيرة
+        large_ratio = len(self.analysis_results["large_files"]) / total_files
+        score -= large_ratio * 15
+        
+        # خصم نقاط للمشاكل الأمنية
+        security_ratio = len(self.analysis_results["security_issues"]) / total_files
+        score -= security_ratio * 30
+        
+        # خصم نقاط لمشاكل الجودة
+        quality_issues = sum(1 for f in self.analysis_results["detailed_analysis"] if f['needs_refactoring'])
+        quality_ratio = quality_issues / total_files
+        score -= quality_ratio * 20
+        
+        # خصم نقاط للملفات في الأماكن الخاطئة
+        misplaced = sum(1 for f in self.analysis_results["detailed_analysis"] if f['suggested_location'])
+        misplaced_ratio = misplaced / total_files
+        score -= misplaced_ratio * 15
+        
+        self.analysis_results["health_score"] = max(0, min(100, score))
+    
+    def generate_move_suggestions(self) -> None:
+        """إنشاء قائمة باقتراحات النقل"""
+        for file_info in self.analysis_results["detailed_analysis"]:
+            if file_info['suggested_location'] and file_info['importance'] != 'trash':
+                self.analysis_results["suggested_moves"].append({
+                    "from": file_info['path'],
+                    "to": file_info['suggested_location'],
+                    "reason": f"نقل {file_info['type']} للمكان المناسب",
+                    "priority": "high" if file_info['importance'] == 'critical' else "medium"
+                })
+    
+    def generate_report(self, output_file: str = "project_analysis_report.json") -> None:
+        """إنشاء تقرير JSON مفصل"""
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(self.analysis_results, f, ensure_ascii=False, indent=2)
+        
+        print(f"\n✅ تم حفظ التقرير في: {output_file}")
+        
+        # طباعة ملخص
+        print("\n📊 ملخص التحليل:")
+        print(f"  - إجمالي الملفات: {self.analysis_results['total_files']}")
+        print(f"  - إجمالي الأسطر: {self.analysis_results['total_lines']:,}")
+        print(f"  - صحة المشروع: {self.analysis_results['health_score']:.1f}%")
+        print(f"  - ملفات فارغة: {len(self.analysis_results['empty_files'])}")
+        print(f"  - ملفات كبيرة: {len(self.analysis_results['large_files'])}")
+        print(f"  - مشاكل أمنية: {len(self.analysis_results['security_issues'])}")
+        print(f"  - ملفات تحتاج نقل: {len(self.analysis_results['suggested_moves'])}")
 
 
 def main():
-    """Main execution function"""
-    analyzer = ProjectFileAnalyzer()
-
-    print("🚀 Starting comprehensive project analysis...")
+    """تشغيل التحليل الشامل"""
+    analyzer = ComprehensiveProjectAnalyzer()
     results = analyzer.analyze_project()
+    analyzer.generate_report()
+    
+    # إنشاء تقرير markdown أيضاً
+    create_markdown_report(results)
 
-    # Save full results
-    output_file = "project_analysis_complete.json"
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2, ensure_ascii=False)
 
-    print(f"\n✅ Analysis complete! Results saved to {output_file}")
-
-    # Print summary
-    summary = results["summary"]
-    print(f"\n📊 SUMMARY:")
-    print(f"   📄 Total files analyzed: {summary['total_valid_files']}")
-    print(f"   📝 Total lines of code: {summary['total_lines_of_code']:,}")
-    print(f"   🏗️  Total classes: {summary['total_classes']}")
-    print(f"   ⚙️  Total functions: {summary['total_functions']}")
-    print(f"   ⚠️  Files with issues: {summary['files_with_issues']}")
-
-    print(f"\n📋 File Types:")
-    for file_type, count in summary["file_types"].items():
-        print(f"   {file_type}: {count}")
-
-    print(f"\n🎯 Importance Levels:")
-    for level, count in summary["importance_levels"].items():
-        print(f"   {level}: {count}")
-
-    print(f"\n⚠️  Top Issues:")
-    for issue, count in summary["common_issues"].items():
-        print(f"   {issue}: {count} files")
-
-    # Generate specific reports for critical and high importance files
-    critical_files = []
-    high_files = []
-
-    for file_path, result in results["files"].items():
-        if "error" in result:
-            continue
-
-        importance = result["analysis"]["importance"]
-        if importance == "critical":
-            critical_files.append((file_path, result))
-        elif importance == "high":
-            high_files.append((file_path, result))
-
-    # Save critical files report
-    if critical_files:
-        critical_report = {
-            "critical_files": {path: result for path, result in critical_files},
-            "count": len(critical_files),
-        }
-
-        with open("critical_files_report.json", "w", encoding="utf-8") as f:
-            json.dump(critical_report, f, indent=2, ensure_ascii=False)
-
-        print(
-            f"\n🔴 Critical files report saved to critical_files_report.json ({len(critical_files)} files)"
-        )
-
-    # Save high importance files report
-    if high_files:
-        high_report = {
-            "high_importance_files": {path: result for path, result in high_files},
-            "count": len(high_files),
-        }
-
-        with open("high_importance_files_report.json", "w", encoding="utf-8") as f:
-            json.dump(high_report, f, indent=2, ensure_ascii=False)
-
-        print(
-            f"🟡 High importance files report saved to high_importance_files_report.json ({len(high_files)} files)"
-        )
+def create_markdown_report(results: Dict[str, Any]) -> None:
+    """إنشاء تقرير Markdown سهل القراءة"""
+    with open("project_analysis_report.md", "w", encoding="utf-8") as f:
+        f.write("# 📊 تقرير التحليل الشامل لمشروع AI Teddy Bear\n\n")
+        f.write(f"**التاريخ**: {results['timestamp']}\n\n")
+        
+        f.write("## 📈 الإحصائيات العامة\n\n")
+        f.write(f"- **إجمالي الملفات**: {results['total_files']}\n")
+        f.write(f"- **إجمالي الأسطر**: {results['total_lines']:,}\n")
+        f.write(f"- **صحة المشروع**: {results['health_score']:.1f}%\n\n")
+        
+        f.write("## 📁 توزيع أنواع الملفات\n\n")
+        for file_type, count in sorted(results['file_types'].items(), key=lambda x: x[1], reverse=True):
+            f.write(f"- **{file_type}**: {count} ملف\n")
+        
+        f.write("\n## 🚨 المشاكل المكتشفة\n\n")
+        f.write(f"### مشاكل أمنية ({len(results['security_issues'])})\n")
+        for issue in results['security_issues'][:5]:  # أول 5 فقط
+            f.write(f"- `{issue['file']}`: {', '.join(issue['issues'])}\n")
+        
+        f.write(f"\n### ملفات فارغة ({len(results['empty_files'])})\n")
+        for file in results['empty_files'][:10]:  # أول 10 فقط
+            f.write(f"- `{file}`\n")
+        
+        f.write(f"\n### ملفات كبيرة ({len(results['large_files'])})\n")
+        for file in sorted(results['large_files'], key=lambda x: x['lines'], reverse=True)[:5]:
+            f.write(f"- `{file['path']}`: {file['lines']} سطر\n")
+        
+        f.write(f"\n## 📦 الملفات المكررة ({len(results['duplicate_candidates'])})\n")
+        exact_dups = [d for d in results['duplicate_candidates'] if d['type'] == 'exact']
+        if exact_dups:
+            f.write(f"### تكرار كامل ({len(exact_dups)})\n")
+            for dup in exact_dups[:5]:
+                f.write(f"- الملفات: {', '.join(f'`{f}`' for f in dup['files'])}\n")
+        
+        f.write(f"\n## 🚚 اقتراحات النقل ({len(results['suggested_moves'])})\n")
+        high_priority = [m for m in results['suggested_moves'] if m['priority'] == 'high']
+        if high_priority:
+            f.write("### أولوية عالية\n")
+            for move in high_priority[:10]:
+                f.write(f"- نقل `{move['from']}` ← `{move['to']}`\n")
+    
+    print("✅ تم إنشاء تقرير Markdown: project_analysis_report.md")
 
 
 if __name__ == "__main__":

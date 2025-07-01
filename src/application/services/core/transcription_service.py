@@ -7,7 +7,6 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, AsyncIterator, Dict, Optional, Union
 
 import numpy as np
@@ -23,7 +22,6 @@ import librosa
 from openai import AsyncOpenAI
 
 # Value objects
-from src.domain.value_objects import Confidence
 
 logger = logging.getLogger(__name__)
 

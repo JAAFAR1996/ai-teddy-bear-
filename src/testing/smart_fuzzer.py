@@ -12,11 +12,10 @@ import random
 import string
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from hypothesis.stateful import RuleBasedStateMachine, invariant, rule
 
 from .coverage_tracker import CoverageTracker
 from .mutation_engine import MutationEngine

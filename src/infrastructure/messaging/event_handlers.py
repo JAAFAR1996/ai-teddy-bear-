@@ -5,14 +5,9 @@
 Event handlers for processing AI Teddy Bear domain events from Kafka
 """
 
-import asyncio
 import logging
-from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-from ...domain.events import (ChildProfileUpdated, ChildRegistered,
-                              ConversationEnded, ConversationStarted,
-                              EmotionDetected, SafetyViolationDetected)
 from .event_consumer import ConsumedEvent, EventHandler
 
 logger = logging.getLogger(__name__)

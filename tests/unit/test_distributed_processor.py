@@ -7,8 +7,7 @@ Author: AI Team Lead
 
 import asyncio
 import time
-from typing import Any, Dict
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 
 import numpy as np
 import pytest

@@ -5,7 +5,6 @@ Smart fallback responses for error handling and system resilience
 
 import logging
 import random
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from src.application.services.ai.models.ai_response_models import \

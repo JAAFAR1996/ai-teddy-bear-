@@ -4,24 +4,16 @@ Comprehensive Unit Tests for Conversation Repository
 Tests all CRUD operations, analytics, search functionality, and advanced features
 """
 
-import asyncio
-import json
 import os
-import sqlite3
 import tempfile
-from collections import Counter
-from datetime import date, datetime, timedelta
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, Mock, patch
+from datetime import datetime, timedelta
+from unittest.mock import Mock
 
 import pytest
 
 from src.domain.entities.conversation import (ContentType, Conversation,
-                                              ConversationMetrics,
                                               EmotionalState, InteractionType,
                                               Message, MessageRole)
-from src.domain.repositories.base import (BulkOperationResult, QueryOptions,
-                                          SearchCriteria, SortOrder)
 # Import our modules
 from src.infrastructure.persistence.conversation_sqlite_repository import \
     ConversationSQLiteRepository

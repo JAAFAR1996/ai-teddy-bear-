@@ -1,9 +1,7 @@
-import json
 import logging
 import os
 import sqlite3
 from datetime import datetime
-from typing import Any, Dict
 
 
 def create_database(db_path: str = "data/child_memories.db"):

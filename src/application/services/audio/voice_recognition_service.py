@@ -3,14 +3,12 @@ Voice Recognition Application Service
 Handles speech-to-text conversion and audio transcription
 """
 
-import io
 import logging
 import tempfile
 from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import soundfile as sf
-import torch
 import whisper
 from openai import AsyncOpenAI
 

@@ -5,11 +5,9 @@ Orchestrates the generation of comprehensive reports
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from src.domain.reporting.models import (ChildProgress, EmotionDistribution,
-                                         InteractionAnalysis, ReportPeriod,
-                                         SkillAnalysis)
+from src.domain.reporting.models import (ChildProgress, InteractionAnalysis, ReportPeriod)
 from src.domain.reporting.services import (BehaviorAnalyzer,
                                            EmotionAnalyzerService,
                                            ProgressAnalyzer, SkillAnalyzer)

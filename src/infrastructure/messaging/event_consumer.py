@@ -11,12 +11,11 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from kafka import KafkaConsumer
-from kafka.errors import CommitFailedError, KafkaError
+from kafka.errors import CommitFailedError
 
-from ..domain.events import DomainEvent
 from .kafka_config import KAFKA_CONFIG, KafkaConsumerConfig, KafkaTopics
 
 logger = logging.getLogger(__name__)

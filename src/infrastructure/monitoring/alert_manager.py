@@ -4,10 +4,8 @@ Alert Manager - نظام إدارة التنبيهات والإشعارات
 """
 
 import asyncio
-import json
 import os
 import smtplib
-from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
@@ -18,7 +16,7 @@ from typing import Any, Dict, List, Optional
 import aiohttp
 import structlog
 
-from src.domain.exceptions.base import ErrorCategory, ErrorSeverity
+from src.domain.exceptions.base import ErrorCategory
 
 logger = structlog.get_logger(__name__)
 

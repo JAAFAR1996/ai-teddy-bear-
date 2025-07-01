@@ -6,9 +6,6 @@ Author: Performance Team Lead
 """
 
 import asyncio
-import time
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 

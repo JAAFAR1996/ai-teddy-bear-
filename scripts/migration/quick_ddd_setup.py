@@ -1,11 +1,12 @@
-#!/usr/bin/env python3
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 Quick DDD Structure Setup
 Lead Architect: Jaafar Adeeb
 Simplified Domain-Driven Design structure creation
 """
-
-import os
 from pathlib import Path
 
 
@@ -17,9 +18,7 @@ class QuickDDDSetup:
 
     def create_structure(self):
         """Create the basic DDD structure"""
-        print("Creating DDD Structure...")
-
-        # Create directories
+        logger.info("Creating DDD Structure...")
         directories = [
             "src_new",
             "src_new/domain",
@@ -39,32 +38,22 @@ class QuickDDDSetup:
             "tests_new/unit",
             "tests_new/integration",
         ]
-
         for directory in directories:
             dir_path = self.project_root / directory
             dir_path.mkdir(parents=True, exist_ok=True)
-
-            # Create simple __init__.py
             init_file = dir_path / "__init__.py"
             if not init_file.exists():
                 init_file.write_text('"""DDD Module"""')
-
-        # Create base entity class
         self._create_base_entity()
-
-        # Create example child entity
         self._create_child_entity()
-
-        # Create command example
         self._create_commands()
-
-        print("DDD Structure created successfully!")
+        logger.info("DDD Structure created successfully!")
 
     def _create_base_entity(self):
         """Create base entity class"""
-        content = '''"""
+        content = """""\"
 Base Entity Classes
-"""
+""\"
 
 from abc import ABC
 from datetime import datetime
@@ -72,13 +61,13 @@ from typing import List, Any, Optional
 from uuid import UUID, uuid4
 
 class DomainEvent:
-    """Base domain event"""
+    ""\"Base domain event""\"
     def __init__(self):
         self.event_id = uuid4()
         self.occurred_at = datetime.utcnow()
 
 class Entity(ABC):
-    """Base entity with identity"""
+    ""\"Base entity with identity""\"
     
     def __init__(self, entity_id: Optional[UUID] = None):
         self.id = entity_id or uuid4()
@@ -87,11 +76,11 @@ class Entity(ABC):
         self._domain_events: List[DomainEvent] = []
     
     def add_domain_event(self, event: DomainEvent) -> None:
-        """Add domain event"""
+        ""\"Add domain event""\"
         self._domain_events.append(event)
     
     def clear_domain_events(self) -> List[DomainEvent]:
-        """Clear and return events"""
+        ""\"Clear and return events""\"
         events = self._domain_events.copy()
         self._domain_events.clear()
         return events
@@ -102,35 +91,34 @@ class Entity(ABC):
         return self.id == other.id
 
 class AggregateRoot(Entity):
-    """Base aggregate root"""
+    ""\"Base aggregate root""\"
     
     def __init__(self, entity_id: Optional[UUID] = None):
         super().__init__(entity_id)
         self.version = 1
-'''
-
+"""
         file_path = self.project_root / "src_new/domain/entities/base.py"
         file_path.write_text(content)
 
     def _create_child_entity(self):
         """Create child entity example"""
-        content = '''"""
+        content = """""\"
 Child Entity - Main Aggregate Root
-"""
+""\"
 
 from .base import AggregateRoot, DomainEvent
 from typing import Optional
 from uuid import UUID
 
 class ChildRegistered(DomainEvent):
-    """Child registration event"""
+    ""\"Child registration event""\"
     def __init__(self, child_id: UUID, name: str):
         super().__init__()
         self.child_id = child_id
         self.name = name
 
 class Child(AggregateRoot):
-    """Child entity - main aggregate root"""
+    ""\"Child entity - main aggregate root""\"
     
     def __init__(self, name: str, age: int, device_id: str, entity_id: Optional[UUID] = None):
         super().__init__(entity_id)
@@ -143,7 +131,7 @@ class Child(AggregateRoot):
         self.add_domain_event(ChildRegistered(self.id, name))
     
     def start_conversation(self, initial_message: str):
-        """Start a new conversation"""
+        ""\"Start a new conversation""\"
         if not self.can_interact():
             raise ValueError("Child cannot interact at this time")
         
@@ -151,23 +139,22 @@ class Child(AggregateRoot):
         return f"Conversation started by {self.name}: {initial_message}"
     
     def can_interact(self) -> bool:
-        """Check if child can interact"""
+        ""\"Check if child can interact""\"
         return self.is_active and 3 <= self.age <= 12
     
     def deactivate(self):
-        """Deactivate child account"""
+        ""\"Deactivate child account""\"
         self.is_active = False
         self.mark_as_modified()
-'''
-
+"""
         file_path = self.project_root / "src_new/domain/entities/child.py"
         file_path.write_text(content)
 
     def _create_commands(self):
         """Create command examples"""
-        content = '''"""
+        content = """""\"
 Application Commands - CQRS Pattern
-"""
+""\"
 
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
@@ -176,12 +163,12 @@ from uuid import UUID
 
 @dataclass
 class Command(ABC):
-    """Base command"""
+    ""\"Base command""\"
     pass
 
 @dataclass
 class RegisterChildCommand(Command):
-    """Register new child command"""
+    ""\"Register new child command""\"
     name: str
     age: int
     device_id: str
@@ -189,23 +176,23 @@ class RegisterChildCommand(Command):
 
 @dataclass
 class StartConversationCommand(Command):
-    """Start conversation command"""
+    ""\"Start conversation command""\"
     child_id: UUID
     initial_message: str
 
 class CommandHandler(ABC):
-    """Base command handler"""
+    ""\"Base command handler""\"
     
     @abstractmethod
     async def handle(self, command: Command) -> Any:
-        """Handle command"""
+        ""\"Handle command""\"
         pass
 
 class RegisterChildHandler(CommandHandler):
-    """Handle child registration"""
+    ""\"Handle child registration""\"
     
     async def handle(self, command: RegisterChildCommand) -> UUID:
-        """Register a new child"""
+        ""\"Register a new child""\"
         # Import here to avoid circular dependencies
         from ..domain.entities.child import Child
         
@@ -226,28 +213,25 @@ class RegisterChildHandler(CommandHandler):
             print(f"Event published: {event.__class__.__name__}")
         
         return child.id
-'''
-
+"""
         file_path = self.project_root / "src_new/application/commands/__init__.py"
         file_path.write_text(content)
 
 
 def main():
     """Main execution"""
-    print("Quick DDD Structure Setup")
-    print("Lead Architect: Jaafar Adeeb")
-    print("=" * 40)
-
+    logger.info("Quick DDD Structure Setup")
+    logger.info("Lead Architect: Jaafar Adeeb")
+    logger.info("=" * 40)
     setup = QuickDDDSetup()
     setup.create_structure()
-
-    print("\nDDD Structure created!")
-    print("New structure available in src_new/ directory")
-    print("\nNext steps:")
-    print("1. Review the created structure")
-    print("2. Migrate existing code gradually")
-    print("3. Update imports and dependencies")
-    print("4. Run tests to validate")
+    logger.info("\nDDD Structure created!")
+    logger.info("New structure available in src_new/ directory")
+    logger.info("\nNext steps:")
+    logger.info("1. Review the created structure")
+    logger.info("2. Migrate existing code gradually")
+    logger.info("3. Update imports and dependencies")
+    logger.info("4. Run tests to validate")
 
 
 if __name__ == "__main__":

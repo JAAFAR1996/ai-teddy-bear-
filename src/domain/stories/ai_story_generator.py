@@ -1,10 +1,9 @@
 import asyncio
-import json
 import random
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 import openai
 
@@ -401,7 +400,7 @@ class FairyLandAIGenerator:
 
             return response.choices[0].message.content
 
-        except Exception as e:
+        except Exception:
             # التراجع إلى قصة افتراضية في حالة الخطأ
             return self._generate_fallback_story(length)
 

@@ -5,7 +5,6 @@ Generated from: accessibility_service.py
 """
 
 import logging
-from pathlib import Path
 from typing import Dict, List, Optional
 
 from .dto.accessibility_dto import AccessibilityProfileDTO

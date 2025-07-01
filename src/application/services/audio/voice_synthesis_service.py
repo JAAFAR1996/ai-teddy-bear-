@@ -4,11 +4,9 @@ Handles text-to-speech conversion with emotional tones
 """
 
 import logging
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import azure.cognitiveservices.speech as speechsdk
-import numpy as np
 from elevenlabs import ElevenLabs, generate, stream
 
 from src.application.services.streaming_service import StreamingService

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 """
 Enterprise-Grade Observability Manager for AI Teddy Bear System
@@ -20,17 +20,13 @@ Author: Senior Software Engineer & Architect
 Version: 2.0.0 Enterprise
 """
 
-import json
 import logging
 import os
-import threading
 import time
-import traceback
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from functools import wraps
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 # Enterprise imports with graceful fallbacks
 try:
@@ -46,7 +42,7 @@ try:
     from opentelemetry.semantic_conventions.resource import ResourceAttributes
 
     OTEL_AVAILABLE = True
-except ImportError as e:
+except ImportError:
     OTEL_AVAILABLE = False
     trace = None
     context = None

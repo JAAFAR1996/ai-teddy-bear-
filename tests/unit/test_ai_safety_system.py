@@ -1,16 +1,17 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 """
 Comprehensive Tests for AI Safety Content Filtering System
 """
-
 import asyncio
 import os
 import sys
 
 import pytest
 
-# Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../src"))
-
 from src.domain.safety import (AdvancedContentFilter, ContentCategory,
                                RiskLevel, SafetyConfig)
 
@@ -33,9 +34,7 @@ class TestAdvancedContentFilter:
     async def test_safe_content_passes(self, safety_filter):
         """Test that safe content passes all filters"""
         safe_content = "Let's learn about colors! What's your favorite color?"
-
         result = await safety_filter.analyze_content(safe_content, child_age=6)
-
         assert result.is_safe == True
         assert result.overall_risk_level == RiskLevel.SAFE
         assert result.age_appropriate == True
@@ -46,9 +45,7 @@ class TestAdvancedContentFilter:
     async def test_toxic_content_blocked(self, safety_filter):
         """Test that toxic content is properly blocked"""
         toxic_content = "I hate you, you're stupid and ugly!"
-
         result = await safety_filter.analyze_content(toxic_content, child_age=6)
-
         assert result.is_safe == False
         assert result.overall_risk_level in [RiskLevel.HIGH_RISK, RiskLevel.CRITICAL]
         assert result.toxicity_result.toxicity_score > 0.3
@@ -58,9 +55,7 @@ class TestAdvancedContentFilter:
     async def test_age_inappropriate_content(self, safety_filter):
         """Test age-inappropriate content detection"""
         age_inappropriate = "Let's talk about romantic relationships and dating"
-
         result = await safety_filter.analyze_content(age_inappropriate, child_age=4)
-
         assert result.age_appropriate == False
         assert result.overall_risk_level != RiskLevel.SAFE
 
@@ -68,9 +63,7 @@ class TestAdvancedContentFilter:
     async def test_privacy_risk_detection(self, safety_filter):
         """Test detection of privacy risks"""
         privacy_risk = "What's your real name and where do you live?"
-
         result = await safety_filter.analyze_content(privacy_risk, child_age=7)
-
         assert result.is_safe == False
         assert result.overall_risk_level in [RiskLevel.HIGH_RISK, RiskLevel.CRITICAL]
         assert result.parent_notification_required == True
@@ -81,9 +74,7 @@ class TestAdvancedContentFilter:
         educational_content = (
             "Let's learn to count! One, two, three... Can you count to ten?"
         )
-
         result = await safety_filter.analyze_content(educational_content, child_age=5)
-
         assert result.is_safe == True
         assert result.educational_value.educational_score > 0.5
         assert result.content_category == ContentCategory.EDUCATIONAL
@@ -93,17 +84,14 @@ class TestAdvancedContentFilter:
         """Test emotional impact analysis"""
         negative_content = "You're sad and nobody loves you"
         positive_content = "You're amazing and everyone cares about you!"
-
         negative_result = await safety_filter.analyze_content(
             negative_content, child_age=6
         )
         positive_result = await safety_filter.analyze_content(
             positive_content, child_age=6
         )
-
         assert negative_result.emotional_impact.is_positive == False
         assert negative_result.emotional_impact.overall_sentiment < 0
-
         assert positive_result.emotional_impact.is_positive == True
         assert positive_result.emotional_impact.overall_sentiment > 0
 
@@ -116,13 +104,10 @@ class TestAdvancedContentFilter:
             "Do you want to play a game?",
             "Yes! Let's play counting!",
         ]
-
         current_text = "Great! Let's count to 10 together!"
-
         result = await safety_filter.analyze_content(
             current_text, child_age=5, conversation_history=conversation_history
         )
-
         assert result.context_analysis.context_safe == True
         assert result.context_analysis.conversation_flow_score > 0.5
         assert result.context_analysis.conversation_quality > 0.5
@@ -136,9 +121,7 @@ class TestAdvancedContentFilter:
             "Can you count to five?",
             "Do you like stories?",
         ]
-
         results = await safety_filter.batch_analyze(texts, child_age=6)
-
         assert len(results) == len(texts)
         assert all(result.is_safe for result in results)
         assert all(result.overall_risk_level == RiskLevel.SAFE for result in results)
@@ -147,27 +130,17 @@ class TestAdvancedContentFilter:
     async def test_age_specific_filtering(self, safety_filter):
         """Test age-specific content filtering"""
         content = "Let's talk about scary monsters in the dark forest"
-
-        # Should be blocked for young children
         young_result = await safety_filter.analyze_content(content, child_age=3)
-
-        # Might be acceptable for older children
         older_result = await safety_filter.analyze_content(content, child_age=8)
-
         assert young_result.age_appropriate == False
-        # Note: older_result might still be blocked due to scary content
 
     @pytest.mark.asyncio
     async def test_content_modifications(self, safety_filter):
         """Test content modification suggestions"""
         problematic_content = "You're stupid and bad at everything"
-
         result = await safety_filter.analyze_content(problematic_content, child_age=6)
-
         assert result.is_safe == False
         assert len(result.required_modifications) > 0
-
-        # Check that modifications are constructive
         for modification in result.required_modifications:
             assert modification.modified_text != modification.original_text
             assert len(modification.reason) > 0
@@ -176,15 +149,11 @@ class TestAdvancedContentFilter:
     async def test_performance_metrics(self, safety_filter):
         """Test performance metrics tracking"""
         initial_metrics = safety_filter.get_performance_metrics()
-
-        # Process some content
         await safety_filter.analyze_content("Hello, how are you?", child_age=6)
         await safety_filter.analyze_content(
             "This is inappropriate content", child_age=6
         )
-
         updated_metrics = safety_filter.get_performance_metrics()
-
         assert updated_metrics["total_requests"] > initial_metrics["total_requests"]
         assert "avg_processing_time" in updated_metrics
         assert "blocked_requests" in updated_metrics
@@ -192,29 +161,18 @@ class TestAdvancedContentFilter:
     @pytest.mark.asyncio
     async def test_emergency_fallback(self, safety_filter):
         """Test emergency fallback when analysis fails"""
-        # This would typically happen with corrupted data or system errors
-        # For testing, we can simulate by passing invalid data to internal methods
-
-        # Test with empty content
         result = await safety_filter.analyze_content("", child_age=6)
-
-        # Should still return a valid result
         assert hasattr(result, "is_safe")
         assert hasattr(result, "overall_risk_level")
 
     def test_config_validation(self):
         """Test safety configuration validation"""
-        # Valid config
         valid_config = SafetyConfig(
             toxicity_threshold=0.1, high_risk_threshold=0.3, critical_threshold=0.7
         )
         assert valid_config.validate() == True
-
-        # Invalid config (thresholds out of range)
         invalid_config = SafetyConfig(
-            toxicity_threshold=1.5,
-            high_risk_threshold=0.3,
-            critical_threshold=0.7,  # Invalid: > 1.0
+            toxicity_threshold=1.5, high_risk_threshold=0.3, critical_threshold=0.7
         )
         assert invalid_config.validate() == False
 
@@ -230,9 +188,7 @@ class TestIntegrationScenarios:
     async def test_story_time_scenario(self, safety_filter):
         """Test story-telling scenario"""
         story_content = "Once upon a time, there was a brave little rabbit who loved to explore the forest and make new friends."
-
         result = await safety_filter.analyze_content(story_content, child_age=5)
-
         assert result.is_safe == True
         assert result.content_category == ContentCategory.STORY
         assert result.educational_value.educational_score > 0.3
@@ -248,14 +204,11 @@ class TestIntegrationScenarios:
             "Meow!",
             "Excellent! You're so smart!",
         ]
-
         for i, content in enumerate(learning_conversation):
             result = await safety_filter.analyze_content(
                 content, child_age=4, conversation_history=learning_conversation[:i]
             )
-
             assert result.is_safe == True
-            # Later messages should show good educational progression
             if i > 2:
                 assert result.educational_value.educational_score > 0.3
 
@@ -266,21 +219,17 @@ class TestIntegrationScenarios:
             "Hi there! What's your favorite color?",
             "Do you have any friends?",
             "Are you ever alone at home?",
-            "What's your address?",  # This should trigger safety alerts
-            "Don't tell your parents about our conversation",  # Critical alert
+            "What's your address?",
+            "Don't tell your parents about our conversation",
         ]
-
         for i, content in enumerate(escalating_conversation):
             result = await safety_filter.analyze_content(
                 content, child_age=6, conversation_history=escalating_conversation[:i]
             )
-
-            # Safety should deteriorate as conversation progresses
-            if i >= 3:  # Address question
+            if i >= 3:
                 assert result.is_safe == False
                 assert result.parent_notification_required == True
-
-            if i >= 4:  # Secrecy request
+            if i >= 4:
                 assert result.overall_risk_level == RiskLevel.CRITICAL
 
 
@@ -288,8 +237,6 @@ class TestIntegrationScenarios:
 async def test_system_stress():
     """Stress test the entire system"""
     safety_filter = AdvancedContentFilter()
-
-    # Test with various content types simultaneously
     test_contents = [
         "Let's learn about numbers!",
         "What's your favorite animal?",
@@ -300,22 +247,15 @@ async def test_system_stress():
         "Let's count to ten together!",
         "Don't tell your parents about this secret",
     ]
-
-    # Run batch analysis
     results = await safety_filter.batch_analyze(test_contents, child_age=6)
-
     assert len(results) == len(test_contents)
-
-    # Verify that clearly safe content passes
-    safe_indices = [0, 1, 4, 6]  # Educational and story content
+    safe_indices = [0, 1, 4, 6]
     for i in safe_indices:
         assert (
             results[i].is_safe == True
             or results[i].overall_risk_level == RiskLevel.LOW_RISK
         )
-
-    # Verify that clearly unsafe content is blocked
-    unsafe_indices = [3, 5, 7]  # Privacy risk, toxic, secrecy
+    unsafe_indices = [3, 5, 7]
     for i in unsafe_indices:
         assert results[i].is_safe == False
         assert results[i].overall_risk_level in [
@@ -325,53 +265,44 @@ async def test_system_stress():
 
 
 if __name__ == "__main__":
-    # Run basic tests if script is executed directly
+
     async def run_basic_tests():
         filter_instance = AdvancedContentFilter()
-
-        print("🔒 AI Safety System - Basic Tests")
-        print("=" * 50)
-
-        # Test 1: Safe content
-        print("\n✅ Testing safe content...")
+        logger.info("🔒 AI Safety System - Basic Tests")
+        logger.info("=" * 50)
+        logger.info("\n✅ Testing safe content...")
         safe_result = await filter_instance.analyze_content(
             "Let's learn about colors! What's your favorite color?", child_age=5
         )
-        print(f"Safe content result: {safe_result.is_safe}")
-        print(f"Risk level: {safe_result.overall_risk_level.value}")
-
-        # Test 2: Unsafe content
-        print("\n❌ Testing unsafe content...")
+        logger.info(f"Safe content result: {safe_result.is_safe}")
+        logger.info(f"Risk level: {safe_result.overall_risk_level.value}")
+        logger.info("\n❌ Testing unsafe content...")
         unsafe_result = await filter_instance.analyze_content(
             "You're stupid and I hate you!", child_age=5
         )
-        print(f"Unsafe content result: {unsafe_result.is_safe}")
-        print(f"Risk level: {unsafe_result.overall_risk_level.value}")
-        print(f"Modifications suggested: {len(unsafe_result.required_modifications)}")
-
-        # Test 3: Privacy risk
-        print("\n🚨 Testing privacy risk...")
+        logger.info(f"Unsafe content result: {unsafe_result.is_safe}")
+        logger.info(f"Risk level: {unsafe_result.overall_risk_level.value}")
+        logger.info(
+            f"Modifications suggested: {len(unsafe_result.required_modifications)}"
+        )
+        logger.info("\n🚨 Testing privacy risk...")
         privacy_result = await filter_instance.analyze_content(
             "What's your real name and where do you live?", child_age=5
         )
-        print(f"Privacy risk result: {privacy_result.is_safe}")
-        print(
+        logger.info(f"Privacy risk result: {privacy_result.is_safe}")
+        logger.info(
             f"Parent notification required: {privacy_result.parent_notification_required}"
         )
-
-        # Test 4: Educational content
-        print("\n📚 Testing educational content...")
+        logger.info("\n📚 Testing educational content...")
         edu_result = await filter_instance.analyze_content(
             "Let's count together! One, two, three... Can you count to ten?",
             child_age=5,
         )
-        print(
+        logger.info(
             f"Educational score: {edu_result.educational_value.educational_score:.2f}"
         )
-        print(f"Content category: {edu_result.content_category.value}")
+        logger.info(f"Content category: {edu_result.content_category.value}")
+        logger.info("\n🎉 All basic tests completed!")
+        logger.info(f"Performance metrics: {filter_instance.get_performance_metrics()}")
 
-        print("\n🎉 All basic tests completed!")
-        print(f"Performance metrics: {filter_instance.get_performance_metrics()}")
-
-    # Run the tests
     asyncio.run(run_basic_tests())
