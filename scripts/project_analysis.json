@@ -1,10 +1,10 @@
 {
-  "total_files": 83,
-  "total_python_files": 65,
+  "total_files": 89,
+  "total_python_files": 69,
   "file_types": {
-    "other": 56,
+    "other": 60,
     "repository": 1,
-    "config": 5,
+    "config": 6,
     "model": 1,
     "service": 2
   },
@@ -19,15 +19,18 @@
         ".\\chaos_experiment_runner.py",
         ".\\clean_architecture_relocator.py",
         ".\\comprehensive_architecture_analyzer.py",
+        ".\\comprehensive_cleaner.py",
         ".\\comprehensive_project_analyzer.py",
         ".\\configure_logging.py",
         ".\\config_hardware_esp32_analyzer.py",
         ".\\content_similarity_analyzer.py",
         ".\\data_migration.py",
         ".\\ddd_integration_simple.py",
+        ".\\deep_analysis.py",
         ".\\exception_fixer.py",
         ".\\fix_imports_checker.py",
         ".\\frontend_api_cache_analyzer.py",
+        ".\\full_project_analyzer.py",
         ".\\generate_docs.py",
         ".\\generate_encryption_key.py",
         ".\\generate_env.py",
@@ -44,6 +47,7 @@
         ".\\performance_profile.py",
         ".\\professional_ddd_integration.py",
         ".\\project_analyzer.py",
+        ".\\project_cleaner.py",
         ".\\quick_config_analyzer.py",
         ".\\run_all_fixes.py",
         ".\\security_cleanup.py",
@@ -211,10 +215,35 @@
     },
     {
       "type": "functional",
+      "signature": "_select_best_file(self,files)",
+      "files": [
+        ".\\comprehensive_architecture_analyzer.py",
+        ".\\comprehensive_cleaner.py",
+        ".\\project_cleaner.py"
+      ]
+    },
+    {
+      "type": "functional",
       "signature": "run_comprehensive_analysis(self)",
       "files": [
         ".\\comprehensive_architecture_analyzer.py",
         ".\\quick_config_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "run_comprehensive_cleanup(self)",
+      "files": [
+        ".\\comprehensive_cleaner.py",
+        ".\\comprehensive_cleanup.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "_backup_and_delete(self,file_path)",
+      "files": [
+        ".\\comprehensive_cleaner.py",
+        ".\\project_cleaner.py"
       ]
     },
     {
@@ -250,6 +279,7 @@
       "signature": "__init__(self,project_root)",
       "files": [
         ".\\comprehensive_project_analyzer.py",
+        ".\\full_project_analyzer.py",
         ".\\professional_ddd_integration_v2.py",
         ".\\project_analyzer.py",
         ".\\security_audit_and_fix.py",
@@ -272,6 +302,7 @@
       "signature": "analyze_project(self)",
       "files": [
         ".\\comprehensive_project_analyzer.py",
+        ".\\full_project_analyzer.py",
         ".\\project_analyzer.py",
         ".\\migration\\ddd_architecture_analyzer.py"
       ]
@@ -341,6 +372,103 @@
     },
     {
       "type": "functional",
+      "signature": "generate_report(self)",
+      "files": [
+        ".\\frontend_api_cache_analyzer.py",
+        ".\\project_cleaner.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "analyze_python_file(self,file_path)",
+      "files": [
+        ".\\full_project_analyzer.py",
+        ".\\god_class_splitter.py",
+        ".\\project_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "_analyze_ast(self,content,file_path)",
+      "files": [
+        ".\\full_project_analyzer.py",
+        ".\\project_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "_determine_file_type(self,file_path,content)",
+      "files": [
+        ".\\full_project_analyzer.py",
+        ".\\project_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "_determine_importance(self,file_path,content,classes,functions)",
+      "files": [
+        ".\\full_project_analyzer.py",
+        ".\\project_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "_find_issues(self,content,file_path)",
+      "files": [
+        ".\\full_project_analyzer.py",
+        ".\\project_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "_suggest_location(self,current_path,file_type)",
+      "files": [
+        ".\\full_project_analyzer.py",
+        ".\\project_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "_calculate_complexity(self,analysis_data)",
+      "files": [
+        ".\\full_project_analyzer.py",
+        ".\\project_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "_find_duplicates(self)",
+      "files": [
+        ".\\full_project_analyzer.py",
+        ".\\project_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "_generate_summary(self)",
+      "files": [
+        ".\\full_project_analyzer.py",
+        ".\\project_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "save_report(self,output_file)",
+      "files": [
+        ".\\full_project_analyzer.py",
+        ".\\project_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
+      "signature": "print_summary(self)",
+      "files": [
+        ".\\full_project_analyzer.py",
+        ".\\project_analyzer.py"
+      ]
+    },
+    {
+      "type": "functional",
       "signature": "generate_encryption_key()",
       "files": [
         ".\\generate_keys.py",
@@ -379,14 +507,6 @@
       "files": [
         ".\\god_class_refactor_ddd.py",
         ".\\migration\\ddd_architecture_analyzer.py"
-      ]
-    },
-    {
-      "type": "functional",
-      "signature": "analyze_python_file(self,file_path)",
-      "files": [
-        ".\\god_class_splitter.py",
-        ".\\project_analyzer.py"
       ]
     },
     {
@@ -436,6 +556,10 @@
       644
     ],
     [
+      ".\\comprehensive_cleaner.py",
+      545
+    ],
+    [
       ".\\comprehensive_project_analyzer.py",
       579
     ],
@@ -450,6 +574,10 @@
     [
       ".\\demo_multi_layer_cache.py",
       558
+    ],
+    [
+      ".\\full_project_analyzer.py",
+      578
     ],
     [
       ".\\god_class_refactor_ddd.py",
@@ -530,14 +658,14 @@
       "suggested_location": null,
       "complexity": 38,
       "dependencies": [
-        "ast",
-        "traceback",
+        "os",
         "pathlib",
-        "json",
-        "datetime",
+        "ast",
         "collections",
+        "json",
         "typing",
-        "os"
+        "datetime",
+        "traceback"
       ]
     },
     {
@@ -561,18 +689,18 @@
       "suggested_location": null,
       "complexity": 28,
       "dependencies": [
-        "shutil",
-        "pathlib",
-        "json",
-        "datetime",
-        "difflib",
         "logging",
+        "os",
+        "pathlib",
         "dataclasses",
+        "difflib",
         "warnings",
         "collections",
-        "hashlib",
+        "json",
         "typing",
-        "os"
+        "datetime",
+        "hashlib",
+        "shutil"
       ]
     },
     {
@@ -594,11 +722,11 @@
       "suggested_location": null,
       "complexity": 5,
       "dependencies": [
-        "shutil",
-        "datetime",
         "logging",
+        "os",
         "sqlite3",
-        "os"
+        "datetime",
+        "shutil"
       ]
     },
     {
@@ -622,17 +750,17 @@
       "suggested_location": null,
       "complexity": 8,
       "dependencies": [
-        "sys",
-        "requests",
-        "pathlib",
-        "json",
-        "datetime",
         "logging",
-        "asyncio",
-        "argparse",
+        "pathlib",
         "chaos",
+        "json",
+        "argparse",
+        "asyncio",
+        "sys",
+        "datetime",
         "typing",
-        "time"
+        "time",
+        "requests"
       ]
     },
     {
@@ -654,9 +782,9 @@
       "suggested_location": null,
       "complexity": 5,
       "dependencies": [
-        "pathlib",
+        "os",
         "shutil",
-        "os"
+        "pathlib"
       ]
     },
     {
@@ -679,12 +807,12 @@
       "suggested_location": null,
       "complexity": 13,
       "dependencies": [
-        "traceback",
+        "os",
         "pathlib",
-        "shutil",
-        "datetime",
         "typing",
-        "os"
+        "datetime",
+        "shutil",
+        "traceback"
       ]
     },
     {
@@ -708,16 +836,55 @@
       "suggested_location": null,
       "complexity": 26,
       "dependencies": [
-        "re",
-        "traceback",
+        "os",
         "pathlib",
-        "shutil",
-        "json",
-        "datetime",
+        "re",
         "collections",
-        "hashlib",
+        "json",
         "typing",
-        "os"
+        "datetime",
+        "hashlib",
+        "shutil",
+        "traceback"
+      ]
+    },
+    {
+      "path": ".\\comprehensive_cleaner.py",
+      "relative_path": "comprehensive_cleaner.py",
+      "type": "other",
+      "importance": "high",
+      "stats": {
+        "lines": 545,
+        "loc": 387,
+        "classes": 1,
+        "functions": 14,
+        "imports": 12
+      },
+      "hash": "c3ff141ab663556137b7444e68c645c1",
+      "issues": [
+        "Uses eval() - security risk",
+        "Uses exec() - security risk",
+        "Uses os.system - use subprocess instead",
+        "Generic exception handling",
+        "Print statements in production code",
+        "Contains TODO/FIXME/XXX",
+        "File too large (545 lines)"
+      ],
+      "suggested_location": null,
+      "complexity": 18,
+      "dependencies": [
+        "os",
+        "pathlib",
+        "re",
+        "ast",
+        "collections",
+        "json",
+        "typing",
+        "sys",
+        "datetime",
+        "hashlib",
+        "shutil",
+        "argparse"
       ]
     },
     {
@@ -739,10 +906,10 @@
       "suggested_location": null,
       "complexity": 10,
       "dependencies": [
-        "pathlib",
+        "os",
         "shutil",
-        "typing",
-        "os"
+        "pathlib",
+        "typing"
       ]
     },
     {
@@ -767,12 +934,12 @@
       "suggested_location": null,
       "complexity": 12,
       "dependencies": [
-        "re",
         "pathlib",
-        "shutil",
-        "datetime",
+        "os",
+        "re",
         "typing",
-        "os"
+        "datetime",
+        "shutil"
       ]
     },
     {
@@ -796,11 +963,11 @@
       "suggested_location": "src/infrastructure/persistence/repositories/comprehensive_fix_and_report.py",
       "complexity": 11,
       "dependencies": [
-        "re",
+        "os",
         "pathlib",
-        "datetime",
+        "re",
         "typing",
-        "os"
+        "datetime"
       ]
     },
     {
@@ -825,16 +992,16 @@
       "suggested_location": null,
       "complexity": 18,
       "dependencies": [
-        "ast",
-        "re",
+        "os",
         "pathlib",
-        "json",
-        "datetime",
+        "re",
+        "ast",
         "inspect",
         "collections",
-        "hashlib",
+        "json",
         "typing",
-        "os"
+        "datetime",
+        "hashlib"
       ]
     },
     {
@@ -856,14 +1023,14 @@
       "suggested_location": "configs/configure_logging.py",
       "complexity": 7,
       "dependencies": [
-        "sys",
-        "json",
         "logging",
-        "argparse",
-        "platform",
+        "os",
+        "json",
         "typing",
-        "yaml",
-        "os"
+        "argparse",
+        "sys",
+        "platform",
+        "yaml"
       ]
     },
     {
@@ -887,18 +1054,18 @@
       "suggested_location": "configs/config_hardware_esp32_analyzer.py",
       "complexity": 25,
       "dependencies": [
-        "shutil",
-        "pathlib",
-        "json",
-        "datetime",
-        "difflib",
         "logging",
+        "os",
+        "pathlib",
         "dataclasses",
+        "difflib",
         "warnings",
         "collections",
-        "hashlib",
+        "json",
         "typing",
-        "os"
+        "datetime",
+        "hashlib",
+        "shutil"
       ]
     },
     {
@@ -921,15 +1088,15 @@
       "suggested_location": null,
       "complexity": 12,
       "dependencies": [
-        "ast",
-        "traceback",
+        "os",
         "pathlib",
-        "shutil",
-        "datetime",
+        "ast",
         "difflib",
-        "hashlib",
         "typing",
-        "os"
+        "datetime",
+        "hashlib",
+        "shutil",
+        "traceback"
       ]
     },
     {
@@ -949,13 +1116,13 @@
       "suggested_location": null,
       "complexity": 10,
       "dependencies": [
-        "json",
-        "datetime",
         "logging",
+        "os",
+        "json",
         "sqlite3",
         "typing",
-        "backup_database",
-        "os"
+        "datetime",
+        "backup_database"
       ]
     },
     {
@@ -977,9 +1144,37 @@
       "suggested_location": null,
       "complexity": 5,
       "dependencies": [
-        "pathlib",
+        "os",
         "shutil",
-        "os"
+        "pathlib"
+      ]
+    },
+    {
+      "path": ".\\deep_analysis.py",
+      "relative_path": "deep_analysis.py",
+      "type": "other",
+      "importance": "high",
+      "stats": {
+        "lines": 318,
+        "loc": 220,
+        "classes": 1,
+        "functions": 10,
+        "imports": 6
+      },
+      "hash": "c9f7574f3d78837dbf9c4dec0409906c",
+      "issues": [
+        "Print statements in production code",
+        "File is getting large (318 lines)"
+      ],
+      "suggested_location": null,
+      "complexity": 13,
+      "dependencies": [
+        "os",
+        "pathlib",
+        "ast",
+        "collections",
+        "json",
+        "typing"
       ]
     },
     {
@@ -1002,13 +1197,13 @@
       "suggested_location": null,
       "complexity": 9,
       "dependencies": [
-        "sys",
+        "logging",
         "pathlib",
         "src",
-        "logging",
-        "asyncio",
-        "numpy",
         "typing",
+        "asyncio",
+        "sys",
+        "numpy",
         "time"
       ]
     },
@@ -1032,13 +1227,13 @@
       "suggested_location": null,
       "complexity": 9,
       "dependencies": [
-        "sys",
+        "logging",
         "pathlib",
         "src",
-        "logging",
-        "asyncio",
-        "numpy",
         "typing",
+        "asyncio",
+        "sys",
+        "numpy",
         "time"
       ]
     },
@@ -1062,13 +1257,13 @@
       "suggested_location": null,
       "complexity": 9,
       "dependencies": [
-        "sys",
+        "logging",
         "pathlib",
         "src",
-        "logging",
-        "asyncio",
-        "numpy",
         "typing",
+        "asyncio",
+        "sys",
+        "numpy",
         "time"
       ]
     },
@@ -1092,14 +1287,14 @@
       "suggested_location": null,
       "complexity": 6,
       "dependencies": [
-        "sys",
+        "logging",
         "src",
         "json",
-        "datetime",
-        "logging",
-        "asyncio",
-        "random",
         "typing",
+        "asyncio",
+        "datetime",
+        "sys",
+        "random",
         "time"
       ]
     },
@@ -1124,12 +1319,12 @@
       "suggested_location": null,
       "complexity": 16,
       "dependencies": [
-        "ast",
-        "re",
+        "os",
         "pathlib",
-        "shutil",
+        "re",
+        "ast",
         "typing",
-        "os"
+        "shutil"
       ]
     },
     {
@@ -1152,10 +1347,10 @@
       "suggested_location": null,
       "complexity": 8,
       "dependencies": [
-        "pathlib",
+        "os",
         "shutil",
-        "typing",
-        "os"
+        "pathlib",
+        "typing"
       ]
     },
     {
@@ -1177,10 +1372,10 @@
       "suggested_location": null,
       "complexity": 11,
       "dependencies": [
+        "os",
         "pathlib",
         "re",
-        "typing",
-        "os"
+        "typing"
       ]
     },
     {
@@ -1203,14 +1398,53 @@
       "suggested_location": null,
       "complexity": 13,
       "dependencies": [
-        "traceback",
+        "os",
         "pathlib",
-        "shutil",
         "json",
+        "typing",
         "datetime",
         "hashlib",
+        "shutil",
+        "traceback"
+      ]
+    },
+    {
+      "path": ".\\full_project_analyzer.py",
+      "relative_path": "full_project_analyzer.py",
+      "type": "other",
+      "importance": "high",
+      "stats": {
+        "lines": 578,
+        "loc": 410,
+        "classes": 1,
+        "functions": 15,
+        "imports": 9
+      },
+      "hash": "07327a69c171a026706980d870d6b469",
+      "issues": [
+        "Uses eval() - security risk",
+        "Uses exec() - security risk",
+        "Uses pickle.loads - security risk",
+        "Uses os.system - use subprocess instead",
+        "Possible hardcoded password",
+        "Generic exception handling",
+        "Print statements in production code",
+        "Contains TODO/FIXME/XXX",
+        "File too large (578 lines)",
+        "Uses wildcard imports"
+      ],
+      "suggested_location": null,
+      "complexity": 18,
+      "dependencies": [
+        "os",
+        "pathlib",
+        "re",
+        "ast",
+        "collections",
+        "json",
         "typing",
-        "os"
+        "datetime",
+        "hashlib"
       ]
     },
     {
@@ -1230,11 +1464,11 @@
       "suggested_location": null,
       "complexity": 9,
       "dependencies": [
-        "shutil",
         "logging",
+        "os",
         "argparse",
-        "subprocess",
-        "os"
+        "shutil",
+        "subprocess"
       ]
     },
     {
@@ -1256,10 +1490,10 @@
       "suggested_location": null,
       "complexity": 2,
       "dependencies": [
-        "argparse",
         "base64",
+        "os",
         "secrets",
-        "os"
+        "argparse"
       ]
     },
     {
@@ -1281,11 +1515,11 @@
       "suggested_location": null,
       "complexity": 4,
       "dependencies": [
-        "string",
-        "dotenv",
-        "argparse",
+        "os",
         "secrets",
-        "os"
+        "argparse",
+        "string",
+        "dotenv"
       ]
     },
     {
@@ -1307,10 +1541,10 @@
       "suggested_location": null,
       "complexity": 4,
       "dependencies": [
-        "cryptography",
+        "string",
         "base64",
-        "secrets",
-        "string"
+        "cryptography",
+        "secrets"
       ]
     },
     {
@@ -1332,10 +1566,10 @@
       "suggested_location": null,
       "complexity": 6,
       "dependencies": [
-        "cryptography",
         "base64",
-        "secrets",
-        "os"
+        "cryptography",
+        "os",
+        "secrets"
       ]
     },
     {
@@ -1357,11 +1591,11 @@
       "suggested_location": null,
       "complexity": 11,
       "dependencies": [
-        "re",
+        "os",
         "pathlib",
-        "subprocess",
+        "re",
         "typing",
-        "os"
+        "subprocess"
       ]
     },
     {
@@ -1384,15 +1618,15 @@
       "suggested_location": null,
       "complexity": 27,
       "dependencies": [
-        "ast",
-        "re",
+        "dataclasses",
+        "os",
         "pathlib",
+        "re",
+        "ast",
+        "typing",
         "datetime",
         "structlog",
-        "dataclasses",
-        "asyncio",
-        "typing",
-        "os"
+        "asyncio"
       ]
     },
     {
@@ -1418,13 +1652,13 @@
       "suggested_location": null,
       "complexity": 21,
       "dependencies": [
-        "ast",
-        "re",
-        "pathlib",
-        "shutil",
         "dataclasses",
+        "os",
+        "pathlib",
+        "re",
+        "ast",
         "typing",
-        "os"
+        "shutil"
       ]
     },
     {
@@ -1444,12 +1678,12 @@
       "suggested_location": null,
       "complexity": 3,
       "dependencies": [
-        "sys",
-        "src",
-        "redis",
         "logging",
+        "src",
         "sqlite3",
-        "typing"
+        "typing",
+        "sys",
+        "redis"
       ]
     },
     {
@@ -1472,12 +1706,12 @@
       "suggested_location": null,
       "complexity": 13,
       "dependencies": [
-        "sys",
+        "os",
         "pathlib",
-        "shutil",
+        "sys",
         "glob",
-        "subprocess",
-        "os"
+        "shutil",
+        "subprocess"
       ]
     },
     {
@@ -1497,12 +1731,12 @@
       "suggested_location": null,
       "complexity": 4,
       "dependencies": [
-        "json",
-        "datetime",
         "logging",
+        "os",
+        "json",
         "sqlite3",
         "typing",
-        "os"
+        "datetime"
       ]
     },
     {
@@ -1526,17 +1760,17 @@
       "suggested_location": "configs/intelligent_config_merger.py",
       "complexity": 18,
       "dependencies": [
-        "re",
-        "traceback",
+        "os",
         "pathlib",
-        "json",
-        "datetime",
+        "re",
         "difflib",
         "collections",
-        "hashlib",
+        "json",
         "typing",
-        "yaml",
-        "os"
+        "datetime",
+        "hashlib",
+        "traceback",
+        "yaml"
       ]
     },
     {
@@ -1558,11 +1792,11 @@
       "suggested_location": null,
       "complexity": 1,
       "dependencies": [
-        "src",
-        "datetime",
         "logging",
+        "src",
+        "uuid",
         "asyncio",
-        "uuid"
+        "datetime"
       ]
     },
     {
@@ -1584,9 +1818,9 @@
       "suggested_location": "configs/migrate_config.py",
       "complexity": 1,
       "dependencies": [
+        "os",
         "pathlib",
-        "json",
-        "os"
+        "json"
       ]
     },
     {
@@ -1609,19 +1843,19 @@
       "suggested_location": null,
       "complexity": 29,
       "dependencies": [
-        "re",
-        "sys",
-        "pathlib",
-        "json",
-        "datetime",
-        "hvac",
         "logging",
+        "os",
+        "pathlib",
         "dataclasses",
-        "argparse",
+        "re",
         "cryptography",
+        "json",
         "typing",
-        "yaml",
-        "os"
+        "sys",
+        "hvac",
+        "argparse",
+        "datetime",
+        "yaml"
       ]
     },
     {
@@ -1643,14 +1877,14 @@
       "suggested_location": "src/core/domain/entities/model_benchmark.py",
       "complexity": 9,
       "dependencies": [
-        "json",
-        "os",
         "logging",
+        "os",
+        "anthropic",
+        "json",
+        "typing",
         "argparse",
         "openai",
         "google",
-        "anthropic",
-        "typing",
         "time"
       ]
     },
@@ -1674,13 +1908,13 @@
       "suggested_location": null,
       "complexity": 5,
       "dependencies": [
-        "sys",
+        "logging",
         "pathlib",
         "json",
-        "datetime",
-        "logging",
         "argparse",
         "asyncio",
+        "sys",
+        "datetime",
         "typing",
         "infrastructure",
         "yaml"
@@ -1705,18 +1939,18 @@
       "suggested_location": null,
       "complexity": 12,
       "dependencies": [
-        "sys",
-        "json",
-        "tracemalloc",
-        "os",
         "logging",
-        "argparse",
+        "os",
         "memory_profiler",
-        "pstats",
-        "cProfile",
-        "typing",
         "io",
-        "time"
+        "json",
+        "argparse",
+        "sys",
+        "pstats",
+        "typing",
+        "cProfile",
+        "time",
+        "tracemalloc"
       ]
     },
     {
@@ -1740,11 +1974,11 @@
       "suggested_location": null,
       "complexity": 15,
       "dependencies": [
+        "os",
         "pathlib",
-        "shutil",
-        "datetime",
         "typing",
-        "os"
+        "datetime",
+        "shutil"
       ]
     },
     {
@@ -1767,12 +2001,12 @@
       "suggested_location": null,
       "complexity": 13,
       "dependencies": [
+        "os",
         "pathlib",
-        "shutil",
         "json",
-        "datetime",
         "typing",
-        "os"
+        "datetime",
+        "shutil"
       ]
     },
     {
@@ -1803,15 +2037,51 @@
       "suggested_location": null,
       "complexity": 17,
       "dependencies": [
-        "ast",
-        "re",
+        "os",
         "pathlib",
-        "json",
-        "datetime",
+        "re",
+        "ast",
         "collections",
-        "hashlib",
+        "json",
         "typing",
-        "os"
+        "datetime",
+        "hashlib"
+      ]
+    },
+    {
+      "path": ".\\project_cleaner.py",
+      "relative_path": "project_cleaner.py",
+      "type": "other",
+      "importance": "high",
+      "stats": {
+        "lines": 443,
+        "loc": 318,
+        "classes": 1,
+        "functions": 14,
+        "imports": 12
+      },
+      "hash": "b7f16e87a4d305df929a4be5376f3c6a",
+      "issues": [
+        "Uses os.system - use subprocess instead",
+        "Generic exception handling",
+        "Print statements in production code",
+        "File is getting large (443 lines)"
+      ],
+      "suggested_location": null,
+      "complexity": 18,
+      "dependencies": [
+        "os",
+        "pathlib",
+        "re",
+        "ast",
+        "collections",
+        "json",
+        "typing",
+        "sys",
+        "datetime",
+        "hashlib",
+        "shutil",
+        "argparse"
       ]
     },
     {
@@ -1834,11 +2104,11 @@
       "suggested_location": null,
       "complexity": 10,
       "dependencies": [
+        "os",
         "pathlib",
-        "shutil",
-        "datetime",
         "typing",
-        "os"
+        "datetime",
+        "shutil"
       ]
     },
     {
@@ -1862,14 +2132,14 @@
       "suggested_location": "configs/quick_config_analyzer.py",
       "complexity": 14,
       "dependencies": [
-        "traceback",
+        "os",
         "pathlib",
-        "json",
-        "datetime",
         "collections",
-        "hashlib",
+        "json",
         "typing",
-        "os"
+        "datetime",
+        "hashlib",
+        "traceback"
       ]
     },
     {
@@ -1892,11 +2162,11 @@
       "suggested_location": null,
       "complexity": 12,
       "dependencies": [
-        "re",
+        "os",
         "pathlib",
-        "datetime",
+        "re",
         "typing",
-        "os"
+        "datetime"
       ]
     },
     {
@@ -1921,18 +2191,18 @@
       "suggested_location": null,
       "complexity": 18,
       "dependencies": [
-        "exception_fixer",
-        "sys",
+        "pathlib",
+        "immediate_cleanup",
         "re",
         "ast",
-        "pathlib",
-        "god_class_splitter",
         "json",
+        "sys",
         "datetime",
         "glob",
-        "immediate_cleanup",
+        "time",
         "subprocess",
-        "time"
+        "god_class_splitter",
+        "exception_fixer"
       ]
     },
     {
@@ -1959,18 +2229,18 @@
       "suggested_location": null,
       "complexity": 21,
       "dependencies": [
-        "ast",
-        "re",
-        "pathlib",
-        "json",
-        "datetime",
         "logging",
+        "os",
+        "pathlib",
         "dataclasses",
-        "asyncio",
-        "argparse",
+        "re",
+        "ast",
+        "json",
         "typing",
-        "enum",
-        "os"
+        "asyncio",
+        "datetime",
+        "argparse",
+        "enum"
       ]
     },
     {
@@ -1993,14 +2263,14 @@
       "suggested_location": null,
       "complexity": 16,
       "dependencies": [
-        "re",
-        "shutil",
-        "pathlib",
-        "json",
         "logging",
-        "typing",
+        "os",
+        "pathlib",
+        "re",
         "secrets",
-        "os"
+        "json",
+        "typing",
+        "shutil"
       ]
     },
     {
@@ -2022,13 +2292,13 @@
       "suggested_location": null,
       "complexity": 13,
       "dependencies": [
-        "sys",
-        "json",
         "logging",
+        "os",
+        "json",
         "argparse",
-        "subprocess",
+        "sys",
         "typing",
-        "os"
+        "subprocess"
       ]
     },
     {
@@ -2051,13 +2321,13 @@
       "suggested_location": "src/core/services/service_organizer_analyzer.py",
       "complexity": 14,
       "dependencies": [
-        "traceback",
+        "os",
         "pathlib",
-        "shutil",
         "json",
-        "datetime",
         "typing",
-        "os"
+        "datetime",
+        "shutil",
+        "traceback"
       ]
     },
     {
@@ -2102,12 +2372,12 @@
       "suggested_location": null,
       "complexity": 11,
       "dependencies": [
-        "traceback",
+        "os",
         "pathlib",
-        "shutil",
-        "datetime",
         "typing",
-        "os"
+        "datetime",
+        "shutil",
+        "traceback"
       ]
     },
     {
@@ -2130,15 +2400,15 @@
       "suggested_location": null,
       "complexity": 15,
       "dependencies": [
-        "ast",
-        "sys",
-        "importlib",
-        "pathlib",
-        "datetime",
         "logging",
+        "os",
+        "pathlib",
         "dataclasses",
+        "ast",
+        "importlib",
         "typing",
-        "os"
+        "sys",
+        "datetime"
       ]
     },
     {
@@ -2161,20 +2431,20 @@
       "suggested_location": null,
       "complexity": 20,
       "dependencies": [
-        "sys",
-        "shutil",
-        "pathlib",
-        "json",
-        "datetime",
-        "difflib",
         "logging",
+        "os",
+        "pathlib",
         "dataclasses",
+        "difflib",
         "warnings",
         "collections",
-        "hashlib",
-        "filecmp",
+        "json",
         "typing",
-        "os"
+        "sys",
+        "datetime",
+        "hashlib",
+        "shutil",
+        "filecmp"
       ]
     },
     {
@@ -2196,17 +2466,17 @@
       "suggested_location": null,
       "complexity": 11,
       "dependencies": [
-        "sys",
-        "torch",
-        "subprocess",
-        "socket",
-        "json",
         "logging",
+        "os",
         "psutil",
-        "platform",
-        "argparse",
+        "json",
         "typing",
-        "os"
+        "sys",
+        "argparse",
+        "socket",
+        "subprocess",
+        "platform",
+        "torch"
       ]
     },
     {
@@ -2231,22 +2501,22 @@
       "suggested_location": null,
       "complexity": 13,
       "dependencies": [
-        "pydub",
         "base64",
-        "sys",
-        "time",
-        "json",
-        "datetime",
+        "os",
         "simpleaudio",
+        "io",
+        "sounddevice",
+        "queue",
+        "json",
         "threading",
         "asyncio",
+        "sys",
+        "datetime",
+        "pydub",
         "numpy",
-        "wave",
+        "time",
         "websockets",
-        "sounddevice",
-        "io",
-        "queue",
-        "os"
+        "wave"
       ]
     },
     {
@@ -2271,14 +2541,14 @@
       "suggested_location": null,
       "complexity": 14,
       "dependencies": [
-        "ast",
-        "re",
-        "traceback",
+        "os",
         "pathlib",
-        "datetime",
+        "re",
+        "ast",
         "collections",
         "typing",
-        "os"
+        "datetime",
+        "traceback"
       ]
     },
     {
@@ -2301,14 +2571,14 @@
       "suggested_location": "src/core/services/vault_secret_manager.py",
       "complexity": 23,
       "dependencies": [
-        "sys",
+        "logging",
+        "os",
+        "dataclasses",
         "pathlib",
         "json",
-        "hvac",
-        "logging",
-        "dataclasses",
         "typing",
-        "os"
+        "sys",
+        "hvac"
       ]
     },
     {
@@ -2331,8 +2601,8 @@
       "suggested_location": null,
       "complexity": 5,
       "dependencies": [
-        "pathlib",
-        "os"
+        "os",
+        "pathlib"
       ]
     },
     {
@@ -2355,18 +2625,18 @@
       "suggested_location": null,
       "complexity": 42,
       "dependencies": [
-        "ast",
-        "sys",
-        "re",
-        "networkx",
-        "pathlib",
-        "json",
-        "datetime",
-        "logging",
         "dataclasses",
+        "os",
+        "pathlib",
+        "logging",
+        "re",
+        "ast",
         "collections",
+        "json",
         "typing",
-        "os"
+        "sys",
+        "datetime",
+        "networkx"
       ]
     },
     {
@@ -2389,10 +2659,10 @@
       "suggested_location": null,
       "complexity": 12,
       "dependencies": [
-        "pathlib",
         "datetime",
-        "typing",
-        "os"
+        "os",
+        "pathlib",
+        "typing"
       ]
     },
     {
@@ -2414,8 +2684,8 @@
       "suggested_location": null,
       "complexity": 8,
       "dependencies": [
-        "pathlib",
-        "os"
+        "os",
+        "pathlib"
       ]
     }
   ],
@@ -2440,6 +2710,9 @@
     ],
     "22947972c957bbe1911df2ed3bb28323": [
       ".\\comprehensive_architecture_analyzer.py"
+    ],
+    "c3ff141ab663556137b7444e68c645c1": [
+      ".\\comprehensive_cleaner.py"
     ],
     "9b4b33a0cfc7b20bfdd19eef8e650857": [
       ".\\comprehensive_cleanup.py"
@@ -2468,6 +2741,9 @@
     "f44ff7394af74c9385935d2bbdb1b78f": [
       ".\\ddd_integration_simple.py"
     ],
+    "c9f7574f3d78837dbf9c4dec0409906c": [
+      ".\\deep_analysis.py"
+    ],
     "74de6bce8fe3568bf1de7882ad5ab9cf": [
       ".\\demo_distributed_ai.py"
     ],
@@ -2491,6 +2767,9 @@
     ],
     "71725eb8a6e90122eb390161aad6aa49": [
       ".\\frontend_api_cache_analyzer.py"
+    ],
+    "07327a69c171a026706980d870d6b469": [
+      ".\\full_project_analyzer.py"
     ],
     "d35ed72c0ae25a25ffbc1ae97fd08955": [
       ".\\generate_docs.py"
@@ -2554,6 +2833,9 @@
     ],
     "9d31ea92f05ad13886c9a7d8c48dd41b": [
       ".\\project_analyzer.py"
+    ],
+    "b7f16e87a4d305df929a4be5376f3c6a": [
+      ".\\project_cleaner.py"
     ],
     "eeba084928b9d44be0b8ca72d1b3d044": [
       ".\\proper_ddd_splitter.py"
@@ -2624,15 +2906,18 @@
       ".\\chaos_experiment_runner.py",
       ".\\clean_architecture_relocator.py",
       ".\\comprehensive_architecture_analyzer.py",
+      ".\\comprehensive_cleaner.py",
       ".\\comprehensive_project_analyzer.py",
       ".\\configure_logging.py",
       ".\\config_hardware_esp32_analyzer.py",
       ".\\content_similarity_analyzer.py",
       ".\\data_migration.py",
       ".\\ddd_integration_simple.py",
+      ".\\deep_analysis.py",
       ".\\exception_fixer.py",
       ".\\fix_imports_checker.py",
       ".\\frontend_api_cache_analyzer.py",
+      ".\\full_project_analyzer.py",
       ".\\generate_docs.py",
       ".\\generate_encryption_key.py",
       ".\\generate_env.py",
@@ -2649,6 +2934,7 @@
       ".\\performance_profile.py",
       ".\\professional_ddd_integration.py",
       ".\\project_analyzer.py",
+      ".\\project_cleaner.py",
       ".\\quick_config_analyzer.py",
       ".\\run_all_fixes.py",
       ".\\security_cleanup.py",
@@ -2976,7 +3262,9 @@
       ".\\comprehensive_architecture_analyzer.py"
     ],
     "_select_best_file(self,files)": [
-      ".\\comprehensive_architecture_analyzer.py"
+      ".\\comprehensive_architecture_analyzer.py",
+      ".\\comprehensive_cleaner.py",
+      ".\\project_cleaner.py"
     ],
     "_get_merge_approach(self,service_type)": [
       ".\\comprehensive_architecture_analyzer.py"
@@ -2993,6 +3281,44 @@
     "run_comprehensive_analysis(self)": [
       ".\\comprehensive_architecture_analyzer.py",
       ".\\quick_config_analyzer.py"
+    ],
+    "__init__(self,analysis_file,dry_run)": [
+      ".\\comprehensive_cleaner.py"
+    ],
+    "run_comprehensive_cleanup(self)": [
+      ".\\comprehensive_cleaner.py",
+      ".\\comprehensive_cleanup.py"
+    ],
+    "phase1_major_cleanup(self)": [
+      ".\\comprehensive_cleaner.py"
+    ],
+    "phase2_remove_duplicates(self)": [
+      ".\\comprehensive_cleaner.py"
+    ],
+    "phase3_reorganize_structure(self)": [
+      ".\\comprehensive_cleaner.py"
+    ],
+    "phase4_fix_issues(self)": [
+      ".\\comprehensive_cleaner.py"
+    ],
+    "phase5_final_cleanup(self)": [
+      ".\\comprehensive_cleaner.py"
+    ],
+    "_backup_and_delete(self,file_path)": [
+      ".\\comprehensive_cleaner.py",
+      ".\\project_cleaner.py"
+    ],
+    "_is_in_correct_location(self,current,suggested)": [
+      ".\\comprehensive_cleaner.py"
+    ],
+    "_move_file_safely(self,source,destination)": [
+      ".\\comprehensive_cleaner.py"
+    ],
+    "_remove_print_statements(self,file_path)": [
+      ".\\comprehensive_cleaner.py"
+    ],
+    "generate_final_report(self)": [
+      ".\\comprehensive_cleaner.py"
     ],
     "log(self,message)": [
       ".\\comprehensive_cleanup.py",
@@ -3015,9 +3341,6 @@
     "generate_cleanup_report(self)": [
       ".\\comprehensive_cleanup.py",
       ".\\security_cleanup.py"
-    ],
-    "run_comprehensive_cleanup(self)": [
-      ".\\comprehensive_cleanup.py"
     ],
     "create_test_files()": [
       ".\\comprehensive_fixer.py"
@@ -3069,6 +3392,7 @@
     ],
     "__init__(self,project_root)": [
       ".\\comprehensive_project_analyzer.py",
+      ".\\full_project_analyzer.py",
       ".\\professional_ddd_integration_v2.py",
       ".\\project_analyzer.py",
       ".\\security_audit_and_fix.py",
@@ -3110,6 +3434,7 @@
     ],
     "analyze_project(self)": [
       ".\\comprehensive_project_analyzer.py",
+      ".\\full_project_analyzer.py",
       ".\\project_analyzer.py",
       ".\\migration\\ddd_architecture_analyzer.py"
     ],
@@ -3181,6 +3506,33 @@
     ],
     "create_init_files()": [
       ".\\ddd_integration_simple.py"
+    ],
+    "__init__(self,analysis_file)": [
+      ".\\deep_analysis.py"
+    ],
+    "analyze_all(self)": [
+      ".\\deep_analysis.py"
+    ],
+    "analyze_duplicates(self)": [
+      ".\\deep_analysis.py"
+    ],
+    "analyze_large_files(self)": [
+      ".\\deep_analysis.py"
+    ],
+    "analyze_issues(self)": [
+      ".\\deep_analysis.py"
+    ],
+    "analyze_structure_problems(self)": [
+      ".\\deep_analysis.py"
+    ],
+    "analyze_dependencies(self)": [
+      ".\\deep_analysis.py"
+    ],
+    "generate_cleanup_recommendations(self)": [
+      ".\\deep_analysis.py"
+    ],
+    "_suggest_best_duplicate(self,files)": [
+      ".\\deep_analysis.py"
     ],
     "_generate_demo_data(self)": [
       ".\\demo_distributed_ai.py",
@@ -3299,10 +3651,59 @@
       ".\\frontend_api_cache_analyzer.py"
     ],
     "generate_report(self)": [
-      ".\\frontend_api_cache_analyzer.py"
+      ".\\frontend_api_cache_analyzer.py",
+      ".\\project_cleaner.py"
     ],
     "run_analysis(self)": [
       ".\\frontend_api_cache_analyzer.py"
+    ],
+    "analyze_python_file(self,file_path)": [
+      ".\\full_project_analyzer.py",
+      ".\\god_class_splitter.py",
+      ".\\project_analyzer.py"
+    ],
+    "_analyze_ast(self,content,file_path)": [
+      ".\\full_project_analyzer.py",
+      ".\\project_analyzer.py"
+    ],
+    "_determine_file_type(self,file_path,content)": [
+      ".\\full_project_analyzer.py",
+      ".\\project_analyzer.py"
+    ],
+    "_determine_importance(self,file_path,content,classes,functions)": [
+      ".\\full_project_analyzer.py",
+      ".\\project_analyzer.py"
+    ],
+    "_find_issues(self,content,file_path)": [
+      ".\\full_project_analyzer.py",
+      ".\\project_analyzer.py"
+    ],
+    "_suggest_location(self,current_path,file_type)": [
+      ".\\full_project_analyzer.py",
+      ".\\project_analyzer.py"
+    ],
+    "_calculate_complexity(self,analysis_data)": [
+      ".\\full_project_analyzer.py",
+      ".\\project_analyzer.py"
+    ],
+    "_find_duplicates(self)": [
+      ".\\full_project_analyzer.py",
+      ".\\project_analyzer.py"
+    ],
+    "_analyze_project_structure(self)": [
+      ".\\full_project_analyzer.py"
+    ],
+    "_generate_summary(self)": [
+      ".\\full_project_analyzer.py",
+      ".\\project_analyzer.py"
+    ],
+    "save_report(self,output_file)": [
+      ".\\full_project_analyzer.py",
+      ".\\project_analyzer.py"
+    ],
+    "print_summary(self)": [
+      ".\\full_project_analyzer.py",
+      ".\\project_analyzer.py"
     ],
     "generate_sphinx_docs(self,output_dir)": [
       ".\\generate_docs.py"
@@ -3403,10 +3804,6 @@
     ],
     "__init__(self,max_lines_per_file)": [
       ".\\god_class_splitter.py"
-    ],
-    "analyze_python_file(self,file_path)": [
-      ".\\god_class_splitter.py",
-      ".\\project_analyzer.py"
     ],
     "_extract_dependencies(self,node,lines)": [
       ".\\god_class_splitter.py"
@@ -3647,35 +4044,35 @@
     "run_integration(self)": [
       ".\\professional_ddd_integration_v2.py"
     ],
-    "_analyze_ast(self,content,file_path)": [
-      ".\\project_analyzer.py"
+    "__init__(self,project_root,analysis_file)": [
+      ".\\project_cleaner.py"
     ],
-    "_determine_file_type(self,file_path,content)": [
-      ".\\project_analyzer.py"
+    "run_full_cleanup(self,dry_run)": [
+      ".\\project_cleaner.py"
     ],
-    "_determine_importance(self,file_path,content,classes,functions)": [
-      ".\\project_analyzer.py"
+    "remove_trash_files(self,dry_run)": [
+      ".\\project_cleaner.py"
     ],
-    "_find_issues(self,content,file_path)": [
-      ".\\project_analyzer.py"
+    "merge_duplicates(self,dry_run)": [
+      ".\\project_cleaner.py"
     ],
-    "_suggest_location(self,current_path,file_type)": [
-      ".\\project_analyzer.py"
+    "reorganize_structure(self,dry_run)": [
+      ".\\project_cleaner.py"
     ],
-    "_calculate_complexity(self,analysis_data)": [
-      ".\\project_analyzer.py"
+    "final_cleanup(self,dry_run)": [
+      ".\\project_cleaner.py"
     ],
-    "_find_duplicates(self)": [
-      ".\\project_analyzer.py"
+    "_update_imports(self,old_file,new_file)": [
+      ".\\project_cleaner.py"
     ],
-    "_generate_summary(self)": [
-      ".\\project_analyzer.py"
+    "_path_to_import(self,file_path)": [
+      ".\\project_cleaner.py"
     ],
-    "save_report(self,output_file)": [
-      ".\\project_analyzer.py"
+    "_move_file_with_imports(self,old_path,new_path)": [
+      ".\\project_cleaner.py"
     ],
-    "print_summary(self)": [
-      ".\\project_analyzer.py"
+    "_remove_empty_dirs(self)": [
+      ".\\project_cleaner.py"
     ],
     "split_accessibility_service(self,file_path,lines_count)": [
       ".\\proper_ddd_splitter.py"
@@ -4150,24 +4547,24 @@
   },
   "import_dependencies": {},
   "summary": {
-    "total_files": 83,
-    "python_files": 65,
+    "total_files": 89,
+    "python_files": 69,
     "importance_distribution": {
-      "high": 43,
+      "high": 47,
       "critical": 8,
       "medium": 12,
       "low": 2
     },
     "type_distribution": {
-      "other": 56,
+      "other": 60,
       "repository": 1,
       "config": 5,
       "model": 1,
       "service": 2
     },
-    "total_issues": 143,
-    "duplicate_groups": 41,
+    "total_issues": 166,
+    "duplicate_groups": 55,
     "empty_files": 0,
-    "large_files": 18
+    "large_files": 20
   }
 }
