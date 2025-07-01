@@ -16,7 +16,7 @@ import { AuthGuard } from './architecture/presentation/guards/AuthGuard';
 
 // Presentation Layer Components
 import { Layout } from './components/layout/Layout';
-import { Dashboard } from './components/Dashboard';
+import Dashboard from './components/Dashboard';
 import { Conversations } from './components/conversations/Conversations';
 import { ChildProfile } from './components/child/ChildProfile';
 import { Settings } from './components/settings/Settings';
@@ -24,7 +24,6 @@ import { Login } from './components/auth/Login';
 import { Reports } from './components/reports/Reports';
 import { Emergency } from './components/emergency/Emergency';
 import { Analytics } from './components/analytics/Analytics';
-import { Loading } from './components/common/Loading';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Styles and themes

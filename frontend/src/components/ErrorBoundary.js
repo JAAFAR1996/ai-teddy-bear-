@@ -121,156 +121,29 @@ const Button = styled.button`
   }
 `;
 
-class ErrorBoundary extends React.Component {
+export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      hasError: false,
-      error: null,
-      errorInfo: null,
-      eventId: null,
-    };
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI
     return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
-    }
-    
-    // Update state with error details
-    this.setState({
-      error,
-      errorInfo,
-    });
-    
-    // Log error to external service (in production)
-    if (process.env.NODE_ENV === 'production') {
-      this.logErrorToService(error, errorInfo);
-    }
+    console.error('Error caught by boundary:', error, errorInfo);
   }
-
-  logErrorToService = (error, errorInfo) => {
-    // Log to external error tracking service
-    // This could be Sentry, LogRocket, or custom error API
-    try {
-      const errorData = {
-        message: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        url: window.location.href,
-        userId: localStorage.getItem('userId') || 'anonymous',
-      };
-      
-      // Send to error tracking API
-      fetch('/api/errors', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(errorData),
-      }).catch(err => {
-        console.error('Failed to log error to service:', err);
-      });
-      
-    } catch (loggingError) {
-      console.error('Failed to prepare error for logging:', loggingError);
-    }
-  };
-
-  handleRefresh = () => {
-    // Reset error state and reload page
-    this.setState({
-      hasError: false,
-      error: null,
-      errorInfo: null,
-    });
-    window.location.reload();
-  };
-
-  handleGoHome = () => {
-    // Reset error state and navigate to home
-    this.setState({
-      hasError: false,
-      error: null,
-      errorInfo: null,
-    });
-    window.location.href = '/dashboard';
-  };
 
   render() {
     if (this.state.hasError) {
-      const { error, errorInfo } = this.state;
-      
-      // Get user-friendly error message
-      const getErrorMessage = (error) => {
-        if (error?.message?.includes('ChunkLoadError')) {
-          return 'حدث خطأ في تحميل التطبيق. يرجى تحديث الصفحة.';
-        }
-        if (error?.message?.includes('Network')) {
-          return 'خطأ في الاتصال بالشبكة. تأكد من اتصال الإنترنت.';
-        }
-        return 'حدث خطأ غير متوقع في التطبيق. نعتذر عن الإزعاج.';
-      };
-      
       return (
-        <ErrorContainer>
-          <ErrorCard>
-            <ErrorIcon>
-              <FiAlertTriangle />
-            </ErrorIcon>
-            
-            <ErrorTitle>عذراً، حدث خطأ!</ErrorTitle>
-            
-            <ErrorMessage>
-              {getErrorMessage(error)}
-            </ErrorMessage>
-            
-            {process.env.NODE_ENV === 'development' && error && (
-              <ErrorDetails>
-                <summary>تفاصيل الخطأ (للمطورين)</summary>
-                <pre>
-                  <strong>Error:</strong> {error.message}
-                  {'\n\n'}
-                  <strong>Stack:</strong>
-                  {'\n'}
-                  {error.stack}
-                  {errorInfo && (
-                    <>
-                      {'\n\n'}
-                      <strong>Component Stack:</strong>
-                      {'\n'}
-                      {errorInfo.componentStack}
-                    </>
-                  )}
-                </pre>
-              </ErrorDetails>
-            )}
-            
-            <ButtonGroup>
-              <Button primary onClick={this.handleRefresh}>
-                <FiRefreshCw />
-                تحديث الصفحة
-              </Button>
-              
-              <Button onClick={this.handleGoHome}>
-                <FiHome />
-                العودة للرئيسية
-              </Button>
-            </ButtonGroup>
-            
-            <ErrorMessage style={{ marginTop: '1.5rem', fontSize: '0.875rem' }}>
-              إذا استمر الخطأ، يرجى التواصل مع الدعم التقني.
-            </ErrorMessage>
-          </ErrorCard>
-        </ErrorContainer>
+        <div style={{ padding: '50px', textAlign: 'center' }}>
+          <h2>عذراً، حدث خطأ ما</h2>
+          <button onClick={() => window.location.reload()}>
+            إعادة تحميل الصفحة
+          </button>
+        </div>
       );
     }
 

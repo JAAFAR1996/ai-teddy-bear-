@@ -458,8 +458,8 @@ class AuditLogger:
             
             return True
         except Exception as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)Exception as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)            return False
+            logger.error(f"Error in operation: {e}", exc_info=True)
+            return False
     
     async def query_logs(
         self,
