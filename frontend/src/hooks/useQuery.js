@@ -2,191 +2,30 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiUtils } from '../services/api';
 
 // Custom hook for API queries with caching and loading states
-export const useQuery = (queryKey, queryFn, options = {}) => {
-  const {
-    enabled = true,
-    refetchOnWindowFocus = false,
-    refetchInterval = null,
-    staleTime = 5 * 60 * 1000, // 5 minutes
-    cacheTime = 10 * 60 * 1000, // 10 minutes
-    retry = 3,
-    onSuccess,
-    onError,
-  } = options;
-
+export const useQuery = (key, fetcher, options = {}) => {
   const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isFetching, setIsFetching] = useState(false);
-  const [lastFetch, setLastFetch] = useState(null);
-  
-  const retryCountRef = useRef(0);
-  const abortControllerRef = useRef(null);
-  const intervalRef = useRef(null);
+  const [error, setError] = useState(null);
 
-  // Generate cache key
-  const cacheKey = Array.isArray(queryKey) ? queryKey.join('-') : queryKey;
-
-  // Get cached data
-  const getCachedData = useCallback(() => {
-    try {
-      const cached = localStorage.getItem(`query-cache-${cacheKey}`);
-      if (cached) {
-        const { data: cachedData, timestamp } = JSON.parse(cached);
-        const now = Date.now();
-        
-        // Check if cache is still valid
-        if (now - timestamp < staleTime) {
-          return cachedData;
-        }
-        
-        // Remove expired cache
-        localStorage.removeItem(`query-cache-${cacheKey}`);
-      }
-    } catch (error) {
-      console.warn('Failed to get cached data:', error);
-    }
-    return null;
-  }, [cacheKey, staleTime]);
-
-  // Set cached data
-  const setCachedData = useCallback((newData) => {
-    try {
-      const cacheItem = {
-        data: newData,
-        timestamp: Date.now(),
-      };
-      localStorage.setItem(`query-cache-${cacheKey}`, JSON.stringify(cacheItem));
-      
-      // Set cleanup timer
-      setTimeout(() => {
-        localStorage.removeItem(`query-cache-${cacheKey}`);
-      }, cacheTime);
-    } catch (error) {
-      console.warn('Failed to cache data:', error);
-    }
-  }, [cacheKey, cacheTime]);
-
-  // Execute query
-  const executeQuery = useCallback(async (showLoader = true) => {
-    if (!enabled) return;
-
-    // Cancel previous request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Create new abort controller
-    abortControllerRef.current = new AbortController();
-
-    try {
-      if (showLoader && !data) {
-        setIsLoading(true);
-      }
-      setIsFetching(true);
-      setError(null);
-
-      const result = await queryFn({
-        signal: abortControllerRef.current.signal,
-      });
-
-      setData(result);
-      setCachedData(result);
-      setLastFetch(Date.now());
-      retryCountRef.current = 0;
-
-      if (onSuccess) {
-        onSuccess(result);
-      }
-    } catch (err) {
-      if (err.name === 'AbortError') {
-        return; // Request was cancelled
-      }
-
-      const errorMessage = apiUtils.formatError(err);
-      setError(errorMessage);
-
-      // Retry logic
-      if (retryCountRef.current < retry) {
-        retryCountRef.current += 1;
-        setTimeout(() => {
-          executeQuery(false);
-        }, Math.pow(2, retryCountRef.current) * 1000); // Exponential backoff
-      } else if (onError) {
-        onError(err);
-      }
-    } finally {
-      setIsLoading(false);
-      setIsFetching(false);
-    }
-  }, [queryFn, enabled, data, retry, onSuccess, onError, setCachedData]);
-
-  // Refetch function
-  const refetch = useCallback(() => {
-    return executeQuery(false);
-  }, [executeQuery]);
-
-  // Initial load
   useEffect(() => {
-    if (!enabled) return;
-
-    // Try to load from cache first
-    const cachedData = getCachedData();
-    if (cachedData) {
-      setData(cachedData);
-      setIsLoading(false);
-      setLastFetch(Date.now());
-    }
-
-    // Execute query
-    executeQuery();
-
-    // Cleanup
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const result = await fetcher();
+        setData(result);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setIsLoading(false);
       }
     };
-  }, [enabled, executeQuery, getCachedData]);
 
-  // Refetch interval
-  useEffect(() => {
-    if (refetchInterval && enabled) {
-      intervalRef.current = setInterval(() => {
-        executeQuery(false);
-      }, refetchInterval);
-
-      return () => {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
-      };
+    if (options.enabled !== false) {
+      fetchData();
     }
-  }, [refetchInterval, enabled, executeQuery]);
+  }, [key, options.enabled]);
 
-  // Refetch on window focus
-  useEffect(() => {
-    if (refetchOnWindowFocus && enabled) {
-      const handleFocus = () => {
-        // Only refetch if data is stale
-        if (lastFetch && Date.now() - lastFetch > staleTime) {
-          executeQuery(false);
-        }
-      };
-
-      window.addEventListener('focus', handleFocus);
-      return () => window.removeEventListener('focus', handleFocus);
-    }
-  }, [refetchOnWindowFocus, enabled, lastFetch, staleTime, executeQuery]);
-
-  return {
-    data,
-    error,
-    isLoading,
-    isFetching,
-    refetch,
-    isStale: lastFetch ? Date.now() - lastFetch > staleTime : true,
-  };
+  return { data, isLoading, error };
 };
 
 // Hook for mutations

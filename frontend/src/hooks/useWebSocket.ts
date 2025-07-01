@@ -1,170 +1,158 @@
-/**
- * useWebSocket Hook
- * React hook for WebSocket connection management
- */
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { websocketService, WebSocketState, WebSocketMessage } from '../services/websocket.service';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { WebSocketService, getWebSocketService } from '@services/websocket.service';
-import { WebSocketEvent, WebSocketMessage } from '@types';
+export interface UseWebSocketOptions {
+  autoConnect?: boolean;
+  reconnectOnError?: boolean;
+  onOpen?: () => void;
+  onClose?: (event: CloseEvent) => void;
+  onError?: (error: Error) => void;
+  onMessage?: (message: WebSocketMessage) => void;
+  onReconnecting?: (attempt: number) => void;
+}
 
 export interface UseWebSocketReturn {
   isConnected: boolean;
-  connectionState: 'connecting' | 'connected' | 'disconnected' | 'error';
-  connect: () => Promise<void>;
+  state: WebSocketState;
+  lastMessage: WebSocketMessage | null;
+  sendMessage: (message: Partial<WebSocketMessage>) => void;
+  connect: () => void;
   disconnect: () => void;
-  send: <T = any>(event: WebSocketEvent, data: T) => void;
-  on: <T = any>(event: WebSocketEvent, handler: (data: T) => void) => () => void;
-  lastMessage?: WebSocketMessage;
-  error?: Error;
+  reconnectAttempts: number;
 }
 
-export function useWebSocket(autoConnect = true): UseWebSocketReturn {
-  const [isConnected, setIsConnected] = useState(false);
-  const [connectionState, setConnectionState] = useState<UseWebSocketReturn['connectionState']>('disconnected');
-  const [lastMessage, setLastMessage] = useState<WebSocketMessage>();
-  const [error, setError] = useState<Error>();
-  
-  const wsRef = useRef<WebSocketService>();
-  const handlersRef = useRef<Map<WebSocketEvent, Set<Function>>>(new Map());
+/**
+ * Custom hook for WebSocket connections
+ * Provides a declarative API for WebSocket communication
+ */
+export const useWebSocket = (url?: string, options: UseWebSocketOptions = {}): UseWebSocketReturn => {
+  const [state, setState] = useState<WebSocketState>(WebSocketState.CLOSED);
+  const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const optionsRef = useRef(options);
 
-  // Initialize WebSocket service
+  // Update options ref
   useEffect(() => {
-    try {
-      wsRef.current = getWebSocketService();
-    } catch {
-      // Service not initialized yet
-      wsRef.current = undefined;
+    optionsRef.current = options;
+  }, [options]);
+
+  // Set up event listeners
+  useEffect(() => {
+    const handleOpen = () => {
+      setState(WebSocketState.OPEN);
+      setReconnectAttempts(0);
+      optionsRef.current.onOpen?.();
+    };
+
+    const handleClose = (event: CloseEvent) => {
+      setState(WebSocketState.CLOSED);
+      optionsRef.current.onClose?.(event);
+    };
+
+    const handleError = (error: Error) => {
+      optionsRef.current.onError?.(error);
+    };
+
+    const handleMessage = (message: WebSocketMessage) => {
+      setLastMessage(message);
+      optionsRef.current.onMessage?.(message);
+    };
+
+    const handleReconnecting = (attempt: number) => {
+      setState(WebSocketState.RECONNECTING);
+      setReconnectAttempts(attempt);
+      optionsRef.current.onReconnecting?.(attempt);
+    };
+
+    const handleConnecting = () => {
+      setState(WebSocketState.CONNECTING);
+    };
+
+    // Subscribe to events
+    websocketService.on('open', handleOpen);
+    websocketService.on('close', handleClose);
+    websocketService.on('error', handleError);
+    websocketService.on('message', handleMessage);
+    websocketService.on('reconnecting', handleReconnecting);
+    websocketService.on('connecting', handleConnecting);
+
+    // Auto-connect if requested
+    if (options.autoConnect && websocketService.getState() === WebSocketState.CLOSED) {
+      websocketService.connect();
     }
+
+    // Cleanup
+    return () => {
+      websocketService.off('open', handleOpen);
+      websocketService.off('close', handleClose);
+      websocketService.off('error', handleError);
+      websocketService.off('message', handleMessage);
+      websocketService.off('reconnecting', handleReconnecting);
+      websocketService.off('connecting', handleConnecting);
+    };
+  }, [options.autoConnect]);
+
+  // Methods
+  const connect = useCallback(() => {
+    websocketService.connect();
   }, []);
 
-  // Connect to WebSocket
-  const connect = useCallback(async () => {
-    if (!wsRef.current) {
-      const error = new Error('WebSocket service not initialized');
-      setError(error);
-      throw error;
-    }
-
-    try {
-      setConnectionState('connecting');
-      setError(undefined);
-      await wsRef.current.connect();
-      setIsConnected(true);
-      setConnectionState('connected');
-    } catch (err: any) {
-      const error = err as Error;
-      setError(error);
-      setConnectionState('error');
-      throw error;
-    }
-  }, []);
-
-  // Disconnect from WebSocket
   const disconnect = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.disconnect();
-      setIsConnected(false);
-      setConnectionState('disconnected');
-    }
+    websocketService.disconnect();
   }, []);
 
-  // Send message
-  const send = useCallback(<T = any>(event: WebSocketEvent, data: T) => {
-    if (!wsRef.current) {
-      console.warn('WebSocket not initialized');
-      return;
-    }
-    
-    wsRef.current.send(event, data);
+  const sendMessage = useCallback((message: Partial<WebSocketMessage>) => {
+    websocketService.send(message);
   }, []);
 
-  // Subscribe to events
-  const on = useCallback(<T = any>(
-    event: WebSocketEvent, 
-    handler: (data: T) => void
-  ): (() => void) => {
-    if (!wsRef.current) {
-      console.warn('WebSocket not initialized');
-      return () => {};
-    }
+  return {
+    isConnected: state === WebSocketState.OPEN,
+    state,
+    lastMessage,
+    sendMessage,
+    connect,
+    disconnect,
+    reconnectAttempts
+  };
+};
 
-    // Store handler reference
-    if (!handlersRef.current.has(event)) {
-      handlersRef.current.set(event, new Set());
-    }
-    handlersRef.current.get(event)!.add(handler);
+// Message type specific hooks
+export const useNotificationWebSocket = (deviceId: string) => {
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-    // Subscribe to WebSocket
-    const unsubscribe = wsRef.current.on(event, (data: T) => {
-      handler(data);
-      setLastMessage({
-        event,
-        data,
-        timestamp: new Date(),
-      });
-    });
-
-    // Return cleanup function
-    return () => {
-      unsubscribe();
-      handlersRef.current.get(event)?.delete(handler);
-    };
-  }, []);
-
-  // Setup connection handlers
-  useEffect(() => {
-    if (!wsRef.current) return;
-
-    const unsubscribeConnect = wsRef.current.onConnect(() => {
-      setIsConnected(true);
-      setConnectionState('connected');
-    });
-
-    const unsubscribeError = wsRef.current.onError((err: Error) => {
-      setError(err);
-      setConnectionState('error');
-    });
-
-    return () => {
-      unsubscribeConnect();
-      unsubscribeError();
-    };
-  }, []);
-
-  // Auto-connect on mount
-  useEffect(() => {
-    if (autoConnect && wsRef.current && !isConnected) {
-      connect().catch(console.error);
-    }
-
-    return () => {
-      if (autoConnect && wsRef.current) {
-        disconnect();
+  const { isConnected, sendMessage } = useWebSocket(undefined, {
+    autoConnect: true,
+    onMessage: (message) => {
+      if (message.type.includes('alert') || message.type.includes('notification')) {
+        setNotifications(prev => [...prev, message]);
+        setUnreadCount(prev => prev + 1);
       }
-    };
-  }, [autoConnect, connect, disconnect, isConnected]);
+    }
+  });
 
-  // Update connection state based on WebSocket state
-  useEffect(() => {
-    if (!wsRef.current) return;
+  const markAsRead = useCallback((notificationId: string) => {
+    setNotifications(prev => 
+      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+    );
+    setUnreadCount(prev => Math.max(0, prev - 1));
+  }, []);
 
-    const interval = setInterval(() => {
-      const state = wsRef.current!.getState();
-      setConnectionState(state);
-      setIsConnected(state === 'connected');
-    }, 1000);
-
-    return () => clearInterval(interval);
+  const clearNotifications = useCallback(() => {
+    setNotifications([]);
+    setUnreadCount(0);
   }, []);
 
   return {
     isConnected,
-    connectionState,
-    connect,
-    disconnect,
-    send,
-    on,
-    lastMessage,
-    error,
+    notifications,
+    unreadCount,
+    markAsRead,
+    clearNotifications,
+    sendMessage
   };
-} 
+};
+
+// Export specific message types
+export { WebSocketState } from '../services/websocket.service';
+export type { WebSocketMessage } from '../services/websocket.service'; 

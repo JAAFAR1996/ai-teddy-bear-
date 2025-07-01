@@ -1,264 +1,165 @@
-/**
- * WebSocket Service for AI Teddy Bear
- * Real-time communication with auto-reconnection
- */
+import { EventEmitter } from 'events';
 
-import { WebSocketMessage, WebSocketEvent } from '@types';
+export enum WebSocketState {
+  CONNECTING = 'CONNECTING',
+  OPEN = 'OPEN',
+  CLOSING = 'CLOSING',
+  CLOSED = 'CLOSED',
+  RECONNECTING = 'RECONNECTING'
+}
 
 export interface WebSocketConfig {
   url: string;
+  protocols?: string[];
   reconnectInterval?: number;
   maxReconnectAttempts?: number;
   heartbeatInterval?: number;
+  timeout?: number;
+  autoConnect?: boolean;
   debug?: boolean;
 }
 
-type EventHandler<T = any> = (data: T) => void;
-type ConnectionHandler = () => void;
-type ErrorHandler = (error: Error) => void;
+export interface WebSocketMessage {
+  type: string;
+  data: any;
+  timestamp: number;
+  id?: string;
+}
 
-export class WebSocketService {
+/**
+ * WebSocket Service for real-time communication
+ * Implements automatic reconnection, heartbeat, and message queueing
+ */
+export class WebSocketService extends EventEmitter {
   private ws: WebSocket | null = null;
   private config: Required<WebSocketConfig>;
+  private state: WebSocketState = WebSocketState.CLOSED;
   private reconnectAttempts = 0;
-  private isIntentionallyClosed = false;
-  private eventHandlers: Map<WebSocketEvent, Set<EventHandler>> = new Map();
-  private connectionHandlers: Set<ConnectionHandler> = new Set();
-  private errorHandlers: Set<ErrorHandler> = new Set();
+  private reconnectTimer: NodeJS.Timeout | null = null;
+  private heartbeatTimer: NodeJS.Timeout | null = null;
   private messageQueue: WebSocketMessage[] = [];
-  private heartbeatTimer?: number;
-  private reconnectTimer?: number;
+  private isIntentionallyClosed = false;
 
   constructor(config: WebSocketConfig) {
+    super();
     this.config = {
-      reconnectInterval: 5000,
-      maxReconnectAttempts: 10,
-      heartbeatInterval: 30000,
-      debug: false,
-      ...config,
-    };
-  }
-
-  /**
-   * Connect to WebSocket server
-   */
-  connect(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.ws?.readyState === WebSocket.OPEN) {
-        resolve();
-        return;
-      }
-
-      try {
-        this.ws = new WebSocket(this.config.url);
-        this.setupEventListeners();
-
-        const onOpen = () => {
-          this.log('WebSocket connected');
-          this.reconnectAttempts = 0;
-          this.startHeartbeat();
-          this.flushMessageQueue();
-          this.notifyConnectionHandlers();
-          resolve();
-        };
-
-        const onError = (error: Event) => {
-          this.log('WebSocket connection error', error);
-          reject(new Error('Failed to connect to WebSocket'));
-        };
-
-        this.ws.addEventListener('open', onOpen, { once: true });
-        this.ws.addEventListener('error', onError, { once: true });
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  /**
-   * Disconnect from WebSocket server
-   */
-  disconnect(): void {
-    this.isIntentionallyClosed = true;
-    this.stopHeartbeat();
-    this.clearReconnectTimer();
-    
-    if (this.ws) {
-      this.ws.close(1000, 'Client disconnect');
-      this.ws = null;
-    }
-  }
-
-  /**
-   * Send message through WebSocket
-   */
-  send<T = any>(event: WebSocketEvent, data: T): void {
-    const message: WebSocketMessage<T> = {
-      event,
-      data,
-      timestamp: new Date(),
+      url: config.url,
+      protocols: config.protocols || [],
+      reconnectInterval: config.reconnectInterval || 3000,
+      maxReconnectAttempts: config.maxReconnectAttempts || 5,
+      heartbeatInterval: config.heartbeatInterval || 30000,
+      timeout: config.timeout || 10000,
+      autoConnect: config.autoConnect !== false,
+      debug: config.debug || false
     };
 
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(message));
-      this.log('Message sent:', message);
-    } else {
-      // Queue message if not connected
-      this.messageQueue.push(message);
-      this.log('Message queued:', message);
-      
-      // Try to reconnect if not already attempting
-      if (!this.reconnectTimer && !this.isIntentionallyClosed) {
-        this.reconnect();
-      }
+    if (this.config.autoConnect) {
+      this.connect();
     }
   }
 
-  /**
-   * Subscribe to WebSocket events
-   */
-  on<T = any>(event: WebSocketEvent, handler: EventHandler<T>): () => void {
-    if (!this.eventHandlers.has(event)) {
-      this.eventHandlers.set(event, new Set());
-    }
-    
-    this.eventHandlers.get(event)!.add(handler);
-
-    // Return unsubscribe function
-    return () => {
-      this.eventHandlers.get(event)?.delete(handler);
-    };
-  }
-
-  /**
-   * Subscribe to connection events
-   */
-  onConnect(handler: ConnectionHandler): () => void {
-    this.connectionHandlers.add(handler);
-    return () => this.connectionHandlers.delete(handler);
-  }
-
-  /**
-   * Subscribe to error events
-   */
-  onError(handler: ErrorHandler): () => void {
-    this.errorHandlers.add(handler);
-    return () => this.errorHandlers.delete(handler);
-  }
-
-  /**
-   * Get connection status
-   */
-  isConnected(): boolean {
-    return this.ws?.readyState === WebSocket.OPEN;
-  }
-
-  /**
-   * Get connection state
-   */
-  getState(): 'connecting' | 'connected' | 'disconnected' | 'error' {
-    if (!this.ws) return 'disconnected';
-    
-    switch (this.ws.readyState) {
-      case WebSocket.CONNECTING:
-        return 'connecting';
-      case WebSocket.OPEN:
-        return 'connected';
-      case WebSocket.CLOSING:
-      case WebSocket.CLOSED:
-        return this.reconnectAttempts > 0 ? 'error' : 'disconnected';
-      default:
-        return 'disconnected';
+  private log(message: string, ...args: any[]): void {
+    if (this.config.debug) {
+      console.log(`[WebSocket] ${message}`, ...args);
     }
   }
 
-  // Private methods
+  connect(): void {
+    if (this.state === WebSocketState.OPEN || this.state === WebSocketState.CONNECTING) {
+      this.log('Already connected or connecting');
+      return;
+    }
 
-  private setupEventListeners(): void {
+    this.isIntentionallyClosed = false;
+    this.state = WebSocketState.CONNECTING;
+    this.emit('connecting');
+
+    try {
+      this.ws = new WebSocket(this.config.url, this.config.protocols);
+      this.setupEventHandlers();
+    } catch (error) {
+      this.log('Connection error:', error);
+      this.handleError(error);
+    }
+  }
+
+  private setupEventHandlers(): void {
     if (!this.ws) return;
 
-    this.ws.addEventListener('message', this.handleMessage.bind(this));
-    this.ws.addEventListener('close', this.handleClose.bind(this));
-    this.ws.addEventListener('error', this.handleError.bind(this));
-  }
+    this.ws.onopen = () => {
+      this.log('Connected');
+      this.state = WebSocketState.OPEN;
+      this.reconnectAttempts = 0;
+      this.emit('open');
+      this.startHeartbeat();
+      this.flushMessageQueue();
+    };
 
-  private handleMessage(event: MessageEvent): void {
-    try {
-      const message: WebSocketMessage = JSON.parse(event.data);
-      this.log('Message received:', message);
-
-      // Handle heartbeat
-      if (message.event === 'heartbeat' as WebSocketEvent) {
-        return;
-      }
-
-      // Notify event handlers
-      const handlers = this.eventHandlers.get(message.event);
-      if (handlers) {
-        handlers.forEach(handler => {
-          try {
-            handler(message.data);
-          } catch (error) {
-            console.error('Error in event handler:', error);
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Failed to parse WebSocket message:', error);
-    }
-  }
-
-  private handleClose(event: CloseEvent): void {
-    this.log('WebSocket closed:', event.code, event.reason);
-    this.stopHeartbeat();
-
-    if (!this.isIntentionallyClosed && 
-        this.reconnectAttempts < this.config.maxReconnectAttempts) {
-      this.reconnect();
-    }
-  }
-
-  private handleError(event: Event): void {
-    const error = new Error('WebSocket error');
-    this.log('WebSocket error:', event);
-    this.notifyErrorHandlers(error);
-  }
-
-  private reconnect(): void {
-    if (this.reconnectTimer) return;
-
-    const delay = Math.min(
-      this.config.reconnectInterval * Math.pow(2, this.reconnectAttempts),
-      30000 // Max 30 seconds
-    );
-
-    this.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
-
-    this.reconnectTimer = setTimeout(async () => {
-      this.reconnectTimer = undefined;
-      this.reconnectAttempts++;
-
+    this.ws.onmessage = (event) => {
       try {
-        await this.connect();
+        const message = JSON.parse(event.data) as WebSocketMessage;
+        this.log('Message received:', message.type);
+        this.emit('message', message);
+        this.emit(message.type, message.data);
       } catch (error) {
-        this.log('Reconnection failed:', error);
-        
-        if (this.reconnectAttempts >= this.config.maxReconnectAttempts) {
-          this.notifyErrorHandlers(new Error('Max reconnection attempts reached'));
-        }
+        this.log('Failed to parse message:', error);
+        this.emit('error', error);
       }
+    };
+
+    this.ws.onerror = (error) => {
+      this.log('WebSocket error:', error);
+      this.handleError(error);
+    };
+
+    this.ws.onclose = (event) => {
+      this.log('Connection closed:', event.code, event.reason);
+      this.state = WebSocketState.CLOSED;
+      this.stopHeartbeat();
+      this.emit('close', event);
+
+      if (!this.isIntentionallyClosed && this.shouldReconnect()) {
+        this.scheduleReconnect();
+      }
+    };
+  }
+
+  private handleError(error: any): void {
+    this.emit('error', error);
+    if (this.state === WebSocketState.CONNECTING) {
+      this.state = WebSocketState.CLOSED;
+      if (this.shouldReconnect()) {
+        this.scheduleReconnect();
+      }
+    }
+  }
+
+  private shouldReconnect(): boolean {
+    return this.reconnectAttempts < this.config.maxReconnectAttempts;
+  }
+
+  private scheduleReconnect(): void {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+    }
+
+    this.state = WebSocketState.RECONNECTING;
+    this.reconnectAttempts++;
+    const delay = this.config.reconnectInterval * Math.pow(1.5, this.reconnectAttempts - 1);
+
+    this.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+    this.emit('reconnecting', this.reconnectAttempts);
+
+    this.reconnectTimer = setTimeout(() => {
+      this.connect();
     }, delay);
   }
 
   private startHeartbeat(): void {
     this.stopHeartbeat();
-    
     this.heartbeatTimer = setInterval(() => {
-      if (this.ws?.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({
-          event: 'heartbeat',
-          timestamp: new Date(),
-        }));
+      if (this.isConnected()) {
+        this.send({ type: 'heartbeat', data: { timestamp: Date.now() } });
       }
     }, this.config.heartbeatInterval);
   }
@@ -266,68 +167,80 @@ export class WebSocketService {
   private stopHeartbeat(): void {
     if (this.heartbeatTimer) {
       clearInterval(this.heartbeatTimer);
-      this.heartbeatTimer = undefined;
-    }
-  }
-
-  private clearReconnectTimer(): void {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = undefined;
+      this.heartbeatTimer = null;
     }
   }
 
   private flushMessageQueue(): void {
-    while (this.messageQueue.length > 0 && this.ws?.readyState === WebSocket.OPEN) {
-      const message = this.messageQueue.shift()!;
-      this.ws.send(JSON.stringify(message));
-      this.log('Queued message sent:', message);
+    while (this.messageQueue.length > 0 && this.isConnected()) {
+      const message = this.messageQueue.shift();
+      if (message) {
+        this.send(message);
+      }
     }
   }
 
-  private notifyConnectionHandlers(): void {
-    this.connectionHandlers.forEach(handler => {
+  send(message: Partial<WebSocketMessage>): void {
+    const fullMessage: WebSocketMessage = {
+      type: message.type || 'message',
+      data: message.data,
+      timestamp: message.timestamp || Date.now(),
+      id: message.id || this.generateMessageId()
+    };
+
+    if (this.isConnected() && this.ws) {
       try {
-        handler();
+        this.ws.send(JSON.stringify(fullMessage));
+        this.log('Message sent:', fullMessage.type);
       } catch (error) {
-        console.error('Error in connection handler:', error);
+        this.log('Failed to send message:', error);
+        this.messageQueue.push(fullMessage);
       }
-    });
-  }
-
-  private notifyErrorHandlers(error: Error): void {
-    this.errorHandlers.forEach(handler => {
-      try {
-        handler(error);
-      } catch (err) {
-        console.error('Error in error handler:', err);
-      }
-    });
-  }
-
-  private log(...args: any[]): void {
-    if (this.config.debug) {
-      console.log('[WebSocket]', ...args);
+    } else {
+      this.log('Queueing message:', fullMessage.type);
+      this.messageQueue.push(fullMessage);
     }
+  }
+
+  disconnect(): void {
+    this.isIntentionallyClosed = true;
+    
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+
+    this.stopHeartbeat();
+
+    if (this.ws) {
+      this.state = WebSocketState.CLOSING;
+      this.ws.close(1000, 'Client disconnect');
+      this.ws = null;
+    }
+
+    this.state = WebSocketState.CLOSED;
+    this.messageQueue = [];
+  }
+
+  isConnected(): boolean {
+    return this.state === WebSocketState.OPEN && this.ws?.readyState === WebSocket.OPEN;
+  }
+
+  getState(): WebSocketState {
+    return this.state;
+  }
+
+  private generateMessageId(): string {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 }
 
-// Singleton instance
-let wsInstance: WebSocketService | null = null;
-
-export const getWebSocketService = (config?: WebSocketConfig): WebSocketService => {
-  if (!wsInstance && config) {
-    wsInstance = new WebSocketService(config);
-  }
-  
-  if (!wsInstance) {
-    throw new Error('WebSocket service not initialized');
-  }
-  
-  return wsInstance;
+// Create singleton instance
+const wsConfig: WebSocketConfig = {
+  url: process.env['REACT_APP_WS_URL'] || 'ws://localhost:8000/ws',
+  autoConnect: false,
+  debug: process.env['NODE_ENV'] === 'development'
 };
 
-export const initWebSocket = (config: WebSocketConfig): WebSocketService => {
-  wsInstance = new WebSocketService(config);
-  return wsInstance;
-}; 
+export const websocketService = new WebSocketService(wsConfig);
+export default websocketService; 
