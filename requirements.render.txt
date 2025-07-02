@@ -1,20 +1,57 @@
-# AI Teddy Bear - Render.com Requirements
-# Minimal and optimized for cloud deployment
+# AI Teddy Bear - Render.com Requirements (Cloud-Optimized)
+# ================================================================
+# This file removes PyAudio and uses cloud-compatible alternatives
 
-# Core FastAPI
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
+# ================== CORE FRAMEWORK ==================
+fastapi==0.104.1                  # Modern web framework
+uvicorn[standard]==0.24.0         # ASGI server with performance optimizations
+pydantic==2.5.0                   # Data validation
+pydantic-settings==2.1.0          # Settings management
 
-# File and HTTP handling
-python-multipart==0.0.6
-aiofiles==23.2.1
+# ================== FILE & HTTP HANDLING ==================
+python-multipart==0.0.6           # Form data parsing
+aiofiles==23.2.1                  # Async file operations
+httpx==0.25.2                     # Modern HTTP client
 
-# Performance boost
-uvloop==0.19.0
-httptools==0.6.1
+# ================== PERFORMANCE OPTIMIZATION ==================
+uvloop==0.19.0                    # Fast event loop
+httptools==0.6.1                  # HTTP protocol implementation
 
-# Optional: Add these if you need them later
-# openai==1.3.0                    # For OpenAI API
-# redis==5.0.1                     # For Redis cache
-# sqlalchemy[asyncio]==2.0.23      # For database 
+# ================== AI & CLOUD SERVICES ==================
+openai==1.3.8                     # OpenAI API client
+anthropic==0.7.7                  # Anthropic API client
+elevenlabs>=0.2.26                # Cloud Text-to-Speech (replaces pyaudio)
+
+# ================== AUDIO PROCESSING (CLOUD-COMPATIBLE) ==================
+# NOTE: Removed pyaudio - incompatible with cloud deployment
+# Using cloud-based alternatives instead:
+requests==2.31.0                  # For external API calls
+websockets==12.0                  # For real-time audio streaming
+
+# ================== VALIDATION & SECURITY ==================
+cryptography==43.0.3              # Modern cryptography
+pyjwt==2.8.0                      # JWT tokens
+passlib[bcrypt]==1.7.4            # Password hashing
+
+# ================== DATABASE (LIGHTWEIGHT) ==================
+aiosqlite==0.19.0                 # Async SQLite (cloud-friendly)
+sqlalchemy[asyncio]==2.0.23       # Modern ORM with async support
+
+# ================== MONITORING & LOGGING ==================
+structlog==23.2.0                 # Structured logging
+loguru==0.7.2                     # Advanced logging
+
+# ================== CACHING (OPTIONAL) ==================
+# redis==5.0.1                    # Uncomment if using Redis on Render
+
+# ================== BACKGROUND TASKS ==================
+celery>=5.3.0                     # For heavy audio processing tasks
+
+# ================== UTILITY ==================
+python-dateutil==2.8.2            # Date utilities
+pytz==2023.3                      # Timezone handling
+pyyaml==6.0.1                     # YAML processing
+
+# ================== DEVELOPMENT TOOLS ==================
+rich==13.7.0                      # Rich text formatting
+click==8.1.7                      # CLI framework 
