@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # Simple API Server
+  teddy-api:
+    image: python:3.11-slim
+    container_name: teddy-simple-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: |
+      sh -c "
+      pip install fastapi uvicorn --quiet &&
+      echo 'from fastapi import FastAPI
+      from fastapi.middleware.cors import CORSMiddleware
+      import os
+      
+      app = FastAPI(title=\"🧸 AI Teddy Bear - Simple Server\")
+      
+      app.add_middleware(
+          CORSMiddleware,
+          allow_origins=[\"*\"],
+          allow_credentials=True,
+          allow_methods=[\"*\"],
+          allow_headers=[\"*\"],
+      )
+      
+      @app.get(\"/\")
+      def root():
+          return {
+              \"message\": \"🧸 AI Teddy Bear Server is Running!\", 
+              \"status\": \"OK\",
+              \"version\": \"Simple 1.0\"
+          }
+      
+      @app.get(\"/health\")
+      def health():
+          return {\"status\": \"healthy\", \"server\": \"simple\"}
+      
+      @app.get(\"/esp32/test\")
+      def esp32_test():
+          return {
+              \"message\": \"ESP32 connection test successful!\",
+              \"endpoints\": [\"/\", \"/health\", \"/esp32/test\"],
+              \"websocket\": \"Coming soon\",
+              \"status\": \"ready\"
+          }
+      
+      @app.post(\"/api/audio\")
+      def audio_endpoint():
+          return {\"message\": \"Audio endpoint ready\", \"status\": \"received\"}
+      
+      print(\"🧸 AI Teddy Bear Server Started!\")
+      print(\"📖 API Docs: http://localhost:8000/docs\")
+      print(\"🌐 Main: http://localhost:8000\")
+      ' > app.py && python -m uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  # Optional: Simple database for testing
+  simple-db:
+    image: postgres:15-alpine
+    container_name: teddy-simple-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: teddy_simple
+      POSTGRES_USER: teddy
+      POSTGRES_PASSWORD: simple123
+    ports:
+      - "5432:5432"
+    volumes:
+      - simple_db_data:/var/lib/postgresql/data
+
+volumes:
+  simple_db_data: 

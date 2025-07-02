@@ -1,0 +1,34 @@
+# AI Teddy Bear - Render.com Optimized Dockerfile
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    fastapi==0.104.1 \
+    uvicorn[standard]==0.24.0 \
+    pydantic==2.5.0 \
+    python-multipart==0.0.6 \
+    aiofiles==23.2.1
+
+# Copy application code
+COPY app.py .
+
+# Create necessary directories
+RUN mkdir -p logs uploads
+
+# Expose port (Render uses PORT environment variable)
+EXPOSE ${PORT:-8000}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
+
+# Start command (Render-friendly)
+CMD uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000} 
