@@ -1,3 +1,63 @@
+#!/usr/bin/env python3
+"""
+📝 إعدادات pytest للمشروع
+حل مشاكل imports والpaths
+"""
+
+import sys
+import os
+import logging
+from pathlib import Path
+
+# إضافة مجلد src إلى Python path
+project_root = Path(__file__).parent.parent
+src_path = project_root / "src"
+sys.path.insert(0, str(src_path))
+sys.path.insert(0, str(project_root))
+
+# إعداد logging للاختبارات
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s:%(name)s:%(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+
+# تعطيل warnings غير المهمة
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+
+# Mock للمكتبات المفقودة
+try:
+    import torch
+except ImportError:
+    # Mock torch للاختبارات
+    import sys
+    from unittest.mock import MagicMock
+    sys.modules['torch'] = MagicMock()
+    sys.modules['torch.nn'] = MagicMock()
+    sys.modules['torchaudio'] = MagicMock()
+
+try:
+    import pyaudio
+except ImportError:
+    import sys
+    from unittest.mock import MagicMock
+    sys.modules['pyaudio'] = MagicMock()
+
+try:
+    import redis
+except ImportError:
+    import sys
+    from unittest.mock import MagicMock
+    sys.modules['redis'] = MagicMock()
+
+# إعداد متغيرات البيئة للاختبارات
+os.environ.setdefault('TESTING', 'true')
+os.environ.setdefault('LOG_LEVEL', 'INFO')
+
 import asyncio
 import uuid
 

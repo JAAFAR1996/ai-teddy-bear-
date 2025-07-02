@@ -14,17 +14,35 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List
 
+# إعداد logging أولاً
+import logging
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger(__name__)
+
+# Mock classes for demo
+class GeneratedTest:
+    def __init__(self, test_name, test_code, test_type, priority, safety_critical, description, tags):
+        self.test_name = test_name
+        self.test_code = test_code
+        self.test_type = test_type
+        self.priority = priority
+        self.safety_critical = safety_critical
+        self.description = description
+        self.tags = tags
+
+class ChildContext:
+    def __init__(self, age, emotion):
+        self.age = age
+        self.emotion = emotion
+
 try:
-    from .ai_test_generator import (AITestGenerator, GeneratedTest,
-                                    TestGenerationConfig)
+    from .ai_test_generator import (AITestGenerator, TestGenerationConfig)
     from .coverage_tracker import CoverageTracker
     from .mutation_engine import MutationEngine
-    from .smart_fuzzer import ChildContext, FuzzingStrategy, SmartFuzzer
+    from .smart_fuzzer import FuzzingStrategy, SmartFuzzer
     from .test_validator import TestValidator
 except ImportError:
     logger.info("Testing framework components not fully available. Running demo mode.")
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class MockChildResponse:
