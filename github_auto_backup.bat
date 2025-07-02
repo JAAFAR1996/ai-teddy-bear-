@@ -22,6 +22,7 @@ if %ERRORLEVEL% EQU 0 (
 ) else (
     git commit -m "Auto-backup %TIMESTAMP%"
     git push https://github.com/JAAFAR1996/ai-teddy-bear-.git main
+	git fetch origin main
     echo ✅ التغييرات تم رفعها.
     git log -1 --oneline
 )
