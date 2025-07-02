@@ -27,13 +27,13 @@ except ImportError:
 
 # Voice synthesis providers
 try:
-    try:
     from elevenlabs import ElevenLabs, Voice, VoiceSettings, generate, stream
 except ImportError:
-    from src.infrastructure.external_services.mock.elevenlabs import (
-        ElevenLabs, Voice, VoiceSettings, generate, stream)
-except ImportError:
-    ElevenLabs = Voice = VoiceSettings = stream = generate = None
+    try:
+        from src.infrastructure.external_services.mock.elevenlabs import (
+            ElevenLabs, Voice, VoiceSettings, generate, stream)
+    except ImportError:
+        ElevenLabs = Voice = VoiceSettings = stream = generate = None
 from openai import AsyncOpenAI
 
 try:
@@ -100,6 +100,50 @@ class VoiceCharacter:
     pitch_adjustment: float = 0.0  # semitones
     speed_adjustment: float = 1.0  # multiplier
     volume_adjustment: float = 1.0  # multiplier
+
+@dataclass
+class SynthesisContext:
+    """Context for synthesis operations"""
+    text: str
+    emotion: EmotionalTone
+    character: VoiceCharacter
+    voice_settings: VoiceSettings
+
+@dataclass
+class SynthesisServiceCredentials:
+    """Credentials and settings for synthesis service providers"""
+    # API Keys
+    elevenlabs_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
+    azure_speech_key: Optional[str] = None
+    
+    # Provider-specific settings
+    azure_speech_region: str = "eastus"
+    
+    # Validation and helper methods
+    def has_elevenlabs(self) -> bool:
+        """Check if ElevenLabs credentials are available"""
+        return self.elevenlabs_api_key is not None
+    
+    def has_openai(self) -> bool:
+        """Check if OpenAI credentials are available"""
+        return self.openai_api_key is not None
+    
+    def has_azure(self) -> bool:
+        """Check if Azure Speech credentials are available"""
+        return self.azure_speech_key is not None
+    
+    def get_available_providers(self) -> List[VoiceProvider]:
+        """Get list of available providers based on credentials"""
+        providers = []
+        if self.has_elevenlabs():
+            providers.append(VoiceProvider.ELEVENLABS)
+        if self.has_openai():
+            providers.append(VoiceProvider.OPENAI)
+        if self.has_azure():
+            providers.append(VoiceProvider.AZURE)
+        providers.append(VoiceProvider.SYSTEM)  # Always available as fallback
+        return providers
 
 # ================== STREAMING AUDIO BUFFER ==================
 
@@ -188,35 +232,37 @@ class ModernSynthesisService:
     
     async def initialize(
         self,
-        elevenlabs_api_key: Optional[str] = None,
-        openai_api_key: Optional[str] = None,
-        azure_speech_key: Optional[str] = None,
-        azure_speech_region: str = "eastus"
+        credentials: Optional[SynthesisServiceCredentials] = None
     ) -> None:
-        """Initialize synthesis providers"""
+        """Initialize synthesis providers using credentials object"""
+        if credentials is None:
+            credentials = SynthesisServiceCredentials()
+            
         try:
             # Initialize ElevenLabs
-            if elevenlabs_api_key:
-                self.elevenlabs_client = ElevenLabs(api_key=elevenlabs_api_key)
+            if credentials.has_elevenlabs():
+                self.elevenlabs_client = ElevenLabs(api_key=credentials.elevenlabs_api_key)
                 logger.info("✅ ElevenLabs client initialized")
             
             # Initialize OpenAI
-            if openai_api_key:
-                self.openai_client = AsyncOpenAI(api_key=openai_api_key)
+            if credentials.has_openai():
+                self.openai_client = AsyncOpenAI(api_key=credentials.openai_api_key)
                 logger.info("✅ OpenAI client initialized for TTS")
             
             # Initialize Azure Speech
-            if azure_speech_key:
+            if credentials.has_azure():
                 self.azure_speech_config = speechsdk.SpeechConfig(
-                    subscription=azure_speech_key,
-                    region=azure_speech_region
+                    subscription=credentials.azure_speech_key,
+                    region=credentials.azure_speech_region
                 )
                 logger.info("✅ Azure Speech client initialized")
             
             # Load default voice characters
             await self._load_default_characters()
             
-            logger.info("🚀 Synthesis service fully initialized")
+            # Log available providers
+            available_providers = credentials.get_available_providers()
+            logger.info(f"🚀 Synthesis service initialized with providers: {[p.value for p in available_providers]}")
             
         except Exception as e:
             logger.error(f"❌ Failed to initialize synthesis service: {e}")
@@ -288,38 +334,16 @@ class ModernSynthesisService:
         start_time = time.time()
         
         try:
-            # Select character
-            character = await self._select_character(character_id, language)
+            # Prepare synthesis context
+            synthesis_context = await self._prepare_synthesis_context(text, emotion, character_id, language)
             
-            # Get voice settings for emotion
-            voice_settings = character.emotional_settings.get(
-                emotion, 
-                character.emotional_settings[EmotionalTone.FRIENDLY]
-            )
-            
-            # Choose synthesis method based on provider
-            if character.provider == VoiceProvider.ELEVENLABS and self.elevenlabs_client:
-                async for chunk in self._synthesize_elevenlabs_stream(text, character, voice_settings):
-                    yield chunk
-            elif character.provider == VoiceProvider.OPENAI and self.openai_client:
-                async for chunk in self._synthesize_openai_stream(text, character):
-                    yield chunk
-            elif character.provider == VoiceProvider.AZURE and self.azure_speech_config:
-                async for chunk in self._synthesize_azure_stream(text, character, emotion):
-                    yield chunk
-            else:
-                # Fallback to non-streaming synthesis
-                audio_data = await self.synthesize_audio(text, emotion, character_id, language)
-                if audio_data:
-                    # Chunk the audio for streaming
-                    chunk_size = self.config.chunk_size
-                    for i in range(0, len(audio_data), chunk_size):
-                        yield audio_data[i:i + chunk_size]
-                        await asyncio.sleep(0.01)  # Small delay for streaming effect
+            # Execute streaming synthesis
+            async for chunk in self._execute_streaming_synthesis(synthesis_context):
+                yield chunk
             
             # Update stats
             processing_time = time.time() - start_time
-            self._update_stats(character.provider, processing_time)
+            self._update_stats(synthesis_context.character.provider, processing_time)
             
         except Exception as e:
             logger.error(f"❌ Stream synthesis failed: {e}")
@@ -349,32 +373,19 @@ class ModernSynthesisService:
         start_time = time.time()
         
         try:
-            # Select character
-            character = await self._select_character(character_id, language)
+            # Prepare synthesis context
+            synthesis_context = await self._prepare_synthesis_context(text, emotion, character_id, language)
             
-            # Get voice settings
-            voice_settings = character.emotional_settings.get(
-                emotion,
-                character.emotional_settings[EmotionalTone.FRIENDLY]
-            )
+            # Execute audio synthesis
+            audio_data = await self._execute_audio_synthesis(synthesis_context)
             
-            # Synthesize based on provider
-            if character.provider == VoiceProvider.ELEVENLABS and self.elevenlabs_client:
-                audio_data = await self._synthesize_elevenlabs(text, character, voice_settings)
-            elif character.provider == VoiceProvider.OPENAI and self.openai_client:
-                audio_data = await self._synthesize_openai(text, character)
-            elif character.provider == VoiceProvider.AZURE and self.azure_speech_config:
-                audio_data = await self._synthesize_azure(text, character, emotion)
-            else:
-                audio_data = await self._synthesize_fallback(text)
-            
-            # Apply voice adjustments
+            # Apply post-processing
             if audio_data:
-                audio_data = await self._apply_voice_adjustments(audio_data, character)
+                audio_data = await self._apply_voice_adjustments(audio_data, synthesis_context.character)
             
             # Update stats
             processing_time = time.time() - start_time
-            self._update_stats(character.provider, processing_time)
+            self._update_stats(synthesis_context.character.provider, processing_time)
             
             logger.debug(f"🎯 Synthesized in {processing_time:.2f}s: '{text[:50]}...'")
             return audio_data
@@ -383,6 +394,58 @@ class ModernSynthesisService:
             logger.error(f"❌ Audio synthesis failed: {e}")
             self.stats["error_count"] += 1
             return await self._synthesize_fallback(text)
+    
+    async def _prepare_synthesis_context(
+        self,
+        text: str,
+        emotion: EmotionalTone,
+        character_id: Optional[str],
+        language: Optional[str]
+    ) -> 'SynthesisContext':
+        """Prepare synthesis context with character and voice settings"""
+        character = await self._select_character(character_id, language)
+        voice_settings = character.emotional_settings.get(
+            emotion, 
+            character.emotional_settings[EmotionalTone.FRIENDLY]
+        )
+        
+        return SynthesisContext(
+            text=text,
+            emotion=emotion,
+            character=character,
+            voice_settings=voice_settings
+        )
+    
+    async def _execute_streaming_synthesis(self, context: 'SynthesisContext') -> AsyncIterator[bytes]:
+        """Execute streaming synthesis based on provider"""
+        provider = context.character.provider
+        
+        if provider == VoiceProvider.ELEVENLABS and self.elevenlabs_client:
+            async for chunk in self._synthesize_elevenlabs_stream(context.text, context.character, context.voice_settings):
+                yield chunk
+        elif provider == VoiceProvider.OPENAI and self.openai_client:
+            async for chunk in self._synthesize_openai_stream(context.text, context.character):
+                yield chunk
+        elif provider == VoiceProvider.AZURE and self.azure_speech_config:
+            async for chunk in self._synthesize_azure_stream(context.text, context.character, context.emotion):
+                yield chunk
+        else:
+            # Fallback to chunked audio synthesis
+            async for chunk in self._fallback_streaming_synthesis(context):
+                yield chunk
+    
+    async def _execute_audio_synthesis(self, context: 'SynthesisContext') -> Optional[bytes]:
+        """Execute audio synthesis based on provider"""
+        provider = context.character.provider
+        
+        if provider == VoiceProvider.ELEVENLABS and self.elevenlabs_client:
+            return await self._synthesize_elevenlabs(context.text, context.character, context.voice_settings)
+        elif provider == VoiceProvider.OPENAI and self.openai_client:
+            return await self._synthesize_openai(context.text, context.character)
+        elif provider == VoiceProvider.AZURE and self.azure_speech_config:
+            return await self._synthesize_azure(context.text, context.character, context.emotion)
+        else:
+            return await self._synthesize_fallback(context.text)
     
     async def _synthesize_elevenlabs_stream(
         self,
@@ -616,6 +679,15 @@ class ModernSynthesisService:
                 yield audio_data[i:i + chunk_size]
                 await asyncio.sleep(0.01)
     
+    async def _fallback_streaming_synthesis(self, context: SynthesisContext) -> AsyncIterator[bytes]:
+        """Fallback streaming synthesis by chunking regular synthesis"""
+        audio_data = await self.synthesize_audio(context.text, context.emotion, context.character.id)
+        if audio_data:
+            chunk_size = self.config.chunk_size
+            for i in range(0, len(audio_data), chunk_size):
+                yield audio_data[i:i + chunk_size]
+                await asyncio.sleep(0.01)  # Small delay for streaming effect
+    
     async def _select_character(
         self,
         character_id: Optional[str],
@@ -740,24 +812,56 @@ class ModernSynthesisService:
                 "error": str(e)
             }
 
-# ================== FACTORY FUNCTION ==================
+# ================== FACTORY FUNCTIONS ==================
 
 async def create_synthesis_service(
+    config: Optional[SynthesisConfig] = None,
+    credentials: Optional[SynthesisServiceCredentials] = None
+) -> ModernSynthesisService:
+    """
+    🏭 Factory function to create and initialize synthesis service
+    
+    Args:
+        config: Optional synthesis configuration
+        credentials: Optional service credentials for providers
+        
+    Returns:
+        Initialized synthesis service
+        
+    Example:
+        >>> credentials = SynthesisServiceCredentials(
+        ...     elevenlabs_api_key="your_key",
+        ...     openai_api_key="your_key"
+        ... )
+        >>> service = await create_synthesis_service(credentials=credentials)
+    """
+    service = ModernSynthesisService(config)
+    await service.initialize(credentials=credentials)
+    return service
+
+# Legacy compatibility function for backward compatibility
+async def create_synthesis_service_legacy(
     config: Optional[SynthesisConfig] = None,
     elevenlabs_api_key: Optional[str] = None,
     openai_api_key: Optional[str] = None,
     azure_speech_key: Optional[str] = None,
     azure_speech_region: str = "eastus"
 ) -> ModernSynthesisService:
-    """Factory function to create and initialize synthesis service"""
-    service = ModernSynthesisService(config)
-    await service.initialize(
+    """
+    🔄 Legacy factory function for backward compatibility
+    
+    ⚠️ DEPRECATED: Use create_synthesis_service with SynthesisServiceCredentials instead
+    
+    This function maintains the old interface with individual parameters
+    while internally using the new Parameter Object pattern.
+    """
+    credentials = SynthesisServiceCredentials(
         elevenlabs_api_key=elevenlabs_api_key,
         openai_api_key=openai_api_key,
         azure_speech_key=azure_speech_key,
         azure_speech_region=azure_speech_region
     )
-    return service
+    return await create_synthesis_service(config=config, credentials=credentials)
 
 # Re-export for compatibility
 SynthesisService = ModernSynthesisService

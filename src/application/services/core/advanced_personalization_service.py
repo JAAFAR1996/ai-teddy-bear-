@@ -100,41 +100,43 @@ class AdvancedPersonalizationService:
 
         self._load_data()
 
-    def _load_data(self) -> Any:
-        """تحميل البيانات من الملفات"""
+    def _load_data(self) -> None:
+        """تحميل جميع البيانات من الملفات"""
         try:
-            # تحميل الشخصيات
-            personalities_file = self.data_dir / "personalities.json"
-            if personalities_file.exists():
-                with open(personalities_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    for child_id, personality_data in data.items():
-                        self.personalities[child_id] = ChildPersonality(
-                            **personality_data
-                        )
-
-            # تحميل أنماط التفاعل
-            patterns_file = self.data_dir / "interaction_patterns.json"
-            if patterns_file.exists():
-                with open(patterns_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    for child_id, pattern_data in data.items():
-                        self.interaction_patterns[child_id] = InteractionPattern(
-                            **pattern_data
-                        )
-
-            # تحميل أداء المحتوى
-            content_file = self.data_dir / "content_performance.json"
-            if content_file.exists():
-                with open(content_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    for child_id, contents in data.items():
-                        self.content_performance[child_id] = [
-                            AdaptiveContent(**content) for content in contents
-                        ]
-
+            self._load_personalities()
+            self._load_interaction_patterns()
+            self._load_content_performance()
         except Exception as e:
             logger.error(f"خطأ في تحميل بيانات التخصيص: {e}")
+
+    def _load_personalities(self) -> None:
+        """تحميل بيانات الشخصيات"""
+        personalities_file = self.data_dir / "personalities.json"
+        if personalities_file.exists():
+            with open(personalities_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                for child_id, personality_data in data.items():
+                    self.personalities[child_id] = ChildPersonality(**personality_data)
+
+    def _load_interaction_patterns(self) -> None:
+        """تحميل أنماط التفاعل"""
+        patterns_file = self.data_dir / "interaction_patterns.json"
+        if patterns_file.exists():
+            with open(patterns_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                for child_id, pattern_data in data.items():
+                    self.interaction_patterns[child_id] = InteractionPattern(**pattern_data)
+
+    def _load_content_performance(self) -> None:
+        """تحميل بيانات أداء المحتوى"""
+        content_file = self.data_dir / "content_performance.json"
+        if content_file.exists():
+            with open(content_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                for child_id, contents in data.items():
+                    self.content_performance[child_id] = [
+                        AdaptiveContent(**content) for content in contents
+                    ]
 
     def _save_data(self) -> Any:
         """حفظ البيانات في الملفات"""
@@ -188,86 +190,105 @@ class AdvancedPersonalizationService:
     def analyze_personality_from_interactions(
         self, child_id: str, interactions: List[Dict]
     ) -> ChildPersonality:
-        """تحليل الشخصية من التفاعلات"""
+        """تحليل الشخصية من التفاعلات - مقسمة لدوال متخصصة"""
         personality = self.get_child_personality(child_id)
 
         if not interactions:
             return personality
 
-        # تحليل الانفتاح (كم مرة جرب أشياء جديدة)
+        # تحليل كل جانب من جوانب الشخصية منفصلاً
+        personality.openness = self._analyze_openness(interactions)
+        personality.extraversion = self._analyze_extraversion(interactions)
+        personality.conscientiousness = self._analyze_conscientiousness(interactions)
+        personality.agreeableness = self._analyze_agreeableness(interactions)
+        personality.neuroticism = self._analyze_neuroticism(interactions)
+        personality.curiosity_level = self._analyze_curiosity(interactions)
+        personality.creativity_level = self._analyze_creativity(interactions)
+
+        personality.last_updated = datetime.now().isoformat()
+        self._save_data()
+
+        return personality
+
+    def _analyze_openness(self, interactions: List[Dict]) -> float:
+        """تحليل مستوى الانفتاح على التجارب الجديدة"""
         new_activities = set()
         total_activities = 0
 
-        # تحليل الانبساطية (طول المحادثات ونشاطية الردود)
-        conversation_lengths = []
-        response_speeds = []
-
-        # تحليل المثابرة (إكمال المهام والألعاب)
-        completed_tasks = 0
-        total_tasks = 0
-
-        # تحليل الوداعة (الردود الإيجابية والتعاونية)
-        positive_responses = 0
-        total_responses = 0
-
-        # تحليل العصابية (مؤشرات القلق أو الإحباط)
-        negative_emotions = 0
-        total_emotions = 0
-
         for interaction in interactions:
             activity_type = interaction.get("activity_type", "")
-
-            # تتبع الأنشطة الجديدة
             if activity_type:
                 if activity_type not in new_activities:
                     new_activities.add(activity_type)
                 total_activities += 1
 
-            # تحليل طول المحادثة
+        if total_activities > 0:
+            return min(1.0, len(new_activities) / total_activities * 2)
+        return 0.5
+
+    def _analyze_extraversion(self, interactions: List[Dict]) -> float:
+        """تحليل مستوى الانبساطية"""
+        conversation_lengths = []
+
+        for interaction in interactions:
             duration = interaction.get("duration_minutes", 0)
             if duration > 0:
                 conversation_lengths.append(duration)
 
-            # تحليل إكمال المهام
+        if conversation_lengths:
+            avg_length = np.mean(conversation_lengths)
+            return min(1.0, avg_length / 30)  # 30 دقيقة = انبساطية كاملة
+        return 0.5
+
+    def _analyze_conscientiousness(self, interactions: List[Dict]) -> float:
+        """تحليل مستوى المثابرة والضميرية"""
+        completed_tasks = 0
+        total_tasks = 0
+
+        for interaction in interactions:
             if interaction.get("completed", False):
                 completed_tasks += 1
             if "completed" in interaction:
                 total_tasks += 1
 
-            # تحليل المشاعر
-            emotion = interaction.get("emotion", "")
-            if emotion:
-                total_emotions += 1
-                if emotion in ["sad", "angry", "frustrated"]:
-                    negative_emotions += 1
+        if total_tasks > 0:
+            return completed_tasks / total_tasks
+        return 0.5
 
-            # تحليل الردود
+    def _analyze_agreeableness(self, interactions: List[Dict]) -> float:
+        """تحليل مستوى الوداعة والتعاون"""
+        positive_responses = 0
+        total_responses = 0
+
+        for interaction in interactions:
             response_type = interaction.get("response_type", "")
             if response_type:
                 total_responses += 1
                 if response_type in ["positive", "enthusiastic", "cooperative"]:
                     positive_responses += 1
 
-        # تحديث النتائج
-        if total_activities > 0:
-            personality.openness = min(1.0, len(new_activities) / total_activities * 2)
-
-        if conversation_lengths:
-            avg_length = np.mean(conversation_lengths)
-            personality.extraversion = min(
-                1.0, avg_length / 30
-            )  # 30 دقيقة = انبساطية كاملة
-
-        if total_tasks > 0:
-            personality.conscientiousness = completed_tasks / total_tasks
-
         if total_responses > 0:
-            personality.agreeableness = positive_responses / total_responses
+            return positive_responses / total_responses
+        return 0.5
+
+    def _analyze_neuroticism(self, interactions: List[Dict]) -> float:
+        """تحليل مستوى العصابية والقلق"""
+        negative_emotions = 0
+        total_emotions = 0
+
+        for interaction in interactions:
+            emotion = interaction.get("emotion", "")
+            if emotion:
+                total_emotions += 1
+                if emotion in ["sad", "angry", "frustrated"]:
+                    negative_emotions += 1
 
         if total_emotions > 0:
-            personality.neuroticism = negative_emotions / total_emotions
+            return negative_emotions / total_emotions
+        return 0.5
 
-        # تحديث مستوى الفضول
+    def _analyze_curiosity(self, interactions: List[Dict]) -> float:
+        """تحليل مستوى الفضول"""
         unique_topics = len(
             set(
                 interaction.get("topic", "")
@@ -275,31 +296,37 @@ class AdvancedPersonalizationService:
                 if interaction.get("topic")
             )
         )
-        personality.curiosity_level = min(
-            1.0, unique_topics / 10
-        )  # 10 مواضيع مختلفة = فضول كامل
+        return min(1.0, unique_topics / 10)  # 10 مواضيع مختلفة = فضول كامل
 
-        # تحديث مستوى الإبداع
+    def _analyze_creativity(self, interactions: List[Dict]) -> float:
+        """تحليل مستوى الإبداع"""
         creative_activities = sum(
             1
             for interaction in interactions
             if interaction.get("activity_type")
             in ["storytelling", "creative_games", "art"]
         )
-        personality.creativity_level = min(
-            1.0, creative_activities / len(interactions) * 2
-        )
+        
+        if len(interactions) > 0:
+            return min(1.0, creative_activities / len(interactions) * 2)
+        return 0.5
 
-        personality.last_updated = datetime.now().isoformat()
-        self._save_data()
-
-        return personality
-
-    def update_interaction_patterns(Dict) -> None:
-        """تحديث أنماط التفاعل"""
+    def update_interaction_patterns(self, child_id: str, interaction_data: Dict) -> None:
+        """تحديث أنماط التفاعل - مقسمة لدوال متخصصة"""
         patterns = self.get_interaction_patterns(child_id)
 
-        # تحديث الأنشطة المفضلة
+        # تحديث كل نمط منفصلاً
+        self._update_preferred_activities(patterns, interaction_data)
+        self._update_favorite_topics(patterns, interaction_data)
+        self._update_attention_patterns(patterns, interaction_data)
+        self._update_response_patterns(patterns, interaction_data)
+        self._update_mood_triggers(patterns, interaction_data)
+        self._update_learning_preferences(patterns, interaction_data)
+
+        self._save_data()
+
+    def _update_preferred_activities(self, patterns: InteractionPattern, interaction_data: Dict) -> None:
+        """تحديث الأنشطة المفضلة"""
         activity = interaction_data.get("activity_type")
         if activity and activity not in patterns.preferred_activities:
             engagement = interaction_data.get("engagement_score", 0)
@@ -308,14 +335,16 @@ class AdvancedPersonalizationService:
                 # الاحتفاظ بأفضل 10 أنشطة
                 patterns.preferred_activities = patterns.preferred_activities[-10:]
 
-        # تحديث المواضيع المفضلة
+    def _update_favorite_topics(self, patterns: InteractionPattern, interaction_data: Dict) -> None:
+        """تحديث المواضيع المفضلة"""
         topic = interaction_data.get("topic")
         if topic:
             if topic not in patterns.favorite_topics:
                 patterns.favorite_topics.append(topic)
                 patterns.favorite_topics = patterns.favorite_topics[-15:]
 
-        # تحديث أوقات التفاعل النشط
+    def _update_attention_patterns(self, patterns: InteractionPattern, interaction_data: Dict) -> None:
+        """تحديث أوقات التفاعل النشط"""
         current_hour = datetime.now().strftime("%H")
         if interaction_data.get("engagement_score", 0) > 0.6:
             time_slot = self._get_time_slot(current_hour)
@@ -323,14 +352,16 @@ class AdvancedPersonalizationService:
                 patterns.attention_patterns.get(time_slot, 0) + 1
             )
 
-        # تحديث أنماط الردود
+    def _update_response_patterns(self, patterns: InteractionPattern, interaction_data: Dict) -> None:
+        """تحديث أنماط الردود"""
         response_type = interaction_data.get("response_type")
         if response_type:
             patterns.response_patterns[response_type] = (
                 patterns.response_patterns.get(response_type, 0) + 1
             )
 
-        # تحديث محفزات المزاج
+    def _update_mood_triggers(self, patterns: InteractionPattern, interaction_data: Dict) -> None:
+        """تحديث محفزات المزاج"""
         emotion = interaction_data.get("emotion")
         trigger = interaction_data.get("trigger")
         if emotion and trigger:
@@ -343,7 +374,8 @@ class AdvancedPersonalizationService:
                     mood_category
                 ][-10:]
 
-        # تحديث تفضيلات التعلم
+    def _update_learning_preferences(self, patterns: InteractionPattern, interaction_data: Dict) -> None:
+        """تحديث تفضيلات التعلم"""
         learning_method = interaction_data.get("learning_method")
         success_rate = interaction_data.get("success_rate", 0)
         if learning_method and success_rate > 0:
@@ -351,8 +383,6 @@ class AdvancedPersonalizationService:
             # تحديث تدريجي بناءً على النجاح
             new_pref = current_pref * 0.8 + success_rate * 0.2
             patterns.learning_preferences[learning_method] = min(1.0, new_pref)
-
-        self._save_data()
 
     def _get_time_slot(self, hour: str) -> str:
         """تحديد فترة اليوم"""
