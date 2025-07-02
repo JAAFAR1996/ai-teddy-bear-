@@ -417,22 +417,62 @@ class ModernSynthesisService:
         )
     
     async def _execute_streaming_synthesis(self, context: 'SynthesisContext') -> AsyncIterator[bytes]:
-        """Execute streaming synthesis based on provider"""
-        provider = context.character.provider
+        """Execute streaming synthesis based on provider using strategy pattern"""
+        provider_strategy = self._get_streaming_strategy(context.character.provider)
         
-        if provider == VoiceProvider.ELEVENLABS and self.elevenlabs_client:
-            async for chunk in self._synthesize_elevenlabs_stream(context.text, context.character, context.voice_settings):
+        try:
+            async for chunk in provider_strategy(context):
                 yield chunk
-        elif provider == VoiceProvider.OPENAI and self.openai_client:
-            async for chunk in self._synthesize_openai_stream(context.text, context.character):
-                yield chunk
-        elif provider == VoiceProvider.AZURE and self.azure_speech_config:
-            async for chunk in self._synthesize_azure_stream(context.text, context.character, context.emotion):
-                yield chunk
-        else:
+        except Exception as e:
+            logger.error(f"❌ Provider {context.character.provider.value} streaming failed: {e}")
             # Fallback to chunked audio synthesis
             async for chunk in self._fallback_streaming_synthesis(context):
                 yield chunk
+    
+    def _get_streaming_strategy(self, provider: VoiceProvider):
+        """Get streaming strategy function for the given provider"""
+        strategies = {
+            VoiceProvider.ELEVENLABS: self._stream_elevenlabs_strategy,
+            VoiceProvider.OPENAI: self._stream_openai_strategy,
+            VoiceProvider.AZURE: self._stream_azure_strategy,
+        }
+        
+        return strategies.get(provider, self._stream_fallback_strategy)
+    
+    async def _stream_elevenlabs_strategy(self, context: 'SynthesisContext') -> AsyncIterator[bytes]:
+        """ElevenLabs streaming strategy"""
+        if not self.elevenlabs_client:
+            async for chunk in self._stream_fallback_strategy(context):
+                yield chunk
+            return
+            
+        async for chunk in self._synthesize_elevenlabs_stream(context.text, context.character, context.voice_settings):
+            yield chunk
+    
+    async def _stream_openai_strategy(self, context: 'SynthesisContext') -> AsyncIterator[bytes]:
+        """OpenAI streaming strategy"""
+        if not self.openai_client:
+            async for chunk in self._stream_fallback_strategy(context):
+                yield chunk
+            return
+            
+        async for chunk in self._synthesize_openai_stream(context.text, context.character):
+            yield chunk
+    
+    async def _stream_azure_strategy(self, context: 'SynthesisContext') -> AsyncIterator[bytes]:
+        """Azure streaming strategy"""
+        if not self.azure_speech_config:
+            async for chunk in self._stream_fallback_strategy(context):
+                yield chunk
+            return
+            
+        async for chunk in self._synthesize_azure_stream(context.text, context.character, context.emotion):
+            yield chunk
+    
+    async def _stream_fallback_strategy(self, context: 'SynthesisContext') -> AsyncIterator[bytes]:
+        """Fallback streaming strategy"""
+        async for chunk in self._fallback_streaming_synthesis(context):
+            yield chunk
     
     async def _execute_audio_synthesis(self, context: 'SynthesisContext') -> Optional[bytes]:
         """Execute audio synthesis based on provider"""
@@ -839,29 +879,65 @@ async def create_synthesis_service(
     await service.initialize(credentials=credentials)
     return service
 
-# Legacy compatibility function for backward compatibility
+# Legacy compatibility function with reduced arguments
 async def create_synthesis_service_legacy(
     config: Optional[SynthesisConfig] = None,
-    elevenlabs_api_key: Optional[str] = None,
-    openai_api_key: Optional[str] = None,
-    azure_speech_key: Optional[str] = None,
-    azure_speech_region: str = "eastus"
+    api_keys: Optional[Dict[str, str]] = None,
+    azure_region: str = "eastus"
 ) -> ModernSynthesisService:
     """
-    🔄 Legacy factory function for backward compatibility
+    🔄 Legacy factory function with reduced arguments
     
     ⚠️ DEPRECATED: Use create_synthesis_service with SynthesisServiceCredentials instead
     
-    This function maintains the old interface with individual parameters
-    while internally using the new Parameter Object pattern.
+    Args:
+        config: Optional synthesis configuration
+        api_keys: Dict with keys: 'elevenlabs', 'openai', 'azure'
+        azure_region: Azure region for speech services
+        
+    Example:
+        >>> await create_synthesis_service_legacy(
+        ...     api_keys={'elevenlabs': 'key1', 'openai': 'key2'}
+        ... )
     """
+    api_keys = api_keys or {}
+    
     credentials = SynthesisServiceCredentials(
-        elevenlabs_api_key=elevenlabs_api_key,
-        openai_api_key=openai_api_key,
-        azure_speech_key=azure_speech_key,
-        azure_speech_region=azure_speech_region
+        elevenlabs_api_key=api_keys.get('elevenlabs'),
+        openai_api_key=api_keys.get('openai'),
+        azure_speech_key=api_keys.get('azure'),
+        azure_speech_region=azure_region
     )
     return await create_synthesis_service(config=config, credentials=credentials)
+
+# Ultra-legacy function for maximum backward compatibility (will be removed in v3.0)
+async def create_synthesis_service_old(
+    elevenlabs_key: Optional[str] = None,
+    openai_key: Optional[str] = None,
+    azure_key: Optional[str] = None,
+    azure_region: str = "eastus"
+) -> ModernSynthesisService:
+    """
+    🚨 ULTRA-DEPRECATED: Will be removed in v3.0
+    Use create_synthesis_service instead
+    """
+    import warnings
+    warnings.warn(
+        "create_synthesis_service_old is deprecated and will be removed in v3.0. "
+        "Use create_synthesis_service with SynthesisServiceCredentials instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    
+    api_keys = {}
+    if elevenlabs_key:
+        api_keys['elevenlabs'] = elevenlabs_key
+    if openai_key:
+        api_keys['openai'] = openai_key
+    if azure_key:
+        api_keys['azure'] = azure_key
+        
+    return await create_synthesis_service_legacy(api_keys=api_keys, azure_region=azure_region)
 
 # Re-export for compatibility
 SynthesisService = ModernSynthesisService
