@@ -1,5 +1,6 @@
-# llm_service_factory.py - Enhanced version with bumpy roads fixed
+# llm_service_factory.py - Enhanced version with bumpy roads fixed + Arguments Fixed
 # 🚀 تم حل مشاكل "الطرق الوعرة": Parameter Objects + Simplified Logic
+# ✅ إصلاح Excess Number of Function Arguments باستخدام INTRODUCE PARAMETER OBJECT
 
 import asyncio
 import hashlib
@@ -58,6 +59,56 @@ class ModelSelectionRequest:
     required_features: List[str] = field(default_factory=list)
     budget_constraint: Optional[float] = None
     latency_requirement: Optional[int] = None
+
+# FIX: INTRODUCE PARAMETER OBJECT for generate_response_legacy
+@dataclass
+class LegacyGenerationParams:
+    """📦 Parameter Object لحل مشكلة Excess Number of Function Arguments في generate_response_legacy"""
+    conversation: Conversation
+    provider: Optional[LLMProvider] = None
+    model: Optional[str] = None
+    max_tokens: int = 150
+    temperature: float = 0.7
+    stream: bool = False
+    use_cache: bool = True
+    extra_kwargs: Dict[str, Any] = field(default_factory=dict)
+    
+    def to_generation_request(self) -> GenerationRequest:
+        """تحويل إلى GenerationRequest الحديث"""
+        return GenerationRequest(
+            conversation=self.conversation,
+            provider=self.provider,
+            model=self.model,
+            max_tokens=self.max_tokens,
+            temperature=self.temperature,
+            stream=self.stream,
+            use_cache=self.use_cache,
+            extra_kwargs=self.extra_kwargs
+        )
+    
+    @classmethod
+    def from_legacy_args(
+        cls,
+        conversation: Conversation,
+        provider: Optional[LLMProvider] = None,
+        model: Optional[str] = None,
+        max_tokens: int = 150,
+        temperature: float = 0.7,
+        stream: bool = False,
+        use_cache: bool = True,
+        **kwargs
+    ) -> 'LegacyGenerationParams':
+        """إنشاء من المعاملات القديمة"""
+        return cls(
+            conversation=conversation,
+            provider=provider,
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            stream=stream,
+            use_cache=use_cache,
+            extra_kwargs=kwargs
+        )
 
 
 class ModelSelector:
@@ -315,9 +366,16 @@ class LLMServiceFactory:
             return dict(self.usage_stats[provider])
         return {str(p): dict(stats) for p, stats in self.usage_stats.items()}
     
-    # ================== BACKWARD COMPATIBILITY ==================
+    # ================== BACKWARD COMPATIBILITY - FIXED ==================
     
     async def generate_response_legacy(
+        self, params: LegacyGenerationParams
+    ) -> Union[str, AsyncIterator[str]]:
+        """🔄 Legacy method - Fixed with Parameter Object (8 args → 1 arg)"""
+        request = params.to_generation_request()
+        return await self.generate_response(request)
+    
+    async def generate_response_legacy_direct(
         self,
         conversation: Conversation,
         provider: Optional[LLMProvider] = None,
@@ -328,18 +386,12 @@ class LLMServiceFactory:
         use_cache: bool = True,
         **kwargs
     ) -> Union[str, AsyncIterator[str]]:
-        """🔄 Legacy method - backward compatibility wrapper"""
-        request = GenerationRequest(
-            conversation=conversation,
-            provider=provider,
-            model=model,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            stream=stream,
-            use_cache=use_cache,
-            extra_kwargs=kwargs
+        """🔄 Direct legacy method - for backward compatibility only"""
+        params = LegacyGenerationParams.from_legacy_args(
+            conversation, provider, model, max_tokens, 
+            temperature, stream, use_cache, **kwargs
         )
-        return await self.generate_response(request)
+        return await self.generate_response_legacy(params)
 
 
 # ================== FACTORY & HELPER FUNCTIONS ==================
@@ -371,6 +423,17 @@ def create_model_selection_request(
     """📦 Helper function to create ModelSelectionRequest"""
     return ModelSelectionRequest(
         task_type=task_type,
+        **kwargs
+    )
+
+# FIX: Helper function for LegacyGenerationParams
+def create_legacy_generation_params(
+    conversation: Conversation,
+    **kwargs
+) -> LegacyGenerationParams:
+    """📦 Helper function to create LegacyGenerationParams"""
+    return LegacyGenerationParams(
+        conversation=conversation,
         **kwargs
     )
 

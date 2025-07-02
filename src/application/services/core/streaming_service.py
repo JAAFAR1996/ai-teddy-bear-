@@ -379,19 +379,16 @@ class StreamingService:
             await self.input_buffer.write(audio_data)
             # Process with STT when buffer has enough data
             buffer_size = await self.input_buffer.size
-            logger.info()
-                f"[DEBUG] بعد إضافة الصوت: buffer_size={buffer_size}, chunk_size={self.chunk_size}")
+            logger.info(f"[DEBUG] بعد إضافة الصوت: buffer_size={buffer_size}, chunk_size={self.chunk_size}")
             if buffer_size >= self.chunk_size:
                 audio_chunk = await self.input_buffer.read(buffer_size)
-                logger.info()
-                    f"[DEBUG] buffer_size={buffer_size}, chunk_size={self.chunk_size}, audio_chunk len={len(audio_chunk)}")
+                logger.info(f"[DEBUG] buffer_size={buffer_size}, chunk_size={self.chunk_size}, audio_chunk len={len(audio_chunk)}")
 
                 # Convert to text
                 if self.stt_service:
                     logger.debug("[DEBUG] قبل استدعاء stt_service.transcribe")
                     text = await self.stt_service.transcribe(audio_chunk)
-                    logger.info()
-                        f"[DEBUG] بعد استدعاء stt_service.transcribe: {text}")
+                    logger.info(f"[DEBUG] بعد استدعاء stt_service.transcribe: {text}")
                     if text:
                         await self.process_text_input(text, session_id, websocket)
 
@@ -439,11 +436,10 @@ class StreamingService:
                         api_key=self.elevenlabs_api_key
                     )
                     audio_format = "mp3"  # ElevenLabs يرجع MP3
-                    logger.info()
-                        f"[DEBUG] نجح ElevenLabs - حجم الصوت: {len(audio_bytes)}")
+                    logger.info(f"[DEBUG] نجح ElevenLabs - حجم الصوت: {len(audio_bytes)}")
 
                 except Exception as e:
-    logger.error(f"Error: {e}")f"[DEBUG] فشل ElevenLabs: {e}")
+                    logger.error(f"[DEBUG] فشل ElevenLabs: {e}")
                     audio_bytes = None
 
             # استخدام gTTS كبديل
@@ -461,7 +457,7 @@ class StreamingService:
                     logger.debug(f"[DEBUG] نجح gTTS - حجم الصوت: {len(audio_bytes)}")
 
                 except Exception as e:
-    logger.error(f"Error: {e}")f"[DEBUG] فشل gTTS: {e}")
+                    logger.error(f"[DEBUG] فشل gTTS: {e}")
 
             # إرسال الرد
             if audio_bytes and websocket:
@@ -475,8 +471,7 @@ class StreamingService:
                     "timestamp": datetime.now().isoformat()
                 }
 
-                logger.info()
-                    f"[DEBUG] إرسال رد بحجم: {len(response_data['audio'])} حرف")
+                logger.info(f"[DEBUG] إرسال رد بحجم: {len(response_data['audio'])} حرف")
                 await websocket.send(json.dumps(response_data))
                 logger.debug("[DEBUG] ✅ تم إرسال الرد بنجاح!")
 
@@ -502,19 +497,59 @@ class StreamingService:
                 }))
 
     async def get_voice_id(self, voice_name: str) -> str:
-        """Get voice ID from voice name"""
+        """
+        Get voice ID from voice name.
+        Refactored to eliminate bumpy road pattern.
+        """
         try:
             voices = await asyncio.to_thread(self.elevenlabs_client.voices.get_all)
-            for voice in voices.voices:
-                if voice.name.lower() == voice_name.lower():
-                    return voice.voice_id
-
-            # Default voice if not found
-            return voices.voices[0].voice_id if voices.voices else None
+            
+            # Extract function: find specific voice
+            voice_id = self._find_voice_by_name(voices.voices, voice_name)
+            if voice_id:
+                return voice_id
+            
+            # Extract function: get default voice
+            return self._get_default_voice_id(voices.voices)
 
         except Exception as e:
             self.logger.error(f"Error getting voice ID: {e}")
             raise
+
+    def _find_voice_by_name(self, voices: list, voice_name: str) -> Optional[str]:
+        """
+        Find voice ID by name in the voices list.
+        Extracted from get_voice_id to eliminate bump 1.
+        """
+        if not voices or not voice_name:
+            return None
+            
+        normalized_target_name = voice_name.lower().strip()
+        
+        for voice in voices:
+            if hasattr(voice, 'name') and voice.name:
+                if voice.name.lower() == normalized_target_name:
+                    return voice.voice_id
+        
+        return None
+
+    def _get_default_voice_id(self, voices: list) -> Optional[str]:
+        """
+        Get default voice ID when target voice is not found.
+        Extracted from get_voice_id to eliminate bump 2.
+        """
+        if not voices:
+            self.logger.warning("No voices available from ElevenLabs")
+            return None
+        
+        # Return first available voice as default
+        first_voice = voices[0]
+        if hasattr(first_voice, 'voice_id'):
+            self.logger.info(f"Using default voice: {getattr(first_voice, 'name', 'Unknown')}")
+            return first_voice.voice_id
+        
+        self.logger.error("Default voice does not have voice_id attribute")
+        return None
 
     async def tts_elevenlabs(self, text: str) -> bytes:
         """Convert text to speech using ElevenLabs"""
@@ -612,14 +647,73 @@ class StreamingService:
             return "عذراً، لم أستطع فهم ما تقول. هل يمكنك إعادة المحاولة؟"
 
     async def get_streaming_status(self, session_id: str) -> dict:
-        """Get streaming status from repository with input validation"""
-        if not isinstance(session_id, str) or not session_id:
-            self.logger.error("Invalid session_id for get_streaming_status")
-            return {"status": "error", "reason": "Invalid session_id"}
-        if hasattr(self, 'streaming_repository'):
-            return await self.streaming_repository.get_status(session_id)
-        self.logger.error("streaming_repository not configured")
-        return {"status": "error", "reason": "Repository not configured"}
+        """
+        Get streaming status from repository with input validation.
+        Refactored to eliminate bumpy road pattern.
+        """
+        # Extract function: validate session ID
+        validation_error = self._validate_session_id(session_id)
+        if validation_error:
+            return validation_error
+        
+        # Extract function: get status from repository
+        return await self._fetch_streaming_status(session_id)
+
+    def _validate_session_id(self, session_id: str) -> Optional[dict]:
+        """
+        Validate session ID input.
+        Extracted from get_streaming_status to eliminate bump 1.
+        """
+        if not isinstance(session_id, str):
+            self.logger.error(f"Invalid session_id type: {type(session_id)}")
+            return {
+                "status": "error", 
+                "reason": "session_id must be a string",
+                "error_code": "INVALID_TYPE"
+            }
+        
+        if not session_id or not session_id.strip():
+            self.logger.error("Empty or whitespace-only session_id provided")
+            return {
+                "status": "error", 
+                "reason": "session_id cannot be empty",
+                "error_code": "EMPTY_SESSION_ID"
+            }
+        
+        return None  # No validation error
+
+    async def _fetch_streaming_status(self, session_id: str) -> dict:
+        """
+        Fetch streaming status from repository.
+        Extracted from get_streaming_status to eliminate bump 2.
+        """
+        if not hasattr(self, 'streaming_repository'):
+            self.logger.error("streaming_repository not configured")
+            return {
+                "status": "error", 
+                "reason": "Repository not configured",
+                "error_code": "REPOSITORY_NOT_CONFIGURED"
+            }
+        
+        if self.streaming_repository is None:
+            self.logger.error("streaming_repository is None")
+            return {
+                "status": "error", 
+                "reason": "Repository not initialized",
+                "error_code": "REPOSITORY_NOT_INITIALIZED"
+            }
+        
+        try:
+            status = await self.streaming_repository.get_status(session_id)
+            self.logger.debug(f"Successfully retrieved status for session {session_id}")
+            return status
+        except Exception as e:
+            self.logger.error(f"Error fetching streaming status for session {session_id}: {e}")
+            return {
+                "status": "error", 
+                "reason": f"Repository error: {str(e)}",
+                "error_code": "REPOSITORY_ERROR"
+            }
 
 
 class SessionManager:
@@ -645,7 +739,7 @@ class SessionManager:
         """Get session by ID"""
         return self.sessions.get(session_id)
 
-    def add_message(Optional[Dict] = None) -> None:
+    def add_message(self, session_id: str, message_type: str, content: str, metadata: Optional[Dict] = None) -> None:
         """Add message to session history"""
         if session_id not in self.session_history:
             self.session_history[session_id] = []
@@ -663,7 +757,7 @@ class SessionManager:
         if session_id in self.sessions:
             self.sessions[session_id]['last_activity'] = datetime.now()
 
-    def end_session(str) -> None:
+    def end_session(self, session_id: str) -> None:
         """End session"""
         if session_id in self.sessions:
             self.sessions[session_id]['ended_at'] = datetime.now()

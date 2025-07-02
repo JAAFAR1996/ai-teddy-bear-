@@ -113,41 +113,46 @@ class OpenAITranscriptionProvider(TranscriptionProviderBase):
         audio_data: bytes,
         config: TranscriptionConfig
     ) -> TranscriptionResult:
-        """Transcribe using OpenAI Whisper API"""
+        """Transcribe using OpenAI Whisper API - Bumpy Road fixed"""
         try:
-            # Create file-like object
-            audio_file = io.BytesIO(audio_data)
-            audio_file.name = "audio.wav"
-            
-            # Call OpenAI API
-            response = await self.client.audio.transcriptions.create(
-                model=config.model,
-                file=audio_file,
-                language=config.language,
-                temperature=config.temperature,
-                response_format="verbose_json" if config.enable_word_timestamps else "json"
-            )
-            
-            # Parse response
-            result = TranscriptionResult(
-                text=response.text,
-                language=response.language if hasattr(response, 'language') else config.language,
-                duration=response.duration if hasattr(response, 'duration') else None,
-                words=response.words if hasattr(response, 'words') else None,
-                metadata={"provider": "openai", "model": config.model}
-            )
-            
-            logger.info(
-                "OpenAI transcription completed",
-                text_length=len(result.text),
-                language=result.language
-            )
-            
+            response = await self._call_openai_api(audio_data, config)
+            result = self._parse_openai_response(response, config)
+            self._log_transcription_success(result)
             return result
-            
         except Exception as e:
             logger.error("OpenAI transcription failed", error=str(e))
             raise
+
+    async def _call_openai_api(self, audio_data: bytes, config: TranscriptionConfig):
+        """Call OpenAI API with proper formatting"""
+        audio_file = io.BytesIO(audio_data)
+        audio_file.name = "audio.wav"
+        
+        return await self.client.audio.transcriptions.create(
+            model=config.model,
+            file=audio_file,
+            language=config.language,
+            temperature=config.temperature,
+            response_format="verbose_json" if config.enable_word_timestamps else "json"
+        )
+
+    def _parse_openai_response(self, response, config: TranscriptionConfig) -> TranscriptionResult:
+        """Parse OpenAI response into TranscriptionResult"""
+        return TranscriptionResult(
+            text=response.text,
+            language=response.language if hasattr(response, 'language') else config.language,
+            duration=response.duration if hasattr(response, 'duration') else None,
+            words=response.words if hasattr(response, 'words') else None,
+            metadata={"provider": "openai", "model": config.model}
+        )
+
+    def _log_transcription_success(self, result: TranscriptionResult) -> None:
+        """Log successful transcription"""
+        logger.info(
+            "OpenAI transcription completed",
+            text_length=len(result.text),
+            language=result.language
+        )
     
     async def is_available(self) -> bool:
         """Check if OpenAI is available"""
@@ -175,82 +180,99 @@ class GoogleTranscriptionProvider(TranscriptionProviderBase):
         audio_data: bytes,
         config: TranscriptionConfig
     ) -> TranscriptionResult:
-        """Transcribe using Google Speech-to-Text"""
+        """Transcribe using Google Speech-to-Text - Bumpy Road fixed"""
         try:
-            # Configure recognition
-            recognition_config = speech_v1.RecognitionConfig(
-                encoding=speech_v1.RecognitionConfig.AudioEncoding.WEBM_OPUS,
-                sample_rate_hertz=16000,
-                language_code=self._get_language_code(config.language),
-                enable_automatic_punctuation=config.enable_punctuation,
-                enable_word_time_offsets=config.enable_word_timestamps,
-                enable_speaker_diarization=config.enable_speaker_diarization,
-                max_alternatives=config.max_alternatives,
-                profanity_filter=config.profanity_filter,
-                model="latest_long",
-                use_enhanced=True,
-            )
-            
-            audio = speech_v1.RecognitionAudio(content=audio_data)
-            
-            # Perform recognition
-            response = await self.client.recognize(
-                config=recognition_config,
-                audio=audio
-            )
-            
-            # Parse response
-            if not response.results:
-                return TranscriptionResult(
-                    text="",
-                    language=config.language,
-                    confidence=0.0,
-                    metadata={"provider": "google", "error": "No results"}
-                )
-            
-            # Get best alternative
-            result = response.results[0]
-            best_alternative = result.alternatives[0]
-            
-            # Extract words if available
-            words = None
-            if config.enable_word_timestamps and hasattr(best_alternative, 'words'):
-                words = [
-                    {
-                        "word": word.word,
-                        "start_time": word.start_time.total_seconds(),
-                        "end_time": word.end_time.total_seconds(),
-                        "confidence": getattr(word, 'confidence', 1.0)
-                    }
-                    for word in best_alternative.words
-                ]
-            
-            transcription_result = TranscriptionResult(
-                text=best_alternative.transcript,
-                language=config.language,
-                confidence=best_alternative.confidence,
-                words=words,
-                alternatives=[
-                    {"text": alt.transcript, "confidence": alt.confidence}
-                    for alt in result.alternatives[1:config.max_alternatives]
-                ],
-                metadata={
-                    "provider": "google",
-                    "language_code": result.language_code if hasattr(result, 'language_code') else None
-                }
-            )
-            
-            logger.info(
-                "Google transcription completed",
-                text_length=len(transcription_result.text),
-                confidence=transcription_result.confidence
-            )
-            
-            return transcription_result
-            
+            response = await self._perform_google_recognition(audio_data, config)
+            result = self._parse_google_response(response, config)
+            self._log_google_success(result)
+            return result
         except Exception as e:
             logger.error("Google transcription failed", error=str(e))
             raise
+
+    async def _perform_google_recognition(self, audio_data: bytes, config: TranscriptionConfig):
+        """Perform Google Speech recognition"""
+        recognition_config = speech_v1.RecognitionConfig(
+            encoding=speech_v1.RecognitionConfig.AudioEncoding.WEBM_OPUS,
+            sample_rate_hertz=16000,
+            language_code=self._get_language_code(config.language),
+            enable_automatic_punctuation=config.enable_punctuation,
+            enable_word_time_offsets=config.enable_word_timestamps,
+            enable_speaker_diarization=config.enable_speaker_diarization,
+            max_alternatives=config.max_alternatives,
+            profanity_filter=config.profanity_filter,
+            model="latest_long",
+            use_enhanced=True,
+        )
+        
+        audio = speech_v1.RecognitionAudio(content=audio_data)
+        
+        return await self.client.recognize(
+            config=recognition_config,
+            audio=audio
+        )
+
+    def _parse_google_response(self, response, config: TranscriptionConfig) -> TranscriptionResult:
+        """Parse Google response into TranscriptionResult"""
+        if not response.results:
+            return self._create_empty_result(config)
+        
+        result = response.results[0]
+        best_alternative = result.alternatives[0]
+        
+        words = self._extract_google_words(best_alternative, config)
+        alternatives = self._extract_google_alternatives(result, config)
+        
+        return TranscriptionResult(
+            text=best_alternative.transcript,
+            language=config.language,
+            confidence=best_alternative.confidence,
+            words=words,
+            alternatives=alternatives,
+            metadata={
+                "provider": "google",
+                "language_code": result.language_code if hasattr(result, 'language_code') else None
+            }
+        )
+
+    def _create_empty_result(self, config: TranscriptionConfig) -> TranscriptionResult:
+        """Create empty result when no results returned"""
+        return TranscriptionResult(
+            text="",
+            language=config.language,
+            confidence=0.0,
+            metadata={"provider": "google", "error": "No results"}
+        )
+
+    def _extract_google_words(self, best_alternative, config: TranscriptionConfig):
+        """Extract word-level timestamps from Google response"""
+        if not config.enable_word_timestamps or not hasattr(best_alternative, 'words'):
+            return None
+            
+        return [
+            {
+                "word": word.word,
+                "start_time": word.start_time.total_seconds(),
+                "end_time": word.end_time.total_seconds(),
+                "confidence": getattr(word, 'confidence', 1.0)
+            }
+            for word in best_alternative.words
+        ]
+
+    def _extract_google_alternatives(self, result, config: TranscriptionConfig):
+        """Extract alternative transcriptions"""
+        return [
+            {"text": alt.transcript, "confidence": alt.confidence}
+            for alt in result.alternatives[1:config.max_alternatives]
+        ]
+
+    def _log_google_success(self, result: TranscriptionResult) -> None:
+        """Log successful Google transcription"""
+        logger.info(
+            "Google transcription completed",
+            text_length=len(result.text),
+            confidence=result.confidence
+        )
     
     async def is_available(self) -> bool:
         """Check if Google Speech is available"""
@@ -296,59 +318,63 @@ class AzureTranscriptionProvider(TranscriptionProviderBase):
         audio_data: bytes,
         config: TranscriptionConfig
     ) -> TranscriptionResult:
-        """Transcribe using Azure Speech Services"""
+        """Transcribe using Azure Speech Services - Bumpy Road fixed"""
         try:
-            # Configure speech recognition
-            self.speech_config.speech_recognition_language = self._get_language_code(config.language)
-            self.speech_config.request_word_level_timestamps()
-            
-            # Create audio stream
-            audio_stream = AudioInputStream(audio_data)
-            audio_config = AudioConfig(stream=audio_stream)
-            
-            # Create recognizer
-            recognizer = SpeechRecognizer(
-                speech_config=self.speech_config,
-                audio_config=audio_config
-            )
-            
-            # Perform recognition
+            recognizer = self._setup_azure_recognizer(audio_data, config)
             result = await self._recognize_async(recognizer)
-            
-            if result.reason == ResultReason.RecognizedSpeech:
-                # Extract detailed results
-                details = result.json
-                
-                words = None
-                if config.enable_word_timestamps and "NBest" in details:
-                    words = self._extract_words(details["NBest"][0])
-                
-                transcription_result = TranscriptionResult(
-                    text=result.text,
-                    language=config.language,
-                    confidence=details.get("NBest", [{}])[0].get("Confidence", 1.0),
-                    duration=details.get("Duration", 0) / 10000000.0,  # Convert to seconds
-                    words=words,
-                    metadata={
-                        "provider": "azure",
-                        "recognition_status": result.reason.name
-                    }
-                )
-                
-                logger.info(
-                    "Azure transcription completed",
-                    text_length=len(transcription_result.text),
-                    reason=result.reason.name
-                )
-                
-                return transcription_result
-                
-            else:
-                raise Exception(f"Recognition failed: {result.reason}")
-                
+            transcription_result = self._parse_azure_result(result, config)
+            self._log_azure_success(transcription_result, result)
+            return transcription_result
         except Exception as e:
             logger.error("Azure transcription failed", error=str(e))
             raise
+
+    def _setup_azure_recognizer(self, audio_data: bytes, config: TranscriptionConfig):
+        """Setup Azure speech recognizer"""
+        self.speech_config.speech_recognition_language = self._get_language_code(config.language)
+        self.speech_config.request_word_level_timestamps()
+        
+        audio_stream = AudioInputStream(audio_data)
+        audio_config = AudioConfig(stream=audio_stream)
+        
+        return SpeechRecognizer(
+            speech_config=self.speech_config,
+            audio_config=audio_config
+        )
+
+    def _parse_azure_result(self, result, config: TranscriptionConfig) -> TranscriptionResult:
+        """Parse Azure recognition result"""
+        if result.reason != ResultReason.RecognizedSpeech:
+            raise Exception(f"Recognition failed: {result.reason}")
+        
+        details = result.json
+        words = self._extract_azure_words(details, config)
+        
+        return TranscriptionResult(
+            text=result.text,
+            language=config.language,
+            confidence=details.get("NBest", [{}])[0].get("Confidence", 1.0),
+            duration=details.get("Duration", 0) / 10000000.0,  # Convert to seconds
+            words=words,
+            metadata={
+                "provider": "azure",
+                "recognition_status": result.reason.name
+            }
+        )
+
+    def _extract_azure_words(self, details: Dict, config: TranscriptionConfig):
+        """Extract word-level timestamps from Azure response"""
+        if not config.enable_word_timestamps or "NBest" not in details:
+            return None
+        return self._extract_words(details["NBest"][0])
+
+    def _log_azure_success(self, transcription_result: TranscriptionResult, result) -> None:
+        """Log successful Azure transcription"""
+        logger.info(
+            "Azure transcription completed",
+            text_length=len(transcription_result.text),
+            reason=result.reason.name
+        )
     
     async def is_available(self) -> bool:
         """Check if Azure is available"""
@@ -489,33 +515,53 @@ class CloudTranscriptionService:
         **kwargs
     ) -> TranscriptionResult:
         """
-        Transcribe audio with automatic provider selection and fallback
+        Transcribe audio with automatic provider selection and fallback - Complex Method fixed
         """
-        # Handle base64 input
-        if isinstance(audio_data, str):
-            audio_data = base64.b64decode(audio_data)
+        audio_bytes = self._prepare_audio_data(audio_data)
+        config = self._create_transcription_config(language, provider, **kwargs)
         
-        # Create config
-        config = TranscriptionConfig(
+        # Try primary provider first
+        result = await self._try_primary_provider(audio_bytes, config, provider)
+        if result:
+            return result
+        
+        # Fall back to other providers
+        return await self._try_fallback_providers(audio_bytes, config, provider)
+
+    def _prepare_audio_data(self, audio_data: Union[bytes, str]) -> bytes:
+        """Prepare audio data for transcription"""
+        if isinstance(audio_data, str):
+            return base64.b64decode(audio_data)
+        return audio_data
+
+    def _create_transcription_config(self, language: str, provider: Optional[TranscriptionProvider], **kwargs) -> TranscriptionConfig:
+        """Create transcription configuration"""
+        return TranscriptionConfig(
             language=language,
             provider=provider or self.default_config.provider,
             **kwargs
         )
+
+    async def _try_primary_provider(self, audio_data: bytes, config: TranscriptionConfig, provider: Optional[TranscriptionProvider]) -> Optional[TranscriptionResult]:
+        """Try the specified provider first"""
+        if not provider or provider not in self.providers:
+            return None
         
-        # Try specified provider first
-        if provider and provider in self.providers:
-            try:
-                return await self.providers[provider].transcribe(audio_data, config)
-            except Exception as e:
-                logger.warning(
-                    f"Provider {provider} failed, trying fallback",
-                    error=str(e)
-                )
-        
-        # Try all available providers
+        try:
+            return await self.providers[provider].transcribe(audio_data, config)
+        except Exception as e:
+            logger.warning(
+                f"Provider {provider} failed, trying fallback",
+                error=str(e)
+            )
+            return None
+
+    async def _try_fallback_providers(self, audio_data: bytes, config: TranscriptionConfig, failed_provider: Optional[TranscriptionProvider]) -> TranscriptionResult:
+        """Try all remaining providers as fallback"""
         errors = []
+        
         for prov_type, prov_instance in self.providers.items():
-            if prov_type == provider:  # Skip already tried
+            if prov_type == failed_provider:  # Skip already tried
                 continue
             
             try:
@@ -531,11 +577,12 @@ class CloudTranscriptionService:
         raise Exception(f"All transcription providers failed: {'; '.join(errors)}")
     
     async def get_available_providers(self) -> List[TranscriptionProvider]:
-        """Get list of available providers"""
+        """Get list of available providers - Bumpy Road fixed"""
         available = []
         
         for provider_type, provider_instance in self.providers.items():
-            if await self._check_provider_availability(provider_type, provider_instance):
+            is_available = await self._check_provider_availability(provider_type, provider_instance)
+            if is_available:
                 available.append(provider_type)
         
         return available

@@ -10,14 +10,61 @@ import hashlib
 import json
 import sqlite3
 import traceback
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 import structlog
 
 # إعداد logger
 logger = structlog.get_logger(__name__)
+
+
+# =============================================================================
+# PARAMETER OBJECTS (INTRODUCE PARAMETER OBJECT REFACTORING)
+# =============================================================================
+
+@dataclass
+class IssueData:
+    """
+    Parameter object for issue creation and reporting.
+    Encapsulates all data needed to create or report an issue.
+    """
+    title: str
+    description: str
+    severity: str = "medium"
+    component: str = "unknown"
+    error_type: str = "runtime_error"
+    stacktrace: Optional[str] = None
+    
+    def __post_init__(self):
+        """Validate issue data"""
+        if not self.title or not isinstance(self.title, str):
+            raise ValueError("title must be a non-empty string")
+        if not self.description or not isinstance(self.description, str):
+            raise ValueError("description must be a non-empty string")
+            
+        # Validate severity levels
+        valid_severities = ["low", "medium", "high", "critical"]
+        if self.severity not in valid_severities:
+            raise ValueError(f"severity must be one of: {valid_severities}")
+            
+        # Clean and validate component name
+        if not self.component or not isinstance(self.component, str):
+            self.component = "unknown"
+        else:
+            self.component = self.component.strip().lower()
+            
+        # Clean and validate error_type
+        if not self.error_type or not isinstance(self.error_type, str):
+            self.error_type = "runtime_error"
+        else:
+            self.error_type = self.error_type.strip()
+            
+        # Clean stacktrace if provided
+        if self.stacktrace and not isinstance(self.stacktrace, str):
+            self.stacktrace = str(self.stacktrace)
 
 
 class IssueTrackerService:
@@ -96,19 +143,20 @@ class IssueTrackerService:
                 "Failed to initialize issue tracker database", error=str(e)
             )
 
-    async def create_issue(
-        self,
-        title: str,
-        description: str,
-        severity: str = "medium",
-        component: str = "unknown",
-        error_type: str = "runtime_error",
-        stacktrace: str = None,
-    ) -> str:
-        """إنشاء تقرير مشكلة جديد"""
+    async def create_issue(self, issue_data: IssueData) -> str:
+        """
+        إنشاء تقرير مشكلة جديد.
+        Refactored to use parameter object pattern.
+        
+        Args:
+            issue_data: IssueData object containing all issue information
+            
+        Returns:
+            str: Issue ID or None if failed
+        """
         try:
             # إنشاء ID فريد للمشكلة
-            issue_id = self._generate_issue_id(title, error_type)
+            issue_id = self._generate_issue_id(issue_data.title, issue_data.error_type)
 
             # حفظ في قاعدة البيانات
             conn = sqlite3.connect(self.db_path)
@@ -141,13 +189,13 @@ class IssueTrackerService:
                 """,
                     (
                         issue_id,
-                        title,
-                        description,
-                        severity,
+                        issue_data.title,
+                        issue_data.description,
+                        issue_data.severity,
                         "open",
-                        component,
-                        error_type,
-                        stacktrace or "",
+                        issue_data.component,
+                        issue_data.error_type,
+                        issue_data.stacktrace or "",
                     ),
                 )
 
@@ -157,8 +205,8 @@ class IssueTrackerService:
             self.logger.info(
                 "Issue created",
                 issue_id=issue_id,
-                severity=severity,
-                component=component,
+                severity=issue_data.severity,
+                component=issue_data.component,
             )
 
             return issue_id
@@ -167,8 +215,31 @@ class IssueTrackerService:
             self.logger.error("Failed to create issue", error=str(e))
             return None
 
+    async def create_issue_legacy(
+        self,
+        title: str,
+        description: str,
+        severity: str = "medium",
+        component: str = "unknown",
+        error_type: str = "runtime_error",
+        stacktrace: str = None,
+    ) -> str:
+        """
+        Legacy method for backward compatibility.
+        Creates IssueData and delegates to new method.
+        """
+        issue_data = IssueData(
+            title=title,
+            description=description,
+            severity=severity,
+            component=component,
+            error_type=error_type,
+            stacktrace=stacktrace
+        )
+        return await self.create_issue(issue_data)
+
     def _generate_issue_id(self, title: str, error_type: str) -> str:
-        """إنشاء ID فريد للمشكلة"""
+        """إنشاء ID فريق للمشكلة"""
         try:
             content = f"{title}:{error_type}"
             hash_object = hashlib.md5(content.encode())
@@ -230,17 +301,39 @@ issue_tracker = IssueTrackerService()
 
 
 # دوال مساعدة
-async def report_issue(
+async def report_issue(issue_data: IssueData) -> str:
+    """
+    تسجيل مشكلة جديدة.
+    Refactored to use parameter object pattern.
+    
+    Args:
+        issue_data: IssueData object containing all issue information
+        
+    Returns:
+        str: Issue ID or None if failed
+    """
+    return await issue_tracker.create_issue(issue_data)
+
+
+async def report_issue_legacy(
     title: str,
     description: str,
     severity: str = "medium",
     component: str = "unknown",
     error_type: str = "runtime_error",
 ) -> str:
-    """تسجيل مشكلة جديدة"""
-    return await issue_tracker.create_issue(
-        title, description, severity, component, error_type
+    """
+    Legacy function for backward compatibility.
+    Creates IssueData and delegates to new function.
+    """
+    issue_data = IssueData(
+        title=title,
+        description=description,
+        severity=severity,
+        component=component,
+        error_type=error_type
     )
+    return await report_issue(issue_data)
 
 
 async def report_exception(
@@ -249,14 +342,16 @@ async def report_exception(
     """تسجيل استثناء مع stacktrace"""
     stacktrace = traceback.format_exc()
 
-    return await issue_tracker.create_issue(
+    issue_data = IssueData(
         title=f"{component}: {type(exception).__name__}",
         description=f"{str(exception)}\n\nContext: {context}",
         severity="high",
         component=component,
         error_type=type(exception).__name__,
-        stacktrace=stacktrace,
+        stacktrace=stacktrace
     )
+    
+    return await issue_tracker.create_issue(issue_data)
 
 
 async def get_system_health() -> Dict:

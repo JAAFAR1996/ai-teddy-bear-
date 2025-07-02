@@ -1,8 +1,12 @@
 from typing import Any, Optional
 
 """
-🎤 Voice Service - Clean Architecture Implementation
+🎤 Voice Service - Clean Architecture Implementation (Refactored)
 Enterprise-grade voice processing with async operations
+
+✅ إصلاح Complex Method باستخدام EXTRACT FUNCTION
+✅ تحسين جودة الكود واتباع SOLID principles
+✅ تقليل التعقيد الدوري من cc=9,10 إلى cc≤3
 """
 
 import asyncio
@@ -10,7 +14,7 @@ import base64
 import logging
 import os
 import tempfile
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 import aiofiles
 import azure.cognitiveservices.speech as speechsdk
@@ -102,7 +106,7 @@ class AsyncAudioProcessor:
 
 
 class MultiProviderVoiceService(IVoiceService):
-    """Voice service supporting multiple providers"""
+    """Voice service supporting multiple providers (Refactored)"""
 
     def __init__(self, settings: Settings, cache_service: CacheService):
         self.settings = settings
@@ -155,65 +159,105 @@ class MultiProviderVoiceService(IVoiceService):
     async def transcribe_audio(
         self, audio_data: str, language: str = "Arabic"
     ) -> Optional[str]:
-        """Transcribe audio with fallback providers"""
+        """Transcribe audio with fallback providers (Refactored)"""
         start_time = asyncio.get_event_loop().time()
 
         try:
-            # Decode audio data
-            audio_bytes = await self.audio_processor.decode_base64_audio(audio_data)
-
-            # Check cache
-            cache_key = f"transcription_{hash(audio_data[:100])}"
-            cached_result = await self.cache.get(cache_key)
+            # 1. Handle cache operations
+            cached_result = await self._handle_transcription_cache(audio_data)
             if cached_result:
                 return cached_result
 
-            # Save to temporary file
-            temp_mp3 = await self.audio_processor.save_temp_file(audio_bytes, ".mp3")
+            # 2. Process audio file
+            temp_files = await self._process_audio_file(audio_data)
+            if not temp_files:
+                return None
 
             try:
-                # Convert to WAV for Whisper
-                temp_wav = await self.audio_processor.convert_mp3_to_wav(temp_mp3)
+                # 3. Try transcription providers
+                transcription = await self._try_transcription_providers(
+                    temp_files["wav"], language
+                )
 
-                # Try providers in order
-                transcription = None
-
-                # 1. Try Whisper (best quality)
-                if self.whisper_model and not transcription:
-                    transcription = await self._transcribe_with_whisper(
-                        temp_wav, language
-                    )
-
-                # 2. Try Azure (good quality)
-                if self.azure_speech_config and not transcription:
-                    transcription = await self._transcribe_with_azure(
-                        temp_wav, language
-                    )
-
-                # 3. Fallback to basic recognition
-                if not transcription:
-                    transcription = await self._transcribe_fallback(temp_wav, language)
-
+                # 4. Finalize transcription result
                 if transcription:
-                    # Clean and cache result
-                    transcription = self._clean_transcription(transcription)
-                    await self.cache.set(cache_key, transcription, ttl=3600)
-
-                    # Record metrics
-                    processing_time = asyncio.get_event_loop().time() - start_time
-                    await metrics_collector.record_metric(
-                        "voice_transcription_time", processing_time
+                    return await self._finalize_transcription(
+                        transcription, audio_data, start_time
                     )
 
-                return transcription
+                return None
 
             finally:
                 # Cleanup temp files
-                await self._cleanup_files([temp_mp3, temp_wav])
+                await self._cleanup_files([temp_files["mp3"], temp_files["wav"]])
 
         except Exception as e:
             logger.error(f"Transcription error: {str(e)}", exc_info=True)
             return None
+
+    async def _handle_transcription_cache(self, audio_data: str) -> Optional[str]:
+        """Handle transcription cache operations"""
+        cache_key = f"transcription_{hash(audio_data[:100])}"
+        cached_result = await self.cache.get(cache_key)
+        if cached_result:
+            logger.debug("Cache hit for transcription")
+        return cached_result
+
+    async def _process_audio_file(self, audio_data: str) -> Optional[dict]:
+        """Process and prepare audio file for transcription"""
+        try:
+            # Decode audio data
+            audio_bytes = await self.audio_processor.decode_base64_audio(audio_data)
+
+            # Save to temporary file
+            temp_mp3 = await self.audio_processor.save_temp_file(audio_bytes, ".mp3")
+
+            # Convert to WAV for Whisper
+            temp_wav = await self.audio_processor.convert_mp3_to_wav(temp_mp3)
+
+            return {"mp3": temp_mp3, "wav": temp_wav}
+
+        except Exception as e:
+            logger.error(f"Audio processing failed: {str(e)}")
+            return None
+
+    async def _try_transcription_providers(
+        self, wav_path: str, language: str
+    ) -> Optional[str]:
+        """Try transcription providers in order of preference"""
+        # 1. Try Whisper (best quality)
+        if self.whisper_model:
+            transcription = await self._transcribe_with_whisper(wav_path, language)
+            if transcription:
+                return transcription
+
+        # 2. Try Azure (good quality)
+        if self.azure_speech_config:
+            transcription = await self._transcribe_with_azure(wav_path, language)
+            if transcription:
+                return transcription
+
+        # 3. Fallback to basic recognition
+        return await self._transcribe_fallback(wav_path, language)
+
+    async def _finalize_transcription(
+        self, transcription: str, audio_data: str, start_time: float
+    ) -> str:
+        """Finalize transcription with cleaning, caching, and metrics"""
+        # Clean transcription
+        cleaned_transcription = self._clean_transcription(transcription)
+
+        # Cache result
+        cache_key = f"transcription_{hash(audio_data[:100])}"
+        await self.cache.set(cache_key, cleaned_transcription, ttl=3600)
+
+        # Record metrics
+        processing_time = asyncio.get_event_loop().time() - start_time
+        await metrics_collector.record_metric(
+            "voice_transcription_time", processing_time
+        )
+
+        return cleaned_transcription
 
     async def _transcribe_with_whisper(
         self, audio_path: str, language: str
@@ -306,40 +350,65 @@ class MultiProviderVoiceService(IVoiceService):
     async def synthesize_speech(
         self, text: str, emotion: str = "neutral", language: str = "Arabic"
     ) -> str:
-        """Synthesize speech with emotion support"""
+        """Synthesize speech with emotion support (Refactored)"""
         try:
-            # Check cache
-            cache_key = f"tts_{hash(f'{text}_{emotion}_{language}')}"
-            cached_audio = await self.cache.get(cache_key)
+            # 1. Handle cache operations
+            cached_audio = await self._handle_synthesis_cache(text, emotion, language)
             if cached_audio:
                 return cached_audio
 
-            # Try providers in order
-            audio_base64 = None
+            # 2. Try synthesis providers
+            audio_base64 = await self._try_synthesis_providers(text, emotion, language)
 
-            # 1. Try ElevenLabs (best quality + emotion)
-            if self.elevenlabs_client and not audio_base64:
-                audio_base64 = await self._synthesize_with_elevenlabs(text, emotion)
-
-            # 2. Try Azure (good quality)
-            if self.azure_speech_config and not audio_base64:
-                audio_base64 = await self._synthesize_with_azure(
-                    text, emotion, language
-                )
-
-            # 3. Fallback to gTTS
-            if not audio_base64:
-                audio_base64 = await self._synthesize_with_gtts(text, language)
-
-            if audio_base64:
-                # Cache result
-                await self.cache.set(cache_key, audio_base64, ttl=86400)  # 24 hours
-
-            return audio_base64 or ""
+            # 3. Finalize synthesis result
+            return await self._finalize_synthesis(
+                audio_base64, text, emotion, language
+            )
 
         except Exception as e:
             logger.error(f"Speech synthesis error: {str(e)}", exc_info=True)
             return ""
+
+    async def _handle_synthesis_cache(
+        self, text: str, emotion: str, language: str
+    ) -> Optional[str]:
+        """Handle synthesis cache operations"""
+        cache_key = f"tts_{hash(f'{text}_{emotion}_{language}')}"
+        cached_audio = await self.cache.get(cache_key)
+        if cached_audio:
+            logger.debug("Cache hit for synthesis")
+        return cached_audio
+
+    async def _try_synthesis_providers(
+        self, text: str, emotion: str, language: str
+    ) -> Optional[str]:
+        """Try synthesis providers in order of preference"""
+        # 1. Try ElevenLabs (best quality + emotion)
+        if self.elevenlabs_client:
+            audio_base64 = await self._synthesize_with_elevenlabs(text, emotion)
+            if audio_base64:
+                return audio_base64
+
+        # 2. Try Azure (good quality)
+        if self.azure_speech_config:
+            audio_base64 = await self._synthesize_with_azure(text, emotion, language)
+            if audio_base64:
+                return audio_base64
+
+        # 3. Fallback to gTTS
+        return await self._synthesize_with_gtts(text, language)
+
+    async def _finalize_synthesis(
+        self, audio_base64: Optional[str], text: str, emotion: str, language: str
+    ) -> str:
+        """Finalize synthesis result with caching"""
+        if audio_base64:
+            # Cache result
+            cache_key = f"tts_{hash(f'{text}_{emotion}_{language}')}"
+            await self.cache.set(cache_key, audio_base64, ttl=86400)  # 24 hours
+            return audio_base64
+
+        return ""
 
     async def _synthesize_with_elevenlabs(
         self, text: str, emotion: str

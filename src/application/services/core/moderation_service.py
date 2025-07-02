@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-🚀 Moderation Service - Unified & Safe Edition
-خدمة الفلترة الموحدة والآمنة للدمية الذكية
+🚀 Moderation Service - Unified & Safe Edition (Refactored)
+خدمة الفلترة الموحدة والآمنة للدمية الذكية - نسخة محسنة
 
-✅ نسخة آمنة ومبسطة تعمل بدون تعقيدات
+✅ إصلاح Complex Method باستخدام EXTRACT FUNCTION
+✅ إصلاح Too Many Arguments باستخدام INTRODUCE PARAMETER OBJECT
+✅ تحسين جودة الكود واتباع SOLID principles
 ✅ توافق كامل مع الواجهات القديمة
-✅ معالجة أخطاء شاملة
-✅ أداء سريع وموثوق
 """
 
 import asyncio
@@ -55,14 +55,56 @@ class ModerationContext:
     enable_google: bool = False
     strict_mode: bool = False
 
+@dataclass
+class ModerationResultData:
+    """Parameter object لتجميع معاملات ModerationResult"""
+    is_safe: bool = True
+    severity: ModerationSeverity = ModerationSeverity.SAFE
+    flagged_categories: Optional[List] = None
+    confidence_scores: Optional[Dict] = None
+    matched_rules: Optional[List] = None
+    
+    def get_flagged_categories(self) -> List:
+        return self.flagged_categories or []
+    
+    def get_confidence_scores(self) -> Dict:
+        return self.confidence_scores or {}
+    
+    def get_matched_rules(self) -> List:
+        return self.matched_rules or []
+
 class ModerationResult:
-    def __init__(self, is_safe=True, severity=ModerationSeverity.SAFE, 
-                 flagged_categories=None, confidence_scores=None, matched_rules=None):
-        self.is_safe = is_safe
-        self.severity = severity
-        self.flagged_categories = flagged_categories or []
-        self.confidence_scores = confidence_scores or {}
-        self.matched_rules = matched_rules or []
+    def __init__(self, data: Optional[ModerationResultData] = None):
+        """إنشاء نتيجة فلترة باستخدام parameter object"""
+        if data is None:
+            data = ModerationResultData()
+        
+        self.is_safe = data.is_safe
+        self.severity = data.severity
+        self.flagged_categories = data.get_flagged_categories()
+        self.confidence_scores = data.get_confidence_scores()
+        self.matched_rules = data.get_matched_rules()
+
+@dataclass
+class LegacyModerationParams:
+    """Parameter object لتجميع معاملات check_content_legacy"""
+    content: str
+    user_id: Optional[str] = None 
+    session_id: Optional[str] = None
+    age: int = 10
+    language: str = "en"
+    context: Optional[List] = None
+    
+    def to_moderation_request(self) -> ModerationRequest:
+        """تحويل إلى ModerationRequest"""
+        return ModerationRequest(
+            content=self.content,
+            user_id=self.user_id,
+            session_id=self.session_id,
+            age=self.age,
+            language=self.language,
+            context=self.context
+        )
 
 class ModerationRule:
     def __init__(self, name, pattern, severity, category):
@@ -97,9 +139,9 @@ def get_config():
 
 class ModerationService:
     """
-    🎯 خدمة الفلترة الرئيسية - نسخة آمنة ومستقرة
+    🎯 خدمة الفلترة الرئيسية - نسخة محسنة ومنظمة
     
-    تجمع بين البساطة والقوة مع توافق كامل للواجهات القديمة
+    تطبق مبادئ SOLID و Clean Code مع توافق كامل للواجهات القديمة
     """
     
     def __init__(self, config=None):
@@ -128,7 +170,7 @@ class ModerationService:
         # Age-based rules
         self.age_rules = self._initialize_age_rules()
         
-        self.logger.info("🚀 Moderation Service initialized successfully (Safe Edition)")
+        self.logger.info("🚀 Moderation Service initialized successfully (Refactored Edition)")
     
     def _load_default_whitelist(self) -> set:
         """كلمات آمنة ومسموحة"""
@@ -191,8 +233,43 @@ class ModerationService:
         request: Union[str, ModerationRequest],
         context: Optional[ModerationContext] = None,
     ) -> Dict[str, Any]:
-        """🔍 فحص المحتوى الرئيسي - سريع وآمن"""
+        """🔍 فحص المحتوى الرئيسي - محسن ومبسط"""
         
+        # 1. Prepare request and context
+        mod_request, mod_context = self._prepare_moderation_request(request, context)
+        
+        self.stats["total_checks"] += 1
+        
+        try:
+            # 2. Basic content validation
+            validation_result = self._validate_content_basics(mod_request)
+            if validation_result:
+                return validation_result
+            
+            # 3. Handle cache operations
+            cache_result = await self._handle_cache_operations(mod_request, mod_context)
+            if cache_result:
+                return cache_result
+            
+            # 4. Perform content analysis
+            analysis_result = await self._analyze_content(mod_request)
+            
+            # 5. Update processing statistics and cache
+            await self._update_processing_stats(analysis_result, mod_request, mod_context)
+            
+            return analysis_result
+            
+        except Exception as e:
+            self.logger.error(f"❌ Error in content check: {e}")
+            # Return safe response on error to avoid blocking legitimate content
+            return self._create_safe_response("Processing error - content allowed")
+    
+    def _prepare_moderation_request(
+        self, 
+        request: Union[str, ModerationRequest], 
+        context: Optional[ModerationContext]
+    ) -> tuple[ModerationRequest, ModerationContext]:
+        """تحضير طلب الفلترة والسياق"""
         # Convert string input to request object
         if isinstance(request, str):
             mod_request = ModerationRequest(content=request)
@@ -202,50 +279,63 @@ class ModerationService:
         if context is None:
             context = ModerationContext()
         
-        self.stats["total_checks"] += 1
+        return mod_request, context
+    
+    def _validate_content_basics(self, request: ModerationRequest) -> Optional[Dict[str, Any]]:
+        """التحقق الأساسي من صحة المحتوى"""
+        # Check if content is empty or invalid
+        if self._is_empty_or_invalid(request.content):
+            return self._create_safe_response("Empty content")
         
-        try:
-            # 1. Basic validation
-            if self._is_empty_or_invalid(mod_request.content):
-                return self._create_safe_response("Empty content")
-            
-            if self._is_too_long(mod_request.content):
-                return self._create_unsafe_response(
-                    "Content too long", 
-                    [ContentCategory.AGE_INAPPROPRIATE]
-                )
-            
-            # 2. Check cache
-            if context.use_cache:
-                cache_key = self._generate_cache_key(
-                    mod_request.content, mod_request.age, mod_request.language
-                )
-                cached_result = self._check_cache(cache_key)
-                if cached_result:
-                    self.stats["cache_hits"] += 1
-                    return cached_result
-                else:
-                    self.stats["cache_misses"] += 1
-            
-            # 3. Content analysis
-            result = await self._analyze_content(mod_request)
-            
-            # 4. Cache successful results
-            if context.use_cache:
-                self._cache_result(cache_key, result)
-            
-            # 5. Update stats
-            if result["allowed"]:
-                self.stats["safe_content"] += 1
-            else:
-                self.stats["blocked_content"] += 1
-            
-            return result
-            
-        except Exception as e:
-            self.logger.error(f"❌ Error in content check: {e}")
-            # Return safe response on error to avoid blocking legitimate content
-            return self._create_safe_response("Processing error - content allowed")
+        # Check if content is too long
+        if self._is_too_long(request.content):
+            return self._create_unsafe_response(
+                "Content too long", 
+                [ContentCategory.AGE_INAPPROPRIATE]
+            )
+        
+        return None
+    
+    async def _handle_cache_operations(
+        self, 
+        request: ModerationRequest, 
+        context: ModerationContext
+    ) -> Optional[Dict[str, Any]]:
+        """معالجة عمليات cache"""
+        if not context.use_cache:
+            return None
+        
+        cache_key = self._generate_cache_key(
+            request.content, request.age, request.language
+        )
+        
+        cached_result = self._check_cache(cache_key)
+        if cached_result:
+            self.stats["cache_hits"] += 1
+            return cached_result
+        else:
+            self.stats["cache_misses"] += 1
+            # Store cache_key for later use
+            setattr(request, '_cache_key', cache_key)
+        
+        return None
+    
+    async def _update_processing_stats(
+        self, 
+        result: Dict[str, Any], 
+        request: ModerationRequest, 
+        context: ModerationContext
+    ) -> None:
+        """تحديث الإحصائيات وcache"""
+        # Cache successful results
+        if context.use_cache and hasattr(request, '_cache_key'):
+            self._cache_result(request._cache_key, result)
+        
+        # Update stats
+        if result["allowed"]:
+            self.stats["safe_content"] += 1
+        else:
+            self.stats["blocked_content"] += 1
     
     async def _analyze_content(self, request: ModerationRequest) -> Dict[str, Any]:
         """تحليل المحتوى الشامل"""
@@ -411,22 +501,32 @@ class ModerationService:
     
     async def check_content_legacy(
         self,
-        content: str,
+        params: Union[LegacyModerationParams, str],
         user_id: Optional[str] = None,
         session_id: Optional[str] = None,
         age: int = 10,
         language: str = "en",
         context: Optional[List] = None,
     ) -> Dict[str, Any]:
-        """🔄 واجهة قديمة للتوافق الكامل"""
-        request = ModerationRequest(
-            content=content,
-            user_id=user_id,
-            session_id=session_id,
-            age=age,
-            language=language,
-            context=context
-        )
+        """🔄 واجهة قديمة للتوافق الكامل (محسنة)"""
+        
+        # Handle both new parameter object and legacy parameters
+        if isinstance(params, LegacyModerationParams):
+            request = params.to_moderation_request()
+        elif isinstance(params, str):
+            # Legacy support: first parameter is content string
+            legacy_params = LegacyModerationParams(
+                content=params,
+                user_id=user_id,
+                session_id=session_id,
+                age=age,
+                language=language,
+                context=context
+            )
+            request = legacy_params.to_moderation_request()
+        else:
+            raise ValueError("First parameter must be either LegacyModerationParams or content string")
+        
         return await self.check_content(request)
     
     async def moderate_content(self, text: str, user_context: dict = None) -> dict:

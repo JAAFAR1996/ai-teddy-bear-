@@ -197,6 +197,92 @@ async def register_device(
 
 # ================== AUDIO PROCESSING ENDPOINTS ==================
 
+async def _validate_and_get_child(device_id: str, child_service: ChildService):
+    """
+    Validate device and get child profile.
+    Extracted from process_audio to reduce complexity.
+    """
+    child = await child_service.get_by_device_id(device_id)
+    if not child:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No child profile found for device {device_id}",
+        )
+    return child
+
+async def _transcribe_audio_data(audio_data: str, language: str, voice_service: VoiceService):
+    """
+    Transcribe audio data to text with validation.
+    Extracted from process_audio to reduce complexity.
+    """
+    transcribed_text = await voice_service.transcribe_audio(
+        audio_data=audio_data, language=language
+    )
+    
+    if not transcribed_text:
+        raise HTTPException(status_code=422, detail="Could not transcribe audio")
+    
+    return transcribed_text
+
+async def _generate_ai_response(message: str, child, session_id: Optional[str], ai_service: AIService):
+    """
+    Generate AI response for the transcribed message.
+    Extracted from process_audio to reduce complexity.
+    """
+    return await ai_service.generate_response(
+        message=message, child=child, session_id=session_id
+    )
+
+async def _synthesize_response_audio(text: str, emotion: str, language: str, voice_service: VoiceService):
+    """
+    Convert AI response text to audio.
+    Extracted from process_audio to reduce complexity.
+    """
+    return await voice_service.synthesize_speech(
+        text=text, emotion=emotion, language=language
+    )
+
+async def _save_conversation_data(
+    device_id: str, 
+    message: str, 
+    response: str, 
+    emotion: str, 
+    category: str, 
+    learning_points: List[str], 
+    child_service: ChildService
+):
+    """
+    Save conversation data to database.
+    Extracted from process_audio to reduce complexity.
+    """
+    await child_service.save_conversation(
+        device_id=device_id,
+        message=message,
+        response=response,
+        metadata={
+            "emotion": emotion,
+            "category": category,
+            "learning_points": learning_points,
+        },
+    )
+
+def _build_ai_response(ai_response, response_audio: str, transcribed_text: str) -> AIResponse:
+    """
+    Build the final AI response object.
+    Extracted from process_audio to reduce complexity.
+    """
+    return AIResponse(
+        text=ai_response.text,
+        emotion=ai_response.emotion,
+        category=ai_response.category,
+        learning_points=ai_response.learning_points,
+        session_id=ai_response.session_id,
+        timestamp=datetime.utcnow(),
+        metadata={
+            "audio_response": response_audio,
+            "transcribed_text": transcribed_text,
+        },
+    )
 
 @app.post("/api/v1/audio/process", response_model=AIResponse, tags=["audio"])
 async def process_audio(
@@ -205,58 +291,42 @@ async def process_audio(
     voice_service: VoiceService = Depends(get_voice_service),
     child_service: ChildService = Depends(get_child_service),
 ):
-    """Process audio from ESP32 device"""
+    """
+    Process audio from ESP32 device.
+    Refactored to reduce complexity using extracted functions.
+    """
     try:
-        # Get child profile
-        child = await child_service.get_by_device_id(request.device_id)
-        if not child:
-            raise HTTPException(
-                status_code=404,
-                detail=f"No child profile found for device {request.device_id}",
-            )
+        # Step 1: Validate and get child profile
+        child = await _validate_and_get_child(request.device_id, child_service)
 
-        # Process audio to text
-        transcribed_text = await voice_service.transcribe_audio(
-            audio_data=request.audio, language=child.language
+        # Step 2: Transcribe audio to text
+        transcribed_text = await _transcribe_audio_data(
+            request.audio, child.language, voice_service
         )
 
-        if not transcribed_text:
-            raise HTTPException(status_code=422, detail="Could not transcribe audio")
-
-        # Generate AI response
-        ai_response = await ai_service.generate_response(
-            message=transcribed_text, child=child, session_id=request.session_id
+        # Step 3: Generate AI response
+        ai_response = await _generate_ai_response(
+            transcribed_text, child, request.session_id, ai_service
         )
 
-        # Convert response to audio
-        response_audio = await voice_service.synthesize_speech(
-            text=ai_response.text, emotion=ai_response.emotion, language=child.language
+        # Step 4: Convert response to audio
+        response_audio = await _synthesize_response_audio(
+            ai_response.text, ai_response.emotion, child.language, voice_service
         )
 
-        # Save conversation
-        await child_service.save_conversation(
-            device_id=request.device_id,
-            message=transcribed_text,
-            response=ai_response.text,
-            metadata={
-                "emotion": ai_response.emotion,
-                "category": ai_response.category,
-                "learning_points": ai_response.learning_points,
-            },
+        # Step 5: Save conversation
+        await _save_conversation_data(
+            request.device_id,
+            transcribed_text,
+            ai_response.text,
+            ai_response.emotion,
+            ai_response.category,
+            ai_response.learning_points,
+            child_service,
         )
 
-        return AIResponse(
-            text=ai_response.text,
-            emotion=ai_response.emotion,
-            category=ai_response.category,
-            learning_points=ai_response.learning_points,
-            session_id=ai_response.session_id,
-            timestamp=datetime.utcnow(),
-            metadata={
-                "audio_response": response_audio,
-                "transcribed_text": transcribed_text,
-            },
-        )
+        # Step 6: Build and return response
+        return _build_ai_response(ai_response, response_audio, transcribed_text)
 
     except HTTPException:
         raise

@@ -11,6 +11,7 @@ Migrated from 1295-line God Class to organized, maintainable architecture.
 
 import logging
 import os
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
@@ -33,6 +34,63 @@ from src.infrastructure.parentdashboard import (CacheService,
 from src.infrastructure.persistence.child_repository import ChildRepository
 from src.infrastructure.persistence.conversation_repository import \
     ConversationRepository
+
+
+# =============================================================================
+# PARAMETER OBJECTS (INTRODUCE PARAMETER OBJECT REFACTORING)
+# =============================================================================
+
+@dataclass
+class ChildProfileData:
+    """
+    Parameter object for child profile creation.
+    Encapsulates all data needed to create a child profile.
+    """
+    parent_id: str
+    name: str
+    age: int
+    interests: List[str]
+    language: str = "en"
+    
+    def __post_init__(self):
+        """Validate child profile data"""
+        if not self.parent_id or not isinstance(self.parent_id, str):
+            raise ValueError("parent_id must be a non-empty string")
+        if not self.name or not isinstance(self.name, str):
+            raise ValueError("name must be a non-empty string")
+        if not isinstance(self.age, int) or self.age <= 0:
+            raise ValueError("age must be a positive integer")
+        if not isinstance(self.interests, list):
+            raise ValueError("interests must be a list")
+        if not self.language or not isinstance(self.language, str):
+            raise ValueError("language must be a non-empty string")
+
+
+@dataclass
+class InteractionLogData:
+    """
+    Parameter object for interaction logging.
+    Encapsulates all data needed to log an interaction.
+    """
+    user_id: str
+    child_message: str
+    assistant_message: str
+    timestamp: Optional[datetime] = None
+    session_id: Optional[str] = None
+    audio_url: Optional[str] = None
+    
+    def __post_init__(self):
+        """Validate interaction log data and set defaults"""
+        if not self.user_id or not isinstance(self.user_id, str):
+            raise ValueError("user_id must be a non-empty string")
+        if not self.child_message or not isinstance(self.child_message, str):
+            raise ValueError("child_message must be a non-empty string")
+        if not self.assistant_message or not isinstance(self.assistant_message, str):
+            raise ValueError("assistant_message must be a non-empty string")
+            
+        # Set default timestamp if not provided
+        if self.timestamp is None:
+            self.timestamp = datetime.now()
 
 
 class ParentDashboardService:
@@ -106,7 +164,26 @@ class ParentDashboardService:
             email, name, phone, timezone
         )
 
-    async def create_child_profile(
+    async def create_child_profile(self, profile_data: ChildProfileData) -> ChildProfile:
+        """
+        Create child profile with age-appropriate defaults.
+        Refactored to use parameter object pattern.
+        
+        Args:
+            profile_data: ChildProfileData object containing all profile information
+            
+        Returns:
+            ChildProfile: Created child profile
+        """
+        return await self.orchestrator.create_child_profile(
+            profile_data.parent_id, 
+            profile_data.name, 
+            profile_data.age, 
+            profile_data.interests, 
+            profile_data.language
+        )
+
+    async def create_child_profile_legacy(
         self,
         parent_id: str,
         name: str,
@@ -114,10 +191,18 @@ class ParentDashboardService:
         interests: List[str],
         language: str = "en",
     ) -> ChildProfile:
-        """Create child profile with age-appropriate defaults"""
-        return await self.orchestrator.create_child_profile(
-            parent_id, name, age, interests, language
+        """
+        Legacy method for backward compatibility.
+        Creates ChildProfileData and delegates to new method.
+        """
+        profile_data = ChildProfileData(
+            parent_id=parent_id,
+            name=name,
+            age=age,
+            interests=interests,
+            language=language
         )
+        return await self.create_child_profile(profile_data)
 
     async def update_parental_controls(
         self, child_id: str, controls: Dict[str, Any]
@@ -135,7 +220,32 @@ class ParentDashboardService:
     # SESSION MANAGEMENT (Delegates to SessionService)
     # =============================================================================
 
-    async def log_interaction(
+    async def log_interaction(self, interaction_data: InteractionLogData):
+        """
+        Log a conversation interaction.
+        Refactored to use parameter object pattern.
+        
+        Args:
+            interaction_data: InteractionLogData object containing all interaction information
+            
+        Returns:
+            Log result from session service
+        """
+        session_id = interaction_data.session_id
+        
+        if not session_id:
+            # Start new session if needed
+            session_result = await self.session_service.start_session(interaction_data.user_id)
+            session_id = session_result.get("session_id")
+
+        return await self.session_service.log_interaction(
+            session_id, 
+            interaction_data.child_message, 
+            interaction_data.assistant_message, 
+            interaction_data.audio_url
+        )
+
+    async def log_interaction_legacy(
         self,
         user_id: str,
         child_message: str,
@@ -144,15 +254,19 @@ class ParentDashboardService:
         session_id: Optional[str] = None,
         audio_url: Optional[str] = None,
     ):
-        """Log a conversation interaction"""
-        if not session_id:
-            # Start new session if needed
-            session_result = await self.session_service.start_session(user_id)
-            session_id = session_result.get("session_id")
-
-        return await self.session_service.log_interaction(
-            session_id, child_message, assistant_message, audio_url
+        """
+        Legacy method for backward compatibility.
+        Creates InteractionLogData and delegates to new method.
+        """
+        interaction_data = InteractionLogData(
+            user_id=user_id,
+            child_message=child_message,
+            assistant_message=assistant_message,
+            timestamp=timestamp,
+            session_id=session_id,
+            audio_url=audio_url
         )
+        return await self.log_interaction(interaction_data)
 
     async def end_conversation_session(self, session_id: str):
         """End a conversation session"""
