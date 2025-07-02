@@ -49,7 +49,7 @@ try:
     )
     from PySide6.QtGui import QColor, QFont, QIcon, QPalette
 except Exception as e:
-    logger.error(f"❌ PySide6 not installed. Installing...{e}")
+    print(f"❌ PySide6 not installed. Installing...{e}")
     import subprocess
     subprocess.check_call([sys.executable, "-m", "pip", "install", "PySide6"])
     from PySide6.QtCore import Signal, Slot, QThread, QTimer, QPropertyAnimation
