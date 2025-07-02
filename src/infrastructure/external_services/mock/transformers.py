@@ -44,7 +44,7 @@ class MockModel:
     def to(self, device):
         return self
 
-    def ast.literal_eval(self):
+    def eval(self):
         return self
 
 
@@ -72,19 +72,7 @@ class MockPipeline:
             return [{"result": "mock_result"}]
 
 
-# Mock torch for compatibility
-class MockTorch:
-    @staticmethod
-    def tensor(data):
-        return MockTensor(data)
-
-    @staticmethod
-    def no_grad():
-        return MockContext()
-
-    cuda = MockCuda()
-
-
+# Mock torch classes
 class MockTensor:
     def __init__(self, data):
         self.data = data
@@ -105,6 +93,19 @@ class MockCuda:
     @staticmethod
     def is_available():
         return False
+
+
+# Mock torch for compatibility
+class MockTorch:
+    @staticmethod
+    def tensor(data):
+        return MockTensor(data)
+
+    @staticmethod
+    def no_grad():
+        return MockContext()
+
+    cuda = MockCuda()
 
 
 # Export mock torch as well

@@ -8,10 +8,15 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, String
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+try:
+    from sqlalchemy import JSON, Boolean, Column, DateTime, String
+    from sqlalchemy.ext.declarative import declarative_base
+    Base = declarative_base()
+    SQLALCHEMY_AVAILABLE = True
+except ImportError:
+    # SQLAlchemy not available - create mock base
+    Base = object
+    SQLALCHEMY_AVAILABLE = False
 
 
 class ModerationSeverity(Enum):
@@ -84,21 +89,36 @@ class ModerationRule:
     action: str = "block"  # block, warn, log
 
 
-class ModerationLog(Base):
-    """Database model for moderation logs"""
+if SQLALCHEMY_AVAILABLE:
+    class ModerationLog(Base):
+        """Database model for moderation logs"""
 
-    __tablename__ = "moderation_logs"
+        __tablename__ = "moderation_logs"
 
-    id = Column(String, primary_key=True)
-    session_id = Column(String)
-    user_id = Column(String)
-    timestamp = Column(DateTime, default=datetime.now)
-    content = Column(String)
-    result = Column(JSON)
-    severity = Column(String)
-    categories = Column(JSON)
-    action_taken = Column(String)
-    parent_notified = Column(Boolean, default=False)
+        id = Column(String, primary_key=True)
+        session_id = Column(String)
+        user_id = Column(String)
+        timestamp = Column(DateTime, default=datetime.now)
+        content = Column(String)
+        result = Column(JSON)
+        severity = Column(String)
+        categories = Column(JSON)
+        action_taken = Column(String)
+        parent_notified = Column(Boolean, default=False)
+else:
+    @dataclass
+    class ModerationLog:
+        """Mock moderation log for when SQLAlchemy is not available"""
+        id: str
+        session_id: Optional[str] = None
+        user_id: Optional[str] = None
+        timestamp: datetime = field(default_factory=datetime.now)
+        content: str = ""
+        result: dict = field(default_factory=dict)
+        severity: str = "safe"
+        categories: list = field(default_factory=list)
+        action_taken: str = "none"
+        parent_notified: bool = False
 
 
 # Helper functions for creating rules
