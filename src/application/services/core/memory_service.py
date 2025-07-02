@@ -74,6 +74,25 @@ class MemoryService:
             session_id, user_message, ai_response, metadata
         )
 
+    def _memory_matches_query(self, memory: Memory, query: str) -> bool:
+        """Check if a memory matches the search query"""
+        return query.lower() in memory.content.lower()
+
+    def _filter_memories_by_query(self, memories: List[Memory], query: str) -> List[Memory]:
+        """Filter memories that match the query and update access count"""
+        relevant_memories = []
+        
+        for memory in memories:
+            if self._memory_matches_query(memory, query):
+                memory.access()  # Update access count
+                relevant_memories.append(memory)
+        
+        return relevant_memories
+
+    def _apply_memory_limit(self, memories: List[Memory], limit: int) -> List[Memory]:
+        """Apply limit to the number of memories returned"""
+        return memories[:limit]
+
     async def recall_memories(
         self,
         child_id: str,
@@ -86,24 +105,45 @@ class MemoryService:
             # Get from working memory first
             working_memories = self.storage_service.get_working_memory(child_id)
 
-            # Filter by query
-            relevant_memories = []
-            for memory in working_memories:
-                if query.lower() in memory.content.lower():
-                    memory.access()  # Update access count
-                    relevant_memories.append(memory)
+            # Filter memories by query
+            relevant_memories = self._filter_memories_by_query(working_memories, query)
 
-            # If we need more, search vector store
+            # If we need more memories, search vector store
             if len(relevant_memories) < limit:
                 # In a full implementation, we'd use sentence transformer here
                 # For now, return what we have
                 pass
 
-            return relevant_memories[:limit]
+            # Apply limit and return
+            return self._apply_memory_limit(relevant_memories, limit)
 
         except Exception as e:
             self.logger.error(f"Failed to recall memories: {e}")
             return []
+
+    def _extract_topics_from_memories(self, memories: List[Memory]) -> List[str]:
+        """Extract unique topics from a list of memories"""
+        all_topics = []
+        for memory in memories:
+            all_topics.extend(memory.topics)
+        return list(set(all_topics))[:5]  # Return top 5 unique topics
+
+    def _extract_emotions_from_memories(self, memories: List[Memory]) -> List[str]:
+        """Extract recent emotions from a list of memories"""
+        all_emotions = []
+        for memory in memories:
+            all_emotions.extend(memory.emotions)
+        return list(set(all_emotions))[-3:]  # Return last 3 unique emotions
+
+    def _has_memories_for_summary(self, short_term: List[Memory], working_mem: List[Memory]) -> bool:
+        """Check if there are enough memories to generate a summary"""
+        return bool(short_term or working_mem)
+
+    def _create_conversation_summary(self, has_memories: bool) -> Optional[str]:
+        """Create a conversation summary if memories exist"""
+        if has_memories:
+            return "Recent conversation context available"
+        return None
 
     async def get_conversation_context(
         self, child_id: str, include_summary: bool = True
@@ -114,24 +154,27 @@ class MemoryService:
             short_term = self.storage_service.get_short_term_buffer(child_id)
             working_mem = self.storage_service.get_working_memory(child_id)
 
-            # Extract topics and emotions
-            all_topics = []
-            all_emotions = []
+            # Combine all memories for processing
+            all_memories = short_term + working_mem
 
-            for memory in short_term + working_mem:
-                all_topics.extend(memory.topics)
-                all_emotions.extend(memory.emotions)
+            # Extract topics and emotions using helper methods
+            recent_topics = self._extract_topics_from_memories(all_memories)
+            emotional_state = self._extract_emotions_from_memories(all_memories)
+
+            # Check if we have memories for summary
+            has_memories = self._has_memories_for_summary(short_term, working_mem)
 
             # Build context
             context = {
-                "recent_topics": list(set(all_topics))[:5],
-                "emotional_state": list(set(all_emotions))[-3:],
-                "memory_count": len(short_term) + len(working_mem),
+                "recent_topics": recent_topics,
+                "emotional_state": emotional_state,
+                "memory_count": len(all_memories),
                 "summary": None,
             }
 
-            if include_summary and (short_term or working_mem):
-                context["summary"] = "Recent conversation context available"
+            # Add summary if requested and available
+            if include_summary:
+                context["summary"] = self._create_conversation_summary(has_memories)
 
             return context
 
@@ -143,6 +186,23 @@ class MemoryService:
         """Get child memory profile"""
         return await self.repository.get_child_profile(child_id)
 
+    def _create_new_child_profile(self, child_id: str, interaction_data: Dict[str, Any]) -> ChildMemoryProfile:
+        """Create a new child profile with default values"""
+        return ChildMemoryProfile(
+            child_id=child_id,
+            name=interaction_data.get("name", "Unknown"),
+            age=interaction_data.get("age", 8),
+            total_interactions=0,
+            first_interaction=datetime.now(),
+            last_interaction=datetime.now(),
+        )
+
+    def _update_topic_preferences(self, profile: ChildMemoryProfile, interaction_data: Dict[str, Any]):
+        """Update topic preferences in the profile"""
+        topics = interaction_data.get("topics", [])
+        for topic in topics:
+            profile.update_topic_preference(topic, 1.0)
+
     async def update_child_profile(
         self, child_id: str, interaction_data: Dict[str, Any]
     ):
@@ -150,24 +210,15 @@ class MemoryService:
         try:
             profile = await self.get_child_profile(child_id)
 
+            # Create new profile if it doesn't exist
             if not profile:
-                # Create new profile
-                profile = ChildMemoryProfile(
-                    child_id=child_id,
-                    name=interaction_data.get("name", "Unknown"),
-                    age=interaction_data.get("age", 8),
-                    total_interactions=0,
-                    first_interaction=datetime.now(),
-                    last_interaction=datetime.now(),
-                )
+                profile = self._create_new_child_profile(child_id, interaction_data)
 
-            # Update profile
+            # Update interaction count
             profile.add_interaction()
 
-            # Update preferences if provided
-            if "topics" in interaction_data:
-                for topic in interaction_data["topics"]:
-                    profile.update_topic_preference(topic, 1.0)
+            # Update topic preferences if provided
+            self._update_topic_preferences(profile, interaction_data)
 
             # Save updated profile
             await self.repository.save_child_profile(profile)
@@ -243,20 +294,44 @@ def calculate_memory_similarity(memory1: Memory, memory2: Memory) -> float:
     return (topic_sim + emotion_sim) / 2
 
 
+def _is_memory_pair_similar(memory1: Memory, memory2: Memory, threshold: float) -> bool:
+    """Check if two memories are similar enough to be related"""
+    similarity = calculate_memory_similarity(memory1, memory2)
+    return similarity >= threshold
+
+
+def _find_related_memories(
+    target_memory: Memory, all_memories: List[Memory], threshold: float
+) -> List[str]:
+    """Find all memories related to a target memory"""
+    related_ids = []
+    
+    for candidate_memory in all_memories:
+        if target_memory.id == candidate_memory.id:
+            continue
+            
+        if _is_memory_pair_similar(target_memory, candidate_memory, threshold):
+            related_ids.append(candidate_memory.id)
+    
+    return related_ids
+
+
 def generate_memory_graph(
     memories: List[Memory], threshold: float = 0.5
 ) -> Dict[str, List[str]]:
     """Generate a graph of related memories"""
+    # Early return for empty input
+    if not memories:
+        return {}
+        
+    # Early return for single memory
+    if len(memories) == 1:
+        return {memories[0].id: []}
+    
     graph = {}
-
-    for i, memory1 in enumerate(memories):
-        related = []
-        for j, memory2 in enumerate(memories):
-            if i != j:
-                similarity = calculate_memory_similarity(memory1, memory2)
-                if similarity >= threshold:
-                    related.append(memory2.id)
-
-        graph[memory1.id] = related
+    
+    for memory in memories:
+        related_ids = _find_related_memories(memory, memories, threshold)
+        graph[memory.id] = related_ids
 
     return graph
