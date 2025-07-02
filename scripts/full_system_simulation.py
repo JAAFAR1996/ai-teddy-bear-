@@ -450,7 +450,7 @@ class SystemSimulation:
         print(f"{Fore.GREEN}✅ تمت محاكاة جميع مكونات النظام بنجاح!")
         print(f"\n{Fore.CYAN}📊 الإحصائيات النهائية:")
         print(f"  • الطفل المسجل: {self.child_name} ({self.child_age} سنوات)")
-        print(f"  • عدد المحادثات: {len(conversations)}")
+        print(f"  • عدد المحادثات: {len(self.conversations)}")
         print(f"  • المشاعر المكتشفة: {len(self.emotions_history)}")
         print(f"  • الخدمات النشطة: 6/6")
         print(f"  • حالة الأمان: {Fore.GREEN}آمن 🔒")

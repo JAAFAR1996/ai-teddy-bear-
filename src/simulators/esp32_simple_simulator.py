@@ -35,7 +35,7 @@ try:
     from tkinter import (BOTH, END, RIGHT, VERTICAL, Button, Frame, Label,
                          Scrollbar, StringVar, Text, Tk, X, Y, messagebox, ttk)
 except Exception as e:
-    logger.error(f"Error: {e}")"❌ Tkinter not available")
+    logger.error(f"❌ Tkinter not available: {e}")
     sys.exit(1)
 
 # ============================ CONFIGURATION ============================
@@ -84,7 +84,7 @@ class ESP32TeddySimulator:
             logger.info("✅ Microphone calibrated")
             
         except Exception as e:
-    logger.error(f"Error: {e}")f"❌ Audio initialization error: {e}")
+            logger.error(f"❌ Audio initialization error: {e}")
     
     def create_gui(self) -> Any:
         """إنشاء واجهة المحاكي"""
@@ -394,7 +394,7 @@ class ESP32TeddySimulator:
         try:
             self.root.mainloop()
         except Exception as e:
-    logger.error(f"Error: {e}")"\n👋 ESP32 Simulator shutting down...")
+            logger.error(f"\n👋 ESP32 Simulator shutting down: {e}")
         finally:
             self.power_off()
 
@@ -414,4 +414,4 @@ if __name__ == "__main__":
         simulator = ESP32TeddySimulator()
         simulator.run()
     except Exception as e:
-    logger.error(f"Error: {e}")f"❌ Simulator error: {e}") 
+        logger.error(f"❌ Simulator error: {e}") 

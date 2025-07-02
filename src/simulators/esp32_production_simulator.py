@@ -13,17 +13,43 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime
 
+# Install required packages if missing
+try:
+    import aiohttp
+    import websockets
+    import numpy as np
+    import sounddevice as sd
+except ImportError as e:
+    print(f"Installing missing dependencies: {e}")
+    import subprocess
+    packages = ["aiohttp", "websockets", "numpy", "sounddevice"]
+    for pkg in packages:
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
+        except:
+            print(f"Warning: Could not install {pkg}")
+    
+    # Import again after installation
+    try:
+        import aiohttp
+        import websockets
+        import numpy as np
+        import sounddevice as sd
+    except ImportError:
+        print("Warning: Some packages still missing - audio features may not work")
+
 try:
     from PySide6 import QtCore, QtGui, QtWidgets
     from PySide6.QtCore import (QPropertyAnimation, QThread, QTimer, Signal,
                                 Slot)
+    from PySide6.QtWidgets import (
         QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
         QPushButton, QTextEdit, QLabel, QGroupBox, QStatusBar,
         QProgressBar, QMessageBox, QInputDialog, QSplitter
     )
     from PySide6.QtGui import QColor, QFont, QIcon, QPalette
 except Exception as e:
-    logger.error(f"Error: {e}")"❌ PySide6 not installed. Installing...")
+    logger.error(f"❌ PySide6 not installed. Installing...{e}")
     import subprocess
     subprocess.check_call([sys.executable, "-m", "pip", "install", "PySide6"])
     from PySide6.QtCore import Signal, Slot, QThread, QTimer, QPropertyAnimation
@@ -32,9 +58,6 @@ except Exception as e:
         QPushButton, QLabel, QTextEdit, QProgressBar, QGroupBox, QSlider,
         QSpinBox, QCheckBox, QTabWidget, QGridLayout, QSplitter, QFrame
     )
-
-import numpy as np
-import sounddevice as sd
 
 logger = logging.getLogger(__name__)
 
@@ -152,12 +175,12 @@ class AsyncWorker(QThread):
             self.error_occurred.emit(f"API request failed: {str(e)}")
             raise
     
-    def _schedule_coroutine(self, coro) -> Any:
+    def schedule_coroutine(self, coro) -> Any:
         """Schedule coroutine in worker loop"""
         if self.loop and self.running:
             asyncio.run_coroutine_threadsafe(coro, self.loop)
     
-    def _stop(self) -> Any:
+    def stop(self) -> Any:
         """Stop worker thread"""
         self.running = False
         if self.websocket:
@@ -196,7 +219,7 @@ class AudioHandler(QThread):
             return self._numpy_to_wav(audio_data)
         return b''
     
-    def _run(self) -> Any:
+    def run(self) -> Any:
         """Recording thread"""
         try:
             with sd.InputStream(
@@ -240,7 +263,7 @@ class AudioHandler(QThread):
         
         return buffer.getvalue()
     
-    def _play_audio(bytes) -> None:
+    def play_audio(self, audio_data: bytes) -> None:
         """Play audio data"""
         try:
             # Decode base64 if needed
@@ -319,7 +342,7 @@ class ConsoleWidget(QTextEdit):
             }
         """)
     
-    def _log(str = "info") -> None:
+    def log(self, message: str, level: str = "info") -> None:
         """Add log message with color coding"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         
@@ -595,7 +618,7 @@ class ESP32ProductionSimulator(QMainWindow):
     # ================== SLOTS ==================
     
     @Slot()
-    def _connect_to_server(self) -> Any:
+    def connect_to_server(self) -> Any:
         """Connect to server"""
         self.console.log("Connecting to server...", "info")
         
@@ -669,14 +692,14 @@ class ESP32ProductionSimulator(QMainWindow):
         self.async_worker.schedule_coroutine(create_profile())
     
     @Slot()
-    def _start_recording(self) -> Any:
+    def start_recording(self) -> Any:
         """Start voice recording"""
         self.console.log("🎤 Recording started...", "info")
         self.state.is_recording = True
         self.audio_handler.start_recording()
     
     @Slot()
-    def _stop_recording(self) -> Any:
+    def stop_recording(self) -> Any:
         """Stop recording and send audio"""
         if not self.state.is_recording:
             return
@@ -690,7 +713,7 @@ class ESP32ProductionSimulator(QMainWindow):
         else:
             self.console.log("No audio recorded", "warning")
     
-    def _send_audio_data(bytes) -> None:
+    def send_audio_data(self, audio_data: bytes) -> None:
         """Send audio data to server"""
         async def send():
             try:
@@ -719,7 +742,7 @@ class ESP32ProductionSimulator(QMainWindow):
         self.async_worker.schedule_coroutine(send())
     
     @Slot()
-    def _send_text_message(self) -> Any:
+    def send_text_message(self) -> Any:
         """Send text message"""
         message = self.message_input.text().strip()
         if not message:
@@ -733,7 +756,7 @@ class ESP32ProductionSimulator(QMainWindow):
         # In production, this would use actual TTS
     
     @Slot(dict)
-    def _handle_ws_message(dict) -> None:
+    def handle_ws_message(self, data: dict) -> None:
         """Handle WebSocket message"""
         msg_type = data.get("type", "unknown")
         
@@ -744,21 +767,21 @@ class ESP32ProductionSimulator(QMainWindow):
             self.console.log(f"WebSocket message: {json.dumps(data)}", "info")
     
     @Slot(str)
-    def _handle_error(str) -> None:
+    def handle_error(self, error: str) -> None:
         """Handle error messages"""
         self.console.log(error, "error")
     
     @Slot(str)
-    def _update_status(str) -> None:
+    def update_status(self, status: str) -> None:
         """Update status message"""
         self.status_bar.showMessage(status, 3000)
     
     @Slot(float)
-    def _update_audio_level(float) -> None:
+    def update_audio_level(self, level: float) -> None:
         """Update audio level indicator"""
         self.audio_level_bar.setValue(int(level * 100))
     
-    def _update_connection_status(bool) -> None:
+    def update_connection_status(self, connected: bool) -> None:
         """Update connection status display"""
         if connected:
             self.connection_status.setText("● Connected")
@@ -772,7 +795,7 @@ class ESP32ProductionSimulator(QMainWindow):
             self.ws_status.setText("WebSocket: Disconnected")
     
     @Slot()
-    def _run_auto_demo(self) -> Any:
+    def run_auto_demo(self) -> Any:
         """Run automated demo"""
         self.console.log("Starting automated demo...", "info")
         
@@ -788,7 +811,7 @@ class ESP32ProductionSimulator(QMainWindow):
         for i, msg in enumerate(demo_messages):
             QTimer.singleShot(i * 5000, lambda m=msg: self.console.log(f"👤 Demo: {m}", "info"))
     
-    def _closeEvent(self, event) -> Any:
+    def closeEvent(self, event) -> Any:
         """Handle window close"""
         self.async_worker.stop()
         self.async_worker.wait()
@@ -815,6 +838,10 @@ def main() -> Any:
     # Create and show simulator
     simulator = ESP32ProductionSimulator()
     simulator.show()
+    
+    # Log startup
+    print("🧸 ESP32 Production Simulator started successfully!")
+    print("📡 Ready to connect to AI Teddy Bear server")
     
     # Run application
     sys.exit(app.exec())
