@@ -342,11 +342,37 @@ class LLMServiceFactory:
         return await self.generate_response(request)
 
 
+# ================== FACTORY & HELPER FUNCTIONS ==================
+
 async def create_llm_factory(config: Optional[Dict] = None) -> LLMServiceFactory:
     """Create and initialize LLM factory"""
     factory = LLMServiceFactory(config)
     await factory.initialize()
     return factory
+
+
+def create_generation_request(
+    conversation: Conversation,
+    provider: Optional[LLMProvider] = None,
+    **kwargs
+) -> GenerationRequest:
+    """📦 Helper function to create GenerationRequest"""
+    return GenerationRequest(
+        conversation=conversation,
+        provider=provider,
+        **kwargs
+    )
+
+
+def create_model_selection_request(
+    task_type: str,
+    **kwargs
+) -> ModelSelectionRequest:
+    """📦 Helper function to create ModelSelectionRequest"""
+    return ModelSelectionRequest(
+        task_type=task_type,
+        **kwargs
+    )
 
 
 def get_default_model_config(
