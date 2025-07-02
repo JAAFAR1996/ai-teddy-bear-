@@ -76,8 +76,8 @@ class AsyncAudioProcessor:
 
         # Run ffmpeg in executor to avoid blocking
         loop = asyncio.get_event_loop()
-        proc = await asyncio.create_subprocess_# SECURITY FIX: Replaced exec with safe alternative
-# Original: exec("ffmpeg",
+        proc = await asyncio.create_subprocess_exec(
+            "ffmpeg",
             "-i",
             mp3_path,
             "-ar",
@@ -88,7 +88,6 @@ class AsyncAudioProcessor:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-# TODO: Review and implement safe alternative
 
         stdout, stderr = await proc.communicate()
 

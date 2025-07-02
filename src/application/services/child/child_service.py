@@ -1,340 +1,302 @@
-﻿"""Child profile management service for ESP32 teddy bear."""
+﻿"""
+Child Profile Service - Manages child profiles connected to ESP32 devices
+"""
 
+import logging
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from enum import Enum
 
-import structlog
-
-from ....domain.esp32.models import (ChildProfile, InteractionType, SessionData)
-
-logger = structlog.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
-class ChildProfileService:
-    """Service for managing child profiles and session data."""
+class InteractionType(str, Enum):
+    """Types of child interactions"""
+    CONVERSATION = "conversation"
+    STORY_REQUEST = "story_request"
+    GAME = "game"
+    LEARNING = "learning"
+    EMOTIONAL_SUPPORT = "emotional_support"
 
-    def __init__(self, device_id: str):
+
+class ChildProfile:
+    """Child profile model"""
+    
+    def __init__(
+        self, 
+        name: str, 
+        age: int, 
+        device_id: str, 
+        language: str = "Arabic"
+    ):
+        self.id = str(uuid.uuid4())
+        self.name = name
+        self.age = age
         self.device_id = device_id
-        self.current_profile: Optional[ChildProfile] = None
-        self.profiles_cache: Dict[str, ChildProfile] = {}
+        self.language = language
+        self.created_at = datetime.utcnow()
+        self.preferences = {}
+        self.conversation_history = []
+        self.learning_progress = {}
+        
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "age": self.age,
+            "device_id": self.device_id,
+            "language": self.language,
+            "created_at": self.created_at.isoformat(),
+            "preferences": self.preferences,
+            "conversation_count": len(self.conversation_history),
+            "learning_progress": self.learning_progress
+        }
 
-        logger.info(" Child profile service initialized")
 
-    def create_profile(self, name: str, age: int) -> ChildProfile:
-        """Create new child profile."""
+class SessionData:
+    """Conversation session data"""
+    
+    def __init__(self, child_id: str, device_id: str):
+        self.session_id = str(uuid.uuid4())
+        self.child_id = child_id
+        self.device_id = device_id
+        self.started_at = datetime.utcnow()
+        self.messages = []
+        self.interaction_type = InteractionType.CONVERSATION
+        
+    def add_message(self, message: str, response: str, metadata: Dict[str, Any] = None):
+        self.messages.append({
+            "timestamp": datetime.utcnow().isoformat(),
+            "user_message": message,
+            "ai_response": response,
+            "metadata": metadata or {}
+        })
+
+
+class CloudChildService:
+    """Service for managing child profiles and conversations."""
+
+    def __init__(self):
+        self.children: Dict[str, ChildProfile] = {}
+        self.device_to_child: Dict[str, str] = {}  # device_id -> child_id
+        self.active_sessions: Dict[str, SessionData] = {}
+        logger.info("CloudChildService initialized")
+
+    async def create_child(
+        self, 
+        name: str, 
+        age: int, 
+        device_id: str, 
+        language: str = "Arabic",
+        preferences: Dict[str, Any] = None
+    ) -> ChildProfile:
+        """
+        Create a new child profile
+        
+        Args:
+            name: Child's name
+            age: Child's age  
+            device_id: Associated ESP32 device ID
+            language: Preferred language
+            preferences: Child preferences
+            
+        Returns:
+            Created child profile
+        """
         try:
-            child_id = f"child_{uuid.uuid4().hex[:8]}"
-
-            profile = ChildProfile(
-                name=name, age=age, child_id=child_id, device_id=self.device_id
-            )
-
-            self.profiles_cache[child_id] = profile
-            self.current_profile = profile
-
-            logger.info(f" Created profile for {name}, age {age}")
-            return profile
-
+            # Check if device already has a child
+            if device_id in self.device_to_child:
+                existing_child_id = self.device_to_child[device_id]
+                existing_child = self.children[existing_child_id]
+                logger.warning(f"Device {device_id} already linked to child {existing_child.name}")
+                return existing_child
+            
+            # Create new child
+            child = ChildProfile(name, age, device_id, language)
+            if preferences:
+                child.preferences.update(preferences)
+            
+            # Store child
+            self.children[child.id] = child
+            self.device_to_child[device_id] = child.id
+            
+            logger.info(f"Child profile created: {name} (age {age}) for device {device_id}")
+            return child
+            
         except Exception as e:
-            logger.error(f" Profile creation failed: {e}")
+            logger.error(f"Child creation failed: {str(e)}")
             raise
 
-    def load_profile(self, child_id: str) -> Optional[ChildProfile]:
-        """Load existing child profile."""
+    async def get_by_device_id(self, device_id: str) -> Optional[ChildProfile]:
+        """Get child profile by device ID"""
         try:
-            if child_id in self.profiles_cache:
-                profile = self.profiles_cache[child_id]
-                self.current_profile = profile
-                logger.info(f" Loaded profile for {profile.name}")
-                return profile
-            else:
-                logger.warning(f"Profile not found: {child_id}")
-                return None
-
+            child_id = self.device_to_child.get(device_id)
+            if child_id:
+                return self.children.get(child_id)
+            return None
+            
         except Exception as e:
-            logger.error(f" Profile loading failed: {e}")
+            logger.error(f"Failed to get child for device {device_id}: {str(e)}")
             return None
 
-    def start_session(self) -> Optional[SessionData]:
-        """Start new session for current profile."""
-        try:
-            if not self.current_profile:
-                logger.error("No current profile to start session")
-                return None
+    async def get_child(self, child_id: str) -> Optional[ChildProfile]:
+        """Get child profile by ID"""
+        return self.children.get(child_id)
 
-            session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
-            self.current_profile.start_session(session_id)
-
-            logger.info(f" Started session: {session_id}")
-            return self.current_profile.current_session
-
-        except Exception as e:
-            logger.error(f" Session start failed: {e}")
-            return None
-
-    def end_session(self) -> None:
-        """End current session."""
-        try:
-            if self.current_profile and self.current_profile.current_session:
-                session_duration = self.current_profile.current_session.duration_minutes
-                self.current_profile.end_session()
-                logger.info(f" Ended session (duration: {session_duration} minutes)")
-            else:
-                logger.warning("No active session to end")
-
-        except Exception as e:
-            logger.error(f" Session end failed: {e}")
-
-    def record_conversation(
-        self,
-        child_input: str,
-        ai_response: str,
-        interaction_type: InteractionType = InteractionType.CONVERSATION,
+    async def update_child_preferences(
+        self, 
+        child_id: str, 
+        preferences: Dict[str, Any]
     ) -> bool:
-        """Record conversation in current profile."""
+        """Update child preferences"""
         try:
-            if not self.current_profile:
-                logger.error("No current profile to record conversation")
+            child = self.children.get(child_id)
+            if not child:
                 return False
-
-            self.current_profile.add_conversation(
-                child_input, ai_response, interaction_type
-            )
-
-            # Update session if active
-            if self.current_profile.current_session:
-                self.current_profile.current_session.record_interaction()
-
-            logger.debug(f" Recorded conversation: {child_input[:30]}...")
+                
+            child.preferences.update(preferences)
+            logger.info(f"Updated preferences for child {child.name}")
             return True
-
+            
         except Exception as e:
-            logger.error(f" Conversation recording failed: {e}")
+            logger.error(f"Failed to update preferences: {str(e)}")
             return False
 
-    def update_learning_progress(self, subject: str, points: int) -> bool:
-        """Update learning progress for current profile."""
+    async def start_session(
+        self, 
+        device_id: str, 
+        interaction_type: InteractionType = InteractionType.CONVERSATION
+    ) -> Optional[str]:
+        """Start a new conversation session"""
         try:
-            if not self.current_profile:
-                logger.error("No current profile to update learning")
-                return False
-
-            self.current_profile.update_learning_progress(subject, points)
-            logger.info(f" Learning progress updated: {subject} +{points} points")
-            return True
-
-        except Exception as e:
-            logger.error(f" Learning progress update failed: {e}")
-            return False
-
-    def add_favorite_activity(self, activity: str) -> bool:
-        """Add activity to favorites for current profile."""
-        try:
-            if not self.current_profile:
-                logger.error("No current profile to add favorite")
-                return False
-
-            self.current_profile.add_favorite_activity(activity)
-            logger.info(f" Added favorite activity: {activity}")
-            return True
-
-        except Exception as e:
-            logger.error(f" Add favorite activity failed: {e}")
-            return False
-
-    def get_profile_summary(self) -> Optional[Dict[str, Any]]:
-        """Get summary of current profile."""
-        try:
-            if not self.current_profile:
+            child = await self.get_by_device_id(device_id)
+            if not child:
+                logger.warning(f"No child found for device {device_id}")
                 return None
-
-            summary = {
-                "basic_info": {
-                    "name": self.current_profile.name,
-                    "age": self.current_profile.age,
-                    "child_id": self.current_profile.child_id,
-                    "created_at": self.current_profile.created_at.isoformat(),
-                    "last_seen": (
-                        self.current_profile.last_seen.isoformat()
-                        if self.current_profile.last_seen
-                        else None
-                    ),
-                },
-                "current_session": {
-                    "is_active": self.current_profile.is_active_session,
-                    "session_id": (
-                        self.current_profile.current_session.session_id
-                        if self.current_profile.current_session
-                        else None
-                    ),
-                    "duration_minutes": (
-                        self.current_profile.current_session.duration_minutes
-                        if self.current_profile.current_session
-                        else 0
-                    ),
-                    "interaction_count": (
-                        self.current_profile.current_session.interaction_count
-                        if self.current_profile.current_session
-                        else 0
-                    ),
-                },
-                "statistics": self.current_profile.interaction_summary,
-                "preferences": {
-                    "preferred_language": self.current_profile.preferred_language,
-                    "volume_preference": self.current_profile.volume_preference,
-                },
-            }
-
-            return summary
-
+            
+            session = SessionData(child.id, device_id)
+            session.interaction_type = interaction_type
+            
+            self.active_sessions[session.session_id] = session
+            
+            logger.info(f"Started session {session.session_id} for child {child.name}")
+            return session.session_id
+            
         except Exception as e:
-            logger.error(f" Profile summary failed: {e}")
+            logger.error(f"Failed to start session: {str(e)}")
             return None
 
-    def get_conversation_history(self, limit: int = 10) -> List[Dict[str, Any]]:
-        """Get recent conversation history."""
+    async def save_conversation(
+        self, 
+        device_id: str, 
+        message: str, 
+        response: str, 
+        session_id: str = None,
+        metadata: Dict[str, Any] = None
+    ) -> bool:
+        """Save conversation exchange"""
         try:
-            if not self.current_profile:
-                return []
-
-            recent_conversations = self.current_profile.conversation_history[-limit:]
-
-            history = []
-            for conv in recent_conversations:
-                history.append(
-                    {
-                        "timestamp": conv.timestamp.isoformat(),
-                        "child_input": conv.child_input,
-                        "ai_response": conv.ai_response,
-                        "interaction_type": conv.interaction_type.value,
-                        "confidence": conv.confidence,
-                        "language": conv.language,
-                        "duration_text": conv.duration_text,
-                    }
-                )
-
-            return history
-
+            child = await self.get_by_device_id(device_id)
+            if not child:
+                return False
+            
+            # Add to child's history
+            conversation_entry = {
+                "timestamp": datetime.utcnow().isoformat(),
+                "message": message,
+                "response": response,
+                "session_id": session_id,
+                "metadata": metadata or {}
+            }
+            
+            child.conversation_history.append(conversation_entry)
+            
+            # Update active session if exists
+            if session_id and session_id in self.active_sessions:
+                session = self.active_sessions[session_id]
+                session.add_message(message, response, metadata)
+            
+            logger.info(f"Saved conversation for child {child.name}")
+            return True
+            
         except Exception as e:
-            logger.error(f" Conversation history failed: {e}")
-            return []
+            logger.error(f"Failed to save conversation: {str(e)}")
+            return False
 
-    def get_learning_progress(self) -> Dict[str, Any]:
-        """Get learning progress for current profile."""
+    async def register_device(
+        self, 
+        device_id: str, 
+        firmware_version: str, 
+        hardware_info: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
+        """Register device and prepare for child linking"""
         try:
-            if not self.current_profile:
+            # This is a placeholder for device registration
+            # In a real system, this would integrate with device registry
+            
+            logger.info(f"Device registration prepared: {device_id}")
+            return {
+                "registration_id": f"REG_{device_id}_{datetime.utcnow().timestamp()}",
+                "status": "ready_for_child_profile"
+            }
+            
+        except Exception as e:
+            logger.error(f"Device registration failed: {str(e)}")
+            raise
+
+    async def get_child_stats(self, child_id: str) -> Dict[str, Any]:
+        """Get child interaction statistics"""
+        try:
+            child = self.children.get(child_id)
+            if not child:
                 return {}
-
-            progress = {}
-            for subject, learning in self.current_profile.learning_progress.items():
-                progress[subject] = {
-                    "level": learning.level,
-                    "points": learning.points,
-                    "total_sessions": learning.total_sessions,
-                    "achievements": learning.achievements,
-                    "last_activity": (
-                        learning.last_activity.isoformat()
-                        if learning.last_activity
-                        else None
-                    ),
-                }
-
-            return progress
-
+            
+            total_conversations = len(child.conversation_history)
+            
+            # Analyze conversation types
+            interaction_types = {}
+            for conv in child.conversation_history[-50:]:  # Last 50 conversations
+                conv_type = conv.get("metadata", {}).get("category", "general")
+                interaction_types[conv_type] = interaction_types.get(conv_type, 0) + 1
+            
+            return {
+                "total_conversations": total_conversations,
+                "interaction_types": interaction_types,
+                "account_age_days": (datetime.utcnow() - child.created_at).days,
+                "preferred_language": child.language,
+                "learning_progress": child.learning_progress
+            }
+            
         except Exception as e:
-            logger.error(f" Learning progress failed: {e}")
+            logger.error(f"Failed to get child stats: {str(e)}")
             return {}
 
-    def update_preferences(self, **preferences) -> bool:
-        """Update profile preferences."""
+    async def end_session(self, session_id: str) -> bool:
+        """End an active session"""
         try:
-            if not self.current_profile:
-                logger.error("No current profile to update preferences")
-                return False
-
-            if "language" in preferences:
-                self.current_profile.preferred_language = preferences["language"]
-
-            if "volume" in preferences:
-                volume = preferences["volume"]
-                if 0 <= volume <= 100:
-                    self.current_profile.volume_preference = volume
-                else:
-                    raise ValueError("Volume must be between 0 and 100")
-
-            logger.info(f" Updated preferences: {preferences}")
-            return True
-
-        except Exception as e:
-            logger.error(f" Preferences update failed: {e}")
-            return False
-
-    def get_all_profiles(self) -> List[Dict[str, Any]]:
-        """Get list of all cached profiles."""
-        try:
-            profiles = []
-            for profile in self.profiles_cache.values():
-                profiles.append(
-                    {
-                        "child_id": profile.child_id,
-                        "name": profile.name,
-                        "age": profile.age,
-                        "total_conversations": profile.total_conversations,
-                        "last_seen": (
-                            profile.last_seen.isoformat() if profile.last_seen else None
-                        ),
-                        "is_current": profile == self.current_profile,
-                    }
-                )
-
-            return profiles
-
-        except Exception as e:
-            logger.error(f" Get all profiles failed: {e}")
-            return []
-
-    def switch_profile(self, child_id: str) -> bool:
-        """Switch to different profile."""
-        try:
-            if child_id in self.profiles_cache:
-                # End current session if active
-                if self.current_profile and self.current_profile.is_active_session:
-                    self.end_session()
-
-                # Switch profile
-                self.current_profile = self.profiles_cache[child_id]
-                logger.info(f" Switched to profile: {self.current_profile.name}")
+            if session_id in self.active_sessions:
+                session = self.active_sessions[session_id]
+                del self.active_sessions[session_id]
+                
+                logger.info(f"Ended session {session_id} with {len(session.messages)} messages")
                 return True
-            else:
-                logger.error(f"Profile not found: {child_id}")
-                return False
-
+            return False
+            
         except Exception as e:
-            logger.error(f" Profile switch failed: {e}")
+            logger.error(f"Failed to end session: {str(e)}")
             return False
 
-    def delete_profile(self, child_id: str) -> bool:
-        """Delete a profile."""
-        try:
-            if child_id in self.profiles_cache:
-                profile = self.profiles_cache[child_id]
+    async def get_all_children(self) -> List[ChildProfile]:
+        """Get all child profiles"""
+        return list(self.children.values())
 
-                # End session if this is the current profile
-                if self.current_profile == profile:
-                    if profile.is_active_session:
-                        self.end_session()
-                    self.current_profile = None
-
-                # Remove from cache
-                del self.profiles_cache[child_id]
-
-                logger.info(f" Deleted profile: {profile.name}")
-                return True
-            else:
-                logger.error(f"Profile not found: {child_id}")
-                return False
-
-        except Exception as e:
-            logger.error(f" Profile deletion failed: {e}")
-            return False
+    def get_service_stats(self) -> Dict[str, Any]:
+        """Get service statistics"""
+        return {
+            "total_children": len(self.children),
+            "active_sessions": len(self.active_sessions),
+            "total_conversations": sum(
+                len(child.conversation_history) for child in self.children.values()
+            )
+        }
