@@ -1,0 +1,46 @@
+# AI Teddy Bear Simulator Requirements
+# 🧸 متطلبات محاكي الدب الذكي
+
+# GUI Framework
+tkinter-dev==3.11.0  # Usually built-in with Python
+
+# Audio Processing
+pyaudio==0.2.13
+pygame==2.5.2
+wave  # Built-in Python module
+
+# HTTP/WebSocket Communication
+requests==2.31.0
+aiohttp==3.9.1
+websockets==12.0
+
+# Async Support
+asyncio  # Built-in Python module
+
+# Data Processing
+base64  # Built-in Python module
+json    # Built-in Python module
+uuid    # Built-in Python module
+
+# Threading & Concurrency
+concurrent.futures  # Built-in Python module
+threading          # Built-in Python module
+
+# File System & Temp Files
+tempfile  # Built-in Python module
+pathlib   # Built-in Python module
+os        # Built-in Python module
+
+# Date/Time
+datetime  # Built-in Python module
+
+# Logging
+logging  # Built-in Python module
+
+# Type Hints (Python 3.8+)
+typing   # Built-in Python module
+
+# Optional Dependencies for Enhanced Features
+sounddevice==0.4.6    # Alternative audio backend
+scipy==1.11.4         # Audio processing enhancements
+numpy==1.24.4         # Numerical operations 
