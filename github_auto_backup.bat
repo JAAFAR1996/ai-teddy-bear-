@@ -1,9 +1,9 @@
 @echo off
+chcp 65001 >nul
+:: optional: تغيير الخط في نافذة cmd إلى Consolas
 
-:: تفعيل التخزين الدائم (store) أو المؤقت (cache)
+:: تفعيل credential helper (ببساطة)
 git config --global credential.helper store
-:: أو استخدم هذا إذا أردت تخزينًا مؤقتًا:
-:: git config --global credential.helper "cache --timeout=3600"
 
 :: إعداد التاريخ والوقت
 for /f "tokens=1-4 delims=/ " %%a in ("%DATE%") do (
