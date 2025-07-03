@@ -1,7 +1,7 @@
 import logging
 import sqlite3
-from datetime import datetime
 import sys
+from datetime import datetime
 
 
 class DataMigration:
@@ -37,23 +37,18 @@ class DataMigration:
             cursor = conn.cursor()
 
             # Add new columns to existing tables
-            cursor.execute(
-                """
+            cursor.execute("""
             ALTER TABLE child_profiles 
             ADD COLUMN language_preference TEXT DEFAULT 'en'
-            """
-            )
+            """)
 
-            cursor.execute(
-                """
+            cursor.execute("""
             ALTER TABLE child_profiles 
             ADD COLUMN learning_mode TEXT DEFAULT 'adaptive'
-            """
-            )
+            """)
 
             # Create new tables
-            cursor.execute(
-                """
+            cursor.execute("""
             CREATE TABLE IF NOT EXISTS learning_progress (
                 child_id TEXT,
                 skill_category TEXT,
@@ -61,8 +56,7 @@ class DataMigration:
                 last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(child_id) REFERENCES child_profiles(child_id)
             )
-            """
-            )
+            """)
 
             # Update system version
             cursor.execute(
@@ -96,23 +90,18 @@ class DataMigration:
             cursor = conn.cursor()
 
             # Add privacy consent tracking
-            cursor.execute(
-                """
+            cursor.execute("""
             ALTER TABLE child_profiles 
             ADD COLUMN parental_consent_timestamp DATETIME
-            """
-            )
+            """)
 
-            cursor.execute(
-                """
+            cursor.execute("""
             ALTER TABLE child_profiles 
             ADD COLUMN consent_version TEXT
-            """
-            )
+            """)
 
             # Create privacy audit log
-            cursor.execute(
-                """
+            cursor.execute("""
             CREATE TABLE IF NOT EXISTS privacy_audit_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 child_id TEXT,
@@ -121,8 +110,7 @@ class DataMigration:
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(child_id) REFERENCES child_profiles(child_id)
             )
-            """
-            )
+            """)
 
             # Update system version
             cursor.execute(
@@ -167,12 +155,10 @@ class DataMigration:
             conn = self._connect_db()
             cursor = conn.cursor()
 
-            cursor.execute(
-                """
+            cursor.execute("""
             SELECT value FROM system_config 
             WHERE key = 'database_version'
-            """
-            )
+            """)
 
             result = cursor.fetchone()
             current_version = int(result[0]) if result else 1

@@ -17,13 +17,15 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 
+from infrastructure.security.mtls.certificate_monitoring import (
+    get_certificate_monitoring_dashboard,
+)
+from infrastructure.security.mtls.kubernetes_mtls_integration import (
+    get_mtls_orchestrator,
+)
+from infrastructure.security.mtls.mtls_manager import ServiceType, get_mtls_manager
+
 sys.path.append(str(Path(__file__).parent.parent))
-from infrastructure.security.mtls.certificate_monitoring import \
-    get_certificate_monitoring_dashboard
-from infrastructure.security.mtls.kubernetes_mtls_integration import \
-    get_mtls_orchestrator
-from infrastructure.security.mtls.mtls_manager import (ServiceType,
-                                                       get_mtls_manager)
 
 logger = logging.getLogger(__name__)
 
@@ -103,14 +105,14 @@ class MTLSAutomationCLI:
                     await self.orchestrator.mtls_manager.rotation_manager.schedule_rotation(
                         service_name, datetime.utcnow()
                     )
-            rotated = (
-                await self.orchestrator.mtls_manager.rotation_manager.check_and_rotate_certificates()
-            )
+            rotated = await self.orchestrator.mtls_manager.rotation_manager.check_and_rotate_certificates()
             if rotated:
                 logger.info(f"✅ Rotated certificates for: {', '.join(rotated)}")
                 for service_name in rotated:
-                    await self.orchestrator.k8s_integration.deploy_certificate_as_secret(
-                        service_name
+                    await (
+                        self.orchestrator.k8s_integration.deploy_certificate_as_secret(
+                            service_name
+                        )
                     )
                 logger.info("📦 Updated Kubernetes secrets")
                 return True

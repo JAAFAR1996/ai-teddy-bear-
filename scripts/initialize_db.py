@@ -1,8 +1,8 @@
 import logging
 import os
 import sqlite3
-from datetime import datetime
 import sys
+from datetime import datetime
 
 
 def create_database(db_path: str = "data/child_memories.db"):
@@ -23,8 +23,7 @@ def create_database(db_path: str = "data/child_memories.db"):
         cursor = conn.cursor()
 
         # Create child profiles table
-        cursor.execute(
-            """
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS child_profiles (
             child_id TEXT PRIMARY KEY,
             name TEXT,
@@ -33,12 +32,10 @@ def create_database(db_path: str = "data/child_memories.db"):
             personality TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-        """
-        )
+        """)
 
         # Create conversation history table
-        cursor.execute(
-            """
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS conversation_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             child_id TEXT,
@@ -48,12 +45,10 @@ def create_database(db_path: str = "data/child_memories.db"):
             duration INTEGER,
             FOREIGN KEY(child_id) REFERENCES child_profiles(child_id)
         )
-        """
-        )
+        """)
 
         # Create parent notifications table
-        cursor.execute(
-            """
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS parent_notifications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             child_id TEXT,
@@ -63,12 +58,10 @@ def create_database(db_path: str = "data/child_memories.db"):
             is_read BOOLEAN DEFAULT 0,
             FOREIGN KEY(child_id) REFERENCES child_profiles(child_id)
         )
-        """
-        )
+        """)
 
         # Create safety violation tracking table
-        cursor.execute(
-            """
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS safety_violations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             child_id TEXT,
@@ -78,19 +71,16 @@ def create_database(db_path: str = "data/child_memories.db"):
             severity INTEGER,
             FOREIGN KEY(child_id) REFERENCES child_profiles(child_id)
         )
-        """
-        )
+        """)
 
         # Create system configuration table
-        cursor.execute(
-            """
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS system_config (
             key TEXT PRIMARY KEY,
             value TEXT,
             last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-        """
-        )
+        """)
 
         # Commit changes
         conn.commit()
