@@ -271,6 +271,36 @@ class ModerationService:
     
     async def check_content_with_params_legacy(
         self,
+        params: 'LegacyContentCheckParams'
+    ) -> Dict[str, Any]:
+        """
+        Legacy interface REFACTORED using Parameter Object pattern.
+        ✅ Reduced from 5 arguments to 1 argument (under threshold)
+        
+        Args:
+            params: LegacyContentCheckParams containing all legacy parameters
+            
+        Returns:
+            Dict[str, Any]: Moderation result
+        """
+        # Handle legacy parameter object
+        mod_request = ModerationRequest(
+            content=params.content,
+            user_id=params.user_id,
+            session_id=params.session_id,
+            age=params.age,
+            language=params.extra_kwargs.get('language', 'en')
+        )
+        
+        mod_context = ModerationContext(
+            use_cache=params.extra_kwargs.get('use_cache', True),
+            enable_openai=params.extra_kwargs.get('enable_openai', True)
+        )
+        
+        return await self.check_content(mod_request, mod_context)
+    
+    async def check_content_with_params_legacy_args(
+        self,
         content: str,
         user_id: Optional[str] = None,
         session_id: Optional[str] = None,
@@ -278,12 +308,18 @@ class ModerationService:
         **kwargs
     ) -> Dict[str, Any]:
         """
-        Legacy interface for backward compatibility.
-        ⚠️ DEPRECATED: Use check_content_with_params with ContentCheckParams instead.
+        Legacy method for backward compatibility - DEPRECATED.
+        Creates LegacyContentCheckParams and delegates to new method.
+        ⚠️ DEPRECATED: Use check_content_with_params_legacy with LegacyContentCheckParams instead.
         """
-        return await self.legacy_adapter.check_content_with_params_legacy(
-            content, user_id, session_id, age, **kwargs
+        legacy_params = LegacyContentCheckParams(
+            content=content,
+            user_id=user_id,
+            session_id=session_id,
+            age=age,
+            extra_kwargs=kwargs
         )
+        return await self.check_content_with_params_legacy(legacy_params)
     
     async def moderate_content(self, text: str, user_context: dict = None) -> dict:
         """Very old legacy interface - delegated to adapter"""
@@ -407,6 +443,56 @@ from .moderation.legacy_adapter import (
 )
 from .moderation.models import ModerationSeverity, ContentCategory
 
+# ================== PARAMETER OBJECTS ==================
+
+from dataclasses import dataclass, field
+
+@dataclass
+class LegacyContentCheckParams:
+    """
+    Parameter object for legacy content check parameters.
+    Applied INTRODUCE PARAMETER OBJECT pattern to reduce function arguments.
+    """
+    content: str
+    user_id: Optional[str] = None
+    session_id: Optional[str] = None
+    age: int = 10
+    extra_kwargs: Dict[str, Any] = field(default_factory=dict)
+    
+    def __post_init__(self):
+        """Validate legacy parameters"""
+        if not self.content or not isinstance(self.content, str):
+            raise ValueError("content must be a non-empty string")
+        
+        if self.age < 0 or self.age > 150:
+            raise ValueError("age must be between 0 and 150")
+        
+        if self.user_id is not None and not isinstance(self.user_id, str):
+            raise ValueError("user_id must be a string or None")
+        
+        if self.session_id is not None and not isinstance(self.session_id, str):
+            raise ValueError("session_id must be a string or None")
+
+
+def create_legacy_content_check_params(
+    content: str,
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    age: int = 10,
+    **kwargs
+) -> LegacyContentCheckParams:
+    """
+    Factory function to create LegacyContentCheckParams.
+    Simplifies creation of parameter objects.
+    """
+    return LegacyContentCheckParams(
+        content=content,
+        user_id=user_id,
+        session_id=session_id,
+        age=age,
+        extra_kwargs=kwargs
+    )
+
 # Legacy rule engine placeholder
 class RuleEngine:
     """Placeholder for legacy rule engine compatibility"""
@@ -434,9 +520,11 @@ __all__ = [
     "LegacyModerationParams",
     "ModerationMetadata",
     "ContentCheckParams",
+    "LegacyContentCheckParams",
     "RuleEngine",
     "create_moderation_service",
     "create_moderation_request",
     "create_content_check_params",
+    "create_legacy_content_check_params",
     "get_config"
 ] 
