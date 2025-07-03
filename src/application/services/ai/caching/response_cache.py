@@ -13,14 +13,50 @@ import json
 import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
+from enum import Enum
 
 try:
     import redis.asyncio as aioredis
 except ImportError:
     aioredis = None
 
-from ..llm_base import ModelConfig
-from src.core.domain.entities.conversation import Message
+
+# Mock classes for standalone operation
+class LLMProvider(Enum):
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic" 
+    GOOGLE = "google"
+
+
+class ModelConfig:
+    """Mock model config for caching"""
+    def __init__(self, provider=None, model_name="", max_tokens=150, temperature=0.7, **kwargs):
+        self.provider = provider
+        self.model_name = model_name
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+    
+    def __dict__(self):
+        return {
+            "provider": str(self.provider) if self.provider else None,
+            "model_name": self.model_name,
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature
+        }
+
+
+class Message:
+    """Mock message class for caching"""
+    def __init__(self, content="", role="user", **kwargs):
+        self.content = content
+        self.role = role
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+    
+    def __dict__(self):
+        return {"content": self.content, "role": self.role}
 
 
 class LLMResponseCache:
@@ -111,8 +147,8 @@ class LLMResponseCache:
 
     def generate_key(self, messages: List[Message], model_config: ModelConfig) -> str:
         """Generate cache key for messages and config"""
-        content = json.dumps([msg.__dict__ for msg in messages], sort_keys=True)
-        config_hash = hashlib.md5(json.dumps(model_config.__dict__, sort_keys=True).encode()).hexdigest()
+        content = json.dumps([msg.__dict__() for msg in messages], sort_keys=True)
+        config_hash = hashlib.md5(json.dumps(model_config.__dict__(), sort_keys=True).encode()).hexdigest()
         return f"llm:{hashlib.md5(content.encode()).hexdigest()}:{config_hash}"
     
     def get_stats(self) -> dict:

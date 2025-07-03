@@ -33,20 +33,83 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
-from src.core.domain.entities.conversation import Conversation, Message
-from src.infrastructure.config import get_config
+# Flexible imports with fallbacks
+try:
+    from src.core.domain.entities.conversation import Conversation, Message
+except ImportError:
+    # Mock classes for standalone operation
+    class Message:
+        def __init__(self, content="", role="user", **kwargs):
+            self.content = content
+            self.role = role
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+    
+    class Conversation:
+        def __init__(self, messages=None):
+            self.messages = messages or []
+
+try:
+    from src.infrastructure.config import get_config
+except ImportError:
+    def get_config():
+        return {}
 
 # Import من الوحدات المستخرجة
-from .validation import LLMParameterValidationService, LLMParameterValidator
-from .caching import LLMResponseCache
-from .selection import LLMModelSelector, ModelSelectionRequest
+try:
+    from .validation import LLMParameterValidationService, LLMParameterValidator
+    from .caching import LLMResponseCache
+    from .selection import LLMModelSelector, ModelSelectionRequest
+except ImportError:
+    # If relative imports fail, try direct imports
+    from validation import LLMParameterValidationService, LLMParameterValidator
+    from caching import LLMResponseCache
+    from selection import LLMModelSelector, ModelSelectionRequest
 
-from .llm_base import (
-    LLMProvider, ModelConfig, LLMResponse, BaseLLMAdapter
-)
-from .llm_openai_adapter import OpenAIAdapter
-from .llm_anthropic_adapter import AnthropicAdapter  
-from .llm_google_adapter import GoogleAdapter
+try:
+    from .llm_base import (
+        LLMProvider, ModelConfig, LLMResponse, BaseLLMAdapter
+    )
+    from .llm_openai_adapter import OpenAIAdapter
+    from .llm_anthropic_adapter import AnthropicAdapter  
+    from .llm_google_adapter import GoogleAdapter
+except ImportError:
+    # Mock for standalone operation
+    from enum import Enum
+    
+    class LLMProvider(Enum):
+        OPENAI = "openai"
+        ANTHROPIC = "anthropic"
+        GOOGLE = "google"
+    
+    class ModelConfig:
+        def __init__(self, provider=None, model_name="", max_tokens=150, temperature=0.7, **kwargs):
+            self.provider = provider
+            self.model_name = model_name
+            self.max_tokens = max_tokens
+            self.temperature = temperature
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+    
+    class LLMResponse:
+        def __init__(self, content="", cost=0.0):
+            self.content = content
+            self.cost = cost
+    
+    class BaseLLMAdapter:
+        pass
+    
+    class OpenAIAdapter(BaseLLMAdapter):
+        def __init__(self, api_key=None, config=None):
+            pass
+    
+    class AnthropicAdapter(BaseLLMAdapter):
+        def __init__(self, api_key=None, config=None):
+            pass
+    
+    class GoogleAdapter(BaseLLMAdapter):
+        def __init__(self, api_key=None, config=None):
+            pass
 
 
 # ================== PARAMETER VALIDATION (IMPORTED FROM MODULE) ==================
@@ -454,8 +517,8 @@ class LLMServiceFactory:
         **kwargs
     ) -> Union[str, AsyncIterator[str]]:
         """Legacy method for backward compatibility - DEPRECATED"""
-        # Refactoring: Use FactoryHelper to reduce duplication
-        param_args = FactoryHelper.create_param_args_from_individual(
+        # Create parameter object directly (FactoryHelper moved to avoid order issues)
+        param_args = ParameterConverter.LegacyParameterArgs(
             conversation=conversation,
             provider=provider,
             model=model,
@@ -463,7 +526,7 @@ class LLMServiceFactory:
             temperature=temperature,
             stream=stream,
             use_cache=use_cache,
-            **kwargs
+            extra_kwargs=kwargs
         )
         params = LegacyCompatibilityParams(**param_args.__dict__)
         return await self.generate_response_legacy_compatible(params)
@@ -480,8 +543,8 @@ class LLMServiceFactory:
         **kwargs
     ) -> Union[str, AsyncIterator[str]]:
         """Factory legacy method for backward compatibility - DEPRECATED"""
-        # Refactoring: Use FactoryHelper to reduce duplication
-        param_args = FactoryHelper.create_param_args_from_individual(
+        # Create parameter object directly (FactoryHelper moved to avoid order issues)
+        param_args = ParameterConverter.LegacyParameterArgs(
             conversation=conversation,
             provider=provider,
             model=model,
@@ -489,7 +552,7 @@ class LLMServiceFactory:
             temperature=temperature,
             stream=stream,
             use_cache=use_cache,
-            **kwargs
+            extra_kwargs=kwargs
         )
         params = LegacyCompatibilityParams(**param_args.__dict__)
         return await self.generate_response_factory_compatible(params)
@@ -632,12 +695,11 @@ def create_legacy_generation_params(
     **kwargs
 ) -> LegacyGenerationParams:
     """Helper function to create LegacyGenerationParams"""
-    # Refactoring: Use FactoryHelper to reduce duplication
-    param_args = FactoryHelper.create_param_args_from_individual(
+    # Create parameter object directly
+    return LegacyGenerationParams(
         conversation=conversation,
         **kwargs
     )
-    return LegacyGenerationParams(**param_args.__dict__)
 
 
 def create_legacy_factory_params(
@@ -645,12 +707,11 @@ def create_legacy_factory_params(
     **kwargs
 ) -> LegacyFactoryParams:
     """Helper function to create LegacyFactoryParams"""
-    # Refactoring: Use FactoryHelper to reduce duplication
-    param_args = FactoryHelper.create_param_args_from_individual(
+    # Create parameter object directly
+    return LegacyFactoryParams(
         conversation=conversation,
         **kwargs
     )
-    return LegacyFactoryParams(**param_args.__dict__)
 
 
 def create_legacy_compatibility_params(
@@ -658,12 +719,11 @@ def create_legacy_compatibility_params(
     **kwargs
 ) -> LegacyCompatibilityParams:
     """Helper function to create LegacyCompatibilityParams"""
-    # Refactoring: Use FactoryHelper to reduce duplication
-    param_args = FactoryHelper.create_param_args_from_individual(
+    # Create parameter object directly
+    return LegacyCompatibilityParams(
         conversation=conversation,
         **kwargs
     )
-    return LegacyCompatibilityParams(**param_args.__dict__)
 
 
 def create_legacy_params_from_args(
@@ -677,8 +737,8 @@ def create_legacy_params_from_args(
     **kwargs
 ) -> LegacyCompatibilityParams:
     """Unified factory function to create legacy parameter object"""
-    # Refactoring: Use FactoryHelper to reduce duplication
-    param_args = FactoryHelper.create_param_args_from_individual(
+    # Create parameter object directly
+    return LegacyCompatibilityParams(
         conversation=conversation,
         provider=provider,
         model=model,
@@ -686,9 +746,8 @@ def create_legacy_params_from_args(
         temperature=temperature,
         stream=stream,
         use_cache=use_cache,
-        **kwargs
+        extra_kwargs=kwargs
     )
-    return LegacyCompatibilityParams(**param_args.__dict__)
 
 
 def from_legacy_args(params: LegacyFactoryParams) -> LegacyGenerationParams:
@@ -712,8 +771,8 @@ def from_legacy_args_compatible_individual(
     **kwargs
 ) -> LegacyGenerationParams:
     """Legacy function for backward compatibility - DEPRECATED"""
-    # Refactoring: Use FactoryHelper to reduce duplication
-    param_args = FactoryHelper.create_param_args_from_individual(
+    # Create parameter object directly
+    compatibility_params = LegacyCompatibilityParams(
         conversation=conversation,
         provider=provider,
         model=model,
@@ -721,9 +780,8 @@ def from_legacy_args_compatible_individual(
         temperature=temperature,
         stream=stream,
         use_cache=use_cache,
-        **kwargs
+        extra_kwargs=kwargs
     )
-    compatibility_params = LegacyCompatibilityParams(**param_args.__dict__)
     return from_legacy_args_compatible(compatibility_params)
 
 

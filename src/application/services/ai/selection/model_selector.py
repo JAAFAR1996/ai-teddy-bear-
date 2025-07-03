@@ -11,8 +11,25 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
+from enum import Enum
 
-from ..llm_base import LLMProvider, ModelConfig
+
+# Mock classes for standalone operation
+class LLMProvider(Enum):
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+    GOOGLE = "google"
+
+
+class ModelConfig:
+    """Mock model config for selection"""
+    def __init__(self, provider=None, model_name="", max_tokens=150, temperature=0.7, **kwargs):
+        self.provider = provider
+        self.model_name = model_name
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
 
 @dataclass

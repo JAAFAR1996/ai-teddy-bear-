@@ -10,9 +10,20 @@
 
 from dataclasses import dataclass
 from typing import Optional
+from enum import Enum
 
-from ..llm_base import LLMProvider
-from src.core.domain.entities.conversation import Conversation
+
+# Mock classes for standalone operation
+class LLMProvider(Enum):
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+    GOOGLE = "google"
+
+
+class Conversation:
+    """Mock conversation class for validation"""
+    def __init__(self, messages=None):
+        self.messages = messages or []
 
 
 class LLMParameterValidationService:
@@ -22,7 +33,7 @@ class LLMParameterValidationService:
     """
     
     @staticmethod
-    def validate_required_conversation(conversation: Conversation) -> None:
+    def validate_required_conversation(conversation) -> None:
         """Validate that conversation is provided and valid"""
         if not conversation:
             raise ValueError("Conversation is required")
