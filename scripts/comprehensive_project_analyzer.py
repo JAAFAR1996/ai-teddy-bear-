@@ -320,7 +320,8 @@ class ComprehensiveProjectAnalyzer:
             issues.append("Security: يستخدم pickle.loads (خطر أمني)")
         
         # مشاكل جودة الكود
-        if 'except:' in content or 'except Exception:' in content:
+        if 'except:' in content or '# FIXME: replace with specific exception
+except Exception as exc:' in content:
             issues.append("Quality: معالجة استثناءات عامة")
         
         if re.search(r'print\s*\(', content) and 'test' not in str(file_path):

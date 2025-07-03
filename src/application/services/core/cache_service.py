@@ -149,7 +149,7 @@ class CacheService:
         cached = self.cache.get(key)
         if cached:
             try:
-                return ast.literal_ast.literal_eval(cached)
+                return ast.literal_eval(cached)
             except Exception as e:
                 self.logger.error(f"Error deserializing cached analytics: {e}")
         return None

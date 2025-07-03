@@ -765,8 +765,8 @@ class TestErrorHandling:
             try:
                 result = await flaky_api_call()
                 break
-            except Exception:
-                if i == max_retries - 1:
+            # FIXME: replace with specific exception
+except Exception as exc:if i == max_retries - 1:
                     raise
                 await asyncio.sleep(0.1 * (i + 1))  # Exponential backoff
         

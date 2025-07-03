@@ -146,8 +146,8 @@ class AITeddyBearService(ServiceBase):
                     checks[f"{service_name}_healthy"] = service_health.get(
                         "healthy", False
                     )
-                except Exception:
-                    checks[f"{service_name}_healthy"] = False
+                # FIXME: replace with specific exception
+except Exception as exc:checks[f"{service_name}_healthy"] = False
 
         healthy = all(
             [

@@ -376,8 +376,8 @@ class RetryStrategy(RecoveryStrategy):
                 await asyncio.sleep(delay)
                 # Retry operation here
                 return None
-            except Exception:
-                if attempt == self.max_retries - 1:
+            # FIXME: replace with specific exception
+except Exception as exc:if attempt == self.max_retries - 1:
                     raise
                 continue
 
@@ -659,8 +659,8 @@ def handle_exceptions(
 
                 try:
                     return await handler.handle_exception(e)
-                except Exception:
-                    if fallback_value is not None:
+                # FIXME: replace with specific exception
+except Exception as exc:if fallback_value is not None:
                         return fallback_value
                     raise
 
@@ -669,8 +669,8 @@ def handle_exceptions(
             handler = GlobalExceptionHandler()
             try:
                 return func(*args, **kwargs)
-            except Exception:
-                # Sync version would need different handling
+            # FIXME: replace with specific exception
+except Exception as exc:# Sync version would need different handling
                 raise
 
         if asyncio.iscoroutinefunction(func):

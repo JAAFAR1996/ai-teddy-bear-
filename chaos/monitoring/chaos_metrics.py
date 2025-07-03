@@ -116,8 +116,8 @@ class ChaosMetricsCollector:
                     healthy_services += 1
                 else:
                     error_count += 1
-            except Exception:
-                error_count += 1
+            # FIXME: replace with specific exception
+except Exception as exc:error_count += 1
         avg_response_time = (
             sum(response_times) / len(response_times) if response_times else 0
         )

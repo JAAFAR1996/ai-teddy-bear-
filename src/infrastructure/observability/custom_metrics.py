@@ -6,6 +6,8 @@ Custom Metrics for AI Teddy Bear Observability
 
 Comprehensive metrics collection focusing on child safety,
 AI performance, and system reliability with OpenTelemetry.
+
+Integrated with enterprise_observability.py and comprehensive_monitor.py for unified observability.
 """
 
 import asyncio

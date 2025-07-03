@@ -77,8 +77,8 @@ class WhisperClient:
             confidence = max(0.0, min(1.0, (avg_logprob + 1.0) / 1.0))
             return confidence
 
-        except Exception:
-            return 0.5
+        # FIXME: replace with specific exception
+except Exception as exc:return 0.5
 
     async def detect_language(self, audio_data: np.ndarray) -> Optional[str]:
         """Detect language from audio"""

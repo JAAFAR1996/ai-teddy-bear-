@@ -409,8 +409,8 @@ class PerformanceTester:
                         response = target_function("test stress", context)
 
                     successful_requests += 1
-                except Exception:
-                    error_count += 1
+                # FIXME: replace with specific exception
+except Exception as exc:error_count += 1
 
             # Run stress level
             tasks = [stress_request() for _ in range(stress_level)]

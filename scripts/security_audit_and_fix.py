@@ -421,8 +421,10 @@ class SecurityAuditor:
                 )
                 self._ensure_import(lines, "import logging")
                 self._ensure_import(lines, "logger = logging.getLogger(__name__)")
-            elif "except Exception:" in line:
-                line = line.replace("except Exception:", "except Exception as e:")
+            elif "# FIXME: replace with specific exception
+except Exception as exc:" in line:
+                line = line.replace("# FIXME: replace with specific exception
+except Exception as exc:", "except Exception as e:")
                 lines[line_idx] = line
                 indent = len(line) - len(line.lstrip()) + 4
                 lines.insert(

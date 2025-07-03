@@ -1,5 +1,3 @@
-from typing import Any, Dict, List, Optional
-
 """
 Enterprise-Grade Multi-Layer Caching System for AI Teddy Bear Project.
 
@@ -7,9 +5,13 @@ This module provides advanced multi-layer caching with L1 (memory), L2 (Redis),
 and L3 (CDN) layers for optimal performance across different content types
 and access patterns.
 
+Integrated with performance_optimizer.py for comprehensive cache management.
+
 Performance Team Implementation - Task 12
 Author: Performance Team Lead
 """
+
+from typing import Any, Dict, List, Optional
 
 import asyncio
 import base64
@@ -341,8 +343,8 @@ class L1MemoryCache:
             else:
                 return len(pickle.dumps(value))
         except json.JSONDecodeError as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)json.JSONDecodeError as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)            return 1024  # Default estimate
+            logger.error(f"Error in operation: {e}", exc_info=True)
+            return 1024  # Default estimate
     
     def get_stats(self) -> Dict[str, Any]:
         """Get L1 cache statistics."""

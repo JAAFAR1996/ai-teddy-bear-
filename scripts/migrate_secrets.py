@@ -186,8 +186,8 @@ class AdvancedSecretsMigrator:
                 chunk = f.read(1024)
                 if b"\x00" in chunk:
                     return True
-        except Exception:
-            return True
+        # FIXME: replace with specific exception
+except Exception as exc:return True
         return False
 
     def _scan_file_content(self, file_path: str, content: str):

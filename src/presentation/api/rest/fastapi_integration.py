@@ -5,11 +5,14 @@ Modern WebSocket and Audio Streaming with FastAPI
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from fastapi import (Depends, FastAPI, WebSocket)
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+
+# DI helper
+from infrastructure.di import provide
 
 from .audio_streamer import AudioStreamConfig, ModernAudioStreamer
 from .websocket_manager import ModernWebSocketManager, WebSocketConfig
@@ -31,32 +34,31 @@ class StreamingStats(BaseModel):
 
 # ================== DEPENDENCY INJECTION ==================
 
-# Global instances (in production, use proper DI container)
-websocket_manager: Optional[ModernWebSocketManager] = None
-audio_streamer: Optional[ModernAudioStreamer] = None
-
-
 def get_websocket_manager() -> ModernWebSocketManager:
-    """Get WebSocket manager instance"""
-    global websocket_manager
-    if websocket_manager is None:
-        config = WebSocketConfig(
+    """Provide a *singleton* WebSocket manager via the DI container."""
+
+    def _factory() -> ModernWebSocketManager:
+        cfg = WebSocketConfig(
             heartbeat_interval=30, max_connections=1000, connection_timeout=300
         )
-        websocket_manager = ModernWebSocketManager(config)
-    return websocket_manager
+        return ModernWebSocketManager(cfg)
+
+    return provide(ModernWebSocketManager, _factory)
 
 
 def get_audio_streamer() -> ModernAudioStreamer:
-    """Get audio streamer instance"""
-    global audio_streamer
-    if audio_streamer is None:
+    """Provide a *singleton* audio streamer via the DI container."""
+
+    def _factory() -> ModernAudioStreamer:
         ws_manager = get_websocket_manager()
-        config = AudioStreamConfig(
-            sample_rate=16000, enable_real_time_processing=True, streaming_enabled=True
+        cfg = AudioStreamConfig(
+            sample_rate=16000,
+            enable_real_time_processing=True,
+            streaming_enabled=True,
         )
-        audio_streamer = ModernAudioStreamer(ws_manager, None, config)
-    return audio_streamer
+        return ModernAudioStreamer(ws_manager, None, cfg)
+
+    return provide(ModernAudioStreamer, _factory)
 
 
 # ================== FASTAPI APPLICATION ==================
@@ -296,11 +298,9 @@ def create_streaming_app() -> FastAPI:
         """Application shutdown"""
         logger.info("🛑 Shutting down AI Teddy Bear Streaming API...")
 
-        if websocket_manager:
-            await websocket_manager.shutdown()
-
-        if audio_streamer:
-            await audio_streamer.shutdown()
+        # Gracefully shut down singleton services.
+        await get_websocket_manager().shutdown()
+        await get_audio_streamer().shutdown()
 
         logger.info("✅ Graceful shutdown complete")
 

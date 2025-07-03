@@ -163,8 +163,8 @@ class RateMonitorService:
 
             return True, "System limits OK"
 
-        except Exception:
-            return False, "System limits check error"
+        # FIXME: replace with specific exception
+except Exception as exc:return False, "System limits check error"
 
     async def _check_parent_weekly_limit(
         self, parent_email: str, now: datetime
@@ -197,8 +197,8 @@ class RateMonitorService:
 
             return True, "Parent weekly limit OK"
 
-        except Exception:
-            return False, "Parent limit check error"
+        # FIXME: replace with specific exception
+except Exception as exc:return False, "Parent limit check error"
 
     async def record_notification(
         self,

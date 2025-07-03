@@ -112,8 +112,8 @@ class RenderDeploymentTester:
             print(f"   ✅ Cloud Audio: {features.get('cloud_audio_processing')}")
             return True
             
-        except Exception:
-            return False
+        # FIXME: replace with specific exception
+except Exception as exc:return False
     
     async def test_esp32_connect(self) -> bool:
         """Test ESP32 connection endpoint"""
@@ -142,8 +142,8 @@ class RenderDeploymentTester:
             print(f"   ✅ Cloud AI: {capabilities['cloud_ai']}")
             return True
             
-        except Exception:
-            return False
+        # FIXME: replace with specific exception
+except Exception as exc:return False
     
     async def test_audio_text_processing(self) -> bool:
         """Test audio processing with text message"""
@@ -219,8 +219,8 @@ class RenderDeploymentTester:
             print(f"   ✅ AI Response: {services['ai_response']}")
             return True
             
-        except Exception:
-            return False
+        # FIXME: replace with specific exception
+except Exception as exc:return False
     
     async def test_admin_stats(self) -> bool:
         """Test admin statistics endpoint"""
@@ -245,8 +245,8 @@ class RenderDeploymentTester:
             print(f"   ✅ Audio Service: {server_info.get('audio_service')}")
             return True
             
-        except Exception:
-            return False
+        # FIXME: replace with specific exception
+except Exception as exc:return False
     
     async def test_error_handling(self) -> bool:
         """Test error handling for invalid endpoints"""
@@ -276,8 +276,8 @@ class RenderDeploymentTester:
             print("   ✅ Bad request handling works correctly")
             return True
             
-        except Exception:
-            return False
+        # FIXME: replace with specific exception
+except Exception as exc:return False
     
     def generate_report(self) -> Dict[str, Any]:
         """Generate final test report"""

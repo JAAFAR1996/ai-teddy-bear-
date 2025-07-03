@@ -159,8 +159,8 @@ class EnhancedTeddyClient:
     try:
         try:
             audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="wav")
-        except Exception:
-            audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
+        # FIXME: replace with specific exception
+except Exception as exc:audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
         logger.info("🔊 يتحدث الدبدوب...")
         play(audio)
         logger.info("✅ انتهى الدبدوب من الكلام")

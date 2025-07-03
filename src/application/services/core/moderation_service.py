@@ -35,23 +35,93 @@ from .moderation.legacy_adapter import (
 
 # ================== CONFIGURATION ==================
 
-class SimpleConfig:
-    """تكوين مبسط وآمن للخدمة"""
-    def __init__(self):
-        self.api_keys = SimpleAPIKeys()
+class SecureConfig:
+    """تكوين آمن للخدمة مع إدارة الأسرار"""
+    def __init__(self, secrets_manager=None):
+        self.api_keys = SecureAPIKeys(secrets_manager)
+        self.secrets_manager = secrets_manager
 
-class SimpleAPIKeys:
-    """مفاتيح API من متغيرات البيئة"""
-    def __init__(self):
-        self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-        self.AZURE_CONTENT_SAFETY_KEY = os.getenv("AZURE_CONTENT_SAFETY_KEY", "")
-        self.AZURE_CONTENT_SAFETY_ENDPOINT = os.getenv("AZURE_CONTENT_SAFETY_ENDPOINT", "")
-        self.GOOGLE_CLOUD_CREDENTIALS = os.getenv("GOOGLE_CLOUD_CREDENTIALS", "")
-        self.ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+class SecureAPIKeys:
+    """مفاتيح API آمنة من نظام إدارة الأسرار"""
+    
+    def __init__(self, secrets_manager=None):
+        self.secrets_manager = secrets_manager
+        self._cached_keys = {}
+        self.logger = logging.getLogger(self.__class__.__name__)
+    
+    async def get_openai_key(self) -> str:
+        """Get OpenAI API key from vault"""
+        if "openai" not in self._cached_keys:
+            try:
+                if self.secrets_manager:
+                    self._cached_keys["openai"] = await self.secrets_manager.get_secret("openai_api_key")
+                else:
+                    self._cached_keys["openai"] = os.getenv("OPENAI_API_KEY", "")
+            except Exception as e:
+                self.logger.error(f"❌ Failed to get OpenAI key: {e}")
+                self._cached_keys["openai"] = ""
+        return self._cached_keys["openai"]
+    
+    async def get_anthropic_key(self) -> str:
+        """Get Anthropic API key from vault"""
+        if "anthropic" not in self._cached_keys:
+            try:
+                if self.secrets_manager:
+                    self._cached_keys["anthropic"] = await self.secrets_manager.get_secret("anthropic_api_key")
+                else:
+                    self._cached_keys["anthropic"] = os.getenv("ANTHROPIC_API_KEY", "")
+            except Exception as e:
+                self.logger.error(f"❌ Failed to get Anthropic key: {e}")
+                self._cached_keys["anthropic"] = ""
+        return self._cached_keys["anthropic"]
+    
+    async def get_azure_content_safety_key(self) -> str:
+        """Get Azure Content Safety key from vault"""
+        if "azure_content_safety" not in self._cached_keys:
+            try:
+                if self.secrets_manager:
+                    self._cached_keys["azure_content_safety"] = await self.secrets_manager.get_secret("azure_content_safety_key")
+                else:
+                    self._cached_keys["azure_content_safety"] = os.getenv("AZURE_CONTENT_SAFETY_KEY", "")
+            except Exception as e:
+                self.logger.error(f"❌ Failed to get Azure Content Safety key: {e}")
+                self._cached_keys["azure_content_safety"] = ""
+        return self._cached_keys["azure_content_safety"]
+    
+    async def get_azure_content_safety_endpoint(self) -> str:
+        """Get Azure Content Safety endpoint from vault"""
+        if "azure_endpoint" not in self._cached_keys:
+            try:
+                if self.secrets_manager:
+                    self._cached_keys["azure_endpoint"] = await self.secrets_manager.get_secret("azure_content_safety_endpoint")
+                else:
+                    self._cached_keys["azure_endpoint"] = os.getenv("AZURE_CONTENT_SAFETY_ENDPOINT", "")
+            except Exception as e:
+                self.logger.error(f"❌ Failed to get Azure endpoint: {e}")
+                self._cached_keys["azure_endpoint"] = ""
+        return self._cached_keys["azure_endpoint"]
+    
+    async def get_google_cloud_credentials(self) -> str:
+        """Get Google Cloud credentials from vault"""
+        if "google_cloud" not in self._cached_keys:
+            try:
+                if self.secrets_manager:
+                    self._cached_keys["google_cloud"] = await self.secrets_manager.get_secret("google_cloud_credentials")
+                else:
+                    self._cached_keys["google_cloud"] = os.getenv("GOOGLE_CLOUD_CREDENTIALS", "")
+            except Exception as e:
+                self.logger.error(f"❌ Failed to get Google Cloud credentials: {e}")
+                self._cached_keys["google_cloud"] = ""
+        return self._cached_keys["google_cloud"]
+    
+    def clear_cache(self):
+        """Clear cached keys"""
+        self._cached_keys.clear()
+        self.logger.info("🗑️ API keys cache cleared")
 
-def get_config():
-    """إحضار التكوين البسيط"""
-    return SimpleConfig()
+def get_config(secrets_manager=None):
+    """إحضار التكوين الآمن"""
+    return SecureConfig(secrets_manager)
 
 
 # ================== MAIN MODERATION SERVICE ==================

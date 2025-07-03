@@ -25,13 +25,32 @@ class ModerationResult:
     Follows Single Responsibility Principle
     """
 
-    def __init__(self):
-        """Initialize ModerationResult"""
-        pass
+    def __init__(self, message: str, rules: list[Any] | None = None):
+        """Initialize ModerationResult with the *message* and moderation *rules*.
 
-    def overall_score(self) -> Any:
+        Args:
+            message: The content that needs to be assessed.
+            rules:  Iterable of callables that accept ``message`` and return
+                *True* if the content is acceptable. When ``None`` an empty
+                list is assumed.
         """
-        overall_score - Extracted method
-        TODO: Implement the actual logic from original class
+
+        self.message = message
+        self.rules = rules or []
+
+    # ---------------------------------------------------------------------
+    # Public helpers
+    # ---------------------------------------------------------------------
+
+    def overall_score(self) -> float:
+        """Return a *violation ratio* between ``0.0`` (safe) and ``1.0`` (all bad).
+
+        The score is computed as: (number_of_failed_rules / total_rules).
+        If no rules are supplied the score defaults to **0.0** (cannot judge).
         """
-        raise NotImplementedError("Method needs implementation")
+
+        if not self.rules:
+            return 0.0
+
+        failed = sum(1 for rule in self.rules if not rule(self.message))
+        return failed / len(self.rules)

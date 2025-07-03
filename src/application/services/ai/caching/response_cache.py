@@ -100,8 +100,8 @@ class LLMResponseCache:
         try:
             value = await self.redis_client.get(key)
             return value.decode('utf-8') if value else None
-        except Exception:
-            return None
+        # FIXME: replace with specific exception
+except Exception as exc:return None
     
     def _try_local_get(self, key: str) -> Optional[str]:
         """Try to get value from local cache"""
@@ -129,8 +129,8 @@ class LLMResponseCache:
         if self.redis_client:
             try:
                 await self.redis_client.setex(key, self.cache_ttl, value)
-            except Exception:
-                pass
+            # FIXME: replace with specific exception
+except Exception as exc:pass
 
         # Set in local cache
         self._set_local_cache(key, value)

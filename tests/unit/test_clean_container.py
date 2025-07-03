@@ -64,8 +64,8 @@ async def test_factory_providers():
 
         # Should be different instances for factory
         assert session_mgr1 is not session_mgr2
-    except Exception:
-        # This might fail due to missing database setup, which is expected
+    # FIXME: replace with specific exception
+except Exception as exc:# This might fail due to missing database setup, which is expected
         pass
 
 
@@ -86,8 +86,8 @@ async def test_dependency_injection():
         # Verify it has dependencies injected
         assert hasattr(child_service, "repository")
         assert hasattr(child_service, "cache_service")
-    except Exception:
-        # Expected to fail without proper database setup
+    # FIXME: replace with specific exception
+except Exception as exc:# Expected to fail without proper database setup
         pass
 
 
@@ -132,8 +132,8 @@ async def test_container_context_manager():
             assert ctx_container is not None
             # Container should be initialized
             assert container.config.provided["database_url"]() == config["database_url"]
-    except Exception:
-        # Expected to fail during initialization without full dependencies
+    # FIXME: replace with specific exception
+except Exception as exc:# Expected to fail during initialization without full dependencies
         pass
 
 
@@ -180,8 +180,8 @@ async def test_circular_dependency_detection():
 
         assert settings is not None
         assert emotion_analyzer is not None
-    except Exception:
-        # Expected to fail during actual creation without dependencies
+    # FIXME: replace with specific exception
+except Exception as exc:# Expected to fail during actual creation without dependencies
         pass
 
 

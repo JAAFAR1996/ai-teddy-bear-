@@ -1052,8 +1052,8 @@ class TestErrorHandlingAndRecovery:
                 changes_made.append("change_3")  # Should not reach here
                 await db.commit()
                 
-            except Exception:
-                await db.rollback()
+            # FIXME: replace with specific exception
+except Exception as exc:await db.rollback()
                 changes_made.clear()  # Rollback changes
                 raise
         
@@ -1079,8 +1079,8 @@ class TestErrorHandlingAndRecovery:
         async def get_response_with_fallback(query):
             try:
                 return await primary_service.get_response(query)
-            except Exception:
-                # Fallback to simpler service
+            # FIXME: replace with specific exception
+except Exception as exc:# Fallback to simpler service
                 return await fallback_service.get_response(query)
         
         # Test fallback
