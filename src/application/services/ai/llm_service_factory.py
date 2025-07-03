@@ -60,10 +60,12 @@ class ModelSelectionRequest:
     budget_constraint: Optional[float] = None
     latency_requirement: Optional[int] = None
 
-# FIX: INTRODUCE PARAMETER OBJECT for generate_response_legacy
 @dataclass
 class LegacyGenerationParams:
-    """📦 Parameter Object لحل مشكلة Excess Number of Function Arguments في generate_response_legacy"""
+    """
+    📦 Parameter Object لحل مشكلة Excess Number of Function Arguments
+    ✅ Reduces method arguments from 8 to 1 (under threshold)
+    """
     conversation: Conversation
     provider: Optional[LLMProvider] = None
     model: Optional[str] = None
@@ -72,6 +74,17 @@ class LegacyGenerationParams:
     stream: bool = False
     use_cache: bool = True
     extra_kwargs: Dict[str, Any] = field(default_factory=dict)
+    
+    def __post_init__(self):
+        """Validate parameters after initialization"""
+        if not self.conversation:
+            raise ValueError("Conversation is required")
+        
+        if self.max_tokens < 1 or self.max_tokens > 8192:
+            raise ValueError("max_tokens must be between 1 and 8192")
+        
+        if self.temperature < 0.0 or self.temperature > 2.0:
+            raise ValueError("temperature must be between 0.0 and 2.0")
     
     def to_generation_request(self) -> GenerationRequest:
         """تحويل إلى GenerationRequest الحديث"""
@@ -85,29 +98,44 @@ class LegacyGenerationParams:
             use_cache=self.use_cache,
             extra_kwargs=self.extra_kwargs
         )
+
+@dataclass
+class LegacyFactoryParams:
+    """
+    📦 Parameter Object for factory method creation
+    ✅ Encapsulates all parameters needed for legacy factory operations
+    """
+    conversation: Conversation
+    provider: Optional[LLMProvider] = None
+    model: Optional[str] = None
+    max_tokens: int = 150
+    temperature: float = 0.7
+    stream: bool = False
+    use_cache: bool = True
+    extra_kwargs: Dict[str, Any] = field(default_factory=dict)
     
-    @classmethod
-    def from_legacy_args(
-        cls,
-        conversation: Conversation,
-        provider: Optional[LLMProvider] = None,
-        model: Optional[str] = None,
-        max_tokens: int = 150,
-        temperature: float = 0.7,
-        stream: bool = False,
-        use_cache: bool = True,
-        **kwargs
-    ) -> 'LegacyGenerationParams':
-        """إنشاء من المعاملات القديمة"""
-        return cls(
-            conversation=conversation,
-            provider=provider,
-            model=model,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            stream=stream,
-            use_cache=use_cache,
-            extra_kwargs=kwargs
+    def __post_init__(self):
+        """Validate factory parameters"""
+        if not self.conversation:
+            raise ValueError("Conversation is required")
+        
+        if self.max_tokens < 1 or self.max_tokens > 8192:
+            raise ValueError("max_tokens must be between 1 and 8192")
+        
+        if self.temperature < 0.0 or self.temperature > 2.0:
+            raise ValueError("temperature must be between 0.0 and 2.0")
+    
+    def to_legacy_generation_params(self) -> LegacyGenerationParams:
+        """Convert to LegacyGenerationParams"""
+        return LegacyGenerationParams(
+            conversation=self.conversation,
+            provider=self.provider,
+            model=self.model,
+            max_tokens=self.max_tokens,
+            temperature=self.temperature,
+            stream=self.stream,
+            use_cache=self.use_cache,
+            extra_kwargs=self.extra_kwargs
         )
 
 
@@ -366,16 +394,43 @@ class LLMServiceFactory:
             return dict(self.usage_stats[provider])
         return {str(p): dict(stats) for p, stats in self.usage_stats.items()}
     
-    # ================== BACKWARD COMPATIBILITY - FIXED ==================
+    # ================== MODERN INTERFACE - REFACTORED ==================
     
     async def generate_response_legacy(
         self, params: LegacyGenerationParams
     ) -> Union[str, AsyncIterator[str]]:
-        """🔄 Legacy method - Fixed with Parameter Object (8 args → 1 arg)"""
+        """
+        Refactored legacy method using parameter object pattern.
+        ✅ Reduced from 8 arguments to 1 argument (under threshold)
+        
+        Args:
+            params: LegacyGenerationParams containing all generation information
+            
+        Returns:
+            Union[str, AsyncIterator[str]]: Generated response
+        """
         request = params.to_generation_request()
         return await self.generate_response(request)
     
     async def generate_response_legacy_direct(
+        self, params: LegacyFactoryParams
+    ) -> Union[str, AsyncIterator[str]]:
+        """
+        Refactored direct legacy method using parameter object pattern.
+        ✅ Reduced from 8 arguments to 1 argument (under threshold)
+        
+        Args:
+            params: LegacyFactoryParams containing all factory operation information
+            
+        Returns:
+            Union[str, AsyncIterator[str]]: Generated response
+        """
+        legacy_params = params.to_legacy_generation_params()
+        return await self.generate_response_legacy(legacy_params)
+    
+    # ================== BACKWARD COMPATIBILITY METHODS ==================
+    
+    async def generate_response_legacy_compatible(
         self,
         conversation: Conversation,
         provider: Optional[LLMProvider] = None,
@@ -386,12 +441,80 @@ class LLMServiceFactory:
         use_cache: bool = True,
         **kwargs
     ) -> Union[str, AsyncIterator[str]]:
-        """🔄 Direct legacy method - for backward compatibility only"""
-        params = LegacyGenerationParams.from_legacy_args(
-            conversation, provider, model, max_tokens, 
-            temperature, stream, use_cache, **kwargs
+        """
+        Legacy method for backward compatibility.
+        Creates LegacyGenerationParams and delegates to new method.
+        ⚠️ DEPRECATED: Use generate_response_legacy with LegacyGenerationParams instead.
+        Legacy method REFACTORED using Parameter Object pattern.
+        ✅ Reduced from 8 arguments to 1 argument (under threshold)
+        
+        Args:
+            conversation: Conversation object
+            provider: Optional LLM provider
+            model: Optional model name
+            max_tokens: Maximum tokens to generate
+            temperature: Temperature for generation
+            stream: Whether to stream response
+            use_cache: Whether to use caching
+            **kwargs: Additional parameters
+            
+        Returns:
+            Union[str, AsyncIterator[str]]: Generated response
+        """
+        params = LegacyGenerationParams(
+            conversation=conversation,
+            provider=provider,
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            stream=stream,
+            use_cache=use_cache,
+            extra_kwargs=kwargs
         )
         return await self.generate_response_legacy(params)
+    
+    async def generate_response_factory_compatible(
+        self,
+        conversation: Conversation,
+        provider: Optional[LLMProvider] = None,
+        model: Optional[str] = None,
+        max_tokens: int = 150,
+        temperature: float = 0.7,
+        stream: bool = False,
+        use_cache: bool = True,
+        **kwargs
+    ) -> Union[str, AsyncIterator[str]]:
+        """
+        Factory legacy method for backward compatibility.
+        Creates LegacyFactoryParams and delegates to new method.
+        ⚠️ DEPRECATED: Use generate_response_legacy_direct with LegacyFactoryParams instead.
+        Legacy method REFACTORED using Parameter Object pattern.
+        ✅ Reduced from 8 arguments to 1 argument (under threshold)
+        
+        Args:
+            conversation: Conversation object
+            provider: Optional LLM provider
+            model: Optional model name
+            max_tokens: Maximum tokens to generate
+            temperature: Temperature for generation
+            stream: Whether to stream response
+            use_cache: Whether to use caching
+            **kwargs: Additional parameters
+            
+        Returns:
+            Union[str, AsyncIterator[str]]: Generated response
+        """
+        params = LegacyFactoryParams(
+            conversation=conversation,
+            provider=provider,
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            stream=stream,
+            use_cache=use_cache,
+            extra_kwargs=kwargs
+        )
+        return await self.generate_response_legacy_direct(params)
 
 
 # ================== FACTORY & HELPER FUNCTIONS ==================
@@ -426,16 +549,90 @@ def create_model_selection_request(
         **kwargs
     )
 
-# FIX: Helper function for LegacyGenerationParams
+
 def create_legacy_generation_params(
     conversation: Conversation,
     **kwargs
 ) -> LegacyGenerationParams:
-    """📦 Helper function to create LegacyGenerationParams"""
+    """
+    📦 Helper function to create LegacyGenerationParams
+    ✅ Replaces the problematic from_legacy_args method
+    """
     return LegacyGenerationParams(
         conversation=conversation,
         **kwargs
     )
+
+
+def create_legacy_factory_params(
+    conversation: Conversation,
+    **kwargs
+) -> LegacyFactoryParams:
+    """
+    📦 Helper function to create LegacyFactoryParams
+    ✅ Replaces the problematic factory method arguments
+    """
+    return LegacyFactoryParams(
+        conversation=conversation,
+        **kwargs
+    )
+
+
+def from_legacy_args(params: LegacyFactoryParams) -> LegacyGenerationParams:
+    """
+    Refactored factory method using parameter object pattern.
+    ✅ Reduced from 8 arguments to 1 argument (under threshold)
+    
+    Args:
+        params: LegacyFactoryParams containing all legacy arguments
+        
+    Returns:
+        LegacyGenerationParams: Legacy generation parameters
+    """
+    return params.to_legacy_generation_params()
+
+
+def from_legacy_args_compatible(
+    conversation: Conversation,
+    provider: Optional[LLMProvider] = None,
+    model: Optional[str] = None,
+    max_tokens: int = 150,
+    temperature: float = 0.7,
+    stream: bool = False,
+    use_cache: bool = True,
+    **kwargs
+) -> LegacyGenerationParams:
+    """
+    Legacy function for backward compatibility.
+    Creates LegacyFactoryParams and delegates to new function.
+    ⚠️ DEPRECATED: Use from_legacy_args with LegacyFactoryParams instead.
+    Legacy function REFACTORED using Parameter Object pattern.
+    ✅ Reduced from 8 arguments to 1 argument (under threshold)
+    
+    Args:
+        conversation: Conversation object
+        provider: Optional LLM provider
+        model: Optional model name
+        max_tokens: Maximum tokens to generate
+        temperature: Temperature for generation
+        stream: Whether to stream response
+        use_cache: Whether to use caching
+        **kwargs: Additional parameters
+        
+    Returns:
+        LegacyGenerationParams: Legacy generation parameters
+    """
+    factory_params = LegacyFactoryParams(
+        conversation=conversation,
+        provider=provider,
+        model=model,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        stream=stream,
+        use_cache=use_cache,
+        extra_kwargs=kwargs
+    )
+    return from_legacy_args(factory_params)
 
 
 def get_default_model_config(
@@ -470,3 +667,90 @@ def get_default_model_config(
     }
     
     return configs.get(provider, {}).get(task, configs[LLMProvider.OPENAI]['general'])
+
+
+# ================== MIGRATION EXAMPLES ==================
+
+"""
+MIGRATION GUIDE: From Individual Arguments to Parameter Objects
+
+❌ OLD WAY (8 arguments - exceeds threshold):
+# Legacy function call
+params = LegacyGenerationParams.from_legacy_args(
+    conversation, provider, model, max_tokens, 
+    temperature, stream, use_cache, **kwargs
+)
+
+# Legacy factory method call
+result = await factory.generate_response_legacy_direct(
+    conversation, provider, model, max_tokens,
+    temperature, stream, use_cache, **kwargs
+)
+
+✅ NEW WAY (1 argument - under threshold):
+# Using parameter objects
+legacy_params = LegacyGenerationParams(
+    conversation=conversation,
+    provider=provider,
+    model=model,
+    max_tokens=max_tokens,
+    temperature=temperature,
+    stream=stream,
+    use_cache=use_cache,
+    extra_kwargs=kwargs
+)
+result = await factory.generate_response_legacy(legacy_params)
+
+# Using factory params
+factory_params = LegacyFactoryParams(
+    conversation=conversation,
+    provider=provider,
+    model=model,
+    max_tokens=max_tokens,
+    temperature=temperature,
+    stream=stream,
+    use_cache=use_cache,
+    extra_kwargs=kwargs
+)
+result = await factory.generate_response_legacy_direct(factory_params)
+
+✅ FACTORY FUNCTIONS:
+# Create parameters easily
+legacy_params = create_legacy_generation_params(
+    conversation=conversation,
+    provider=provider,
+    max_tokens=max_tokens,
+    temperature=temperature
+)
+
+factory_params = create_legacy_factory_params(
+    conversation=conversation,
+    provider=provider,
+    max_tokens=max_tokens,
+    temperature=temperature
+)
+
+# Modern conversion
+modern_params = from_legacy_args(factory_params)
+"""
+
+
+# ================== EXPORTS ==================
+
+__all__ = [
+    "LLMServiceFactory",
+    "GenerationRequest",
+    "ModelSelectionRequest", 
+    "LegacyGenerationParams",
+    "LegacyFactoryParams",
+    "ModelSelector",
+    "ResponseCache",
+    "create_llm_factory",
+    "create_generation_request",
+    "create_model_selection_request",
+    "create_legacy_generation_params",
+    "create_legacy_factory_params",
+    "from_legacy_args",
+    "from_legacy_args_compatible",
+    "get_default_model_config"
+]

@@ -236,14 +236,52 @@ class ModerationService:
     
     async def check_content_with_params(
         self,
+        params: Union[str, 'ContentCheckParams'],
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Refactored interface - uses parameter object pattern.
+        ✅ Reduced from 5 arguments to 1 argument (under threshold)
+        
+        Args:
+            params: ContentCheckParams object or content string for simple usage
+            **kwargs: Additional parameters for backward compatibility
+            
+        Returns:
+            Dict[str, Any]: Moderation result
+        """
+        from .moderation.legacy_adapter import ContentCheckParams
+        
+        if isinstance(params, str):
+            # Simple usage - convert string to parameter object
+            check_params = ContentCheckParams(
+                content=params,
+                user_id=kwargs.get("user_id"),
+                session_id=kwargs.get("session_id"),
+                age=kwargs.get("age", 10),
+                language=kwargs.get("language", "en"),
+                context=kwargs.get("context"),
+                strict_mode=kwargs.get("strict_mode", False),
+                use_cache=kwargs.get("use_cache", True)
+            )
+        else:
+            check_params = params
+        
+        return await self.legacy_adapter.check_content_with_params(check_params)
+    
+    async def check_content_with_params_legacy(
+        self,
         content: str,
         user_id: Optional[str] = None,
         session_id: Optional[str] = None,
         age: int = 10,
         **kwargs
     ) -> Dict[str, Any]:
-        """Legacy interface - delegated to adapter"""
-        return await self.legacy_adapter.check_content_with_params(
+        """
+        Legacy interface for backward compatibility.
+        ⚠️ DEPRECATED: Use check_content_with_params with ContentCheckParams instead.
+        """
+        return await self.legacy_adapter.check_content_with_params_legacy(
             content, user_id, session_id, age, **kwargs
         )
     
@@ -361,7 +399,12 @@ def create_moderation_request(
 # ================== BACKWARD COMPATIBILITY ==================
 
 # Export legacy classes for backward compatibility
-from .moderation.legacy_adapter import LegacyModerationParams, ModerationMetadata
+from .moderation.legacy_adapter import (
+    LegacyModerationParams, 
+    ModerationMetadata, 
+    ContentCheckParams,
+    create_content_check_params
+)
 from .moderation.models import ModerationSeverity, ContentCategory
 
 # Legacy rule engine placeholder
@@ -390,8 +433,10 @@ __all__ = [
     "ContentCategory",
     "LegacyModerationParams",
     "ModerationMetadata",
+    "ContentCheckParams",
     "RuleEngine",
     "create_moderation_service",
     "create_moderation_request",
+    "create_content_check_params",
     "get_config"
 ] 

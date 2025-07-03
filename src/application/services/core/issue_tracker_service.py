@@ -46,6 +46,26 @@ class IssueValidationService:
         return severity
     
     @staticmethod
+    def validate_status_level(status: str) -> str:
+        """Validate and return a valid status level"""
+        valid_statuses = ["open", "closed", "in_progress"]
+        if status not in valid_statuses:
+            raise ValueError(f"status must be one of: {valid_statuses}")
+        return status
+    
+    @staticmethod
+    def validate_limit_range(limit: int) -> None:
+        """Validate limit parameter is within acceptable range"""
+        if limit < 1 or limit > 100:
+            raise ValueError("limit must be between 1 and 100")
+    
+    @staticmethod
+    def validate_offset_range(offset: int) -> None:
+        """Validate offset parameter is non-negative"""
+        if offset < 0:
+            raise ValueError("offset must be non-negative")
+    
+    @staticmethod
     def clean_and_validate_component(component: str) -> str:
         """Clean and validate component name"""
         if not component or not isinstance(component, str):
@@ -96,6 +116,31 @@ class IssueDataValidator:
         issue_data.stacktrace = self.validator.clean_stacktrace(issue_data.stacktrace)
 
 
+class IssueQueryValidator:
+    """
+    Specialized validator for query parameters.
+    Extracted to reduce cyclomatic complexity of IssueQueryParams.__post_init__.
+    """
+    
+    def __init__(self, validation_service: IssueValidationService):
+        self.validator = validation_service
+    
+    def validate_optional_status(self, status: Optional[str]) -> None:
+        """Validate status parameter if provided"""
+        if status:
+            self.validator.validate_status_level(status)
+    
+    def validate_optional_severity(self, severity: Optional[str]) -> None:
+        """Validate severity parameter if provided"""
+        if severity:
+            self.validator.validate_severity_level(severity)
+    
+    def validate_pagination_params(self, limit: int, offset: int) -> None:
+        """Validate pagination parameters"""
+        self.validator.validate_limit_range(limit)
+        self.validator.validate_offset_range(offset)
+
+
 # =============================================================================
 # PARAMETER OBJECTS (IMPROVED WITH LOW COMPLEXITY VALIDATION)
 # =============================================================================
@@ -136,18 +181,17 @@ class IssueQueryParams:
     offset: int = 0
     
     def __post_init__(self):
-        """Validate query parameters"""
-        if self.status and self.status not in ["open", "closed", "in_progress"]:
-            raise ValueError("status must be one of: open, closed, in_progress")
+        """
+        Validate query parameters with extracted validation methods.
+        Cyclomatic complexity reduced from 12 to 3.
+        """
+        validation_service = IssueValidationService()
+        query_validator = IssueQueryValidator(validation_service)
         
-        if self.severity and self.severity not in ["low", "medium", "high", "critical"]:
-            raise ValueError("severity must be one of: low, medium, high, critical")
-        
-        if self.limit < 1 or self.limit > 100:
-            raise ValueError("limit must be between 1 and 100")
-        
-        if self.offset < 0:
-            raise ValueError("offset must be non-negative")
+        # Decomposed validation calls (low complexity)
+        query_validator.validate_optional_status(self.status)
+        query_validator.validate_optional_severity(self.severity)
+        query_validator.validate_pagination_params(self.limit, self.offset)
 
 
 @dataclass
@@ -159,14 +203,18 @@ class IssueUpdateData:
     notes: Optional[str] = None
     
     def __post_init__(self):
-        """Validate update data"""
-        IssueValidationService.validate_required_string(self.issue_id, "issue_id")
+        """Validate update data with extracted validation methods"""
+        validation_service = IssueValidationService()
         
-        if self.status and self.status not in ["open", "closed", "in_progress"]:
-            raise ValueError("status must be one of: open, closed, in_progress")
+        # Validate required field
+        validation_service.validate_required_string(self.issue_id, "issue_id")
         
-        if self.severity and self.severity not in ["low", "medium", "high", "critical"]:
-            raise ValueError("severity must be one of: low, medium, high, critical")
+        # Validate optional fields
+        if self.status:
+            validation_service.validate_status_level(self.status)
+        
+        if self.severity:
+            validation_service.validate_severity_level(self.severity)
 
 
 class IssueTrackerService:
