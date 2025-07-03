@@ -523,7 +523,7 @@ async def run_all_tests():
     api_key = os.getenv("HUME_API_KEY")
     if not api_key:
         logger.error("❌ HUME_API_KEY not set!")
-        logger.info("💡 Set it with: export HUME_API_KEY='xmkFxYNrKdHjhY6RiEA0JT46C2xAo4YsdiujXqtg5fd1C99Q'")
+        logger.info("💡 Set it with: export HUME_API_KEY='your_hume_api_key_here'")
         return
     
     logger.info(f"🔑 API Key: {api_key[:8]}...")
@@ -541,7 +541,8 @@ async def run_all_tests():
 if __name__ == "__main__":
     # تعيين API Key إذا لم يكن موجوداً
     if not os.getenv("HUME_API_KEY"):
-        os.environ["HUME_API_KEY"] = "xmkFxYNrKdHjhY6RiEA0JT46C2xAo4YsdiujXqtg5fd1C99Q"
+        logger.warning("⚠️ HUME_API_KEY not set - using default for testing only")
+        os.environ["HUME_API_KEY"] = "test_key_only_for_development"
     
     # تشغيل الاختبارات
     asyncio.run(run_all_tests()) 

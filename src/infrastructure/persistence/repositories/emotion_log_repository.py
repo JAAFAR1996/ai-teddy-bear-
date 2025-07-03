@@ -32,9 +32,7 @@ class EmotionLogRepository:
         if emotion_type:
             q = q.where(EmotionLog.emotion_type == emotion_type)
         q = q.order_by(EmotionLog.timestamp.desc()).limit(limit).offset(offset)
-        return self.session.# SECURITY WARNING: exec usage needs manual review
-# # SECURITY WARNING: exec usage needs manual review
-# exec(q).all()
+        return self.session.exec(q).all()
 
     def aggregate_stats(str="day") -> None:
         """Aggregation: avg score & count per emotion_type per period (day/week)."""
@@ -50,9 +48,7 @@ class EmotionLogRepository:
             .group_by("period", EmotionLog.emotion_type)
             .order_by("period")
         )
-        return self.session.# SECURITY WARNING: exec usage needs manual review
-# # SECURITY WARNING: exec usage needs manual review
-# exec(q).all()
+        return self.session.exec(q).all()
 
 
 # مثال استخدام:

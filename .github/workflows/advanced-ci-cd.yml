@@ -1,0 +1,505 @@
+name: 🚀 Advanced CI/CD Pipeline - AI Teddy Bear
+
+on:
+  push:
+    branches: [ main, develop, feature/*, hotfix/* ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - development
+        - staging
+        - production
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ai-teddy-bear
+  SECRETS_PROVIDER: hashicorp-vault
+
+jobs:
+  # =============================================================================
+  # Code Quality & Security Analysis
+  # =============================================================================
+  code-quality:
+    name: 🔍 Code Quality & Security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+    
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+    
+    - name: 🔒 Security scanning with Bandit
+      run: |
+        bandit -r src/ -f json -o bandit-report.json || true
+        bandit -r src/ -f txt -o bandit-report.txt
+    
+    - name: 🔍 SAST with CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: python, javascript
+    
+    - name: 🔍 SAST Analysis
+      uses: github/codeql-action/analyze@v2
+    
+    - name: 🧹 Code formatting check
+      run: |
+        black --check --diff src/ tests/
+        isort --check-only --diff src/ tests/
+    
+    - name: 📏 Linting with flake8
+      run: |
+        flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503
+    
+    - name: 🔍 Type checking with mypy
+      run: |
+        mypy src/ --strict --ignore-missing-imports
+    
+    - name: 📊 Generate code quality report
+      run: |
+        python scripts/generate_quality_report.py
+    
+    - name: 📤 Upload quality reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: quality-reports
+        path: |
+          bandit-report.json
+          bandit-report.txt
+          quality-report.html
+          coverage.xml
+
+  # =============================================================================
+  # Unit & Integration Testing
+  # =============================================================================
+  testing:
+    name: 🧪 Testing Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: code-quality
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+    
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+    
+    - name: 🔧 Setup test environment
+      run: |
+        cp env.example .env.test
+        echo "DATABASE__URL=postgresql+asyncpg://postgres:postgres@localhost:5432/test_db" >> .env.test
+        echo "REDIS__URL=redis://localhost:6379/0" >> .env.test
+        echo "TESTING__ENABLED=true" >> .env.test
+        echo "TESTING__MOCK_AI_SERVICES=true" >> .env.test
+    
+    - name: 🧪 Run unit tests
+      run: |
+        pytest tests/unit/ -v --cov=src --cov-report=xml --cov-report=html --cov-report=term-missing
+      env:
+        ENV_FILE: .env.test
+    
+    - name: 🔗 Run integration tests
+      run: |
+        pytest tests/integration/ -v --cov=src --cov-append
+      env:
+        ENV_FILE: .env.test
+    
+    - name: 🚀 Run performance tests
+      run: |
+        pytest tests/performance/ -v -m performance
+      env:
+        ENV_FILE: .env.test
+    
+    - name: 🔒 Run security tests
+      run: |
+        pytest tests/security/ -v -m security
+      env:
+        ENV_FILE: .env.test
+    
+    - name: 👶 Run child safety tests
+      run: |
+        pytest tests/child_safety/ -v -m child_safety
+      env:
+        ENV_FILE: .env.test
+    
+    - name: 📊 Generate coverage report
+      run: |
+        coverage xml
+        coverage html
+        coverage report --show-missing
+    
+    - name: 📤 Upload test artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          coverage.xml
+          htmlcov/
+          .pytest_cache/
+          test-results/
+
+  # =============================================================================
+  # Security & Compliance
+  # =============================================================================
+  security-compliance:
+    name: 🛡️ Security & Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: testing
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🔍 Container vulnerability scanning
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: 📦 Dependency vulnerability scanning
+      run: |
+        safety check --json --output safety-report.json || true
+        pip-audit --format json --output pip-audit-report.json || true
+    
+    - name: 🔒 Secrets scanning
+      run: |
+        trufflehog --json . > trufflehog-report.json || true
+    
+    - name: 📋 Compliance check
+      run: |
+        python scripts/compliance_checker.py --output compliance-report.json
+    
+    - name: 📤 Upload security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          trivy-results.sarif
+          safety-report.json
+          pip-audit-report.json
+          trufflehog-report.json
+          compliance-report.json
+
+  # =============================================================================
+  # Build & Package
+  # =============================================================================
+  build:
+    name: 🏗️ Build & Package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [testing, security-compliance]
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🐳 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: 🔐 Configure Docker registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: 📋 Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+    
+    - name: 🏗️ Build and push Docker image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+        build-args: |
+          BUILDKIT_INLINE_CACHE=1
+          PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+    
+    - name: 📦 Create release package
+      run: |
+        python scripts/create_release_package.py --version ${{ github.sha }}
+    
+    - name: 📤 Upload release package
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-package
+        path: release-package.tar.gz
+
+  # =============================================================================
+  # Staging Deployment
+  # =============================================================================
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: build
+    environment: staging
+    if: github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🔐 Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    
+    - name: 🔐 Configure Kubernetes
+      uses: azure/k8s-set-context@v3
+      with:
+        kubeconfig: ${{ secrets.KUBECONFIG_STAGING }}
+    
+    - name: 🔄 Deploy to staging
+      run: |
+        kubectl set image deployment/ai-teddy-bear-staging \
+          ai-teddy-bear=${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
+        kubectl rollout status deployment/ai-teddy-bear-staging
+    
+    - name: 🧪 Run staging smoke tests
+      run: |
+        python scripts/staging_smoke_tests.py --environment staging
+    
+    - name: 📊 Generate staging report
+      run: |
+        python scripts/generate_deployment_report.py --environment staging --output staging-report.json
+    
+    - name: 📤 Upload staging report
+      uses: actions/upload-artifact@v3
+      with:
+        name: staging-report
+        path: staging-report.json
+
+  # =============================================================================
+  # Production Deployment
+  # =============================================================================
+  deploy-production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [build, deploy-staging]
+    environment: production
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'release' && github.event.action == 'published')
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🔐 Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    
+    - name: 🔐 Configure Kubernetes
+      uses: azure/k8s-set-context@v3
+      with:
+        kubeconfig: ${{ secrets.KUBECONFIG_PRODUCTION }}
+    
+    - name: 🔄 Deploy to production
+      run: |
+        kubectl set image deployment/ai-teddy-bear-production \
+          ai-teddy-bear=${{ env.DOCKER_REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-tag }}
+        kubectl rollout status deployment/ai-teddy-bear-production
+    
+    - name: 🧪 Run production smoke tests
+      run: |
+        python scripts/production_smoke_tests.py --environment production
+    
+    - name: 📊 Generate production report
+      run: |
+        python scripts/generate_deployment_report.py --environment production --output production-report.json
+    
+    - name: 📤 Upload production report
+      uses: actions/upload-artifact@v3
+      with:
+        name: production-report
+        path: production-report.json
+    
+    - name: 📢 Notify deployment success
+      run: |
+        python scripts/notify_deployment.py --environment production --status success
+
+  # =============================================================================
+  # Monitoring & Observability
+  # =============================================================================
+  monitoring:
+    name: 📊 Monitoring & Observability
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 📊 Setup monitoring
+      run: |
+        python scripts/setup_monitoring.py --environment ${{ github.ref_name }}
+    
+    - name: 📈 Deploy Grafana dashboards
+      run: |
+        python scripts/deploy_grafana_dashboards.py --environment ${{ github.ref_name }}
+    
+    - name: 🚨 Configure alerts
+      run: |
+        python scripts/configure_alerts.py --environment ${{ github.ref_name }}
+    
+    - name: 📋 Generate monitoring report
+      run: |
+        python scripts/generate_monitoring_report.py --output monitoring-report.json
+    
+    - name: 📤 Upload monitoring report
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-report
+        path: monitoring-report.json
+
+  # =============================================================================
+  # Final Report & Notifications
+  # =============================================================================
+  final-report:
+    name: 📋 Final Report & Notifications
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [code-quality, testing, security-compliance, build, deploy-staging, deploy-production, monitoring]
+    if: always()
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 📊 Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts/
+    
+    - name: 📋 Generate comprehensive report
+      run: |
+        python scripts/generate_comprehensive_report.py \
+          --quality-reports artifacts/quality-reports/ \
+          --test-results artifacts/test-results/ \
+          --security-reports artifacts/security-reports/ \
+          --staging-report artifacts/staging-report/ \
+          --production-report artifacts/production-report/ \
+          --monitoring-report artifacts/monitoring-report/ \
+          --output comprehensive-report.html
+    
+    - name: 📤 Upload comprehensive report
+      uses: actions/upload-artifact@v3
+      with:
+        name: comprehensive-report
+        path: comprehensive-report.html
+    
+    - name: 📢 Send notifications
+      run: |
+        python scripts/send_notifications.py \
+          --report comprehensive-report.html \
+          --slack-webhook ${{ secrets.SLACK_WEBHOOK }} \
+          --email ${{ secrets.NOTIFICATION_EMAIL }}
+    
+    - name: 📊 Update project metrics
+      run: |
+        python scripts/update_project_metrics.py \
+          --quality-reports artifacts/quality-reports/ \
+          --test-results artifacts/test-results/ \
+          --security-reports artifacts/security-reports/
+
+# =============================================================================
+# Workflow Configuration
+# =============================================================================
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+  actions: read
+  pull-requests: read 
