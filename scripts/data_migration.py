@@ -1,6 +1,7 @@
 import logging
 import sqlite3
 from datetime import datetime
+import sys
 
 
 class DataMigration:
@@ -202,7 +203,7 @@ def main():
         migrator.run_migrations()
     except Exception as e:
         logging.error(f"Migration failed: {e}")
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

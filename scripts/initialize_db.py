@@ -2,6 +2,7 @@ import logging
 import os
 import sqlite3
 from datetime import datetime
+import sys
 
 
 def create_database(db_path: str = "data/child_memories.db"):
@@ -154,7 +155,7 @@ def main():
         seed_initial_config(db_path)
     except Exception as e:
         logging.error(f"Database initialization failed: {e}")
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
