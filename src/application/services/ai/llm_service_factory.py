@@ -33,7 +33,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
-from src.core.domain.entities.conversation import Conversation
+from src.core.domain.entities.conversation import Conversation, Message
 from src.infrastructure.config import get_config
 
 # Import من الوحدات المستخرجة
@@ -506,6 +506,61 @@ class LLMServiceFactory:
             return dict(self.usage_stats[provider])
         return {str(p): dict(stats) for p, stats in self.usage_stats.items()}
 
+    # ================== SIMPLIFIED INTERFACE ==================
+    
+    async def generate_simple(
+        self,
+        prompt: str,
+        provider: str = "openai",
+        model: Optional[str] = None,
+        temperature: float = 0.7,
+        max_tokens: int = 150,
+        **kwargs
+    ) -> str:
+        """
+        🚀 Simplified interface for easy usage
+        واجهة مبسطة للاستخدام السهل
+        
+        Args:
+            prompt: The input prompt
+            provider: Provider name (openai, anthropic, google)
+            model: Model name (optional, auto-selected)
+            temperature: Generation temperature
+            max_tokens: Maximum tokens
+            **kwargs: Additional parameters
+            
+        Returns:
+            str: Generated response
+        """
+        # Convert simple parameters to internal format
+        from src.core.domain.entities.conversation import Message
+        
+        # Create simple conversation
+        message = Message(content=prompt, role="user")
+        conversation = Conversation(messages=[message])
+        
+        # Map provider string to enum
+        provider_map = {
+            "openai": LLMProvider.OPENAI,
+            "anthropic": LLMProvider.ANTHROPIC, 
+            "google": LLMProvider.GOOGLE
+        }
+        
+        provider_enum = provider_map.get(provider.lower(), LLMProvider.OPENAI)
+        
+        # Create request
+        request = GenerationRequest(
+            conversation=conversation,
+            provider=provider_enum,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            extra_kwargs=kwargs
+        )
+        
+        # Generate response
+        return await self.generate_response(request)
+
 
 # ================== BACKWARD COMPATIBILITY ALIASES ==================
 # For backward compatibility with existing code
@@ -681,6 +736,57 @@ def get_default_model_config(
     return selector.get_default_model_config(provider, task)
 
 
+# ================== SIMPLIFIED GLOBAL INTERFACE ==================
+
+# Global factory instance for simplified usage
+_global_factory = None
+
+
+async def get_factory() -> LLMServiceFactory:
+    """Get or create global factory instance"""
+    global _global_factory
+    if _global_factory is None:
+        _global_factory = await create_llm_factory()
+    return _global_factory
+
+
+async def generate_simple(
+    prompt: str,
+    provider: str = "openai",
+    model: Optional[str] = None,
+    temperature: float = 0.7,
+    max_tokens: int = 150,
+    **kwargs
+) -> str:
+    """
+    🚀 Global simplified interface for easy LLM usage
+    واجهة عامة مبسطة لاستخدام LLM بسهولة
+    
+    Example:
+        response = await generate_simple("What is Python?", provider="openai")
+        
+    Args:
+        prompt: The input prompt
+        provider: Provider name (openai, anthropic, google)
+        model: Model name (optional, auto-selected)
+        temperature: Generation temperature
+        max_tokens: Maximum tokens
+        **kwargs: Additional parameters
+        
+    Returns:
+        str: Generated response
+    """
+    factory = await get_factory()
+    return await factory.generate_simple(
+        prompt=prompt,
+        provider=provider,
+        model=model,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        **kwargs
+    )
+
+
 # ================== EXPORTS ==================
 
 __all__ = [
@@ -722,7 +828,11 @@ __all__ = [
     "ModelSelectionRequest",          # from selection module
     
     # Utility functions
-    "get_default_model_config"
+    "get_default_model_config",
+    
+    # Simplified interface
+    "generate_simple",
+    "get_factory"
 ]
 
 # Backward compatibility aliases
