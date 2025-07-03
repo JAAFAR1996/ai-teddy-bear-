@@ -87,7 +87,14 @@ class LLMParameterValidationService:
     @staticmethod
     def validate_model_name(model: Optional[str]) -> None:
         """Validate model name if provided"""
-        if model is not None and (not isinstance(model, str) or len(model.strip()) == 0):
+        if model is None:
+            return
+            
+        # Refactoring: Extract complex conditions to improve readability
+        is_not_string = not isinstance(model, str)
+        is_empty_string = isinstance(model, str) and len(model.strip()) == 0
+        
+        if is_not_string or is_empty_string:
             raise ValueError("model must be a non-empty string if provided")
 
 
