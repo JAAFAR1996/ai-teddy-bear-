@@ -1,1 +1,0 @@
-"""Application Query_Handlers"""

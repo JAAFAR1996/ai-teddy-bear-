@@ -1,1 +1,0 @@
-"""Infrastructure Elevenlabs_Adapter"""

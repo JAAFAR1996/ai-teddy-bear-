@@ -1,1 +1,0 @@
-"""Domain Voice_Command"""

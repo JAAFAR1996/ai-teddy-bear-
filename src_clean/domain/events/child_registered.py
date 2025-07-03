@@ -1,1 +1,0 @@
-"""Domain Child_Registered"""
