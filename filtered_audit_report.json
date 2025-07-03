@@ -1,0 +1,388 @@
+{
+  "timestamp": "2025-07-03T23:57:00",
+  "summary": {
+    "project_critical_issues": 24,
+    "project_high_issues": 21,
+    "project_medium_issues": 441,
+    "test_critical_issues": 17,
+    "venv_issues_ignored": 1771
+  },
+  "project_critical_issues": [
+    {
+      "file": "scripts\\advanced_deep_analyzer.py",
+      "line": 331,
+      "description": "استخدام eval() غير آمن في السطر 331",
+      "recommendation": "استبدل بـ ast.literal_eval() أو safe_eval()"
+    },
+    {
+      "file": "scripts\\advanced_deep_analyzer.py",
+      "line": 333,
+      "description": "استخدام exec() غير آمن في السطر 333",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    },
+    {
+      "file": "scripts\\comprehensive_cleanup_analyzer.py",
+      "line": 421,
+      "description": "استخدام eval() غير آمن في السطر 421",
+      "recommendation": "استبدل بـ ast.literal_eval() أو safe_eval()"
+    },
+    {
+      "file": "scripts\\comprehensive_cleanup_analyzer.py",
+      "line": 422,
+      "description": "استخدام exec() غير آمن في السطر 422",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    },
+    {
+      "file": "scripts\\comprehensive_project_analyzer.py",
+      "line": 313,
+      "description": "استخدام eval() غير آمن في السطر 313",
+      "recommendation": "استبدل بـ ast.literal_eval() أو safe_eval()"
+    },
+    {
+      "file": "scripts\\comprehensive_project_analyzer.py",
+      "line": 313,
+      "description": "استخدام exec() غير آمن في السطر 313",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    },
+    {
+      "file": "scripts\\comprehensive_project_analyzer.py",
+      "line": 314,
+      "description": "استخدام exec() غير آمن في السطر 314",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    },
+    {
+      "file": "scripts\\updated_project_audit.py",
+      "line": 125,
+      "description": "استخدام eval() غير آمن في السطر 125",
+      "recommendation": "استبدل بـ ast.literal_eval() أو safe_eval()"
+    },
+    {
+      "file": "scripts\\updated_project_audit.py",
+      "line": 137,
+      "description": "استخدام exec() غير آمن في السطر 137",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    },
+    {
+      "file": "src\\hume_fixed.py",
+      "line": 354,
+      "description": "مفتاح API مكشوف في السطر 354",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "src\\application\\services\\moderation_integration_example.py",
+      "line": 24,
+      "description": "مفتاح API مكشوف في السطر 24",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "src\\application\\services\\moderation_integration_example.py",
+      "line": 31,
+      "description": "مفتاح API مكشوف في السطر 31",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "src\\application\\services\\synthesis\\factory.py",
+      "line": 33,
+      "description": "مفتاح API مكشوف في السطر 33",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "src\\application\\services\\synthesis\\factory.py",
+      "line": 34,
+      "description": "مفتاح API مكشوف في السطر 34",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "src\\infrastructure\\external_services\\enhanced_hume_integration_2025.py",
+      "line": 64,
+      "description": "مفتاح API مكشوف في السطر 64",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "src\\infrastructure\\external_services\\hume_integration.py",
+      "line": 526,
+      "description": "مفتاح API مكشوف في السطر 526",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "src\\infrastructure\\plugins\\plugin_architecture.py",
+      "line": 265,
+      "description": "استخدام exec() غير آمن في السطر 265",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    },
+    {
+      "file": "src\\infrastructure\\security\\security_solutions_integration.py",
+      "line": 256,
+      "description": "استخدام eval() غير آمن في السطر 256",
+      "recommendation": "استبدل بـ ast.literal_eval() أو safe_eval()"
+    },
+    {
+      "file": "src\\infrastructure\\security\\security_solutions_integration.py",
+      "line": 256,
+      "description": "استخدام exec() غير آمن في السطر 256",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    },
+    {
+      "file": "src\\infrastructure\\security\\security_solutions_integration.py",
+      "line": 305,
+      "description": "مفتاح API مكشوف في السطر 305",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "src\\infrastructure\\external_services\\mock\\transformers.py",
+      "line": 47,
+      "description": "استخدام eval() غير آمن في السطر 47",
+      "recommendation": "استبدل بـ ast.literal_eval() أو safe_eval()"
+    },
+    {
+      "file": "src\\infrastructure\\persistence\\repositories\\emotion_log_repository.py",
+      "line": 35,
+      "description": "استخدام exec() غير آمن في السطر 35",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    },
+    {
+      "file": "src\\infrastructure\\persistence\\repositories\\emotion_log_repository.py",
+      "line": 51,
+      "description": "استخدام exec() غير آمن في السطر 51",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    },
+    {
+      "file": "src\\presentation\\ui\\main_window.py",
+      "line": 294,
+      "description": "استخدام exec() غير آمن في السطر 294",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    }
+  ],
+  "project_high_issues": [
+    {
+      "file": "health_check.py",
+      "line": 55,
+      "description": "استخدام except: واسع في السطر 55",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "health_check.py",
+      "line": 65,
+      "description": "استخدام except: واسع في السطر 65",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "scripts\\comprehensive_project_analyzer.py",
+      "line": 206,
+      "description": "استخدام except: واسع في السطر 206",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "scripts\\find_exact_duplicates.py",
+      "line": 45,
+      "description": "استخدام except: واسع في السطر 45",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "scripts\\health_check.py",
+      "line": 55,
+      "description": "استخدام except: واسع في السطر 55",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "scripts\\health_check.py",
+      "line": 72,
+      "description": "استخدام except: واسع في السطر 72",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "scripts\\health_check.py",
+      "line": 89,
+      "description": "استخدام except: واسع في السطر 89",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "scripts\\project_health_check.py",
+      "line": 181,
+      "description": "استخدام except: واسع في السطر 181",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "scripts\\teddy_bear_simulator.py",
+      "line": 191,
+      "description": "استخدام except: واسع في السطر 191",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "scripts\\teddy_bear_simulator.py",
+      "line": 675,
+      "description": "استخدام except: واسع في السطر 675",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "tests\\final_test.py",
+      "line": 33,
+      "description": "استخدام except: واسع في السطر 33",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "tests\\final_test.py",
+      "line": 58,
+      "description": "استخدام except: واسع في السطر 58",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "tests\\final_test.py",
+      "line": 70,
+      "description": "استخدام except: واسع في السطر 70",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "tests\\final_test.py",
+      "line": 81,
+      "description": "استخدام except: واسع في السطر 81",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "tests\\final_test.py",
+      "line": 117,
+      "description": "استخدام except: واسع في السطر 117",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "tests\\final_test.py",
+      "line": 125,
+      "description": "استخدام except: واسع في السطر 125",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "tests\\final_test.py",
+      "line": 131,
+      "description": "استخدام except: واسع في السطر 131",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "tests\\final_test.py",
+      "line": 139,
+      "description": "استخدام except: واسع في السطر 139",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "tests\\final_test.py",
+      "line": 145,
+      "description": "استخدام except: واسع في السطر 145",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "tests\\final_test.py",
+      "line": 158,
+      "description": "استخدام except: واسع في السطر 158",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    },
+    {
+      "file": "src\\application\\services\\core\\ar_vr_analytics.py",
+      "line": 166,
+      "description": "استخدام except: واسع في السطر 166",
+      "recommendation": "استبدل بـ except Exception as e: أو استثناء محدد"
+    }
+  ],
+  "test_critical_issues": [
+    {
+      "file": "test_streaming_refactoring.py",
+      "line": 30,
+      "description": "مفتاح API مكشوف في السطر 30",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "test_synthesis_refactoring_complete.py",
+      "line": 56,
+      "description": "مفتاح API مكشوف في السطر 56",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "test_synthesis_refactoring_complete.py",
+      "line": 57,
+      "description": "مفتاح API مكشوف في السطر 57",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "test_too_many_arguments_fix.py",
+      "line": 41,
+      "description": "مفتاح API مكشوف في السطر 41",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "test_too_many_arguments_fix.py",
+      "line": 42,
+      "description": "مفتاح API مكشوف في السطر 42",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "test_too_many_arguments_fix.py",
+      "line": 101,
+      "description": "مفتاح API مكشوف في السطر 101",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "test_too_many_arguments_fix.py",
+      "line": 153,
+      "description": "مفتاح API مكشوف في السطر 153",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "test_too_many_arguments_fix.py",
+      "line": 154,
+      "description": "مفتاح API مكشوف في السطر 154",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "test_too_many_arguments_fix.py",
+      "line": 189,
+      "description": "مفتاح API مكشوف في السطر 189",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "test_too_many_arguments_fix.py",
+      "line": 190,
+      "description": "مفتاح API مكشوف في السطر 190",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "test_too_many_arguments_fix.py",
+      "line": 266,
+      "description": "مفتاح API مكشوف في السطر 266",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "test_too_many_arguments_fix.py",
+      "line": 267,
+      "description": "مفتاح API مكشوف في السطر 267",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    },
+    {
+      "file": "tests\\security\\test_phase1_security_foundation.py",
+      "line": 228,
+      "description": "استخدام eval() غير آمن في السطر 228",
+      "recommendation": "استبدل بـ ast.literal_eval() أو safe_eval()"
+    },
+    {
+      "file": "tests\\security\\test_phase1_security_foundation.py",
+      "line": 229,
+      "description": "استخدام exec() غير آمن في السطر 229",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    },
+    {
+      "file": "tests\\security\\test_phase1_security_foundation.py",
+      "line": 576,
+      "description": "استخدام eval() غير آمن في السطر 576",
+      "recommendation": "استبدل بـ ast.literal_eval() أو safe_eval()"
+    },
+    {
+      "file": "tests\\security\\test_phase1_security_foundation.py",
+      "line": 579,
+      "description": "استخدام exec() غير آمن في السطر 579",
+      "recommendation": "استبدل بـ secure_exec() أو أضف تعليق SECURITY"
+    },
+    {
+      "file": "tests\\unit\\test_clean_container.py",
+      "line": 77,
+      "description": "مفتاح API مكشوف في السطر 77",
+      "recommendation": "استخدم متغيرات البيئة أو ملف تكوين آمن"
+    }
+  ]
+}
