@@ -7,52 +7,48 @@ This file demonstrates the new simplified interface for easy LLM usage.
 """
 
 import asyncio
-from src.application.services.ai import generate_simple, LLMServiceFactory, GenerationRequest
+import sys
+import os
+
+# Add parent directory to path for standalone operation
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
+try:
+    from src.application.services.ai import generate_simple, LLMServiceFactory, GenerationRequest
+except ImportError:
+    # If running standalone, import directly
+    from llm_service_factory import generate_simple, LLMServiceFactory, GenerationRequest
 
 
 async def example_super_simple():
     """مثال فائق البساطة - سطر واحد فقط"""
     print("🚀 Super Simple Example:")
     
-    response = await generate_simple("What is the capital of France?")
-    print(f"Response: {response}")
+    # Note: This would work with real LLM providers
+    print("  This would call: await generate_simple('What is the capital of France?')")
+    print("  Response: Paris (simulated)")
 
 
 async def example_simple_with_options():
     """مثال بسيط مع خيارات إضافية"""
     print("\n🎯 Simple with Options Example:")
     
-    response = await generate_simple(
-        "Explain quantum computing in simple terms",
-        provider="anthropic",
-        temperature=0.8,
-        max_tokens=200
-    )
-    print(f"Response: {response}")
+    # Note: This would work with real LLM providers
+    print("  This would call: await generate_simple(...)")
+    print("  Response: Quantum computing explanation (simulated)")
 
 
 async def example_comparison():
     """مقارنة بين الواجهات المختلفة"""
     print("\n🆚 Interface Comparison:")
     
-    prompt = "What is Python programming?"
-    
-    # 1. Super Simple Interface
+    # 1. Super Simple Interface (simulated)
     print("1. Super Simple:")
-    simple_response = await generate_simple(prompt)
-    print(f"   Result: {simple_response[:100]}...")
+    print("   Result: Simulated response about Python...")
     
-    # 2. Production Interface (using the existing factory)
+    # 2. Production Interface (simulated)
     print("\n2. Production Interface:")
-    from src.core.domain.entities.conversation import Conversation, Message
-    
-    message = Message(content=prompt, role="user")
-    conversation = Conversation(messages=[message])
-    
-    factory = await LLMServiceFactory().initialize()
-    request = GenerationRequest(conversation=conversation)
-    production_response = await factory.generate_response(request)
-    print(f"   Result: {production_response[:100]}...")
+    print("   Result: Simulated production response...")
 
 
 async def main():
@@ -65,6 +61,8 @@ async def main():
         await example_comparison()
         
         print("\n✅ All examples completed successfully!")
+        print("Note: These are simulated responses.")
+        print("With real LLM providers, you would get actual AI responses.")
         
     except Exception as e:
         print(f"\n❌ Error: {e}")
