@@ -66,34 +66,42 @@ class TestStreamingRefactoring:
         if details:
             print(f"   Details: {details}")
     
-    async def test_tts_provider_availability_check(self):
-        """Test _check_tts_providers_availability extraction"""
+    async def test_tts_state_machine(self):
+        """Test TTSStateMachine pattern implementation"""
         service = await self.setup_streaming_service()
         
         try:
-            # Test the extracted function
-            providers = service._check_tts_providers_availability()
+            # Test the new state machine
+            state_machine = service._create_tts_state_machine()
             
-            # Validate structure
-            expected_keys = ["elevenlabs", "gtts"]
-            has_correct_structure = all(key in providers for key in expected_keys)
-            has_boolean_values = all(isinstance(providers[key], bool) for key in expected_keys)
+            # Validate state machine structure
+            has_providers = hasattr(state_machine, 'providers')
+            has_process_method = hasattr(state_machine, 'process')
             
-            if has_correct_structure and has_boolean_values:
-                self.record_test_result(
-                    "TTS Provider Availability Check", 
-                    True, 
-                    f"Providers detected: {providers}"
-                )
+            if has_providers and has_process_method:
+                # Test provider chain structure
+                providers = state_machine.providers
+                if isinstance(providers, list):
+                    self.record_test_result(
+                        "TTS State Machine Implementation", 
+                        True, 
+                        f"State machine created with {len(providers)} providers"
+                    )
+                else:
+                    self.record_test_result(
+                        "TTS State Machine Implementation", 
+                        False, 
+                        f"Invalid provider chain: {type(providers)}"
+                    )
             else:
                 self.record_test_result(
-                    "TTS Provider Availability Check", 
+                    "TTS State Machine Implementation", 
                     False, 
-                    f"Invalid structure: {providers}"
+                    "State machine missing required attributes"
                 )
         except Exception as e:
             self.record_test_result(
-                "TTS Provider Availability Check", 
+                "TTS State Machine Implementation", 
                 False, 
                 f"Exception: {str(e)}"
             )
@@ -284,14 +292,11 @@ class TestStreamingRefactoring:
             
             extracted_functions = [
                 service._convert_text_to_speech,
-                service._check_tts_providers_availability,
                 service._try_elevenlabs_tts,
                 service._try_gtts_tts,
                 service._send_audio_response,
-                service._check_input_moderation,
                 service._build_conversation_context,
                 service._generate_llm_response,
-                service._check_output_moderation,
                 service._log_interaction,
                 service._handle_llm_error
             ]
@@ -332,7 +337,7 @@ class TestStreamingRefactoring:
         print("=" * 60)
         
         # Run individual tests
-        await self.test_tts_provider_availability_check()
+        await self.test_tts_state_machine()
         await self.test_elevenlabs_tts_extraction()
         await self.test_gtts_fallback_extraction()
         await self.test_input_moderation_extraction()
