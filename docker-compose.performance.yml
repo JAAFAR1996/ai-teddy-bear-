@@ -1,0 +1,438 @@
+version: '3.8'
+
+services:
+  # ================== DATABASE OPTIMIZATION ==================
+  
+  # Primary PostgreSQL with asyncpg optimization
+  postgres-primary:
+    image: postgres:15-alpine
+    container_name: teddy-postgres-primary
+    environment:
+      POSTGRES_DB: ai_teddy_bear
+      POSTGRES_USER: teddy_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-teddy_secure_pass}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_primary_data:/var/lib/postgresql/data
+      - ./config/postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    ports:
+      - "5432:5432"
+    networks:
+      - teddy-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U teddy_user -d ai_teddy_bear"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Read Replica 1
+  postgres-replica-1:
+    image: postgres:15-alpine
+    container_name: teddy-postgres-replica-1
+    environment:
+      POSTGRES_DB: ai_teddy_bear
+      POSTGRES_USER: teddy_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-teddy_secure_pass}
+    volumes:
+      - postgres_replica_1_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - teddy-network
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+
+  # Read Replica 2
+  postgres-replica-2:
+    image: postgres:15-alpine
+    container_name: teddy-postgres-replica-2
+    environment:
+      POSTGRES_DB: ai_teddy_bear
+      POSTGRES_USER: teddy_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-teddy_secure_pass}
+    volumes:
+      - postgres_replica_2_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - teddy-network
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+
+  # PgBouncer for connection pooling
+  pgbouncer:
+    image: edoburu/pgbouncer:1.18.0
+    container_name: teddy-pgbouncer
+    environment:
+      DB_HOST: postgres-primary
+      DB_USER: teddy_user
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-teddy_secure_pass}
+      DB_NAME: ai_teddy_bear
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 20
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 5
+      MAX_DB_CONNECTIONS: 50
+      MAX_USER_CONNECTIONS: 50
+    ports:
+      - "6432:5432"
+    networks:
+      - teddy-network
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+
+  # ================== ADVANCED CACHING ==================
+  
+  # Redis Cluster - Master 1
+  redis-master-1:
+    image: redis:7-alpine
+    container_name: teddy-redis-master-1
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000
+    ports:
+      - "7001:6379"
+    volumes:
+      - redis_master_1_data:/data
+    networks:
+      - teddy-network
+
+  # Redis Cluster - Master 2
+  redis-master-2:
+    image: redis:7-alpine
+    container_name: teddy-redis-master-2
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000
+    ports:
+      - "7002:6379"
+    volumes:
+      - redis_master_2_data:/data
+    networks:
+      - teddy-network
+
+  # Redis Cluster - Master 3
+  redis-master-3:
+    image: redis:7-alpine
+    container_name: teddy-redis-master-3
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000
+    ports:
+      - "7003:6379"
+    volumes:
+      - redis_master_3_data:/data
+    networks:
+      - teddy-network
+
+  # Redis Cluster - Replica 1
+  redis-replica-1:
+    image: redis:7-alpine
+    container_name: teddy-redis-replica-1
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000
+    ports:
+      - "7004:6379"
+    volumes:
+      - redis_replica_1_data:/data
+    networks:
+      - teddy-network
+
+  # Redis Cluster - Replica 2
+  redis-replica-2:
+    image: redis:7-alpine
+    container_name: teddy-redis-replica-2
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000
+    ports:
+      - "7005:6379"
+    volumes:
+      - redis_replica_2_data:/data
+    networks:
+      - teddy-network
+
+  # Redis Cluster - Replica 3
+  redis-replica-3:
+    image: redis:7-alpine
+    container_name: teddy-redis-replica-3
+    command: redis-server --appendonly yes --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000
+    ports:
+      - "7006:6379"
+    volumes:
+      - redis_replica_3_data:/data
+    networks:
+      - teddy-network
+
+  # Redis Cluster Initializer
+  redis-cluster-init:
+    image: redis:7-alpine
+    container_name: teddy-redis-cluster-init
+    command: >
+      sh -c "
+        echo 'Waiting for Redis nodes to be ready...'
+        sleep 10
+        echo 'yes' | redis-cli --cluster create 
+          redis-master-1:6379 redis-master-2:6379 redis-master-3:6379 
+          redis-replica-1:6379 redis-replica-2:6379 redis-replica-3:6379 
+          --cluster-replicas 1
+        echo 'Redis cluster initialized successfully'
+      "
+    networks:
+      - teddy-network
+    depends_on:
+      - redis-master-1
+      - redis-master-2
+      - redis-master-3
+      - redis-replica-1
+      - redis-replica-2
+      - redis-replica-3
+
+  # ================== HIGH-PERFORMANCE API ==================
+  
+  # High Performance API Server
+  api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: teddy-api-server
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://teddy_user:${POSTGRES_PASSWORD:-teddy_secure_pass}@pgbouncer:5432/ai_teddy_bear
+      - REDIS_CLUSTER_NODES=redis-master-1:6379,redis-master-2:6379,redis-master-3:6379
+      - API_WORKERS=4
+      - COMPRESSION_ENABLED=true
+      - STREAMING_ENABLED=true
+      - CACHE_ENABLED=true
+    ports:
+      - "8000:8000"
+    networks:
+      - teddy-network
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+      redis-cluster-init:
+        condition: service_completed_successfully
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Load Balancer (Nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: teddy-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx/ssl:/etc/nginx/ssl
+    networks:
+      - teddy-network
+    depends_on:
+      - api-server
+
+  # ================== AUTO-SCALING INFRASTRUCTURE ==================
+  
+  # Kubernetes API Server (Minikube for development)
+  k8s-api:
+    image: gcr.io/k8s-minikube/kicbase:v0.0.37
+    container_name: teddy-k8s-api
+    ports:
+      - "8443:8443"
+    networks:
+      - teddy-network
+
+  # Horizontal Pod Autoscaler
+  hpa-controller:
+    image: k8s.gcr.io/metrics-server/metrics-server:v0.6.1
+    container_name: teddy-hpa-controller
+    command:
+      - /metrics-server
+      - --kubelet-insecure-tls
+      - --kubelet-preferred-address-types=InternalIP
+    networks:
+      - teddy-network
+
+  # ================== COMPREHENSIVE OBSERVABILITY ==================
+  
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: teddy-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - teddy-network
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: teddy-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - teddy-network
+    depends_on:
+      - prometheus
+
+  # Jaeger for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: teddy-jaeger
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - teddy-network
+
+  # Elasticsearch for centralized logging
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: teddy-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - teddy-network
+
+  # Logstash for log processing
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.0
+    container_name: teddy-logstash
+    volumes:
+      - ./config/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "5044:5044"
+    networks:
+      - teddy-network
+    depends_on:
+      - elasticsearch
+
+  # Kibana for log visualization
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: teddy-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - teddy-network
+    depends_on:
+      - elasticsearch
+
+  # AlertManager for alerting
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: teddy-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./config/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    networks:
+      - teddy-network
+
+  # ================== BACKGROUND TASKS ==================
+  
+  # Celery for background task processing
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: teddy-celery-worker
+    command: celery -A src.infrastructure.tasks worker --loglevel=info --concurrency=4
+    environment:
+      - CELERY_BROKER_URL=redis://redis-master-1:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis-master-1:6379/0
+    networks:
+      - teddy-network
+    depends_on:
+      - redis-master-1
+
+  # Celery Beat for scheduled tasks
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: teddy-celery-beat
+    command: celery -A src.infrastructure.tasks beat --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=redis://redis-master-1:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis-master-1:6379/0
+    networks:
+      - teddy-network
+    depends_on:
+      - redis-master-1
+
+  # ================== MONITORING & MAINTENANCE ==================
+  
+  # Performance monitoring agent
+  performance-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: teddy-performance-agent
+    command: python -m src.infrastructure.performance.monitoring_agent
+    environment:
+      - PROMETHEUS_URL=http://prometheus:9090
+      - GRAFANA_URL=http://grafana:3000
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    networks:
+      - teddy-network
+    depends_on:
+      - prometheus
+      - grafana
+      - elasticsearch
+
+volumes:
+  postgres_primary_data:
+  postgres_replica_1_data:
+  postgres_replica_2_data:
+  redis_master_1_data:
+  redis_master_2_data:
+  redis_master_3_data:
+  redis_replica_1_data:
+  redis_replica_2_data:
+  redis_replica_3_data:
+  prometheus_data:
+  grafana_data:
+  elasticsearch_data:
+  alertmanager_data:
+
+networks:
+  teddy-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 

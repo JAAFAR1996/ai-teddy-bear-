@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-07-03T23:58:00",
+  "summary": {
+    "total_project_files": 680,
+    "total_venv_files": 8786,
+    "total_test_files": 69,
+    "total_script_files": 75,
+    "duplicate_groups": 0,
+    "unnecessary_files": 2
+  },
+  "duplicates": {},
+  "unnecessary_files": [
+    {
+      "file": "exact_duplicates_report.json",
+      "reason": "ملف مشبوه"
+    },
+    {
+      "file": "exact_duplicates_report.md",
+      "reason": "ملف مشبوه"
+    }
+  ],
+  "recommendations": [
+    "🧹 تنظيف الملفات غير المهمة",
+    "📁 إضافة venv/ إلى .gitignore",
+    "📋 مراجعة الملفات التجريبية",
+    "🗂️ تنظيم هيكل المجلدات",
+    "📝 تحديث .gitignore"
+  ]
+}
