@@ -3,9 +3,16 @@
 خدمات اختيار نماذج LLM
 """
 
-from .model_selector import LLMModelSelector, ModelSelectionRequest
+from .model_selector import (
+    LLMModelSelector,
+    ModelSelectionRequest,
+    ModelConfig,
+    LLMProvider
+)
 
 __all__ = [
     "LLMModelSelector",
-    "ModelSelectionRequest"
+    "ModelSelectionRequest",
+    "ModelConfig",
+    "LLMProvider"
 ] 

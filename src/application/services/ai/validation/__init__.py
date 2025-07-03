@@ -5,10 +5,14 @@
 
 from .parameter_validation import (
     LLMParameterValidationService,
-    LLMParameterValidator
+    LLMParameterValidator,
+    Conversation,
+    LLMProvider
 )
 
 __all__ = [
     "LLMParameterValidationService",
-    "LLMParameterValidator"
+    "LLMParameterValidator",
+    "Conversation",
+    "LLMProvider"
 ] 
