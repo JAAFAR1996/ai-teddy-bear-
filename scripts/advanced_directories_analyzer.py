@@ -96,8 +96,8 @@ class AdvancedDirectoriesAnalyzer:
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 lines = f.readlines()[:max_lines]
             return "".join(lines).strip()
-        except Exception:
-            return ""
+        # FIXME: replace with specific exception
+except Exception as exc:return ""
 
     def scan_all_directories(self) -> None:
         """مسح جميع المجلدات المحددة"""

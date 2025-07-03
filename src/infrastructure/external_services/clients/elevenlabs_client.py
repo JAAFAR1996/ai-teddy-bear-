@@ -72,5 +72,5 @@ class ElevenLabsClient:
             # Simple health check
             self.client.voices.get_all()
             return True
-        except Exception:
-            return False
+        # FIXME: replace with specific exception
+except Exception as exc:return False

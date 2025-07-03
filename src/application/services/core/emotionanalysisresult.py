@@ -14,13 +14,19 @@ class EmotionAnalysisResult:
     Follows Single Responsibility Principle
     """
 
-    def __init__(self):
-        """Initialize EmotionAnalysisResult"""
-        pass
+    def __init__(self, emotion: str, confidence: float):
+        """Create a lightweight emotion analysis result.
 
-    def to_dict(self) -> Any:
+        Args:
+            emotion: Detected primary emotion (e.g., *happy*, *sad*).
+            confidence: Model confidence (``0.0``–``1.0``).
         """
-        to_dict - Extracted method
-        TODO: Implement the actual logic from original class
-        """
-        raise NotImplementedError("Method needs implementation")
+
+        self.emotion = emotion
+        # Clamp confidence to [0.0, 1.0]
+        self.confidence = max(0.0, min(1.0, float(confidence)))
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a serialisable representation of the analysis result."""
+
+        return {"emotion": self.emotion, "confidence": self.confidence}

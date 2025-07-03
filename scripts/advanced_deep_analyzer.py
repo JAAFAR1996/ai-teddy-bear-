@@ -248,16 +248,16 @@ class AdvancedDeepAnalyzer:
                 if any(pattern in line for pattern in ["async ", "await ", "yield"]):
                     complexity += 1
             return min(complexity, 100)
-        except Exception:
-            return 0
+        # FIXME: replace with specific exception
+except Exception as exc:return 0
 
     def _count_lines(self, file_path: Path) -> int:
         """حساب عدد الأسطر"""
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 return len(f.readlines())
-        except Exception:
-            return 0
+        # FIXME: replace with specific exception
+except Exception as exc:return 0
 
     def _categorize_large_file(self, file_path: Path) -> str:
         """تصنيف الملف الكبير"""
@@ -331,8 +331,8 @@ class AdvancedDeepAnalyzer:
                 issues.append("🚨 استخدام eval() خطر أمني")
             if "# SECURITY WARNING: exec usage needs manual review" in content:
                 issues.append("🚨 استخدام exec() خطر أمني")
-        except Exception:
-            issues.append("❌ خطأ في قراءة الملف")
+        # FIXME: replace with specific exception
+except Exception as exc:issues.append("❌ خطأ في قراءة الملف")
         return issues
 
     def _assess_security_quality(self, file_path: Path) -> int:
@@ -348,8 +348,8 @@ class AdvancedDeepAnalyzer:
             if "import" not in content:
                 score -= 1
             return max(score, 1)
-        except Exception:
-            return 1
+        # FIXME: replace with specific exception
+except Exception as exc:return 1
 
     def _identify_security_issues(self) -> List[str]:
         """تحديد مشاكل الأمان العامة"""
@@ -398,8 +398,8 @@ class AdvancedDeepAnalyzer:
                 "has_secrets": self._detect_secrets_in_data(data),
                 "structure": type(data).__name__,
             }
-        except Exception:
-            return {"error": "فشل في قراءة JSON"}
+        # FIXME: replace with specific exception
+except Exception as exc:return {"error": "فشل في قراءة JSON"}
 
     def _detect_secrets_in_data(self, data: Any) -> bool:
         """كشف الأسرار في البيانات"""
@@ -462,8 +462,8 @@ class AdvancedDeepAnalyzer:
                 "quality_score": min(10, (test_count + assert_count) // 2),
                 "coverage_estimate": self._estimate_test_coverage(content),
             }
-        except Exception:
-            return {
+        # FIXME: replace with specific exception
+except Exception as exc:return {
                 "path": str(file_path),
                 "name": file_path.name,
                 "error": "فشل في التحليل",
@@ -514,8 +514,8 @@ class AdvancedDeepAnalyzer:
                 return "متوسط"
             else:
                 return "منخفض"
-        except Exception:
-            return "غير محدد"
+        # FIXME: replace with specific exception
+except Exception as exc:return "غير محدد"
 
     def _analyze_package_json(self, file_path: Path) -> Dict:
         """تحليل package.json"""
@@ -528,8 +528,8 @@ class AdvancedDeepAnalyzer:
                 "scripts_count": len(data.get("scripts", {})),
                 "has_vulnerabilities": "audit" in str(data),
             }
-        except Exception:
-            return {"error": "فشل في قراءة package.json"}
+        # FIXME: replace with specific exception
+except Exception as exc:return {"error": "فشل في قراءة package.json"}
 
     def _analyze_infra_file(self, file_path: Path) -> Dict:
         """تحليل ملف بنية تحتية"""
@@ -565,8 +565,8 @@ class AdvancedDeepAnalyzer:
                 return "متوسط"
             else:
                 return "منخفض"
-        except Exception:
-            return "غير محدد"
+        # FIXME: replace with specific exception
+except Exception as exc:return "غير محدد"
 
     def generate_comprehensive_report(self, analyses: Dict) -> str:
         """إنشاء تقرير شامل"""

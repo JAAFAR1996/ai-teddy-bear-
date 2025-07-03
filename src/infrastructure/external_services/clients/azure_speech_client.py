@@ -108,5 +108,5 @@ class AzureSpeechClient:
             synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.speech_config)
             result = synthesizer.get_voices_async().get()
             return result.reason == speechsdk.ResultReason.VoicesListRetrieved
-        except Exception:
-            return False
+        # FIXME: replace with specific exception
+except Exception as exc:return False

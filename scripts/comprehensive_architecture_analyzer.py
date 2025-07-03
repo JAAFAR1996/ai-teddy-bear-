@@ -101,8 +101,8 @@ class ArchitectureAnalyzer:
                 return ""
             with open(file_path, "rb") as f:
                 return hashlib.md5(f.read()).hexdigest()
-        except Exception:
-            return ""
+        # FIXME: replace with specific exception
+except Exception as exc:return ""
 
     def extract_service_type(self, filename: str) -> str:
         """استخراج نوع الخدمة من اسم الملف"""
@@ -236,8 +236,8 @@ class ArchitectureAnalyzer:
         try:
             file_stat = Path(self.base_path / file_path).stat()
             recency_score = min(10, max(1, recency_score))
-        except Exception:
-            recency_score = 5
+        # FIXME: replace with specific exception
+except Exception as exc:recency_score = 5
         total_score = (quality_score + importance_score + recency_score) / 3
         if total_score >= 8:
             recommendation = "KEEP"

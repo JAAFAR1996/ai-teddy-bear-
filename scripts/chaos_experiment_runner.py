@@ -214,8 +214,8 @@ class ChaosExperimentRunner:
 
                 response = requests.get(f"http://{service}:8000/health", timeout=10)
                 health_results[service] = response.status_code == 200
-            except Exception:
-                health_results[service] = False
+            # FIXME: replace with specific exception
+except Exception as exc:health_results[service] = False
         all_healthy = all(health_results.values())
         healthy_count = sum(health_results.values())
         return {

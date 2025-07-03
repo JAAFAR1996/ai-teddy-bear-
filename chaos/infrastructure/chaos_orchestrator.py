@@ -423,8 +423,8 @@ class ChaosOrchestrator:
                     if response.status_code == 200:
                         recovered = True
                         break
-                except Exception:
-                    pass
+                # FIXME: replace with specific exception
+except Exception as exc:pass
                 await asyncio.sleep(1)
             if recovered:
                 logger.info(f"✅ {target} recovered successfully")
@@ -460,8 +460,8 @@ class ChaosOrchestrator:
         try:
             response = requests.get(f"http://{target}:8000/health", timeout=5)
             return response.status_code == 200
-        except Exception:
-            return False
+        # FIXME: replace with specific exception
+except Exception as exc:return False
 
     async def _post_experiment_verification(self, metrics: ExperimentMetrics):
         """Verify system state after experiment"""

@@ -169,8 +169,8 @@ async def simulate_content_filter_overload(
                     timeout=5,
                 )
                 return response.status_code == 200
-            except Exception:
-                return False
+            # FIXME: replace with specific exception
+except Exception as exc:return False
 
         tasks = []
         for i in range(total_requests):

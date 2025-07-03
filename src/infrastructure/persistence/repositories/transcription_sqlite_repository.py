@@ -44,8 +44,8 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
                 rate = f.getframerate()
                 duration = frames / float(rate)
                 return duration
-        except Exception:
-            return None
+        # FIXME: replace with specific exception
+except Exception as exc:return None
 
     def add(self, transcription: Transcription) -> Transcription:
         """Override add method to handle audio duration and defaults."""

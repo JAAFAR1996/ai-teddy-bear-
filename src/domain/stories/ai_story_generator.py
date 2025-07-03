@@ -400,8 +400,8 @@ class FairyLandAIGenerator:
 
             return response.choices[0].message.content
 
-        except Exception:
-            # التراجع إلى قصة افتراضية في حالة الخطأ
+        # FIXME: replace with specific exception
+except Exception as exc:# التراجع إلى قصة افتراضية في حالة الخطأ
             return self._generate_fallback_story(length)
 
     def _generate_fallback_story(self, length: StoryLength) -> str:

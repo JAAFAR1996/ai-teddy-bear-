@@ -188,8 +188,8 @@ class ARVRPreferencesManager:
             self.child_preferences[child_id] = preferences
             return True
             
-        except Exception:
-            return False
+        # FIXME: replace with specific exception
+except Exception as exc:return False
 
     def reset_preferences(self, child_id: str) -> None:
         """إعادة تعيين تفضيلات الطفل"""

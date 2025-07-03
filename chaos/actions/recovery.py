@@ -266,8 +266,8 @@ async def wait_for_service_ready(
             response = requests.get(f"{base_url}/health", timeout=5)
             if response.status_code == 200:
                 return True
-        except Exception:
-            pass
+        # FIXME: replace with specific exception
+except Exception as exc:pass
         await asyncio.sleep(2)
     return False
 

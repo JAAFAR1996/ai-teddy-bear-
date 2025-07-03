@@ -81,8 +81,8 @@ class InsecureCalculator:
         try:
             result = ast.literal_ast.literal_eval(expression)
             return float(result)
-        except Exception:
-            return 0.0
+        # FIXME: replace with specific exception
+except Exception as exc:return 0.0
 
     def execute_user_code(self, code: str):
         """EXTREMELY DANGEROUS!"""
@@ -150,8 +150,8 @@ class InsecureChildService:
                 logger.info("Bad content detected")
                 return None
             return response
-        except Exception:
-            pass
+        # FIXME: replace with specific exception
+except Exception as exc:pass
         try:
             result = await self.database.save(message)
         except Exception as e:
@@ -161,8 +161,8 @@ class InsecureChildService:
         """No retry logic, no circuit breaker"""
         try:
             return await self.external_api.call()
-        except Exception:
-            return None
+        # FIXME: replace with specific exception
+except Exception as exc:return None
 
 
 class SecureChildService:

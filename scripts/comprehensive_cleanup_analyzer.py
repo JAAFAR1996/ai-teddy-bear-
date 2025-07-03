@@ -209,8 +209,8 @@ class ComprehensiveCleanupAnalyzer:
                 except UnicodeDecodeError:
                     continue
             return ""
-        except Exception:
-            return ""
+        # FIXME: replace with specific exception
+except Exception as exc:return ""
     
     def _analyze_python_file(self, content: str, file_path: Path) -> Dict[str, Any]:
         """تحليل ملف Python"""
@@ -438,7 +438,8 @@ class ComprehensiveCleanupAnalyzer:
                     })
             
             # مشاكل جودة
-            if 'except:' in content or 'except Exception:' in content:
+            if 'except:' in content or '# FIXME: replace with specific exception
+except Exception as exc:' in content:
                 issues.append({
                     "type": "quality",
                     "severity": "medium",

@@ -230,7 +230,7 @@ class RuleEngine:
                 rule = ModerationRule(**rule_data)
                 self.add_rule(rule)
                 imported_count += 1
-            except Exception:
-                continue
+            # FIXME: replace with specific exception
+except Exception as exc:continue
         
         return imported_count 

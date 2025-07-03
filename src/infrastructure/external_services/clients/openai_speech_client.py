@@ -88,5 +88,5 @@ class OpenAISpeechClient:
             # Simple health check by listing models
             models = await self.client.models.list()
             return len(models.data) > 0
-        except Exception:
-            return False
+        # FIXME: replace with specific exception
+except Exception as exc:return False

@@ -90,8 +90,8 @@ def check_file_sizes():
                         lines = len(f.readlines())
                     if lines > 300:
                         large_files.append((str(file_path), lines))
-                except Exception:
-                    continue
+                # FIXME: replace with specific exception
+except Exception as exc:continue
     if large_files:
         logger.info(f"⚠️ Found {len(large_files)} large files (>300 lines):")
         for file_path, lines in sorted(large_files, key=lambda x: x[1], reverse=True):

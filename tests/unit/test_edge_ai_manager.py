@@ -385,8 +385,8 @@ class TestErrorHandling:
             result = await manager.process_on_edge(invalid_audio)
             # Should either handle gracefully or provide fallback
             assert isinstance(result, EdgeProcessingResult)
-        except Exception:
-            # Expected for invalid data
+        # FIXME: replace with specific exception
+except Exception as exc:# Expected for invalid data
             pass
 
 

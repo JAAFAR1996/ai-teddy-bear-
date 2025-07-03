@@ -514,8 +514,8 @@ class IssueTrackerService:
             content = f"{title}:{error_type}"
             hash_object = hashlib.md5(content.encode())
             return f"ISS-{hash_object.hexdigest()[:8].upper()}"
-        except Exception:
-            return f"ISS-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+        # FIXME: replace with specific exception
+except Exception as exc:return f"ISS-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
 
     async def get_issue_statistics(self) -> Dict:
         """الحصول على إحصائيات المشاكل"""

@@ -61,8 +61,8 @@ class TestSystemPerformance(PerformanceTestCase):
                     op_duration = (time.perf_counter() - op_start) * 1000
                     operation_times.append(op_duration)
                     self.record_operation(f"user_{user.id}_interaction", op_duration)
-                except Exception:
-                    self.record_operation(f"user_{user.id}_interaction_failed", -1)
+                # FIXME: replace with specific exception
+except Exception as exc:self.record_operation(f"user_{user.id}_interaction_failed", -1)
                 await asyncio.sleep(random.uniform(0.1, 0.5))
             return operation_times
 

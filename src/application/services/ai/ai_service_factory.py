@@ -343,8 +343,8 @@ class FallbackOnlyAIService(IAIService):
         try:
             result = await self.emotion_analyzer.analyze_text_emotion(message)
             return result.primary_emotion
-        except Exception:
-            return "neutral"
+        # FIXME: replace with specific exception
+except Exception as exc:return "neutral"
 
     async def categorize_message(self, message: str) -> str:
         """Basic message categorization"""

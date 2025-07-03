@@ -123,8 +123,8 @@ class ComprehensiveFixer:
                         verification["large_files_remaining"].append(
                             {"file": file_path.name, "lines": lines}
                         )
-                except Exception:
-                    continue
+                # FIXME: replace with specific exception
+except Exception as exc:continue
         complete_domains = sum(
             1 for d in verification["domains_created"] if d["complete"]
         )
@@ -157,8 +157,8 @@ class ComprehensiveFixer:
                         lines = len(f.readlines())
                     lines_info["original_god_classes"][file_path.name] = lines
                     lines_info["total_lines_original"] += lines
-                except Exception:
-                    continue
+                # FIXME: replace with specific exception
+except Exception as exc:continue
         for domain_dir in (self.src_dir / "domain").glob("*"):
             if domain_dir.is_dir():
                 for file_path in domain_dir.rglob("*.py"):
@@ -168,8 +168,8 @@ class ComprehensiveFixer:
                         rel_path = str(file_path.relative_to(self.src_dir))
                         lines_info["new_files_created"][rel_path] = lines
                         lines_info["total_lines_new"] += lines
-                    except Exception:
-                        continue
+                    # FIXME: replace with specific exception
+except Exception as exc:continue
         for app_dir in (self.src_dir / "application").glob("*"):
             if app_dir.is_dir() and app_dir.name not in ["services", "__pycache__"]:
                 for file_path in app_dir.rglob("*.py"):
@@ -179,8 +179,8 @@ class ComprehensiveFixer:
                         rel_path = str(file_path.relative_to(self.src_dir))
                         lines_info["new_files_created"][rel_path] = lines
                         lines_info["total_lines_new"] += lines
-                    except Exception:
-                        continue
+                    # FIXME: replace with specific exception
+except Exception as exc:continue
         if lines_info["total_lines_original"] > 0:
             lines_info["recovery_percentage"] = int(
                 lines_info["total_lines_new"] / lines_info["total_lines_original"] * 100

@@ -118,8 +118,8 @@ def track_request_duration(endpoint: str):
             try:
                 result = await func(*args, **kwargs)
                 return result
-            except Exception:
-                status = "error"
+            # FIXME: replace with specific exception
+except Exception as exc:status = "error"
                 raise
             finally:
                 duration = time.time() - start_time
@@ -134,8 +134,8 @@ def track_request_duration(endpoint: str):
             try:
                 result = func(*args, **kwargs)
                 return result
-            except Exception:
-                status = "error"
+            # FIXME: replace with specific exception
+except Exception as exc:status = "error"
                 raise
             finally:
                 duration = time.time() - start_time
