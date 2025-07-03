@@ -1,12 +1,16 @@
-from typing import Any, Optional
+from typing import Any, Optional, Tuple, List, Callable
+from dataclasses import dataclass
+from enum import Enum
 
 """
 🎤 Voice Service - Clean Architecture Implementation (Refactored)
 Enterprise-grade voice processing with async operations
 
 ✅ إصلاح Complex Method باستخدام EXTRACT FUNCTION
+✅ إصلاح Bumpy Road باستخدام EXTRACT FUNCTION  
 ✅ تحسين جودة الكود واتباع SOLID principles
 ✅ تقليل التعقيد الدوري من cc=9,10 إلى cc≤3
+✅ إزالة Nested Conditionals وتحسين Chain of Responsibility
 """
 
 import asyncio
@@ -27,6 +31,60 @@ from elevenlabs.client import AsyncElevenLabs
 from gtts import gTTS
 
 logger = logging.getLogger(__name__)
+
+# ================== PROVIDER ABSTRACTIONS ==================
+
+class ProviderType(Enum):
+    """Voice provider types"""
+    WHISPER = "whisper"
+    AZURE = "azure"
+    ELEVENLABS = "elevenlabs"
+    GTTS = "gtts"
+    FALLBACK = "fallback"
+
+@dataclass
+class ProviderConfig:
+    """Configuration for a voice provider"""
+    provider_type: ProviderType
+    is_available: bool
+    priority: int
+    name: str
+
+@dataclass
+class TranscriptionRequest:
+    """Request data for transcription"""
+    audio_path: str
+    language: str
+
+@dataclass
+class SynthesisRequest:
+    """Request data for synthesis"""
+    text: str
+    emotion: str
+    language: str
+
+class ProviderChain:
+    """Chain of Responsibility pattern for providers"""
+    
+    def __init__(self):
+        self.providers: List[ProviderConfig] = []
+    
+    def add_provider(self, config: ProviderConfig):
+        """Add provider to chain"""
+        self.providers.append(config)
+        # Sort by priority (higher priority first)
+        self.providers.sort(key=lambda x: x.priority, reverse=True)
+    
+    def get_available_providers(self) -> List[ProviderConfig]:
+        """Get available providers in priority order"""
+        return [p for p in self.providers if p.is_available]
+    
+    def get_provider_by_type(self, provider_type: ProviderType) -> Optional[ProviderConfig]:
+        """Get specific provider by type"""
+        for provider in self.providers:
+            if provider.provider_type == provider_type and provider.is_available:
+                return provider
+        return None
 
 # ================== VOICE SERVICE INTERFACE ==================
 
@@ -117,6 +175,10 @@ class MultiProviderVoiceService(IVoiceService):
         self._init_whisper()
         self._init_elevenlabs()
         self._init_azure()
+        
+        # Initialize provider chains
+        self._init_transcription_chain()
+        self._init_synthesis_chain()
 
     def _init_whisper(self) -> Any:
         """Initialize Whisper model"""
@@ -155,6 +217,58 @@ class MultiProviderVoiceService(IVoiceService):
         except Exception as e:
             logger.error(f"Failed to initialize Azure Speech: {str(e)}")
             self.azure_speech_config = None
+
+    def _init_transcription_chain(self):
+        """Initialize transcription provider chain"""
+        self.transcription_chain = ProviderChain()
+        
+        # Add providers in priority order
+        self.transcription_chain.add_provider(ProviderConfig(
+            provider_type=ProviderType.WHISPER,
+            is_available=self.whisper_model is not None,
+            priority=10,
+            name="Whisper"
+        ))
+        
+        self.transcription_chain.add_provider(ProviderConfig(
+            provider_type=ProviderType.AZURE,
+            is_available=self.azure_speech_config is not None,
+            priority=8,
+            name="Azure Speech"
+        ))
+        
+        self.transcription_chain.add_provider(ProviderConfig(
+            provider_type=ProviderType.FALLBACK,
+            is_available=True,  # Always available
+            priority=5,
+            name="Fallback Recognition"
+        ))
+
+    def _init_synthesis_chain(self):
+        """Initialize synthesis provider chain"""
+        self.synthesis_chain = ProviderChain()
+        
+        # Add providers in priority order
+        self.synthesis_chain.add_provider(ProviderConfig(
+            provider_type=ProviderType.ELEVENLABS,
+            is_available=self.elevenlabs_client is not None,
+            priority=10,
+            name="ElevenLabs"
+        ))
+        
+        self.synthesis_chain.add_provider(ProviderConfig(
+            provider_type=ProviderType.AZURE,
+            is_available=self.azure_speech_config is not None,
+            priority=8,
+            name="Azure Speech"
+        ))
+        
+        self.synthesis_chain.add_provider(ProviderConfig(
+            provider_type=ProviderType.GTTS,
+            is_available=True,  # Always available
+            priority=5,
+            name="Google TTS"
+        ))
 
     async def transcribe_audio(
         self, audio_data: str, language: str = "Arabic"
@@ -224,21 +338,42 @@ class MultiProviderVoiceService(IVoiceService):
     async def _try_transcription_providers(
         self, wav_path: str, language: str
     ) -> Optional[str]:
-        """Try transcription providers in order of preference"""
-        # 1. Try Whisper (best quality)
-        if self.whisper_model:
-            transcription = await self._transcribe_with_whisper(wav_path, language)
-            if transcription:
-                return transcription
+        """Try transcription providers using chain of responsibility (Refactored)"""
+        request = TranscriptionRequest(audio_path=wav_path, language=language)
+        
+        # Get available providers in priority order
+        available_providers = self.transcription_chain.get_available_providers()
+        
+        # Try each provider in sequence
+        for provider in available_providers:
+            result = await self._execute_transcription_provider(provider, request)
+            if result:
+                logger.info(f"✅ Transcription successful with {provider.name}")
+                return result
+            else:
+                logger.debug(f"❌ Transcription failed with {provider.name}")
+        
+        logger.warning("⚠️  All transcription providers failed")
+        return None
 
-        # 2. Try Azure (good quality)
-        if self.azure_speech_config:
-            transcription = await self._transcribe_with_azure(wav_path, language)
-            if transcription:
-                return transcription
-
-        # 3. Fallback to basic recognition
-        return await self._transcribe_fallback(wav_path, language)
+    async def _execute_transcription_provider(
+        self, provider: ProviderConfig, request: TranscriptionRequest
+    ) -> Optional[str]:
+        """Execute transcription with specific provider"""
+        try:
+            if provider.provider_type == ProviderType.WHISPER:
+                return await self._transcribe_with_whisper(request.audio_path, request.language)
+            elif provider.provider_type == ProviderType.AZURE:
+                return await self._transcribe_with_azure(request.audio_path, request.language)
+            elif provider.provider_type == ProviderType.FALLBACK:
+                return await self._transcribe_fallback(request.audio_path, request.language)
+            else:
+                logger.warning(f"Unknown transcription provider: {provider.provider_type}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error in {provider.name} transcription: {str(e)}")
+            return None
 
     async def _finalize_transcription(
         self, transcription: str, audio_data: str, start_time: float
@@ -382,21 +517,42 @@ class MultiProviderVoiceService(IVoiceService):
     async def _try_synthesis_providers(
         self, text: str, emotion: str, language: str
     ) -> Optional[str]:
-        """Try synthesis providers in order of preference"""
-        # 1. Try ElevenLabs (best quality + emotion)
-        if self.elevenlabs_client:
-            audio_base64 = await self._synthesize_with_elevenlabs(text, emotion)
-            if audio_base64:
-                return audio_base64
+        """Try synthesis providers using chain of responsibility (Refactored)"""
+        request = SynthesisRequest(text=text, emotion=emotion, language=language)
+        
+        # Get available providers in priority order
+        available_providers = self.synthesis_chain.get_available_providers()
+        
+        # Try each provider in sequence
+        for provider in available_providers:
+            result = await self._execute_synthesis_provider(provider, request)
+            if result:
+                logger.info(f"✅ Synthesis successful with {provider.name}")
+                return result
+            else:
+                logger.debug(f"❌ Synthesis failed with {provider.name}")
+        
+        logger.warning("⚠️  All synthesis providers failed")
+        return None
 
-        # 2. Try Azure (good quality)
-        if self.azure_speech_config:
-            audio_base64 = await self._synthesize_with_azure(text, emotion, language)
-            if audio_base64:
-                return audio_base64
-
-        # 3. Fallback to gTTS
-        return await self._synthesize_with_gtts(text, language)
+    async def _execute_synthesis_provider(
+        self, provider: ProviderConfig, request: SynthesisRequest
+    ) -> Optional[str]:
+        """Execute synthesis with specific provider"""
+        try:
+            if provider.provider_type == ProviderType.ELEVENLABS:
+                return await self._synthesize_with_elevenlabs(request.text, request.emotion)
+            elif provider.provider_type == ProviderType.AZURE:
+                return await self._synthesize_with_azure(request.text, request.emotion, request.language)
+            elif provider.provider_type == ProviderType.GTTS:
+                return await self._synthesize_with_gtts(request.text, request.language)
+            else:
+                logger.warning(f"Unknown synthesis provider: {provider.provider_type}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error in {provider.name} synthesis: {str(e)}")
+            return None
 
     async def _finalize_synthesis(
         self, audio_base64: Optional[str], text: str, emotion: str, language: str
@@ -557,6 +713,67 @@ class MultiProviderVoiceService(IVoiceService):
                     )
                 except Exception as e:
                     logger.warning(f"Failed to delete temp file {path}: {e}")
+
+    # ================== PROVIDER MANAGEMENT METHODS ==================
+
+    def get_transcription_providers_status(self) -> List[dict]:
+        """Get status of all transcription providers"""
+        return [
+            {
+                "name": provider.name,
+                "type": provider.provider_type.value,
+                "available": provider.is_available,
+                "priority": provider.priority
+            }
+            for provider in self.transcription_chain.providers
+        ]
+
+    def get_synthesis_providers_status(self) -> List[dict]:
+        """Get status of all synthesis providers"""
+        return [
+            {
+                "name": provider.name,
+                "type": provider.provider_type.value,
+                "available": provider.is_available,
+                "priority": provider.priority
+            }
+            for provider in self.synthesis_chain.providers
+        ]
+
+    async def test_provider_availability(self, provider_type: ProviderType) -> bool:
+        """Test if a specific provider is available and working"""
+        try:
+            if provider_type == ProviderType.WHISPER:
+                return self.whisper_model is not None
+            elif provider_type == ProviderType.AZURE:
+                return self.azure_speech_config is not None
+            elif provider_type == ProviderType.ELEVENLABS:
+                return self.elevenlabs_client is not None
+            elif provider_type == ProviderType.GTTS:
+                return True  # Always available
+            elif provider_type == ProviderType.FALLBACK:
+                return True  # Always available
+            else:
+                return False
+        except Exception as e:
+            logger.error(f"Error testing {provider_type.value} availability: {str(e)}")
+            return False
+
+    def update_provider_availability(self, provider_type: ProviderType, is_available: bool):
+        """Update provider availability status"""
+        # Update transcription chain
+        for provider in self.transcription_chain.providers:
+            if provider.provider_type == provider_type:
+                provider.is_available = is_available
+                break
+        
+        # Update synthesis chain
+        for provider in self.synthesis_chain.providers:
+            if provider.provider_type == provider_type:
+                provider.is_available = is_available
+                break
+        
+        logger.info(f"Updated {provider_type.value} availability to {is_available}")
 
 
 # ================== FACTORY ==================
