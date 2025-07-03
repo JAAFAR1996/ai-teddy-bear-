@@ -1,64 +1,25 @@
 {
   "timestamp": "2025-07-03T23:58:00",
   "summary": {
-    "total_project_files": 704,
+    "total_project_files": 680,
     "total_venv_files": 8786,
-    "total_test_files": 75,
-    "total_script_files": 76,
-    "duplicate_groups": 1,
-    "unnecessary_files": 9
+    "total_test_files": 69,
+    "total_script_files": 75,
+    "duplicate_groups": 0,
+    "unnecessary_files": 2
   },
-  "duplicates": {
-    "99914b932bd37a50b983c5e7c90ae93b": {
-      "files": [
-        "data\\ar_vr\\ar_experiences.json",
-        "data\\ar_vr\\vr_environments.json",
-        "data\\personalization\\content_performance.json"
-      ],
-      "count": 3,
-      "size_mb": 0.0
-    }
-  },
+  "duplicates": {},
   "unnecessary_files": [
     {
-      "file": "demo_clean_architecture.py",
-      "reason": "ملف تجريبي أو مثال"
-    },
-    {
-      "file": "demo_clean_architecture.py",
-      "reason": "ملف تجريبي أو مثال"
-    },
-    {
-      "file": "DUPLICATE_FILES_CLEANUP_PLAN.md",
+      "file": "exact_duplicates_report.json",
       "reason": "ملف مشبوه"
     },
     {
-      "file": "config\\default_schema_backup.json",
-      "reason": "ملف قديم أو نسخة احتياطية"
-    },
-    {
-      "file": "config\\schemas\\backup_recovery.json",
-      "reason": "ملف قديم أو نسخة احتياطية"
-    },
-    {
-      "file": "src\\application\\services\\moderation_integration_example.py",
-      "reason": "ملف تجريبي أو مثال"
-    },
-    {
-      "file": "src\\infrastructure\\observability\\observability_demo.py",
-      "reason": "ملف تجريبي أو مثال"
-    },
-    {
-      "file": "src\\infrastructure\\security\\security_migration_examples.py",
-      "reason": "ملف تجريبي أو مثال"
-    },
-    {
-      "file": "src\\presentation\\enterprise_componentsdashboard\\smartalertsystemprocessing.py",
-      "reason": "ملف مؤقت"
+      "file": "exact_duplicates_report.md",
+      "reason": "ملف مشبوه"
     }
   ],
   "recommendations": [
-    "🗑️ حذف الملفات المكررة لتوفير المساحة",
     "🧹 تنظيف الملفات غير المهمة",
     "📁 إضافة venv/ إلى .gitignore",
     "📋 مراجعة الملفات التجريبية",

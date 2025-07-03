@@ -1,4 +1,9 @@
-# src/infrastructure/database/connection_pool.py
+# src/infrastructure/persistence/connection_pool.py
+"""
+Enhanced Database Connection Pool Manager
+Integrates with models.py and base.py for comprehensive database management
+"""
+
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
@@ -15,10 +20,8 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = structlog.get_logger()
 
-
-class Base(DeclarativeBase):
-    """Base class for all database models"""
-    pass
+# Import models to ensure they're registered
+from .models import Base
 
 
 class DatabaseConfig:
@@ -184,8 +187,8 @@ class ConnectionPool:
                 yield session
                 await session.commit()
             except Exception as e:
-    logger.error(f"Error: {e}", exc_info=True)as e:
-    logger.error(f"Error: {e}", exc_info=True)                await session.rollback()
+                logger.error(f"Database session error: {e}", exc_info=True)
+                await session.rollback()
                 raise
             finally:
                 await session.close()
