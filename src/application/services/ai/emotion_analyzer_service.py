@@ -7,12 +7,11 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.application.services.ai.emotion_analyzer_service import \
-    EmotionAnalyzer as DomainEmotionAnalyzer
-from src.application.services.ai.core import \
-    IEmotionAnalyzer
-from src.application.services.ai.models.ai_response_models import \
-    EmotionAnalysis
+from src.application.services.ai.core import IEmotionAnalyzer
+from src.application.services.ai.emotion_analyzer_service import (
+    EmotionAnalyzer as DomainEmotionAnalyzer,
+)
+from src.application.services.ai.models.ai_response_models import EmotionAnalysis
 
 logger = logging.getLogger(__name__)
 

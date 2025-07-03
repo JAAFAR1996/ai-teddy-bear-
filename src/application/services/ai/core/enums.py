@@ -8,6 +8,7 @@ from enum import Enum
 
 class AIProvider(Enum):
     """AI Provider types"""
+
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
     GOOGLE = "google"
@@ -18,6 +19,7 @@ class AIProvider(Enum):
 
 class ResponseSafety(Enum):
     """Response safety levels"""
+
     SAFE = "safe"
     CAUTION = "caution"
     UNSAFE = "unsafe"
@@ -26,6 +28,7 @@ class ResponseSafety(Enum):
 
 class EmotionType(Enum):
     """Emotion types from advanced emotion analyzer"""
+
     # Primary emotions
     HAPPY = "happy"
     SAD = "sad"
@@ -34,8 +37,8 @@ class EmotionType(Enum):
     DISGUSTED = "disgusted"
     SURPRISED = "surprised"
     NEUTRAL = "neutral"
-    
-    # Secondary emotions  
+
+    # Secondary emotions
     EXCITED = "excited"
     ANXIOUS = "anxious"
     CONFUSED = "confused"
@@ -44,7 +47,7 @@ class EmotionType(Enum):
     FRUSTRATED = "frustrated"
     PROUD = "proud"
     ASHAMED = "ashamed"
-    
+
     # Complex emotions
     OVERWHELMED = "overwhelmed"
     CONTENT = "content"
@@ -56,6 +59,7 @@ class EmotionType(Enum):
 
 class MessageCategory(Enum):
     """Message categories for conversation analysis"""
+
     GENERAL_CONVERSATION = "general_conversation"
     EDUCATIONAL = "educational"
     EMOTIONAL_SUPPORT = "emotional_support"
@@ -72,6 +76,7 @@ class MessageCategory(Enum):
 
 class CacheLevel(Enum):
     """Cache levels for different types of data"""
+
     MEMORY = "memory"
     REDIS = "redis"
     DATABASE = "database"
@@ -80,6 +85,7 @@ class CacheLevel(Enum):
 
 class ProcessingPriority(Enum):
     """Processing priority levels"""
+
     LOW = "low"
     NORMAL = "normal"
     HIGH = "high"
@@ -89,6 +95,7 @@ class ProcessingPriority(Enum):
 
 class ContentType(Enum):
     """Content types for processing"""
+
     TEXT = "text"
     AUDIO = "audio"
     IMAGE = "image"
@@ -98,6 +105,7 @@ class ContentType(Enum):
 
 class SafetyRiskLevel(Enum):
     """Safety risk levels"""
+
     MINIMAL = "minimal"
     LOW = "low"
     MODERATE = "moderate"
@@ -107,6 +115,7 @@ class SafetyRiskLevel(Enum):
 
 class ResponseType(Enum):
     """Response types for different contexts"""
+
     DIRECT_ANSWER = "direct_answer"
     EDUCATIONAL = "educational"
     ENCOURAGING = "encouraging"
@@ -119,6 +128,7 @@ class ResponseType(Enum):
 
 class SessionStatus(Enum):
     """Conversation session statuses"""
+
     ACTIVE = "active"
     PAUSED = "paused"
     ENDED = "ended"
@@ -128,6 +138,7 @@ class SessionStatus(Enum):
 
 class LearningLevel(Enum):
     """Child learning levels"""
+
     BEGINNER = "beginner"
     INTERMEDIATE = "intermediate"
     ADVANCED = "advanced"
@@ -137,6 +148,7 @@ class LearningLevel(Enum):
 
 class DeviceType(Enum):
     """Device types for the teddy bear"""
+
     PHYSICAL_TEDDY = "physical_teddy"
     MOBILE_APP = "mobile_app"
     WEB_APP = "web_app"
@@ -146,6 +158,7 @@ class DeviceType(Enum):
 
 class ErrorType(Enum):
     """Error types for error handling"""
+
     NETWORK_ERROR = "network_error"
     API_ERROR = "api_error"
     RATE_LIMIT = "rate_limit"
@@ -160,6 +173,7 @@ class ErrorType(Enum):
 
 class HealthStatus(Enum):
     """Health check statuses"""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -169,6 +183,7 @@ class HealthStatus(Enum):
 
 class MetricType(Enum):
     """Metric types for monitoring"""
+
     COUNTER = "counter"
     GAUGE = "gauge"
     HISTOGRAM = "histogram"
@@ -177,6 +192,7 @@ class MetricType(Enum):
 
 class NotificationLevel(Enum):
     """Notification levels"""
+
     INFO = "info"
     WARNING = "warning"
     ERROR = "error"
@@ -185,6 +201,7 @@ class NotificationLevel(Enum):
 
 class ConversationPhase(Enum):
     """Conversation phases"""
+
     GREETING = "greeting"
     MAIN_INTERACTION = "main_interaction"
     LEARNING_ACTIVITY = "learning_activity"
@@ -195,6 +212,7 @@ class ConversationPhase(Enum):
 
 class PersonalizationLevel(Enum):
     """Personalization levels"""
+
     NONE = "none"
     BASIC = "basic"
     MODERATE = "moderate"
@@ -204,18 +222,20 @@ class PersonalizationLevel(Enum):
 
 class DataRetentionPolicy(Enum):
     """Data retention policies"""
-    NONE = "none"           # No retention
-    SESSION = "session"     # Keep for session only
-    DAILY = "daily"         # Keep for 24 hours
-    WEEKLY = "weekly"       # Keep for 7 days
-    MONTHLY = "monthly"     # Keep for 30 days
-    LONG_TERM = "long_term" # Keep for legal/educational purposes
+
+    NONE = "none"  # No retention
+    SESSION = "session"  # Keep for session only
+    DAILY = "daily"  # Keep for 24 hours
+    WEEKLY = "weekly"  # Keep for 7 days
+    MONTHLY = "monthly"  # Keep for 30 days
+    LONG_TERM = "long_term"  # Keep for legal/educational purposes
 
 
 class ComplianceLevel(Enum):
     """Compliance levels"""
-    COPPA = "coppa"         # Children's Online Privacy Protection Act
-    GDPR = "gdpr"           # General Data Protection Regulation
-    FERPA = "ferpa"         # Family Educational Rights and Privacy Act
-    HIPAA = "hipaa"         # Health Insurance Portability and Accountability Act
-    CCPA = "ccpa"           # California Consumer Privacy Act 
+
+    COPPA = "coppa"  # Children's Online Privacy Protection Act
+    GDPR = "gdpr"  # General Data Protection Regulation
+    FERPA = "ferpa"  # Family Educational Rights and Privacy Act
+    HIPAA = "hipaa"  # Health Insurance Portability and Accountability Act
+    CCPA = "ccpa"  # California Consumer Privacy Act
