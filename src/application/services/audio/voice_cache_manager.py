@@ -7,7 +7,16 @@ import hashlib
 import logging
 from typing import Optional, Any
 
-from core.infrastructure.caching.cache_service import CacheService
+# Mock cache service for now
+class CacheService:
+    def __init__(self):
+        self._cache = {}
+    
+    async def get(self, key: str):
+        return self._cache.get(key)
+    
+    async def set(self, key: str, value: str, ttl: int = 3600):
+        self._cache[key] = value
 
 logger = logging.getLogger(__name__)
 

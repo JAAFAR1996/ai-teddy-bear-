@@ -73,6 +73,25 @@ class ChildProfileRequest(BaseModel):
     preferences: Dict[str, Any] = Field(default_factory=dict)
 
 
+class ConversationRecord(BaseModel):
+    """Encapsulates conversation data for saving - Parameter Object Pattern"""
+    
+    device_id: str = Field(..., description="Device identifier")
+    message: str = Field(..., description="Child's message")
+    response: str = Field(..., description="AI response")
+    emotion: str = Field(..., description="Detected emotion")
+    category: str = Field(..., description="Conversation category")
+    learning_points: List[str] = Field(default_factory=list, description="Learning points")
+    
+    def to_metadata(self) -> Dict[str, Any]:
+        """Convert analysis data to metadata dictionary"""
+        return {
+            "emotion": self.emotion,
+            "category": self.category,
+            "learning_points": self.learning_points,
+        }
+
+
 class AIResponse(BaseModel):
     """Structured AI response"""
 
@@ -243,27 +262,18 @@ async def _synthesize_response_audio(text: str, emotion: str, language: str, voi
     )
 
 async def _save_conversation_data(
-    device_id: str, 
-    message: str, 
-    response: str, 
-    emotion: str, 
-    category: str, 
-    learning_points: List[str], 
+    conversation: ConversationRecord,
     child_service: ChildService
 ):
     """
     Save conversation data to database.
-    Extracted from process_audio to reduce complexity.
+    Refactored using Parameter Object pattern - reduces from 7 to 2 arguments.
     """
     await child_service.save_conversation(
-        device_id=device_id,
-        message=message,
-        response=response,
-        metadata={
-            "emotion": emotion,
-            "category": category,
-            "learning_points": learning_points,
-        },
+        device_id=conversation.device_id,
+        message=conversation.message,
+        response=conversation.response,
+        metadata=conversation.to_metadata(),
     )
 
 def _build_ai_response(ai_response, response_audio: str, transcribed_text: str) -> AIResponse:
@@ -314,16 +324,16 @@ async def process_audio(
             ai_response.text, ai_response.emotion, child.language, voice_service
         )
 
-        # Step 5: Save conversation
-        await _save_conversation_data(
-            request.device_id,
-            transcribed_text,
-            ai_response.text,
-            ai_response.emotion,
-            ai_response.category,
-            ai_response.learning_points,
-            child_service,
+        # Step 5: Save conversation using Parameter Object pattern
+        conversation_record = ConversationRecord(
+            device_id=request.device_id,
+            message=transcribed_text,
+            response=ai_response.text,
+            emotion=ai_response.emotion,
+            category=ai_response.category,
+            learning_points=ai_response.learning_points,
         )
+        await _save_conversation_data(conversation_record, child_service)
 
         # Step 6: Build and return response
         return _build_ai_response(ai_response, response_audio, transcribed_text)
@@ -395,7 +405,7 @@ class ConnectionManager:
         self.active_connections[device_id] = websocket
         logger.info(f"WebSocket connected: {device_id}")
 
-    def disconnect(str) -> None:
+    def disconnect(self, device_id: str) -> None:
         if device_id in self.active_connections:
             del self.active_connections[device_id]
             logger.info(f"WebSocket disconnected: {device_id}")

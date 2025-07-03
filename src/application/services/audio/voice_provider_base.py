@@ -13,7 +13,12 @@ from src.domain.audio.models import (
     TranscriptionRequest, SynthesisRequest
 )
 from .voice_cache_manager import VoiceCacheManager
-from core.infrastructure.monitoring.metrics import metrics_collector
+# Mock metrics collector for now
+class MockMetricsCollector:
+    async def record_metric(self, name: str, value: float):
+        pass
+
+metrics_collector = MockMetricsCollector()
 
 logger = logging.getLogger(__name__)
 

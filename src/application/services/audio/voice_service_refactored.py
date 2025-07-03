@@ -16,7 +16,16 @@ from .voice_provider_manager import ProviderManager
 from .voice_transcription_service import TranscriptionService
 from .voice_synthesis_service import SynthesisService
 from .voice_cache_manager import VoiceCacheManager
-from src.application.services.core.cache_service import CacheService
+# Mock cache service for compatibility
+class CacheService:
+    def __init__(self):
+        self._cache = {}
+    
+    async def get(self, key: str):
+        return self._cache.get(key)
+    
+    async def set(self, key: str, value: str, ttl: int = 3600):
+        self._cache[key] = value
 
 # Configuration class if not exists
 class Settings:

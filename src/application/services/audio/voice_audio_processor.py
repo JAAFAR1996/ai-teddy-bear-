@@ -10,7 +10,11 @@ import os
 import logging
 from typing import Dict, Optional
 
-import aiofiles
+try:
+    import aiofiles
+    AIOFILES_AVAILABLE = True
+except ImportError:
+    AIOFILES_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -39,16 +43,26 @@ class VoiceAudioProcessor:
         temp_path = temp_file.name
         temp_file.close()
         
-        async with aiofiles.open(temp_path, 'wb') as f:
-            await f.write(data)
+        if AIOFILES_AVAILABLE:
+            async with aiofiles.open(temp_path, 'wb') as f:
+                await f.write(data)
+        else:
+            # Fallback to synchronous write
+            with open(temp_path, 'wb') as f:
+                f.write(data)
         
         return temp_path
     
     @staticmethod
     async def read_temp_file(file_path: str) -> bytes:
         """Read temporary file asynchronously"""
-        async with aiofiles.open(file_path, 'rb') as f:
-            return await f.read()
+        if AIOFILES_AVAILABLE:
+            async with aiofiles.open(file_path, 'rb') as f:
+                return await f.read()
+        else:
+            # Fallback to synchronous read
+            with open(file_path, 'rb') as f:
+                return f.read()
     
     @staticmethod
     async def convert_mp3_to_wav(mp3_path: str) -> str:

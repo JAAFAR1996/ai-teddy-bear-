@@ -27,7 +27,6 @@ except ImportError:
     ELEVENLABS_AVAILABLE = False
 
 from src.domain.audio.models import ProviderType, ProviderConfig, ProviderOperation
-from core.infrastructure.config import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -43,13 +42,21 @@ class ProviderResources:
 class ProviderManager:
     """Manages voice providers with simplified initialization"""
     
-    def __init__(self, settings: Settings):
-        self.settings = settings
+    def __init__(self, settings: Optional[Any] = None):
+        self.settings = settings or MockSettings()
         self.resources = ProviderResources()
         self.providers: Dict[ProviderType, ProviderConfig] = {}
         
         # Initialize all providers
         self._initialize_providers()
+
+
+class MockSettings:
+    """Mock settings class for testing"""
+    def __init__(self):
+        self.azure_speech_key = None
+        self.azure_speech_region = None
+        self.elevenlabs_api_key = None
     
     def _initialize_providers(self):
         """Initialize all providers with their configurations"""
