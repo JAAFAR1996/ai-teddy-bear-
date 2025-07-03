@@ -1,176 +1,250 @@
 """
-Voice Synthesis Application Service
-Handles text-to-speech conversion with emotional tones
+Voice Synthesis Service
+Handles text-to-speech synthesis operations using multiple providers
 """
 
+import asyncio
 import logging
-from typing import Optional
+from typing import Optional, Dict, Any
+import tempfile
+import os
 
-import azure.cognitiveservices.speech as speechsdk
-from elevenlabs import ElevenLabs, generate, stream
+from .voice_provider_base import BaseProviderService
+from .voice_provider_manager import ProviderManager
+from .voice_cache_manager import VoiceCacheManager
+from .voice_audio_processor import VoiceAudioProcessor
+from .voice_models import (
+    SynthesisRequest, ProviderConfig, 
+    ProviderOperation, ProviderType
+)
 
-from src.application.services.streaming_service import StreamingService
-from src.domain.audio.models.voice_models import (EmotionalTone, Language,
-                                                  VoiceProfile)
+logger = logging.getLogger(__name__)
 
 
-class VoiceSynthesisService:
-    """Application service for voice synthesis operations"""
-
-    def __init__(self, config=None):
-        self.config = config
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.streaming_service: Optional[StreamingService] = None
-
-        # Initialize synthesis clients
-        self._init_synthesis_clients()
-
-    def _init_synthesis_clients(self):
-        """Initialize voice synthesis clients"""
-        # ElevenLabs
-        if getattr(self.config, "ELEVENLABS_API_KEY", None):
-            self.elevenlabs_client = ElevenLabs(
-                api_key=getattr(self.config, "ELEVENLABS_API_KEY")
-            )
-        else:
-            self.elevenlabs_client = None
-
-        # Azure Speech
-        if getattr(self.config, "AZURE_SPEECH_KEY", None):
-            speech_config = speechsdk.SpeechConfig(
-                subscription=getattr(self.config, "AZURE_SPEECH_KEY"),
-                region=getattr(self.config, "AZURE_SPEECH_REGION", "eastus"),
-            )
-            self.azure_speech_config = speech_config
-        else:
-            self.azure_speech_config = None
-
-    def set_streaming_service(self, streaming_service: StreamingService):
-        """Set streaming service for integration"""
-        self.streaming_service = streaming_service
-
-    async def synthesize_speech(
-        self,
-        text: str,
-        voice_profile: VoiceProfile,
-        emotion: EmotionalTone = EmotionalTone.CALM,
-        stream_output: bool = True,
-    ) -> Optional[bytes]:
-        """
-        Synthesize speech with emotional nuance
-
-        Args:
-            text: Text to convert to speech
-            voice_profile: Voice profile to use
-            emotion: Emotional tone
-            stream_output: Whether to stream output
-
-        Returns:
-            Audio bytes if not streaming, None if streaming
-        """
+class SynthesisExecutor:
+    """Executes synthesis with specific providers"""
+    
+    def __init__(self, provider_manager: ProviderManager):
+        self.provider_manager = provider_manager
+        self.resources = provider_manager.get_resources()
+    
+    async def execute(
+        self, provider: ProviderConfig, request: SynthesisRequest
+    ) -> Optional[str]:
+        """Execute synthesis with specified provider"""
         try:
-            if not text or not voice_profile:
-                self.logger.error("Invalid text or voice profile")
-                return None
-
-            # Get voice settings for emotion
-            voice_settings = voice_profile.get_voice_settings(emotion)
-
-            # Use appropriate service based on language
-            if voice_profile.language == Language.ARABIC and self.azure_speech_config:
-                # Use Azure for Arabic
-                audio_data = await self._synthesize_azure(text, emotion)
-            elif self.elevenlabs_client:
-                # Use ElevenLabs
-                audio_data = await self._synthesize_elevenlabs(
-                    text, voice_profile.voice_id, voice_settings, stream_output
-                )
+            if provider.provider_type == ProviderType.ELEVENLABS:
+                return await self._synthesize_elevenlabs(request)
+            elif provider.provider_type == ProviderType.AZURE:
+                return await self._synthesize_azure(request)
+            elif provider.provider_type == ProviderType.GTTS:
+                return await self._synthesize_gtts(request)
             else:
-                raise ValueError("No voice synthesis service available")
-
-            return audio_data if not stream_output else None
-
+                logger.warning(f"Unknown synthesis provider: {provider.provider_type}")
+                return None
         except Exception as e:
-            self.logger.error(f"Speech synthesis error: {e}")
+            logger.error(f"Synthesis failed with {provider.name}: {str(e)}")
             return None
-
-    async def _synthesize_elevenlabs(
-        self, text: str, voice_id: str, voice_settings, stream_output: bool
-    ) -> Optional[bytes]:
+    
+    async def _synthesize_elevenlabs(self, request: SynthesisRequest) -> Optional[str]:
         """Synthesize using ElevenLabs"""
-        try:
-            if stream_output and self.streaming_service:
-                # Stream directly to output
-                audio_stream = stream(
-                    text=text,
-                    voice=voice_id,
-                    model="eleven_multilingual_v2",
-                    voice_settings=voice_settings,
-                )
-
-                async for chunk in audio_stream:
-                    await self.streaming_service.output_buffer.write(chunk)
-
-                return None
-            else:
-                # Generate complete audio
-                audio = generate(
-                    text=text,
-                    voice=voice_id,
-                    model="eleven_multilingual_v2",
-                    voice_settings=voice_settings,
-                )
-                return audio
-
-        except Exception as e:
-            self.logger.error(f"ElevenLabs synthesis error: {e}")
+        if not self.resources.elevenlabs_client:
             return None
-
-    async def _synthesize_azure(self, text: str, emotion: EmotionalTone) -> bytes:
-        """Synthesize using Azure Speech Services"""
+        
         try:
-            # Configure voice name based on emotion
-            voice_name = self._get_azure_voice_name(emotion)
-            self.azure_speech_config.speech_synthesis_voice_name = voice_name
-
+            # Configure voice settings based on emotion
+            voice_settings = self._get_elevenlabs_voice_settings(request.emotion)
+            
+            # Generate speech
+            audio_generator = await self.resources.elevenlabs_client.generate(
+                text=request.text,
+                voice="Rachel",  # Default voice, could be configurable
+                model="eleven_multilingual_v2",
+                voice_settings=voice_settings
+            )
+            
+            # Collect audio chunks
+            audio_chunks = []
+            async for chunk in audio_generator:
+                if chunk:
+                    audio_chunks.append(chunk)
+            
+            if audio_chunks:
+                # Combine chunks and encode to base64
+                audio_data = b''.join(audio_chunks)
+                return await VoiceAudioProcessor.encode_audio_base64(audio_data)
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"ElevenLabs synthesis error: {str(e)}")
+            return None
+    
+    async def _synthesize_azure(self, request: SynthesisRequest) -> Optional[str]:
+        """Synthesize using Azure Speech"""
+        if not self.resources.azure_speech_config:
+            return None
+        
+        try:
+            import azure.cognitiveservices.speech as speechsdk
+            
+            # Configure language and voice
+            voice_map = {
+                "Arabic": "ar-SA-ZariyahNeural",
+                "English": "en-US-JennyNeural"
+            }
+            
+            voice_name = voice_map.get(request.language, "ar-SA-ZariyahNeural")
+            self.resources.azure_speech_config.speech_synthesis_voice_name = voice_name
+            
             # Create synthesizer
             synthesizer = speechsdk.SpeechSynthesizer(
-                speech_config=self.azure_speech_config
+                speech_config=self.resources.azure_speech_config
             )
-
-            # Generate speech
-            result = synthesizer.speak_text_async(text).get()
-
+            
+            # Build SSML with emotion
+            ssml_text = self._build_azure_ssml(
+                request.text, voice_name, request.emotion
+            )
+            
+            # Perform synthesis
+            result = await asyncio.get_event_loop().run_in_executor(
+                None, synthesizer.speak_ssml_async(ssml_text).get
+            )
+            
             if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
-                return result.audio_data
+                # Convert audio data to base64
+                return await VoiceAudioProcessor.encode_audio_base64(result.audio_data)
             else:
-                self.logger.error(f"Azure synthesis failed: {result.reason}")
+                logger.warning(f"Azure synthesis failed: {result.reason}")
                 return None
-
+                
         except Exception as e:
-            self.logger.error(f"Azure synthesis error: {e}")
+            logger.error(f"Azure synthesis error: {str(e)}")
             return None
-
-    def _get_azure_voice_name(self, emotion: EmotionalTone) -> str:
-        """Get Azure voice name based on emotion"""
-        voice_mapping = {
-            EmotionalTone.HAPPY: "ar-SA-ZariyahNeural",
-            EmotionalTone.CALM: "ar-SA-HamedNeural",
-            EmotionalTone.EXCITED: "ar-SA-ZariyahNeural",
-            EmotionalTone.SLEEPY: "ar-SA-HamedNeural",
-            EmotionalTone.STORYTELLING: "ar-SA-ZariyahNeural",
-        }
-
-        return voice_mapping.get(emotion, "ar-SA-ZariyahNeural")
-
-    async def test_synthesis(self, text: str, voice_profile: VoiceProfile) -> bool:
-        """Test voice synthesis capability"""
+    
+    async def _synthesize_gtts(self, request: SynthesisRequest) -> Optional[str]:
+        """Synthesize using Google TTS (gTTS)"""
         try:
-            audio_data = await self.synthesize_speech(
-                text, voice_profile, EmotionalTone.HAPPY, stream_output=False
+            from gtts import gTTS
+            
+            # Configure language
+            lang_map = {
+                "Arabic": "ar",
+                "English": "en"
+            }
+            
+            lang = lang_map.get(request.language, "ar")
+            
+            # Create gTTS object
+            tts = gTTS(text=request.text, lang=lang, slow=False)
+            
+            # Save to temporary file
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as temp_file:
+                temp_path = temp_file.name
+            
+            # Generate audio
+            await asyncio.get_event_loop().run_in_executor(
+                None, tts.save, temp_path
             )
-            return audio_data is not None
-
+            
+            # Read and encode audio
+            audio_data = await VoiceAudioProcessor.read_temp_file(temp_path)
+            encoded_audio = await VoiceAudioProcessor.encode_audio_base64(audio_data)
+            
+            # Cleanup
+            await VoiceAudioProcessor.cleanup_files([temp_path])
+            
+            return encoded_audio
+            
         except Exception as e:
-            self.logger.error(f"Synthesis test failed: {e}")
-            return False
+            logger.error(f"gTTS synthesis error: {str(e)}")
+            return None
+    
+    def _get_elevenlabs_voice_settings(self, emotion: str) -> Dict[str, Any]:
+        """Get ElevenLabs voice settings based on emotion"""
+        settings_map = {
+            "happy": {"stability": 0.75, "similarity_boost": 0.75, "style": 0.2},
+            "sad": {"stability": 0.85, "similarity_boost": 0.65, "style": 0.1},
+            "excited": {"stability": 0.65, "similarity_boost": 0.8, "style": 0.3},
+            "calm": {"stability": 0.9, "similarity_boost": 0.7, "style": 0.0},
+            "neutral": {"stability": 0.8, "similarity_boost": 0.75, "style": 0.1}
+        }
+        
+        return settings_map.get(emotion, settings_map["neutral"])
+    
+    def _build_azure_ssml(self, text: str, voice_name: str, emotion: str) -> str:
+        """Build SSML for Azure Speech with emotion"""
+        emotion_styles = {
+            "happy": "cheerful",
+            "sad": "sad",
+            "excited": "excited",
+            "calm": "calm",
+            "neutral": "neutral"
+        }
+        
+        style = emotion_styles.get(emotion, "neutral")
+        
+        return f"""
+        <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="ar-SA">
+            <voice name="{voice_name}">
+                <mstts:express-as style="{style}">
+                    {text}
+                </mstts:express-as>
+            </voice>
+        </speak>
+        """
+
+
+class SynthesisService(BaseProviderService[SynthesisRequest]):
+    """Service for handling text-to-speech synthesis requests"""
+    
+    def __init__(
+        self, 
+        provider_manager: ProviderManager, 
+        cache_manager: VoiceCacheManager
+    ):
+        super().__init__(
+            operation_type=ProviderOperation.SYNTHESIS,
+            cache_manager=cache_manager,
+            metric_name="synthesis_duration"
+        )
+        self.provider_manager = provider_manager
+        self.executor = SynthesisExecutor(provider_manager)
+        
+        # Set providers for synthesis
+        all_providers = provider_manager.get_all_providers()
+        self.set_providers(all_providers)
+    
+    async def synthesize(
+        self, 
+        text: str, 
+        emotion: str = "neutral", 
+        language: str = "Arabic"
+    ) -> str:
+        """Synthesize text to speech"""
+        # Generate cache key
+        cache_key = self.cache_manager.generate_synthesis_key(text, emotion, language)
+        
+        # Create request
+        request = SynthesisRequest(
+            text=text,
+            emotion=emotion,
+            language=language,
+            cache_key=cache_key
+        )
+        
+        # Process with provider chain
+        result = await self.process_with_providers(request, self.executor)
+        
+        # Return result or empty base64 audio
+        return result or ""
+    
+    async def process(
+        self, 
+        text: str, 
+        emotion: str = "neutral", 
+        language: str = "Arabic"
+    ) -> str:
+        """Process synthesis request"""
+        return await self.synthesize(text, emotion, language)

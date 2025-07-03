@@ -28,6 +28,26 @@ from .audio_playback_service import AudioPlaybackService
 from .audio_recording_service import AudioRecordingService
 from .audio_session_service import AudioSessionService
 
+from .voice_service_refactored import (
+    IVoiceService,
+    MultiProviderVoiceService,
+    VoiceServiceFactory,
+    Settings
+)
+
+from .voice_models import (
+    ProviderType,
+    ProviderOperation,
+    ProviderConfig,
+    TranscriptionRequest,
+    SynthesisRequest,
+    ProviderResult
+)
+
+from .voice_provider_manager import ProviderManager
+from .voice_cache_manager import VoiceCacheManager
+from .voice_audio_processor import VoiceAudioProcessor
+
 __all__ = [
     "ModernTranscriptionService",
     "TranscriptionService",
@@ -42,4 +62,17 @@ __all__ = [
     "AudioRecordingService",
     "AudioPlaybackService",
     "AudioSessionService",
+    "IVoiceService",
+    "MultiProviderVoiceService",
+    "VoiceServiceFactory",
+    "Settings",
+    "ProviderType",
+    "ProviderOperation",
+    "ProviderConfig",
+    "TranscriptionRequest",
+    "SynthesisRequest",
+    "ProviderResult",
+    "ProviderManager",
+    "VoiceCacheManager",
+    "VoiceAudioProcessor"
 ]
