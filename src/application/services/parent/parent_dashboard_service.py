@@ -571,48 +571,34 @@ class ParentDashboardService:
 
     async def create_child_profile_legacy(
         self,
-        parent_id: str,
-        name: str,
-        age: int,
-        interests: List[str],
-        language: str = "en",
+        profile_data: ChildProfileData
     ) -> ChildProfile:
         """
-        Legacy method for backward compatibility.
-        Creates ChildProfileData and delegates to new method.
-        ⚠️ DEPRECATED: Use create_child_profile with ChildProfileData instead.
+        Legacy method REFACTORED using Parameter Object pattern.
+        ✅ Reduced from 5 arguments to 1 argument (under threshold)
+        
+        Args:
+            profile_data: ChildProfileData containing all profile information
+            
+        Returns:
+            ChildProfile: Created child profile
         """
-        profile_data = ChildProfileData(
-            parent_id=parent_id,
-            name=name,
-            age=age,
-            interests=interests,
-            language=language
-        )
         return await self.create_child_profile(profile_data)
 
     async def log_interaction_legacy(
         self,
-        user_id: str,
-        child_message: str,
-        assistant_message: str,
-        timestamp: datetime = None,
-        session_id: Optional[str] = None,
-        audio_url: Optional[str] = None,
+        interaction_data: InteractionLogData
     ):
         """
-        Legacy method for backward compatibility.
-        Creates InteractionLogData and delegates to new method.
-        ⚠️ DEPRECATED: Use log_interaction with InteractionLogData instead.
+        Legacy method REFACTORED using Parameter Object pattern.
+        ✅ Reduced from 6 arguments to 1 argument (under threshold)
+        
+        Args:
+            interaction_data: InteractionLogData containing all interaction information
+            
+        Returns:
+            Log result from session service
         """
-        interaction_data = InteractionLogData(
-            user_id=user_id,
-            child_message=child_message,
-            assistant_message=assistant_message,
-            timestamp=timestamp,
-            session_id=session_id,
-            audio_url=audio_url
-        )
         return await self.log_interaction(interaction_data)
 
     async def get_analytics_legacy(

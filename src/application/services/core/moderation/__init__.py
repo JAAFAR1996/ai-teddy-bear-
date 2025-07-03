@@ -1,29 +1,50 @@
 """
-Moderation System Package
-Comprehensive content moderation for child safety
+🎯 Moderation Service - High Cohesion Components
+Refactored moderation service with EXTRACT CLASS pattern applied
 """
 
-from .moderation_types import (
-    ContentCategory,
-    ModerationLog,
-    ModerationResult,
-    ModerationRule,
+from .models import (
     ModerationSeverity,
-    create_age_appropriate_rule,
-    create_topic_filter_rule,
+    ContentCategory,
+    ModerationRequest,
+    ModerationContext,
+    ModerationResult,
+    ModerationResultData,
+    ModerationRule
 )
-from .moderation_rules import RuleEngine
+
+from .cache_manager import ModerationCache
+from .content_analyzer import ContentAnalyzer
+from .statistics import ModerationStatistics, ModerationStatsEntry
+from .legacy_adapter import (
+    LegacyModerationAdapter,
+    LegacyModerationParams,
+    ModerationMetadata
+)
 
 __all__ = [
-    # Types
+    # Models
     "ModerationSeverity",
-    "ContentCategory",
+    "ContentCategory", 
+    "ModerationRequest",
+    "ModerationContext",
     "ModerationResult",
+    "ModerationResultData",
     "ModerationRule",
-    "ModerationLog",
-    # Rule Engine
-    "RuleEngine",
-    # Helper functions
-    "create_age_appropriate_rule",
-    "create_topic_filter_rule",
-] 
+    
+    # Core Components
+    "ModerationCache",
+    "ContentAnalyzer",
+    "ModerationStatistics",
+    "ModerationStatsEntry",
+    
+    # Legacy Support
+    "LegacyModerationAdapter",
+    "LegacyModerationParams", 
+    "ModerationMetadata"
+]
+
+# Version info
+__version__ = "2.0.0"
+__author__ = "AI Teddy Bear Team"
+__description__ = "High-cohesion moderation service with EXTRACT CLASS refactoring" 
