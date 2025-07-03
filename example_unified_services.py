@@ -283,7 +283,7 @@ async def demonstrate_unified_services():
     emotion_service = await inject(IEmotionService)
     
     # معالجة صوت
-    audio_data = b"مرحباً تيدي، كيف حالك؟"
+    audio_data = "مرحباً تيدي، كيف حالك؟".encode('utf-8')
     audio_result = await audio_service.process_audio(audio_data)
     print(f"🎵 نتيجة معالجة الصوت: {audio_result}")
     
