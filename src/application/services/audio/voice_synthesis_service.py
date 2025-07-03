@@ -13,7 +13,7 @@ from .voice_provider_base import BaseProviderService
 from .voice_provider_manager import ProviderManager
 from .voice_cache_manager import VoiceCacheManager
 from .voice_audio_processor import VoiceAudioProcessor
-from .voice_models import (
+from src.domain.audio.models import (
     SynthesisRequest, ProviderConfig, 
     ProviderOperation, ProviderType
 )

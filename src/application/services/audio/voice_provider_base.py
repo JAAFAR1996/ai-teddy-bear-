@@ -8,7 +8,7 @@ import logging
 from typing import Optional, List, Generic, TypeVar, Protocol
 from abc import ABC, abstractmethod
 
-from .voice_models import (
+from src.domain.audio.models import (
     ProviderConfig, ProviderResult, ProviderOperation,
     TranscriptionRequest, SynthesisRequest
 )

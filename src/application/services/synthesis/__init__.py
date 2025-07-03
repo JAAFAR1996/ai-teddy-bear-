@@ -12,7 +12,7 @@ from .models import (
 )
 from .audio_buffer import StreamingAudioBuffer
 from .character_manager import VoiceCharacterManager
-from .audio_processor import AudioProcessor
+from src.domain.audio.services import AudioProcessor
 from .performance_monitor import PerformanceMonitor
 from .providers import (
     BaseSynthesisProvider,

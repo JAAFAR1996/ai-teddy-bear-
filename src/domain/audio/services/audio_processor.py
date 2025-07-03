@@ -5,11 +5,20 @@ Handles audio enhancement and processing
 
 import logging
 
-import noisereduce as nr
 import numpy as np
-import pyrubberband as pyrb
-
 from ..models.voice_models import AudioConfig
+
+try:
+    import noisereduce as nr
+    NOISEREDUCE_AVAILABLE = True
+except ImportError:
+    NOISEREDUCE_AVAILABLE = False
+
+try:
+    import pyrubberband as pyrb
+    PYRUBBERBAND_AVAILABLE = True
+except ImportError:
+    PYRUBBERBAND_AVAILABLE = False
 
 
 class AudioProcessor:
@@ -44,6 +53,10 @@ class AudioProcessor:
         """Reduce background noise"""
         try:
             if audio_data is None or len(audio_data) == 0:
+                return audio_data
+
+            if not NOISEREDUCE_AVAILABLE:
+                self.logger.warning("noisereduce library not available, skipping noise reduction")
                 return audio_data
 
             # Use noisereduce library
@@ -95,6 +108,10 @@ class AudioProcessor:
             if audio_data is None or len(audio_data) == 0:
                 return audio_data
 
+            if not PYRUBBERBAND_AVAILABLE:
+                self.logger.warning("pyrubberband library not available, skipping pitch shift")
+                return audio_data
+
             # Use pyrubberband for pitch shifting
             shifted = pyrb.pitch_shift(audio_data, self.config.sample_rate, semitones)
             return shifted
@@ -109,6 +126,10 @@ class AudioProcessor:
         """Change audio speed without affecting pitch"""
         try:
             if audio_data is None or len(audio_data) == 0:
+                return audio_data
+
+            if not PYRUBBERBAND_AVAILABLE:
+                self.logger.warning("pyrubberband library not available, skipping speed change")
                 return audio_data
 
             # Use pyrubberband for time stretching

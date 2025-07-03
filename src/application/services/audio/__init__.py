@@ -17,9 +17,8 @@ except ImportError:
     pass
 
 try:
-    from .voice_service import (ModernVoiceService, VoiceConfig,
-                                VoiceInteractionResult, VoiceService,
-                                create_voice_service)
+    from .voice_service_refactored import (IVoiceService, MultiProviderVoiceService,
+                                          VoiceServiceFactory, Settings)
 except ImportError:
     # Voice service not available
     pass
@@ -35,7 +34,7 @@ from .voice_service_refactored import (
     Settings
 )
 
-from .voice_models import (
+from src.domain.audio.models import (
     ProviderType,
     ProviderOperation,
     ProviderConfig,
@@ -54,18 +53,13 @@ __all__ = [
     "TranscriptionConfig",
     "StreamingAudioBuffer",
     "create_transcription_service",
-    "ModernVoiceService",
-    "VoiceService",
-    "VoiceConfig",
-    "VoiceInteractionResult",
-    "create_voice_service",
-    "AudioRecordingService",
-    "AudioPlaybackService",
-    "AudioSessionService",
     "IVoiceService",
     "MultiProviderVoiceService",
     "VoiceServiceFactory",
     "Settings",
+    "AudioRecordingService",
+    "AudioPlaybackService",
+    "AudioSessionService",
     "ProviderType",
     "ProviderOperation",
     "ProviderConfig",

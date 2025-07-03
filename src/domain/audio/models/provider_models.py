@@ -1,11 +1,11 @@
 """
-Voice Service Data Models
-Centralized data structures for voice processing
+Voice Provider Domain Models
+Core domain models for voice service providers
 """
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Dict, Any, Callable
+from typing import Optional, Dict, Any, List
 
 
 class ProviderType(Enum):
@@ -30,7 +30,7 @@ class ProviderConfig:
     is_available: bool
     priority: int
     name: str
-    supported_operations: list[ProviderOperation]
+    supported_operations: List[ProviderOperation]
 
 
 @dataclass

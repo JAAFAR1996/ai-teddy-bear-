@@ -57,9 +57,10 @@ except Exception as e:
     ENHANCED_AUDIO_AVAILABLE = False
 MODERN_AUDIO_AVAILABLE = False
 try:
-    from .audio_processing import (AudioProcessor, detect_silence,
-                                   get_audio_stats, normalize_volume,
-                                   process_audio, trim_silence)
+    from src.domain.audio.services import AudioProcessor
+    from .cloud_audio_service import (detect_silence,
+                                      get_audio_stats, normalize_volume,
+                                      process_audio, trim_silence)
 
     AUDIO_PROCESSING_AVAILABLE = True
 except ImportError:

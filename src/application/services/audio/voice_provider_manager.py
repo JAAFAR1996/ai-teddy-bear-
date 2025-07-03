@@ -8,11 +8,25 @@ import logging
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
-import whisper
-import azure.cognitiveservices.speech as speechsdk
-from elevenlabs.client import AsyncElevenLabs
+try:
+    import whisper
+    WHISPER_AVAILABLE = True
+except ImportError:
+    WHISPER_AVAILABLE = False
 
-from .voice_models import ProviderType, ProviderConfig, ProviderOperation
+try:
+    import azure.cognitiveservices.speech as speechsdk
+    AZURE_AVAILABLE = True
+except ImportError:
+    AZURE_AVAILABLE = False
+
+try:
+    from elevenlabs.client import AsyncElevenLabs
+    ELEVENLABS_AVAILABLE = True
+except ImportError:
+    ELEVENLABS_AVAILABLE = False
+
+from src.domain.audio.models import ProviderType, ProviderConfig, ProviderOperation
 from core.infrastructure.config import Settings
 
 logger = logging.getLogger(__name__)
@@ -92,6 +106,10 @@ class ProviderManager:
     
     def _init_whisper(self) -> bool:
         """Initialize Whisper model"""
+        if not WHISPER_AVAILABLE:
+            logger.warning("Whisper library not available")
+            return False
+        
         try:
             self.resources.whisper_model = whisper.load_model("base")
             logger.info("✅ Whisper model loaded")
@@ -102,6 +120,10 @@ class ProviderManager:
     
     def _init_azure(self) -> bool:
         """Initialize Azure Speech services"""
+        if not AZURE_AVAILABLE:
+            logger.warning("Azure Speech library not available")
+            return False
+        
         try:
             if self.settings.azure_speech_key and self.settings.azure_speech_region:
                 self.resources.azure_speech_config = speechsdk.SpeechConfig(
@@ -117,6 +139,10 @@ class ProviderManager:
     
     def _init_elevenlabs(self) -> bool:
         """Initialize ElevenLabs client"""
+        if not ELEVENLABS_AVAILABLE:
+            logger.warning("ElevenLabs library not available")
+            return False
+        
         try:
             if self.settings.elevenlabs_api_key:
                 self.resources.elevenlabs_client = AsyncElevenLabs(

@@ -4,7 +4,7 @@ import logging
 import threading
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from ....domain.audio.models import (AudioQualityMode, AudioSession,
                                      AudioSessionType, AudioSystemConfig,
