@@ -11,7 +11,8 @@ from .models import (
     ChildProfileData,
     InteractionLogData,
     AnalyticsRequest,
-    ExportRequest
+    ExportRequest,
+    AlertRequest
 )
 
 __all__ = [
@@ -25,7 +26,8 @@ __all__ = [
     "ChildProfileData",
     "InteractionLogData",
     "AnalyticsRequest",
-    "ExportRequest"
+    "ExportRequest",
+    "AlertRequest"
 ]
 
 # Version info
