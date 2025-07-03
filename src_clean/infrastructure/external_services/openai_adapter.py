@@ -1,0 +1,1 @@
+"""Infrastructure Openai_Adapter"""
