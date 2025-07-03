@@ -119,9 +119,9 @@ class SecureAPIKeys:
         self._cached_keys.clear()
         self.logger.info("🗑️ API keys cache cleared")
 
-def get_config():
-    """إحضار التكوين البسيط"""
-    return SimpleConfig()
+def get_config(secrets_manager=None):
+    """إحضار التكوين الآمن"""
+    return SecureConfig(secrets_manager)
 
 
 # ================== MAIN MODERATION SERVICE ==================

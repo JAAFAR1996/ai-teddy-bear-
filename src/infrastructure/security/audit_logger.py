@@ -1,67 +1,71 @@
-from typing import Any, Dict, List, Optional
-
 """
-Comprehensive Audit Logging System
-Provides tamper-proof audit logs for security and compliance
+Enterprise-Grade Audit Logging System
+Comprehensive audit trail for child safety and compliance
 """
 
 import asyncio
 import hashlib
 import json
+import logging
+import os
 import time
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
+from dataclasses import dataclass, field, asdict
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
+import aiofiles
 import structlog
+from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
-from sqlalchemy import Boolean, Column, DateTime, Index, Integer, String, Text
-from sqlalchemy.ext.declarative import declarative_base
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from pydantic import BaseModel, Field, validator
 
-logger = structlog.get_logger()
+from domain.exceptions import SecurityException
 
-Base = declarative_base()
+logger = logging.getLogger(__name__)
 
 
 class AuditEventType(Enum):
     """Types of audit events"""
-    # Authentication
+    # Authentication events
     LOGIN_SUCCESS = "login_success"
     LOGIN_FAILURE = "login_failure"
     LOGOUT = "logout"
-    SESSION_TIMEOUT = "session_timeout"
+    PASSWORD_CHANGE = "password_change"
+    PASSWORD_RESET = "password_reset"
     
-    # Authorization
-    ACCESS_GRANTED = "access_granted"
-    ACCESS_DENIED = "access_denied"
-    PERMISSION_CHANGED = "permission_changed"
+    # Child interaction events
+    CHILD_INTERACTION_START = "child_interaction_start"
+    CHILD_INTERACTION_END = "child_interaction_end"
+    VOICE_CAPTURE = "voice_capture"
+    AI_RESPONSE = "ai_response"
+    CONTENT_MODERATION = "content_moderation"
     
-    # Data Access
-    DATA_READ = "data_read"
-    DATA_WRITE = "data_write"
-    DATA_DELETE = "data_delete"
+    # Safety events
+    SAFETY_INCIDENT = "safety_incident"
+    INAPPROPRIATE_CONTENT = "inappropriate_content"
+    EMERGENCY_ALERT = "emergency_alert"
+    PARENT_NOTIFICATION = "parent_notification"
+    
+    # Data events
+    DATA_ACCESS = "data_access"
+    DATA_MODIFICATION = "data_modification"
+    DATA_DELETION = "data_deletion"
     DATA_EXPORT = "data_export"
     
-    # Child Data
-    CHILD_DATA_ACCESS = "child_data_access"
-    CHILD_DATA_MODIFIED = "child_data_modified"
-    CHILD_AUDIO_PLAYED = "child_audio_played"
-    CHILD_CONVERSATION = "child_conversation"
-    
-    # Security
-    ENCRYPTION_KEY_USED = "encryption_key_used"
-    DECRYPTION_PERFORMED = "decryption_performed"
+    # System events
+    SYSTEM_STARTUP = "system_startup"
+    SYSTEM_SHUTDOWN = "system_shutdown"
+    CONFIGURATION_CHANGE = "configuration_change"
     SECURITY_ALERT = "security_alert"
-    SUSPICIOUS_ACTIVITY = "suspicious_activity"
     
-    # System
-    SYSTEM_START = "system_start"
-    SYSTEM_STOP = "system_stop"
-    CONFIG_CHANGE = "config_change"
-    ERROR_OCCURRED = "error_occurred"
+    # Compliance events
+    COPPA_CONSENT = "coppa_consent"
+    GDPR_REQUEST = "gdpr_request"
+    DATA_RETENTION = "data_retention"
+    AUDIT_REPORT = "audit_report"
 
 
 class AuditSeverity(Enum):
@@ -72,513 +76,528 @@ class AuditSeverity(Enum):
     CRITICAL = "critical"
 
 
+class AuditCategory(Enum):
+    """Audit event categories"""
+    AUTHENTICATION = "authentication"
+    CHILD_SAFETY = "child_safety"
+    DATA_PROTECTION = "data_protection"
+    SYSTEM_SECURITY = "system_security"
+    COMPLIANCE = "compliance"
+    PERFORMANCE = "performance"
+
+
+@dataclass
+class AuditContext:
+    """Context information for audit events"""
+    user_id: Optional[str] = None
+    child_id: Optional[str] = None
+    session_id: Optional[str] = None
+    request_id: Optional[str] = None
+    correlation_id: Optional[str] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    device_id: Optional[str] = None
+    location: Optional[str] = None
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 @dataclass
 class AuditEvent:
-    """Audit event data structure"""
+    """Audit event structure"""
     event_id: str
-    timestamp: datetime
     event_type: AuditEventType
     severity: AuditSeverity
-    user_id: Optional[str]
-    child_id: Optional[str]
-    session_id: Optional[str]
-    ip_address: Optional[str]
-    user_agent: Optional[str]
-    resource: Optional[str]
-    action: str
-    result: str
+    category: AuditCategory
+    timestamp: datetime
+    context: AuditContext
+    description: str
     details: Dict[str, Any] = field(default_factory=dict)
     metadata: Dict[str, Any] = field(default_factory=dict)
-    hash_chain: Optional[str] = None
-    signature: Optional[str] = None
+    hash: Optional[str] = None
+    
+    def __post_init__(self):
+        """Generate hash for tamper detection"""
+        if not self.hash:
+            self.hash = self._generate_hash()
+    
+    def _generate_hash(self) -> str:
+        """Generate SHA-256 hash for tamper detection"""
+        data = {
+            'event_id': self.event_id,
+            'event_type': self.event_type.value,
+            'severity': self.severity.value,
+            'category': self.category.value,
+            'timestamp': self.timestamp.isoformat(),
+            'description': self.description,
+            'details': json.dumps(self.details, sort_keys=True),
+        }
+        
+        data_str = json.dumps(data, sort_keys=True)
+        return hashlib.sha256(data_str.encode()).hexdigest()
 
 
-class AuditLogEntry(Base):
-    """Database model for audit logs"""
-    __tablename__ = 'audit_logs'
+class AuditConfig(BaseModel):
+    """Configuration for audit logging"""
     
-    id = Column(Integer, primary_key=True)
-    event_id = Column(String(64), unique=True, nullable=False)
-    timestamp = Column(DateTime, nullable=False)
-    event_type = Column(String(50), nullable=False)
-    severity = Column(String(20), nullable=False)
-    user_id = Column(String(64), index=True)
-    child_id = Column(String(64), index=True)
-    session_id = Column(String(64), index=True)
-    ip_address = Column(String(45))
-    user_agent = Column(Text)
-    resource = Column(String(255))
-    action = Column(String(100), nullable=False)
-    result = Column(String(50), nullable=False)
-    details = Column(Text)
-    meta_data = Column(Text)  # Renamed to avoid SQLAlchemy reserved word
-    hash_chain = Column(String(64), nullable=False)
-    signature = Column(Text)
-    is_verified = Column(Boolean, default=True)
+    # Storage settings
+    log_directory: Path = Field(default=Path("./audit_logs"), description="Audit log directory")
+    max_file_size_mb: int = Field(default=100, description="Maximum log file size in MB")
+    max_files: int = Field(default=100, description="Maximum number of log files")
+    retention_days: int = Field(default=2555, description="Log retention period in days")  # 7 years for COPPA
     
-    __table_args__ = (
-        Index('idx_timestamp', 'timestamp'),
-        Index('idx_event_type', 'event_type'),
-        Index('idx_user_child', 'user_id', 'child_id'),
-    )
+    # Security settings
+    enable_encryption: bool = Field(default=True, description="Encrypt audit logs")
+    enable_tamper_detection: bool = Field(default=True, description="Enable tamper detection")
+    enable_compression: bool = Field(default=True, description="Compress old logs")
+    
+    # Performance settings
+    batch_size: int = Field(default=100, description="Batch size for log writes")
+    flush_interval_seconds: float = Field(default=5.0, description="Log flush interval")
+    async_writing: bool = Field(default=True, description="Use async log writing")
+    
+    # Monitoring settings
+    enable_real_time_monitoring: bool = Field(default=True, description="Enable real-time monitoring")
+    alert_threshold_events_per_minute: int = Field(default=1000, description="Alert threshold")
+    critical_event_types: List[str] = Field(default_factory=lambda: [
+        "safety_incident", "emergency_alert", "security_alert"
+    ])
+    
+    class Config:
+        validate_assignment = True
+
+
+class AuditLogWriter:
+    """Thread-safe audit log writer with encryption"""
+    
+    def __init__(self, config: AuditConfig):
+        self.config = config
+        self.log_directory = config.log_directory
+        self.log_directory.mkdir(parents=True, exist_ok=True)
+        
+        # Encryption key
+        self.encryption_key = self._get_or_create_encryption_key()
+        self.cipher_suite = Fernet(self.encryption_key)
+        
+        # Log file management
+        self.current_file = None
+        self.current_file_path = None
+        self.event_count = 0
+        
+        # Batch processing
+        self.event_buffer: List[AuditEvent] = []
+        self.last_flush = time.time()
+        
+        # Thread safety
+        self._lock = asyncio.Lock()
+        
+        logger.info(f"🔐 Audit log writer initialized at {self.log_directory}")
+    
+    def _get_or_create_encryption_key(self) -> bytes:
+        """Get or create encryption key for audit logs"""
+        key_file = self.log_directory / ".audit_key"
+        
+        if key_file.exists():
+            with open(key_file, 'rb') as f:
+                return f.read()
+        else:
+            key = Fernet.generate_key()
+            with open(key_file, 'wb') as f:
+                f.write(key)
+            # Set restrictive permissions
+            os.chmod(key_file, 0o600)
+            return key
+    
+    def _get_current_log_file(self) -> Path:
+        """Get current log file path based on date"""
+        today = datetime.now().date()
+        return self.log_directory / f"audit_{today.isoformat()}.log.enc"
+    
+    async def write_event(self, event: AuditEvent):
+        """Write audit event to log file"""
+        async with self._lock:
+            self.event_buffer.append(event)
+            self.event_count += 1
+            
+            # Check if we need to flush
+            if (len(self.event_buffer) >= self.config.batch_size or
+                time.time() - self.last_flush >= self.config.flush_interval_seconds):
+                await self._flush_buffer()
+    
+    async def _flush_buffer(self):
+        """Flush event buffer to log file"""
+        if not self.event_buffer:
+            return
+        
+        try:
+            # Get current log file
+            log_file = self._get_current_log_file()
+            
+            # Rotate file if needed
+            if log_file.exists() and log_file.stat().st_size > self.config.max_file_size_mb * 1024 * 1024:
+                await self._rotate_log_file(log_file)
+            
+            # Write events
+            events_data = []
+            for event in self.event_buffer:
+                event_dict = asdict(event)
+                event_dict['timestamp'] = event.timestamp.isoformat()
+                events_data.append(event_dict)
+            
+            # Encrypt and write
+            data = json.dumps(events_data, ensure_ascii=False, separators=(',', ':'))
+            encrypted_data = self.cipher_suite.encrypt(data.encode())
+            
+            async with aiofiles.open(log_file, 'ab') as f:
+                await f.write(encrypted_data + b'\n')
+            
+            # Clear buffer
+            self.event_buffer.clear()
+            self.last_flush = time.time()
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to flush audit buffer: {e}")
+            # Don't lose events - keep them in buffer for retry
+    
+    async def _rotate_log_file(self, current_file: Path):
+        """Rotate log file when it gets too large"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        new_file = current_file.parent / f"{current_file.stem}_{timestamp}.log.enc"
+        current_file.rename(new_file)
+        
+        # Clean up old files
+        await self._cleanup_old_files()
+    
+    async def _cleanup_old_files(self):
+        """Clean up old log files based on retention policy"""
+        cutoff_date = datetime.now() - timedelta(days=self.config.retention_days)
+        
+        for log_file in self.log_directory.glob("audit_*.log.enc"):
+            try:
+                file_date_str = log_file.stem.split('_')[1]  # Extract date from filename
+                file_date = datetime.strptime(file_date_str, "%Y-%m-%d").date()
+                
+                if file_date < cutoff_date.date():
+                    log_file.unlink()
+                    logger.info(f"🗑️ Deleted old audit log: {log_file}")
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to process log file {log_file}: {e}")
+
+
+class AuditMonitor:
+    """Real-time audit monitoring and alerting"""
+    
+    def __init__(self, config: AuditConfig):
+        self.config = config
+        self.event_counters: Dict[str, int] = {}
+        self.last_reset = time.time()
+        self.alert_handlers: List[callable] = []
+        
+        logger.info("🔍 Audit monitor initialized")
+    
+    def register_alert_handler(self, handler: callable):
+        """Register alert handler function"""
+        self.alert_handlers.append(handler)
+    
+    async def process_event(self, event: AuditEvent):
+        """Process audit event for monitoring"""
+        current_time = time.time()
+        
+        # Reset counters every minute
+        if current_time - self.last_reset >= 60:
+            self.event_counters.clear()
+            self.last_reset = current_time
+        
+        # Update counters
+        event_type = event.event_type.value
+        self.event_counters[event_type] = self.event_counters.get(event_type, 0) + 1
+        
+        # Check for critical events
+        if event.event_type.value in self.config.critical_event_types:
+            await self._handle_critical_event(event)
+        
+        # Check rate limits
+        total_events = sum(self.event_counters.values())
+        if total_events > self.config.alert_threshold_events_per_minute:
+            await self._handle_rate_limit_exceeded(total_events)
+    
+    async def _handle_critical_event(self, event: AuditEvent):
+        """Handle critical audit events"""
+        alert_message = f"🚨 CRITICAL AUDIT EVENT: {event.event_type.value}"
+        alert_data = {
+            'event_id': event.event_id,
+            'event_type': event.event_type.value,
+            'severity': event.severity.value,
+            'timestamp': event.timestamp.isoformat(),
+            'description': event.description,
+            'context': asdict(event.context),
+        }
+        
+        logger.critical(alert_message, **alert_data)
+        
+        # Send alerts to all handlers
+        for handler in self.alert_handlers:
+            try:
+                await handler(alert_message, alert_data)
+            except Exception as e:
+                logger.error(f"❌ Alert handler failed: {e}")
+    
+    async def _handle_rate_limit_exceeded(self, total_events: int):
+        """Handle rate limit exceeded"""
+        alert_message = f"⚠️ AUDIT RATE LIMIT EXCEEDED: {total_events} events/minute"
+        
+        logger.warning(alert_message, total_events=total_events)
+        
+        for handler in self.alert_handlers:
+            try:
+                await handler(alert_message, {'total_events': total_events})
+            except Exception as e:
+                logger.error(f"❌ Rate limit alert handler failed: {e}")
 
 
 class AuditLogger:
-    """
-    Tamper-proof audit logging system with blockchain-like integrity
-    """
+    """Main audit logging system"""
     
-    def __init__(self, config: Dict[str, Any], db_session):
-        self.config = config
-        self.db_session = db_session
-        self._buffer: List[AuditEvent] = []
-        self._buffer_size = config.get("audit_buffer_size", 100)
-        self._flush_interval = config.get("audit_flush_interval", 10)
-        self._retention_days = config.get("audit_retention_days", 365)
+    def __init__(self, config: Optional[AuditConfig] = None):
+        self.config = config or AuditConfig()
+        self.writer = AuditLogWriter(self.config)
+        self.monitor = AuditMonitor(self.config)
+        self.structured_logger = self._setup_structured_logger()
         
-        # Cryptographic setup for tamper-proof logs
-        self._private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048
+        # Register default alert handlers
+        self.monitor.register_alert_handler(self._default_alert_handler)
+        
+        logger.info("📋 Audit logger initialized")
+    
+    def _setup_structured_logger(self) -> structlog.BoundLogger:
+        """Setup structured logger for audit events"""
+        structlog.configure(
+            processors=[
+                structlog.stdlib.filter_by_level,
+                structlog.stdlib.add_logger_name,
+                structlog.stdlib.add_log_level,
+                structlog.processors.TimeStamper(fmt="iso"),
+                structlog.processors.StackInfoRenderer(),
+                structlog.processors.format_exc_info,
+                structlog.processors.UnicodeDecoder(),
+                structlog.processors.JSONRenderer()
+            ],
+            context_class=dict,
+            logger_factory=structlog.stdlib.LoggerFactory(),
+            wrapper_class=structlog.stdlib.BoundLogger,
+            cache_logger_on_first_use=True,
         )
-        self._public_key = self._private_key.public_key()
-        self._last_hash = self._get_last_hash()
-        
-        # Event filters
-        self._sensitive_events = {
-            AuditEventType.CHILD_DATA_ACCESS,
-            AuditEventType.CHILD_DATA_MODIFIED,
-            AuditEventType.CHILD_AUDIO_PLAYED,
-            AuditEventType.CHILD_CONVERSATION
-        }
-        
-        # Start background tasks
-        self._flush_task = asyncio.create_task(self._flush_loop())
-        self._cleanup_task = asyncio.create_task(self._cleanup_loop())
+        return structlog.get_logger("audit")
+    
+    async def _default_alert_handler(self, message: str, data: Dict[str, Any]):
+        """Default alert handler"""
+        # TODO: Integrate with external alerting systems (Slack, email, etc.)
+        logger.warning(f"🚨 AUDIT ALERT: {message}", **data)
     
     async def log_event(
         self,
         event_type: AuditEventType,
-        action: str,
-        result: str,
-        user_id: Optional[str] = None,
-        child_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        resource: Optional[str] = None,
+        severity: AuditSeverity,
+        category: AuditCategory,
+        description: str,
+        context: Optional[AuditContext] = None,
         details: Optional[Dict[str, Any]] = None,
-        severity: Optional[AuditSeverity] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
-        """Log an audit event"""
-        # Auto-determine severity if not provided
-        if severity is None:
-            severity = self._determine_severity(event_type, result)
-        
+        """Log audit event"""
         # Generate event ID
-        event_id = self._generate_event_id()
+        event_id = f"audit_{int(time.time() * 1000000)}"
+        
+        # Create context
+        if not context:
+            context = AuditContext()
         
         # Create event
         event = AuditEvent(
             event_id=event_id,
-            timestamp=datetime.utcnow(),
             event_type=event_type,
             severity=severity,
-            user_id=user_id,
-            child_id=child_id,
-            session_id=session_id,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            resource=resource,
-            action=action,
-            result=result,
+            category=category,
+            timestamp=datetime.now(timezone.utc),
+            context=context,
+            description=description,
             details=details or {},
-            metadata={
-                "version": "1.0",
-                "service": self.config.get("service_name", "ai_teddy")
-            }
+            metadata=metadata or {},
         )
         
-        # Add to buffer
-        await self._add_to_buffer(event)
+        # Write to log
+        await self.writer.write_event(event)
         
-        # Log sensitive events immediately
-        if event_type in self._sensitive_events:
-            await self._flush_buffer()
+        # Process for monitoring
+        await self.monitor.process_event(event)
         
-        logger.info(
-            "Audit event logged",
+        # Log to structured logger
+        self.structured_logger.info(
+            "📋 Audit event logged",
             event_id=event_id,
             event_type=event_type.value,
-            severity=severity.value
+            severity=severity.value,
+            category=category.value,
+            description=description,
+            **details or {},
         )
         
         return event_id
     
-    async def _add_to_buffer(self, event: AuditEvent) -> None:
-        """Add event to buffer with integrity protection"""
-        # Calculate hash chain
-        event.hash_chain = self._calculate_hash(event, self._last_hash)
-        
-        # Sign event
-        event.signature = self._sign_event(event)
-        
-        # Update last hash
-        self._last_hash = event.hash_chain
-        
-        # Add to buffer
-        self._buffer.append(event)
-        
-        # Flush if buffer is full
-        if len(self._buffer) >= self._buffer_size:
-            await self._flush_buffer()
-    
-    async def _flush_buffer(self) -> None:
-        """Flush buffer to database"""
-        if not self._buffer:
-            return
-        
-        try:
-            # Convert events to DB entries
-            entries = []
-            for event in self._buffer:
-                entry = AuditLogEntry(
-                    event_id=event.event_id,
-                    timestamp=event.timestamp,
-                    event_type=event.event_type.value,
-                    severity=event.severity.value,
-                    user_id=event.user_id,
-                    child_id=event.child_id,
-                    session_id=event.session_id,
-                    ip_address=event.ip_address,
-                    user_agent=event.user_agent,
-                    resource=event.resource,
-                    action=event.action,
-                    result=event.result,
-                    details=json.dumps(event.details),
-                    meta_data=json.dumps(event.metadata),
-                    hash_chain=event.hash_chain,
-                    signature=event.signature
-                )
-                entries.append(entry)
-            
-            # Bulk insert
-            self.db_session.bulk_save_objects(entries)
-            self.db_session.commit()
-            
-            # Clear buffer
-            self._buffer.clear()
-            
-            logger.info(f"Flushed {len(entries)} audit events to database")
-            
-        except Exception as e:
-            logger.error("Failed to flush audit buffer", error=str(e))
-            # Don't clear buffer on error
-    
-    async def _flush_loop(self) -> None:
-        """Background task to periodically flush buffer"""
-        while True:
-            try:
-                await asyncio.sleep(self._flush_interval)
-                await self._flush_buffer()
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                logger.error("Flush loop error", error=str(e))
-    
-    async def _cleanup_loop(self) -> None:
-        """Background task to clean up old logs"""
-        while True:
-            try:
-                await asyncio.sleep(86400)  # Daily
-                await self._cleanup_old_logs()
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                logger.error("Cleanup loop error", error=str(e))
-    
-    async def _cleanup_old_logs(self) -> None:
-        """Remove logs older than retention period"""
-        cutoff_date = datetime.utcnow() - timedelta(days=self._retention_days)
-        
-        # Archive before deletion
-        await self._archive_logs(cutoff_date)
-        
-        # Delete old logs
-        deleted = self.db_session.query(AuditLogEntry).filter(
-            AuditLogEntry.timestamp < cutoff_date
-        ).delete()
-        
-        self.db_session.commit()
-        
-        logger.info(f"Cleaned up {deleted} old audit logs")
-    
-    async def _archive_logs(self, cutoff_date: datetime) -> None:
-        """Archive logs before deletion"""
-        # Implementation depends on archive strategy
-        # Could be S3, cold storage, etc.
-        pass
-    
-    def _generate_event_id(self) -> str:
-        """Generate unique event ID"""
-        timestamp = str(time.time_ns())
-        random_bytes = os.urandom(8).hex()
-        return hashlib.sha256(f"{timestamp}:{random_bytes}".encode()).hexdigest()
-    
-    def _calculate_hash(self, event: AuditEvent, previous_hash: str) -> str:
-        """Calculate hash for blockchain-like integrity"""
-        data = {
-            "event_id": event.event_id,
-            "timestamp": event.timestamp.isoformat(),
-            "event_type": event.event_type.value,
-            "user_id": event.user_id,
-            "child_id": event.child_id,
-            "action": event.action,
-            "result": event.result,
-            "previous_hash": previous_hash
-        }
-        
-        serialized = json.dumps(data, sort_keys=True)
-        return hashlib.sha256(serialized.encode()).hexdigest()
-    
-    def _sign_event(self, event: AuditEvent) -> str:
-        """Digitally sign event for non-repudiation"""
-        message = f"{event.event_id}:{event.hash_chain}".encode()
-        
-        signature = self._private_key.sign(
-            message,
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA256()),
-                salt_length=padding.PSS.MAX_LENGTH
-            ),
-            hashes.SHA256()
-        )
-        
-        return base64.b64encode(signature).decode()
-    
-    def _get_last_hash(self) -> str:
-        """Get last hash from database"""
-        last_entry = self.db_session.query(AuditLogEntry).order_by(
-            AuditLogEntry.id.desc()
-        ).first()
-        
-        if last_entry:
-            return last_entry.hash_chain
-        
-        # Genesis hash
-        return "0" * 64
-    
-    def _determine_severity(self, event_type: AuditEventType, result: str) -> AuditSeverity:
-        """Auto-determine event severity"""
-        if result == "failure" or result == "denied":
-            return AuditSeverity.WARNING
-        
-        if event_type in [
-            AuditEventType.SECURITY_ALERT,
-            AuditEventType.SUSPICIOUS_ACTIVITY
-        ]:
-            return AuditSeverity.CRITICAL
-        
-        if event_type == AuditEventType.ERROR_OCCURRED:
-            return AuditSeverity.ERROR
-        
-        return AuditSeverity.INFO
-    
-    async def verify_integrity(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
-        """Verify audit log integrity for a date range"""
-        entries = self.db_session.query(AuditLogEntry).filter(
-            AuditLogEntry.timestamp.between(start_date, end_date)
-        ).order_by(AuditLogEntry.id).all()
-        
-        if not entries:
-            return {"verified": True, "total": 0, "errors": []}
-        
-        errors = []
-        previous_hash = self._get_previous_hash(entries[0].id)
-        
-        for entry in entries:
-            # Reconstruct event
-            event = AuditEvent(
-                event_id=entry.event_id,
-                timestamp=entry.timestamp,
-                event_type=AuditEventType(entry.event_type),
-                severity=AuditSeverity(entry.severity),
-                user_id=entry.user_id,
-                child_id=entry.child_id,
-                action=entry.action,
-                result=entry.result
-            )
-            
-            # Verify hash chain
-            expected_hash = self._calculate_hash(event, previous_hash)
-            if expected_hash != entry.hash_chain:
-                errors.append({
-                    "event_id": entry.event_id,
-                    "error": "Hash chain mismatch"
-                })
-            
-            # Verify signature
-            if not self._verify_signature(entry):
-                errors.append({
-                    "event_id": entry.event_id,
-                    "error": "Invalid signature"
-                })
-            
-            previous_hash = entry.hash_chain
-        
-        return {
-            "verified": len(errors) == 0,
-            "total": len(entries),
-            "errors": errors
-        }
-    
-    def _get_previous_hash(self, entry_id: int) -> str:
-        """Get hash of previous entry"""
-        previous = self.db_session.query(AuditLogEntry).filter(
-            AuditLogEntry.id < entry_id
-        ).order_by(AuditLogEntry.id.desc()).first()
-        
-        return previous.hash_chain if previous else "0" * 64
-    
-    def _verify_signature(self, entry: AuditLogEntry) -> bool:
-        """Verify digital signature"""
-        try:
-            message = f"{entry.event_id}:{entry.hash_chain}".encode()
-            signature = base64.b64decode(entry.signature)
-            
-            self._public_key.verify(
-                signature,
-                message,
-                padding.PSS(
-                    mgf=padding.MGF1(hashes.SHA256()),
-                    salt_length=padding.PSS.MAX_LENGTH
-                ),
-                hashes.SHA256()
-            )
-            
-            return True
-        except Exception as e:
-            logger.error(f"Error in operation: {e}", exc_info=True)
-            return False
-    
-    async def query_logs(
+    async def log_child_interaction(
         self,
-        event_types: Optional[List[AuditEventType]] = None,
-        user_id: Optional[str] = None,
-        child_id: Optional[str] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        limit: int = 100
-    ) -> List[Dict[str, Any]]:
-        """Query audit logs with filters"""
-        query = self.db_session.query(AuditLogEntry)
+        child_id: str,
+        interaction_type: str,
+        content: Optional[str] = None,
+        response: Optional[str] = None,
+        safety_score: Optional[float] = None,
+        context: Optional[AuditContext] = None,
+    ) -> str:
+        """Log child interaction event"""
+        if not context:
+            context = AuditContext(child_id=child_id)
+        else:
+            context.child_id = child_id
         
-        if event_types:
-            query = query.filter(
-                AuditLogEntry.event_type.in_([e.value for e in event_types])
-            )
-        
-        if user_id:
-            query = query.filter(AuditLogEntry.user_id == user_id)
-        
-        if child_id:
-            query = query.filter(AuditLogEntry.child_id == child_id)
-        
-        if start_date:
-            query = query.filter(AuditLogEntry.timestamp >= start_date)
-        
-        if end_date:
-            query = query.filter(AuditLogEntry.timestamp <= end_date)
-        
-        entries = query.order_by(AuditLogEntry.timestamp.desc()).limit(limit).all()
-        
-        return [self._entry_to_dict(entry) for entry in entries]
-    
-    def _entry_to_dict(self, entry: AuditLogEntry) -> Dict[str, Any]:
-        """Convert DB entry to dictionary"""
-        return {
-            "event_id": entry.event_id,
-            "timestamp": entry.timestamp.isoformat(),
-            "event_type": entry.event_type,
-            "severity": entry.severity,
-            "user_id": entry.user_id,
-            "child_id": entry.child_id,
-            "session_id": entry.session_id,
-            "ip_address": entry.ip_address,
-            "resource": entry.resource,
-            "action": entry.action,
-            "result": entry.result,
-            "details": json.loads(entry.details) if entry.details else {},
-            "is_verified": entry.is_verified
+        details = {
+            'interaction_type': interaction_type,
+            'content_length': len(content) if content else 0,
+            'response_length': len(response) if response else 0,
+            'safety_score': safety_score,
         }
-    
-    def get_public_key(self) -> str:
-        """Get public key for external verification"""
-        return self._public_key.public_bytes(
-            encoding=Encoding.PEM,
-            format=PublicFormat.SubjectPublicKeyInfo
-        ).decode()
-    
-    async def shutdown(self) -> None:
-        """Graceful shutdown"""
-        # Cancel background tasks
-        self._flush_task.cancel()
-        self._cleanup_task.cancel()
         
-        # Final flush
-        await self._flush_buffer()
+        if safety_score and safety_score < 0.7:
+            event_type = AuditEventType.SAFETY_INCIDENT
+            severity = AuditSeverity.WARNING
+        else:
+            event_type = AuditEventType.CHILD_INTERACTION_START
+            severity = AuditSeverity.INFO
         
-        logger.info("Audit logger shut down")
+        return await self.log_event(
+            event_type=event_type,
+            severity=severity,
+            category=AuditCategory.CHILD_SAFETY,
+            description=f"Child interaction: {interaction_type}",
+            context=context,
+            details=details,
+        )
+    
+    async def log_safety_incident(
+        self,
+        child_id: str,
+        incident_type: str,
+        severity: AuditSeverity,
+        description: str,
+        details: Optional[Dict[str, Any]] = None,
+        context: Optional[AuditContext] = None,
+    ) -> str:
+        """Log safety incident"""
+        if not context:
+            context = AuditContext(child_id=child_id)
+        else:
+            context.child_id = child_id
+        
+        incident_details = {
+            'incident_type': incident_type,
+            'child_id': child_id,
+            **(details or {}),
+        }
+        
+        return await self.log_event(
+            event_type=AuditEventType.SAFETY_INCIDENT,
+            severity=severity,
+            category=AuditCategory.CHILD_SAFETY,
+            description=description,
+            context=context,
+            details=incident_details,
+        )
+    
+    async def log_data_access(
+        self,
+        user_id: str,
+        data_type: str,
+        operation: str,
+        resource_id: Optional[str] = None,
+        context: Optional[AuditContext] = None,
+    ) -> str:
+        """Log data access event"""
+        if not context:
+            context = AuditContext(user_id=user_id)
+        else:
+            context.user_id = user_id
+        
+        details = {
+            'data_type': data_type,
+            'operation': operation,
+            'resource_id': resource_id,
+        }
+        
+        return await self.log_event(
+            event_type=AuditEventType.DATA_ACCESS,
+            severity=AuditSeverity.INFO,
+            category=AuditCategory.DATA_PROTECTION,
+            description=f"Data {operation}: {data_type}",
+            context=context,
+            details=details,
+        )
+    
+    async def generate_compliance_report(
+        self,
+        start_date: datetime,
+        end_date: datetime,
+        report_type: str = "coppa",
+    ) -> Dict[str, Any]:
+        """Generate compliance report"""
+        # TODO: Implement compliance report generation
+        # This would read from audit logs and generate structured reports
+        return {
+            'report_type': report_type,
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat(),
+            'generated_at': datetime.now(timezone.utc).isoformat(),
+            'summary': {
+                'total_events': 0,
+                'safety_incidents': 0,
+                'data_access_events': 0,
+                'authentication_events': 0,
+            },
+            'details': [],
+        }
 
 
-# Convenience decorator for automatic audit logging
-def audit_log(str = None) -> None:
-    """
-    Decorator for automatic audit logging
-    
-    Example:
-        @audit_log(AuditEventType.CHILD_DATA_ACCESS, resource_param="child_id")
-        async def get_child_data(child_id: str):
-            ...
-    """
-    def decorator(func) -> Any:
-        async def wrapper(*args, **kwargs):
-            # Get audit logger from somewhere (e.g., dependency injection)
-            audit_logger = kwargs.get('audit_logger')
-            
-            if audit_logger:
-                # Extract resource if specified
-                resource = None
-                if resource_param:
-                    resource = kwargs.get(resource_param)
-                
-                try:
-                    # Execute function
-                    result = await func(*args, **kwargs)
-                    
-                    # Log success
-                    await audit_logger.log_event(
-                        event_type=event_type,
-                        action=func.__name__,
-                        result="success",
-                        resource=resource
-                    )
-                    
-                    return result
-                    
-                except Exception as e:
-                    # Log failure
-                    await audit_logger.log_event(
-                        event_type=event_type,
-                        action=func.__name__,
-                        result="failure",
-                        resource=resource,
-                        details={"error": str(e)}
-                    )
-                    raise
-            
-            # No audit logger, just execute
-            return await func(*args, **kwargs)
-        
-        return wrapper
-    return decorator 
+# Global audit logger instance
+audit_logger = AuditLogger()
+
+
+# Convenience functions
+async def log_audit_event(
+    event_type: AuditEventType,
+    severity: AuditSeverity,
+    category: AuditCategory,
+    description: str,
+    **kwargs,
+) -> str:
+    """Convenience function for logging audit events"""
+    return await audit_logger.log_event(
+        event_type=event_type,
+        severity=severity,
+        category=category,
+        description=description,
+        **kwargs,
+    )
+
+
+async def log_child_safety_incident(
+    child_id: str,
+    incident_type: str,
+    description: str,
+    severity: AuditSeverity = AuditSeverity.WARNING,
+    **kwargs,
+) -> str:
+    """Convenience function for logging child safety incidents"""
+    return await audit_logger.log_safety_incident(
+        child_id=child_id,
+        incident_type=incident_type,
+        severity=severity,
+        description=description,
+        **kwargs,
+    ) 
