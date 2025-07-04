@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 
 from openai import APIError, APITimeoutError, AsyncOpenAI, RateLimitError
 from openai.types.chat import ChatCompletion
+import secrets
 
 from src.application.services.ai.analyzers.emotion_analyzer_service import \
     EmotionAnalyzerService
@@ -69,7 +70,8 @@ class ModernOpenAIService(IAIService):
         self.max_history_length = 10
 
         self._initialize_client()
-        logger.info("✅ Modern OpenAI Service initialized with enhanced features")
+        logger.info(
+            "✅ Modern OpenAI Service initialized with enhanced features")
 
     def _initialize_client(self) -> None:
         """Initialize OpenAI client with comprehensive error handling"""
@@ -79,7 +81,8 @@ class ModernOpenAIService(IAIService):
                 logger.error("🚫 OpenAI API key not configured")
                 raise ValueError("OpenAI API key is required for AI service")
 
-            self.client = AsyncOpenAI(api_key=api_key, timeout=30.0, max_retries=3)
+            self.client = AsyncOpenAI(
+                api_key=api_key, timeout=30.0, max_retries=3)
             logger.info("✅ OpenAI client initialized successfully")
 
         except Exception as e:
@@ -92,7 +95,7 @@ class ModernOpenAIService(IAIService):
     def _get_cache_key(self, text: str, context: str, child_profile: str) -> str:
         """Generate optimized cache key with LRU caching"""
         combined = f"{text}:{context}:{child_profile}"
-        return hashlib.md5(combined.encode()).hexdigest()
+        return hashlib.sha512(combined.encode()).hexdigest()
 
     def _get_child_profile_key(self, child: Child) -> str:
         """Generate child profile key for caching"""
@@ -110,7 +113,8 @@ class ModernOpenAIService(IAIService):
             else:
                 # Remove expired entry
                 del self.memory_cache[cache_key]
-                logger.debug(f"🧹 Expired cache entry removed: {cache_key[:8]}...")
+                logger.debug(
+                    f"🧹 Expired cache entry removed: {cache_key[:8]}...")
 
         return None
 
@@ -157,7 +161,8 @@ class ModernOpenAIService(IAIService):
             # Enhanced caching strategy
             child_profile = self._get_child_profile_key(child)
             context_str = json.dumps(context or {}, sort_keys=True)
-            cache_key = self._get_cache_key(message, context_str, child_profile)
+            cache_key = self._get_cache_key(
+                message, context_str, child_profile)
 
             # Check memory cache first (fastest)
             cached_response = self._check_memory_cache(cache_key)
@@ -176,8 +181,10 @@ class ModernOpenAIService(IAIService):
                 return response
 
             # 🎭 Activate emotion analyzer (parallel processing)
-            emotion_task = asyncio.create_task(self._enhanced_emotion_analysis(message))
-            category_task = asyncio.create_task(self.categorize_message(message))
+            emotion_task = asyncio.create_task(
+                self._enhanced_emotion_analysis(message))
+            category_task = asyncio.create_task(
+                self.categorize_message(message))
 
             # Get conversation history
             device_id = getattr(child, "device_id", "unknown")
@@ -246,7 +253,8 @@ class ModernOpenAIService(IAIService):
 
         except RateLimitError:
             self.rate_limit_count += 1
-            logger.warning(f"⚠️ OpenAI rate limit hit (#{self.rate_limit_count})")
+            logger.warning(
+                f"⚠️ OpenAI rate limit hit (#{self.rate_limit_count})")
             return await self.fallback_service.create_rate_limit_fallback(
                 message, child, session_id
             )
@@ -267,7 +275,8 @@ class ModernOpenAIService(IAIService):
 
         except Exception as e:
             self.error_count += 1
-            logger.error(f"💥 Unexpected AI service error: {str(e)}", exc_info=True)
+            logger.error(
+                f"💥 Unexpected AI service error: {str(e)}", exc_info=True)
             return await self.fallback_service.create_generic_fallback(
                 message, child, session_id, str(e)
             )
@@ -283,7 +292,7 @@ class ModernOpenAIService(IAIService):
         messages = [{"role": "system", "content": system_prompt}]
 
         # Add conversation history
-        messages.extend(history[-self.max_history_length :])
+        messages.extend(history[-self.max_history_length:])
 
         # Add emotion context to message
         enhanced_message = (
@@ -315,7 +324,8 @@ class ModernOpenAIService(IAIService):
             return emotion_result.primary_emotion
 
         except Exception as e:
-            logger.warning(f"⚠️ Emotion analyzer failed, using fallback: {str(e)}")
+            logger.warning(
+                f"⚠️ Emotion analyzer failed, using fallback: {str(e)}")
             return self._basic_emotion_detection(message)
 
     def _basic_emotion_detection(self, message: str) -> str:
@@ -422,8 +432,6 @@ class ModernOpenAIService(IAIService):
         self, child: Child, session_id: str
     ) -> AIResponseModel:
         """Enhanced wake word response with variety"""
-        import random
-
         responses = [
             f"نعم {child.name}؟ أنا هنا! كيف يمكنني مساعدتك؟ 🧸✨",
             f"مرحباً {child.name}! أسعد بسماع صوتك! بماذا تفكر؟ 🌟😊",
@@ -431,7 +439,7 @@ class ModernOpenAIService(IAIService):
         ]
 
         return AIResponseModel(
-            text=random.choice(responses),
+            text=secrets.choice(responses),  # nosec
             emotion="happy",
             category="greeting",
             learning_points=["social_interaction", "communication"],
@@ -491,7 +499,7 @@ class ModernOpenAIService(IAIService):
         # Keep only recent history
         if len(history) > self.max_history_length * 2:
             self.conversation_history[device_id] = history[
-                -self.max_history_length * 2 :
+                -self.max_history_length * 2:
             ]
 
     def _get_conversation_history(self, device_id: str) -> List[Dict]:

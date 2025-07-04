@@ -102,10 +102,12 @@ async def clear_chaos_state(configuration: Dict[str, Any] = None) -> Dict[str, A
                     },
                     timeout=15,
                 )
-                clear_results[service_name] = clear_response.status_code in [200, 202]
+                clear_results[service_name] = clear_response.status_code in [
+                    200, 202]
             except Exception as e:
                 clear_results[service_name] = False
-                logger.error(f"❌ Failed to clear chaos state for {service_name}: {e}")
+                logger.error(
+                    f"❌ Failed to clear chaos state for {service_name}: {e}")
         success = all(clear_results.values())
         return {
             "action": "clear_chaos_state",
@@ -136,7 +138,8 @@ async def restore_network_policies(
                 success_count += 1
                 await asyncio.sleep(1)
             except Exception as e:
-                logger.error(f"❌ Network policy restoration failed: {command} - {e}")
+                logger.error(
+                    f"❌ Network policy restoration failed: {command} - {e}")
         success = success_count == len(network_commands)
         return {
             "action": "restore_network_policies",
@@ -169,7 +172,8 @@ async def restart_failed_services(
                 "restart_results": {},
                 "success": True,
             }
-        logger.info(f"Found {len(failed_services)} failed services: {failed_services}")
+        logger.info(
+            f"Found {len(failed_services)} failed services: {failed_services}")
         for service in failed_services:
             try:
                 restart_response = requests.post(
@@ -265,10 +269,14 @@ async def wait_for_service_ready(
         try:
             response = requests.get(f"{base_url}/health", timeout=5)
             if response.status_code == 200:
+                logger.info(f"Service {service_name} is ready.")
                 return True
-        # FIXME: replace with specific exception
-except Exception as exc:pass
+        except requests.exceptions.RequestException as exc:
+            logger.warning(
+                f"Waiting for service {service_name} to be ready. Error: {exc}")
         await asyncio.sleep(2)
+    logger.error(
+        f"Service {service_name} did not become ready in {timeout_seconds} seconds.")
     return False
 
 
@@ -340,7 +348,8 @@ async def check_performance_metrics() -> Dict[str, Any]:
     """Check system performance metrics"""
     try:
         start_time = time.time()
-        test_response = requests.get("http://graphql-federation:8000/health", timeout=5)
+        test_response = requests.get(
+            "http://graphql-federation:8000/health", timeout=5)
         response_time = time.time() - start_time
         performance_acceptable = (
             test_response.status_code == 200 and response_time < 2.0

@@ -317,11 +317,14 @@ class FairyLandAIGenerator:
         # اختيار شخصيات من البنك
         theme_characters = []
         if theme in [StoryTheme.ANIMALS, StoryTheme.FRIENDSHIP]:
-            theme_characters = random.sample(self.character_bank["animals"], 2)
+            theme_characters = random.sample(
+                self.character_bank["animals"], 2)
         elif theme in [StoryTheme.FANTASY, StoryTheme.ADVENTURE]:
-            theme_characters = random.sample(self.character_bank["fantasy"], 2)
+            theme_characters = random.sample(
+                self.character_bank["fantasy"], 2)
         else:
-            theme_characters = random.sample(self.character_bank["humans"], 2)
+            theme_characters = random.sample(
+                self.character_bank["humans"], 2)
 
         # بناء الـ prompt
         prompt = f"""
@@ -399,9 +402,7 @@ class FairyLandAIGenerator:
             )
 
             return response.choices[0].message.content
-
-        # FIXME: replace with specific exception
-except Exception as exc:# التراجع إلى قصة افتراضية في حالة الخطأ
+        except Exception as exc:  # التراجع إلى قصة افتراضية في حالة الخطأ
             return self._generate_fallback_story(length)
 
     def _generate_fallback_story(self, length: StoryLength) -> str:
@@ -475,9 +476,11 @@ except Exception as exc:# التراجع إلى قصة افتراضية في ح�
 
         # استخراج العنوان
         lines = raw_content.strip().split("\n")
-        title_line = next((line for line in lines if line.startswith("عنوان:")), "")
+        title_line = next(
+            (line for line in lines if line.startswith("عنوان:")), "")
         title = (
-            title_line.replace("عنوان:", "").strip() or f"مغامرة {context.child_name}"
+            title_line.replace("عنوان:", "").strip(
+            ) or f"مغامرة {context.child_name}"
         )
 
         # إزالة سطر العنوان من المحتوى
@@ -493,7 +496,8 @@ except Exception as exc:# التراجع إلى قصة افتراضية في ح�
         moral_lesson = self._extract_moral_lesson(content, context.age)
 
         # تحديد العناصر التعليمية
-        educational_elements = self._extract_educational_elements(content, theme)
+        educational_elements = self._extract_educational_elements(
+            content, theme)
 
         # تحديد العلامات العاطفية
         emotional_tags = self._extract_emotional_tags(content)
@@ -668,7 +672,8 @@ except Exception as exc:# التراجع إلى قصة افتراضية في ح�
 
         # نقاط للحالة العاطفية
         emotional_alignment = len(
-            [tag for tag in story["emotional_tags"] if context.emotional_state in tag]
+            [tag for tag in story["emotional_tags"]
+                if context.emotional_state in tag]
         )
         if emotional_alignment > 0:
             score += 1.5

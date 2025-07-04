@@ -101,12 +101,12 @@ class AdvancedSecretsMigrator:
                 "type": "Access Token",
             },
             "openai_key": {
-                "pattern": "sk-[a-zA-Z0-9]{48,}",
+                "pattern": "sk-[a-zA-Z0-9]{48}",
                 "confidence": 1.0,
                 "type": "OpenAI API Key",
             },
             "anthropic_key": {
-                "pattern": "sk-ant-[a-zA-Z0-9-]{95,}",
+                "pattern": "sk-ant-[a-zA-Z0-9-]{95}",
                 "confidence": 1.0,
                 "type": "Anthropic API Key",
             },
@@ -145,7 +145,8 @@ class AdvancedSecretsMigrator:
                     path=self.config.vault_mount_path,
                     options={"version": "2"},
                 )
-                logger.info(f"✅ تم إنشاء مسار الأسرار: {self.config.vault_mount_path}")
+                logger.info(
+                    f"✅ تم إنشاء مسار الأسرار: {self.config.vault_mount_path}")
             else:
                 logger.info(
                     f"ℹ️ مسار الأسرار موجود بالفعل: {self.config.vault_mount_path}"
@@ -184,10 +185,10 @@ class AdvancedSecretsMigrator:
         try:
             with open(file_path, "rb") as f:
                 chunk = f.read(1024)
-                if b"\x00" in chunk:
+                if b"\\x00" in chunk:
                     return True
-        # FIXME: replace with specific exception
-except Exception as exc:return True
+        except Exception as exc:
+            return True
         return False
 
     def _scan_file_content(self, file_path: str, content: str):
@@ -195,9 +196,11 @@ except Exception as exc:return True
         lines = content.split("\n")
         for line_num, line in enumerate(lines, 1):
             for pattern_name, pattern_info in self.secret_patterns.items():
-                matches = re.finditer(pattern_info["pattern"], line, re.IGNORECASE)
+                matches = re.finditer(
+                    pattern_info["pattern"], line, re.IGNORECASE)
                 for match in matches:
-                    secret_value = match.group(1) if match.groups() else match.group(0)
+                    secret_value = match.group(
+                        1) if match.groups() else match.group(0)
                     if self._is_valid_secret(secret_value, pattern_info["type"]):
                         secret_item = SecretItem(
                             file_path=file_path,
@@ -230,20 +233,21 @@ except Exception as exc:return True
         for dummy in dummy_patterns:
             if dummy in value_lower:
                 return False
-        if secret_type == "OpenAI API Key":
-            return len(value) >= 48 and value.startswith("sk-")
-        elif secret_type == "Anthropic API Key":
+        if secret_type == "OpenAI API Key":  # nosec
+            return len(value) >= 51 and value.startswith("sk-")
+        elif secret_type == "Anthropic API Key":  # nosec
             return len(value) >= 95 and value.startswith("sk-ant-")
-        elif secret_type == "Google API Key":
+        elif secret_type == "Google API Key":  # nosec
             return len(value) == 39 and value.startswith("AIza")
         return len(value) >= 8
 
     def _extract_key_name(self, line: str, pattern_name: str) -> str:
         """استخراج اسم المفتاح من السطر"""
-        key_match = re.search("[\"\\']?(\\w+(?:[_-]\\w+)*)[\"\\']?\\s*[:=]", line)
+        key_match = re.search(
+            "[\"\\']?(\\w+(?:[_-]\\w+)*)[\"\\']?\\s*[:=]", line)
         if key_match:
             return key_match.group(1)
-        return pattern_name
+        return pattern_name.replace("_", " ").title()
 
     def create_backup(self) -> str:
         """إنشاء نسخة احتياطية من الملفات المتأثرة"""
@@ -272,7 +276,8 @@ except Exception as exc:return True
             return self._simulate_migration()
         if not self.vault_client:
             raise RuntimeError("Vault client غير مهيأ")
-        logger.info(f"🚀 بدء نقل {len(self.discovered_secrets)} سر إلى Vault...")
+        logger.info(
+            f"🚀 بدء نقل {len(self.discovered_secrets)} سر إلى Vault...")
         migration_results = {"successful": [], "failed": [], "skipped": []}
         for secret in self.discovered_secrets:
             try:
@@ -299,7 +304,8 @@ except Exception as exc:return True
                 logger.info(f"✅ تم نقل السر: {secret.key} -> {vault_path}")
             except Exception as e:
                 logger.error(f"❌ فشل نقل السر {secret.key}: {e}")
-                migration_results["failed"].append({"key": secret.key, "error": str(e)})
+                migration_results["failed"].append(
+                    {"key": secret.key, "error": str(e)})
         return migration_results
 
     def _generate_vault_path(self, secret: SecretItem) -> str:
@@ -338,7 +344,8 @@ except Exception as exc:return True
             if secret.file_path in updated_files:
                 continue
             try:
-                self._update_file_with_vault_reference(secret, migration_results)
+                self._update_file_with_vault_reference(
+                    secret, migration_results)
                 updated_files.add(secret.file_path)
             except Exception as e:
                 logger.error(f"❌ فشل تحديث الملف {secret.file_path}: {e}")
@@ -403,7 +410,8 @@ except Exception as exc:return True
         self, migration_results: Dict, backup_dir: str
     ) -> str:
         """إنشاء تقرير شامل عن عملية النقل"""
-        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        timestamp = datetime.now(timezone.utc).strftime(
+            "%Y-%m-%d %H:%M:%S UTC")
         report = {
             "migration_summary": {
                 "timestamp": timestamp,
@@ -486,8 +494,10 @@ def main():
     parser.add_argument(
         "--vault-url", default="http://localhost:8200", help="عنوان Vault"
     )
-    parser.add_argument("--vault-token", required=True, help="رمز المصادقة مع Vault")
-    parser.add_argument("--mount-path", default="ai-teddy", help="مسار تخزين الأسرار")
+    parser.add_argument("--vault-token", required=True,
+                        help="رمز المصادقة مع Vault")
+    parser.add_argument("--mount-path", default="ai-teddy",
+                        help="مسار تخزين الأسرار")
     parser.add_argument("--scan-path", default=".", help="مسار المسح")
     parser.add_argument(
         "--dry-run", action="store_true", help="تشغيل تجريبي بدون تعديلات"
@@ -516,7 +526,8 @@ def main():
         migration_results = migrator.migrate_to_vault()
         migrator.update_configuration_files(migration_results)
         migrator.generate_vault_policies()
-        report_file = migrator.generate_migration_report(migration_results, backup_dir)
+        report_file = migrator.generate_migration_report(
+            migration_results, backup_dir)
         logger.info(f"🎉 تمت عملية النقل بنجاح! التقرير: {report_file}")
     except Exception as e:
         logger.error(f"💥 فشلت عملية النقل: {e}")

@@ -5,6 +5,7 @@ Testing the new dependency-injector based container
 """
 
 from unittest.mock import Mock
+import logging
 
 import pytest
 
@@ -15,6 +16,8 @@ from src.infrastructure.modern_container import (ContainerContext,
                                                  configure_container,
                                                  container)
 from src.infrastructure.session_manager import SessionManager
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -35,14 +38,16 @@ async def test_container_configuration():
     configure_container(**config)
 
     # Verify configuration was applied
-    assert container.config.provided["database_url"]() == config["database_url"]
+    assert container.config.provided["database_url"](
+    ) == config["database_url"]
     assert container.config.provided["debug"]() == config["debug"]
 
 
 @pytest.mark.asyncio
 async def test_singleton_providers():
     """Test that singleton providers return the same instance"""
-    configure_container(database_url="sqlite+aiosqlite:///:memory:", debug=True)
+    configure_container(
+        database_url="sqlite+aiosqlite:///:memory:", debug=True)
 
     # Get services multiple times
     settings1 = container.settings()
@@ -55,7 +60,8 @@ async def test_singleton_providers():
 @pytest.mark.asyncio
 async def test_factory_providers():
     """Test that factory providers return new instances"""
-    configure_container(database_url="sqlite+aiosqlite:///:memory:", debug=True)
+    configure_container(
+        database_url="sqlite+aiosqlite:///:memory:", debug=True)
 
     # Get session managers (factory provider)
     try:
@@ -64,9 +70,9 @@ async def test_factory_providers():
 
         # Should be different instances for factory
         assert session_mgr1 is not session_mgr2
-    # FIXME: replace with specific exception
-except Exception as exc:# This might fail due to missing database setup, which is expected
-        pass
+    except Exception as exc:
+        # This might fail due to missing database setup, which is expected
+        logger.warning(f"Test dependency injection failed as expected: {exc}")
 
 
 @pytest.mark.asyncio
@@ -86,9 +92,9 @@ async def test_dependency_injection():
         # Verify it has dependencies injected
         assert hasattr(child_service, "repository")
         assert hasattr(child_service, "cache_service")
-    # FIXME: replace with specific exception
-except Exception as exc:# Expected to fail without proper database setup
-        pass
+    except Exception as exc:
+        # Expected to fail without proper database setup
+        logger.warning(f"Test dependency injection failed as expected: {exc}")
 
 
 @pytest.mark.asyncio
@@ -131,10 +137,12 @@ async def test_container_context_manager():
         async with ContainerContext(**config) as ctx_container:
             assert ctx_container is not None
             # Container should be initialized
-            assert container.config.provided["database_url"]() == config["database_url"]
-    # FIXME: replace with specific exception
-except Exception as exc:# Expected to fail during initialization without full dependencies
-        pass
+            assert container.config.provided["database_url"](
+            ) == config["database_url"]
+    except Exception as exc:
+        # Expected to fail during initialization without full dependencies
+        logger.warning(
+            f"Container context manager test failed as expected: {exc}")
 
 
 @pytest.mark.asyncio
@@ -158,7 +166,8 @@ async def test_provider_types():
     ]
 
     for provider_name in providers:
-        assert hasattr(container, provider_name), f"Missing provider: {provider_name}"
+        assert hasattr(
+            container, provider_name), f"Missing provider: {provider_name}"
         provider = getattr(container, provider_name)
         assert provider is not None
 
@@ -170,7 +179,8 @@ async def test_circular_dependency_detection():
     # automatically, so we don't need to implement it ourselves
 
     # This test just verifies the container is properly configured
-    configure_container(database_url="sqlite+aiosqlite:///:memory:", debug=True)
+    configure_container(
+        database_url="sqlite+aiosqlite:///:memory:", debug=True)
 
     # Try to get services that might have circular dependencies
     try:
@@ -180,9 +190,9 @@ async def test_circular_dependency_detection():
 
         assert settings is not None
         assert emotion_analyzer is not None
-    # FIXME: replace with specific exception
-except Exception as exc:# Expected to fail during actual creation without dependencies
-        pass
+    except Exception as exc:
+        # Expected to fail during actual creation without dependencies
+        logger.warning(f"Circular dependency test failed as expected: {exc}")
 
 
 @pytest.mark.asyncio

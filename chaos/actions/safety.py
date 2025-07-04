@@ -6,7 +6,7 @@ Chaos actions specifically for testing child safety systems
 
 import asyncio
 import logging
-import random
+import secrets
 from datetime import datetime
 from typing import Any, Dict
 
@@ -49,7 +49,7 @@ async def inject_toxic_content(configuration: Dict[str, Any] = None) -> Dict[str
                 actions.safety_endpoints["content_filter"],
                 json={
                     "content": content,
-                    "child_age": random.randint(5, 12),
+                    "child_age": secrets.randbelow(8) + 5,  # nosec
                     "context": "chat_message",
                 },
                 timeout=10,
@@ -108,7 +108,8 @@ async def test_parental_controls_bypass(
             "method": "session_hijacking",
             "payload": {"session_token": "fake_parent_token"},
         },
-        {"method": "api_manipulation", "payload": {"override_parental_settings": True}},
+        {"method": "api_manipulation", "payload": {
+            "override_parental_settings": True}},
     ]
     blocked_attempts = 0
     results = []
@@ -169,8 +170,8 @@ async def simulate_content_filter_overload(
                     timeout=5,
                 )
                 return response.status_code == 200
-            # FIXME: replace with specific exception
-except Exception as exc:return False
+            except Exception as exc:
+                return False
 
         tasks = []
         for i in range(total_requests):
@@ -211,7 +212,8 @@ async def test_safety_system_failover(
     """Test safety system failover mechanisms"""
     logger.info("🔄 Testing safety system failover")
     try:
-        primary_response = requests.get("http://safety-service:8000/health", timeout=5)
+        primary_response = requests.get(
+            "http://safety-service:8000/health", timeout=5)
         primary_healthy = primary_response.status_code == 200
         if primary_healthy:
             fallback_response = requests.get(

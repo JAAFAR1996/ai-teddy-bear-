@@ -1,24 +1,22 @@
+from tests.framework import PerformanceTestCase
+from src.application.services.interaction_service import InteractionService
+from src.application.services.cleanup_service import CleanupService
+from src.application.services.audio_service import AudioService
+import pytest
+import psutil
+import numpy as np
+from typing import Dict
+import time
+import gc
+import asyncio
 import logging
+import random
 
 logger = logging.getLogger(__name__)
 
 """
 System Performance Tests - اختبارات الأداء الشاملة
 """
-import asyncio
-import gc
-import random
-import time
-from typing import Dict
-
-import numpy as np
-import psutil
-import pytest
-
-from src.application.services.audio_service import AudioService
-from src.application.services.cleanup_service import CleanupService
-from src.application.services.interaction_service import InteractionService
-from tests.framework import PerformanceTestCase
 
 
 class TestSystemPerformance(PerformanceTestCase):
@@ -45,7 +43,8 @@ class TestSystemPerformance(PerformanceTestCase):
         tasks = []
         start_time = time.time()
         users = [
-            self.test_data_builder.create_child(age=random.randint(3, 12))
+            self.test_data_builder.create_child(
+                age=random.randint(3, 12))
             for _ in range(num_users)
         ]
         self.start_performance_tracking()
@@ -60,18 +59,22 @@ class TestSystemPerformance(PerformanceTestCase):
                     )
                     op_duration = (time.perf_counter() - op_start) * 1000
                     operation_times.append(op_duration)
-                    self.record_operation(f"user_{user.id}_interaction", op_duration)
-                # FIXME: replace with specific exception
-except Exception as exc:self.record_operation(f"user_{user.id}_interaction_failed", -1)
-                await asyncio.sleep(random.uniform(0.1, 0.5))
+                    self.record_operation(
+                        f"user_{user.id}_interaction", op_duration)
+                except Exception as exc:
+                    self.record_operation(
+                        f"user_{user.id}_interaction_failed", -1)
+                await asyncio.sleep((random.randint(100, 500)) / 1000.0)
             return operation_times
 
         tasks = [simulate_user_interaction(user) for user in users]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         metrics = self.stop_performance_tracking()
         duration = time.time() - start_time
-        successful_users = sum(1 for r in results if not isinstance(r, Exception))
-        total_operations = sum(len(r) for r in results if not isinstance(r, Exception))
+        successful_users = sum(
+            1 for r in results if not isinstance(r, Exception))
+        total_operations = sum(len(r)
+                               for r in results if not isinstance(r, Exception))
         error_rate = (len(results) - successful_users) / len(results)
         assert duration < 30, f"Test took {duration}s, expected < 30s"
         assert error_rate < 0.01, f"Error rate {error_rate * 100}% exceeds 1%"
@@ -171,7 +174,8 @@ except Exception as exc:self.record_operation(f"user_{user.id}_interaction_faile
     async def test_database_query_performance(self):
         """اختبار أداء استعلامات قاعدة البيانات"""
         num_children = 100
-        children = [self.test_data_builder.create_child() for _ in range(num_children)]
+        children = [self.test_data_builder.create_child()
+                    for _ in range(num_children)]
         query_tests = [
             {
                 "name": "Single child lookup",
@@ -214,7 +218,8 @@ except Exception as exc:self.record_operation(f"user_{user.id}_interaction_faile
                 avg_latency < test["expected_ms"]
             ), f"{test['name']} avg latency {avg_latency:.2f}ms exceeds {test['expected_ms']}ms"
             results.append(
-                {"query": test["name"], "avg_ms": avg_latency, "p95_ms": p95_latency}
+                {"query": test["name"], "avg_ms": avg_latency,
+                    "p95_ms": p95_latency}
             )
         logger.info("\nDatabase Query Performance:")
         for result in results:
@@ -271,11 +276,13 @@ except Exception as exc:self.record_operation(f"user_{user.id}_interaction_faile
 
     def generate_audio_chunk(self, size: int) -> bytes:
         """Generate random audio data for testing"""
-        return bytes(random.randint(0, 255) for _ in range(size))
+        return random.randbytes(size)
 
     async def simulate_api_call(
         self, endpoint: str, method: str = "GET", data: Dict = None
     ):
         """Simulate API call for testing"""
-        await asyncio.sleep(random.uniform(0.001, 0.01))
+        # Generate a random float between 0.001 and 0.01
+        delay = (random.randint(100, 1000)) / 100000.0
+        await asyncio.sleep(delay)
         return {"status": "success", "data": {}, "timestamp": time.time()}

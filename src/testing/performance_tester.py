@@ -19,6 +19,8 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 import psutil
+import secrets
+from .smart_fuzzer import ChildContext
 
 logger = logging.getLogger(__name__)
 
@@ -192,7 +194,8 @@ class PerformanceTester:
             test_results, start_time, end_time
         )
 
-        logger.info(f"✅ Performance testing complete: {report.pass_fail_status}")
+        logger.info(
+            f"✅ Performance testing complete: {report.pass_fail_status}")
 
         return report
 
@@ -211,8 +214,6 @@ class PerformanceTester:
 
                 try:
                     # Simulate child context
-                    from .smart_fuzzer import ChildContext
-
                     context = ChildContext(age=7, emotion="happy")
 
                     # Execute test
@@ -276,32 +277,30 @@ class PerformanceTester:
             async with semaphore:
                 while time.time() < end_time:
                     # Select random interaction pattern
-                    import random
-
-                    pattern = random.choice(self.child_interaction_patterns)
-                    input_text = random.choice(pattern["inputs"])
+                    emotions = ["happy", "excited", "curious"]
+                    emotion = secrets.choice(emotions)
+                    context = ChildContext(
+                        # من 3 إلى 12 (Bandit_B311)
+                        age=secrets.randbelow(10) + 3,
+                        emotion=emotion,
+                    )
 
                     request_start = time.perf_counter()
                     total_requests += 1
 
                     try:
-                        from .smart_fuzzer import ChildContext
-
-                        context = ChildContext(
-                            age=random.randint(3, 12),
-                            emotion=random.choice(["happy", "excited", "curious"]),
-                        )
-
                         if asyncio.iscoroutinefunction(target_function):
-                            response = await target_function(input_text, context)
+                            response = await target_function(context.input, context)
                         else:
-                            response = target_function(input_text, context)
+                            response = target_function(context.input, context)
 
-                        response_time = (time.perf_counter() - request_start) * 1000
+                        response_time = (
+                            time.perf_counter() - request_start) * 1000
                         response_times.append(response_time)
 
                         # Small delay to simulate realistic user behavior
-                        await asyncio.sleep(random.uniform(0.1, 1.0))
+                        delay = (secrets.randbelow(91) + 10) / 100.0
+                        await asyncio.sleep(delay)
 
                     except Exception as e:
                         error_count += 1
@@ -312,7 +311,8 @@ class PerformanceTester:
                         break
 
         # Run concurrent user simulations
-        tasks = [single_user_simulation() for _ in range(config.concurrent_users)]
+        tasks = [single_user_simulation()
+                 for _ in range(config.concurrent_users)]
         await asyncio.gather(*tasks, return_exceptions=True)
 
         # Calculate metrics
@@ -390,7 +390,8 @@ class PerformanceTester:
         stress_levels = [50, 100, 200, 500, 1000, 2000]
 
         for stress_level in stress_levels:
-            logger.info(f"Testing stress level: {stress_level} concurrent requests")
+            logger.info(
+                f"Testing stress level: {stress_level} concurrent requests")
 
             start_time = time.perf_counter()
             error_count = 0
@@ -399,8 +400,6 @@ class PerformanceTester:
             async def stress_request():
                 nonlocal error_count, successful_requests
                 try:
-                    from .smart_fuzzer import ChildContext
-
                     context = ChildContext(age=7, emotion="neutral")
 
                     if asyncio.iscoroutinefunction(target_function):
@@ -409,8 +408,8 @@ class PerformanceTester:
                         response = target_function("test stress", context)
 
                     successful_requests += 1
-                # FIXME: replace with specific exception
-except Exception as exc:error_count += 1
+                except Exception as exc:
+                    error_count += 1
 
             # Run stress level
             tasks = [stress_request() for _ in range(stress_level)]
@@ -437,7 +436,8 @@ except Exception as exc:error_count += 1
 
             # Stop if system is breaking (error rate > 50%)
             if error_rate > 0.5:
-                logger.warning(f"System breaking at {stress_level} concurrent users")
+                logger.warning(
+                    f"System breaking at {stress_level} concurrent users")
                 break
 
         return results
@@ -459,7 +459,8 @@ except Exception as exc:error_count += 1
         normal_tasks = []
 
         for _ in range(normal_load):
-            task = self._single_performance_request(target_function, "normal load")
+            task = self._single_performance_request(
+                target_function, "normal load")
             normal_tasks.append(task)
 
         normal_responses = await asyncio.gather(*normal_tasks, return_exceptions=True)
@@ -470,7 +471,8 @@ except Exception as exc:error_count += 1
         spike_tasks = []
 
         for _ in range(spike_load):
-            task = self._single_performance_request(target_function, "spike load")
+            task = self._single_performance_request(
+                target_function, "spike load")
             spike_tasks.append(task)
 
         spike_responses = await asyncio.gather(*spike_tasks, return_exceptions=True)
@@ -527,7 +529,8 @@ except Exception as exc:error_count += 1
         # Run sustained load
         load_tasks = []
         for _ in range(50):
-            task = self._single_performance_request(target_function, "resource test")
+            task = self._single_performance_request(
+                target_function, "resource test")
             load_tasks.append(task)
 
         # Monitor resources during execution
@@ -600,7 +603,8 @@ except Exception as exc:error_count += 1
             responses = await asyncio.gather(*tasks, return_exceptions=True)
             duration = time.perf_counter() - start_time
 
-            success_count = len([r for r in responses if not isinstance(r, Exception)])
+            success_count = len(
+                [r for r in responses if not isinstance(r, Exception)])
             success_rate = success_count / len(responses)
 
             result = PerformanceResult(
@@ -637,8 +641,6 @@ except Exception as exc:error_count += 1
             try:
                 request_start = time.perf_counter()
 
-                from .smart_fuzzer import ChildContext
-
                 context = ChildContext(age=7, emotion="happy")
 
                 if asyncio.iscoroutinefunction(target_function):
@@ -659,13 +661,14 @@ except Exception as exc:error_count += 1
         # Check for performance degradation over time
         if response_times:
             first_half = response_times[: len(response_times) // 2]
-            second_half = response_times[len(response_times) // 2 :]
+            second_half = response_times[len(response_times) // 2:]
 
             first_avg = statistics.mean(first_half) if first_half else 0
             second_avg = statistics.mean(second_half) if second_half else 0
 
             # Performance should not degrade more than 20%
-            degradation = (second_avg - first_avg) / first_avg if first_avg > 0 else 0
+            degradation = (second_avg - first_avg) / \
+                first_avg if first_avg > 0 else 0
             performance_stable = degradation <= 0.2
         else:
             performance_stable = False
@@ -706,8 +709,6 @@ except Exception as exc:error_count += 1
     ):
         """Execute a single performance request"""
         try:
-            from .smart_fuzzer import ChildContext
-
             context = ChildContext(age=7, emotion="happy")
 
             if asyncio.iscoroutinefunction(target_function):
@@ -744,7 +745,8 @@ except Exception as exc:error_count += 1
                 }
 
         # Generate recommendations
-        recommendations = self._generate_performance_recommendations(test_results)
+        recommendations = self._generate_performance_recommendations(
+            test_results)
 
         # Determine overall pass/fail
         overall_pass = pass_rate >= 0.8  # 80% of tests must pass

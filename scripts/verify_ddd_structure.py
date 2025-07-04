@@ -1,3 +1,5 @@
+from pathlib import Path
+import os
 import logging
 
 logger = logging.getLogger(__name__)
@@ -7,8 +9,6 @@ Verify DDD Structure Script
 ===========================
 Check if DDD integration is correct and find issues
 """
-import os
-from pathlib import Path
 
 
 def check_file_completeness():
@@ -70,7 +70,8 @@ def check_imports():
                 except Exception as e:
                     logger.info(f"⚠️ Error reading {file_path}: {e}")
     if broken_imports:
-        logger.info(f"\n❌ Found {len(broken_imports)} files with broken imports:")
+        logger.info(
+            f"\n❌ Found {len(broken_imports)} files with broken imports:")
         for imp in broken_imports:
             logger.info(f"   - {imp}")
     else:
@@ -86,12 +87,12 @@ def check_file_sizes():
             if file.endswith(".py"):
                 file_path = Path(root) / file
                 try:
-                    with open(file_path, "r", encoding="utf-8") as f:
+                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                         lines = len(f.readlines())
                     if lines > 300:
                         large_files.append((str(file_path), lines))
-                # FIXME: replace with specific exception
-except Exception as exc:continue
+                except (IOError, OSError) as e:
+                    logger.warning(f"Could not read file {file_path}: {e}")
     if large_files:
         logger.info(f"⚠️ Found {len(large_files)} large files (>300 lines):")
         for file_path, lines in sorted(large_files, key=lambda x: x[1], reverse=True):

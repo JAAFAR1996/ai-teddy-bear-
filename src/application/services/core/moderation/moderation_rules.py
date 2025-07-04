@@ -5,6 +5,7 @@ Manages and evaluates content moderation rules
 
 import re
 from typing import Dict, List, Tuple
+import logging
 
 from .moderation_types import ContentCategory, ModerationRule, ModerationSeverity
 
@@ -15,6 +16,7 @@ class RuleEngine:
     def __init__(self):
         self.rules: Dict[str, ModerationRule] = {}
         self.compiled_patterns: Dict[str, re.Pattern] = {}
+        self.logger = logging.getLogger(self.__class__.__name__)
         self._load_default_rules()
 
     def _load_default_rules(self) -> None:
@@ -51,7 +53,8 @@ class RuleEngine:
                 id="bullying_1",
                 name="Bullying Detection",
                 description="Detects bullying language",
-                keywords=["stupid", "dumb", "loser", "hate you", "nobody likes"],
+                keywords=["stupid", "dumb", "loser",
+                          "hate you", "nobody likes"],
                 category=ContentCategory.BULLYING,
                 severity=ModerationSeverity.MEDIUM,
             ),
@@ -59,7 +62,8 @@ class RuleEngine:
                 id="drugs_1",
                 name="Drug References",
                 description="Detects drug-related content",
-                keywords=["drugs", "cocaine", "marijuana", "pills", "high", "stoned"],
+                keywords=["drugs", "cocaine", "marijuana",
+                          "pills", "high", "stoned"],
                 category=ContentCategory.DRUGS,
                 severity=ModerationSeverity.HIGH,
             ),
@@ -76,7 +80,8 @@ class RuleEngine:
                 id="self_harm_1",
                 name="Self Harm Detection",
                 description="Detects self-harm content",
-                keywords=["suicide", "cut myself", "kill myself", "end my life"],
+                keywords=["suicide", "cut myself",
+                          "kill myself", "end my life"],
                 category=ContentCategory.SELF_HARM,
                 severity=ModerationSeverity.CRITICAL,
             ),
@@ -115,7 +120,8 @@ class RuleEngine:
         """Add a moderation rule"""
         self.rules[rule.id] = rule
         if rule.pattern and rule.is_regex:
-            self.compiled_patterns[rule.id] = re.compile(rule.pattern, re.IGNORECASE)
+            self.compiled_patterns[rule.id] = re.compile(
+                rule.pattern, re.IGNORECASE)
 
     def remove_rule(self, rule_id: str) -> None:
         """Remove a moderation rule"""
@@ -128,16 +134,17 @@ class RuleEngine:
         """Update an existing rule"""
         if rule_id not in self.rules:
             return False
-        
+
         rule = self.rules[rule_id]
         for key, value in updates.items():
             if hasattr(rule, key):
                 setattr(rule, key, value)
-        
+
         # Recompile pattern if updated
         if rule.pattern and rule.is_regex:
-            self.compiled_patterns[rule_id] = re.compile(rule.pattern, re.IGNORECASE)
-        
+            self.compiled_patterns[rule_id] = re.compile(
+                rule.pattern, re.IGNORECASE)
+
         return True
 
     def get_rule(self, rule_id: str) -> ModerationRule:
@@ -220,17 +227,20 @@ class RuleEngine:
     def import_rules(self, rules_data: List[Dict]) -> int:
         """Import rules from dictionaries"""
         imported_count = 0
-        
+
         for rule_data in rules_data:
             try:
                 # Convert string values back to enums
                 rule_data["category"] = ContentCategory(rule_data["category"])
-                rule_data["severity"] = ModerationSeverity(rule_data["severity"])
-                
+                rule_data["severity"] = ModerationSeverity(
+                    rule_data["severity"])
+
                 rule = ModerationRule(**rule_data)
                 self.add_rule(rule)
                 imported_count += 1
-            # FIXME: replace with specific exception
-except Exception as exc:continue
-        
-        return imported_count 
+            except (KeyError, TypeError, ValueError) as exc:
+                self.logger.warning(
+                    f"Skipping invalid rule data: {rule_data}. Error: {exc}")
+                continue
+
+        return imported_count
