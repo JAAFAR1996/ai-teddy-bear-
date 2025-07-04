@@ -16,8 +16,7 @@ from uuid import uuid4
 from ...domain.events.event_sourcing_examples import ChildAggregateExample
 from ...domain.events.event_sourcing_service import get_event_sourcing_service
 from ...domain.value_objects import ChildId, DeviceId, ParentId
-from .command_bus import (Command, CommandHandler, CommandResult,
-                          get_command_bus)
+from .command_bus import Command, CommandHandler, CommandResult, get_command_bus
 
 logger = logging.getLogger(__name__)
 

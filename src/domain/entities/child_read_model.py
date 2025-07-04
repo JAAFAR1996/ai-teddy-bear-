@@ -12,12 +12,16 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from ...domain.events.child_events import (ChildProfileUpdated,
-                                           ChildRegistered,
-                                           SafetyViolationDetected)
-from ...domain.events.conversation_events import (ConversationEnded,
-                                                  ConversationStarted,
-                                                  MessageReceived)
+from ...domain.events.child_events import (
+    ChildProfileUpdated,
+    ChildRegistered,
+    SafetyViolationDetected,
+)
+from ...domain.events.conversation_events import (
+    ConversationEnded,
+    ConversationStarted,
+    MessageReceived,
+)
 from ...shared.kernel import DomainEvent
 
 logger = logging.getLogger(__name__)

@@ -253,7 +253,8 @@ class PasswordSecurity:
         self.forbidden_patterns = [
             r"(.)\1{3,}",  # Repeated characters
             r"(012|123|234|345|456|567|678|789|890)",  # Sequential numbers
-            r"(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)",  # Sequential letters
+            # Sequential letters
+            r"(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)",
             r"(qwerty|asdfgh|zxcvbn)",  # Keyboard patterns
         ]
 

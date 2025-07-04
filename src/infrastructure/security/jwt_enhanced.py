@@ -75,7 +75,6 @@ class EnhancedJWTManager:
         secret_key: Optional[str] = None,
         redis_client: Optional[redis.Redis] = None,
     ):
-
         self.secret_key = secret_key or self._generate_secret_key()
         self.redis_client = redis_client
         self.algorithm = "HS256"

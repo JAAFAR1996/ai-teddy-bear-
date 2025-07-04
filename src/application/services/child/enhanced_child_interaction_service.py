@@ -11,18 +11,28 @@ Senior Backend Developer & Professor
 import asyncio
 import time
 from dataclasses import dataclass, field
-from typing import AsyncIterator, 
+from typing import (
+    AsyncIterator,
+)
 
 import numpy as np
 import structlog
 
 from src.infrastructure.external_services.advanced_ai_orchestrator import (
-    AdvancedAIOrchestrator, ChildRequest, ModelComplexity)
+    AdvancedAIOrchestrator,
+    ChildRequest,
+    ModelComplexity,
+)
+
 # Import enhanced components
 from src.infrastructure.external_services.enhanced_audio_processor import (
-    AudioProcessingResult, EnhancedAudioProcessor)
+    AudioProcessingResult,
+    EnhancedAudioProcessor,
+)
 from src.infrastructure.security.advanced_content_filter import (
-    AdvancedContentFilter, ContentAnalysisResult)
+    AdvancedContentFilter,
+    ContentAnalysisResult,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -523,7 +533,10 @@ class EnhancedChildInteractionService:
         )
 
         from src.infrastructure.security.advanced_content_filter import (
-            ContentCategory, RiskLevel, SafetyViolation)
+            ContentCategory,
+            RiskLevel,
+            SafetyViolation,
+        )
 
         emergency_content_analysis = ContentAnalysisResult(
             is_safe=False,

@@ -588,9 +588,9 @@ class AdvancedAsyncProcessor:
 
                 # Update worker stats
                 self.worker_stats[worker_id]["tasks_processed"] += 1
-                self.worker_stats[worker_id][
-                    "total_execution_time"
-                ] += result.execution_time
+                self.worker_stats[worker_id]["total_execution_time"] += (
+                    result.execution_time
+                )
                 self.worker_stats[worker_id]["last_active"] = time.time()
 
                 # Record performance metrics

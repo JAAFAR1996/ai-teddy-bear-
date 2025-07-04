@@ -20,16 +20,20 @@ import numpy as np
 
 from .audit_logger import SecurityAuditLogger
 from .data_encryption import DataClassification
+
 # Core imports
-from .homomorphic_encryption import (EncryptedData, HEConfig,
-                                     HEProcessingResult, HomomorphicEncryption,
-                                     ProcessingMode)
+from .homomorphic_encryption import (
+    EncryptedData,
+    HEConfig,
+    HEProcessingResult,
+    HomomorphicEncryption,
+    ProcessingMode,
+)
 
 # Audio processing imports
 try:
     from ...audio.audio_processing import AudioConfig, AudioProcessor
-    from ...domain.services.advanced_emotion_analyzer import \
-        AdvancedEmotionAnalyzer
+    from ...domain.services.advanced_emotion_analyzer import AdvancedEmotionAnalyzer
 
     AUDIO_PROCESSING_AVAILABLE = True
 except ImportError:

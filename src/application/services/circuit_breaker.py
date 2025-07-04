@@ -11,7 +11,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from functools import wraps
-from typing import Callable, 
+from typing import (
+    Callable,
+)
 
 import structlog
 

@@ -1,5 +1,28 @@
 import logging
+import uuid
+from datetime import date, datetime
 from typing import Any, Dict
+
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Table,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy.dialects.sqlite import JSON
+from sqlalchemy.event import listens_for
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship, validates
 
 logger = logging.getLogger(__name__)
 
@@ -8,18 +31,6 @@ logger = logging.getLogger(__name__)
 SQLAlchemy Models for AI Teddy Bear Project
 Includes Child, Conversation, Message, and related entities with optimized relationships and indexes
 """
-
-import uuid
-from datetime import date, datetime
-
-from sqlalchemy import (Boolean, CheckConstraint, Column, Date, DateTime,
-                        Float, ForeignKey, Index, Integer, String, Table, Text,
-                        UniqueConstraint)
-from sqlalchemy.dialects.sqlite import JSON
-from sqlalchemy.event import listens_for
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, validates
 
 Base = declarative_base()
 
@@ -514,7 +525,6 @@ class EmotionProfile(Base, UUIDMixin, TimestampMixin):
 Interest.children = relationship(
     "Child", secondary=child_interests_table, back_populates="interests"
 )
-
 
 # Event listeners for automatic updates
 

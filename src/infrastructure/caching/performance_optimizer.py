@@ -462,7 +462,9 @@ class CacheHealthMonitor:
             "overall_status": (
                 "CRITICAL"
                 if any(a["level"] == "CRITICAL" for a in alerts)
-                else "WARNING" if alerts else "HEALTHY"
+                else "WARNING"
+                if alerts
+                else "HEALTHY"
             ),
             "alerts": alerts,
             "metrics_summary": {

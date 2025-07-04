@@ -30,14 +30,12 @@ from datetime import datetime, timezone
 # Enterprise imports with graceful fallbacks
 try:
     from opentelemetry import baggage, context, trace
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import \
-        OTLPSpanExporter
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.instrumentation.asgi import ASGIInstrumentor
     from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import (BatchSpanProcessor,
-                                                SimpleSpanProcessor)
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor, SimpleSpanProcessor
     from opentelemetry.semantic_conventions.resource import ResourceAttributes
 
     OTEL_AVAILABLE = True
@@ -49,8 +47,13 @@ except ImportError:
 
 # Prometheus integration
 try:
-    from prometheus_client import (CollectorRegistry, Counter, Gauge,
-                                   Histogram, generate_latest)
+    from prometheus_client import (
+        CollectorRegistry,
+        Counter,
+        Gauge,
+        Histogram,
+        generate_latest,
+    )
 
     PROMETHEUS_AVAILABLE = True
 except ImportError:
