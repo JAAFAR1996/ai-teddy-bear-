@@ -6,6 +6,7 @@ Author: API Team Lead
 """
 
 import os
+import secrets
 from unittest.mock import AsyncMock
 
 import pytest
@@ -91,7 +92,8 @@ class TestFederationConfig:
 
     def test_custom_config(self):
         """Test custom configuration."""
-        services = [ServiceConfig("test_service", "http://test:8000", "/schema")]
+        services = [ServiceConfig(
+            "test_service", "http://test:8000", "/schema")]
 
         config = FederationConfig(
             services=services, enable_authentication=False, rate_limit_requests=200
@@ -192,7 +194,8 @@ class TestAuthentication:
         user = await auth_service.create_user(
             username="testuser",
             email="test@example.com",
-            password=os.environ.get("TEST_PASSWORD", "test_secure_password_2025"),
+            password=os.environ.get(
+                "TEST_PASSWORD", secrets.token_urlsafe(16)),
             role=UserRole.PARENT,
         )
 
@@ -264,7 +267,8 @@ class TestAuthentication:
             username="admin",
             email="admin@test.com",
             role=UserRole.ADMIN,
-            permissions=auth_service.RolePermissions.get_permissions(UserRole.ADMIN),
+            permissions=auth_service.RolePermissions.get_permissions(
+                UserRole.ADMIN),
         )
 
         parent_user = User(
@@ -272,25 +276,32 @@ class TestAuthentication:
             username="parent",
             email="parent@test.com",
             role=UserRole.PARENT,
-            permissions=auth_service.RolePermissions.get_permissions(UserRole.PARENT),
+            permissions=auth_service.RolePermissions.get_permissions(
+                UserRole.PARENT),
             children_ids=["child-123"],
         )
 
         # Test admin permissions
-        assert auth_service.check_permission(admin_user, Permission.READ_CHILD) is True
+        assert auth_service.check_permission(
+            admin_user, Permission.READ_CHILD) is True
         assert (
-            auth_service.check_permission(admin_user, Permission.ADMIN_SYSTEM) is False
+            auth_service.check_permission(
+                admin_user, Permission.ADMIN_SYSTEM) is False
         )
 
         # Test parent permissions
-        assert auth_service.check_permission(parent_user, Permission.READ_CHILD) is True
+        assert auth_service.check_permission(
+            parent_user, Permission.READ_CHILD) is True
         assert (
-            auth_service.check_permission(parent_user, Permission.DELETE_CHILD) is False
+            auth_service.check_permission(
+                parent_user, Permission.DELETE_CHILD) is False
         )
 
         # Test child access
-        assert auth_service.check_child_access(parent_user, "child-123") is True
-        assert auth_service.check_child_access(parent_user, "child-456") is False
+        assert auth_service.check_child_access(
+            parent_user, "child-123") is True
+        assert auth_service.check_child_access(
+            parent_user, "child-456") is False
 
 
 class TestServiceResolvers:

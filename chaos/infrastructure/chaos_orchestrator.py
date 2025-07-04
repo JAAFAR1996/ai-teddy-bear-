@@ -259,7 +259,8 @@ class ChaosOrchestrator:
                 await self._inject_security_breach(target, intensity)
             metrics.failures_injected += 1
         except Exception as e:
-            logger.error(f"❌ Failed to inject {failure_type.value} into {target}: {e}")
+            logger.error(
+                f"❌ Failed to inject {failure_type.value} into {target}: {e}")
 
     async def _inject_network_latency(self, target: str, intensity: float):
         """Inject network latency"""
@@ -315,7 +316,8 @@ class ChaosOrchestrator:
                         timeout=10,
                     )
                     if response.status_code == 200:
-                        logger.warning(f"⚠️ AI hallucination test: {prompt[:30]}...")
+                        logger.warning(
+                            f"⚠️ AI hallucination test: {prompt[:30]}...")
                 except Exception as e:
                     logger.error(f"AI hallucination injection failed: {e}")
 
@@ -336,7 +338,8 @@ class ChaosOrchestrator:
                         json={"content": content},
                         timeout=10,
                     )
-                    logger.info(f"🧪 Toxic content test: {response.status_code}")
+                    logger.info(
+                        f"🧪 Toxic content test: {response.status_code}")
                 except Exception as e:
                     logger.error(f"Toxic content injection failed: {e}")
 
@@ -390,7 +393,8 @@ class ChaosOrchestrator:
         baseline = {}
         for target in targets:
             try:
-                response = requests.get(f"http://{target}:8000/metrics", timeout=5)
+                response = requests.get(
+                    f"http://{target}:8000/metrics", timeout=5)
                 if response.status_code == 200:
                     baseline[target] = response.json()
             except Exception as e:
@@ -423,14 +427,16 @@ class ChaosOrchestrator:
                     if response.status_code == 200:
                         recovered = True
                         break
-                # FIXME: replace with specific exception
-except Exception as exc:pass
+                except Exception as exc:
+                    logger.error(f"Health check failed for {target}: {exc}")
+                    pass  # Continue recovery validation
                 await asyncio.sleep(1)
             if recovered:
                 logger.info(f"✅ {target} recovered successfully")
                 metrics.failures_detected += 1
             else:
-                logger.error(f"❌ {target} failed to recover within {max_wait}s")
+                logger.error(
+                    f"❌ {target} failed to recover within {max_wait}s")
         recovery_time = time.time() - recovery_start
         metrics.recovery_time_seconds = recovery_time
         if metrics.failures_injected > 0:
@@ -442,7 +448,8 @@ except Exception as exc:pass
         critical_services = ["safety-service", "child-service"]
         for service in critical_services:
             try:
-                response = requests.get(f"http://{service}:8000/health", timeout=5)
+                response = requests.get(
+                    f"http://{service}:8000/health", timeout=5)
                 if response.status_code != 200:
                     logger.error(f"❌ Critical service {service} is unhealthy")
                     return False
@@ -460,18 +467,22 @@ except Exception as exc:pass
         try:
             response = requests.get(f"http://{target}:8000/health", timeout=5)
             return response.status_code == 200
-        # FIXME: replace with specific exception
-except Exception as exc:return False
+        except Exception as exc:
+            logger.error(f"Safety check failed for {target}: {exc}")
+            return False
 
     async def _post_experiment_verification(self, metrics: ExperimentMetrics):
         """Verify system state after experiment"""
         logger.info("🔍 Performing post-experiment verification...")
-        safety_services = ["safety-service", "content-filter", "parental-controls"]
+        safety_services = ["safety-service",
+                           "content-filter", "parental-controls"]
         for service in safety_services:
             try:
-                response = requests.get(f"http://{service}:8000/health", timeout=10)
+                response = requests.get(
+                    f"http://{service}:8000/health", timeout=10)
                 if response.status_code != 200:
-                    logger.warning(f"⚠️ {service} not healthy after experiment")
+                    logger.warning(
+                        f"⚠️ {service} not healthy after experiment")
                     metrics.safety_violations += 1
             except Exception as e:
                 logger.error(f"❌ Cannot verify {service}: {e}")

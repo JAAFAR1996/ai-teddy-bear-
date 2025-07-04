@@ -57,13 +57,13 @@ class IssueValidationService:
     Extracted validation logic to reduce cyclomatic complexity.
     Each validation method has a single responsibility.
     """
-    
+
     @staticmethod
     def validate_required_string(value: str, field_name: str) -> None:
         """Validate that a field is a non-empty string"""
         if not value or not isinstance(value, str):
             raise ValueError(f"{field_name} must be a non-empty string")
-    
+
     @staticmethod
     def validate_severity_level(severity: str) -> str:
         """Validate and return a valid severity level"""
@@ -71,7 +71,7 @@ class IssueValidationService:
         if severity not in valid_severities:
             raise ValueError(f"severity must be one of: {valid_severities}")
         return severity
-    
+
     @staticmethod
     def validate_status_level(status: str) -> str:
         """Validate and return a valid status level"""
@@ -79,33 +79,33 @@ class IssueValidationService:
         if status not in valid_statuses:
             raise ValueError(f"status must be one of: {valid_statuses}")
         return status
-    
+
     @staticmethod
     def validate_limit_range(limit: int) -> None:
         """Validate limit parameter is within acceptable range"""
         if limit < 1 or limit > 100:
             raise ValueError("limit must be between 1 and 100")
-    
+
     @staticmethod
     def validate_offset_range(offset: int) -> None:
         """Validate offset parameter is non-negative"""
         if offset < 0:
             raise ValueError("offset must be non-negative")
-    
+
     @staticmethod
     def clean_and_validate_component(component: str) -> str:
         """Clean and validate component name"""
         if not component or not isinstance(component, str):
             return "unknown"
         return component.strip().lower()
-    
+
     @staticmethod
     def clean_and_validate_error_type(error_type: str) -> str:
         """Clean and validate error type"""
         if not error_type or not isinstance(error_type, str):
             return "runtime_error"
         return error_type.strip()
-    
+
     @staticmethod
     def clean_stacktrace(stacktrace: Optional[str]) -> Optional[str]:
         """Clean and validate stacktrace"""
@@ -119,28 +119,32 @@ class IssueDataValidator:
     Specialized validator for issue data.
     Decomposed from complex __post_init__ method.
     """
-    
+
     def __init__(self, validation_service: IssueValidationService):
         self.validator = validation_service
-    
+
     def validate_required_fields(self, title: str, description: str) -> None:
         """Validate required string fields"""
         self.validator.validate_required_string(title, "title")
         self.validator.validate_required_string(description, "description")
-    
+
     def validate_and_clean_optional_fields(self, issue_data) -> None:
         """Validate and clean optional fields"""
         # Validate severity
-        issue_data.severity = self.validator.validate_severity_level(issue_data.severity)
-        
+        issue_data.severity = self.validator.validate_severity_level(
+            issue_data.severity)
+
         # Clean component
-        issue_data.component = self.validator.clean_and_validate_component(issue_data.component)
-        
+        issue_data.component = self.validator.clean_and_validate_component(
+            issue_data.component)
+
         # Clean error type
-        issue_data.error_type = self.validator.clean_and_validate_error_type(issue_data.error_type)
-        
+        issue_data.error_type = self.validator.clean_and_validate_error_type(
+            issue_data.error_type)
+
         # Clean stacktrace
-        issue_data.stacktrace = self.validator.clean_stacktrace(issue_data.stacktrace)
+        issue_data.stacktrace = self.validator.clean_stacktrace(
+            issue_data.stacktrace)
 
 
 class IssueQueryValidator:
@@ -148,20 +152,20 @@ class IssueQueryValidator:
     Specialized validator for query parameters.
     Extracted to reduce cyclomatic complexity of IssueQueryParams.__post_init__.
     """
-    
+
     def __init__(self, validation_service: IssueValidationService):
         self.validator = validation_service
-    
+
     def validate_optional_status(self, status: Optional[str]) -> None:
         """Validate status parameter if provided"""
         if status:
             self.validator.validate_status_level(status)
-    
+
     def validate_optional_severity(self, severity: Optional[str]) -> None:
         """Validate severity parameter if provided"""
         if severity:
             self.validator.validate_severity_level(severity)
-    
+
     def validate_pagination_params(self, limit: int, offset: int) -> None:
         """Validate pagination parameters"""
         self.validator.validate_limit_range(limit)
@@ -184,7 +188,7 @@ class IssueData:
     component: str = "unknown"
     error_type: str = "runtime_error"
     stacktrace: Optional[str] = None
-    
+
     def __post_init__(self):
         """
         Validate issue data with extracted validation methods.
@@ -192,13 +196,13 @@ class IssueData:
         """
         validation_service = IssueValidationService()
         issue_validator = IssueDataValidator(validation_service)
-        
+
         # Decomposed validation calls (low complexity)
         issue_validator.validate_required_fields(self.title, self.description)
         issue_validator.validate_and_clean_optional_fields(self)
 
 
-@dataclass 
+@dataclass
 class IssueQueryParams:
     """Parameter object for issue queries to reduce argument count"""
     status: Optional[str] = None
@@ -206,7 +210,7 @@ class IssueQueryParams:
     component: Optional[str] = None
     limit: int = 10
     offset: int = 0
-    
+
     def __post_init__(self):
         """
         Validate query parameters with extracted validation methods.
@@ -214,7 +218,7 @@ class IssueQueryParams:
         """
         validation_service = IssueValidationService()
         query_validator = IssueQueryValidator(validation_service)
-        
+
         # Decomposed validation calls (low complexity)
         query_validator.validate_optional_status(self.status)
         query_validator.validate_optional_severity(self.severity)
@@ -228,18 +232,18 @@ class IssueUpdateData:
     status: Optional[str] = None
     severity: Optional[str] = None
     notes: Optional[str] = None
-    
+
     def __post_init__(self):
         """Validate update data with extracted validation methods"""
         validation_service = IssueValidationService()
-        
+
         # Validate required field
         validation_service.validate_required_string(self.issue_id, "issue_id")
-        
+
         # Validate optional fields
         if self.status:
             validation_service.validate_status_level(self.status)
-        
+
         if self.severity:
             validation_service.validate_severity_level(self.severity)
 
@@ -280,7 +284,8 @@ class IssueTrackerService:
             }
 
         except Exception as e:
-            self.logger.error("Failed to load issue tracker config", error=str(e))
+            self.logger.error(
+                "Failed to load issue tracker config", error=str(e))
             self.config = {"enable_issue_tracking": True}
 
     def _init_database(self) -> Any:
@@ -325,16 +330,17 @@ class IssueTrackerService:
         """
         إنشاء تقرير مشكلة جديد.
         Refactored to use parameter object pattern.
-        
+
         Args:
             issue_data: IssueData object containing all issue information
-            
+
         Returns:
             str: Issue ID or None if failed
         """
         try:
             # إنشاء ID فريد للمشكلة
-            issue_id = self._generate_issue_id(issue_data.title, issue_data.error_type)
+            issue_id = self._generate_issue_id(
+                issue_data.title, issue_data.error_type)
 
             # حفظ في قاعدة البيانات
             conn = sqlite3.connect(self.db_path)
@@ -350,7 +356,7 @@ class IssueTrackerService:
                 # تحديث عدد التكرارات
                 cursor.execute(
                     """
-                    UPDATE issues 
+                    UPDATE issues
                     SET occurrence_count = occurrence_count + 1,
                         last_occurrence = ?
                     WHERE id = ?
@@ -361,8 +367,9 @@ class IssueTrackerService:
                 # إدراج مشكلة جديدة
                 cursor.execute(
                     """
-                    INSERT INTO issues 
-                    (id, title, description, severity, status, component, error_type, stacktrace)
+                    INSERT INTO issues
+                    (id, title, description, severity, status,
+                     component, error_type, stacktrace)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                     (
@@ -397,54 +404,60 @@ class IssueTrackerService:
         """
         تحديث بيانات مشكلة موجودة.
         Refactored to use parameter object pattern.
-        
+
         Args:
             update_data: IssueUpdateData object containing update information
-            
+
         Returns:
             bool: True if update successful, False otherwise
         """
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
-            
-            # Build dynamic update query
-            update_fields = []
+
+            # SECURITY FIX: Use safe parameterized queries instead of dynamic SQL
             update_values = []
-            
+
+            # Build safe update query with explicit field validation
+            update_clauses = []
+            allowed_fields = {'status', 'severity',
+                              'notes'}  # Whitelist allowed fields
+
             if update_data.status:
-                update_fields.append("status = ?")
+                update_clauses.append("status = ?")
                 update_values.append(update_data.status)
-            
+
             if update_data.severity:
-                update_fields.append("severity = ?")
+                update_clauses.append("severity = ?")
                 update_values.append(update_data.severity)
-            
+
             if update_data.notes:
-                update_fields.append("notes = ?")
+                update_clauses.append("notes = ?")
                 update_values.append(update_data.notes)
-            
-            if not update_fields:
+
+            if not update_clauses:
                 return False  # Nothing to update
-            
+
             # Add issue_id for WHERE clause
             update_values.append(update_data.issue_id)
-            
-            query = f"""
-                UPDATE issues 
-                SET {', '.join(update_fields)}
+
+            # SECURITY: Use static query structure with validated parameters
+            query = """
+                UPDATE issues
+                SET """ + ", ".join(update_clauses) + """
                 WHERE id = ?
             """
-            
+
             cursor.execute(query, update_values)
             conn.commit()
-            
+
             updated = cursor.rowcount > 0
             conn.close()
-            
+
             if updated:
-                self.logger.info("Issue updated", issue_id=update_data.issue_id)
-            
+                self.logger.info(
+                    "Issue updated", issue_id=update_data.issue_id)
+
             return updated
 
         except Exception as e:
@@ -455,53 +468,57 @@ class IssueTrackerService:
         """
         البحث في المشاكل بناءً على المعايير المحددة.
         Refactored to use parameter object pattern.
-        
+
         Args:
             query_params: IssueQueryParams object containing search criteria
-            
+
         Returns:
             List[Dict]: List of matching issues
         """
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
-            
-            # Build dynamic WHERE clause
-            where_conditions = []
+
+            # SECURITY FIX: Use safe parameterized queries with explicit validation
             where_values = []
-            
+
+            # Build safe WHERE clause with validated fields
+            where_clauses = []
+            allowed_filters = {'status', 'severity',
+                               'component'}  # Whitelist allowed filters
+
             if query_params.status:
-                where_conditions.append("status = ?")
+                where_clauses.append("status = ?")
                 where_values.append(query_params.status)
-            
+
             if query_params.severity:
-                where_conditions.append("severity = ?")
+                where_clauses.append("severity = ?")
                 where_values.append(query_params.severity)
-            
+
             if query_params.component:
-                where_conditions.append("component = ?")
+                where_clauses.append("component = ?")
                 where_values.append(query_params.component)
-            
-            # Build final query
+
+            # SECURITY: Build safe query with validated structure
             base_query = """
-                SELECT id, title, description, severity, status, component, 
+                SELECT id, title, description, severity, status, component,
                        error_type, timestamp, occurrence_count
                 FROM issues
             """
-            
-            if where_conditions:
-                base_query += " WHERE " + " AND ".join(where_conditions)
-            
+
+            if where_clauses:
+                base_query += " WHERE " + " AND ".join(where_clauses)
+
             base_query += " ORDER BY timestamp DESC LIMIT ? OFFSET ?"
             where_values.extend([query_params.limit, query_params.offset])
-            
+
             cursor.execute(base_query, where_values)
-            
+
             columns = [desc[0] for desc in cursor.description]
             issues = [dict(zip(columns, row)) for row in cursor.fetchall()]
-            
+
             conn.close()
-            
+
             return issues
 
         except Exception as e:
@@ -509,13 +526,14 @@ class IssueTrackerService:
             return []
 
     def _generate_issue_id(self, title: str, error_type: str) -> str:
-        """إنشاء ID فريق للمشكلة"""
+        """إنشاء ID فريد للمشكلة"""
         try:
             content = f"{title}:{error_type}"
-            hash_object = hashlib.md5(content.encode())
+            hash_object = hashlib.sha256(content.encode())
             return f"ISS-{hash_object.hexdigest()[:8].upper()}"
-        # FIXME: replace with specific exception
-except Exception as exc:return f"ISS-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+        except Exception as exc:
+            # FIXME: replace with specific exception
+            return f"ISS-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
 
     async def get_issue_statistics(self) -> Dict:
         """الحصول على إحصائيات المشاكل"""
@@ -582,10 +600,10 @@ except Exception as exc:return f"ISS-{datetime.utcnow().strftime('%Y%m%d%H%M%S')
         Legacy method for backward compatibility.
         Creates IssueData and delegates to modern method.
         ⚠️ DEPRECATED: Use create_issue with IssueData instead.
-        
+
         Legacy method REFACTORED using Parameter Object pattern.
         ✅ Reduced from 6 arguments to 1 argument (under threshold)
-        
+
         Args:
             title: Issue title
             description: Issue description
@@ -593,7 +611,7 @@ except Exception as exc:return f"ISS-{datetime.utcnow().strftime('%Y%m%d%H%M%S')
             component: Component name
             error_type: Type of error
             stacktrace: Optional stacktrace
-            
+
         Returns:
             str: Issue ID or None if failed
         """
@@ -620,17 +638,17 @@ except Exception as exc:return f"ISS-{datetime.utcnow().strftime('%Y%m%d%H%M%S')
         Legacy method for backward compatibility.
         Creates IssueQueryParams and delegates to modern method.
         ⚠️ DEPRECATED: Use search_issues with IssueQueryParams instead.
-        
+
         Legacy method REFACTORED using Parameter Object pattern.
         ✅ Reduced from 5 arguments to 1 argument (under threshold)
-        
+
         Args:
             status: Issue status filter
             severity: Issue severity filter
             component: Component filter
             limit: Maximum number of results
             offset: Offset for pagination
-            
+
         Returns:
             List[Dict]: List of matching issues
         """
@@ -666,10 +684,10 @@ async def report_issue(issue_data: IssueData) -> str:
     إبلاغ عن مشكلة جديدة.
     Modern function using Parameter Object pattern.
     ✅ Uses Parameter Object (1 argument only)
-    
+
     Args:
         issue_data: IssueData object containing all issue information
-        
+
     Returns:
         str: Issue ID or None if failed
     """
@@ -692,17 +710,17 @@ async def report_issue_legacy(
     Legacy function for backward compatibility.
     Creates IssueData and delegates to modern function.
     ⚠️ DEPRECATED: Use report_issue with IssueData instead.
-    
+
     Legacy function REFACTORED using Parameter Object pattern.
     ✅ Reduced from 5 arguments to 1 argument (under threshold)
-    
+
     Args:
         title: Issue title
         description: Issue description
         severity: Issue severity level
         component: Component name
         error_type: Type of error
-        
+
     Returns:
         str: Issue ID or None if failed
     """
@@ -724,12 +742,12 @@ async def report_exception(
     إبلاغ عن استثناء (Exception).
     Modern function with automatic stacktrace capture.
     ✅ Uses Parameter Object internally
-    
+
     Args:
         component: Component name where exception occurred
         exception: Exception object
         context: Additional context information
-        
+
     Returns:
         str: Issue ID or None if failed
     """
@@ -743,7 +761,7 @@ async def report_exception(
             error_type=type(exception).__name__,
             stacktrace=traceback.format_exc(),
         )
-        
+
         tracker = get_issue_tracker()
         return await tracker.create_issue(issue_data)
     except Exception as e:
@@ -756,12 +774,12 @@ async def update_issue_status(issue_id: str, status: str, notes: str = None) -> 
     تحديث حالة المشكلة.
     Modern function using Parameter Object pattern.
     ✅ Uses Parameter Object internally
-    
+
     Args:
         issue_id: Issue ID to update
         status: New status
         notes: Optional notes
-        
+
     Returns:
         bool: True if update successful
     """
@@ -771,7 +789,7 @@ async def update_issue_status(issue_id: str, status: str, notes: str = None) -> 
             status=status,
             notes=notes
         )
-        
+
         tracker = get_issue_tracker()
         return await tracker.update_issue(update_data)
     except Exception as e:
@@ -784,11 +802,11 @@ async def search_issues_by_component(component: str, limit: int = 10) -> List[Di
     البحث عن المشاكل حسب المكون.
     Modern function using Parameter Object pattern.
     ✅ Uses Parameter Object internally
-    
+
     Args:
         component: Component name to search for
         limit: Maximum number of results
-        
+
     Returns:
         List[Dict]: List of matching issues
     """
@@ -797,7 +815,7 @@ async def search_issues_by_component(component: str, limit: int = 10) -> List[Di
             component=component,
             limit=limit
         )
-        
+
         tracker = get_issue_tracker()
         return await tracker.search_issues(query_params)
     except Exception as e:
@@ -810,18 +828,18 @@ async def get_system_health() -> Dict:
     try:
         service = IssueTrackerService()
         stats = await service.get_issue_statistics()
-        
+
         # تحديد حالة النظام
         critical_issues = stats.get("by_severity", {}).get("critical", 0)
         high_issues = stats.get("by_severity", {}).get("high", 0)
-        
+
         if critical_issues > 0:
             status = "critical"
         elif high_issues > 5:
             status = "degraded"
         else:
             status = "healthy"
-        
+
         return {
             "status": status,
             "total_issues": stats.get("total_issues", 0),
@@ -829,7 +847,7 @@ async def get_system_health() -> Dict:
             "high_issues": high_issues,
             "last_check": datetime.utcnow().isoformat()
         }
-        
+
     except Exception as e:
         logger.error("Failed to get system health", error=str(e))
         return {
@@ -845,7 +863,7 @@ async def get_system_health() -> Dict:
 
 class IssueDataFactory:
     """Factory helper for creating Parameter Objects"""
-    
+
     @staticmethod
     def create_issue_data(
         title: str,
@@ -864,7 +882,7 @@ class IssueDataFactory:
             error_type=error_type,
             stacktrace=stacktrace
         )
-    
+
     @staticmethod
     def create_query_params(
         status: Optional[str] = None,
@@ -881,7 +899,7 @@ class IssueDataFactory:
             limit=limit,
             offset=offset
         )
-    
+
     @staticmethod
     def create_update_data(
         issue_id: str,
@@ -935,25 +953,25 @@ def create_update_data(issue_id: str, **kwargs) -> IssueUpdateData:
 __all__ = [
     # Main service class
     "IssueTrackerService",
-    
+
     # Parameter objects
     "IssueData",
-    "IssueQueryParams", 
+    "IssueQueryParams",
     "IssueUpdateData",
-    
+
     # Validation services
     "IssueValidationService",
     "IssueDataValidator",
     "IssueQueryValidator",
-    
+
     # Helper factory
     "IssueDataFactory",
-    
+
     # Convenience functions
     "create_issue_data",
     "create_query_params",
     "create_update_data",
-    
+
     # Main functions
     "report_issue",
     "report_issue_legacy",

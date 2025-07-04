@@ -97,18 +97,20 @@ ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # FastAPI/Uvicorn configuration
-ENV HOST=0.0.0.0
+ENV HOST=127.0.0.1
 ENV PORT=8000
 ENV WORKERS=1
 ENV ENVIRONMENT=production
 ENV LOG_LEVEL=INFO
 
-# Security environment variables
+# Security environment variables  
 ENV SECURE_SSL_REDIRECT=true
 ENV SECURE_HSTS_SECONDS=31536000
 ENV SECURE_CONTENT_TYPE_NOSNIFF=true
 ENV SECURE_BROWSER_XSS_FILTER=true
 ENV SECURE_REFERRER_POLICY=strict-origin-when-cross-origin
+ENV SECURE_FRAME_DENY=true
+ENV SECURE_CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
 
 # Health check configuration
 ENV HEALTH_CHECK_INTERVAL=30

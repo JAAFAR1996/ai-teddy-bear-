@@ -3,6 +3,7 @@
 WSGI config for AI Teddy Bear project.
 """
 
+from main import app
 import os
 import sys
 from pathlib import Path
@@ -15,7 +16,6 @@ sys.path.insert(0, str(project_root))
 os.environ.setdefault("DEPLOYMENT_ENV", "production")
 
 # استيراد التطبيق
-from main import app
 
 # تطبيق WSGI
 application = app
@@ -23,4 +23,5 @@ application = app
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(application, host="0.0.0.0", port=8000)
+    # SECURITY: Bind to localhost only
+    uvicorn.run(application, host="127.0.0.1", port=8000)

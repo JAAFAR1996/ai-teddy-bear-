@@ -499,7 +499,8 @@ class SafeExpressionParser:
                 return self.template_parser.validate(expression)
             else:
                 return self.ast_evaluator.security_validator.validate_expression(expression)
-        except Exception:
+        except (json.JSONDecodeError, TypeError, ValueError) as e:
+            logger.warning(f"Expression validation error: {e}")
             return False
     
     def evaluate(

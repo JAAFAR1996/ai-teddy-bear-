@@ -92,26 +92,26 @@ class CacheConfig:
     l1_max_size_mb: int = 256
     l1_ttl_seconds: int = 300
     l1_max_items: int = 10000
-    
+
     # L2 Redis Cache
     l2_enabled: bool = True
     l2_redis_url: str = "redis://localhost:6379"
     l2_ttl_seconds: int = 3600
     l2_max_connections: int = 100
     l2_cluster_mode: bool = False
-    
+
     # L3 CDN Cache
     l3_enabled: bool = True
     l3_cdn_endpoint: str = "https://cdn.teddy-bear.ai"
     l3_ttl_seconds: int = 86400
     l3_api_key: str = ""
-    
+
     # L4 Disk Cache
     l4_enabled: bool = False
     l4_cache_dir: str = "/tmp/teddy_cache"
     l4_max_size_gb: int = 10
     l4_ttl_seconds: int = 604800
-    
+
     # Performance settings
     compression_enabled: bool = True
     compression_threshold_bytes: int = 1024
@@ -132,38 +132,38 @@ class CacheMetrics:
     l3_misses: int = 0
     l4_hits: int = 0
     l4_misses: int = 0
-    
+
     write_operations: int = 0
     evictions: int = 0
     errors: int = 0
-    
+
     total_latency_ms: float = 0.0
     l1_latency_ms: float = 0.0
     l2_latency_ms: float = 0.0
     l3_latency_ms: float = 0.0
-    
+
     memory_usage_mb: float = 0.0
     disk_usage_mb: float = 0.0
-    
+
     last_updated: datetime = None
-    
+
     def __post_init__(self):
         if self.last_updated is None:
             self.last_updated = datetime.now()
-    
+
     @property
     def total_hits(self) -> int:
         return self.l1_hits + self.l2_hits + self.l3_hits + self.l4_hits
-    
+
     @property
     def total_misses(self) -> int:
         return self.l1_misses + self.l2_misses + self.l3_misses + self.l4_misses
-    
+
     @property
     def hit_rate(self) -> float:
         total = self.total_hits + self.total_misses
         return self.total_hits / total if total > 0 else 0.0
-    
+
     @property
     def average_latency_ms(self) -> float:
         return self.total_latency_ms / max(1, self.total_requests)
@@ -181,15 +181,15 @@ class CacheEntry:
     last_accessed: datetime = None
     size_bytes: int = 0
     compressed: bool = False
-    
+
     def __post_init__(self):
         if self.last_accessed is None:
             self.last_accessed = self.created_at
-    
+
     @property
     def is_expired(self) -> bool:
         return datetime.now() > self.expires_at
-    
+
     @property
     def age_seconds(self) -> float:
         return (datetime.now() - self.created_at).total_seconds()
@@ -197,28 +197,28 @@ class CacheEntry:
 
 class MockCloudflareClient:
     """Mock Cloudflare CDN client for testing."""
-    
+
     def __init__(self, api_key: str = "", endpoint: str = ""):
         self.api_key = api_key
         self.endpoint = endpoint
         self.mock_storage = {}
-        
+
     async def get(self, key: str) -> Optional[bytes]:
         """Mock CDN get operation."""
         await asyncio.sleep(0.05)  # Simulate network latency
         return self.mock_storage.get(key)
-    
+
     async def set(self, key: str, value: bytes, ttl: int = 86400) -> bool:
         """Mock CDN set operation."""
         await asyncio.sleep(0.02)  # Simulate upload latency
         self.mock_storage[key] = value
         return True
-    
+
     async def delete(self, key: str) -> bool:
         """Mock CDN delete operation."""
         await asyncio.sleep(0.01)
         return self.mock_storage.pop(key, None) is not None
-    
+
     async def purge_cache(self, pattern: str = "*") -> bool:
         """Mock cache purge operation."""
         if pattern == "*":
@@ -228,47 +228,48 @@ class MockCloudflareClient:
 
 class L1MemoryCache:
     """Level 1 in-memory cache with LRU eviction."""
-    
+
     def __init__(self, config: CacheConfig):
         self.config = config
         self.cache: Dict[str, CacheEntry] = {}
         self.access_order: List[str] = []  # For LRU tracking
         self.current_size_bytes = 0
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
+
     async def get(self, key: str) -> Optional[Any]:
         """Get value from L1 cache."""
         if key not in self.cache:
             return None
-        
+
         entry = self.cache[key]
-        
+
         # Check expiration
         if entry.is_expired:
             await self.delete(key)
             return None
-        
+
         # Update access statistics
         entry.access_count += 1
         entry.last_accessed = datetime.now()
-        
+
         # Update LRU order
         if key in self.access_order:
             self.access_order.remove(key)
         self.access_order.append(key)
-        
+
         self.logger.debug(f"L1 cache hit: {key[:16]}...")
         return entry.value
-    
+
     async def set(self, key: str, value: Any, content_type: ContentType, ttl: int) -> bool:
         """Set value in L1 cache."""
         try:
             # Estimate size
             size_bytes = self._estimate_size(value)
-            
+
             # Check if we need to evict entries
             await self._ensure_capacity(size_bytes)
-            
+
             # Create cache entry
             expires_at = datetime.now() + timedelta(seconds=ttl)
             entry = CacheEntry(
@@ -279,36 +280,37 @@ class L1MemoryCache:
                 expires_at=expires_at,
                 size_bytes=size_bytes
             )
-            
+
             # Store entry
             self.cache[key] = entry
             self.current_size_bytes += size_bytes
-            
+
             # Update access order
             if key in self.access_order:
                 self.access_order.remove(key)
             self.access_order.append(key)
-            
-            self.logger.debug(f"L1 cache set: {key[:16]}... ({size_bytes} bytes)")
+
+            self.logger.debug(
+                f"L1 cache set: {key[:16]}... ({size_bytes} bytes)")
             return True
-            
+
         except Exception as e:
             self.logger.error(f"L1 cache set failed: {e}")
             return False
-    
+
     async def delete(self, key: str) -> bool:
         """Delete key from L1 cache."""
         if key in self.cache:
             entry = self.cache.pop(key)
             self.current_size_bytes -= entry.size_bytes
-            
+
             if key in self.access_order:
                 self.access_order.remove(key)
-            
+
             self.logger.debug(f"L1 cache deleted: {key[:16]}...")
             return True
         return False
-    
+
     async def clear(self) -> bool:
         """Clear L1 cache."""
         self.cache.clear()
@@ -316,23 +318,23 @@ class L1MemoryCache:
         self.current_size_bytes = 0
         self.logger.info("L1 cache cleared")
         return True
-    
+
     async def _ensure_capacity(self, required_bytes: int):
         """Ensure sufficient capacity by evicting LRU entries."""
         max_size_bytes = self.config.l1_max_size_mb * 1024 * 1024
         max_items = self.config.l1_max_items
-        
+
         # Evict by size
-        while (self.current_size_bytes + required_bytes > max_size_bytes and 
+        while (self.current_size_bytes + required_bytes > max_size_bytes and
                self.access_order):
             lru_key = self.access_order[0]
             await self.delete(lru_key)
-        
+
         # Evict by count
         while len(self.cache) >= max_items and self.access_order:
             lru_key = self.access_order[0]
             await self.delete(lru_key)
-    
+
     def _estimate_size(self, value: Any) -> int:
         """Estimate memory size of value."""
         try:
@@ -345,7 +347,7 @@ class L1MemoryCache:
         except json.JSONDecodeError as e:
             logger.error(f"Error in operation: {e}", exc_info=True)
             return 1024  # Default estimate
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get L1 cache statistics."""
         return {
@@ -361,20 +363,22 @@ class L1MemoryCache:
 
 class L2RedisCache:
     """Level 2 Redis cache with clustering support."""
-    
+
     def __init__(self, config: CacheConfig):
         self.config = config
         self.redis_client: Optional[redis.Redis] = None
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-        
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
+
     async def initialize(self):
         """Initialize Redis connection."""
         try:
             if not CACHING_LIBS_AVAILABLE:
-                self.logger.warning("Redis libraries not available, using mock")
+                self.logger.warning(
+                    "Redis libraries not available, using mock")
                 self.redis_client = MockRedisClient()
                 return
-            
+
             if self.config.l2_cluster_mode:
                 # Redis Cluster mode
                 from redis.asyncio import RedisCluster
@@ -390,15 +394,15 @@ class L2RedisCache:
                     max_connections=self.config.l2_max_connections,
                     decode_responses=False
                 )
-            
+
             # Test connection
             await self.redis_client.ping()
             self.logger.info("L2 Redis cache initialized successfully")
-            
+
         except Exception as e:
             self.logger.error(f"L2 Redis initialization failed: {e}")
             self.redis_client = MockRedisClient()
-    
+
     async def get(self, key: str) -> Optional[Any]:
         """Get value from L2 Redis cache."""
         try:
@@ -407,39 +411,40 @@ class L2RedisCache:
                 # Decompress if needed
                 if data.startswith(b'COMPRESSED:'):
                     data = self._decompress(data[11:])  # Remove prefix
-                
+
                 # Deserialize
                 value = pickle.loads(data)
                 self.logger.debug(f"L2 cache hit: {key[:16]}...")
                 return value
-                
+
         except Exception as e:
             self.logger.error(f"L2 cache get error: {e}")
-        
+
         return None
-    
+
     async def set(self, key: str, value: Any, ttl: int) -> bool:
         """Set value in L2 Redis cache."""
         try:
             # Serialize
             data = pickle.dumps(value)
-            
+
             # Compress if enabled and beneficial
-            if (self.config.compression_enabled and 
+            if (self.config.compression_enabled and
                 len(data) > self.config.compression_threshold_bytes):
                 compressed_data = self._compress(data)
                 if len(compressed_data) < len(data):
                     data = b'COMPRESSED:' + compressed_data
-            
+
             # Store with TTL
             await self.redis_client.setex(key, ttl, data)
-            self.logger.debug(f"L2 cache set: {key[:16]}... ({len(data)} bytes)")
+            self.logger.debug(
+                f"L2 cache set: {key[:16]}... ({len(data)} bytes)")
             return True
-            
+
         except Exception as e:
             self.logger.error(f"L2 cache set error: {e}")
             return False
-    
+
     async def delete(self, key: str) -> bool:
         """Delete key from L2 Redis cache."""
         try:
@@ -450,7 +455,7 @@ class L2RedisCache:
         except Exception as e:
             self.logger.error(f"L2 cache delete error: {e}")
             return False
-    
+
     async def clear(self, pattern: str = "*") -> bool:
         """Clear L2 cache with optional pattern."""
         try:
@@ -461,24 +466,24 @@ class L2RedisCache:
                 keys = await self.redis_client.keys(pattern)
                 if keys:
                     await self.redis_client.delete(*keys)
-            
+
             self.logger.info(f"L2 cache cleared (pattern: {pattern})")
             return True
         except Exception as e:
             self.logger.error(f"L2 cache clear error: {e}")
             return False
-    
+
     def _compress(self, data: bytes) -> bytes:
         """Compress data using available compression."""
         if LZ4_AVAILABLE:
             return lz4.frame.compress(data)
         else:
             return gzip.compress(data)
-    
+
     def _decompress(self, data: bytes) -> bytes:
         """Decompress data using available compression."""
         if LZ4_AVAILexcept Exception as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)           try:
+    logger.error(f"Error in operation: {e}", exc_info=True) try:
                 return lz4.frame.decompress(data)
             except Exceptioexcept Exception as e:
     logger.error(f"Error in operation: {e}", exc_info=True)
@@ -1048,7 +1053,7 @@ class MultiLayerCache:
     ) -> str:
         """Generate unique cache key."""
         key_data = f"{prefix}:{str(args)}:{str(sorted(kwargs.items()))}"
-        return hashlib.md5(key_data.encode()).hexdigest()
+        return hashlib.sha256(key_data.encode()).hexdigest()
     
     async def cleanup(self):
         """Cleanup cache system resources."""

@@ -24,12 +24,13 @@ except ImportError:
 # Mock classes for standalone operation
 class LLMProvider(Enum):
     OPENAI = "openai"
-    ANTHROPIC = "anthropic" 
+    ANTHROPIC = "anthropic"
     GOOGLE = "google"
 
 
 class ModelConfig:
     """Mock model config for caching"""
+
     def __init__(self, provider=None, model_name="", max_tokens=150, temperature=0.7, **kwargs):
         self.provider = provider
         self.model_name = model_name
@@ -37,7 +38,7 @@ class ModelConfig:
         self.temperature = temperature
         for k, v in kwargs.items():
             setattr(self, k, v)
-    
+
     def __dict__(self):
         return {
             "provider": str(self.provider) if self.provider else None,
@@ -49,12 +50,13 @@ class ModelConfig:
 
 class Message:
     """Mock message class for caching"""
+
     def __init__(self, content="", role="user", **kwargs):
         self.content = content
         self.role = role
         for k, v in kwargs.items():
             setattr(self, k, v)
-    
+
     def __dict__(self):
         return {"content": self.content, "role": self.role}
 
@@ -88,38 +90,39 @@ class LLMResponseCache:
         redis_value = await self._try_redis_get(key)
         if redis_value:
             return redis_value
-        
+
         # Fallback to local cache
         return self._try_local_get(key)
-    
+
     async def _try_redis_get(self, key: str) -> Optional[str]:
         """Try to get value from Redis"""
         if not self.redis_client:
             return None
-        
+
         try:
             value = await self.redis_client.get(key)
             return value.decode('utf-8') if value else None
-        # FIXME: replace with specific exception
-except Exception as exc:return None
-    
+        except Exception as exc:
+            # FIXME: replace with specific exception
+            return None
+
     def _try_local_get(self, key: str) -> Optional[str]:
         """Try to get value from local cache"""
         if key not in self.local_cache:
             return None
-        
+
         value, expiry = self.local_cache[key]
-        
+
         if self._is_cache_valid(expiry):
             return value
         else:
             self._remove_expired_cache(key)
             return None
-    
+
     def _is_cache_valid(self, expiry: datetime) -> bool:
         """Check if cache entry is still valid"""
         return datetime.now() < expiry
-    
+
     def _remove_expired_cache(self, key: str) -> None:
         """Remove expired cache entry"""
         self.local_cache.pop(key, None)
@@ -129,28 +132,32 @@ except Exception as exc:return None
         if self.redis_client:
             try:
                 await self.redis_client.setex(key, self.cache_ttl, value)
-            # FIXME: replace with specific exception
-except Exception as exc:pass
+            except Exception as exc:
+                # FIXME: replace with specific exception
+                self.logger.error(f"Failed to set Redis cache: {exc}")
+                pass  # Fall back to local cache only
 
         # Set in local cache
         self._set_local_cache(key, value)
-    
+
     def _set_local_cache(self, key: str, value: str) -> None:
         """Set value in local cache with size management"""
         if len(self.local_cache) >= self.max_size:
             # Remove oldest entry
             oldest_key = next(iter(self.local_cache))
             del self.local_cache[oldest_key]
-        
+
         expiry = datetime.now() + timedelta(seconds=self.cache_ttl)
         self.local_cache[key] = (value, expiry)
 
     def generate_key(self, messages: List[Message], model_config: ModelConfig) -> str:
         """Generate cache key for messages and config"""
-        content = json.dumps([msg.__dict__() for msg in messages], sort_keys=True)
-        config_hash = hashlib.md5(json.dumps(model_config.__dict__(), sort_keys=True).encode()).hexdigest()
-        return f"llm:{hashlib.md5(content.encode()).hexdigest()}:{config_hash}"
-    
+        content = json.dumps([msg.__dict__()
+                             for msg in messages], sort_keys=True)
+        config_hash = hashlib.sha256(json.dumps(
+            model_config.__dict__(), sort_keys=True).encode()).hexdigest()
+        return f"llm:{hashlib.sha256(content.encode()).hexdigest()}:{config_hash}"
+
     def get_stats(self) -> dict:
         """Get cache statistics"""
         return {
@@ -158,4 +165,4 @@ except Exception as exc:pass
             "redis_connected": self.redis_client is not None,
             "cache_ttl": self.cache_ttl,
             "max_size": self.max_size
-        } 
+        }
