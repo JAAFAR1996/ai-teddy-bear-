@@ -101,9 +101,8 @@ class ArchitectureAnalyzer:
                 return ""
             with open(file_path, "rb") as f:
                 return hashlib.sha256(f.read()).hexdigest()
-
-        # FIXME: replace with specific exception
-except Exception as exc: return ""
+        except Exception as exc:
+            return ""
 
     def extract_service_type(self, filename: str) -> str:
         """استخراج نوع الخدمة من اسم الملف"""
@@ -239,6 +238,7 @@ except Exception as exc: return ""
         try:
             file_stat = Path(self.base_path / file_path).stat()
             recency_score = min(10, max(1, recency_score))
+
         # FIXME: replace with specific exception
 except Exception as exc: recency_score = 5
         total_score = (quality_score + importance_score + recency_score) / 3
