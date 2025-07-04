@@ -1,52 +1,41 @@
-import requests, os, json
+import requests
+import os
 
-TOKEN = os.getenv("CODACY_API_TOKEN")  # ضبطه في متغير بيئة بعد تشغيل السكربت
-ORG = "gh"
-OWNER = "JAAFAR1996"
-REPO = "ai-teddy-bear-"
+CODACY_API_TOKEN = "b8a1a1d381dc4001bb4c84bb7d7399b2"
+ORGANIZATION = "gh/JAAFAR1996"
+REPOSITORY = "ai-teddy-bear-"   # بالضبط كما هو في الرابط
+OUTPUT_DIR = "codacy_issues_markdown"
 
-URL = f"https://app.codacy.com/api/v3/analysis/organizations/{ORG}/{OWNER}/repositories/{REPO}/issues/search"
-HEADERS = {"api-token": TOKEN, "Content-Type": "application/json"}
-OUTPUT_JSON = "all_issues.json"
-OUTPUT_MD = "codacy_issues_markdown"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-def fetch_all_issues():
-    all_issues = []
+url = f"https://app.codacy.com/api/v3/analysis/organizations/{ORGANIZATION}/repositories/{REPOSITORY}/issues/search"
+headers = {
+    "api-token": CODACY_API_TOKEN,
+    "Content-Type": "application/json"
+}
+
+all_issues = []
+for page in range(1, 11):  # جرب حتى 10 صفحات (كل صفحة حتى 1000 مشكلة)
     payload = {
-        "levels": ["Error","Warning","Info"],
-        "categories": ["Security","Code style","Error prone","Best practice","Performance","Code complexity"],
-        "status": "All",
-        "limit": 1000
+        "limit": 1000,
+        "page": page,
+        "status": "All"
     }
-    cursor = None
+    r = requests.post(url, headers=headers, json=payload)
+    if r.status_code != 200:
+        print(f"❌ صفحة {page}: فشل الاتصال أو حدث خطأ في الاستعلام!")
+        print("الرد:", r.text)
+        break
+    issues = r.json().get("issues", [])
+    print(f"صفحة {page}: عدد المشاكل المستخرجة: {len(issues)}")
+    if not issues:
+        break
+    all_issues.extend(issues)
 
-    while True:
-        if cursor:
-            payload["cursor"] = cursor
-        r = requests.post(URL, headers=HEADERS, json=payload)
-        if r.status_code != 200:
-            print("❌ خطأ API:", r.status_code, r.text)
-            break
+print(f"\nعدد كل المشاكل المستخرجة: {len(all_issues)}")
 
-        data = r.json()
-        issues = data.get("issues", [])
-        print(f"Fetched {len(issues)} issues")
-        all_issues.extend(issues)
-
-        cursor = data.get("cursor")
-        if not cursor or not issues:
-            break
-
-    return all_issues
-
-def save_results(issues):
-    os.makedirs(OUTPUT_MD, exist_ok=True)
-    with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
-        json.dump(issues, f, indent=2)
-    print(f"✅ JSON saved to {OUTPUT_JSON}")
-
-    for idx, issue in enumerate(issues, 1):
-        md = f"""# [{issue.get('category', 'Issue')}] {issue.get('tool', '')} – {issue.get('ruleDescription', '')}
+for idx, issue in enumerate(all_issues, 1):
+    md = f"""# [{issue.get('category', 'Issue')}] {issue.get('tool', '')} – {issue.get('ruleDescription', '')}
 
 **File:** `{issue.get('filename', 'unknown')}`
 **Line:** {issue.get('line', 'unknown')}`
@@ -60,12 +49,7 @@ def save_results(issues):
 **Pattern:** {issue.get('patternId', '')}
 **Tool:** {issue.get('tool', '')}
 """
-        with open(f"{OUTPUT_MD}/issue_{idx:05}.md", "w", encoding="utf-8") as out:
-            out.write(md)
-    print(f"✅ Markdown: {len(issues)} issues in `{OUTPUT_MD}`")
+    with open(f"{OUTPUT_DIR}/issue_{idx:05}.md", "w", encoding="utf-8") as out:
+        out.write(md)
 
-if __name__ == "__main__":
-    issues = fetch_all_issues()
-    print(f"\n🚀 Total issues fetched: {len(issues)}\n")
-    if issues:
-        save_results(issues)
+print(f"✅ تم توليد ملفات Markdown لكل مشكلة في مجلد: {OUTPUT_DIR}")
