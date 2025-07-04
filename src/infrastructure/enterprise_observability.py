@@ -31,14 +31,12 @@ from typing import Any, Dict, Optional
 # Enterprise imports with graceful fallbacks
 try:
     from opentelemetry import baggage, context, trace
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import \
-        OTLPSpanExporter
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.instrumentation.asgi import ASGIInstrumentor
     from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import (BatchSpanProcessor,
-                                                SimpleSpanProcessor)
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor, SimpleSpanProcessor
     from opentelemetry.semantic_conventions.resource import ResourceAttributes
 
     OTEL_AVAILABLE = True
@@ -50,8 +48,13 @@ except ImportError:
 
 # Prometheus integration
 try:
-    from prometheus_client import (CollectorRegistry, Counter, Gauge,
-                                   Histogram, generate_latest)
+    from prometheus_client import (
+        CollectorRegistry,
+        Counter,
+        Gauge,
+        Histogram,
+        generate_latest,
+    )
 
     PROMETHEUS_AVAILABLE = True
 except ImportError:
@@ -130,7 +133,9 @@ class EnterpriseMetrics:
                 method=method, endpoint=endpoint, status_code=status_code
             ).inc()
 
-    def record_request_duration(self, method: str, endpoint: str, duration: float) -> None:
+    def record_request_duration(
+        self, method: str, endpoint: str, duration: float
+    ) -> None:
         """Record request duration."""
         if self.request_duration:
             self.request_duration.labels(method=method, endpoint=endpoint).observe(
@@ -152,7 +157,9 @@ class EnterpriseMetrics:
         if self.system_health:
             self.system_health.set(score)
 
-    def record_ai_processing(self, model_type: str, operation: str, duration: float) -> None:
+    def record_ai_processing(
+        self, model_type: str, operation: str, duration: float
+    ) -> None:
         """Record AI processing time."""
         if self.ai_processing_time:
             self.ai_processing_time.labels(

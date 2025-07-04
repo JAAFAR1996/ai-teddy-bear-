@@ -10,9 +10,18 @@ from typing import Any
 import structlog
 from PySide6.QtCore import QTimer, Signal, pyqtSlot
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QGridLayout, QGroupBox,
-                               QHBoxLayout, QLabel, QProgressBar, QPushButton,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QProgressBar,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from ..audio.audio_config import AudioConfig
 from ..audio.audio_engine import AudioProcessingEngine
@@ -117,8 +126,7 @@ class ModernAudioWidget(QWidget):
 
         self.record_button = QPushButton("🎤 Start Recording")
         self.record_button.setMinimumHeight(60)
-        self.record_button.setStyleSheet(
-            """
+        self.record_button.setStyleSheet("""
             QPushButton {
                 background-color: #2196F3;
                 color: white;
@@ -128,8 +136,7 @@ class ModernAudioWidget(QWidget):
                 font-weight: bold;
             }
             QPushButton:hover { background-color: #1976D2; }
-        """
-        )
+        """)
         self.record_button.clicked.connect(self._toggle_recording)
 
         self.stop_button = QPushButton("⏹️ Stop")
