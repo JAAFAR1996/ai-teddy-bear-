@@ -427,11 +427,10 @@ class ChaosOrchestrator:
                     if response.status_code == 200:
                         recovered = True
                         break
-                # FIXME: replace with specific exception
-        except Exception as exc:
-            logger.error(f"Chaos orchestrator operation failed: {exc}")
-            pass  # Continue orchestrator operation
-               await asyncio.sleep(1)
+                except Exception as exc:
+                    logger.error(f"Health check failed for {target}: {exc}")
+                    pass  # Continue recovery validation
+                await asyncio.sleep(1)
             if recovered:
                 logger.info(f"✅ {target} recovered successfully")
                 metrics.failures_detected += 1
@@ -468,16 +467,15 @@ class ChaosOrchestrator:
         try:
             response = requests.get(f"http://{target}:8000/health", timeout=5)
             return response.status_code == 200
+        except Exception as exc:
+            logger.error(f"Safety check failed for {target}: {exc}")
+            return False
 
-        # FIXME: replace with specific exception
-except Exception as exc:
-    return False
-
-   async def _post_experiment_verification(self, metrics: ExperimentMetrics):
+    async def _post_experiment_verification(self, metrics: ExperimentMetrics):
         """Verify system state after experiment"""
         logger.info("🔍 Performing post-experiment verification...")
         safety_services = ["safety-service",
-            "content-filter", "parental-controls"]
+                           "content-filter", "parental-controls"]
         for service in safety_services:
             try:
                 response = requests.get(

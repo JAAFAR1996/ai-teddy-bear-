@@ -238,9 +238,8 @@ class ArchitectureAnalyzer:
         try:
             file_stat = Path(self.base_path / file_path).stat()
             recency_score = min(10, max(1, recency_score))
-
-        # FIXME: replace with specific exception
-except Exception as exc: recency_score = 5
+        except Exception as exc:
+            recency_score = 5
         total_score = (quality_score + importance_score + recency_score) / 3
         if total_score >= 8:
             recommendation = "KEEP"
@@ -582,7 +581,8 @@ def main():
         logger.info("\n🎉 تم إكمال التحليل الشامل!")
         logger.info(f"📊 إجمالي الملفات: {report['statistics']['total_files']}")
         logger.info(f"🔄 التكرارات: {report['statistics']['total_duplicates']}")
-        logger.info(f"🏆 نقاط النظافة: {report['statistics']['clean_score']}/100")
+        logger.info(
+            f"🏆 نقاط النظافة: {report['statistics']['clean_score']}/100")
         logger.info(
             "📋 التقرير الكامل: deleted/reports/COMPREHENSIVE_ARCHITECTURE_ANALYSIS.md"
         )

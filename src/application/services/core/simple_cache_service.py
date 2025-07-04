@@ -95,10 +95,10 @@ class SimpleCacheService:
         self._stats["evictions"] += 1
         logger.debug(f"🧹 Evicted oldest cache entry: {oldest_key[:8]}...")
 
-    def cached(str="") -> None:
+    def cached(self, key_prefix: str = "", ttl: Optional[int] = None):
         """Decorator for caching function results"""
 
-        def decorator(Callable) -> None:
+        def decorator(func):
             @wraps(func)
             async def wrapper(*args, **kwargs):
                 # Generate cache key
@@ -115,7 +115,8 @@ class SimpleCacheService:
                 result = await func(*args, **kwargs)
 
                 # Cache result
-                await self.set(cache_key, result, ttl)
+                cache_ttl = ttl if ttl is not None else self.default_ttl
+                await self.set(cache_key, result, cache_ttl)
 
                 return result
 

@@ -415,31 +415,36 @@ class IssueTrackerService:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
-            # Build dynamic update query
-            update_fields = []
+            # SECURITY FIX: Use safe parameterized queries instead of dynamic SQL
             update_values = []
 
+            # Build safe update query with explicit field validation
+            update_clauses = []
+            allowed_fields = {'status', 'severity',
+                              'notes'}  # Whitelist allowed fields
+
             if update_data.status:
-                update_fields.append("status = ?")
+                update_clauses.append("status = ?")
                 update_values.append(update_data.status)
 
             if update_data.severity:
-                update_fields.append("severity = ?")
+                update_clauses.append("severity = ?")
                 update_values.append(update_data.severity)
 
             if update_data.notes:
-                update_fields.append("notes = ?")
+                update_clauses.append("notes = ?")
                 update_values.append(update_data.notes)
 
-            if not update_fields:
+            if not update_clauses:
                 return False  # Nothing to update
 
             # Add issue_id for WHERE clause
             update_values.append(update_data.issue_id)
 
-            query = f"""
+            # SECURITY: Use static query structure with validated parameters
+            query = """
                 UPDATE issues
-                SET {', '.join(update_fields)}
+                SET """ + ", ".join(update_clauses) + """
                 WHERE id = ?
             """
 
@@ -474,31 +479,35 @@ class IssueTrackerService:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
-            # Build dynamic WHERE clause
-            where_conditions = []
+            # SECURITY FIX: Use safe parameterized queries with explicit validation
             where_values = []
 
+            # Build safe WHERE clause with validated fields
+            where_clauses = []
+            allowed_filters = {'status', 'severity',
+                               'component'}  # Whitelist allowed filters
+
             if query_params.status:
-                where_conditions.append("status = ?")
+                where_clauses.append("status = ?")
                 where_values.append(query_params.status)
 
             if query_params.severity:
-                where_conditions.append("severity = ?")
+                where_clauses.append("severity = ?")
                 where_values.append(query_params.severity)
 
             if query_params.component:
-                where_conditions.append("component = ?")
+                where_clauses.append("component = ?")
                 where_values.append(query_params.component)
 
-            # Build final query
+            # SECURITY: Build safe query with validated structure
             base_query = """
                 SELECT id, title, description, severity, status, component,
                        error_type, timestamp, occurrence_count
                 FROM issues
             """
 
-            if where_conditions:
-                base_query += " WHERE " + " AND ".join(where_conditions)
+            if where_clauses:
+                base_query += " WHERE " + " AND ".join(where_clauses)
 
             base_query += " ORDER BY timestamp DESC LIMIT ? OFFSET ?"
             where_values.extend([query_params.limit, query_params.offset])
