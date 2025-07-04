@@ -37,7 +37,8 @@ API_PORT = int(os.getenv("API_PORT", 8080))
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///emergency.db")
-JWT_SECRET = os.getenv("JWT_SECRET", "emergency-secret-key")
+# SECURITY: Generate secure random key if not provided
+JWT_SECRET = os.getenv("JWT_SECRET", secrets.token_urlsafe(32))
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
 
@@ -51,7 +52,8 @@ class AlertPayload(BaseModel):
     externalURL: str = Field(..., description="رابط خارجي")
     version: str = Field(default="4", description="إصدار Alertmanager")
     groupKey: str = Field(..., description="مفتاح المجموعة")
-    truncatedAlerts: int = Field(default=0, description="عدد التنبيهات المقطوعة")
+    truncatedAlerts: int = Field(
+        default=0, description="عدد التنبيهات المقطوعة")
 
 
 class EmergencyAction(BaseModel):
@@ -147,7 +149,8 @@ class EmergencyHandler:
     def __init__(self, redis_client: redis.Redis, http_client: httpx.AsyncClient):
         self.redis = redis_client
         self.http = http_client
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
     async def process_critical_alert(self, alert: Dict[str, Any]) -> Dict[str, Any]:
         """معالجة التنبيهات الحرجة"""
@@ -201,7 +204,8 @@ class EmergencyHandler:
                 action_type="activate_ddos_protection",
                 priority="critical",
                 target="waf",
-                parameters={"block_threshold": 1000, "enable_rate_limiting": True},
+                parameters={"block_threshold": 1000,
+                            "enable_rate_limiting": True},
             )
 
         elif "ChildDataBreach" in alert_name:
@@ -281,7 +285,8 @@ class EmergencyHandler:
             return {"action_id": action_id, **result}
 
         except Exception as e:
-            self.logger.error(f"❌ خطأ في تنفيذ الإجراء {action.action_type}: {str(e)}")
+            self.logger.error(
+                f"❌ خطأ في تنفيذ الإجراء {action.action_type}: {str(e)}")
             return {"status": "error", "message": f"فشل في تنفيذ الإجراء: {str(e)}"}
 
     async def _rotate_api_keys(self, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -399,7 +404,8 @@ async def general_webhook(
     """Webhook عام للتنبيهات"""
     logger.info(f"📨 استلام تنبيه عام: {len(alert_payload.alerts)} تنبيه(ات)")
 
-    handler = EmergencyHandler(request.app.state.redis, request.app.state.http_client)
+    handler = EmergencyHandler(
+        request.app.state.redis, request.app.state.http_client)
 
     # معالجة التنبيهات في الخلفية
     for alert in alert_payload.alerts:
@@ -419,9 +425,11 @@ async def critical_webhook(
     alert_payload: AlertPayload, request: Request, token: str = Depends(verify_token)
 ):
     """Webhook للتنبيهات الحرجة - معالجة فورية"""
-    logger.critical(f"🚨 استلام تنبيه حرج: {len(alert_payload.alerts)} تنبيه(ات)")
+    logger.critical(
+        f"🚨 استلام تنبيه حرج: {len(alert_payload.alerts)} تنبيه(ات)")
 
-    handler = EmergencyHandler(request.app.state.redis, request.app.state.http_client)
+    handler = EmergencyHandler(
+        request.app.state.redis, request.app.state.http_client)
 
     results = []
     for alert in alert_payload.alerts:
@@ -505,7 +513,8 @@ async def test_alert_endpoint(request: Request, token: str = Depends(verify_toke
         groupKey="test-group",
     )
 
-    handler = EmergencyHandler(request.app.state.redis, request.app.state.http_client)
+    handler = EmergencyHandler(
+        request.app.state.redis, request.app.state.http_client)
     result = await handler.process_critical_alert(test_alert.alerts[0])
 
     return {

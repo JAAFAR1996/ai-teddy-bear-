@@ -1,3 +1,12 @@
+from typing import Any, Dict, List
+from pathlib import Path
+from datetime import datetime, timezone
+from collections import defaultdict
+import re
+import os
+import json
+import hashlib
+import ast
 import logging
 
 logger = logging.getLogger(__name__)
@@ -6,20 +15,11 @@ logger = logging.getLogger(__name__)
 🔍 Comprehensive Project File Analyzer
 Analyzes every Python file in the project and generates detailed reports
 """
-import ast
-import hashlib
-import json
-import os
-import re
-from collections import defaultdict
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Dict, List
 
 
 class ComprehensiveProjectAnalyzer:
     """محلل شامل للمشروع مع قدرات متقدمة"""
-    
+
     def __init__(self, project_root: str = '.'):
         self.project_root = Path(project_root)
         self.analysis_results = {
@@ -39,75 +39,76 @@ class ComprehensiveProjectAnalyzer:
             "suggested_moves": [],
             "health_score": 0
         }
-        
+
         # تحديد الأنماط للتصنيف
         self.critical_patterns = [
             'main.py', 'app.py', 'wsgi.py', '__main__.py',
             'security/', 'auth/', 'child_safety/',
             'models/', 'entities/', 'api/endpoints/', 'core/domain/'
         ]
-        
+
         self.trash_patterns = [
             r'.*_old\.py$', r'.*_backup\.py$', r'.*_temp\.py$',
             r'.*_copy\.py$', r'.*\.pyc$', r'.*~$'
         ]
-        
+
     def analyze_project(self) -> Dict[str, Any]:
         """تحليل شامل لكل ملف في المشروع"""
         print("🔍 بدء التحليل الشامل للمشروع...")
-        
+
         # جمع كل ملفات Python
         python_files = list(self.project_root.rglob("*.py"))
         self.analysis_results["total_files"] = len(python_files)
-        
+
         # تحليل كل ملف
         for idx, file_path in enumerate(python_files, 1):
             if idx % 50 == 0:
                 print(f"📊 تم تحليل {idx}/{len(python_files)} ملف...")
-            
+
             # تجاهل المجلدات غير المهمة
             if any(skip in str(file_path) for skip in ['.git', '__pycache__', 'node_modules', '.venv', 'venv', 'backup_']):
                 continue
-                
+
             self.analyze_python_file(file_path)
-        
+
         # حساب الصحة العامة للمشروع
         self.calculate_project_health()
-        
+
         # إنشاء اقتراحات النقل
         self.generate_move_suggestions()
-        
+
         # البحث عن المكررات
         self.find_duplicates()
-        
+
         return self.analysis_results
-    
+
     def analyze_python_file(self, file_path: Path) -> None:
         """تحليل ملف Python واحد بعمق"""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
                 lines = content.splitlines()
-            
+
             # إحصائيات أساسية
             self.analysis_results["total_lines"] += len(lines)
-            
+
             # حساب hash للملف
-            file_hash = hashlib.md5(content.encode()).hexdigest()
-            
+            file_hash = hashlib.sha256(content.encode()).hexdigest()
+
             # تحليل AST إذا أمكن
             ast_analysis = self.analyze_ast(content)
-            
+
             # تحديد نوع وأهمية الملف
             file_type = self.determine_file_type(file_path, content)
-            importance = self.determine_importance(file_path, content, ast_analysis)
-            
+            importance = self.determine_importance(
+                file_path, content, ast_analysis)
+
             # البحث عن المشاكل
             issues = self.find_issues(content, file_path)
-            
+
             # تحليل التبعيات
             dependencies = self.analyze_dependencies(content, ast_analysis)
-            
+
             # إنشاء تقرير الملف
             file_report = {
                 "path": str(file_path),
@@ -124,11 +125,11 @@ class ComprehensiveProjectAnalyzer:
                 "can_be_deleted": importance == 'trash',
                 "needs_refactoring": len(issues) > 3
             }
-            
+
             # تحديث الإحصائيات
             self.analysis_results["file_types"][file_type] += 1
             self.analysis_results["detailed_analysis"].append(file_report)
-            
+
             # تصنيف الملفات الخاصة
             if len(lines) == 0:
                 self.analysis_results["empty_files"].append(str(file_path))
@@ -137,40 +138,40 @@ class ComprehensiveProjectAnalyzer:
                     "path": str(file_path),
                     "lines": len(lines)
                 })
-            
+
             if 'test_' in str(file_path) or '_test.py' in str(file_path):
                 self.analysis_results["test_files"].append(str(file_path))
-                
+
             if 'config' in str(file_path).lower():
                 self.analysis_results["config_files"].append(str(file_path))
-            
+
             # تحديث قوائم المشاكل
             if any(issue.startswith("Security:") for issue in issues):
                 self.analysis_results["security_issues"].append({
                     "file": str(file_path),
                     "issues": [i for i in issues if i.startswith("Security:")]
                 })
-            
+
             if any(issue.startswith("Quality:") for issue in issues):
                 self.analysis_results["code_quality_issues"].append({
                     "file": str(file_path),
                     "issues": [i for i in issues if i.startswith("Quality:")]
                 })
-                
+
         except Exception as e:
             print(f"⚠️ خطأ في تحليل {file_path}: {e}")
-            
+
     def analyze_ast(self, content: str) -> Dict[str, Any]:
         """تحليل AST للملف"""
         try:
             tree = ast.parse(content)
-            
+
             # جمع المعلومات
             imports = []
             import_froms = []
             classes = []
             functions = []
-            
+
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
                     imports.extend([alias.name for alias in node.names])
@@ -192,7 +193,7 @@ class ComprehensiveProjectAnalyzer:
                             "lines": node.end_lineno - node.lineno if hasattr(node, 'end_lineno') else 0,
                             "has_docstring": ast.get_docstring(node) is not None
                         })
-            
+
             return {
                 "imports": imports,
                 "import_froms": import_froms,
@@ -202,7 +203,7 @@ class ComprehensiveProjectAnalyzer:
                 "total_classes": len(classes),
                 "total_functions": len(functions)
             }
-            
+
         except:
             return {
                 "imports": [],
@@ -213,112 +214,112 @@ class ComprehensiveProjectAnalyzer:
                 "total_classes": 0,
                 "total_functions": 0
             }
-    
+
     def determine_file_type(self, file_path: Path, content: str) -> str:
         """تحديد نوع الملف بدقة"""
         path_str = str(file_path).lower()
-        
+
         # الاختبارات
         if 'test' in path_str or 'spec' in path_str:
             return 'test'
-        
+
         # التكوينات
         elif any(x in path_str for x in ['config', 'settings', 'env']):
             return 'config'
-        
+
         # النماذج والكيانات
         elif any(x in path_str for x in ['model', 'entity', 'schema']):
             return 'model'
-        
+
         # الخدمات
         elif 'service' in path_str or 'manager' in path_str:
             return 'service'
-        
+
         # المستودعات
         elif 'repository' in path_str or 'repo' in path_str:
             return 'repository'
-        
+
         # التحكم والواجهات
         elif any(x in path_str for x in ['controller', 'endpoint', 'route', 'api', 'view']):
             return 'controller'
-        
+
         # الأدوات المساعدة
         elif any(x in path_str for x in ['util', 'helper', 'tool']):
             return 'utility'
-        
+
         # البنية التحتية
         elif 'infrastructure' in path_str or 'infra' in path_str:
             return 'infrastructure'
-        
+
         # المجال الأساسي
         elif 'domain' in path_str or 'core' in path_str:
             return 'domain'
-        
+
         # السكريبتات
         elif 'script' in path_str:
             return 'script'
-        
+
         # التهيئة
         elif '__init__.py' in str(file_path):
             return 'init'
-        
+
         else:
             return 'other'
-    
+
     def determine_importance(self, file_path: Path, content: str, ast_analysis: Dict) -> str:
         """تحديد أهمية الملف بناءً على معايير متعددة"""
         path_str = str(file_path)
-        
+
         # ملفات القمامة - احذف فوراً
         if any(re.match(pattern, path_str) for pattern in self.trash_patterns):
             return 'trash'
-        
+
         # ملفات فارغة
         if len(content.strip()) == 0:
             return 'trash'
-        
+
         # ملفات مهمة جداً
         if any(pattern in path_str for pattern in self.critical_patterns):
             return 'critical'
-        
+
         # ملفات الأمان والمصادقة
         if any(x in path_str.lower() for x in ['security', 'auth', 'permission', 'child_safety']):
             return 'critical'
-        
+
         # ملفات بها منطق معقد
         if ast_analysis['total_classes'] > 2 or ast_analysis['total_functions'] > 5:
             return 'high'
-        
+
         # خدمات ومستودعات
         if any(x in path_str for x in ['service', 'repository', 'manager']):
             return 'high'
-        
+
         # ملفات بدون منطق حقيقي
         if ast_analysis['total_classes'] == 0 and ast_analysis['total_functions'] == 0:
             if '__init__.py' not in path_str:  # إلا إذا كان ملف تهيئة
                 return 'low'
-        
+
         # ملفات مؤقتة أو تجريبية
         if any(x in path_str.lower() for x in ['test_', 'example', 'demo', 'sample']):
             if len(content) < 100:  # وصغيرة
                 return 'low'
-        
+
         return 'medium'
-    
+
     def find_issues(self, content: str, file_path: Path) -> List[str]:
         """إيجاد جميع المشاكل في الملف"""
         issues = []
-        
+
         # مشاكل أمنية
         if 'eval(' in content or 'exec(' in content:
             issues.append("Security: يستخدم eval/exec (خطر أمني)")
-        
+
         if re.search(r'(password|secret|key|token)\s*=\s*["\'][^"\']+["\']', content, re.IGNORECASE):
             issues.append("Security: يحتوي على كلمات سر مضمنة")
-        
+
         if 'pickle.loads' in content:
             issues.append("Security: يستخدم pickle.loads (خطر أمني)")
-        
+
         # مشاكل جودة الكود
         if 'except:' in content or '# FIXME: replace with specific exception
 except Exception as exc:' in content:
