@@ -49,3 +49,4 @@ git diff --cached --exit-code >nul || (
 )
 
 exit /b 0
+pause
