@@ -1,9 +1,11 @@
 @echo off
 chcp 65001 >nul
-
 setlocal enabledelayedexpansion
 
-REM === إعداد التاريخ والوقت بشكل احترافي ===
+REM === إعداد Git Credential Manager Core تلقائيًا ===
+git config --global credential.helper manager-core
+
+REM === إعداد التاريخ والوقت ===
 for /f "tokens=1-4 delims=/ " %%a in ("%DATE%") do (
     set DD=%%a
     set MM=%%b
@@ -19,53 +21,60 @@ echo Running auto-backup for: %CD%
 REM === التأكد من وجود remote ===
 git remote -v >nul 2>&1
 if errorlevel 1 (
-    echo [خطأ] لم يتم العثور على remote! سيتم تعيين الريموت الآن...
+    echo [خطأ] لم يتم العثور على remote! سيتم تعيينه...
     git remote add origin https://github.com/JAAFAR1996/ai-teddy-bear-.git
 )
 
-REM === التأكد من الفرع الحالي تلقائيًا ===
+REM === معرفة الفرع الحالي ===
 for /f "delims=" %%b in ('git rev-parse --abbrev-ref HEAD') do set BRANCH=%%b
 echo [ملاحظة] الفرع الحالي: !BRANCH!
 
-REM === إضافة جميع التغييرات للـ staging area ===
+REM === إضافة جميع التغييرات ===
 git add -A
 if errorlevel 1 (
-    echo [خطأ] فشل في git add -A! تأكد من أنك في مجلد المشروع الصحيح أو لا يوجد ملف مقفل.
-    pause
-    exit /b 1
+    echo [خطأ] فشل git add -A! تأكد من أنك في المسار الصحيح.
+    pause & exit /b 1
 )
 
-REM === فحص الملفات التي سيتم رفعها ===
 git status
 
-REM === التأكد من وجود تغييرات ستدخل للـ commit ===
+REM === التحقق من وجود تغييرات للتزام ===
 git diff --cached --exit-code >nul
 if errorlevel 1 (
     git commit -m "Auto-backup %TIMESTAMP%"
     if errorlevel 1 (
-        echo [خطأ] فشل تنفيذ git commit. تحقق من المشاكل أو رسائل الخطأ.
-        pause
-        exit /b 1
+        echo [خطأ] فشل git commit!
+        pause & exit /b 1
     )
-    :PUSH
-    git push origin !BRANCH!
+
+    REM === دفع التغييرات وتعيين upstream عند الحاجة ===
+    git push -u origin !BRANCH! 2>push.log
     if errorlevel 1 (
-        echo [تحذير] فشل push! محاولة دمج مع الريموت...
+        type push.log
+        echo [تحذير] فشل push! جاري المحاولة بعد pull...
         git pull --no-edit origin !BRANCH!
         if errorlevel 1 (
-            echo [خطأ] تعذر الدمج الآلي. عالج التعارضات يدويًا.
-            pause
-            exit /b 2
+            echo [خطأ] تعارضات في الدمج تحتاج معالجة يدوية.
+            pause & exit /b 2
         )
-        goto PUSH
+        goto PUSH_RETRY
     )
     echo ✅ التغييرات تم رفعها بنجاح.
     git log -1 --oneline
-    exit /b 0
+    goto END
+
+    :PUSH_RETRY
+    git push origin !BRANCH! 2>push2.log
+    if errorlevel 1 (
+        type push2.log
+        echo [خطأ] لا يزال الدفع يفشل بعد الدمج.
+        pause & exit /b 3
+    )
+    echo ✅ الدفع بعد الدمج تم بنجاح.
+    git log -1 --oneline
 ) else (
     echo ✅ لا توجد تغييرات لرفعها. %TIMESTAMP%
-    exit /b 0
 )
 
-REM === نهاية السكريبت ===
-pause
+:END
+exit /b 0
