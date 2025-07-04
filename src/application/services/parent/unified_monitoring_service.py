@@ -13,7 +13,6 @@ import sqlite3
 import time
 from collections import defaultdict, deque
 from datetime import datetime
-from typing import Any, Dict, List
 
 import psutil
 
@@ -71,8 +70,7 @@ class UnifiedMonitoringService:
         cursor = self.conn.cursor()
 
         # جدول المشاكل
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS issues (
                 issue_id TEXT PRIMARY KEY,
                 title TEXT NOT NULL,
@@ -82,19 +80,16 @@ class UnifiedMonitoringService:
                 count INTEGER DEFAULT 1,
                 resolved BOOLEAN DEFAULT 0
             )
-        """
-        )
+        """)
 
         # جدول معدلات الاستخدام
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS rate_limits (
                 endpoint TEXT PRIMARY KEY,
                 requests_count INTEGER DEFAULT 0,
                 last_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """
-        )
+        """)
 
         self.conn.commit()
 

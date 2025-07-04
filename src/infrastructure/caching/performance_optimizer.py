@@ -14,7 +14,6 @@ import logging
 import statistics
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -463,7 +462,9 @@ class CacheHealthMonitor:
             "overall_status": (
                 "CRITICAL"
                 if any(a["level"] == "CRITICAL" for a in alerts)
-                else "WARNING" if alerts else "HEALTHY"
+                else "WARNING"
+                if alerts
+                else "HEALTHY"
             ),
             "alerts": alerts,
             "metrics_summary": {

@@ -15,18 +15,21 @@ import logging
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
 
 # Core imports
-from .edge_ai_manager import (EdgeAIManager, EdgeModelConfig,
-                              EdgeProcessingMode, EdgeProcessingResult,
-                              SafetyLevel, WakeWordModel)
+from .edge_ai_manager import (
+    EdgeAIManager,
+    EdgeModelConfig,
+    EdgeProcessingMode,
+    EdgeProcessingResult,
+    SafetyLevel,
+    WakeWordModel,
+)
 
 # Audio processing integration
 try:
     from ...audio.audio_processing import AudioConfig, AudioProcessor
-    from ...domain.services.advanced_emotion_analyzer import \
-        AdvancedEmotionAnalyzer
+    from ...domain.services.advanced_emotion_analyzer import AdvancedEmotionAnalyzer
 
     AUDIO_PROCESSING_AVAILABLE = True
 except ImportError:
@@ -182,7 +185,6 @@ class EdgeAIIntegrationService:
             in ["happy", "calm", "excited"]
             and edge_time_ms < 50
         ):
-
             return EdgeCloudDecision(
                 use_edge_only=True,
                 use_cloud_for_response=False,
@@ -202,7 +204,6 @@ class EdgeAIIntegrationService:
             )
             or edge_result.confidence < 0.5
         ):
-
             return EdgeCloudDecision(
                 use_edge_only=False,
                 use_cloud_for_response=True,

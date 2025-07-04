@@ -13,7 +13,6 @@ from email.mime.base import MIMEBase as MimeBase
 from email.mime.multipart import MIMEMultipart as MimeMultipart
 from email.mime.text import MIMEText as MimeText
 from pathlib import Path
-from typing import List, Optional
 
 import aiosmtplib
 import structlog

@@ -18,7 +18,6 @@ import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -54,12 +53,13 @@ except ImportError:
 
 # Integration with existing services
 try:
-    from ...application.services.audio.transcription_service import \
-        ModernTranscriptionService
-    from ...application.services.voice_interaction_service import \
-        VoiceInteractionService
-    from ...domain.services.advanced_emotion_analyzer import \
-        AdvancedEmotionAnalyzer
+    from ...application.services.audio.transcription_service import (
+        ModernTranscriptionService,
+    )
+    from ...application.services.voice_interaction_service import (
+        VoiceInteractionService,
+    )
+    from ...domain.services.advanced_emotion_analyzer import AdvancedEmotionAnalyzer
 
     CORE_SERVICES_AVAILABLE = True
 except ImportError:
@@ -970,7 +970,8 @@ class DistributedAIProcessor:
         return health_status
 
     async def process_batch_conversations(
-        self, requests: List[tuple]  # List of (audio_data, child_context) tuples
+        self,
+        requests: List[tuple],  # List of (audio_data, child_context) tuples
     ) -> List[ConversationResponse]:
         """Process multiple conversations in parallel."""
         self.logger.info(f"🔄 Processing batch of {len(requests)} conversations")

@@ -16,7 +16,9 @@ import logging
 from collections import defaultdict, deque
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional
+from typing import (
+    Callable,
+)
 
 # Monitoring and metrics
 try:

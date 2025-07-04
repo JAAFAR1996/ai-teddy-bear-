@@ -11,7 +11,6 @@ import time
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
 
 import redis.asyncio as redis
 import structlog

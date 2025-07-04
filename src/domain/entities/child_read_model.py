@@ -11,14 +11,17 @@ Provides materialized views and projections from domain events.
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
 
-from ...domain.events.child_events import (ChildProfileUpdated,
-                                           ChildRegistered,
-                                           SafetyViolationDetected)
-from ...domain.events.conversation_events import (ConversationEnded,
-                                                  ConversationStarted,
-                                                  MessageReceived)
+from ...domain.events.child_events import (
+    ChildProfileUpdated,
+    ChildRegistered,
+    SafetyViolationDetected,
+)
+from ...domain.events.conversation_events import (
+    ConversationEnded,
+    ConversationStarted,
+    MessageReceived,
+)
 from ...shared.kernel import DomainEvent
 
 logger = logging.getLogger(__name__)

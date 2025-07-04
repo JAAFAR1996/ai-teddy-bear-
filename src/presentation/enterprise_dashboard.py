@@ -12,15 +12,27 @@ Features:
 """
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
 
 import numpy as np
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QGridLayout, QGroupBox,
-                               QHBoxLayout, QLabel, QListWidget, QProgressBar,
-                               QPushButton, QSlider, QSplitter, QTabWidget,
-                               QTextEdit, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QProgressBar,
+    QPushButton,
+    QSlider,
+    QSplitter,
+    QTabWidget,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 try:
     from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -585,8 +597,7 @@ class EnterpriseDashboardWidget(QWidget):
 
         self.current_emotion_label = QLabel("😐 Neutral")
         self.current_emotion_label.setAlignment(Qt.AlignCenter)
-        self.current_emotion_label.setStyleSheet(
-            """
+        self.current_emotion_label.setStyleSheet("""
             QLabel {
                 font-size: 24px;
                 font-weight: bold;
@@ -596,8 +607,7 @@ class EnterpriseDashboardWidget(QWidget):
                 padding: 15px;
                 margin: 5px;
             }
-        """
-        )
+        """)
         emotion_layout.addWidget(self.current_emotion_label)
 
         # Confidence meter
@@ -636,16 +646,14 @@ class EnterpriseDashboardWidget(QWidget):
         self.alerts_display = QTextEdit()
         self.alerts_display.setMaximumHeight(150)
         self.alerts_display.setPlaceholderText("Smart alerts will appear here...")
-        self.alerts_display.setStyleSheet(
-            """
+        self.alerts_display.setStyleSheet("""
             QTextEdit {
                 border: 1px solid #ddd;
                 border-radius: 4px;
                 background-color: #fafafa;
                 font-size: 11px;
             }
-        """
-        )
+        """)
         alerts_layout.addWidget(self.alerts_display)
 
         layout.addWidget(alerts_group)
@@ -812,8 +820,7 @@ class EnterpriseDashboardWidget(QWidget):
         }
 
         bg_color = emotion_colors.get(emotion, "#f0f0f0")
-        self.current_emotion_label.setStyleSheet(
-            f"""
+        self.current_emotion_label.setStyleSheet(f"""
             QLabel {{
                 font-size: 24px;
                 font-weight: bold;
@@ -823,8 +830,7 @@ class EnterpriseDashboardWidget(QWidget):
                 padding: 15px;
                 margin: 5px;
             }}
-        """
-        )
+        """)
 
     def update_charts(self) -> Any:
         """Update all emotion charts"""
@@ -935,8 +941,8 @@ class EnterpriseDashboardWidget(QWidget):
 
         alert_html = f"""
         <div style="border-left: 4px solid {color}; padding: 8px; margin: 4px 0; background-color: #f9f9f9;">
-            <strong>{alert['emoji']} {alert['message']}</strong><br/>
-            <small style="color: #666;">{timestamp} - {alert['priority'].upper()} priority</small>
+            <strong>{alert["emoji"]} {alert["message"]}</strong><br/>
+            <small style="color: #666;">{timestamp} - {alert["priority"].upper()} priority</small>
         </div>
         """
 

@@ -12,7 +12,6 @@ import json
 import platform
 import uuid
 from datetime import datetime
-from typing import Any
 
 import structlog
 from PySide6.QtCore import QObject, QTimer, Signal

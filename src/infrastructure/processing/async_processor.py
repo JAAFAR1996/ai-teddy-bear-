@@ -18,7 +18,7 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from typing import Callable, Set, Union
 
 # Third-party imports for audio/image processing
 try:
@@ -588,9 +588,9 @@ class AdvancedAsyncProcessor:
 
                 # Update worker stats
                 self.worker_stats[worker_id]["tasks_processed"] += 1
-                self.worker_stats[worker_id][
-                    "total_execution_time"
-                ] += result.execution_time
+                self.worker_stats[worker_id]["total_execution_time"] += (
+                    result.execution_time
+                )
                 self.worker_stats[worker_id]["last_active"] = time.time()
 
                 # Record performance metrics

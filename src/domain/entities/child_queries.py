@@ -11,7 +11,6 @@ Handles child profile queries, safety reports, and analytics.
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
 
 from .query_bus import Query, QueryHandler, QueryResult, get_query_bus
 
