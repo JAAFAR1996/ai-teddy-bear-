@@ -1,5 +1,3 @@
-from typing import Any, Dict, List, Optional
-
 """
 Enterprise-Grade Distributed AI Processing System for AI Teddy Bear Project.
 
@@ -295,7 +293,8 @@ if RAY_AVAILABLE:
                         "⚠️ AI services not available, using mock transcription"
                     )
             except Exception as e:
-                logger.error(f"❌ Failed to initialize transcription models: {e}")
+                logger.error(
+                    f"❌ Failed to initialize transcription models: {e}")
 
         async def transcribe(self, audio_data: bytes) -> Dict[str, Any]:
             """Transcribe audio using best available method."""
@@ -332,7 +331,8 @@ if RAY_AVAILABLE:
                 # Convert bytes to audio array
                 if AUDIO_PROCESSING_AVAILABLE:
                     audio_array = (
-                        np.frombuffer(audio_data, dtype=np.int16).astype(np.float32)
+                        np.frombuffer(audio_data, dtype=np.int16).astype(
+                            np.float32)
                         / 32768.0
                     )
 
@@ -411,7 +411,8 @@ if RAY_AVAILABLE:
                 audio_array = None
                 if AUDIO_PROCESSING_AVAILABLE and audio_data:
                     audio_array = (
-                        np.frombuffer(audio_data, dtype=np.int16).astype(np.float32)
+                        np.frombuffer(audio_data, dtype=np.int16).astype(
+                            np.float32)
                         / 32768.0
                     )
 
@@ -435,7 +436,8 @@ if RAY_AVAILABLE:
     @serve.deployment(
         name="safety-service",
         num_replicas=3,
-        ray_actor_options={"num_cpus": 0.5, "memory": 500 * 1024 * 1024},  # 500MB
+        ray_actor_options={"num_cpus": 0.5,
+                           "memory": 500 * 1024 * 1024},  # 500MB
     )
     class SafetyCheckService:
         """Distributed safety checking service."""
@@ -477,7 +479,8 @@ if RAY_AVAILABLE:
                     "is_safe": is_safe,
                     "risk_level": risk_level,
                     "confidence": min(
-                        text_result["confidence"], audio_result.get("confidence", 1.0)
+                        text_result["confidence"], audio_result.get(
+                            "confidence", 1.0)
                     ),
                     "detected_issues": text_result.get("issues", []),
                     "processing_time_ms": processing_time,
@@ -535,7 +538,8 @@ if RAY_AVAILABLE:
                     self.openai_client = AsyncOpenAI()
                     logger.info("✅ AI response service initialized")
                 else:
-                    logger.warning("⚠️ AI services not available, using mock responses")
+                    logger.warning(
+                        "⚠️ AI services not available, using mock responses")
             except Exception as e:
                 logger.error(f"❌ Failed to initialize AI response models: {e}")
 
@@ -574,7 +578,8 @@ if RAY_AVAILABLE:
             """Generate response using OpenAI."""
             try:
                 # Create contextual prompt
-                prompt = self._create_contextual_prompt(text, child_context, emotion)
+                prompt = self._create_contextual_prompt(
+                    text, child_context, emotion)
 
                 # Generate response
                 response = await self.openai_client.chat.completions.create(
@@ -674,7 +679,8 @@ class DistributedAIProcessor:
         self.ray_initialized = False
         self.services = {}
         self.metrics = ProcessingMetrics()
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
         self.request_queue = asyncio.Queue()
         self.worker_pool = []
 
@@ -686,10 +692,12 @@ class DistributedAIProcessor:
             else:
                 await self._initialize_local_services(config)
 
-            self.logger.info("✅ Distributed AI Processor initialized successfully")
+            self.logger.info(
+                "✅ Distributed AI Processor initialized successfully")
 
         except Exception as e:
-            self.logger.error(f"❌ Failed to initialize Distributed AI Processor: {e}")
+            self.logger.error(
+                f"❌ Failed to initialize Distributed AI Processor: {e}")
             raise
 
     async def _initialize_ray_services(self, config: Optional[Dict[str, Any]] = None):
@@ -922,7 +930,7 @@ class DistributedAIProcessor:
             self.logger.error(f"❌ Service call failed for {service_type}: {e}")
             return {"error": str(e)}
 
-    def _update_metrics(float) -> None:
+    def _update_metrics(self, processing_time_ms: float) -> None:
         """Update processing metrics."""
         # Update average processing time
         total_successful = self.metrics.successful_requests
@@ -934,7 +942,8 @@ class DistributedAIProcessor:
             self.metrics.average_processing_time_ms = new_avg
 
         # Update throughput
-        time_since_start = (datetime.now() - self.metrics.last_updated).total_seconds()
+        time_since_start = (
+            datetime.now() - self.metrics.last_updated).total_seconds()
         if time_since_start > 0:
             self.metrics.throughput_per_second = (
                 self.metrics.total_requests / time_since_start
@@ -970,10 +979,12 @@ class DistributedAIProcessor:
         return health_status
 
     async def process_batch_conversations(
-        self, requests: List[tuple]  # List of (audio_data, child_context) tuples
+        # List of (audio_data, child_context) tuples
+        self, requests: List[tuple]
     ) -> List[ConversationResponse]:
         """Process multiple conversations in parallel."""
-        self.logger.info(f"🔄 Processing batch of {len(requests)} conversations")
+        self.logger.info(
+            f"🔄 Processing batch of {len(requests)} conversations")
 
         # Create parallel processing tasks
         tasks = [

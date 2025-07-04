@@ -15,30 +15,33 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Tuple, Any, Optional, Set
 import shutil
+import logging
 
 # إضافة المسار للمشروع
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+logger = logging.getLogger(__name__)
+
 
 class ComprehensiveCleanupAnalyzer:
     """محلل شامل للتنظيف والترتيب"""
-    
+
     def __init__(self, project_root: str = '.'):
         self.project_root = Path(project_root).resolve()
         self.results = self._initialize_results()
-        
+
         # معايير التصنيف
         self.critical_patterns = [
             'main.py', 'app.py', 'wsgi.py', '__main__.py',
             'security/', 'auth/', 'child_safety/',
             'models/', 'entities/', 'api/endpoints/', 'core/domain/'
         ]
-        
+
         self.trash_patterns = [
             r'.*_old\.py$', r'.*_backup\.py$', r'.*_temp\.py$',
             r'.*_copy\.py$', r'.*\.pyc$', r'.*~$', r'.*\.swp$'
         ]
-        
+
     def _initialize_results(self) -> Dict[str, Any]:
         """تهيئة هيكل النتائج"""
         return {
@@ -88,71 +91,73 @@ class ComprehensiveCleanupAnalyzer:
                 "documentation": 0
             }
         }
-    
+
     def analyze_project(self) -> Dict[str, Any]:
         """تحليل شامل للمشروع"""
         print("\n" + "="*60)
         print("🧹 محلل التنظيف الشامل لمشروع AI Teddy Bear")
         print("="*60 + "\n")
-        
+
         # المرحلة 1: جمع الملفات
         print("📂 المرحلة 1: جمع وفحص الملفات...")
         all_files = self._collect_all_files()
         print(f"✅ تم العثور على {len(all_files)} ملف")
-        
+
         # المرحلة 2: تحليل كل ملف
         print("\n📊 المرحلة 2: تحليل الملفات...")
         for idx, file_path in enumerate(all_files, 1):
             if idx % 50 == 0:
                 print(f"   ⏳ تم تحليل {idx}/{len(all_files)} ملف...")
             self._analyze_file(file_path)
-        
+
         # المرحلة 3: البحث عن المكررات
         print("\n🔍 المرحلة 3: البحث عن الملفات المكررة...")
         self._find_duplicates()
-        
+
         # المرحلة 4: إنشاء التوصيات
         print("\n💡 المرحلة 4: إنشاء التوصيات...")
         self._generate_recommendations()
-        
+
         # المرحلة 5: حساب الصحة العامة
         print("\n📈 المرحلة 5: حساب مقاييس الصحة...")
         self._calculate_health_scores()
-        
+
         # طباعة ملخص سريع
         self._print_quick_summary()
-        
+
         return self.results
-    
+
     def _collect_all_files(self) -> List[Path]:
         """جمع جميع الملفات في المشروع"""
         files = []
         exclude_dirs = {
-            '.git', '__pycache__', 'node_modules', '.venv', 'venv', 
+            '.git', '__pycache__', 'node_modules', '.venv', 'venv',
             'env', '.tox', '.pytest_cache', 'backup_', 'security_backup_'
         }
-        
+
         # جمع ملفات Python
         for file_path in self.project_root.rglob("*.py"):
             if not any(excluded in str(file_path) for excluded in exclude_dirs):
                 files.append(file_path)
-        
+
         # جمع ملفات التكوين المهمة
-        config_patterns = ["*.json", "*.yaml", "*.yml", "*.toml", "*.ini", "*.cfg"]
+        config_patterns = ["*.json", "*.yaml",
+            "*.yml", "*.toml", "*.ini", "*.cfg"]
         for pattern in config_patterns:
             for file_path in self.project_root.rglob(pattern):
                 if not any(excluded in str(file_path) for excluded in exclude_dirs):
                     files.append(file_path)
-        
+
         # جمع ملفات أخرى مهمة
-        other_patterns = ["*.md", "*.txt", "*.sh", "*.bat", "Dockerfile*", "*.sql"]
+        other_patterns = ["*.md", "*.txt", "*.sh",
+            "*.bat", "Dockerfile*", "*.sql"]
         for pattern in other_patterns:
             for file_path in self.project_root.rglob(pattern):
                 if not any(excluded in str(file_path) for excluded in exclude_dirs):
                     files.append(file_path)
-        
+
         return sorted(set(files))
-    
+
     def _analyze_file(self, file_path: Path) -> None:
         """تحليل ملف واحد بعمق"""
         try:
@@ -165,39 +170,44 @@ class ComprehensiveCleanupAnalyzer:
                 "size_bytes": file_path.stat().st_size,
                 "modified": datetime.fromtimestamp(file_path.stat().st_mtime).isoformat()
             }
-            
+
             # قراءة المحتوى
             content = self._read_file_content(file_path)
             file_info["lines"] = len(content.splitlines()) if content else 0
-            file_info["hash"] = hashlib.md5(content.encode()).hexdigest() if content else ""
-            
+            file_info["hash"] = hashlib.sha256(
+                content.encode()).hexdigest() if content else ""
+
             # تحليل حسب النوع
             if file_path.suffix == '.py':
                 python_analysis = self._analyze_python_file(content, file_path)
                 file_info.update(python_analysis)
-            
+
             # تحديد النوع والأهمية
             file_info["type"] = self._determine_file_type(file_path, content)
-            file_info["importance"] = self._determine_importance(file_path, content, file_info)
-            
+            file_info["importance"] = self._determine_importance(
+                file_path, content, file_info)
+
             # البحث عن المشاكل
-            file_info["issues"] = self._find_issues(file_path, content, file_info)
-            
+            file_info["issues"] = self._find_issues(
+                file_path, content, file_info)
+
             # اقتراح موقع أفضل
-            file_info["suggested_location"] = self._suggest_location(file_path, file_info["type"])
-            
+            file_info["suggested_location"] = self._suggest_location(
+                file_path, file_info["type"])
+
             # تحديث الإحصائيات
             self._update_statistics(file_info)
-            
+
             # إضافة للنتائج
             self.results["detailed_analysis"].append(file_info)
-            
+
             # تصنيف الملف
-            self.results["classification"][file_info["importance"]].append(file_info["relative_path"])
-            
+            self.results["classification"][file_info["importance"]].append(
+                file_info["relative_path"])
+
         except Exception as e:
             print(f"⚠️ خطأ في تحليل {file_path}: {e}")
-    
+
     def _read_file_content(self, file_path: Path) -> str:
         """قراءة محتوى الملف بأمان"""
         try:
@@ -209,9 +219,10 @@ class ComprehensiveCleanupAnalyzer:
                 except UnicodeDecodeError:
                     continue
             return ""
-        # FIXME: replace with specific exception
-except Exception as exc:return ""
-    
+        except (IOError, OSError) as exc:
+            logger.warning(f"Could not read file {file_path}: {exc}")
+            return ""
+
     def _analyze_python_file(self, content: str, file_path: Path) -> Dict[str, Any]:
         """تحليل ملف Python"""
         analysis = {
@@ -220,15 +231,15 @@ except Exception as exc:return ""
             "complexity": 0,
             "dependencies": []
         }
-        
+
         try:
             tree = ast.parse(content)
-            
+
             # تحليل AST
             imports = []
             classes = []
             functions = []
-            
+
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
                     for alias in node.names:
@@ -249,25 +260,26 @@ except Exception as exc:return ""
                             "args": len(node.args.args),
                             "has_docstring": ast.get_docstring(node) is not None
                         })
-            
+
             analysis["ast_analysis"] = {
                 "imports": imports,
                 "classes": classes,
                 "functions": functions,
                 "has_main": self._has_main_block(tree)
             }
-            
+
             # حساب التعقيد
-            analysis["complexity"] = len(classes) * 2 + len(functions) + len(imports) // 5
+            analysis["complexity"] = len(
+                classes) * 2 + len(functions) + len(imports) // 5
             analysis["dependencies"] = list(set(imports))
-            
+
         except SyntaxError:
             analysis["ast_analysis"]["error"] = "Syntax error"
         except Exception as e:
             analysis["ast_analysis"]["error"] = str(e)
-        
+
         return analysis
-    
+
     def _is_method(self, node: ast.FunctionDef, tree: ast.AST) -> bool:
         """التحقق من أن الدالة هي method داخل class"""
         for parent in ast.walk(tree):
@@ -275,7 +287,7 @@ except Exception as exc:return ""
                 if node in parent.body:
                     return True
         return False
-    
+
     def _has_main_block(self, tree: ast.AST) -> bool:
         """التحقق من وجود if __name__ == '__main__'"""
         for node in ast.walk(tree):
@@ -284,12 +296,12 @@ except Exception as exc:return ""
                     if isinstance(node.test.left, ast.Name) and node.test.left.id == '__name__':
                         return True
         return False
-    
+
     def _determine_file_type(self, file_path: Path, content: str) -> str:
         """تحديد نوع الملف بدقة"""
         name_lower = file_path.name.lower()
         path_lower = str(file_path).lower()
-        
+
         # Python files
         if file_path.suffix == '.py':
             if name_lower == '__init__.py':
@@ -318,90 +330,90 @@ except Exception as exc:return ""
                 return 'config'
             else:
                 return 'python_other'
-        
+
         # Configuration files
         elif file_path.suffix in ['.json', '.yaml', '.yml', '.toml', '.ini', '.cfg']:
             return 'config'
-        
+
         # Documentation
         elif file_path.suffix in ['.md', '.rst', '.txt']:
             return 'documentation'
-        
+
         # Scripts
         elif file_path.suffix in ['.sh', '.bat', '.ps1']:
             return 'script'
-        
+
         # Docker
         elif 'dockerfile' in name_lower:
             return 'docker'
-        
+
         # SQL
         elif file_path.suffix == '.sql':
             return 'database'
-        
+
         else:
             return 'other'
-    
+
     def _determine_importance(self, file_path: Path, content: str, file_info: Dict) -> str:
         """تحديد أهمية الملف"""
         path_str = str(file_path).lower()
-        
+
         # قمامة - احذف فوراً
         if len(content.strip()) == 0 and file_path.suffix != '.py':
             self.results["issues"]["empty_files"].append(str(file_path))
             return 'trash'
-        
+
         # ملفات __init__.py فارغة مقبولة
         if file_path.name == '__init__.py' and len(content.strip()) == 0:
             return 'low'
-        
+
         # ملفات مؤقتة أو قديمة
         if any(re.match(pattern, path_str) for pattern in self.trash_patterns):
             return 'trash'
-        
+
         if any(pattern in path_str for pattern in ['_old', '_backup', '_temp', '_copy', '.bak']):
             return 'trash'
-        
+
         # حرجة - لا تحذف أبداً
         if file_path.name in ['main.py', 'app.py', 'wsgi.py', '__main__.py', 'manage.py']:
             return 'critical'
-        
+
         if any(x in path_str for x in ['security', 'auth', 'permission', 'child_safety']):
             return 'critical'
-        
+
         if any(pattern in path_str for pattern in self.critical_patterns):
             return 'critical'
-        
+
         # عالية الأهمية
         if file_info.get("is_python"):
             ast_data = file_info.get("ast_analysis", {})
             if len(ast_data.get("classes", [])) > 2 or len(ast_data.get("functions", [])) > 5:
                 return 'high'
-        
+
         if any(x in path_str for x in ['service', 'repository', 'controller', 'api']):
             return 'high'
-        
+
         if file_info.get("type") in ['model', 'service', 'repository', 'controller']:
             return 'high'
-        
+
         # منخفضة الأهمية
         if file_info.get("is_python"):
             ast_data = file_info.get("ast_analysis", {})
-            if (len(ast_data.get("classes", [])) == 0 and 
+            if (len(ast_data.get("classes", [])) == 0 and
                 len(ast_data.get("functions", [])) == 0 and
                 file_path.name != '__init__.py'):
                 return 'low'
-        
+
         if 'example' in path_str or 'sample' in path_str or 'demo' in path_str:
             return 'low'
-        
+
         # افتراضي
         return 'medium'
-    
+
     def _find_issues(self, file_path: Path, content: str, file_info: Dict) -> List[Dict[str, str]]:
         """البحث عن المشاكل في الملف"""
         issues = []
-        
+
         # ملفات كبيرة
         if file_info["size_bytes"] > 50 * 1024:  # أكبر من 50KB
             issues.append({
@@ -413,7 +425,7 @@ except Exception as exc:return ""
                 "path": str(file_path),
                 "size_kb": file_info["size_bytes"] / 1024
             })
-        
+
         # Python-specific issues
         if file_path.suffix == '.py':
             # مشاكل أمنية
@@ -424,7 +436,7 @@ except Exception as exc:return ""
                 (r'(password|secret|key|token)\s*=\s*["\'][^"\']+["\']', "كلمة سر مضمنة"),
                 (r'subprocess.*shell\s*=\s*True', "استخدام shell=True - خطر أمني")
             ]
-            
+
             for pattern, message in security_patterns:
                 if re.search(pattern, content, re.IGNORECASE):
                     issues.append({
@@ -436,7 +448,7 @@ except Exception as exc:return ""
                         "file": str(file_path),
                         "issue": message
                     })
-            
+
             # مشاكل جودة
             if 'except:' in content or '# FIXME: replace with specific exception
 except Exception as exc:' in content:

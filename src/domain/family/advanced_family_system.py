@@ -235,12 +235,13 @@ class AdvancedFamilySystem:
 
         return family_id
 
-    def _create_default_scheduled_messages(FamilyProfile) -> None:
+    def _create_default_scheduled_messages(self, family_profile: FamilyProfile) -> None:
         """إنشاء رسائل تشجيعية افتراضية للعائلة"""
 
-        children = [member for member in family.members if member.role == "child"]
+        children = [
+            member for member in family_profile.members if member.role == "child"]
         parent = next(
-            (member for member in family.members if member.role == "parent"), None
+            (member for member in family_profile.members if member.role == "parent"), None
         )
 
         for child in children:
@@ -279,12 +280,13 @@ class AdvancedFamilySystem:
 
                 self.scheduled_messages.extend([morning_msg, bedtime_msg])
 
-    def _create_default_time_restrictions(FamilyProfile) -> None:
+    def _create_default_time_restrictions(self, family_profile: FamilyProfile) -> None:
         """إنشاء قيود زمنية افتراضية"""
 
-        children = [member for member in family.members if member.role == "child"]
+        children = [
+            member for member in family_profile.members if member.role == "child"]
         parent = next(
-            (member for member in family.members if member.role == "parent"), None
+            (member for member in family_profile.members if member.role == "parent"), None
         )
 
         for child in children:
@@ -297,7 +299,7 @@ class AdvancedFamilySystem:
                     restriction_type=TimeRestrictionType.DAILY_LIMIT,
                     start_time=None,
                     end_time=None,
-                    daily_limit_minutes=family.shared_settings.get(
+                    daily_limit_minutes=family_profile.shared_settings.get(
                         "daily_interaction_limit", 60
                     ),
                     days_of_week=[0, 1, 2, 3, 4, 5, 6],
@@ -323,7 +325,8 @@ class AdvancedFamilySystem:
                     created_at=datetime.now(),
                 )
 
-                self.time_restrictions.extend([daily_limit, bedtime_restriction])
+                self.time_restrictions.extend(
+                    [daily_limit, bedtime_restriction])
 
     def add_scheduled_message(
         self,
@@ -515,7 +518,8 @@ class AdvancedFamilySystem:
             return None
 
         family = self.family_profiles[family_id]
-        children = [member for member in family.members if member.role == "child"]
+        children = [
+            member for member in family.members if member.role == "child"]
 
         insights = []
         recommendations = []
@@ -527,11 +531,13 @@ class AdvancedFamilySystem:
 
         if academic_scores:
             top_performer = max(academic_scores.items(), key=lambda x: x[1])
-            insights.append(f"{top_performer[0]} يُظهر أداءً أكاديمياً ممتازاً")
+            insights.append(
+                f"{top_performer[0]} يُظهر أداءً أكاديمياً ممتازاً")
 
             for child_name, score in academic_scores.items():
                 if score < 70:  # أقل من 70%
-                    recommendations.append(f"يحتاج {child_name} دعماً إضافياً في التعليم")
+                    recommendations.append(
+                        f"يحتاج {child_name} دعماً إضافياً في التعليم")
 
         # تحليل الوقت المستخدم
         usage_times = {}
@@ -542,7 +548,8 @@ class AdvancedFamilySystem:
             avg_usage = sum(usage_times.values()) / len(usage_times)
             for child_name, usage in usage_times.items():
                 if usage > avg_usage * 1.5:
-                    recommendations.append(f"قلل وقت استخدام {child_name} للجهاز")
+                    recommendations.append(
+                        f"قلل وقت استخدام {child_name} للجهاز")
                 elif usage < avg_usage * 0.5:
                     insights.append(f"{child_name} يستخدم الجهاز بشكل معتدل")
 
@@ -554,7 +561,8 @@ class AdvancedFamilySystem:
         if social_scores:
             for child_name, score in social_scores.items():
                 if score > 80:
-                    insights.append(f"{child_name} يتمتع بمهارات اجتماعية ممتازة")
+                    insights.append(
+                        f"{child_name} يتمتع بمهارات اجتماعية ممتازة")
                 elif score < 50:
                     recommendations.append(
                         f"شجع {child_name} على المزيد من الأنشطة الاجتماعية"
@@ -604,13 +612,16 @@ class AdvancedFamilySystem:
             return {"error": "العائلة غير موجودة"}
 
         family = self.family_profiles[family_id]
-        children = [member for member in family.members if member.role == "child"]
+        children = [
+            member for member in family.members if member.role == "child"]
 
         # إحصائيات سريعة
         total_children = len(children)
         active_devices = sum(len(child.device_ids) for child in children)
-        active_messages = len([msg for msg in self.scheduled_messages if msg.is_active])
-        active_restrictions = len([r for r in self.time_restrictions if r.is_active])
+        active_messages = len(
+            [msg for msg in self.scheduled_messages if msg.is_active])
+        active_restrictions = len(
+            [r for r in self.time_restrictions if r.is_active])
 
         return {
             "family_info": {
@@ -694,7 +705,8 @@ class AdvancedFamilySystem:
             return {"error": "العائلة غير موجودة"}
 
         family = self.family_profiles[family_id]
-        children = [member for member in family.members if member.role == "child"]
+        children = [
+            member for member in family.members if member.role == "child"]
 
         control_summary = {
             "time_management": {

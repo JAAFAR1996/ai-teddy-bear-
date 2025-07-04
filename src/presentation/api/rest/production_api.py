@@ -15,7 +15,7 @@ from fastapi import (Depends, FastAPI, HTTPException, WebSocket,
                      WebSocketDisconnect, status)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from src.application.services.ai_service import AIService
 from src.application.services.child_service import ChildService
@@ -43,7 +43,7 @@ class RegisterDeviceRequest(BaseModel):
     firmware_version: str = Field(..., pattern=r"^\d+\.\d+\.\d+$")
     hardware_info: Dict[str, Any] = Field(default_factory=dict)
 
-    @validator("device_id")
+    @field_validator("device_id")
     def validate_device_id(cls, v) -> Any:
         if not v.startswith("ESP32_"):
             raise ValueError("Device ID must start with ESP32_")
@@ -58,7 +58,7 @@ class AudioProcessRequest(BaseModel):
     session_id: Optional[str] = Field(None, min_length=10, max_length=50)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-    @validator("audio")
+    @field_validator("audio")
     def validate_audio_not_empty(cls, v) -> Any:
         if not v or len(v) < 100:  # Minimum reasonable audio size
             raise ValueError("Audio data too small")
@@ -77,14 +77,15 @@ class ChildProfileRequest(BaseModel):
 
 class ConversationRecord(BaseModel):
     """Encapsulates conversation data for saving - Parameter Object Pattern"""
-    
+
     device_id: str = Field(..., description="Device identifier")
     message: str = Field(..., description="Child's message")
     response: str = Field(..., description="AI response")
     emotion: str = Field(..., description="Detected emotion")
     category: str = Field(..., description="Conversation category")
-    learning_points: List[str] = Field(default_factory=list, description="Learning points")
-    
+    learning_points: List[str] = Field(
+        default_factory=list, description="Learning points")
+
     def to_metadata(self) -> Dict[str, Any]:
         """Convert analysis data to metadata dictionary"""
         return {
@@ -231,6 +232,7 @@ async def _validate_and_get_child(device_id: str, child_service: ChildService):
         )
     return child
 
+
 async def _transcribe_audio_data(audio_data: str, language: str, voice_service: VoiceService):
     """
     Transcribe audio data to text with validation.
@@ -239,11 +241,13 @@ async def _transcribe_audio_data(audio_data: str, language: str, voice_service: 
     transcribed_text = await voice_service.transcribe_audio(
         audio_data=audio_data, language=language
     )
-    
+
     if not transcribed_text:
-        raise HTTPException(status_code=422, detail="Could not transcribe audio")
-    
+        raise HTTPException(
+            status_code=422, detail="Could not transcribe audio")
+
     return transcribed_text
+
 
 async def _generate_ai_response(message: str, child, session_id: Optional[str], ai_service: AIService):
     """
@@ -254,6 +258,7 @@ async def _generate_ai_response(message: str, child, session_id: Optional[str], 
         message=message, child=child, session_id=session_id
     )
 
+
 async def _synthesize_response_audio(text: str, emotion: str, language: str, voice_service: VoiceService):
     """
     Convert AI response text to audio.
@@ -262,6 +267,7 @@ async def _synthesize_response_audio(text: str, emotion: str, language: str, voi
     return await voice_service.synthesize_speech(
         text=text, emotion=emotion, language=language
     )
+
 
 async def _save_conversation_data(
     conversation: ConversationRecord,
@@ -277,6 +283,7 @@ async def _save_conversation_data(
         response=conversation.response,
         metadata=conversation.to_metadata(),
     )
+
 
 def _build_ai_response(ai_response, response_audio: str, transcribed_text: str) -> AIResponse:
     """
@@ -295,6 +302,7 @@ def _build_ai_response(ai_response, response_audio: str, transcribed_text: str) 
             "transcribed_text": transcribed_text,
         },
     )
+
 
 @app.post("/api/v1/audio/process", response_model=AIResponse, tags=["audio"])
 async def process_audio(

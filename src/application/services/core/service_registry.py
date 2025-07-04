@@ -1,5 +1,3 @@
-from typing import Any, Dict, List, Optional
-
 """
 Service Registry Pattern
 Solves circular dependencies and provides centralized service management
@@ -188,7 +186,8 @@ class ServiceRegistry:
         except Exception as e:
             info.state = ServiceState.FAILED
             info.error = str(e)
-            logger.error(f"Service initialization failed: {name}", error=str(e))
+            logger.error(
+                f"Service initialization failed: {name}", error=str(e))
             raise
 
     def get_service(self, name: str) -> Any:
@@ -199,7 +198,8 @@ class ServiceRegistry:
         info = self._services[name]
 
         if info.state != ServiceState.READY:
-            raise RuntimeError(f"Service '{name}' not ready (state: {info.state})")
+            raise RuntimeError(
+                f"Service '{name}' not ready (state: {info.state})")
 
         return info.instance
 
@@ -230,7 +230,8 @@ class ServiceRegistry:
             # Calculate shutdown order (reverse of init)
             self._shutdown_order = list(reversed(self._initialization_order))
 
-            logger.info("Starting service shutdown", order=self._shutdown_order)
+            logger.info("Starting service shutdown",
+                        order=self._shutdown_order)
 
             # Stop health checks
             for info in self._services.values():

@@ -6,10 +6,9 @@ from typing import Dict, List
 
 import structlog
 
-from ....domain.emotion.models import (EmotionInsight,
-                                       EmotionResult, EmotionTrend,
-                                       ParentalReport, RiskAssessment,
-                                       RiskLevel)
+from src.domain.emotion.models import (EmotionInsight, EmotionResult,
+                                       EmotionTrend, ParentalReport,
+                                       RiskAssessment, RiskLevel)
 
 logger = structlog.get_logger(__name__)
 
@@ -65,7 +64,8 @@ class EmotionAnalyticsService:
             positive_highlights = self._generate_positive_highlights(
                 dominant_emotions, behavioral_changes
             )
-            areas_of_concern = self._identify_concerns(dominant_emotions, trends)
+            areas_of_concern = self._identify_concerns(
+                dominant_emotions, trends)
             recommendations = self._generate_parental_recommendations(
                 dominant_emotions, areas_of_concern
             )
@@ -173,11 +173,13 @@ class EmotionAnalyticsService:
                 curious_ratio = emotion_counts.get("curious", 0) / total
 
                 if happy_ratio > 0.4:
-                    emotional_strengths.append("Strong positive emotional expression")
+                    emotional_strengths.append(
+                        "Strong positive emotional expression")
                 if calm_ratio > 0.2:
                     emotional_strengths.append("Good emotional regulation")
                 if curious_ratio > 0.25:
-                    emotional_strengths.append("Healthy curiosity and engagement")
+                    emotional_strengths.append(
+                        "Healthy curiosity and engagement")
 
             # Calculate overall risk score
             risk_score = self._calculate_risk_score(
@@ -403,7 +405,8 @@ class EmotionAnalyticsService:
         highlights = []
 
         if emotions.get("happy", 0) > 0.4:
-            highlights.append("Child shows strong positive emotional expression")
+            highlights.append(
+                "Child shows strong positive emotional expression")
         if emotions.get("curious", 0) > 0.25:
             highlights.append("Healthy level of curiosity and engagement")
         if emotions.get("calm", 0) > 0.2:

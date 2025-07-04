@@ -49,7 +49,8 @@ class EnterpriseMessageSender(QObject):
 
         # Monitor connection status
         self.websocket_client.connected.connect(self._on_connection_restored)
-        self.websocket_client.message_received.connect(self._handle_server_response)
+        self.websocket_client.message_received.connect(
+            self._handle_server_response)
 
     async def send_audio_message(self, audio_file: bytes, metadata: dict) -> str:
         """Send audio message with comprehensive metadata"""
@@ -117,7 +118,8 @@ class EnterpriseMessageSender(QObject):
             return message_id
 
         except Exception as e:
-            logger.error("Failed to send message", message_id=message_id, error=str(e))
+            logger.error("Failed to send message",
+                         message_id=message_id, error=str(e))
             self._queue_for_retry(message_data)
             self.message_failed.emit(message_id, str(e))
             raise
@@ -131,7 +133,7 @@ class EnterpriseMessageSender(QObject):
 
         # Split into chunks
         for i in range(0, len(json_str), self.chunk_size):
-            chunk = json_str[i : i + self.chunk_size]
+            chunk = json_str[i: i + self.chunk_size]
             chunks.append(chunk)
 
         # Send chunk metadata first
@@ -163,7 +165,8 @@ class EnterpriseMessageSender(QObject):
             await asyncio.sleep(0.01)
 
         # Send completion signal
-        completion_message = {"type": "chunk_complete", "message_id": message_id}
+        completion_message = {
+            "type": "chunk_complete", "message_id": message_id}
 
         self.websocket_client.send_message(completion_message)
 
@@ -205,9 +208,10 @@ class EnterpriseMessageSender(QObject):
             )
             return message_data
 
-    def _queue_for_retry(dict) -> None:
+    def _queue_for_retry(self, message_data: dict) -> None:
         """Queue message for retry"""
-        message_data["retry_attempts"] = message_data.get("retry_attempts", 0) + 1
+        message_data["retry_attempts"] = message_data.get(
+            "retry_attempts", 0) + 1
 
         if message_data["retry_attempts"] <= self.max_retry_attempts:
             message_data["retry_timestamp"] = datetime.now().isoformat()
@@ -219,11 +223,13 @@ class EnterpriseMessageSender(QObject):
                 attempt=message_data["retry_attempts"],
             )
         else:
-            logger.error("Max retry attempts reached", message_id=message_data["id"])
+            logger.error("Max retry attempts reached",
+                         message_id=message_data["id"])
 
             # Remove from pending messages
             self.pending_messages.pop(message_data["id"], None)
-            self.message_failed.emit(message_data["id"], "Max retry attempts reached")
+            self.message_failed.emit(
+                message_data["id"], "Max retry attempts reached")
 
     def _process_retry_queue(self) -> Any:
         """Process queued retry messages"""
@@ -239,7 +245,8 @@ class EnterpriseMessageSender(QObject):
 
             try:
                 asyncio.create_task(
-                    self._send_message_with_retry(message_data["id"], message_data)
+                    self._send_message_with_retry(
+                        message_data["id"], message_data)
                 )
             except Exception as e:
                 logger.error(
@@ -258,7 +265,7 @@ class EnterpriseMessageSender(QObject):
         if self.retry_queue:
             self._process_retry_queue()
 
-    def _handle_server_response(dict) -> None:
+    def _handle_server_response(self, response: dict) -> None:
         """Handle server response for sent messages"""
         if response.get("type") == "message_ack":
             message_id = response.get("message_id")

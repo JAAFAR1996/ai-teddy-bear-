@@ -18,10 +18,10 @@ class ContentModerator:
         lowered = text.lower()
         return not any(word in lowered for word in self.blocked_words)
 
-    def add_blocked_word(str) -> None:
+    def add_blocked_word(self, word: str) -> None:
         if word not in self.blocked_words:
             self.blocked_words.append(word)
 
-    def remove_blocked_word(str) -> None:
+    def remove_blocked_word(self, word: str) -> None:
         if word in self.blocked_words:
             self.blocked_words.remove(word)

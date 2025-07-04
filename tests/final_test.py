@@ -2,6 +2,7 @@
 🧪 الاختبار النهائي - AI Teddy Bear
 اختبار سريع لقياس التحسن بعد إصلاح الخدمات
 """
+import logging
 import importlib
 import sys
 from pathlib import Path
@@ -12,7 +13,6 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "src"))
 
 # إعداد logging
-import logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 
@@ -21,10 +21,10 @@ def test_services():
     """اختبار الخدمات المُصلحة"""
     logger.info('🧪 اختبار الخدمات المُصلحة...')
     results = {'ai_services': False, 'audio_services': False,
-        'child_services': False, 'parent_services': False, 'core_services':
-        False, 'device_services': False}
-    
-    # AI Services - محاولة استيراد مع fallback 
+               'child_services': False, 'parent_services': False, 'core_services':
+               False, 'device_services': False}
+
+    # AI Services - محاولة استيراد مع fallback
     try:
         from src.application.services.ai.interfaces.ai_service_interface import (
             BaseAIService, IAIService, IEmotionAnalyzer)
@@ -38,7 +38,7 @@ def test_services():
             logger.info('  ✅ AI Services: Moderation service متوفر')
         except Exception as e:
             logger.info(f'  ❌ AI Services: {str(e)[:50]}...')
-    
+
     # Audio Services
     try:
         from src.application.services.core.transcription_service import TranscriptionService
@@ -46,7 +46,7 @@ def test_services():
         logger.info('  ✅ Audio Services: Transcription service موجود')
     except Exception as e:
         logger.info(f'  ❌ Audio Services: {str(e)[:50]}...')
-    
+
     # Child Services - استخدام mock fallback
     try:
         from src.infrastructure.external_services.mock.elevenlabs import (
@@ -59,7 +59,7 @@ def test_services():
         # استخدام أي خدمة طفل متوفرة
         results['child_services'] = True
         logger.info('  ✅ Child Services: Services available (fallback)')
-    
+
     # Parent Services
     try:
         from src.application.services.models import (ChildProfile,
@@ -71,7 +71,7 @@ def test_services():
         # fallback: تحقق من وجود أي نموذج
         results['parent_services'] = True
         logger.info('  ✅ Parent Services: Models available (fallback)')
-    
+
     # Core Services
     try:
         from src.application.services.core.use_cases.use_cases import (
@@ -86,10 +86,11 @@ def test_services():
             logger.info('  ✅ Core Services: Core services available')
         except Exception as e:
             logger.info(f'  ❌ Core Services: {str(e)[:50]}...')
-    
+
     # Device Services
     try:
-        device_files = list(Path('src/application/services/device').glob('*.py'))
+        device_files = list(
+            Path('src/application/services/device').glob('*.py'))
         if device_files:
             results['device_services'] = True
             logger.info('  ✅ Device Services: يعمل بشكل طبيعي')
@@ -99,7 +100,7 @@ def test_services():
             logger.info('  ⚠️ Device Services: لا توجد ملفات (مقبول)')
     except Exception as e:
         logger.info(f'  ❌ Device Services: {str(e)[:50]}...')
-    
+
     return results
 
 
@@ -108,7 +109,7 @@ def test_core_entities():
     logger.info('🎯 اختبار Core Entities...')
     entities_found = 0
     total_entities = 3
-    
+
     # AudioStream
     try:
         from src.core.domain.entities.audio_stream import AudioStream
@@ -116,35 +117,23 @@ def test_core_entities():
         logger.info('  ✅ AudioStream entity')
     except:
         logger.info('  ⚠️  AudioStream entity not found (using fallback)')
-    
+
     # Child
     try:
-        from src.core.domain.entities.child import Child
+        from src.domain.entities.child import Child
         entities_found += 1
         logger.info('  ✅ Child entity')
-    except:
-        try:
-            # fallback: try different path
-            from src.domain.entities.child import Child
-            entities_found += 1
-            logger.info('  ✅ Child entity (alternate path)')
-        except:
-            logger.info('  ⚠️  Child entity not found (using fallback)')
-    
+    except ImportError:
+        logger.info('  ⚠️  Child entity not found (using fallback)')
+
     # Conversation
     try:
-        from src.core.domain.entities.conversation import Conversation
+        from src.domain.entities.conversation import Conversation
         entities_found += 1
         logger.info('  ✅ Conversation entity')
-    except:
-        try:
-            # fallback: try different path
-            from src.domain.entities.conversation import Conversation
-            entities_found += 1
-            logger.info('  ✅ Conversation entity (alternate path)')
-        except:
-            logger.info('  ⚠️  Conversation entity not found (using fallback)')
-    
+    except ImportError:
+        logger.info('  ⚠️  Conversation entity not found (using fallback)')
+
     # إذا وُجدت أي entity أو وُجدت خدمات أساسية، نعتبرها ناجحة
     if entities_found > 0:
         logger.info(f'  ✅ {entities_found}/{total_entities} entities تعمل')
@@ -168,9 +157,9 @@ def calculate_final_score(service_results, entities_working):
     entities_score = 20 if entities_working else 0
     total_score = service_score + entities_score
     return {'services_passed': services_passed, 'total_services':
-        total_services, 'service_percentage': services_passed /
-        total_services * 100, 'entities_working': entities_working,
-        'total_score': total_score}
+            total_services, 'service_percentage': services_passed /
+            total_services * 100, 'entities_working': entities_working,
+            'total_score': total_score}
 
 
 def main():
@@ -185,12 +174,12 @@ def main():
     logger.info(f'\n📊 النتائج النهائية:')
     logger.info(
         f"✅ خدمات ناجحة: {final_score['services_passed']}/{final_score['total_services']}"
-        )
+    )
     logger.info(
         f"📈 نسبة نجاح الخدمات: {final_score['service_percentage']:.1f}%")
     logger.info(
         f"🎯 الكيانات الأساسية: {'✅ تعمل' if final_score['entities_working'] else '❌ مشاكل'}"
-        )
+    )
     logger.info(f"🏆 النتيجة الإجمالية: {final_score['total_score']:.1f}/100")
     if final_score['total_score'] >= 90:
         status = '🟢 ممتاز - جاهز للإنتاج'

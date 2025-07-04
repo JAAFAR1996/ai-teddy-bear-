@@ -1,3 +1,7 @@
+from typing import Dict, List
+from pathlib import Path
+from datetime import datetime
+import shutil
 import logging
 
 logger = logging.getLogger(__name__)
@@ -6,10 +10,6 @@ logger = logging.getLogger(__name__)
 Service Organizer Analyzer
 أداة تحليل وتنظيم الخدمات المكررة حسب Clean Architecture
 """
-import shutil
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List
 
 
 class ServiceOrganizerAnalyzer:
@@ -219,7 +219,8 @@ class ServiceOrganizerAnalyzer:
             "deprecated": "deprecated/services/",
         }
         for group, services in functional_groups.items():
-            target_location = mapping.get(group, "src/application/services/core/")
+            target_location = mapping.get(
+                group, "src/application/services/core/")
             clean_arch_plan[target_location].extend(services)
         return clean_arch_plan
 
@@ -339,8 +340,10 @@ class ServiceOrganizerAnalyzer:
         }
         for operation in operations:
             try:
-                target_dir = Path(self.base_path / operation["target_location"])
-                backup_dir = Path(self.base_path / operation["backup_location"])
+                target_dir = Path(
+                    self.base_path / operation["target_location"])
+                backup_dir = Path(
+                    self.base_path / operation["backup_location"])
                 target_dir.mkdir(parents=True, exist_ok=True)
                 backup_dir.mkdir(parents=True, exist_ok=True)
                 results["directories_created"] += 2
@@ -350,7 +353,8 @@ class ServiceOrganizerAnalyzer:
                         backup_file = backup_dir / source_file.name
                         shutil.move(str(source_file), str(backup_file))
                         results["files_moved"] += 1
-                primary_service = Path(self.base_path / operation["primary_service"])
+                primary_service = Path(
+                    self.base_path / operation["primary_service"])
                 if primary_service.exists():
                     target_file = target_dir / primary_service.name
                     if primary_service != target_file:
@@ -489,7 +493,6 @@ find src/ -name "*.py" -exec grep -l "from.*services" {{}} \\;
         logger.info("🎯  ORGANIZING 43 DUPLICATE SERVICES")
         logger.info("=" * 60)
         functional_groups = self.categorize_services_by_functionality()
-        clean_arch_plan = self.create_clean_architecture_plan(functional_groups)
         duplicates = self.detect_duplicate_functionalities(functional_groups)
         operations = self.generate_merge_operations(duplicates)
         results = self.execute_service_organization(operations)

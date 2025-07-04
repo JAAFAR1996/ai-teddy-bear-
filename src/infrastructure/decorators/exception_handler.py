@@ -12,13 +12,21 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 
 import structlog
 
-from src.domain.exceptions.base import (AuthenticationException,
-                                        CircuitBreakerOpenException,
-                                        DatabaseException, ErrorContext,
-                                        ExternalServiceException,
-                                        InappropriateContentException,
-                                        ParentalConsentRequiredException,
-                                        ValidationException)
+from src.domain.exceptions.base import ErrorContext
+from src.domain.exceptions.child_safety import (
+    InappropriateContentException,
+    ParentalConsentRequiredException,
+)
+from src.domain.exceptions.infrastructure import (
+    CircuitBreakerOpenException,
+    DatabaseException,
+    ExternalServiceException,
+)
+from src.domain.exceptions.security import (
+    AuthenticationException,
+    AuthorizationException,
+)
+from src.domain.exceptions.validation import ValidationException
 from src.infrastructure.exception_handling.global_handler import (
     CircuitBreaker, get_global_exception_handler)
 from src.infrastructure.monitoring.metrics import (MetricsCollector,
@@ -595,7 +603,8 @@ def authenticated(required_role: Optional[str] = None, check_token_expiry: bool 
                 auth_context = kwargs["auth_context"]
 
             if not auth_context:
-                raise AuthenticationException(reason="No authentication context found")
+                raise AuthenticationException(
+                    reason="No authentication context found")
 
             # Check if authenticated
             if not auth_context.get("authenticated", False):
@@ -616,9 +625,6 @@ def authenticated(required_role: Optional[str] = None, check_token_expiry: bool 
             if required_role:
                 user_roles = auth_context.get("roles", [])
                 if required_role not in user_roles:
-                    from src.domain.exceptions.base import \
-                        AuthorizationException
-
                     raise AuthorizationException(
                         action=func.__name__, required_role=required_role
                     )
@@ -635,7 +641,8 @@ def authenticated(required_role: Optional[str] = None, check_token_expiry: bool 
                 auth_context = kwargs["auth_context"]
 
             if not auth_context:
-                raise AuthenticationException(reason="No authentication context found")
+                raise AuthenticationException(
+                    reason="No authentication context found")
 
             if not auth_context.get("authenticated", False):
                 raise AuthenticationException(reason="User not authenticated")
@@ -653,9 +660,6 @@ def authenticated(required_role: Optional[str] = None, check_token_expiry: bool 
             if required_role:
                 user_roles = auth_context.get("roles", [])
                 if required_role not in user_roles:
-                    from src.domain.exceptions.base import \
-                        AuthorizationException
-
                     raise AuthorizationException(
                         action=func.__name__, required_role=required_role
                     )
@@ -682,7 +686,8 @@ class ChildInteractionService:
         ),
         (
             ParentalConsentRequiredException,
-            lambda e: {"error": "Parent approval needed", "action": "notify_parent"},
+            lambda e: {"error": "Parent approval needed",
+                       "action": "notify_parent"},
         ),
         (
             ValidationException,

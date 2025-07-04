@@ -8,7 +8,7 @@ import logging
 from datetime import datetime
 from typing import List
 
-from src.core.domain.entities.child import Child
+from src.domain.entities.child import Child
 from src.domain.child.models.child_analytics import (ActivityStatistics,
                                                      AgeStatistics,
                                                      ChildEngagementInsight,
@@ -37,7 +37,8 @@ class ChildAnalyticsDomainService:
             ChildEngagementInsight with complete analysis
         """
         # Calculate interaction metrics
-        metrics = self._calculate_interaction_metrics(child, total_days_since_creation)
+        metrics = self._calculate_interaction_metrics(
+            child, total_days_since_creation)
 
         # Determine engagement level
         engagement_level = self._determine_engagement_level(metrics)
@@ -61,7 +62,8 @@ class ChildAnalyticsDomainService:
         # Calculate days since last interaction
         days_since_last_interaction = 0
         if child.last_interaction:
-            days_since_last_interaction = (datetime.now() - child.last_interaction).days
+            days_since_last_interaction = (
+                datetime.now() - child.last_interaction).days
         else:
             days_since_last_interaction = total_days_since_creation
 
@@ -83,7 +85,8 @@ class ChildAnalyticsDomainService:
         return InteractionMetrics(
             total_interaction_time=child.total_interaction_time,
             daily_average_time=daily_avg_time,
-            time_utilization_percentage=min(time_utilization, 100.0),  # Cap at 100%
+            time_utilization_percentage=min(
+                time_utilization, 100.0),  # Cap at 100%
             interaction_streak=interaction_streak,
             days_since_last_interaction=days_since_last_interaction,
         )
@@ -118,7 +121,8 @@ class ChildAnalyticsDomainService:
         if not children:
             return ChildStatistics(
                 total_children=0,
-                age_statistics=AgeStatistics(min_age=0, max_age=0, average_age=0.0),
+                age_statistics=AgeStatistics(
+                    min_age=0, max_age=0, average_age=0.0),
                 language_distribution={},
                 activity_statistics=ActivityStatistics(
                     children_active_last_7_days=0,
@@ -140,7 +144,8 @@ class ChildAnalyticsDomainService:
         language_distribution = {}
         for child in children:
             lang = child.language_preference or "unknown"
-            language_distribution[lang] = language_distribution.get(lang, 0) + 1
+            language_distribution[lang] = language_distribution.get(
+                lang, 0) + 1
 
         # Calculate activity statistics
         total_children = len(children)
@@ -209,28 +214,33 @@ class ChildAnalyticsDomainService:
 
         # Time-based recommendations
         if metrics.needs_engagement_reminder():
-            recommendations.append("Send gentle reminder to engage with AI assistant")
+            recommendations.append(
+                "Send gentle reminder to engage with AI assistant")
 
         if metrics.is_under_utilization_threshold():
             recommendations.append(
                 "Suggest shorter, more frequent interaction sessions"
             )
         elif metrics.is_over_utilization_threshold():
-            recommendations.append("Consider extending daily interaction time limits")
+            recommendations.append(
+                "Consider extending daily interaction time limits")
 
         # Age-based recommendations
         if child.age and child.age < 6:
             recommendations.append("Focus on play-based learning activities")
         elif child.age and child.age > 12:
-            recommendations.append("Introduce more complex topics and challenges")
+            recommendations.append(
+                "Introduce more complex topics and challenges")
 
         # Interest-based recommendations
         if child.interests and len(child.interests) < 3:
-            recommendations.append("Help child discover new interests and hobbies")
+            recommendations.append(
+                "Help child discover new interests and hobbies")
 
         # Special needs considerations
         if child.special_needs and child.special_needs != []:
-            recommendations.append("Ensure interactions are adapted for special needs")
+            recommendations.append(
+                "Ensure interactions are adapted for special needs")
 
         # Language-based recommendations
         if child.language_preference and child.language_preference != "en":
@@ -259,7 +269,8 @@ class ChildAnalyticsDomainService:
                 (datetime.now() - child.created_at).days if child.created_at else 1
             )
             consistency = min(
-                child.total_interaction_time / (days_since_creation * 1800), 1.0
+                child.total_interaction_time /
+                (days_since_creation * 1800), 1.0
             )  # 30 min/day ideal
             score += consistency
 
@@ -293,13 +304,15 @@ class ChildAnalyticsDomainService:
             child.learning_preferences,
             child.communication_style,
         ]
-        completeness = sum(1 for field in profile_fields if field) / len(profile_fields)
+        completeness = sum(
+            1 for field in profile_fields if field) / len(profile_fields)
         score += completeness
 
         # Recent activity (0-1)
         if child.last_interaction:
             days_since_last = (datetime.now() - child.last_interaction).days
-            recency_score = max(0, 1.0 - (days_since_last / 30.0))  # Decay over 30 days
+            # Decay over 30 days
+            recency_score = max(0, 1.0 - (days_since_last / 30.0))
             score += recency_score
 
         return min(score / max_score, 1.0)

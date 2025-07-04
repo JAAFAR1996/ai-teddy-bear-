@@ -13,7 +13,7 @@ from prometheus_client import Counter, Gauge, Histogram
 
 from src.infrastructure.caching.redis_cache import get_redis_client
 from src.infrastructure.external_services.openai_service import get_ai_service
-from src.infrastructure.persistence.connection import get_db_session
+from src.infrastructure.persistence.connection_pool import db_manager
 
 logger = structlog.get_logger(__name__)
 
@@ -46,11 +46,13 @@ websocket_connections_gauge = Gauge(
 )
 
 ai_requests_counter = Counter(
-    "teddy_bear_ai_requests_total", "Total number of AI requests", ["model", "status"]
+    "teddy_bear_ai_requests_total", "Total number of AI requests", [
+        "model", "status"]
 )
 
 cache_operations_counter = Counter(
-    "teddy_bear_cache_operations_total", "Cache operations", ["operation", "status"]
+    "teddy_bear_cache_operations_total", "Cache operations", [
+        "operation", "status"]
 )
 
 
@@ -112,11 +114,12 @@ class MetricsAggregator:
 
     async def record_violation(self, violation: Dict[str, Any]):
         """Record a safety violation"""
-        self.violations_buffer.append({**violation, "timestamp": datetime.utcnow()})
+        self.violations_buffer.append(
+            {**violation, "timestamp": datetime.utcnow()})
 
         # Trim buffer if too large
         if len(self.violations_buffer) > self.max_buffer_size:
-            self.violations_buffer = self.violations_buffer[-self.max_buffer_size :]
+            self.violations_buffer = self.violations_buffer[-self.max_buffer_size:]
 
     async def get_recent_violations(self, minutes: int = 5) -> List[Dict[str, Any]]:
         """Get violations from the last N minutes"""
@@ -401,7 +404,7 @@ class HealthChecks:
         start_time = datetime.utcnow()
 
         try:
-            async with get_db_session() as session:
+            async with db_manager.get_session() as session:
                 # Simple query to check connectivity
                 result = await session.execute("SELECT 1")
                 result.scalar()
@@ -418,7 +421,8 @@ class HealthChecks:
             return HealthCheckResult(
                 service="database",
                 status="unhealthy",
-                latency_ms=(datetime.utcnow() - start_time).total_seconds() * 1000,
+                latency_ms=(datetime.utcnow() -
+                            start_time).total_seconds() * 1000,
                 error_message=str(e),
             )
 
@@ -457,7 +461,8 @@ class HealthChecks:
             return HealthCheckResult(
                 service="redis",
                 status="unhealthy",
-                latency_ms=(datetime.utcnow() - start_time).total_seconds() * 1000,
+                latency_ms=(datetime.utcnow() -
+                            start_time).total_seconds() * 1000,
                 error_message=str(e),
             )
 
@@ -494,6 +499,7 @@ class HealthChecks:
             return HealthCheckResult(
                 service="ai_service",
                 status="unhealthy",
-                latency_ms=(datetime.utcnow() - start_time).total_seconds() * 1000,
+                latency_ms=(datetime.utcnow() -
+                            start_time).total_seconds() * 1000,
                 error_message=str(e),
             )

@@ -1,3 +1,9 @@
+from typing import Dict, List
+from pathlib import Path
+from datetime import datetime
+from collections import defaultdict
+import os
+import hashlib
 import logging
 
 logger = logging.getLogger(__name__)
@@ -6,12 +12,6 @@ logger = logging.getLogger(__name__)
 Comprehensive Architecture Analyzer for AI-TEDDY-BEAR
 أداة تحليل شاملة لإعادة هيكلة المشروع حسب Clean Architecture
 """
-import hashlib
-import os
-from collections import defaultdict
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List
 
 
 class ArchitectureAnalyzer:
@@ -100,9 +100,11 @@ class ArchitectureAnalyzer:
             if file_path.stat().st_size > 10 * 1024 * 1024:
                 return ""
             with open(file_path, "rb") as f:
-                return hashlib.md5(f.read()).hexdigest()
-        # FIXME: replace with specific exception
-except Exception as exc:return ""
+                return hashlib.sha256(f.read()).hexdigest()
+        except (IOError, OSError) as exc:
+            logger.warning(
+                f"Could not calculate hash for file {file_path}: {exc}")
+            return ""
 
     def extract_service_type(self, filename: str) -> str:
         """استخراج نوع الخدمة من اسم الملف"""
@@ -149,7 +151,8 @@ except Exception as exc:return ""
                         "action_needed": "remove_duplicates",
                     }
                 )
-                self.analysis_report["statistics"]["total_duplicates"] += len(files) - 1
+                self.analysis_report["statistics"]["total_duplicates"] += len(
+                    files) - 1
 
     def _analyze_name_duplicates(self, file_names: Dict):
         """تحليل التكرارات في الأسماء"""
@@ -205,7 +208,8 @@ except Exception as exc:return ""
         for duplicate_group in self.analysis_report["duplicates"]["files"]:
             if duplicate_group["type"] == "identical_content":
                 for file_path in duplicate_group["files"]:
-                    score = self._calculate_file_score(file_path, critical_files)
+                    score = self._calculate_file_score(
+                        file_path, critical_files)
                     self.analysis_report["evaluation"][file_path] = {
                         "quality_score": score["quality"],
                         "importance_score": score["importance"],
@@ -236,8 +240,8 @@ except Exception as exc:return ""
         try:
             file_stat = Path(self.base_path / file_path).stat()
             recency_score = min(10, max(1, recency_score))
-        # FIXME: replace with specific exception
-except Exception as exc:recency_score = 5
+        except Exception as exc:
+            recency_score = 5
         total_score = (quality_score + importance_score + recency_score) / 3
         if total_score >= 8:
             recommendation = "KEEP"
@@ -579,7 +583,8 @@ def main():
         logger.info("\n🎉 تم إكمال التحليل الشامل!")
         logger.info(f"📊 إجمالي الملفات: {report['statistics']['total_files']}")
         logger.info(f"🔄 التكرارات: {report['statistics']['total_duplicates']}")
-        logger.info(f"🏆 نقاط النظافة: {report['statistics']['clean_score']}/100")
+        logger.info(
+            f"🏆 نقاط النظافة: {report['statistics']['clean_score']}/100")
         logger.info(
             "📋 التقرير الكامل: deleted/reports/COMPREHENSIVE_ARCHITECTURE_ANALYSIS.md"
         )

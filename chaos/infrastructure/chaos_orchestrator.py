@@ -296,7 +296,7 @@ class ChaosOrchestrator:
     async def _inject_cpu_spike(self, target: str, intensity: float):
         """Inject CPU spikes"""
         cpu_load = int(100 * intensity)
-        await self._execute_chaos_command("stress --cpu 2 --timeout 60s", target)
+        await self._execute_chaos_command(f"stress --cpu {cpu_load} --timeout 60s", target)
 
     async def _inject_ai_hallucination(self, target: str, intensity: float):
         """Inject AI hallucination scenarios"""
@@ -405,7 +405,9 @@ class ChaosOrchestrator:
     async def _collect_performance_metrics(self, metrics: ExperimentMetrics):
         """Collect performance metrics during experiment"""
         try:
-            pass
+            # This can be expanded with more detailed metric collection
+            logger.debug(
+                f"Collecting performance metrics for {metrics.experiment_id}")
         except Exception as e:
             logger.error(f"Performance metrics collection failed: {e}")
 
@@ -427,7 +429,8 @@ class ChaosOrchestrator:
                     if response.status_code == 200:
                         recovered = True
                         break
-                except Exception as exc:
+                except requests.RequestException:
+                    # Service is likely still down, continue waiting
                     pass
                 await asyncio.sleep(1)
             if recovered:

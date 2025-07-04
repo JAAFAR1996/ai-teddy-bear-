@@ -15,7 +15,6 @@ from typing import Any, AsyncIterator, Dict, List, Optional, Union
 import anthropic
 import google.generativeai as genai
 import openai
-import torch
 
 try:
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -26,7 +25,6 @@ import redis.asyncio as aioredis
 
 from src.core.domain.entities.conversation import Conversation, Message
 from src.infrastructure.config import get_config
-
 
 
 class LLMProvider(Enum):

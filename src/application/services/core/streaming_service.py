@@ -17,8 +17,7 @@ from elevenlabs import ElevenLabs, Voice, VoiceSettings
 from websockets.client import WebSocketClientProtocol
 from websockets.server import WebSocketServerProtocol
 
-from src.application.services.ai.llm_service_factory import (LLMProvider,
-                                                          LLMServiceFactory)
+from src.application.services.ai.llm_service_factory import LLMServiceFactory
 from src.application.services.moderation_service import ModerationService
 from src.application.services.parent_dashboard_service import \
     ParentDashboardService
@@ -35,10 +34,6 @@ from .llm_response_processing_service import LLMResponseProcessingService
 from .websocket_connection_service import WebSocketConnectionService
 
 # streaming_service.py - النسخة الكاملة مع جميع الميزات
-
-
-
-
 
 
 class AudioBuffer:
@@ -98,13 +93,13 @@ class StreamingService:
     Main streaming service coordinator - REFACTORED for High Cohesion.
     EXTRACTED CLASSES applied to resolve Low Cohesion issue.
     Single Responsibility: Coordinate streaming operations between specialized services.
-    
+
     MODULARITY ISSUE RESOLVED:
     - Reduced from 81 functions to 15 functions (81% reduction)
     - Extracted specialized services with single responsibilities
     - Prevents Brain Class evolution
     """
-    
+
     def __init__(self, config=None, stt_service=None, conversation_repo=None):
         self._is_active = True
         self.config = config or get_config()
@@ -115,24 +110,26 @@ class StreamingService:
             max_size=self.config.get('buffer_size', 8192),
             chunk_size=self.config.get('chunk_size', 1024)
         )
-        
+
         self.session_manager = SessionManagementService()
-        
+
         self.websocket_service = WebSocketConnectionService(
             host=self.config.server.FLASK_HOST,
             port=self.config.server.WEBSOCKET_PORT
         )
-        
+
         self.llm_processing_service = LLMResponseProcessingService(
             llm_factory=LLMServiceFactory(self.config),
             moderation_service=ModerationService(self.config),
-            parent_dashboard=ParentDashboardService(self.config, conversation_repo) if conversation_repo else None
+            parent_dashboard=ParentDashboardService(
+                self.config, conversation_repo) if conversation_repo else None
         )
 
         # Services that remain in this class (core streaming functionality)
         self.stt_service = stt_service
         if conversation_repo is None:
-            raise ValueError("conversation_repo is required for StreamingService")
+            raise ValueError(
+                "conversation_repo is required for StreamingService")
 
         # ElevenLabs configuration
         self.elevenlabs_api_key = self.config.api_keys.ELEVENLABS_API_KEY
@@ -159,17 +156,17 @@ class StreamingService:
             # Initialize all specialized services
             self._is_active = True
             self.is_streaming = True
-            
+
             # Start WebSocket server with message handler
             await self.websocket_service.start_server(self.process_client_message)
-            
+
             # Connect to ElevenLabs if configured
             if self.elevenlabs_api_key and self.default_voice:
                 voice_id = await self.get_voice_id(self.default_voice)
                 await self.websocket_service.connect_to_elevenlabs(
                     self.elevenlabs_api_key, voice_id
                 )
-            
+
             self.logger.info("Streaming service started successfully")
         except Exception as e:
             self.logger.error(f"Failed to start streaming service: {e}")
@@ -185,7 +182,7 @@ class StreamingService:
         audio_stats = self.audio_buffer.get_stats()
         session_stats = self.session_manager.get_session_stats()
         connection_stats = self.websocket_service.get_connection_stats()
-        
+
         return {
             "healthy": self._is_active,
             "status": "active" if self._is_active else "inactive",
@@ -210,7 +207,7 @@ class StreamingService:
             # Stop all specialized services
             await self.websocket_service.close_all_connections()
             await self.audio_buffer.clear()
-            
+
             # Cleanup old sessions
             self.session_manager.cleanup_old_sessions()
 
@@ -233,7 +230,7 @@ class StreamingService:
                 'text': self._handle_text_message,
                 'control': self._handle_control_message
             }
-            
+
             handler = message_handlers.get(message_type)
             if handler:
                 await handler(websocket, data, session_id)
@@ -278,11 +275,11 @@ class StreamingService:
 
             # Add to specialized audio buffer
             await self.audio_buffer.write(audio_data)
-            
+
             # Process with STT when buffer has enough data
             buffer_size = await self.audio_buffer.size
             self.logger.info(f"Buffer size after adding audio: {buffer_size}")
-            
+
             if buffer_size >= self.audio_buffer.chunk_size:
                 audio_chunk = await self.audio_buffer.read(buffer_size)
                 self.logger.info(f"Audio chunk length: {len(audio_chunk)}")
@@ -291,7 +288,7 @@ class StreamingService:
                 if self.stt_service:
                     self.logger.debug("Calling STT service")
                     text = await self.stt_service.transcribe(audio_chunk)
-                    
+
                     if text and text.strip():
                         self.logger.info(f"Converted audio to text: {text}")
                         await self.process_text_input(text, session_id, websocket)
@@ -306,7 +303,7 @@ class StreamingService:
     async def process_text_input(self, text: str, session_id: str, websocket=None):
         """Process text input using specialized services"""
         self.logger.info(f"Processing text input: {text}")
-        
+
         try:
             # Get LLM response using specialized service
             response_text = await self.llm_processing_service.process_llm_request(
@@ -315,14 +312,14 @@ class StreamingService:
                 retry_count=0,
                 session_manager=self.session_manager
             )
-            
+
             self.logger.info(f"LLM response: {response_text}")
-            
+
             # Convert to audio if websocket is available
             if websocket:
                 audio_result = await self._convert_text_to_speech(response_text)
                 await self._send_audio_response(websocket, text, response_text, audio_result)
-                
+
         except Exception as e:
             self.logger.error(f"Error processing text input: {e}")
             if websocket:
@@ -342,7 +339,7 @@ class StreamingService:
         elif command == "stop_stream":
             self.is_streaming = False
             await self.websocket_service.send_json_message(websocket, {
-                "type": "control_response", 
+                "type": "control_response",
                 "command": command,
                 "status": "stopped"
             })
@@ -351,14 +348,14 @@ class StreamingService:
         """Convert text to speech using available TTS providers"""
         try:
             from elevenlabs import generate
-            
+
             audio = await asyncio.to_thread(
                 generate,
                 text=text,
                 voice=self.default_voice,
                 model="eleven_multilingual_v2"
             )
-            
+
             if audio and len(audio) > 0:
                 return {
                     "success": True,
@@ -368,7 +365,7 @@ class StreamingService:
                 }
             else:
                 raise ValueError("Empty audio generated")
-                
+
         except Exception as e:
             self.logger.error(f"ElevenLabs TTS failed, trying gTTS: {e}")
             return await self._try_gtts_fallback(text)
@@ -378,26 +375,26 @@ class StreamingService:
         try:
             from gtts import gTTS
             import io
-            
+
             # Create gTTS object
             tts = gTTS(text=text, lang='ar', slow=False)
-            
+
             # Save to bytes buffer
             audio_buffer = io.BytesIO()
             tts.write_to_fp(audio_buffer)
             audio_buffer.seek(0)
             audio_bytes = audio_buffer.read()
-            
+
             if audio_bytes and len(audio_bytes) > 0:
                 return {
                     "success": True,
                     "audio_bytes": audio_bytes,
-                    "format": "mp3", 
+                    "format": "mp3",
                     "provider": "gtts"
                 }
             else:
                 raise ValueError("Empty audio generated from gTTS")
-                
+
         except Exception as e:
             self.logger.error(f"gTTS also failed: {e}")
             return {
@@ -423,20 +420,21 @@ class StreamingService:
             "provider": audio_result["provider"],
             "timestamp": datetime.now().isoformat()
         }
-        
+
         await self.websocket_service.send_json_message(websocket, response_data)
-        self.logger.info(f"Sent audio response with {len(response_data['audio'])} characters")
+        self.logger.info(
+            f"Sent audio response with {len(response_data['audio'])} characters")
 
     async def get_voice_id(self, voice_name: str) -> str:
         """Get voice ID from voice name"""
         try:
             voices = await asyncio.to_thread(self.elevenlabs_client.voices.get_all)
-            
+
             # Find specific voice
             voice_id = self._find_voice_by_name(voices.voices, voice_name)
             if voice_id:
                 return voice_id
-            
+
             # Get default voice
             return self._get_default_voice_id(voices.voices)
 
@@ -448,14 +446,14 @@ class StreamingService:
         """Find voice ID by name in the voices list"""
         if not voices or not voice_name:
             return None
-            
+
         normalized_target_name = voice_name.lower().strip()
-        
+
         for voice in voices:
             if hasattr(voice, 'name') and voice.name:
                 if voice.name.lower() == normalized_target_name:
                     return voice.voice_id
-        
+
         return None
 
     def _get_default_voice_id(self, voices: list) -> Optional[str]:
@@ -463,18 +461,19 @@ class StreamingService:
         if not voices:
             self.logger.warning("No voices available from ElevenLabs")
             return None
-        
+
         # Return first available voice as default
         first_voice = voices[0]
         if hasattr(first_voice, 'voice_id'):
-            self.logger.info(f"Using default voice: {getattr(first_voice, 'name', 'Unknown')}")
+            self.logger.info(
+                f"Using default voice: {getattr(first_voice, 'name', 'Unknown')}")
             return first_voice.voice_id
-        
+
         self.logger.error("Default voice does not have voice_id attribute")
         return None
 
     # ==================== EXTRACTED FUNCTIONS - LARGE METHOD FIX ====================
-    
+
     def get_code_quality_stats(self) -> dict:
         """
         Get comprehensive code quality improvement statistics.
@@ -489,7 +488,7 @@ class StreamingService:
             "extracted_services_details": self._get_extracted_services_details(),
             "benefits_achieved": self._get_benefits_achieved()
         }
-    
+
     def _get_modularity_improvement_stats(self) -> dict:
         """Extract function: Get modularity improvement statistics"""
         return {
@@ -502,7 +501,7 @@ class StreamingService:
             "after": {
                 "main_service_functions": 15,
                 "brain_class_risk": "None",
-                "maintainability": "High", 
+                "maintainability": "High",
                 "testability": "Easy"
             },
             "improvement": {
@@ -511,7 +510,7 @@ class StreamingService:
                 "architecture": "Modular with single responsibilities"
             }
         }
-    
+
     def _get_large_method_improvement_stats(self) -> dict:
         """Extract function: Get large method improvement statistics"""
         return {
@@ -532,7 +531,7 @@ class StreamingService:
                 "compliance": "100% (target < 70 lines)"
             }
         }
-    
+
     def _get_code_health_metrics(self) -> dict:
         """Extract function: Get comprehensive code health metrics"""
         return {
@@ -544,7 +543,7 @@ class StreamingService:
             "maintainability_score": "A+",
             "overall_improvement": "Excellent"
         }
-    
+
     def _get_extracted_services_details(self) -> dict:
         """Extract function: Get details of extracted services"""
         return {
@@ -554,7 +553,7 @@ class StreamingService:
                 "cohesion": "High"
             },
             "SessionManagementService": {
-                "responsibility": "Session lifecycle management", 
+                "responsibility": "Session lifecycle management",
                 "functions": 9,
                 "cohesion": "High"
             },
@@ -569,7 +568,7 @@ class StreamingService:
                 "cohesion": "High"
             }
         }
-    
+
     def _get_benefits_achieved(self) -> list:
         """Extract function: Get list of benefits achieved"""
         return [
