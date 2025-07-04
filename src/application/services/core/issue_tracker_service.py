@@ -2,7 +2,9 @@ from typing import Any, Dict
 
 #!/usr/bin/env python3
 """
-
+Extracted validation logic to reduce cyclomatic complexity.
+Each validation method has a single responsibility.
+"""
 
 import hashlib
 import json
@@ -28,16 +30,13 @@ class IssueValidationService:
     Extracted validation logic to reduce cyclomatic complexity.
     Each validation method has a single responsibility.
     """
-
     @staticmethod
     def validate_required_string(value: str, field_name: str) -> None:
-        """Validate that a field is a non-empty string"""
         if not value or not isinstance(value, str):
             raise ValueError(f"{field_name} must be a non-empty string")
 
     @staticmethod
     def validate_severity_level(severity: str) -> str:
-        """Validate and return a valid severity level"""
         valid_severities = ["low", "medium", "high", "critical"]
         if severity not in valid_severities:
             raise ValueError(f"severity must be one of: {valid_severities}")
@@ -45,7 +44,6 @@ class IssueValidationService:
 
     @staticmethod
     def validate_status_level(status: str) -> str:
-        """Validate and return a valid status level"""
         valid_statuses = ["open", "closed", "in_progress"]
         if status not in valid_statuses:
             raise ValueError(f"status must be one of: {valid_statuses}")
@@ -53,33 +51,28 @@ class IssueValidationService:
 
     @staticmethod
     def validate_limit_range(limit: int) -> None:
-        """Validate limit parameter is within acceptable range"""
         if limit < 1 or limit > 100:
             raise ValueError("limit must be between 1 and 100")
 
     @staticmethod
     def validate_offset_range(offset: int) -> None:
-        """Validate offset parameter is non-negative"""
         if offset < 0:
             raise ValueError("offset must be non-negative")
 
     @staticmethod
     def clean_and_validate_component(component: str) -> str:
-        """Clean and validate component name"""
         if not component or not isinstance(component, str):
             return "unknown"
         return component.strip().lower()
 
     @staticmethod
     def clean_and_validate_error_type(error_type: str) -> str:
-        """Clean and validate error type"""
         if not error_type or not isinstance(error_type, str):
             return "runtime_error"
         return error_type.strip()
 
     @staticmethod
     def clean_stacktrace(stacktrace: Optional[str]) -> Optional[str]:
-        """Clean and validate stacktrace"""
         if stacktrace and not isinstance(stacktrace, str):
             return str(stacktrace)
         return stacktrace
@@ -95,25 +88,16 @@ class IssueDataValidator:
         self.validator = validation_service
 
     def validate_required_fields(self, title: str, description: str) -> None:
-        """Validate required string fields"""
         self.validator.validate_required_string(title, "title")
         self.validator.validate_required_string(description, "description")
 
     def validate_and_clean_optional_fields(self, issue_data) -> None:
-        """Validate and clean optional fields"""
-        # Validate severity
         issue_data.severity = self.validator.validate_severity_level(
             issue_data.severity)
-
-        # Clean component
         issue_data.component = self.validator.clean_and_validate_component(
             issue_data.component)
-
-        # Clean error type
         issue_data.error_type = self.validator.clean_and_validate_error_type(
             issue_data.error_type)
-
-        # Clean stacktrace
         issue_data.stacktrace = self.validator.clean_stacktrace(
             issue_data.stacktrace)
 
@@ -128,17 +112,14 @@ class IssueQueryValidator:
         self.validator = validation_service
 
     def validate_optional_status(self, status: Optional[str]) -> None:
-        """Validate status parameter if provided"""
         if status:
             self.validator.validate_status_level(status)
 
     def validate_optional_severity(self, severity: Optional[str]) -> None:
-        """Validate severity parameter if provided"""
         if severity:
             self.validator.validate_severity_level(severity)
 
     def validate_pagination_params(self, limit: int, offset: int) -> None:
-        """Validate pagination parameters"""
         self.validator.validate_limit_range(limit)
         self.validator.validate_offset_range(offset)
 
@@ -161,14 +142,8 @@ class IssueData:
     stacktrace: Optional[str] = None
 
     def __post_init__(self):
-        """
-        Validate issue data with extracted validation methods.
-        Cyclomatic complexity reduced from 17 to 2.
-        """
         validation_service = IssueValidationService()
         issue_validator = IssueDataValidator(validation_service)
-
-        # Decomposed validation calls (low complexity)
         issue_validator.validate_required_fields(self.title, self.description)
         issue_validator.validate_and_clean_optional_fields(self)
 
@@ -183,14 +158,8 @@ class IssueQueryParams:
     offset: int = 0
 
     def __post_init__(self):
-        """
-        Validate query parameters with extracted validation methods.
-        Cyclomatic complexity reduced from 12 to 3.
-        """
         validation_service = IssueValidationService()
         query_validator = IssueQueryValidator(validation_service)
-
-        # Decomposed validation calls (low complexity)
         query_validator.validate_optional_status(self.status)
         query_validator.validate_optional_severity(self.severity)
         query_validator.validate_pagination_params(self.limit, self.offset)
@@ -205,29 +174,22 @@ class IssueUpdateData:
     notes: Optional[str] = None
 
     def __post_init__(self):
-        """Validate update data with extracted validation methods"""
         validation_service = IssueValidationService()
-
-        # Validate required field
         validation_service.validate_required_string(self.issue_id, "issue_id")
-
-        # Validate optional fields
         if self.status:
             validation_service.validate_status_level(self.status)
-
         if self.severity:
             validation_service.validate_severity_level(self.severity)
 
 
 class IssueTrackerService:
     """
-    🐛 نظام تتبع الأخطاء والمشاكل
-
-    الميزات:
-    - تسجيل تلقائي للأخطاء مع Stacktrace
-    - تجميع الأخطاء المتشابهة
-    - تتبع حالة المشاكل
-    - إحصائيات تفصيلية
+    Issue tracking and error management system.
+    Features:
+    - Automatic error logging with stacktrace
+    - Grouping of similar errors
+    - Issue status tracking
+    - Detailed statistics
     """
 
     def __init__(self, config_path: str = "config/staging_config.json"):
@@ -237,13 +199,10 @@ class IssueTrackerService:
         self._init_database()
 
     def _load_config(self) -> Any:
-        """تحميل إعدادات تتبع الأخطاء"""
         try:
             with open(self.config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
-
             monitoring_config = config.get("MONITORING_CONFIG", {})
-
             self.config = {
                 "enable_issue_tracking": monitoring_config.get(
                     "enable_issue_tracking", True
@@ -253,21 +212,17 @@ class IssueTrackerService:
                 ),
                 "log_retention_days": monitoring_config.get("log_retention_days", 30),
             }
-
         except Exception as e:
             self.logger.error(
                 "Failed to load issue tracker config", error=str(e))
             self.config = {"enable_issue_tracking": True}
 
     def _init_database(self) -> Any:
-        """تهيئة قاعدة بيانات تتبع الأخطاء"""
         try:
             self.db_path = "logs/issues.db"
             Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
-
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
-
             cursor.execute(
                 """
                 CREATE TABLE IF NOT EXISTS issues(
@@ -284,14 +239,11 @@ class IssueTrackerService:
                     last_occurrence DATETIME DEFAULT CURRENT_TIMESTAMP,
                     notes TEXT
                 )
-            """
+                """
             )
-
             conn.commit()
             conn.close()
-
             self.logger.info("Issue tracker database initialized")
-
         except Exception as e:
             self.logger.error(
                 "Failed to initialize issue tracker database", error=str(e)

@@ -11,13 +11,14 @@ import requests
 
 class EmailService:
     """خدمة البريد الإلكتروني"""
-    
+
     def __init__(self, smtp_server: str, smtp_port: int, username: str, password: str):
         self.smtp_server = smtp_server
         self.smtp_port = smtp_port
         self.username = username
         self.password = password
-    
+        self.logger = logging.getLogger(__name__)
+
     async def send_email(self, to: str, subject: str, body: str, is_html: bool = True) -> bool:
         """إرسال بريد إلكتروني"""
         try:
@@ -25,27 +26,29 @@ class EmailService:
             msg['From'] = self.username
             msg['To'] = to
             msg['Subject'] = subject
-            
+
             msg.attach(MIMEText(body, 'html' if is_html else 'plain', 'utf-8'))
-            
+
             server = smtplib.SMTP(self.smtp_server, self.smtp_port)
             server.starttls()
             server.login(self.username, self.password)
             server.send_message(msg)
             server.quit()
-            
+
             return True
         except Exception as e:
-    logger.error(f"Error: {e}")f"Email sending failed: {e}")
+            self.logger.error(f"Email sending failed: {e}")
             return False
+
 
 class SMSService:
     """خدمة الرسائل النصية"""
-    
+
     def __init__(self, api_key: str, api_url: str):
         self.api_key = api_key
         self.api_url = api_url
-    
+        self.logger = logging.getLogger(__name__)
+
     async def send_sms(self, to: str, message: str) -> bool:
         """إرسال رسالة نصية"""
         try:
@@ -54,25 +57,27 @@ class SMSService:
                 'message': message,
                 'api_key': self.api_key
             }
-            
+
             response = requests.post(self.api_url, json=payload)
             return response.status_code == 200
         except Exception as e:
-    logger.error(f"Error: {e}")f"SMS sending failed: {e}")
+            self.logger.error(f"SMS sending failed: {e}")
             return False
+
 
 class PushNotificationService:
     """خدمة الإشعارات الفورية"""
-    
+
     def __init__(self, firebase_key: Optional[str] = None):
         self.firebase_key = firebase_key
-    
+        self.logger = logging.getLogger(__name__)
+
     async def send_notification(self, token: str, title: str, body: str, data: Dict = None) -> bool:
         """إرسال إشعار فوري"""
         try:
             if not self.firebase_key:
                 return False
-            
+
             payload = {
                 'to': token,
                 'notification': {
@@ -81,29 +86,31 @@ class PushNotificationService:
                 },
                 'data': data or {}
             }
-            
+
             headers = {
                 'Authorization': f'key={self.firebase_key}',
                 'Content-Type': 'application/json'
             }
-            
+
             response = requests.post(
                 'https://fcm.googleapis.com/fcm/send',
                 json=payload,
                 headers=headers
             )
-            
+
             return response.status_code == 200
         except Exception as e:
-    logger.error(f"Error: {e}")f"Push notification failed: {e}")
+            self.logger.error(f"Push notification failed: {e}")
             return False
+
 
 class ExternalAPIManager:
     """مدير الخدمات الخارجية"""
-    
+
     def __init__(self, config: Dict):
         self.config = config
-        
+        self.logger = logging.getLogger(__name__)
+
         # تهيئة الخدمات
         self.email_service = EmailService(
             smtp_server=config.get('SMTP_SERVER', ''),
@@ -111,20 +118,20 @@ class ExternalAPIManager:
             username=config.get('EMAIL_USERNAME', ''),
             password=config.get('EMAIL_PASSWORD', '')
         )
-        
+
         self.sms_service = SMSService(
             api_key=config.get('SMS_API_KEY', ''),
             api_url=config.get('SMS_API_URL', '')
         )
-        
+
         self.push_service = PushNotificationService(
             firebase_key=config.get('FIREBASE_KEY')
         )
-    
+
     async def send_alert_via_all_channels(self, recipient_info: Dict, message: str, title: str = "تنبيه"):
         """إرسال تنبيه عبر جميع القنوات المتاحة"""
         tasks = []
-        
+
         # بريد إلكتروني
         if recipient_info.get('email'):
             tasks.append(
@@ -134,7 +141,7 @@ class ExternalAPIManager:
                     body=message
                 )
             )
-        
+
         # رسالة نصية
         if recipient_info.get('phone'):
             tasks.append(
@@ -143,7 +150,7 @@ class ExternalAPIManager:
                     message=f"{title}: {message[:100]}..."
                 )
             )
-        
+
         # إشعار فوري
         if recipient_info.get('device_token'):
             tasks.append(
@@ -153,19 +160,21 @@ class ExternalAPIManager:
                     body=message[:100]
                 )
             )
-        
+
         # تنفيذ جميع المهام
         import asyncio
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         return {
             'email_sent': len(tasks) > 0 and not isinstance(results[0], Exception),
             'sms_sent': len(tasks) > 1 and not isinstance(results[1], Exception),
             'push_sent': len(tasks) > 2 and not isinstance(results[2], Exception)
         }
 
+
 class SecureExternalConfig:
     """Reads all external service credentials from environment variables only"""
+
     def __init__(self):
         self.logger = logging.getLogger("SecureExternalConfig")
         self.smtp_server = os.environ.get("SMTP_SERVER")

@@ -34,7 +34,7 @@ class EmotionLogRepository:
         q = q.order_by(EmotionLog.timestamp.desc()).limit(limit).offset(offset)
         return self.session.exec(q).all()
 
-    def aggregate_stats(str="day") -> None:
+    def aggregate_stats(self, user_id: str, period: str = "day") -> List:
         """Aggregation: avg score & count per emotion_type per period (day/week)."""
         fmt = "%Y-%m-%d" if period == "day" else "%Y-%W"
         q = (

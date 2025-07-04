@@ -355,7 +355,7 @@ class AdvancedContentFilter:
 
             # دمج النتائج وتحليلها
             analysis_result = await self._combine_analysis_results(
-                content, child_age, toxicity_result, age_result
+                content, child_age, toxicity_result, age_result, start_time
             )
 
             # حفظ في الكاش
@@ -376,6 +376,7 @@ class AdvancedContentFilter:
         child_age: int,
         toxicity_result: Dict[str, Any],
         age_result: Dict[str, Any],
+        start_time: float,
     ) -> ContentAnalysisResult:
         """دمج جميع نتائج التحليل"""
 

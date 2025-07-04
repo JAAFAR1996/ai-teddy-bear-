@@ -58,7 +58,8 @@ def decode_cursor(encoded_cursor: str) -> Dict[str, Any]:
         cursor_json = base64.b64decode(encoded_cursor.encode()).decode()
         return json.loads(cursor_json)
     # FIXME: replace with specific exception
-except Exception as exc:return {"offset": 0}
+    except Exception as exc:
+        return {"offset": 0}
 
 
 class CursorPaginator:
@@ -110,7 +111,8 @@ class CursorPaginator:
         for i, item in enumerate(items):
             cursor = encode_cursor(
                 offset=offset + i + 1,
-                timestamp=getattr(item, sort_field, datetime.utcnow()).isoformat(),
+                timestamp=getattr(item, sort_field,
+                                  datetime.utcnow()).isoformat(),
             )
             edges.append(Edge(node=self._serialize_item(item), cursor=cursor))
 

@@ -1,3 +1,8 @@
+from pathlib import Path
+import sys
+import subprocess
+import os
+import structlog
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -8,15 +13,8 @@ logger = logging.getLogger(__name__)
 """
 سكريبت إعداد وتشغيل مشروع AI Teddy Bear
 """
-import structlog
 
 logger = structlog.get_logger(__name__)
-
-
-import os
-import subprocess
-import sys
-from pathlib import Path
 
 
 def create_directories() -> Any:
@@ -24,7 +22,7 @@ def create_directories() -> Any:
     directories = [
         "data",
         "uploads/audio",
-        "uploads/temp", 
+        "uploads/temp",
         "outputs/stories",
         "outputs/responses",
         "outputs/processed",
@@ -33,21 +31,24 @@ def create_directories() -> Any:
         "static/images",
         "logs"
     ]
-    
+
     for directory in directories:
         Path(directory).mkdir(parents=True, exist_ok=True)
         logger.info(f"✓ تم إنشاء مجلد: {directory}")
+
 
 def install_requirements() -> Any:
     """تثبيت المتطلبات"""
     logger.info("📦 تثبيت المتطلبات...")
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
         logger.info("✓ تم تثبيت جميع المتطلبات بنجاح")
     except Exception as e:
-    logger.error(f"Error: {e}")"❌ فشل في تثبيت المتطلبات")
+        logger.error(f"Error: {e} ❌ فشل في تثبيت المتطلبات")
         return False
     return True
+
 
 def create_env_file() -> Any:
     """إنشاء ملف البيئة"""
@@ -77,7 +78,7 @@ DEBUG=False
 HOST=0.0.0.0
 PORT=8000
 """
-    
+
     if not Path(".env").exists():
         with open(".env", "w", encoding="utf-8") as f:
             f.write(env_content)
@@ -85,6 +86,7 @@ PORT=8000
         logger.warning("⚠️  يرجى تعبئة مفاتيح API في ملف .env")
     else:
         logger.info("✓ ملف .env موجود بالفعل")
+
 
 def initialize_database() -> Any:
     """تهيئة قاعدة البيانات"""
@@ -94,7 +96,8 @@ def initialize_database() -> Any:
         db = Database()
         logger.info("✓ تم تهيئة قاعدة البيانات بنجاح")
     except Exception as e:
-    logger.error(f"Error: {e}")f"❌ فشل في تهيئة قاعدة البيانات: {e}")
+        logger.error(f"Error: {e} ❌ فشل في تهيئة قاعدة البيانات: {e}")
+
 
 def run_tests() -> Any:
     """تشغيل الاختبارات"""
@@ -103,31 +106,31 @@ def run_tests() -> Any:
         subprocess.check_call([sys.executable, "-m", "pytest", "tests/", "-v"])
         logger.info("✓ جميع الاختبارات نجحت")
     except Exception as e:
-    logger.error(f"Error: {e}")"⚠️  بعض الاختبارات فشلت")
-    except Exception as e:
-    logger.error(f"Error: {e}")"ℹ️  لا توجد اختبارات للتشغيل")
+        logger.error(
+            f"Error: {e} ⚠️  بعض الاختبارات فشلت أو ℹ️  لا توجد اختبارات للتشغيل")
+
 
 def main() -> Any:
     """الدالة الرئيسية للإعداد"""
     logger.info("🚀 بدء إعداد مشروع AI Teddy Bear")
     logger.info("=" * 50)
-    
+
     # إنشاء المجلدات
     create_directories()
-    
+
     # تثبيت المتطلبات
     if not install_requirements():
         return
-    
+
     # إنشاء ملف البيئة
     create_env_file()
-    
+
     # تهيئة قاعدة البيانات
     initialize_database()
-    
+
     # تشغيل الاختبارات
     run_tests()
-    
+
     logger.info("\n" + "=" * 50)
     logger.info("✅ تم إعداد المشروع بنجاح!")
     logger.info("\n📋 خطوات التشغيل:")
@@ -138,6 +141,7 @@ def main() -> Any:
     logger.info("- لوحة الأهل: http://localhost:8000")
     logger.info("- API التفاعل: http://localhost:8000/interact")
     logger.info("- WebSocket: ws://localhost:8000/ws/{child_id}")
+
 
 if __name__ == "__main__":
     main()

@@ -198,7 +198,8 @@ class AdvancedEncryption:
             algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend()
         )
         decryptor = cipher.decryptor()
-        padded_data = decryptor.update(encrypted_content) + decryptor.finalize()
+        padded_data = decryptor.update(
+            encrypted_content) + decryptor.finalize()
 
         # Remove padding
         padding_length = padded_data[-1]
@@ -253,7 +254,8 @@ class PasswordSecurity:
         self.forbidden_patterns = [
             r"(.)\1{3,}",  # Repeated characters
             r"(012|123|234|345|456|567|678|789|890)",  # Sequential numbers
-            r"(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)",  # Sequential letters
+            # Sequential letters
+            r"(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)",
             r"(qwerty|asdfgh|zxcvbn)",  # Keyboard patterns
         ]
 
@@ -285,13 +287,16 @@ class PasswordSecurity:
 
         # Character requirements
         if self.require_uppercase and not re.search(r"[A-Z]", password):
-            errors.append("Password must contain at least one uppercase letter")
+            errors.append(
+                "Password must contain at least one uppercase letter")
         if self.require_lowercase and not re.search(r"[a-z]", password):
-            errors.append("Password must contain at least one lowercase letter")
+            errors.append(
+                "Password must contain at least one lowercase letter")
         if self.require_digits and not re.search(r"\d", password):
             errors.append("Password must contain at least one digit")
         if self.require_symbols and not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-            errors.append("Password must contain at least one special character")
+            errors.append(
+                "Password must contain at least one special character")
 
         # Pattern checks
         for pattern in self.forbidden_patterns:
@@ -369,10 +374,14 @@ class RateLimitingService:
 
         # Rate limit configurations
         self.limits = {
-            "api_general": {"requests": 100, "window": 60},  # 100 requests per minute
-            "api_auth": {"requests": 5, "window": 60},  # 5 auth attempts per minute
-            "websocket": {"connections": 10, "window": 60},  # 10 connections per minute
-            "audio_upload": {"requests": 20, "window": 60},  # 20 uploads per minute
+            # 100 requests per minute
+            "api_general": {"requests": 100, "window": 60},
+            # 5 auth attempts per minute
+            "api_auth": {"requests": 5, "window": 60},
+            # 10 connections per minute
+            "websocket": {"connections": 10, "window": 60},
+            # 20 uploads per minute
+            "audio_upload": {"requests": 20, "window": 60},
         }
 
     async def check_rate_limit(
@@ -498,7 +507,8 @@ class SecurityAuditLogger:
         if not event.correlation_id:
             import contextvars
 
-            correlation_id_var = contextvars.ContextVar("correlation_id", default=None)
+            correlation_id_var = contextvars.ContextVar(
+                "correlation_id", default=None)
             event.correlation_id = correlation_id_var.get()
 
         async with self._buffer_lock:
@@ -694,7 +704,8 @@ class EnterpriseSecurityManager:
         self.rate_limiter = RateLimitingService(redis_client)
 
         # JWT settings
-        self.jwt_secret = getattr(settings, "jwt_secret", secrets.token_urlsafe(32))
+        self.jwt_secret = getattr(
+            settings, "jwt_secret", secrets.token_urlsafe(32))
         self.jwt_algorithm = "HS256"
         self.jwt_expire_minutes = 30
 
@@ -888,7 +899,7 @@ def get_security_manager() -> EnterpriseSecurityManager:
     return _security_manager
 
 
-def set_security_manager(EnterpriseSecurityManager) -> None:
+def set_security_manager(manager: EnterpriseSecurityManager) -> None:
     """Set global security manager instance"""
     global _security_manager
     _security_manager = manager

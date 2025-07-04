@@ -343,11 +343,11 @@ class BaseRepository(ABC, Generic[T, ID]):
 
     # Hooks and Events
 
-    def add_hook(Callable) -> None:
+    def add_hook(self, operation: OperationType, hook: Callable) -> None:
         """Add a hook for an operation type"""
         self._hooks[operation].append(hook)
 
-    def remove_hook(Callable) -> None:
+    def remove_hook(self, operation: OperationType, hook: Callable) -> None:
         """Remove a hook"""
         if hook in self._hooks[operation]:
             self._hooks[operation].remove(hook)
