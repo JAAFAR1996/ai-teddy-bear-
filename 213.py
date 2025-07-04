@@ -1,4 +1,7 @@
-import requests, os, json
+import json
+import os
+
+import requests
 
 TOKEN = os.getenv("CODACY_API_TOKEN")  # ضبطه في متغير بيئة بعد تشغيل السكربت
 ORG = "gh"
@@ -10,13 +13,21 @@ HEADERS = {"api-token": TOKEN, "Content-Type": "application/json"}
 OUTPUT_JSON = "all_issues.json"
 OUTPUT_MD = "codacy_issues_markdown"
 
+
 def fetch_all_issues():
     all_issues = []
     payload = {
-        "levels": ["Error","Warning","Info"],
-        "categories": ["Security","Code style","Error prone","Best practice","Performance","Code complexity"],
+        "levels": ["Error", "Warning", "Info"],
+        "categories": [
+            "Security",
+            "Code style",
+            "Error prone",
+            "Best practice",
+            "Performance",
+            "Code complexity",
+        ],
         "status": "All",
-        "limit": 1000
+        "limit": 1000,
     }
     cursor = None
 
@@ -39,6 +50,7 @@ def fetch_all_issues():
 
     return all_issues
 
+
 def save_results(issues):
     os.makedirs(OUTPUT_MD, exist_ok=True)
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
@@ -46,23 +58,24 @@ def save_results(issues):
     print(f"✅ JSON saved to {OUTPUT_JSON}")
 
     for idx, issue in enumerate(issues, 1):
-        md = f"""# [{issue.get('category', 'Issue')}] {issue.get('tool', '')} – {issue.get('ruleDescription', '')}
+        md = f"""# [{issue.get("category", "Issue")}] {issue.get("tool", "")} – {issue.get("ruleDescription", "")}
 
-**File:** `{issue.get('filename', 'unknown')}`
-**Line:** {issue.get('line', 'unknown')}`
+**File:** `{issue.get("filename", "unknown")}`
+**Line:** {issue.get("line", "unknown")}`
 
 ---
 **Problem:**
-> {issue.get('message', '')}
+> {issue.get("message", "")}
 
 ---
-**Severity:** {issue.get('severity', 'unknown')}
-**Pattern:** {issue.get('patternId', '')}
-**Tool:** {issue.get('tool', '')}
+**Severity:** {issue.get("severity", "unknown")}
+**Pattern:** {issue.get("patternId", "")}
+**Tool:** {issue.get("tool", "")}
 """
         with open(f"{OUTPUT_MD}/issue_{idx:05}.md", "w", encoding="utf-8") as out:
             out.write(md)
     print(f"✅ Markdown: {len(issues)} issues in `{OUTPUT_MD}`")
+
 
 if __name__ == "__main__":
     issues = fetch_all_issues()
