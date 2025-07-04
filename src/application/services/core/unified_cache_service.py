@@ -46,7 +46,6 @@ class UnifiedCacheService:
         raise NotImplementedError(
             "Implementation needed: تنفيذ الدالة من cache_service.py"
         )
-        pass
 
     def decorator(Callable) -> None:
         """دالة مدموجة من cache_service.py"""
@@ -54,7 +53,6 @@ class UnifiedCacheService:
         raise NotImplementedError(
             "Implementation needed: تنفيذ الدالة من cache_service.py"
         )
-        pass
 
     def _generate_cache_key():
         """دالة مدموجة من cache_service.py"""
@@ -62,7 +60,6 @@ class UnifiedCacheService:
         raise NotImplementedError(
             "Implementation needed: تنفيذ الدالة من cache_service.py"
         )
-        pass
 
     # ----- من simple_cache_service.py -----
 
@@ -72,7 +69,6 @@ class UnifiedCacheService:
         raise NotImplementedError(
             "Implementation needed: تنفيذ الدالة من simple_cache_service.py"
         )
-        pass
 
     def decorator(Callable) -> None:
         """دالة مدموجة من simple_cache_service.py"""
@@ -80,7 +76,6 @@ class UnifiedCacheService:
         raise NotImplementedError(
             "Implementation needed: تنفيذ الدالة من simple_cache_service.py"
         )
-        pass
 
     def _generate_cache_key():
         """دالة مدموجة من simple_cache_service.py"""
@@ -88,7 +83,6 @@ class UnifiedCacheService:
         raise NotImplementedError(
             "Implementation needed: تنفيذ الدالة من simple_cache_service.py"
         )
-        pass
 
     def get_stats(self) -> Dict[str, Any]:
         """دالة مدموجة من simple_cache_service.py"""
@@ -96,7 +90,6 @@ class UnifiedCacheService:
         raise NotImplementedError(
             "Implementation needed: تنفيذ الدالة من simple_cache_service.py"
         )
-        pass
 
     # ==========================================
     # دوال مساعدة إضافية
@@ -118,7 +111,6 @@ class UnifiedCacheService:
         """الحصول على المكونات النشطة"""
         # RESOLVED: تنفيذ منطق فحص المكونات
         raise NotImplementedError("Implementation needed: تنفيذ منطق فحص المكونات")
-        return []
 
 
 # ==========================================
