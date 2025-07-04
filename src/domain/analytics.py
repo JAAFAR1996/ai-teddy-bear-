@@ -21,31 +21,30 @@ class ChildAnalytics:
             # استعلام وهمي - يجب ربطه بقاعدة البيانات الفعلية
             emotions = ['happy', 'calm', 'excited', 'neutral']
             return 'happy'  # افتراضي
-        except IndexError as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)IndexError as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)            return 'neutral'
+        except Exception as e:
+            logger.error(f"Error in get_dominant_emotion: {e}", exc_info=True)
+            return 'neutral'
     
     def calculate_emotion_stability(self, child_id: str, days: int = 30) -> float:
         """حساب استقرار المشاعر (0-1)"""
         try:
-         except Exception as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)اب وهمي - يجب تطويره
+            # كود وهمي - يجب تطويره
             return 0.75  # 75% استقرار
         except Exception as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)            return 0.5
+            logger.error(f"Error in calculate_emotion_stability: {e}", exc_info=True)
+            return 0.5
     
-    def get_speech_concerns(self, chilexcept IndexError as e -> Any:
-    logger.error(f"Error in operation: {e}", exc_info=True)tr) -> List[str]:
+    def get_speech_concerns(self, child_id: str) -> List[str]:
         """الحصول على مخاوف النطق"""
         try:
             # استعلام وهمي
             return []  # لا توجد مخاوف
-        except IndexError as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)            return []
+        except Exception as e:
+            logger.error(f"Error in get_speech_concerns: {e}", exc_info=True)
+            return []
     
     def get_learning_progress(self, child_id: str) -> Dict:
-        """تقدexcept Exception as e:
-    logger.error(f"Error in operation: {e}", exc_info=True) التعليمي"""
+        """تقدير التقدم التعليمي"""
         try:
             return {
                 'status': 'active',
@@ -54,7 +53,8 @@ class ChildAnalytics:
                 'improvement_rate': 12
             }
         except Exception as e:
-    logger.error(f"Error in operation: {e}", exc_info=True)            return {'status': 'no_data'}
+            logger.error(f"Error in get_learning_progress: {e}", exc_info=True)
+            return {'status': 'no_data'}
     
     def evaluate_social_skills(self, child_id: str) -> Dict:
         """تقييم المهارات الاجتماعية"""

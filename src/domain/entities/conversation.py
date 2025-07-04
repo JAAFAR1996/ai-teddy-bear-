@@ -297,7 +297,7 @@ class Conversation(BaseModel):
 
         return message
 
-    def _update_metrics(Message) -> None:
+    def _update_metrics(self, message) -> None:
         """Update conversation metrics"""
         self.metrics.total_messages += 1
 

@@ -5,6 +5,7 @@ Comprehensive audio interface with recording, processing, and visualization
 
 import asyncio
 from datetime import datetime
+from typing import Any
 
 import structlog
 from PySide6.QtCore import QTimer, Signal, pyqtSlot
@@ -198,7 +199,7 @@ class ModernAudioWidget(QWidget):
         for device in devices:
             self.input_device_combo.addItem(device["name"], device["id"])
 
-    def _update_sample_rate(str) -> None:
+    def _update_sample_rate(self, rate_text: str) -> None:
         """Update sample rate"""
         try:
             rate = int(rate_text)
@@ -207,12 +208,12 @@ class ModernAudioWidget(QWidget):
         except ValueError:
             logger.error("Invalid sample rate", rate=rate_text)
 
-    def _toggle_processing(bool) -> None:
+    def _toggle_processing(self, enabled: bool) -> None:
         """Toggle audio processing"""
         self.config.enable_processing = enabled
         self.processing_level_combo.setEnabled(enabled)
 
-    def _update_processing_level(str) -> None:
+    def _update_processing_level(self, level: str) -> None:
         """Update processing level"""
         self.config.processing_level = level
 
@@ -291,7 +292,7 @@ class ModernAudioWidget(QWidget):
             self.status_label.setText(f"❌ Processing failed: {e}")
             self._reset_ui_state()
 
-    def _send_to_server(bytes) -> None:
+    def _send_to_server(self, wav_data: bytes) -> None:
         """Send audio to server"""
         try:
             metadata = {

@@ -52,7 +52,7 @@ class AudioRecorder:
             self.logger.error(f"Error loading audio file: {e}")
             return np.array([])
 
-    def save_audio_file(int=16000) -> None:
+    def save_audio_file(self, audio_data: np.ndarray, file_path: str, sample_rate: int = 16000) -> None:
         """
         Save audio data to a file.
 

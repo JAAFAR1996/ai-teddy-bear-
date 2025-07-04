@@ -621,7 +621,7 @@ class AdvancedBehavioralAnalyzer:
             for alert in sorted(alerts, key=lambda x: x.created_at, reverse=True)
         ]
 
-    def mark_alert_as_read(str) -> None:
+    def mark_alert_as_read(self, alert_id: str) -> None:
         """تأشير التنبيه كمقروء"""
         for alert in self.behavioral_alerts:
             if alert.id == alert_id:

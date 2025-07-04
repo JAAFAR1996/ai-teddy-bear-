@@ -475,7 +475,7 @@ class InteractiveStoryEngine:
         else:
             return {"error": "المشهد التالي غير موجود"}
 
-    def _update_behavioral_data(StoryChoice) -> None:
+    def _update_behavioral_data(self, story_state: Dict, choice: StoryChoice) -> None:
         """تحديث البيانات السلوكية"""
         if "behavioral_data" not in story_state:
             story_state["behavioral_data"] = {}

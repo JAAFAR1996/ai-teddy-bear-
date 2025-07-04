@@ -9,6 +9,7 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
+import logging
 
 
 class ProperDDDSplitter:
@@ -18,10 +19,11 @@ class ProperDDDSplitter:
         self.services_dir = self.src_dir / "application" / "services"
         self.split_count = 0
         self.report = []
+        self.logger = logging.getLogger(__name__)
 
     def log(self, message: str):
         """تسجيل الرسائل"""
-        logger.info(f"✓ {message}")
+        self.logger.info(f"✓ {message}")
         self.report.append(message)
 
     def identify_god_classes(self) -> List[Tuple[Path, int]]:
@@ -455,9 +457,9 @@ class AccessibilityApplicationService:
 
     def run_splitting(self):
         """تشغيل عملية التقسيم الكاملة"""
-        logger.info("=" * 70)
-        logger.info("🔧 بدء تقسيم God Classes الصحيح...")
-        logger.info("=" * 70)
+        self.logger.info("=" * 70)
+        self.logger.info("🔧 بدء تقسيم God Classes الصحيح...")
+        self.logger.info("=" * 70)
         god_classes = self.identify_god_classes()
         if not god_classes:
             self.log("لم يتم العثور على God Classes للتقسيم")
@@ -474,11 +476,11 @@ class AccessibilityApplicationService:
                 self.move_original_to_legacy(file_path)
             else:
                 self.log(f"⚠️ {filename} يحتاج تقسيم يدوي (لم يتم تطبيقه بعد)")
-        logger.info("=" * 70)
-        logger.info("✅ انتهى التقسيم بنجاح!")
-        logger.info(f"   - ملفات مُقسمة: {self.split_count}")
-        logger.info(f"   - ملفات جديدة: {total_files_created}")
-        logger.info("=" * 70)
+        self.logger.info("=" * 70)
+        self.logger.info("✅ انتهى التقسيم بنجاح!")
+        self.logger.info(f"   - ملفات مُقسمة: {self.split_count}")
+        self.logger.info(f"   - ملفات جديدة: {total_files_created}")
+        self.logger.info("=" * 70)
         return self.report
 
 

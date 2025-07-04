@@ -123,43 +123,43 @@ class EnterpriseMetrics:
                 registry=self.registry,
             )
 
-    def increment_requests(int) -> None:
+    def increment_requests(self, method: str, endpoint: str, status_code: int) -> None:
         """Increment request counter."""
         if self.request_count:
             self.request_count.labels(
                 method=method, endpoint=endpoint, status_code=status_code
             ).inc()
 
-    def record_request_duration(float) -> None:
+    def record_request_duration(self, method: str, endpoint: str, duration: float) -> None:
         """Record request duration."""
         if self.request_duration:
             self.request_duration.labels(method=method, endpoint=endpoint).observe(
                 duration
             )
 
-    def set_active_connections(int) -> None:
+    def set_active_connections(self, count: int) -> None:
         """Set active connections count."""
         if self.active_connections:
             self.active_connections.set(count)
 
-    def increment_errors(str) -> None:
+    def increment_errors(self, error_type: str, component: str) -> None:
         """Increment error counter."""
         if self.error_count:
             self.error_count.labels(error_type=error_type, component=component).inc()
 
-    def set_health_score(float) -> None:
+    def set_health_score(self, score: float) -> None:
         """Set system health score."""
         if self.system_health:
             self.system_health.set(score)
 
-    def record_ai_processing(float) -> None:
+    def record_ai_processing(self, model_type: str, operation: str, duration: float) -> None:
         """Record AI processing time."""
         if self.ai_processing_time:
             self.ai_processing_time.labels(
                 model_type=model_type, operation=operation
             ).observe(duration)
 
-    def record_audio_latency(float) -> None:
+    def record_audio_latency(self, operation: str, latency: float) -> None:
         """Record audio processing latency."""
         if self.audio_processing_latency:
             self.audio_processing_latency.labels(operation=operation).observe(latency)
