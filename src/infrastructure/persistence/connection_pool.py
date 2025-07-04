@@ -14,7 +14,6 @@ import structlog
 from sqlalchemy import event, pool
 from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
                                     async_sessionmaker, create_async_engine)
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.pool import AsyncAdaptedQueuePool, NullPool
 # Database drivers will be imported dynamically as needed
 from tenacity import retry, stop_after_attempt, wait_exponential
