@@ -268,7 +268,9 @@ class AsyncDatabaseOptimizer:
         use_cache: bool = True,
         cache_ttl: int = 300
     ) -> List[Dict[str, Any]]:
-        """Execute optimized query with caching and monitoring"""
+        """Execute optimized query with caching and monitoring. Only parameterized queries allowed. Do NOT build SQL from user input."""
+        if "'" in query or '"' in query or ";" in query:
+            raise ValueError("Potentially unsafe SQL detected. Only parameterized queries allowed.")
         start_time = time.time()
         
         # Check cache first

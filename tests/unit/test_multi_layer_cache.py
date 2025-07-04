@@ -12,7 +12,7 @@ import pytest
 # Test imports
 try:
     from src.infrastructure.caching_advanced.multi_layer_cache import (
-        CacheConfig, CacheLayer, CacheMetrics, ContentType, L1MemoryCache,
+        CacheConfig, CacheMetrics, ContentType, L1MemoryCache,
         L2RedisCache, L3CDNCache, MultiLayerCache)
 
     CACHE_AVAILABLE = True
@@ -49,28 +49,24 @@ async def multi_layer_cache(cache_config):
     await cache.cleanup()
 
 
-class TestCacheConfig:
-    """Test cache configuration."""
+def test_default_config():
+    """Test default configuration values."""
+    config = CacheConfig()
+    assert config.l1_enabled is True
+    assert config.l1_max_size_mb == 256
+    assert config.l2_enabled is True
+    assert config.l3_enabled is True
+    assert config.compression_enabled is True
 
-    def test_default_config(self):
-        """Test default configuration values."""
-        config = CacheConfig()
 
-        assert config.l1_enabled is True
-        assert config.l1_max_size_mb == 256
-        assert config.l2_enabled is True
-        assert config.l3_enabled is True
-        assert config.compression_enabled is True
-
-    def test_custom_config(self):
-        """Test custom configuration."""
-        config = CacheConfig(
-            l1_max_size_mb=128, l2_ttl_seconds=7200, compression_threshold_bytes=2048
-        )
-
-        assert config.l1_max_size_mb == 128
-        assert config.l2_ttl_seconds == 7200
-        assert config.compression_threshold_bytes == 2048
+def test_custom_config():
+    """Test custom configuration."""
+    config = CacheConfig(
+        l1_max_size_mb=128, l2_ttl_seconds=7200, compression_threshold_bytes=2048
+    )
+    assert config.l1_max_size_mb == 128
+    assert config.l2_ttl_seconds == 7200
+    assert config.compression_threshold_bytes == 2048
 
 
 class TestL1MemoryCache:
@@ -219,7 +215,7 @@ class TestMultiLayerCache:
         value = await multi_layer_cache.get_with_fallback(
             "invalid_key", ContentType.AI_RESPONSE
         )
-        assert value == "invalid_value"
+        pytest.assume(value == "invalid_value")
 
         # Invalidate
         result = await multi_layer_cache.invalidate("invalid_key")
@@ -302,7 +298,7 @@ class TestMultiLayerCache:
         assert "cache_efficiency" in metrics
 
         # Should have at least one request
-        assert metrics["total_requests"] >= 1
+        pytest.assume(metrics["total_requests"] >= 1)
 
     @pytest.mark.asyncio
     async def test_content_type_strategies(self, multi_layer_cache):
@@ -321,7 +317,8 @@ class TestMultiLayerCache:
 
         # Test model weights (should use L2 and L3, not L1)
         await multi_layer_cache.set_multi_layer(
-            "model_key", {"weights": "large_model_data"}, ContentType.MODEL_WEIGHTS
+            "model_key", {
+                "weights": "large_model_data"}, ContentType.MODEL_WEIGHTS
         )
 
         # Verify values are retrievable
@@ -336,36 +333,32 @@ class TestMultiLayerCache:
         assert session_value["user_id"] == "123"
 
 
-class TestCacheMetrics:
-    """Test cache metrics functionality."""
+def test_metrics_initialization():
+    """Test metrics initialization."""
+    metrics = CacheMetrics()
+    assert metrics.total_requests == 0
+    assert metrics.l1_hits == 0
+    assert metrics.hit_rate == 0.0
+    assert metrics.last_updated is not None
 
-    def test_metrics_initialization(self):
-        """Test metrics initialization."""
-        metrics = CacheMetrics()
 
-        assert metrics.total_requests == 0
-        assert metrics.l1_hits == 0
-        assert metrics.hit_rate == 0.0
-        assert metrics.last_updated is not None
+def test_hit_rate_calculation():
+    """Test hit rate calculation."""
+    metrics = CacheMetrics()
+    metrics.l1_hits = 70
+    metrics.l2_hits = 20
+    metrics.l1_misses = 10
+    assert metrics.total_hits == 90
+    assert metrics.total_misses == 10
+    assert metrics.hit_rate == 0.9
 
-    def test_hit_rate_calculation(self):
-        """Test hit rate calculation."""
-        metrics = CacheMetrics()
-        metrics.l1_hits = 70
-        metrics.l2_hits = 20
-        metrics.l1_misses = 10
 
-        assert metrics.total_hits == 90
-        assert metrics.total_misses == 10
-        assert metrics.hit_rate == 0.9
-
-    def test_average_latency_calculation(self):
-        """Test average latency calculation."""
-        metrics = CacheMetrics()
-        metrics.total_requests = 100
-        metrics.total_latency_ms = 5000.0
-
-        assert metrics.average_latency_ms == 50.0
+def test_average_latency_calculation():
+    """Test average latency calculation."""
+    metrics = CacheMetrics()
+    metrics.total_requests = 100
+    metrics.total_latency_ms = 5000.0
+    assert metrics.average_latency_ms == 50.0
 
 
 @pytest.mark.asyncio
@@ -400,7 +393,7 @@ async def test_cache_performance_under_load():
 
         # Check metrics
         metrics = cache.get_performance_metrics()
-        assert metrics["total_requests"] >= 50
+        pytest.assume(metrics["total_requests"] >= 50)
 
     finally:
         await cache.cleanup()

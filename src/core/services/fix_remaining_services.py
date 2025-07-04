@@ -4,6 +4,9 @@
 """
 
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ServiceFixer:
@@ -331,7 +334,8 @@ async def transcribe_audio_simple(
                 / "audio"
                 / "transcription_service.py"
             )
-            transcription_file.write_text(transcription_content, encoding="utf-8")
+            transcription_file.write_text(
+                transcription_content, encoding="utf-8")
             self.fixes_applied.append("Created transcription service")
             logger.info("  ✅ تم إنشاء transcription service")
         except Exception as e:

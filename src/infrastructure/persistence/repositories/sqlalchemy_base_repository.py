@@ -9,6 +9,7 @@ from abc import ABC
 from contextlib import contextmanager
 from datetime import datetime
 from typing import (Any, Dict, List, Optional, Type, TypeVar)
+import re
 
 from sqlalchemy import and_, asc, desc, func, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -145,7 +146,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         if options and options.filters:
             for field, value in options.filters.items():
                 if hasattr(self.model_class, field):
-                    query = query.filter(getattr(self.model_class, field) == value)
+                    query = query.filter(
+                        getattr(self.model_class, field) == value)
 
         # Apply sorting
         if options and options.sort_by:
@@ -165,7 +167,7 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
 
         return query
 
-    def _build_condition(SearchCriteria) -> None:
+    def _build_condition(self, criterion) -> None:
         """Build SQLAlchemy condition from search criteria"""
         field_attr = getattr(self.model_class, criterion.field, None)
         if field_attr is None:
@@ -365,7 +367,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                 )
 
                 if not existing:
-                    raise EntityNotFoundError(f"Entity with ID {entity.id} not found")
+                    raise EntityNotFoundError(
+                        f"Entity with ID {entity.id} not found")
 
                 # Update fields
                 for key, value in entity.__dict__.items():
@@ -474,7 +477,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         """
         try:
             with self.get_session() as session:
-                query = self._build_query(session, criteria=criteria, options=options)
+                query = self._build_query(
+                    session, criteria=criteria, options=options)
                 entities = query.all()
 
                 return entities
@@ -533,7 +537,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
 
         except SQLAlchemyError as e:
             logger.error(f"Database error during exists check: {e}")
-            raise RepositoryError(f"Failed to check entity existence: {e}") from e
+            raise RepositoryError(
+                f"Failed to check entity existence: {e}") from e
 
     # Bulk Operations
 
@@ -565,7 +570,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                         failed_count += 1
                         entity_id = getattr(entity, "id", "unknown")
                         failed_ids.append(str(entity_id))
-                        logger.warning(f"Failed to add entity {entity_id}: {e}")
+                        logger.warning(
+                            f"Failed to add entity {entity_id}: {e}")
 
                 session.flush()
 
@@ -609,7 +615,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                 for entity in entities:
                     try:
                         if not hasattr(entity, "id") or not entity.id:
-                            raise ValidationError("Entity must have ID for update")
+                            raise ValidationError(
+                                "Entity must have ID for update")
 
                         existing = (
                             session.query(self.model_class)
@@ -633,7 +640,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                         failed_count += 1
                         entity_id = getattr(entity, "id", "unknown")
                         failed_ids.append(str(entity_id))
-                        logger.warning(f"Failed to update entity {entity_id}: {e}")
+                        logger.warning(
+                            f"Failed to update entity {entity_id}: {e}")
 
                 session.flush()
 
@@ -682,7 +690,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
 
                 if failed_count > 0:
                     # Find which IDs failed (simplified approach)
-                    failed_ids = [str(id_) for id_ in entity_ids[-failed_count:]]
+                    failed_ids = [str(id_)
+                                  for id_ in entity_ids[-failed_count:]]
 
         except SQLAlchemyError as e:
             logger.error(f"Database error during bulk delete: {e}")
@@ -762,7 +771,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                 elif operation.lower() == "max":
                     result = query.with_entities(func.max(field_attr)).scalar()
                 else:
-                    raise ValueError(f"Unsupported aggregation operation: {operation}")
+                    raise ValueError(
+                        f"Unsupported aggregation operation: {operation}")
 
                 return result
 
@@ -770,24 +780,24 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             logger.error(f"Database error during aggregation: {e}")
             raise RepositoryError(f"Aggregation operation failed: {e}") from e
 
+    def _validate_table_and_column(self, name: str) -> None:
+        """Ensure table/column name is safe (alphanumeric/underscore only)"""
+        if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
+            raise ValueError(f"Unsafe table/column name: {name}")
+
     async def execute_raw_query(
         self, query: str, params: Dict[str, Any] = None
     ) -> List[Dict[str, Any]]:
-        """
-        Execute raw SQL query (use with caution)
-
-        Args:
-            query: Raw SQL query
-            params: Query parameters
-
-        Returns:
-            Query results as list of dictionaries
-        """
+        """Execute raw SQL query (use with caution, only parameterized queries allowed, table/column names must be validated)"""
+        # Prevent dangerous patterns
+        if "'" in query or '"' in query or ";" in query:
+            raise ValueError(
+                "Potentially unsafe SQL detected. Only parameterized queries allowed.")
+        # Optionally: parse and validate table/column names in query if possible
         try:
             with self.get_session() as session:
                 result = session.execute(text(query), params or {})
                 return [dict(row) for row in result]
-
         except SQLAlchemyError as e:
             logger.error(f"Database error during raw query execution: {e}")
             raise RepositoryError(f"Raw query execution failed: {e}") from e
@@ -798,7 +808,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         """Get repository performance statistics"""
         cache_hit_ratio = 0.0
         if self._cache_hits + self._cache_misses > 0:
-            cache_hit_ratio = self._cache_hits / (self._cache_hits + self._cache_misses)
+            cache_hit_ratio = self._cache_hits / \
+                (self._cache_hits + self._cache_misses)
 
         return {
             "model_class": self.model_class.__name__,

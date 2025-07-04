@@ -112,7 +112,8 @@ class AudioIO:
             default_config: Default audio processing configuration
         """
         self.logger = logging.getLogger(__name__)
-        self.temp_dir = temp_dir or os.path.join(tempfile.gettempdir(), "teddy_audio")
+        self.temp_dir = temp_dir or os.path.join(
+            tempfile.gettempdir(), "teddy_audio")
         self.max_temp_files = max_temp_files
         self.auto_cleanup = auto_cleanup
         self.default_config = default_config or AudioProcessingConfig()
@@ -136,7 +137,7 @@ class AudioIO:
         if self.auto_cleanup:
             self._start_cleanup_scheduler()
 
-    def _ensure_temp_dir(self) -> Any:
+    def _ensure_temp_dir(self) -> None:
         """Ensure temporary directory exists with proper permissions."""
         try:
             temp_path = Path(self.temp_dir)
@@ -151,7 +152,7 @@ class AudioIO:
             self.logger.error(f"Error creating temp directory: {e}")
             raise AudioProcessingError(f"Failed to create temp directory: {e}")
 
-    def _start_cleanup_scheduler(self) -> Any:
+    def _start_cleanup_scheduler(self) -> None:
         """Start background cleanup scheduler."""
 
         def cleanup_worker() -> Any:
@@ -166,18 +167,7 @@ class AudioIO:
         cleanup_thread.start()
 
     def validate_audio_file(self, filename: str) -> AudioMetadata:
-        """
-        Validate and extract metadata from audio file.
-
-        Args:
-            filename: Path to audio file
-
-        Returns:
-            AudioMetadata object
-
-        Raises:
-            AudioValidationError: If file is invalid
-        """
+        """Validate and extract metadata from audio file."""
         try:
             if not os.path.exists(filename):
                 raise AudioValidationError(f"Audio file not found: {filename}")
@@ -203,7 +193,8 @@ class AudioIO:
                         channels=f.channels,
                         size_bytes=file_stats.st_size,
                         created_at=datetime.fromtimestamp(file_stats.st_ctime),
-                        modified_at=datetime.fromtimestamp(file_stats.st_mtime),
+                        modified_at=datetime.fromtimestamp(
+                            file_stats.st_mtime),
                     )
 
                     # Validate audio constraints
@@ -232,24 +223,11 @@ class AudioIO:
         audio_data: np.ndarray,
         filename: str,
         sample_rate: int = 16000,
-        format: AudioFormat = AudioFormat.WAV,
+        audio_format: AudioFormat = AudioFormat.WAV,
         quality: AudioQuality = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> AudioMetadata:
-        """
-        Save audio data to file with enhanced options.
-
-        Args:
-            audio_data: Audio data array
-            filename: Output filename
-            sample_rate: Audio sample rate
-            format: Output format
-            quality: Audio quality preset
-            metadata: Additional metadata
-
-        Returns:
-            AudioMetadata object
-        """
+        """Save audio data to file with enhanced options."""
         try:
             # Use default quality if not specified
             if quality is None:
@@ -259,10 +237,11 @@ class AudioIO:
             os.makedirs(os.path.dirname(filename), exist_ok=True)
 
             # Process audio data
-            processed_audio = self._process_audio_data(audio_data, sample_rate, quality)
+            processed_audio = self._process_audio_data(
+                audio_data, sample_rate, quality)
 
             # Determine output format and parameters
-            if format == AudioFormat.WAV:
+            if audio_format == AudioFormat.WAV:
                 sf.write(
                     filename,
                     processed_audio,
@@ -271,7 +250,8 @@ class AudioIO:
                 )
             else:
                 # Convert using pydub for other formats
-                self._save_with_pydub(processed_audio, filename, quality, format)
+                self._save_with_pydub(
+                    processed_audio, filename, quality, audio_format)
 
             # Create metadata
             file_metadata = self.validate_audio_file(filename)
@@ -353,8 +333,8 @@ class AudioIO:
         audio_data: np.ndarray,
         filename: str,
         quality: AudioQuality,
-        format: AudioFormat,
-    ):
+        audio_format: AudioFormat,
+    ) -> None:
         """Save audio using pydub for format conversion."""
         try:
             # Convert numpy array to pydub AudioSegment
@@ -373,13 +353,13 @@ class AudioIO:
 
             # Export with format-specific parameters
             export_params = {
-                "format": format.value,
+                "format": audio_format.value,
                 "bitrate": quality.value["bitrate"],
             }
 
-            if format == AudioFormat.MP3:
+            if audio_format == AudioFormat.MP3:
                 export_params.update({"parameters": ["-q:a", "2"]})
-            elif format == AudioFormat.OGG:
+            elif audio_format == AudioFormat.OGG:
                 export_params.update({"codec": "libvorbis"})
 
             audio_segment.export(filename, **export_params)
@@ -393,17 +373,7 @@ class AudioIO:
         target_sample_rate: Optional[int] = None,
         normalize: bool = True,
     ) -> Tuple[np.ndarray, int, AudioMetadata]:
-        """
-        Load audio data from file with enhanced processing.
-
-        Args:
-            filename: Input filename
-            target_sample_rate: Target sample rate for resampling
-            normalize: Whether to normalize audio
-
-        Returns:
-            Tuple of (audio_data, sample_rate, metadata)
-        """
+        """Load audio data from file with enhanced processing."""
         try:
             # Validate file first
             metadata = self.validate_audio_file(filename)
@@ -444,24 +414,14 @@ class AudioIO:
         self,
         prefix: str = "audio_",
         suffix: str = ".wav",
-        format: AudioFormat = AudioFormat.WAV,
+        audio_format: AudioFormat = AudioFormat.WAV,
     ) -> str:
-        """
-        Create temporary audio file with cleanup tracking.
-
-        Args:
-            prefix: Filename prefix
-            suffix: Filename suffix
-            format: Audio format
-
-        Returns:
-            Temporary filename
-        """
+        """Create temporary audio file with cleanup tracking."""
         try:
             with self._lock:
                 # Use format-specific extension if not provided
-                if suffix == ".wav" and format != AudioFormat.WAV:
-                    suffix = self.format_extensions[format]
+                if suffix == ".wav" and audio_format != AudioFormat.WAV:
+                    suffix = self.format_extensions[audio_format]
 
                 # Create unique filename
                 unique_id = str(uuid.uuid4())[:8]
@@ -482,7 +442,7 @@ class AudioIO:
             self.logger.error(f"Error creating temp file: {e}")
             raise AudioProcessingError(f"Failed to create temp file: {e}")
 
-    def _cleanup_oldest_temp_files(self) -> Any:
+    def _cleanup_oldest_temp_files(self) -> None:
         """Clean up oldest temporary files."""
         try:
             temp_files_with_time = []
@@ -496,7 +456,8 @@ class AudioIO:
 
             # Sort by modification time and remove oldest
             temp_files_with_time.sort()
-            files_to_remove = len(temp_files_with_time) - self.max_temp_files + 10
+            files_to_remove = len(temp_files_with_time) - \
+                self.max_temp_files + 10
 
             for _, temp_file in temp_files_with_time[:files_to_remove]:
                 self._remove_temp_file(temp_file)
@@ -504,7 +465,7 @@ class AudioIO:
         except Exception as e:
             self.logger.error(f"Error cleaning up oldest temp files: {e}")
 
-    def _remove_temp_file(str) -> None:
+    def _remove_temp_file(self, filepath: str) -> None:
         """Remove a temporary file and its metadata."""
         try:
             if os.path.exists(filepath):
@@ -520,7 +481,7 @@ class AudioIO:
         except Exception as e:
             self.logger.warning(f"Error removing temp file {filepath}: {e}")
 
-    def cleanup_temp_files(int=24) -> None:
+    def cleanup_temp_files(self, max_age_hours: int = 24) -> None:
         """
         Clean up old temporary files.
 
@@ -538,7 +499,8 @@ class AudioIO:
                 for temp_file in list(self._temp_files):
                     try:
                         if os.path.exists(temp_file):
-                            mtime = datetime.fromtimestamp(os.path.getmtime(temp_file))
+                            mtime = datetime.fromtimestamp(
+                                os.path.getmtime(temp_file))
                             if mtime < cutoff_time:
                                 self._remove_temp_file(temp_file)
                                 count += 1
@@ -553,7 +515,8 @@ class AudioIO:
                 for pattern in ["audio_*.wav", "audio_*.mp3", "*.tmp"]:
                     for file in temp_path.glob(pattern):
                         try:
-                            mtime = datetime.fromtimestamp(file.stat().st_mtime)
+                            mtime = datetime.fromtimestamp(
+                                file.stat().st_mtime)
                             if mtime < cutoff_time:
                                 file.unlink()
                                 count += 1
@@ -567,7 +530,7 @@ class AudioIO:
         except Exception as e:
             self.logger.error(f"Error cleaning up temp files: {e}")
 
-    def _save_metadata(AudioMetadata) -> None:
+    def _save_metadata(self, audio_filename: str, metadata: AudioMetadata) -> None:
         """Save metadata to companion file."""
         try:
             metadata_filename = audio_filename + ".meta"
@@ -611,8 +574,10 @@ class AudioIO:
                 channels=metadata_dict["channels"],
                 bitrate=metadata_dict.get("bitrate"),
                 size_bytes=metadata_dict["size_bytes"],
-                created_at=datetime.fromisoformat(metadata_dict["created_at"]),
-                modified_at=datetime.fromisoformat(metadata_dict["modified_at"]),
+                created_at=datetime.fromisoformat(metadata_dict["created_at"]) if hasattr(
+                    datetime, 'fromisoformat') else datetime.strptime(metadata_dict["created_at"], "%Y-%m-%dT%H:%M:%S.%f"),
+                modified_at=datetime.fromisoformat(metadata_dict["modified_at"]) if hasattr(
+                    datetime, 'fromisoformat') else datetime.strptime(metadata_dict["modified_at"], "%Y-%m-%dT%H:%M:%S.%f"),
                 checksum=metadata_dict.get("checksum"),
                 tags=metadata_dict.get("tags", {}),
             )
@@ -623,13 +588,13 @@ class AudioIO:
 
     @contextmanager
     def temp_audio_file(
-        self, format: AudioFormat = AudioFormat.WAV, cleanup_on_exit: bool = True
+        self, audio_format: AudioFormat = AudioFormat.WAV, cleanup_on_exit: bool = True
     ):
         """
         Context manager for temporary audio files.
 
         Args:
-            format: Audio format
+            audio_format: Audio format
             cleanup_on_exit: Whether to cleanup file on exit
 
         Yields:
@@ -637,7 +602,7 @@ class AudioIO:
         """
         temp_file = None
         try:
-            temp_file = self.create_temp_file(format=format)
+            temp_file = self.create_temp_file(audio_format=audio_format)
             yield temp_file
         finally:
             if temp_file and cleanup_on_exit:
@@ -721,7 +686,7 @@ class AudioIO:
 # Utility functions for backward compatibility and convenience
 
 
-def cleanup_temp_files(int=24) -> None:
+def cleanup_temp_files(max_age_hours: int = 24) -> None:
     """Global function to clean up temporary audio files."""
     try:
         with AudioIO() as audio_io:
@@ -745,7 +710,8 @@ def get_audio_files(
     """
     try:
         audio_files = []
-        supported_extensions = [".wav", ".mp3", ".ogg", ".flac", ".m4a", ".aac"]
+        supported_extensions = [".wav", ".mp3",
+                                ".ogg", ".flac", ".m4a", ".aac"]
 
         directory_path = Path(directory)
         if not directory_path.exists():
@@ -761,7 +727,8 @@ def get_audio_files(
                             {"filepath": str(file_path), "metadata": metadata}
                         )
                     except Exception as e:
-                        logging.warning(f"Error getting metadata for {file_path}: {e}")
+                        logging.warning(
+                            f"Error getting metadata for {file_path}: {e}")
                         audio_files.append(
                             {"filepath": str(file_path), "metadata": None}
                         )
@@ -769,7 +736,8 @@ def get_audio_files(
                     audio_files.append(str(file_path))
 
         return sorted(
-            audio_files, key=lambda x: x if isinstance(x, str) else x["filepath"]
+            audio_files, key=lambda x: x if isinstance(
+                x, str) else x["filepath"]
         )
 
     except Exception as e:
@@ -878,7 +846,8 @@ def validate_audio_for_children(filename: str) -> Dict[str, Any]:
         audio_io = AudioIO()
         metadata = audio_io.validate_audio_file(filename)
 
-        validation_results = {"is_valid": True, "issues": [], "metadata": metadata}
+        validation_results = {"is_valid": True,
+                              "issues": [], "metadata": metadata}
 
         # Check duration (max 5 minutes for children)
         if metadata.duration > 300:
@@ -892,7 +861,8 @@ def validate_audio_for_children(filename: str) -> Dict[str, Any]:
 
         # Check sample rate (should be reasonable)
         if metadata.sample_rate < 8000:
-            validation_results["issues"].append("Sample rate too low for good quality")
+            validation_results["issues"].append(
+                "Sample rate too low for good quality")
 
         validation_results["is_valid"] = len(validation_results["issues"]) == 0
 
@@ -904,3 +874,20 @@ def validate_audio_for_children(filename: str) -> Dict[str, Any]:
             "issues": [f"Validation error: {e}"],
             "metadata": None,
         }
+
+
+__all__ = [
+    "AudioFormat",
+    "AudioQuality",
+    "AudioMetadata",
+    "AudioProcessingConfig",
+    "AudioValidationError",
+    "AudioProcessingError",
+    "AudioIO",
+    "cleanup_temp_files",
+    "get_audio_files",
+    "copy_audio_file",
+    "get_audio_duration",
+    "get_audio_format",
+    "validate_audio_for_children",
+]

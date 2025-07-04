@@ -165,11 +165,11 @@ class TestConversationRepositoryBasicOperations:
         result = await conversation_repository.create(sample_conversation)
 
         # Assert
-        assert result is not None
-        assert result.id is not None
-        assert result.child_id == sample_conversation.child_id
-        assert result.session_id == sample_conversation.session_id
-        assert result.topics == sample_conversation.topics
+        pytest.assume(result is not None)
+        pytest.assume(result.id is not None)
+        pytest.assume(result.child_id == sample_conversation.child_id)
+        pytest.assume(result.session_id == sample_conversation.session_id)
+        pytest.assume(result.topics == sample_conversation.topics)
 
     @pytest.mark.asyncio
     async def test_get_conversation_by_id(
@@ -185,13 +185,14 @@ class TestConversationRepositoryBasicOperations:
         )
 
         # Assert
-        assert retrieved_conversation is not None
-        assert retrieved_conversation.id == created_conversation.id
-        assert retrieved_conversation.child_id == sample_conversation.child_id
-        assert len(retrieved_conversation.messages) == len(sample_conversation.messages)
-        assert len(retrieved_conversation.emotional_states) == len(
-            sample_conversation.emotional_states
-        )
+        pytest.assume(retrieved_conversation is not None)
+        pytest.assume(retrieved_conversation.id == created_conversation.id)
+        pytest.assume(retrieved_conversation.child_id ==
+                      sample_conversation.child_id)
+        pytest.assume(len(retrieved_conversation.messages)
+                      == len(sample_conversation.messages))
+        pytest.assume(len(retrieved_conversation.emotional_states)
+                      == len(sample_conversation.emotional_states))
 
     @pytest.mark.asyncio
     async def test_get_conversation_by_session_id(
@@ -207,9 +208,10 @@ class TestConversationRepositoryBasicOperations:
         )
 
         # Assert
-        assert retrieved_conversation is not None
-        assert retrieved_conversation.session_id == sample_conversation.session_id
-        assert retrieved_conversation.id == created_conversation.id
+        pytest.assume(retrieved_conversation is not None)
+        pytest.assume(retrieved_conversation.session_id ==
+                      sample_conversation.session_id)
+        pytest.assume(retrieved_conversation.id == created_conversation.id)
 
     @pytest.mark.asyncio
     async def test_update_conversation(
@@ -228,9 +230,10 @@ class TestConversationRepositoryBasicOperations:
         )
 
         # Assert
-        assert updated_conversation.quality_score == 0.95
-        assert updated_conversation.context_summary == "Updated summary"
-        assert "new_topic" in updated_conversation.topics
+        pytest.assume(updated_conversation.quality_score == 0.95)
+        pytest.assume(updated_conversation.context_summary ==
+                      "Updated summary")
+        pytest.assume("new_topic" in updated_conversation.topics)
 
     @pytest.mark.asyncio
     async def test_delete_conversation(
@@ -244,15 +247,14 @@ class TestConversationRepositoryBasicOperations:
         delete_result = await conversation_repository.delete(created_conversation.id)
 
         # Assert
-        assert delete_result is True
+        pytest.assume(delete_result is True)
 
         # Verify conversation is archived
         retrieved_conversation = await conversation_repository.get_by_id(
             created_conversation.id
         )
-        assert (
-            retrieved_conversation is None
-        )  # Should not be found because it's archived
+        # Should not be found because it's archived
+        pytest.assume(retrieved_conversation is None)
 
 
 class TestConversationRepositoryMessaging:
@@ -269,17 +271,19 @@ class TestConversationRepositoryMessaging:
 
         # Act
         success = await conversation_repository.add_message_to_conversation(
-            created_conversation.id, "user", "This is a new message", {"test": True}
+            created_conversation.id, "user", "This is a new message", {
+                "test": True}
         )
 
         # Assert
-        assert success is True
+        pytest.assume(success is True)
 
         # Verify message was added
         updated_conversation = await conversation_repository.get_by_id(
             created_conversation.id
         )
-        assert updated_conversation.total_messages == initial_message_count + 1
+        pytest.assume(updated_conversation.total_messages ==
+                      initial_message_count + 1)
 
     @pytest.mark.asyncio
     async def test_end_conversation(self, conversation_repository, sample_conversation):
@@ -294,14 +298,14 @@ class TestConversationRepositoryMessaging:
         )
 
         # Assert
-        assert success is True
+        pytest.assume(success is True)
 
         # Verify conversation was ended
         updated_conversation = await conversation_repository.get_by_id(
             created_conversation.id
         )
-        assert updated_conversation.end_time is not None
-        assert updated_conversation.duration_seconds > 0
+        pytest.assume(updated_conversation.end_time is not None)
+        pytest.assume(updated_conversation.duration_seconds > 0)
 
 
 class TestConversationRepositorySearch:
@@ -330,8 +334,9 @@ class TestConversationRepositorySearch:
         )
 
         # Assert
-        assert len(child_conversations) >= 3
-        assert all(conv.child_id == child_id for conv in child_conversations)
+        pytest.assume(len(child_conversations) >= 3)
+        pytest.assume(
+            all(conv.child_id == child_id for conv in child_conversations))
 
     @pytest.mark.asyncio
     async def test_get_conversations_by_topics(self, conversation_repository):
@@ -367,9 +372,9 @@ class TestConversationRepositorySearch:
         )
 
         # Assert
-        assert len(math_conversations) >= 2
+        pytest.assume(len(math_conversations) >= 2)
         for conv in math_conversations:
-            assert "math" in conv.topics
+            pytest.assume("math" in conv.topics)
 
     @pytest.mark.asyncio
     async def test_find_conversations_with_emotion(
@@ -387,7 +392,7 @@ class TestConversationRepositorySearch:
         )
 
         # Assert
-        assert len(happy_conversations) >= 1
+        pytest.assume(len(happy_conversations) >= 1)
         found_conversation = next(
             (
                 conv
@@ -396,7 +401,7 @@ class TestConversationRepositorySearch:
             ),
             None,
         )
-        assert found_conversation is not None
+        pytest.assume(found_conversation is not None)
 
     @pytest.mark.asyncio
     async def test_search_conversation_content(
@@ -412,10 +417,10 @@ class TestConversationRepositorySearch:
         )
 
         # Assert
-        assert len(search_results) >= 1
+        pytest.assume(len(search_results) >= 1)
         conversation, messages = search_results[0]
-        assert conversation.id == created_conversation.id
-        assert any("math" in msg.content.lower() for msg in messages)
+        pytest.assume(conversation.id == created_conversation.id)
+        pytest.assume(any("math" in msg.content.lower() for msg in messages))
 
 
 class TestConversationRepositoryAnalytics:
@@ -435,12 +440,12 @@ class TestConversationRepositoryAnalytics:
         )
 
         # Assert
-        assert summary is not None
-        assert summary["conversation_id"] == created_conversation.id
-        assert "quality_scores" in summary
-        assert "emotional_progression" in summary
-        assert "role_statistics" in summary
-        assert "dominant_emotions" in summary
+        pytest.assume(summary is not None)
+        pytest.assume(summary["conversation_id"] == created_conversation.id)
+        pytest.assume("quality_scores" in summary)
+        pytest.assume("emotional_progression" in summary)
+        pytest.assume("role_statistics" in summary)
+        pytest.assume("dominant_emotions" in summary)
 
     @pytest.mark.asyncio
     async def test_get_conversation_analytics(
@@ -456,11 +461,11 @@ class TestConversationRepositoryAnalytics:
         )
 
         # Assert
-        assert analytics is not None
-        assert "summary" in analytics
-        assert "topics" in analytics
-        assert "quality_metrics" in analytics
-        assert "safety" in analytics
+        pytest.assume(analytics is not None)
+        pytest.assume("summary" in analytics)
+        pytest.assume("topics" in analytics)
+        pytest.assume("quality_metrics" in analytics)
+        pytest.assume("safety" in analytics)
 
     @pytest.mark.asyncio
     async def test_get_conversation_patterns(self, conversation_repository):
@@ -486,11 +491,11 @@ class TestConversationRepositoryAnalytics:
         )
 
         # Assert
-        assert patterns["status"] == "success"
-        assert patterns["total_conversations"] >= 5
-        assert "avg_duration_minutes" in patterns
-        assert "most_common_topics" in patterns
-        assert "conversation_frequency" in patterns
+        pytest.assume(patterns["status"] == "success")
+        pytest.assume(patterns["total_conversations"] >= 5)
+        pytest.assume("avg_duration_minutes" in patterns)
+        pytest.assume("most_common_topics" in patterns)
+        pytest.assume("conversation_frequency" in patterns)
 
     @pytest.mark.asyncio
     async def test_get_conversation_health_metrics(
@@ -506,12 +511,12 @@ class TestConversationRepositoryAnalytics:
         )
 
         # Assert
-        assert health_metrics["status"] == "success"
-        assert "health_score" in health_metrics
-        assert "health_level" in health_metrics
-        assert "metrics" in health_metrics
-        assert "emotional_analysis" in health_metrics
-        assert "recommendations" in health_metrics
+        pytest.assume(health_metrics["status"] == "success")
+        pytest.assume("health_score" in health_metrics)
+        pytest.assume("health_level" in health_metrics)
+        pytest.assume("metrics" in health_metrics)
+        pytest.assume("emotional_analysis" in health_metrics)
+        pytest.assume("recommendations" in health_metrics)
 
 
 class TestConversationRepositoryMaintenance:
@@ -537,7 +542,7 @@ class TestConversationRepositoryMaintenance:
         )
 
         # Assert
-        assert archived_count >= 3
+        pytest.assume(archived_count >= 3)
 
     @pytest.mark.asyncio
     async def test_get_conversation_metrics_summary(
@@ -551,12 +556,12 @@ class TestConversationRepositoryMaintenance:
         metrics = await conversation_repository.get_conversation_metrics_summary()
 
         # Assert
-        assert "total_conversations" in metrics
-        assert "unique_children_count" in metrics
-        assert "average_duration_minutes" in metrics
-        assert "average_quality_score" in metrics
-        assert "recent_activity_7_days" in metrics
-        assert "top_interaction_types" in metrics
+        pytest.assume("total_conversations" in metrics)
+        pytest.assume("unique_children_count" in metrics)
+        pytest.assume("average_duration_minutes" in metrics)
+        pytest.assume("average_quality_score" in metrics)
+        pytest.assume("recent_activity_7_days" in metrics)
+        pytest.assume("top_interaction_types" in metrics)
 
     @pytest.mark.asyncio
     async def test_optimize_conversation_performance(self, conversation_repository):
@@ -579,11 +584,11 @@ class TestConversationRepositoryMaintenance:
         optimization = await conversation_repository.optimize_conversation_performance()
 
         # Assert
-        assert "performance_score" in optimization
-        assert "performance_level" in optimization
-        assert "statistics" in optimization
-        assert "optimizations" in optimization
-        assert "recommendations" in optimization
+        pytest.assume("performance_score" in optimization)
+        pytest.assume("performance_level" in optimization)
+        pytest.assume("statistics" in optimization)
+        pytest.assume("optimizations" in optimization)
+        pytest.assume("recommendations" in optimization)
 
     @pytest.mark.asyncio
     async def test_find_conversations_requiring_review(self, conversation_repository):
@@ -604,11 +609,11 @@ class TestConversationRepositoryMaintenance:
         )
 
         # Assert
-        assert len(review_conversations) >= 1
+        pytest.assume(len(review_conversations) >= 1)
         flagged_found = any(
             conv.child_id == "child-flagged" for conv in review_conversations
         )
-        assert flagged_found
+        pytest.assume(flagged_found)
 
 
 class TestConversationRepositoryAggregation:
@@ -631,7 +636,7 @@ class TestConversationRepositoryAggregation:
         count = await conversation_repository.aggregate("duration_seconds", "count")
 
         # Assert
-        assert count >= 3
+        pytest.assume(count >= 3)
 
     @pytest.mark.asyncio
     async def test_aggregate_average_duration(self, conversation_repository):
@@ -653,7 +658,7 @@ class TestConversationRepositoryAggregation:
         )
 
         # Assert
-        assert avg_duration > 0
+        pytest.assume(avg_duration > 0)
 
 
 class TestConversationRepositoryErrorHandling:
@@ -666,7 +671,7 @@ class TestConversationRepositoryErrorHandling:
         result = await conversation_repository.get_by_id("nonexistent-id")
 
         # Assert
-        assert result is None
+        pytest.assume(result is None)
 
     @pytest.mark.asyncio
     async def test_update_nonexistent_conversation(self, conversation_repository):
@@ -687,7 +692,7 @@ class TestConversationRepositoryErrorHandling:
         result = await conversation_repository.delete("nonexistent-id")
 
         # Assert
-        assert result is False
+        pytest.assume(result is False)
 
     @pytest.mark.asyncio
     async def test_add_message_to_nonexistent_conversation(
@@ -700,7 +705,7 @@ class TestConversationRepositoryErrorHandling:
         )
 
         # Assert
-        assert success is False  # Should fail gracefully
+        pytest.assume(success is False)  # Should fail gracefully
 
     @pytest.mark.asyncio
     async def test_get_health_metrics_no_data(self, conversation_repository):
@@ -711,8 +716,8 @@ class TestConversationRepositoryErrorHandling:
         )
 
         # Assert
-        assert result["status"] == "no_data"
-        assert result["child_id"] == "nonexistent-child"
+        pytest.assume(result["status"] == "no_data")
+        pytest.assume(result["child_id"] == "nonexistent-child")
 
 
 class TestConversationRepositoryIntegration:
@@ -725,42 +730,42 @@ class TestConversationRepositoryIntegration:
         """Test complete conversation lifecycle"""
         # Create
         created_conversation = await conversation_repository.create(sample_conversation)
-        assert created_conversation.id is not None
+        pytest.assume(created_conversation.id is not None)
 
         # Add messages
         success = await conversation_repository.add_message_to_conversation(
             created_conversation.id, "user", "Additional message"
         )
-        assert success is True
+        pytest.assume(success is True)
 
         # Update
         created_conversation.quality_score = 0.95
         updated_conversation = await conversation_repository.update(
             created_conversation
         )
-        assert updated_conversation.quality_score == 0.95
+        pytest.assume(updated_conversation.quality_score == 0.95)
 
         # Get summary
         summary = await conversation_repository.get_conversation_summary(
             created_conversation.id
         )
-        assert summary is not None
+        pytest.assume(summary is not None)
 
         # End conversation
         end_success = await conversation_repository.end_conversation(
             created_conversation.id
         )
-        assert end_success is True
+        pytest.assume(end_success is True)
 
         # Archive (soft delete)
         delete_result = await conversation_repository.delete(created_conversation.id)
-        assert delete_result is True
+        pytest.assume(delete_result is True)
 
         # Verify archived
         archived_conversation = await conversation_repository.get_by_id(
             created_conversation.id
         )
-        assert archived_conversation is None
+        pytest.assume(archived_conversation is None)
 
 
 if __name__ == "__main__":

@@ -219,8 +219,9 @@ class QueryBus:
     async def execute_raw_sql(
         self, sql: str, params: Optional[Dict] = None
     ) -> List[Dict]:
-        """Execute raw SQL query on read model"""
-
+        """Execute raw SQL query on read model. Only parameterized queries allowed. Do NOT build SQL from user input."""
+        if "'" in sql or '"' in sql or ";" in sql:
+            raise ValueError("Potentially unsafe SQL detected. Only parameterized queries allowed.")
         return await self._db.execute_query(sql, params)
 
     async def invalidate_cache(self, pattern: str = None) -> None:

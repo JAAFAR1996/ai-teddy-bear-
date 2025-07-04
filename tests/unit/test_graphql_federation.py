@@ -6,7 +6,20 @@ Author: API Team Lead
 """
 
 import os
-from unittest.mock import AsyncMock
+try:
+    from unittest.mock import AsyncMock, MagicMock
+except ImportError:
+    # Python < 3.8 fallback
+    import sys
+    if sys.version_info < (3, 8):
+        import asyncio
+        from unittest.mock import MagicMock
+
+        class AsyncMock(MagicMock):
+            async def __call__(self, *args, **kwargs):
+                return super().__call__(*args, **kwargs)
+    else:
+        raise
 
 import pytest
 
@@ -84,22 +97,23 @@ class TestFederationConfig:
         """Test default configuration creation."""
         config = create_default_federation_config()
 
-        assert len(config.services) == 4
-        assert config.enable_introspection is True
-        assert config.enable_caching is True
-        assert config.cors_origins == ["*"]
+        pytest.assume(len(config.services) == 4)
+        pytest.assume(config.enable_introspection is True)
+        pytest.assume(config.enable_caching is True)
+        pytest.assume(config.cors_origins == ["*"])
 
     def test_custom_config(self):
         """Test custom configuration."""
-        services = [ServiceConfig("test_service", "http://test:8000", "/schema")]
+        services = [ServiceConfig(
+            "test_service", "http://test:8000", "/schema")]
 
         config = FederationConfig(
             services=services, enable_authentication=False, rate_limit_requests=200
         )
 
-        assert len(config.services) == 1
-        assert config.enable_authentication is False
-        assert config.rate_limit_requests == 200
+        pytest.assume(len(config.services) == 1)
+        pytest.assume(config.enable_authentication is False)
+        pytest.assume(config.rate_limit_requests == 200)
 
 
 class TestServiceConfig:
@@ -115,10 +129,10 @@ class TestServiceConfig:
             retry_attempts=5,
         )
 
-        assert config.name == "test_service"
-        assert config.url == "http://localhost:8000"
-        assert config.timeout == 60
-        assert config.retry_attempts == 5
+        pytest.assume(config.name == "test_service")
+        pytest.assume(config.url == "http://localhost:8000")
+        pytest.assume(config.timeout == 60)
+        pytest.assume(config.retry_attempts == 5)
 
 
 @pytest.mark.skipif(not FEDERATION_AVAILABLE, reason="Federation not available")
@@ -135,7 +149,7 @@ class TestGraphQLFederationGateway:
         gateway.http_client.get.return_value.__aenter__.return_value.status_code = 200
 
         result = await gateway.initialize()
-        assert result is True
+        pytest.assume(result is True)
 
         await gateway.cleanup()
 
@@ -150,7 +164,7 @@ class TestGraphQLFederationGateway:
         config = federation_gateway.services["child_service"]
         healthy = await federation_gateway._check_single_service_health(config)
 
-        assert healthy is True
+        pytest.assume(healthy is True)
 
     @pytest.mark.asyncio
     async def test_query_service_analysis(self, federation_gateway):
@@ -158,12 +172,12 @@ class TestGraphQLFederationGateway:
         # Test child service detection
         query = 'query { child(id: "123") { name age } }'
         services = federation_gateway._analyze_query_services(query)
-        assert "child_service" in services
+        pytest.assume("child_service" in services)
 
         # Test AI service detection
         query = 'query { child(id: "123") { aiProfile { personalityTraits } } }'
         services = federation_gateway._analyze_query_services(query)
-        assert "ai_service" in services
+        pytest.assume("ai_service" in services)
 
     @pytest.mark.asyncio
     async def test_federated_query_execution(self, federation_gateway):
@@ -179,8 +193,8 @@ class TestGraphQLFederationGateway:
         query = 'query { child(id: "123") { name age } }'
         result = await federation_gateway._execute_federated_query(query, {})
 
-        assert "data" in result
-        assert result["data"] is not None
+        pytest.assume("data" in result)
+        pytest.assume(result["data"] is not None)
 
 
 class TestAuthentication:
@@ -192,13 +206,14 @@ class TestAuthentication:
         user = await auth_service.create_user(
             username="testuser",
             email="test@example.com",
-            password=os.environ.get("TEST_PASSWORD", "test_secure_password_2025"),
+            password=os.environ.get(
+                "TEST_PASSWORD", "test_secure_password_2025"),
             role=UserRole.PARENT,
         )
 
-        assert user.username == "testuser"
-        assert user.role == UserRole.PARENT
-        assert Permission.READ_CHILD in user.permissions
+        pytest.assume(user.username == "testuser")
+        pytest.assume(user.role == UserRole.PARENT)
+        pytest.assume(Permission.READ_CHILD in user.permissions)
 
     @pytest.mark.asyncio
     async def test_user_authentication(self, auth_service):
@@ -210,12 +225,12 @@ class TestAuthentication:
 
         # Test successful authentication
         user = await auth_service.authenticate_user("authuser", "password123")
-        assert user is not None
-        assert user.username == "authuser"
+        pytest.assume(user is not None)
+        pytest.assume(user.username == "authuser")
 
         # Test failed authentication
         user = await auth_service.authenticate_user("authuser", "wrongpassword")
-        assert user is None
+        pytest.assume(user is None)
 
     @pytest.mark.asyncio
     async def test_jwt_token_creation(self, auth_service):
@@ -226,13 +241,13 @@ class TestAuthentication:
 
         # Create token
         token = await auth_service.create_access_token(user)
-        assert token is not None
-        assert isinstance(token, str)
+        pytest.assume(token is not None)
+        pytest.assume(isinstance(token, str))
 
         # Verify token
         verified_user = await auth_service.verify_token(token)
-        assert verified_user is not None
-        assert verified_user.id == user.id
+        pytest.assume(verified_user is not None)
+        pytest.assume(verified_user.id == user.id)
 
     @pytest.mark.asyncio
     async def test_api_key_creation(self, auth_service):
@@ -248,13 +263,13 @@ class TestAuthentication:
             user.id, "Test API Key", permissions
         )
 
-        assert api_key.name == "Test API Key"
-        assert api_key.permissions == permissions
+        pytest.assume(api_key.name == "Test API Key")
+        pytest.assume(api_key.permissions == permissions)
 
         # Verify API key
         verified_key = await auth_service.verify_api_key(api_key.key)
-        assert verified_key is not None
-        assert verified_key.user_id == user.id
+        pytest.assume(verified_key is not None)
+        pytest.assume(verified_key.user_id == user.id)
 
     def test_permission_checking(self, auth_service):
         """Test permission checking."""
@@ -264,7 +279,8 @@ class TestAuthentication:
             username="admin",
             email="admin@test.com",
             role=UserRole.ADMIN,
-            permissions=auth_service.RolePermissions.get_permissions(UserRole.ADMIN),
+            permissions=auth_service.RolePermissions.get_permissions(
+                UserRole.ADMIN),
         )
 
         parent_user = User(
@@ -272,25 +288,32 @@ class TestAuthentication:
             username="parent",
             email="parent@test.com",
             role=UserRole.PARENT,
-            permissions=auth_service.RolePermissions.get_permissions(UserRole.PARENT),
+            permissions=auth_service.RolePermissions.get_permissions(
+                UserRole.PARENT),
             children_ids=["child-123"],
         )
 
         # Test admin permissions
-        assert auth_service.check_permission(admin_user, Permission.READ_CHILD) is True
-        assert (
-            auth_service.check_permission(admin_user, Permission.ADMIN_SYSTEM) is False
+        pytest.assume(auth_service.check_permission(
+            admin_user, Permission.READ_CHILD) is True)
+        pytest.assume(
+            auth_service.check_permission(
+                admin_user, Permission.ADMIN_SYSTEM) is False
         )
 
         # Test parent permissions
-        assert auth_service.check_permission(parent_user, Permission.READ_CHILD) is True
-        assert (
-            auth_service.check_permission(parent_user, Permission.DELETE_CHILD) is False
+        pytest.assume(auth_service.check_permission(
+            parent_user, Permission.READ_CHILD) is True)
+        pytest.assume(
+            auth_service.check_permission(
+                parent_user, Permission.DELETE_CHILD) is False
         )
 
         # Test child access
-        assert auth_service.check_child_access(parent_user, "child-123") is True
-        assert auth_service.check_child_access(parent_user, "child-456") is False
+        pytest.assume(auth_service.check_child_access(
+            parent_user, "child-123") is True)
+        pytest.assume(auth_service.check_child_access(
+            parent_user, "child-456") is False)
 
 
 class TestServiceResolvers:
@@ -301,21 +324,22 @@ class TestServiceResolvers:
         """Test child service resolvers."""
         # Test get_child
         child = await ChildServiceResolvers.get_child("test-child-id")
-        assert child is not None
-        assert child.id == "test-child-id"
-        assert child.name == "Ahmed"
+        pytest.assume(child is not None)
+        pytest.assume(child.id == "test-child-id")
+        pytest.assume(child.name == "Ahmed")
 
         # Test get_children
         children = await ChildServiceResolvers.get_children("parent-123")
-        assert len(children) == 2
-        assert all(child.parent_id == "parent-123" for child in children)
+        pytest.assume(len(children) == 2)
+        pytest.assume(
+            all(child.parent_id == "parent-123" for child in children))
 
     @pytest.mark.asyncio
     async def test_ai_service_resolvers(self):
         """Test AI service resolvers."""
         ai_profile = await AIServiceResolvers.get_ai_profile("child-123")
-        assert ai_profile is not None
-        assert len(ai_profile.personality_traits) > 0
+        pytest.assume(ai_profile is not None)
+        pytest.assume(len(ai_profile.personality_traits) > 0)
 
     @pytest.mark.asyncio
     async def test_monitoring_service_resolvers(self):
@@ -323,15 +347,15 @@ class TestServiceResolvers:
         usage_stats = await MonitoringServiceResolvers.get_usage_statistics(
             "child-123", "daily"
         )
-        assert usage_stats is not None
-        assert usage_stats.total_session_time > 0
+        pytest.assume(usage_stats is not None)
+        pytest.assume(usage_stats.total_session_time > 0)
 
     @pytest.mark.asyncio
     async def test_safety_service_resolvers(self):
         """Test safety service resolvers."""
         safety_profile = await SafetyServiceResolvers.get_safety_profile("child-123")
-        assert safety_profile is not None
-        assert safety_profile.safety_score > 0
+        pytest.assume(safety_profile is not None)
+        pytest.assume(safety_profile.safety_score > 0)
 
 
 class TestPerformanceMonitoring:
@@ -350,8 +374,8 @@ class TestPerformanceMonitoring:
             query = 'query { child(id: "123") { name } }'
             query_hash = await monitor.start_query_monitoring(query, {}, "getChild")
 
-            assert query_hash is not None
-            assert monitor.current_queries == 1
+            pytest.assume(query_hash is not None)
+            pytest.assume(monitor.current_queries == 1)
 
             # Finish monitoring
             await monitor.finish_query_monitoring(
@@ -366,11 +390,11 @@ class TestPerformanceMonitoring:
                 error_count=0,
             )
 
-            assert monitor.current_queries == 0
+            pytest.assume(monitor.current_queries == 0)
 
             # Check metrics
             summary = monitor.get_performance_summary()
-            assert summary["summary"]["total_queries"] > 0
+            pytest.assume(summary["summary"]["total_queries"] > 0)
 
         except ImportError:
             pytest.skip("Performance monitoring not available")
@@ -393,7 +417,7 @@ class TestPerformanceMonitoring:
             )
 
             # Check that metrics were recorded
-            assert len(monitor.service_metrics) > 0
+            pytest.assume(len(monitor.service_metrics) > 0)
 
         except ImportError:
             pytest.skip("Performance monitoring not available")
@@ -443,7 +467,7 @@ class TestErrorHandling:
         """Test authentication error handling."""
         # Test invalid token
         invalid_user = await auth_service.verify_token("invalid-token")
-        assert invalid_user is None
+        pytest.assume(invalid_user is None)
 
         # Test rate limiting
         # Simulate multiple failed login attempts
@@ -472,7 +496,7 @@ class TestCacheIntegration:
         query = 'query { child(id: "123") { name } }'
         result = await federation_gateway._execute_federated_query(query, {})
 
-        assert result["data"]["child"]["name"] == "Cached Child"
+        pytest.assume(result["data"]["child"]["name"] == "Cached Child")
 
     @pytest.mark.asyncio
     async def test_authentication_caching(self, auth_service):
@@ -488,11 +512,11 @@ class TestCacheIntegration:
 
         # First verification should cache the result
         verified_user = await auth_service.verify_token(token)
-        assert verified_user.id == user.id
+        pytest.assume(verified_user.id == user.id)
 
         # Second verification should use cache
         verified_user = await auth_service.verify_token(token)
-        assert verified_user.id == user.id
+        pytest.assume(verified_user.id == user.id)
 
 
 @pytest.mark.integration
@@ -540,8 +564,8 @@ class TestFederationIntegration:
 
         result = await federation_gateway._execute_federated_query(query, {})
 
-        assert "data" in result
-        assert result["data"]["child"]["name"] == "Test Child"
+        pytest.assume("data" in result)
+        pytest.assume(result["data"]["child"]["name"] == "Test Child")
 
 
 if __name__ == "__main__":

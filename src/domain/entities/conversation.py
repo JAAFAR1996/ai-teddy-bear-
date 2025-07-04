@@ -45,7 +45,8 @@ class EmotionalState(BaseModel):
     """Emotional state analysis"""
 
     primary_emotion: str = Field(..., description="Primary emotion detected")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score")
+    confidence: float = Field(..., ge=0.0, le=1.0,
+                              description="Confidence score")
     valence: float = Field(
         ..., ge=-1.0, le=1.0, description="Emotional valence (-1 to 1)"
     )
@@ -102,7 +103,8 @@ class Message(BaseModel):
     sentiment: Optional[float] = Field(
         None, ge=-1.0, le=1.0, description="Sentiment score"
     )
-    topics: List[str] = Field(default_factory=list, description="Detected topics")
+    topics: List[str] = Field(default_factory=list,
+                              description="Detected topics")
     entities: List[Dict[str, Any]] = Field(
         default_factory=list, description="Named entities"
     )
@@ -227,7 +229,8 @@ class Conversation(BaseModel):
     )
 
     # Timing
-    start_time: datetime = Field(default_factory=datetime.now, description="Start time")
+    start_time: datetime = Field(
+        default_factory=datetime.now, description="Start time")
     end_time: Optional[datetime] = Field(None, description="End time")
     duration: timedelta = Field(default=timedelta(), description="Duration")
 
@@ -237,7 +240,8 @@ class Conversation(BaseModel):
     )
 
     # Analysis
-    topics: List[str] = Field(default_factory=list, description="Conversation topics")
+    topics: List[str] = Field(default_factory=list,
+                              description="Conversation topics")
     emotional_states: List[EmotionalState] = Field(
         default_factory=list, description="Emotional journey"
     )
@@ -249,7 +253,8 @@ class Conversation(BaseModel):
     )
 
     # Quality & Safety
-    safety_score: float = Field(default=1.0, ge=0.0, le=1.0, description="Safety score")
+    safety_score: float = Field(
+        default=1.0, ge=0.0, le=1.0, description="Safety score")
     quality_score: float = Field(
         default=0.0, ge=0.0, le=1.0, description="Quality score"
     )
@@ -259,7 +264,8 @@ class Conversation(BaseModel):
 
     # Context
     llm_provider: Optional[str] = Field(None, description="LLM provider used")
-    voice_profile: Optional[str] = Field(None, description="Voice profile used")
+    voice_profile: Optional[str] = Field(
+        None, description="Voice profile used")
     language: str = Field(default="en", description="Primary language")
 
     # Summary
@@ -268,7 +274,8 @@ class Conversation(BaseModel):
     )
 
     # Parent visibility
-    parent_visible: bool = Field(default=True, description="Visible to parents")
+    parent_visible: bool = Field(
+        default=True, description="Visible to parents")
     parent_notes: Optional[str] = Field(None, description="Notes from parents")
 
     def add_message(
@@ -283,7 +290,8 @@ class Conversation(BaseModel):
             role=role,
             content=content,
             content_type=content_type,
-            metadata=MessageMetadata(**metadata) if metadata else MessageMetadata(),
+            metadata=MessageMetadata(
+                **metadata) if metadata else MessageMetadata(),
         )
 
         self.messages.append(message)
@@ -301,20 +309,21 @@ class Conversation(BaseModel):
         """Update conversation metrics"""
         self.metrics.total_messages += 1
 
-        if message.content_type == ContentType.TEXT:
+        if hasattr(message, 'content_type') and message.content_type == ContentType.TEXT:
             words = message.content.split()
             self.metrics.total_words += len(words)
 
             # Update turn taking
-            if message.role == MessageRole.USER:
+            if hasattr(message, 'role') and message.role == MessageRole.USER:
                 self.turn_taking.user_turns += 1
-            elif message.role == MessageRole.ASSISTANT:
+            elif hasattr(message, 'role') and message.role == MessageRole.ASSISTANT:
                 self.turn_taking.assistant_turns += 1
 
             # Count questions
-            questions = message.extract_questions()
-            if questions:
-                self.metrics.questions_asked += len(questions)
+            if hasattr(message, 'extract_questions'):
+                questions = message.extract_questions()
+                if questions:
+                    self.metrics.questions_asked += len(questions)
 
     def get_context(self, max_messages: int = 10) -> str:
         """Get conversation context for LLM"""
@@ -408,7 +417,7 @@ class Conversation(BaseModel):
         # Group messages by time windows (e.g., every 5 messages)
         window_size = 5
         for i in range(0, len(self.messages), window_size):
-            window_messages = self.messages[i : i + window_size]
+            window_messages = self.messages[i: i + window_size]
 
             # Analyze emotions in this window
             emotions = defaultdict(float)
@@ -464,7 +473,8 @@ class Conversation(BaseModel):
             factors.append(min(response_rate, 1.0))
 
         # Message length consistency
-        user_messages = [m for m in self.messages if m.role == MessageRole.USER]
+        user_messages = [
+            m for m in self.messages if m.role == MessageRole.USER]
         if len(user_messages) > 1:
             lengths = [m.get_word_count() for m in user_messages]
             avg_length = statistics.mean(lengths)
@@ -495,7 +505,8 @@ class Conversation(BaseModel):
 
         # Check for educational topics
         edu_topics = ["education", "science", "math", "learning", "history"]
-        edu_topic_count = sum(1 for topic in self.topics if topic in edu_topics)
+        edu_topic_count = sum(
+            1 for topic in self.topics if topic in edu_topics)
         if self.topics:
             edu_factors.append(edu_topic_count / len(self.topics))
 
@@ -510,7 +521,8 @@ class Conversation(BaseModel):
             "how",
         ]
         all_text = " ".join([m.content.lower() for m in self.messages])
-        keyword_count = sum(1 for keyword in learning_keywords if keyword in all_text)
+        keyword_count = sum(
+            1 for keyword in learning_keywords if keyword in all_text)
         edu_factors.append(min(keyword_count / 10, 1.0))
 
         # Check for educational content in metadata
@@ -618,4 +630,5 @@ class Conversation(BaseModel):
     class Config:
         """Pydantic configuration"""
 
-        json_encoders = {datetime: lambda v: v.isoformat(), timedelta: lambda v: str(v)}
+        json_encoders = {datetime: lambda v: v.isoformat(),
+                         timedelta: lambda v: str(v)}

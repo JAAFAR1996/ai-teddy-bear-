@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import List, Tuple
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 class ProperDDDSplitter:
 
@@ -19,11 +21,10 @@ class ProperDDDSplitter:
         self.services_dir = self.src_dir / "application" / "services"
         self.split_count = 0
         self.report = []
-        self.logger = logging.getLogger(__name__)
 
     def log(self, message: str):
         """تسجيل الرسائل"""
-        self.logger.info(f"✓ {message}")
+        logger.info(f"✓ {message}")
         self.report.append(message)
 
     def identify_god_classes(self) -> List[Tuple[Path, int]]:
@@ -438,7 +439,8 @@ class AccessibilityApplicationService:
                 if any(f.endswith(".py") for f in files):
                     init_file = root_path / "__init__.py"
                     if not init_file.exists():
-                        init_file.write_text("# Domain module\\n", encoding="utf-8")
+                        init_file.write_text(
+                            "# Domain module\\n", encoding="utf-8")
 
     def move_original_to_legacy(self, file_path: Path):
         """نقل الملف الأصلي إلى legacy"""
@@ -457,9 +459,9 @@ class AccessibilityApplicationService:
 
     def run_splitting(self):
         """تشغيل عملية التقسيم الكاملة"""
-        self.logger.info("=" * 70)
-        self.logger.info("🔧 بدء تقسيم God Classes الصحيح...")
-        self.logger.info("=" * 70)
+        logger.info("=" * 70)
+        logger.info("🔧 بدء تقسيم God Classes الصحيح...")
+        logger.info("=" * 70)
         god_classes = self.identify_god_classes()
         if not god_classes:
             self.log("لم يتم العثور على God Classes للتقسيم")
@@ -471,16 +473,17 @@ class AccessibilityApplicationService:
         for file_path, lines in god_classes:
             filename = file_path.name
             if filename == "accessibility_service.py":
-                files_created = self.split_accessibility_service(file_path, lines)
+                files_created = self.split_accessibility_service(
+                    file_path, lines)
                 total_files_created += len(files_created)
                 self.move_original_to_legacy(file_path)
             else:
                 self.log(f"⚠️ {filename} يحتاج تقسيم يدوي (لم يتم تطبيقه بعد)")
-        self.logger.info("=" * 70)
-        self.logger.info("✅ انتهى التقسيم بنجاح!")
-        self.logger.info(f"   - ملفات مُقسمة: {self.split_count}")
-        self.logger.info(f"   - ملفات جديدة: {total_files_created}")
-        self.logger.info("=" * 70)
+        logger.info("=" * 70)
+        logger.info("✅ انتهى التقسيم بنجاح!")
+        logger.info(f"   - ملفات مُقسمة: {self.split_count}")
+        logger.info(f"   - ملفات جديدة: {total_files_created}")
+        logger.info("=" * 70)
         return self.report
 
 

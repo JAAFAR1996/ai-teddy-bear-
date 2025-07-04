@@ -8,7 +8,7 @@ import json
 import os
 import tempfile
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -120,7 +120,7 @@ class TestPhase1SecurityFoundation:
             vault_url=None,
             vault_token=None,
         )
-        
+
         assert secrets_manager is not None
         assert secrets_manager.config.default_provider == SecretProvider.LOCAL_ENCRYPTED
 
@@ -128,7 +128,7 @@ class TestPhase1SecurityFoundation:
     async def test_secrets_manager_set_get_secret(self, temp_dir, secrets_config):
         """Test setting and getting secrets"""
         secrets_manager = create_secrets_manager("testing")
-        
+
         # Set secret
         success = await secrets_manager.set_secret(
             name="test_api_key",
@@ -137,7 +137,7 @@ class TestPhase1SecurityFoundation:
             rotation_interval_days=30,
         )
         assert success is True
-        
+
         # Get secret
         secret_value = await secrets_manager.get_secret("test_api_key")
         assert secret_value == "test_secret_value"
@@ -146,14 +146,14 @@ class TestPhase1SecurityFoundation:
     async def test_secrets_manager_rotation(self, temp_dir, secrets_config):
         """Test secret rotation"""
         secrets_manager = create_secrets_manager("testing")
-        
+
         # Set initial secret
         await secrets_manager.set_secret("test_key", "old_value")
-        
+
         # Rotate secret
         success = await secrets_manager.rotate_secret("test_key", "new_value")
         assert success is True
-        
+
         # Verify new value
         new_value = await secrets_manager.get_secret("test_key")
         assert new_value == "new_value"
@@ -170,7 +170,7 @@ class TestPhase1SecurityFoundation:
         """Test safe arithmetic expressions"""
         parser = SafeExpressionParser(safe_expression_config)
         context = ExpressionContext()
-        
+
         # Test basic arithmetic
         assert parser.evaluate("2 + 3", context) == 5
         assert parser.evaluate("10 - 5", context) == 5
@@ -183,7 +183,7 @@ class TestPhase1SecurityFoundation:
         """Test safe comparison expressions"""
         parser = SafeExpressionParser(safe_expression_config)
         context = ExpressionContext()
-        
+
         # Test comparisons
         assert parser.evaluate("5 > 3", context) is True
         assert parser.evaluate("2 < 1", context) is False
@@ -196,7 +196,7 @@ class TestPhase1SecurityFoundation:
         """Test safe logical expressions"""
         parser = SafeExpressionParser(safe_expression_config)
         context = ExpressionContext()
-        
+
         # Test logical operations
         assert parser.evaluate("True and False", context) is False
         assert parser.evaluate("True or False", context) is True
@@ -207,7 +207,7 @@ class TestPhase1SecurityFoundation:
         """Test safe function calls"""
         parser = SafeExpressionParser(safe_expression_config)
         context = ExpressionContext()
-        
+
         # Test safe functions
         assert parser.evaluate("abs(-5)", context) == 5
         assert parser.evaluate("round(3.7)", context) == 4
@@ -219,7 +219,7 @@ class TestPhase1SecurityFoundation:
         """Test that dangerous expressions are blocked"""
         parser = SafeExpressionParser(safe_expression_config)
         context = ExpressionContext()
-        
+
         # Test dangerous expressions
         dangerous_expressions = [
             "__import__('os')",
@@ -228,7 +228,7 @@ class TestPhase1SecurityFoundation:
             "eval('2+2')",
             "exec('x = 1')",
         ]
-        
+
         for expr in dangerous_expressions:
             with pytest.raises(Exception):
                 parser.evaluate(expr, context)
@@ -236,7 +236,7 @@ class TestPhase1SecurityFoundation:
     def test_safe_eval_convenience_function(self):
         """Test safe_eval convenience function"""
         variables = {"x": 10, "y": 5}
-        
+
         assert safe_eval("x + y", variables) == 15
         assert safe_eval("x * y", variables) == 50
         assert safe_eval("x > y", variables) is True
@@ -245,15 +245,16 @@ class TestPhase1SecurityFoundation:
         """Test safe template processing"""
         template = "Hello {{name}}, you are {{age}} years old"
         variables = {"name": "Alice", "age": 25}
-        
+
         result = safe_template(template, variables)
         assert result == "Hello Alice, you are 25 years old"
 
     def test_safe_json_logic(self):
         """Test safe JSONLogic processing"""
-        logic = {"and": [{"<": [{"var": "age"}, 18]}, {">": [{"var": "score"}, 80]}]}
+        logic = {"and": [{"<": [{"var": "age"}, 18]},
+                         {">": [{"var": "score"}, 80]}]}
         variables = {"age": 16, "score": 85}
-        
+
         result = safe_json_logic(json.dumps(logic), variables)
         assert result is True
 
@@ -269,7 +270,7 @@ class TestPhase1SecurityFoundation:
     async def test_exception_handler_logging(self, exception_handler_config):
         """Test exception handler logging"""
         handler = EnterpriseExceptionHandler(exception_handler_config)
-        
+
         # Test handling a simple exception
         test_exception = ValueError("Test error")
         error_details = handler.handle_exception(
@@ -278,7 +279,7 @@ class TestPhase1SecurityFoundation:
             additional_data={"test_key": "test_value"},
             reraise=False,
         )
-        
+
         assert error_details is not None
         assert error_details.error_type == "ValueError"
         assert error_details.error_message == "Test error"
@@ -289,25 +290,25 @@ class TestPhase1SecurityFoundation:
     async def test_circuit_breaker_functionality(self, exception_handler_config):
         """Test circuit breaker functionality"""
         handler = EnterpriseExceptionHandler(exception_handler_config)
-        
+
         # Get circuit breaker
         cb = handler.get_circuit_breaker("test_service")
         assert cb.state == "CLOSED"
         assert cb.can_execute() is True
-        
+
         # Simulate failures
         for _ in range(exception_handler_config.error_threshold_per_minute):
             cb.on_failure(ValueError("Test failure"))
-        
+
         # Circuit should be open
         assert cb.state == "OPEN"
         assert cb.can_execute() is False
-        
+
         # Wait for timeout
-        cb.last_failure_time = datetime.now(timezone.utc) - timezone.utc.timedelta(
+        cb.last_failure_time = datetime.now(timezone.utc) - timedelta(
             seconds=exception_handler_config.circuit_breaker_timeout_seconds + 1
         )
-        
+
         # Should be half-open
         assert cb.can_execute() is True
         cb.on_success()
@@ -317,11 +318,11 @@ class TestPhase1SecurityFoundation:
     async def test_handle_exceptions_decorator(self, exception_handler_config):
         """Test handle_exceptions decorator"""
         handler = EnterpriseExceptionHandler(exception_handler_config)
-        
+
         @handle_exceptions(error_code="TEST_ERROR")
         async def failing_function():
             raise ValueError("Test error")
-        
+
         with pytest.raises(ValueError):
             await failing_function()
 
@@ -329,7 +330,7 @@ class TestPhase1SecurityFoundation:
     async def test_with_retry_decorator(self, exception_handler_config):
         """Test with_retry decorator"""
         call_count = 0
-        
+
         @with_retry(max_attempts=3, retry_delay_seconds=0.1)
         async def failing_function():
             nonlocal call_count
@@ -337,7 +338,7 @@ class TestPhase1SecurityFoundation:
             if call_count < 3:
                 raise ValueError("Temporary error")
             return "success"
-        
+
         result = await failing_function()
         assert result == "success"
         assert call_count == 3
@@ -355,14 +356,14 @@ class TestPhase1SecurityFoundation:
     async def test_audit_event_logging(self, audit_config):
         """Test audit event logging"""
         logger = AuditLogger(audit_config)
-        
+
         context = AuditContext(
             user_id="test_user",
             child_id="test_child",
             session_id="test_session",
             ip_address="127.0.0.1",
         )
-        
+
         event_id = await logger.log_event(
             event_type=AuditEventType.CHILD_INTERACTION_START,
             severity=AuditSeverity.INFO,
@@ -371,7 +372,7 @@ class TestPhase1SecurityFoundation:
             context=context,
             details={"test_key": "test_value"},
         )
-        
+
         assert event_id is not None
         assert event_id.startswith("audit_")
 
@@ -379,7 +380,7 @@ class TestPhase1SecurityFoundation:
     async def test_child_interaction_logging(self, audit_config):
         """Test child interaction logging"""
         logger = AuditLogger(audit_config)
-        
+
         event_id = await logger.log_child_interaction(
             child_id="test_child",
             interaction_type="voice_capture",
@@ -387,14 +388,14 @@ class TestPhase1SecurityFoundation:
             response="Hello there!",
             safety_score=0.9,
         )
-        
+
         assert event_id is not None
 
     @pytest.mark.asyncio
     async def test_safety_incident_logging(self, audit_config):
         """Test safety incident logging"""
         logger = AuditLogger(audit_config)
-        
+
         event_id = await logger.log_safety_incident(
             child_id="test_child",
             incident_type="inappropriate_content",
@@ -402,21 +403,21 @@ class TestPhase1SecurityFoundation:
             description="Inappropriate content detected",
             details={"content": "test content", "score": 0.3},
         )
-        
+
         assert event_id is not None
 
     @pytest.mark.asyncio
     async def test_data_access_logging(self, audit_config):
         """Test data access logging"""
         logger = AuditLogger(audit_config)
-        
+
         event_id = await logger.log_data_access(
             user_id="test_user",
             data_type="child_profile",
             operation="read",
             resource_id="child_123",
         )
-        
+
         assert event_id is not None
 
     @pytest.mark.asyncio
@@ -431,7 +432,7 @@ class TestPhase1SecurityFoundation:
             context=AuditContext(user_id="test_user"),
         )
         assert event_id is not None
-        
+
         # Test log_child_safety_incident
         incident_id = await log_child_safety_incident(
             child_id="test_child",
@@ -443,20 +444,21 @@ class TestPhase1SecurityFoundation:
     # ================== INTEGRATION TESTS ==================
 
     @pytest.mark.asyncio
-    async def test_security_integration_workflow(self, temp_dir):
+    async def test_security_integration_workflow(self, temp_dir, exception_handler_config, audit_config):
         """Test complete security integration workflow"""
         # Initialize all security components
         secrets_manager = create_secrets_manager("testing")
-        exception_handler = EnterpriseExceptionHandler()
-        audit_logger = AuditLogger()
-        
+        audit_logger = AuditLogger(audit_config)
+        exception_handler = EnterpriseExceptionHandler(
+            exception_handler_config)
+
         # Set up a secret
         await secrets_manager.set_secret("test_key", "test_value")
-        
+
         # Test safe expression evaluation
         result = safe_eval("2 + 3 * 4")
         assert result == 14
-        
+
         # Test audit logging
         event_id = await log_audit_event(
             event_type=AuditEventType.SYSTEM_STARTUP,
@@ -465,21 +467,23 @@ class TestPhase1SecurityFoundation:
             description="Security integration test",
         )
         assert event_id is not None
-        
+
         # Test exception handling
         try:
             raise ValueError("Integration test error")
         except Exception as e:
-            error_details = exception_handler.handle_exception(e, reraise=False)
+            error_details = exception_handler.handle_exception(
+                e, reraise=False)
             assert error_details is not None
 
     @pytest.mark.asyncio
-    async def test_child_safety_workflow(self, temp_dir):
+    async def test_child_safety_workflow(self, temp_dir, exception_handler_config, audit_config):
         """Test child safety workflow with all security components"""
         # Initialize components
-        audit_logger = AuditLogger()
-        exception_handler = EnterpriseExceptionHandler()
-        
+        audit_logger = AuditLogger(audit_config)
+        exception_handler = EnterpriseExceptionHandler(
+            exception_handler_config)
+
         # Simulate child interaction
         try:
             # Log interaction start
@@ -490,11 +494,11 @@ class TestPhase1SecurityFoundation:
                 safety_score=0.8,
             )
             assert interaction_id is not None
-            
+
             # Process content safely
             content_length = safe_eval("len('Tell me a story')")
             assert content_length == 16
-            
+
             # Log interaction end
             end_id = await audit_logger.log_child_interaction(
                 child_id="child_123",
@@ -504,10 +508,11 @@ class TestPhase1SecurityFoundation:
                 safety_score=0.9,
             )
             assert end_id is not None
-            
+
         except Exception as e:
             # Handle any errors
-            error_details = exception_handler.handle_exception(e, reraise=False)
+            error_details = exception_handler.handle_exception(
+                e, reraise=False)
             assert error_details is not None
 
     # ================== PERFORMANCE TESTS ==================
@@ -516,9 +521,9 @@ class TestPhase1SecurityFoundation:
     async def test_audit_logging_performance(self, audit_config):
         """Test audit logging performance"""
         logger = AuditLogger(audit_config)
-        
+
         start_time = time.time()
-        
+
         # Log multiple events
         for i in range(100):
             await logger.log_event(
@@ -527,10 +532,10 @@ class TestPhase1SecurityFoundation:
                 category=AuditCategory.DATA_PROTECTION,
                 description=f"Test event {i}",
             )
-        
+
         end_time = time.time()
         duration = end_time - start_time
-        
+
         # Should complete within reasonable time
         assert duration < 10.0  # 10 seconds for 100 events
 
@@ -538,17 +543,17 @@ class TestPhase1SecurityFoundation:
         """Test safe expression evaluation performance"""
         parser = SafeExpressionParser(safe_expression_config)
         context = ExpressionContext()
-        
+
         start_time = time.time()
-        
+
         # Evaluate multiple expressions
         for i in range(1000):
             result = parser.evaluate(f"{i} + {i}", context)
             assert result == i * 2
-        
+
         end_time = time.time()
         duration = end_time - start_time
-        
+
         # Should complete within reasonable time
         assert duration < 5.0  # 5 seconds for 1000 expressions
 
@@ -558,11 +563,11 @@ class TestPhase1SecurityFoundation:
         """Test that no hardcoded secrets exist in the codebase"""
         # This test validates that we're not using hardcoded secrets
         # The actual validation would be done by security scanning tools
-        
+
         # Test that our secrets manager properly handles secrets
         secrets_manager = create_secrets_manager("testing")
         assert secrets_manager is not None
-        
+
         # Verify that we're not using environment variables directly
         # (this would be caught by security scanning)
 
@@ -570,25 +575,25 @@ class TestPhase1SecurityFoundation:
         """Test that no eval/exec usage exists in safe components"""
         # Test that our safe expression parser doesn't use eval/exec
         parser = SafeExpressionParser()
-        
+
         # Verify that dangerous expressions are blocked
         with pytest.raises(Exception):
             parser.evaluate("eval('2+2')")
-        
+
         with pytest.raises(Exception):
             parser.evaluate("exec('x=1')")
 
     def test_comprehensive_exception_handling(self, exception_handler_config):
         """Test comprehensive exception handling"""
         handler = EnterpriseExceptionHandler(exception_handler_config)
-        
+
         # Test different exception types
         exceptions = [
             ValueError("Test value error"),
             TypeError("Test type error"),
             RuntimeError("Test runtime error"),
         ]
-        
+
         for exc in exceptions:
             error_details = handler.handle_exception(exc, reraise=False)
             assert error_details is not None
@@ -598,16 +603,21 @@ class TestPhase1SecurityFoundation:
     async def test_complete_audit_trail(self, audit_config):
         """Test complete audit trail functionality"""
         logger = AuditLogger(audit_config)
-        
+
         # Test all event types
         event_types = [
-            (AuditEventType.LOGIN_SUCCESS, AuditSeverity.INFO, AuditCategory.AUTHENTICATION),
-            (AuditEventType.CHILD_INTERACTION_START, AuditSeverity.INFO, AuditCategory.CHILD_SAFETY),
-            (AuditEventType.SAFETY_INCIDENT, AuditSeverity.WARNING, AuditCategory.CHILD_SAFETY),
-            (AuditEventType.DATA_ACCESS, AuditSeverity.INFO, AuditCategory.DATA_PROTECTION),
-            (AuditEventType.SECURITY_ALERT, AuditSeverity.CRITICAL, AuditCategory.SYSTEM_SECURITY),
+            (AuditEventType.LOGIN_SUCCESS, AuditSeverity.INFO,
+             AuditCategory.AUTHENTICATION),
+            (AuditEventType.CHILD_INTERACTION_START,
+             AuditSeverity.INFO, AuditCategory.CHILD_SAFETY),
+            (AuditEventType.SAFETY_INCIDENT,
+             AuditSeverity.WARNING, AuditCategory.CHILD_SAFETY),
+            (AuditEventType.DATA_ACCESS, AuditSeverity.INFO,
+             AuditCategory.DATA_PROTECTION),
+            (AuditEventType.SECURITY_ALERT, AuditSeverity.CRITICAL,
+             AuditCategory.SYSTEM_SECURITY),
         ]
-        
+
         for event_type, severity, category in event_types:
             event_id = await logger.log_event(
                 event_type=event_type,
@@ -619,4 +629,4 @@ class TestPhase1SecurityFoundation:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"]) 
+    pytest.main([__file__, "-v"])

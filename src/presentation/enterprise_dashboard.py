@@ -22,17 +22,18 @@ from PySide6.QtWidgets import (QCheckBox, QComboBox, QGridLayout, QGroupBox,
                                QPushButton, QSlider, QSplitter, QTabWidget,
                                QTextEdit, QVBoxLayout, QWidget)
 
+import structlog
+
+logger = structlog.get_logger()
+
 try:
     from PySide6.QtWebEngineWidgets import QWebEngineView
 
     WEBENGINE_AVAILABLE = True
 except ImportError:
     WEBENGINE_AVAILABLE = False
-    logger.warning("⚠️ QWebEngineView not available - using fallback chart display")
-
-import structlog
-
-logger = structlog.get_logger()
+    logger.warning(
+        "⚠️ QWebEngineView not available - using fallback chart display")
 
 
 class EmotionAnalyticsEngine:
@@ -60,9 +61,10 @@ class EmotionAnalyticsEngine:
 
         except ImportError:
             self.plotly_available = False
-            logger.warning("Plotly not available - install with: pip install plotly")
+            logger.warning(
+                "Plotly not available - install with: pip install plotly")
 
-    def add_emotion_data(dict=None) -> None:
+    def add_emotion_data(self, emotion_data: dict = None, emotion: str = None, confidence: float = None, metadata: dict = None) -> None:
         """Add new emotion data point"""
         entry = {
             "emotion": emotion,
@@ -105,7 +107,8 @@ class EmotionAnalyticsEngine:
             if hour not in hourly_emotions:
                 hourly_emotions[hour] = {}
 
-            hourly_emotions[hour][emotion] = hourly_emotions[hour].get(emotion, 0) + 1
+            hourly_emotions[hour][emotion] = hourly_emotions[hour].get(
+                emotion, 0) + 1
 
         self.patterns["hourly"] = hourly_emotions
 
@@ -160,7 +163,8 @@ class EmotionAnalyticsEngine:
                     y=emotion_conf,
                     mode="lines+markers",
                     name=emotion.title(),
-                    line=dict(color=emotion_colors.get(emotion, "#666666"), width=3),
+                    line=dict(color=emotion_colors.get(
+                        emotion, "#666666"), width=3),
                     marker=dict(size=10, opacity=0.8),
                     hovertemplate=f"<b>{emotion.title()}</b><br>Confidence: %{{y:.1%}}<br>Time: %{{x}}<extra></extra>",
                 )
@@ -247,7 +251,8 @@ class EmotionAnalyticsEngine:
 
         # Prepare hourly emotion data
         hours = list(range(24))
-        emotions = ["happy", "excited", "calm", "curious", "frustrated", "sad", "angry"]
+        emotions = ["happy", "excited", "calm",
+                    "curious", "frustrated", "sad", "angry"]
 
         # Initialize matrix
         intensity_matrix = np.zeros((len(emotions), len(hours)))
@@ -262,7 +267,8 @@ class EmotionAnalyticsEngine:
                 intensity_matrix[emotion_idx][hour] += confidence
 
         # Normalize by maximum value
-        max_val = np.max(intensity_matrix) if np.max(intensity_matrix) > 0 else 1
+        max_val = np.max(intensity_matrix) if np.max(
+            intensity_matrix) > 0 else 1
         intensity_matrix = intensity_matrix / max_val
 
         fig = self.go.Figure(
@@ -316,7 +322,7 @@ class EmotionAnalyticsEngine:
         trend = "stable"
         if len(recent_emotions) >= 10:
             first_half = recent_emotions[: len(recent_emotions) // 2]
-            second_half = recent_emotions[len(recent_emotions) // 2 :]
+            second_half = recent_emotions[len(recent_emotions) // 2:]
 
             first_avg = sum(
                 1 if e["emotion"] in ["happy", "excited", "calm"] else 0
@@ -423,7 +429,8 @@ class SmartAlertSystem:
                 alert = self.create_alert(
                     "sudden_mood_drop",
                     f"Confidence dropped from {previous_confidence:.1%} to {recent_confidence:.1%}",
-                    {"previous": previous_confidence, "current": recent_confidence},
+                    {"previous": previous_confidence,
+                        "current": recent_confidence},
                 )
                 new_alerts.append(alert)
 
@@ -480,7 +487,7 @@ class SmartAlertSystem:
             alert for alert in self.alerts_history if alert["timestamp"] >= cutoff_time
         ]
 
-    def set_sensitivity(float) -> None:
+    def set_sensitivity(self, level: float) -> None:
         """Set alert sensitivity (0.1 to 2.0)"""
         self.sensitivity = max(0.1, min(2.0, level))
 
@@ -635,7 +642,8 @@ class EnterpriseDashboardWidget(QWidget):
         # Alerts display
         self.alerts_display = QTextEdit()
         self.alerts_display.setMaximumHeight(150)
-        self.alerts_display.setPlaceholderText("Smart alerts will appear here...")
+        self.alerts_display.setPlaceholderText(
+            "Smart alerts will appear here...")
         self.alerts_display.setStyleSheet(
             """
             QTextEdit {
@@ -698,7 +706,8 @@ class EnterpriseDashboardWidget(QWidget):
         self.emotion_charts_layout = QVBoxLayout(self.emotion_charts_container)
 
         # Placeholder
-        placeholder = QLabel("📊 Emotion charts will appear after first interactions")
+        placeholder = QLabel(
+            "📊 Emotion charts will appear after first interactions")
         placeholder.setAlignment(Qt.AlignCenter)
         placeholder.setStyleSheet(
             "QLabel { color: #666; font-size: 16px; padding: 50px; }"
@@ -712,7 +721,8 @@ class EnterpriseDashboardWidget(QWidget):
         performance_tab = QWidget()
         performance_layout = QVBoxLayout(performance_tab)
 
-        perf_placeholder = QLabel("📈 Performance metrics will be displayed here")
+        perf_placeholder = QLabel(
+            "📈 Performance metrics will be displayed here")
         perf_placeholder.setAlignment(Qt.AlignCenter)
         perf_placeholder.setStyleSheet(
             "QLabel { color: #666; font-size: 16px; padding: 50px; }"
@@ -756,7 +766,8 @@ class EnterpriseDashboardWidget(QWidget):
 
             # Simulate emotion updates (30% chance)
             if random.random() > 0.7:
-                emotions = ["happy", "excited", "calm", "curious", "frustrated", "sad"]
+                emotions = ["happy", "excited", "calm",
+                            "curious", "frustrated", "sad"]
                 emotion = random.choice(emotions)
                 confidence = random.uniform(0.6, 0.95)
 
@@ -765,10 +776,11 @@ class EnterpriseDashboardWidget(QWidget):
         except Exception as e:
             logger.error("Failed to update real-time metrics", error=str(e))
 
-    def add_emotion_data(dict=None) -> None:
+    def add_emotion_data(self, emotion: str, confidence: float, metadata: dict = None) -> None:
         """Add new emotion data and update displays"""
         # Add to analytics engine
-        self.emotion_engine.add_emotion_data(emotion, confidence, metadata)
+        self.emotion_engine.add_emotion_data(
+            emotion=emotion, confidence=confidence, metadata=metadata)
 
         # Update current emotion display
         self.update_current_emotion_display(emotion, confidence)
@@ -778,9 +790,10 @@ class EnterpriseDashboardWidget(QWidget):
             [{"emotion": emotion, "confidence": confidence}], confidence
         )
 
-        logger.info("Emotion data added", emotion=emotion, confidence=confidence)
+        logger.info("Emotion data added", emotion=emotion,
+                    confidence=confidence)
 
-    def update_current_emotion_display(float) -> None:
+    def update_current_emotion_display(self, emotion: str, confidence: float) -> None:
         """Update current emotion display"""
         emotion_emojis = {
             "happy": "😊",
@@ -849,7 +862,8 @@ class EnterpriseDashboardWidget(QWidget):
             hours = hours_map.get(time_range_text, 6)
 
             # Create timeline chart
-            timeline_fig = self.emotion_engine.create_emotion_timeline_chart(hours)
+            timeline_fig = self.emotion_engine.create_emotion_timeline_chart(
+                hours)
             if timeline_fig:
                 self.display_plotly_chart(timeline_fig, "timeline")
 
@@ -866,7 +880,7 @@ class EnterpriseDashboardWidget(QWidget):
         except Exception as e:
             logger.error("Failed to update charts", error=str(e))
 
-    def display_plotly_chart(str) -> None:
+    def display_plotly_chart(self, fig, chart_type: str) -> None:
         """Display Plotly chart in widget"""
         try:
             if WEBENGINE_AVAILABLE:
@@ -886,7 +900,8 @@ class EnterpriseDashboardWidget(QWidget):
                 import os
                 import tempfile
 
-                temp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+                temp_file = tempfile.NamedTemporaryFile(
+                    suffix=".png", delete=False)
                 fig.write_image(temp_file.name, width=800, height=400)
 
                 pixmap = QPixmap(temp_file.name)
@@ -900,7 +915,8 @@ class EnterpriseDashboardWidget(QWidget):
                 os.unlink(temp_file.name)
 
         except Exception as e:
-            logger.error("Failed to display chart", error=str(e), chart_type=chart_type)
+            logger.error("Failed to display chart",
+                         error=str(e), chart_type=chart_type)
 
             # Show error message
             error_label = QLabel(f"Chart display error: {e}")
@@ -926,10 +942,11 @@ class EnterpriseDashboardWidget(QWidget):
         except Exception as e:
             logger.error("Failed to process alerts", error=str(e))
 
-    def display_alert(Dict) -> None:
+    def display_alert(self, alert: Dict) -> None:
         """Display alert in the alerts panel"""
         timestamp = alert["timestamp"].strftime("%H:%M:%S")
-        priority_colors = {"high": "#ff4444", "medium": "#ff8800", "low": "#4488ff"}
+        priority_colors = {"high": "#ff4444",
+                           "medium": "#ff8800", "low": "#4488ff"}
 
         color = priority_colors.get(alert["priority"], "#666666")
 
@@ -944,9 +961,10 @@ class EnterpriseDashboardWidget(QWidget):
         self.alerts_display.setHtml(alert_html + current_html)
 
         # Emit signal for parent handling
-        self.alert_triggered.emit(alert["type"], alert["message"], alert["data"])
+        self.alert_triggered.emit(
+            alert["type"], alert["message"], alert["data"])
 
-    def toggle_alerts(bool) -> None:
+    def toggle_alerts(self, enabled: bool) -> None:
         """Toggle smart alerts system"""
         self.alert_system.enabled = enabled
 
@@ -957,7 +975,7 @@ class EnterpriseDashboardWidget(QWidget):
             self.alerts_timer.stop()
             logger.info("Smart alerts disabled")
 
-    def update_alert_sensitivity(int) -> None:
+    def update_alert_sensitivity(self, value: int) -> None:
         """Update alert sensitivity"""
         sensitivity = value / 5.0  # Convert 1-10 scale to 0.2-2.0
         self.alert_system.set_sensitivity(sensitivity)
@@ -967,7 +985,7 @@ class EnterpriseDashboardWidget(QWidget):
         self.update_charts()
         logger.info("Charts refreshed manually")
 
-    def update_connection_status(str) -> None:
+    def update_connection_status(self, status: str) -> None:
         """Update connection status indicator"""
         status_config = {
             "Connected": {"color": "green", "symbol": "●"},
@@ -983,7 +1001,7 @@ class EnterpriseDashboardWidget(QWidget):
             f"QLabel {{ color: {config['color']}; font-weight: bold; }}"
         )
 
-    def add_child_profile(dict=None) -> None:
+    def add_child_profile(self, name: str, age: int, metadata: dict = None) -> None:
         """Add child profile to dashboard"""
         profile_text = f"{name} (Age: {age})"
         self.profiles_list.addItem(profile_text)

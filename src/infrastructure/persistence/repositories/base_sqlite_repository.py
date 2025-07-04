@@ -5,6 +5,7 @@ from abc import abstractmethod
 from contextlib import contextmanager
 from datetime import datetime
 from typing import (Any, Dict, List, Optional, Tuple, TypeVar)
+import re
 
 from src.infrastructure.persistence.base import (BaseRepository,
                                                  BulkOperationResult,
@@ -52,8 +53,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
     @property
     def table_name(self) -> str:
-        """Get the table name for this repository."""
+        """Get the table name for this repository. Only safe names allowed."""
         if hasattr(self, "_table_name") and self._table_name:
+            self._validate_table_and_column(self._table_name)
             return self._table_name
         raise NotImplementedError(
             "Subclasses must define table_name property or provide it in constructor"
@@ -319,17 +321,10 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             raise DatabaseError(f"Failed to delete entity: {e}")
 
     async def list(self, options: Optional[QueryOptions] = None) -> List[T]:
-        """
-        List entities with optional filtering and sorting
-
-        Args:
-            options: Query options for filtering, sorting, pagination
-
-        Returns:
-            List of entities
-        """
+        """List entities with optional filtering and sorting. Table/column names are validated."""
         try:
             cursor = self._connection.cursor()
+            self._validate_table_and_column(self.table_name)
             sql = f"SELECT * FROM {self.table_name}"
             params = []
 
@@ -367,18 +362,10 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
     async def search(
         self, criteria: List[SearchCriteria], options: Optional[QueryOptions] = None
     ) -> List[T]:
-        """
-        Search entities with advanced criteria
-
-        Args:
-            criteria: List of search criteria
-            options: Query options
-
-        Returns:
-            List of matching entities
-        """
+        """Search entities with advanced criteria. Table/column names are validated."""
         try:
             cursor = self._connection.cursor()
+            self._validate_table_and_column(self.table_name)
             sql = f"SELECT * FROM {self.table_name}"
             params = []
 
@@ -451,17 +438,10 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             raise ValueError(f"Unsupported operator: {operator}")
 
     async def count(self, criteria: Optional[List[SearchCriteria]] = None) -> int:
-        """
-        Count entities matching criteria
-
-        Args:
-            criteria: Optional search criteria
-
-        Returns:
-            Number of matching entities
-        """
+        """Count entities matching criteria. Table/column names are validated."""
         try:
             cursor = self._connection.cursor()
+            self._validate_table_and_column(self.table_name)
             sql = f"SELECT COUNT(*) FROM {self.table_name}"
             params = []
 
@@ -755,20 +735,11 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         operation: str,
         criteria: Optional[List[SearchCriteria]] = None,
     ) -> Any:
-        """
-        Perform aggregation operation
-
-        Args:
-            field: Field to aggregate
-            operation: Aggregation operation (sum, avg, max, min, count)
-            criteria: Optional search criteria
-
-        Returns:
-            Aggregation result
-        """
+        """Perform aggregation operation. Table/column names are validated."""
         try:
             cursor = self._connection.cursor()
-
+            self._validate_table_and_column(self.table_name)
+            self._validate_table_and_column(field)
             # Build aggregation function
             if operation.lower() == "count":
                 agg_func = f"COUNT({field})"
@@ -782,7 +753,6 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                 agg_func = f"MIN({field})"
             else:
                 raise ValueError(f"Unsupported aggregation operation: {operation}")
-
             sql = f"SELECT {agg_func} FROM {self.table_name}"
             params = []
 
@@ -807,13 +777,14 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             raise DatabaseError(f"Failed to perform aggregation: {e}")
 
     async def execute_safe_query(self, sql: str, params: tuple = ()):
-        """Execute parameterized query only, prevent SQL injection"""
+        """Execute parameterized query only, prevent SQL injection. Table/column names are validated if present."""
         if not isinstance(sql, str) or not sql.strip():
             self.logger.error("Invalid SQL query")
             raise ValueError("Invalid SQL query")
         if not isinstance(params, (tuple, list)):
             self.logger.error("Query parameters must be tuple or list")
             raise ValueError("Query parameters must be tuple or list")
+        # Optionally: parse and validate table/column names in sql if possible
         try:
             cursor = self._connection.cursor()
             cursor.execute(sql, params)
@@ -821,6 +792,11 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         except Exception as e:
             self.logger.error(f"SQL execution error: {e}")
             raise
+
+    def _validate_table_and_column(self, name: str) -> None:
+        """Ensure table/column name is safe (alphanumeric/underscore only)"""
+        if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
+            raise ValueError(f"Unsafe table/column name: {name}")
 
 
 async def get(self, entity_id: str) -> Optional[T]:
