@@ -321,40 +321,39 @@ class ComprehensiveProjectAnalyzer:
             issues.append("Security: يستخدم pickle.loads (خطر أمني)")
 
         # مشاكل جودة الكود
-        if 'except:' in content or '# FIXME: replace with specific exception
-except Exception as exc:' in content:
+        if 'except:' in content or 'except Exception as exc:' in content:
             issues.append("Quality: معالجة استثناءات عامة")
-        
+
         if re.search(r'print\s*\(', content) and 'test' not in str(file_path):
             issues.append("Quality: يحتوي على print في كود الإنتاج")
-        
+
         if 'TODO' in content or 'FIXME' in content or 'XXX' in content:
             issues.append("Quality: يحتوي على TODO/FIXME")
-        
+
         if len(content.splitlines()) > 500:
             issues.append("Quality: ملف كبير جداً (>500 سطر)")
-        
+
         if len(content.strip()) == 0:
             issues.append("Quality: ملف فارغ")
-        
+
         # مشاكل الاستيراد
         if 'from ..' in content and content.count('from ..') > 5:
             issues.append("Quality: الكثير من الاستيرادات النسبية")
-        
+
         if 'import *' in content:
             issues.append("Quality: يستخدم import * (غير مستحسن)")
-        
+
         # مشاكل الأداء
         if re.search(r'for .+ in .+:\s*for .+ in .+:', content):
             if re.search(r'for .+ in .+:\s*for .+ in .+:\s*for .+ in .+:', content):
                 issues.append("Performance: حلقات متداخلة عميقة (3+ مستويات)")
-        
+
         # مشاكل التوثيق
         if not re.search(r'""".*"""', content, re.DOTALL) and len(content) > 200:
             issues.append("Documentation: لا يحتوي على docstrings")
-        
+
         return issues
-    
+
     def analyze_dependencies(self, content: str, ast_analysis: Dict) -> Dict[str, List[str]]:
         """تحليل التبعيات للملف"""
         dependencies = {
@@ -362,27 +361,27 @@ except Exception as exc:' in content:
             "external": [],
             "circular_risk": []
         }
-        
+
         # التبعيات الداخلية
         for imp in ast_analysis['import_froms']:
             if imp and (imp.startswith('.') or imp.startswith('src') or imp.startswith('app')):
                 dependencies["internal"].append(imp)
-        
+
         # التبعيات الخارجية
         for imp in ast_analysis['imports']:
             if imp and not imp.startswith('.'):
                 dependencies["external"].append(imp)
-        
+
         # خطر التبعيات الدائرية
         if len(dependencies["internal"]) > 10:
             dependencies["circular_risk"].append("الكثير من التبعيات الداخلية")
-        
+
         return dependencies
-    
+
     def suggest_location(self, file_path: Path, file_type: str) -> str:
         """اقتراح موقع أفضل للملف"""
         current_path = str(file_path.relative_to(self.project_root))
-        
+
         # خريطة النقل المقترحة
         type_to_location = {
             'model': 'src/core/domain/entities/',
@@ -397,24 +396,24 @@ except Exception as exc:' in content:
             'script': 'scripts/',
             'init': None  # لا تنقل ملفات __init__.py
         }
-        
+
         suggested = type_to_location.get(file_type)
-        
+
         if not suggested or current_path.startswith(suggested):
             return None  # الملف في المكان الصحيح
-        
+
         # إنشاء اسم الملف الجديد
         filename = file_path.name
         return suggested + filename
-    
+
     def find_duplicates(self) -> None:
         """البحث عن الملفات المكررة أو المتشابهة"""
         # تجميع الملفات حسب الـ hash
         hash_to_files = defaultdict(list)
-        
+
         for file_info in self.analysis_results["detailed_analysis"]:
             hash_to_files[file_info['hash']].append(file_info['path'])
-        
+
         # إيجاد المكررات الدقيقة
         for file_hash, files in hash_to_files.items():
             if len(files) > 1:
@@ -423,16 +422,16 @@ except Exception as exc:' in content:
                     "hash": file_hash,
                     "files": files
                 })
-        
+
         # البحث عن التشابه الوظيفي
         function_signatures = defaultdict(list)
-        
+
         for file_info in self.analysis_results["detailed_analysis"]:
             if file_info['ast_analysis']['functions']:
                 for func in file_info['ast_analysis']['functions']:
                     signature = f"{func['name']}({func['args']})"
                     function_signatures[signature].append(file_info['path'])
-        
+
         # إيجاد الدوال المكررة
         for signature, files in function_signatures.items():
             if len(files) > 1:
@@ -441,41 +440,44 @@ except Exception as exc:' in content:
                     "signature": signature,
                     "files": files
                 })
-    
+
     def calculate_project_health(self) -> None:
         """حساب صحة المشروع العامة"""
         total_files = len(self.analysis_results["detailed_analysis"])
         if total_files == 0:
             self.analysis_results["health_score"] = 0
             return
-        
+
         # حساب النقاط
         score = 100
-        
+
         # خصم نقاط للملفات الفارغة
         empty_ratio = len(self.analysis_results["empty_files"]) / total_files
         score -= empty_ratio * 20
-        
+
         # خصم نقاط للملفات الكبيرة
         large_ratio = len(self.analysis_results["large_files"]) / total_files
         score -= large_ratio * 15
-        
+
         # خصم نقاط للمشاكل الأمنية
-        security_ratio = len(self.analysis_results["security_issues"]) / total_files
+        security_ratio = len(
+            self.analysis_results["security_issues"]) / total_files
         score -= security_ratio * 30
-        
+
         # خصم نقاط لمشاكل الجودة
-        quality_issues = sum(1 for f in self.analysis_results["detailed_analysis"] if f['needs_refactoring'])
+        quality_issues = sum(
+            1 for f in self.analysis_results["detailed_analysis"] if f['needs_refactoring'])
         quality_ratio = quality_issues / total_files
         score -= quality_ratio * 20
-        
+
         # خصم نقاط للملفات في الأماكن الخاطئة
-        misplaced = sum(1 for f in self.analysis_results["detailed_analysis"] if f['suggested_location'])
+        misplaced = sum(
+            1 for f in self.analysis_results["detailed_analysis"] if f['suggested_location'])
         misplaced_ratio = misplaced / total_files
         score -= misplaced_ratio * 15
-        
+
         self.analysis_results["health_score"] = max(0, min(100, score))
-    
+
     def generate_move_suggestions(self) -> None:
         """إنشاء قائمة باقتراحات النقل"""
         for file_info in self.analysis_results["detailed_analysis"]:
@@ -486,14 +488,14 @@ except Exception as exc:' in content:
                     "reason": f"نقل {file_info['type']} للمكان المناسب",
                     "priority": "high" if file_info['importance'] == 'critical' else "medium"
                 })
-    
+
     def generate_report(self, output_file: str = "project_analysis_report.json") -> None:
         """إنشاء تقرير JSON مفصل"""
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(self.analysis_results, f, ensure_ascii=False, indent=2)
-        
+
         print(f"\n✅ تم حفظ التقرير في: {output_file}")
-        
+
         # طباعة ملخص
         print("\n📊 ملخص التحليل:")
         print(f"  - إجمالي الملفات: {self.analysis_results['total_files']}")
@@ -501,8 +503,10 @@ except Exception as exc:' in content:
         print(f"  - صحة المشروع: {self.analysis_results['health_score']:.1f}%")
         print(f"  - ملفات فارغة: {len(self.analysis_results['empty_files'])}")
         print(f"  - ملفات كبيرة: {len(self.analysis_results['large_files'])}")
-        print(f"  - مشاكل أمنية: {len(self.analysis_results['security_issues'])}")
-        print(f"  - ملفات تحتاج نقل: {len(self.analysis_results['suggested_moves'])}")
+        print(
+            f"  - مشاكل أمنية: {len(self.analysis_results['security_issues'])}")
+        print(
+            f"  - ملفات تحتاج نقل: {len(self.analysis_results['suggested_moves'])}")
 
 
 def main():
@@ -510,7 +514,7 @@ def main():
     analyzer = ComprehensiveProjectAnalyzer()
     results = analyzer.analyze_project()
     analyzer.generate_report()
-    
+
     # إنشاء تقرير markdown أيضاً
     create_markdown_report(results)
 
@@ -520,43 +524,47 @@ def create_markdown_report(results: Dict[str, Any]) -> None:
     with open("project_analysis_report.md", "w", encoding="utf-8") as f:
         f.write("# 📊 تقرير التحليل الشامل لمشروع AI Teddy Bear\n\n")
         f.write(f"**التاريخ**: {results['timestamp']}\n\n")
-        
+
         f.write("## 📈 الإحصائيات العامة\n\n")
         f.write(f"- **إجمالي الملفات**: {results['total_files']}\n")
         f.write(f"- **إجمالي الأسطر**: {results['total_lines']:,}\n")
         f.write(f"- **صحة المشروع**: {results['health_score']:.1f}%\n\n")
-        
+
         f.write("## 📁 توزيع أنواع الملفات\n\n")
         for file_type, count in sorted(results['file_types'].items(), key=lambda x: x[1], reverse=True):
             f.write(f"- **{file_type}**: {count} ملف\n")
-        
+
         f.write("\n## 🚨 المشاكل المكتشفة\n\n")
         f.write(f"### مشاكل أمنية ({len(results['security_issues'])})\n")
         for issue in results['security_issues'][:5]:  # أول 5 فقط
             f.write(f"- `{issue['file']}`: {', '.join(issue['issues'])}\n")
-        
+
         f.write(f"\n### ملفات فارغة ({len(results['empty_files'])})\n")
         for file in results['empty_files'][:10]:  # أول 10 فقط
             f.write(f"- `{file}`\n")
-        
+
         f.write(f"\n### ملفات كبيرة ({len(results['large_files'])})\n")
         for file in sorted(results['large_files'], key=lambda x: x['lines'], reverse=True)[:5]:
             f.write(f"- `{file['path']}`: {file['lines']} سطر\n")
-        
-        f.write(f"\n## 📦 الملفات المكررة ({len(results['duplicate_candidates'])})\n")
-        exact_dups = [d for d in results['duplicate_candidates'] if d['type'] == 'exact']
+
+        f.write(
+            f"\n## 📦 الملفات المكررة ({len(results['duplicate_candidates'])})\n")
+        exact_dups = [d for d in results['duplicate_candidates']
+                      if d['type'] == 'exact']
         if exact_dups:
             f.write(f"### تكرار كامل ({len(exact_dups)})\n")
             for dup in exact_dups[:5]:
-                f.write(f"- الملفات: {', '.join(f'`{f}`' for f in dup['files'])}\n")
-        
+                f.write(
+                    f"- الملفات: {', '.join(f'`{f}`' for f in dup['files'])}\n")
+
         f.write(f"\n## 🚚 اقتراحات النقل ({len(results['suggested_moves'])})\n")
-        high_priority = [m for m in results['suggested_moves'] if m['priority'] == 'high']
+        high_priority = [m for m in results['suggested_moves']
+                         if m['priority'] == 'high']
         if high_priority:
             f.write("### أولوية عالية\n")
             for move in high_priority[:10]:
                 f.write(f"- نقل `{move['from']}` ← `{move['to']}`\n")
-    
+
     print("✅ تم إنشاء تقرير Markdown: project_analysis_report.md")
 
 

@@ -1,5 +1,6 @@
 # Production Security Patches for AI Teddy Bear
 # Addresses Codacy security findings: privilege escalation, security contexts, read-only filesystems
+# SECURITY SCORE: Critical hardening measures for enterprise deployment
 
 # Security patch for all deployments
 apiVersion: apps/v1
