@@ -1,0 +1,20 @@
+2025-07-02 00:18:28.294 | INFO     | __main__:<module>:321 - 🚀 Starting AI Teddy Bear Backend...
+2025-07-02 00:18:28.295 | INFO     | __main__:<module>:333 - ✅ Test data created
+2025-07-02 00:18:28.295 | INFO     | __main__:<module>:334 - 📡 Starting server on http://localhost:8000
+2025-07-02 00:18:28.295 | INFO     | __main__:<module>:335 - 📖 API docs available at http://localhost:8000/docs
+2025-07-02 00:18:48.383 | INFO     | __main__:<module>:321 - 🚀 Starting AI Teddy Bear Backend...
+2025-07-02 00:18:48.385 | INFO     | __main__:<module>:333 - ✅ Test data created
+2025-07-02 00:18:48.385 | INFO     | __main__:<module>:334 - 📡 Starting server on http://localhost:8000
+2025-07-02 00:18:48.385 | INFO     | __main__:<module>:335 - 📖 API docs available at http://localhost:8000/docs
+2025-07-02 00:19:19.599 | INFO     | __main__:<module>:321 - Starting AI Teddy Bear Backend...
+2025-07-02 00:19:19.599 | INFO     | __main__:<module>:333 - Test data created
+2025-07-02 00:19:19.599 | INFO     | __main__:<module>:334 - Starting server on http://localhost:8000
+2025-07-02 00:19:19.599 | INFO     | __main__:<module>:335 - API docs available at http://localhost:8000/docs
+2025-07-02 01:49:34.667 | INFO     | __main__:<module>:321 - Starting AI Teddy Bear Backend...
+2025-07-02 01:49:34.667 | INFO     | __main__:<module>:333 - Test data created
+2025-07-02 01:49:34.667 | INFO     | __main__:<module>:334 - Starting server on http://localhost:8000
+2025-07-02 01:49:34.667 | INFO     | __main__:<module>:335 - API docs available at http://localhost:8000/docs
+2025-07-02 01:50:21.466 | INFO     | simple_backend:register_device:156 - Registered new child: ???? (ID: c2835e6f-de2a-416d-89db-9ee7750f52b1)
+2025-07-02 01:50:21.466 | INFO     | simple_backend:register_device:156 - Registered new child: ???? (ID: c2835e6f-de2a-416d-89db-9ee7750f52b1)
+2025-07-02 05:00:32.098 | INFO     | simple_backend:register_device:156 - Registered new child: تجربة (ID: fded625b-8c0e-480d-98be-4d6cfbf44608)
+2025-07-02 05:00:32.098 | INFO     | simple_backend:register_device:156 - Registered new child: تجربة (ID: fded625b-8c0e-480d-98be-4d6cfbf44608)

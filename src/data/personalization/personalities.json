@@ -1,0 +1,44 @@
+{
+  "test_child": {
+    "child_id": "test_child",
+    "openness": 0.5,
+    "conscientiousness": 0.5,
+    "extraversion": 0.5,
+    "agreeableness": 0.5,
+    "neuroticism": 0.5,
+    "learning_style": "visual",
+    "attention_span": 15,
+    "preferred_difficulty": "medium",
+    "curiosity_level": 0.5,
+    "creativity_level": 0.5,
+    "last_updated": "2025-06-26T08:44:44.175607"
+  },
+  "personalization_test_child": {
+    "child_id": "personalization_test_child",
+    "openness": 1.0,
+    "conscientiousness": 1.0,
+    "extraversion": 0.3,
+    "agreeableness": 1.0,
+    "neuroticism": 0.5,
+    "learning_style": "visual",
+    "attention_span": 15,
+    "preferred_difficulty": "medium",
+    "curiosity_level": 0.2,
+    "creativity_level": 1.0,
+    "last_updated": "2025-06-26T08:46:45.713637"
+  },
+  "demo_child": {
+    "child_id": "demo_child",
+    "openness": 0.5,
+    "conscientiousness": 0.5,
+    "extraversion": 0.5,
+    "agreeableness": 0.5,
+    "neuroticism": 0.5,
+    "learning_style": "visual",
+    "attention_span": 15,
+    "preferred_difficulty": "medium",
+    "curiosity_level": 0.5,
+    "creativity_level": 0.5,
+    "last_updated": "2025-06-26T08:51:21.454603"
+  }
+}

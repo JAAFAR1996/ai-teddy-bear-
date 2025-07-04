@@ -1,0 +1,299 @@
+"""
+🤖 Refactored AI Service - Enterprise 2025 Implementation
+Clean, focused AI service that coordinates between specialized components
+"""
+
+import asyncio
+import logging
+from datetime import datetime
+from typing import Any, Dict, Optional
+
+from src.application.services.ai.core import IAIServiceFactory \
+    EnhancedAIServiceFactory
+from src.application.services.ai.core import \
+    IAIService
+from src.application.services.ai.models.ai_response_models import (
+    AIResponseModel, AIServiceMetrics)
+from src.core.domain.entities.child import Child
+from src.infrastructure.caching.simple_cache_service import CacheService
+from src.infrastructure.config import Settings
+
+logger = logging.getLogger(__name__)
+
+
+class RefactoredAIService:
+    """
+    🧩 Clean AI Service that coordinates specialized components:
+    - Uses Factory pattern for service creation
+    - Delegates to specialized services
+    - Maintains performance metrics
+    - Handles service lifecycle
+    """
+
+    def __init__(
+        self,
+        settings: Settings,
+        cache_service: CacheService,
+        provider: str = "openai_modern",
+    ):
+        self.settings = settings
+        self.cache_service = cache_service
+        self.provider = provider
+        self._ai_service: Optional[IAIService] = None
+        self._metrics = AIServiceMetrics()
+        self._initialized = False
+
+        logger.info(f"🚀 Refactored AI Service initialized with provider: {provider}")
+
+    async def initialize(self) -> None:
+        """Initialize the AI service"""
+        if self._initialized:
+            return
+
+        try:
+            # Create AI service using factory
+            self._ai_service = EnhancedAIServiceFactory.create_service(
+                provider=self.provider,
+                settings=self.settings,
+                cache_service=self.cache_service,
+            )
+
+            self._initialized = True
+            logger.info("✅ Refactored AI Service initialized successfully")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize AI service: {str(e)}")
+
+            # Fallback to mock service
+            try:
+                self._ai_service = EnhancedAIServiceFactory.create_service(
+                    provider="mock",
+                    settings=self.settings,
+                    cache_service=self.cache_service,
+                )
+                self._initialized = True
+                logger.warning("⚠️ Initialized with mock service as fallback")
+            except Exception as fallback_error:
+                logger.error(f"❌ Even fallback service failed: {str(fallback_error)}")
+                raise
+
+    async def generate_response(
+        self,
+        message: str,
+        child: Child,
+        session_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> AIResponseModel:
+        """
+        🎯 Generate AI response with automatic service management
+        """
+        # Ensure service is initialized
+        await self.initialize()
+
+        if not self._ai_service:
+            raise RuntimeError("AI service not properly initialized")
+
+        start_time = datetime.utcnow()
+        self._metrics.total_requests += 1
+
+        try:
+            # Delegate to the AI service
+            response = await self._ai_service.generate_response(
+                message=message, child=child, session_id=session_id, context=context
+            )
+
+            # Update metrics
+            processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+            self._metrics.average_processing_time_ms = (
+                self._metrics.average_processing_time_ms
+                * (self._metrics.total_requests - 1)
+                + processing_time
+            ) / self._metrics.total_requests
+
+            return response
+
+        except Exception as e:
+            self._metrics.total_errors += 1
+            logger.error(f"💥 Error generating response: {str(e)}")
+
+            # Try to create a basic fallback response
+            try:
+                from src.application.services.ai.fallback_response_service import \
+                    FallbackResponseService
+
+                fallback_service = FallbackResponseService()
+                return await fallback_service.create_generic_fallback(
+                    message=message,
+                    child=child,
+                    session_id=session_id or "error_session",
+                    error_details=str(e),
+                )
+            except Exception as fallback_error:
+                logger.error(f"💥 Fallback also failed: {str(fallback_error)}")
+                # Return absolute minimal response
+                return AIResponseModel(
+                    text=f"عذراً {child.name}، لست أستطيع الرد الآن. حاول مرة أخرى!",
+                    emotion="apologetic",
+                    category="error",
+                    learning_points=["patience"],
+                    session_id=session_id or "emergency",
+                    confidence=0.1,
+                    processing_time_ms=int(processing_time),
+                    error="service_failure",
+                )
+
+    async def analyze_emotion(self, message: str) -> str:
+        """🎭 Analyze emotion in message"""
+        await self.initialize()
+
+        if not self._ai_service:
+            return "neutral"
+
+        try:
+            return await self._ai_service.analyze_emotion(message)
+        except Exception as e:
+            logger.warning(f"⚠️ Emotion analysis failed: {str(e)}")
+            return "neutral"
+
+    async def categorize_message(self, message: str) -> str:
+        """📂 Categorize message type"""
+        await self.initialize()
+
+        if not self._ai_service:
+            return "general_conversation"
+
+        try:
+            return await self._ai_service.categorize_message(message)
+        except Exception as e:
+            logger.warning(f"⚠️ Message categorization failed: {str(e)}")
+            return "general_conversation"
+
+    async def get_performance_metrics(self) -> Dict[str, Any]:
+        """📊 Get comprehensive performance metrics"""
+        combined_metrics = {
+            "refactored_service": {
+                "total_requests": self._metrics.total_requests,
+                "total_errors": self._metrics.total_errors,
+                "error_rate": self._metrics.error_rate,
+                "average_processing_time_ms": self._metrics.average_processing_time_ms,
+                "provider": self.provider,
+                "initialized": self._initialized,
+            }
+        }
+
+        # Get metrics from underlying service if available
+        if self._ai_service and hasattr(self._ai_service, "get_performance_metrics"):
+            try:
+                underlying_metrics = await self._ai_service.get_performance_metrics()
+                combined_metrics["underlying_service"] = underlying_metrics
+            except Exception as e:
+                logger.warning(f"Failed to get underlying service metrics: {e}")
+
+        # Get factory metrics
+        try:
+            factory_metrics = EnhancedAIServiceFactory.get_service_metrics()
+            combined_metrics["factory"] = factory_metrics
+        except Exception as e:
+            logger.warning(f"Failed to get factory metrics: {e}")
+
+        return combined_metrics
+
+    async def health_check(self) -> Dict[str, Any]:
+        """🏥 Perform health check on AI service"""
+        health_status = {
+            "healthy": False,
+            "service": "refactored_ai_service",
+            "provider": self.provider,
+            "initialized": self._initialized,
+            "components": {},
+        }
+
+        try:
+            # Check if service is initialized
+            await self.initialize()
+
+            if self._ai_service:
+                # Test basic functionality
+                test_child = type(
+                    "TestChild",
+                    (),
+                    {"name": "Test", "age": 5, "device_id": "health_check"},
+                )()
+
+                test_response = await asyncio.wait_for(
+                    self.generate_response("مرحبا", test_child, "health_check"),
+                    timeout=5.0,
+                )
+
+                if test_response and test_response.text:
+                    health_status["healthy"] = True
+                    health_status["components"]["response_generation"] = True
+                else:
+                    health_status["components"]["response_generation"] = False
+
+                # Test emotion analysis
+                emotion = await asyncio.wait_for(
+                    self.analyze_emotion("أنا سعيد"), timeout=2.0
+                )
+                health_status["components"]["emotion_analysis"] = bool(emotion)
+
+                # Test categorization
+                category = await asyncio.wait_for(
+                    self.categorize_message("احكي لي قصة"), timeout=2.0
+                )
+                health_status["components"]["message_categorization"] = bool(category)
+
+            else:
+                health_status["error"] = "AI service not initialized"
+
+        except asyncio.TimeoutError:
+            health_status["error"] = "Health check timed out"
+        except Exception as e:
+            health_status["error"] = str(e)
+
+        return health_status
+
+    async def reload_service(self, new_provider: Optional[str] = None) -> bool:
+        """🔄 Reload AI service with optional new provider"""
+        try:
+            if new_provider:
+                self.provider = new_provider
+
+            # Clear factory cache for clean reload
+            EnhancedAIServiceFactory.clear_instances()
+
+            # Reset initialization flag
+            self._initialized = False
+            self._ai_service = None
+
+            # Reinitialize
+            await self.initialize()
+
+            logger.info(f"🔄 AI service reloaded with provider: {self.provider}")
+            return True
+
+        except Exception as e:
+            logger.error(f"❌ Failed to reload AI service: {str(e)}")
+            return False
+
+    def is_initialized(self) -> bool:
+        """Check if service is properly initialized"""
+        return self._initialized and self._ai_service is not None
+
+    def get_current_provider(self) -> str:
+        """Get current AI provider"""
+        return self.provider
+
+    @staticmethod
+    def get_available_providers() -> list:
+        """Get list of available AI providers"""
+        return EnhancedAIServiceFactory.get_available_providers()
+
+
+# Compatibility wrapper for existing code
+class AIService(RefactoredAIService):
+    """Backward compatibility wrapper"""
+
+    def __init__(self, settings: Settings, cache_service: CacheService):
+        super().__init__(settings, cache_service, provider="openai_modern")
+        logger.info("🔄 Using compatibility wrapper for AIService")

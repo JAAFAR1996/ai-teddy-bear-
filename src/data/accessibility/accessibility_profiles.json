@@ -1,0 +1,134 @@
+{
+  "autism_child": {
+    "child_id": "autism_child",
+    "special_needs": [
+      "autism"
+    ],
+    "communication_level": "limited_verbal",
+    "attention_span": 10,
+    "sensory_preferences": {
+      "sound_level": "quiet",
+      "visual_stimulation": "minimal",
+      "interaction_pace": "normal"
+    },
+    "learning_adaptations": {
+      "repeat_instructions": false,
+      "visual_cues": true,
+      "simplified_language": true,
+      "extended_response_time": false,
+      "structured_routine": true
+    },
+    "support_level": "minimal",
+    "last_updated": "2025-06-26T08:46:45.733991"
+  },
+  "adhd_child": {
+    "child_id": "adhd_child",
+    "special_needs": [
+      "adhd"
+    ],
+    "communication_level": "verbal",
+    "attention_span": 8,
+    "sensory_preferences": {
+      "sound_level": "normal",
+      "visual_stimulation": "normal",
+      "interaction_pace": "fast"
+    },
+    "learning_adaptations": {
+      "repeat_instructions": true,
+      "visual_cues": false,
+      "simplified_language": false,
+      "extended_response_time": false,
+      "structured_routine": false
+    },
+    "support_level": "minimal",
+    "last_updated": "2025-06-26T08:46:45.735176"
+  },
+  "hearing_child": {
+    "child_id": "hearing_child",
+    "special_needs": [
+      "hearing_impaired"
+    ],
+    "communication_level": "non_verbal",
+    "attention_span": 15,
+    "sensory_preferences": {
+      "sound_level": "loud",
+      "visual_stimulation": "normal",
+      "interaction_pace": "normal"
+    },
+    "learning_adaptations": {
+      "repeat_instructions": false,
+      "visual_cues": true,
+      "simplified_language": false,
+      "extended_response_time": false,
+      "structured_routine": false
+    },
+    "support_level": "minimal",
+    "last_updated": "2025-06-26T08:46:45.735744"
+  },
+  "learning_child": {
+    "child_id": "learning_child",
+    "special_needs": [
+      "learning_disability"
+    ],
+    "communication_level": "verbal",
+    "attention_span": 15,
+    "sensory_preferences": {
+      "sound_level": "normal",
+      "visual_stimulation": "normal",
+      "interaction_pace": "normal"
+    },
+    "learning_adaptations": {
+      "repeat_instructions": true,
+      "visual_cues": false,
+      "simplified_language": true,
+      "extended_response_time": true,
+      "structured_routine": false
+    },
+    "support_level": "minimal",
+    "last_updated": "2025-06-26T08:46:45.736749"
+  },
+  "autism_demo": {
+    "child_id": "autism_demo",
+    "special_needs": [
+      "autism"
+    ],
+    "communication_level": "limited_verbal",
+    "attention_span": 10,
+    "sensory_preferences": {
+      "sound_level": "quiet",
+      "visual_stimulation": "minimal",
+      "interaction_pace": "normal"
+    },
+    "learning_adaptations": {
+      "repeat_instructions": false,
+      "visual_cues": true,
+      "simplified_language": true,
+      "extended_response_time": false,
+      "structured_routine": true
+    },
+    "support_level": "minimal",
+    "last_updated": "2025-06-26T08:51:24.616717"
+  },
+  "adhd_demo": {
+    "child_id": "adhd_demo",
+    "special_needs": [
+      "adhd"
+    ],
+    "communication_level": "verbal",
+    "attention_span": 8,
+    "sensory_preferences": {
+      "sound_level": "normal",
+      "visual_stimulation": "normal",
+      "interaction_pace": "fast"
+    },
+    "learning_adaptations": {
+      "repeat_instructions": true,
+      "visual_cues": false,
+      "simplified_language": false,
+      "extended_response_time": false,
+      "structured_routine": false
+    },
+    "support_level": "minimal",
+    "last_updated": "2025-06-26T08:51:24.618746"
+  }
+}

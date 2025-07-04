@@ -1,0 +1,34 @@
+{
+  "test_child": {
+    "child_id": "test_child",
+    "preferred_activities": [
+      "games"
+    ],
+    "favorite_topics": [
+      "learning"
+    ],
+    "engagement_times": [],
+    "response_patterns": {
+      "cooperative": 1
+    },
+    "mood_triggers": {
+      "positive": [
+        "music"
+      ],
+      "negative": []
+    },
+    "learning_preferences": {
+      "storytelling": 0.5,
+      "games": 0.5,
+      "songs": 0.5,
+      "questions": 0.5,
+      "visual": 0.5800000000000001
+    },
+    "attention_patterns": {
+      "morning": 0,
+      "afternoon": 0,
+      "evening": 1
+    },
+    "social_interaction_style": "moderate"
+  }
+}

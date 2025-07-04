@@ -1,0 +1,46 @@
+{
+  "test_child_1": {
+    "child_id": "test_child_1",
+    "daily_limit_minutes": 30,
+    "session_limit_minutes": 15,
+    "warning_intervals": [
+      10,
+      5,
+      2
+    ],
+    "break_reminder_minutes": 15,
+    "sleep_time_start": "21:00",
+    "sleep_time_end": "07:00",
+    "allowed_days": [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday"
+    ]
+  },
+  "ahmed_5_years": {
+    "child_id": "ahmed_5_years",
+    "daily_limit_minutes": 60,
+    "session_limit_minutes": 30,
+    "warning_intervals": [
+      10,
+      5,
+      2
+    ],
+    "break_reminder_minutes": 15,
+    "sleep_time_start": "21:00",
+    "sleep_time_end": "07:00",
+    "allowed_days": [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday"
+    ]
+  }
+}

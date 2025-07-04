@@ -1,0 +1,91 @@
+{
+  "test_child": [
+    {
+      "activity_type": "storytelling",
+      "duration_minutes": 15,
+      "engagement_score": 0.8,
+      "topic": "حيوانات",
+      "completed": true,
+      "response_type": "enthusiastic",
+      "timestamp": "2025-06-26T08:44:44.176612"
+    }
+  ],
+  "personalization_test_child": [
+    {
+      "activity_type": "storytelling",
+      "duration_minutes": 10,
+      "engagement_score": 0.9,
+      "topic": "حيوانات",
+      "completed": true,
+      "response_type": "enthusiastic",
+      "timestamp": "2025-06-26T08:46:45.711036"
+    },
+    {
+      "activity_type": "games",
+      "duration_minutes": 8,
+      "engagement_score": 0.7,
+      "topic": "ألغاز",
+      "completed": true,
+      "response_type": "positive",
+      "timestamp": "2025-06-26T08:46:45.712631"
+    }
+  ],
+  "demo_child": [
+    {
+      "activity_type": "storytelling",
+      "duration_minutes": 10,
+      "engagement_score": 0.9,
+      "topic": "حيوانات",
+      "completed": true,
+      "response_type": "enthusiastic",
+      "timestamp": "2025-06-26T08:51:21.458904"
+    }
+  ],
+  "ahmed_5_years": [
+    {
+      "activity_type": "text_chat",
+      "duration_minutes": 1,
+      "engagement_score": 0.7,
+      "topic": "text_interaction",
+      "completed": true,
+      "response_type": "text",
+      "timestamp": "2025-06-26T09:19:52.091395"
+    },
+    {
+      "activity_type": "voice_chat",
+      "duration_minutes": 0.05,
+      "engagement_score": 0.8,
+      "topic": "general_chat",
+      "completed": true,
+      "response_type": "voice",
+      "timestamp": "2025-06-26T09:19:54.438327"
+    },
+    {
+      "activity_type": "voice_chat",
+      "duration_minutes": 0.05,
+      "engagement_score": 0.8,
+      "topic": "general_chat",
+      "completed": true,
+      "response_type": "voice",
+      "timestamp": "2025-06-26T09:20:08.369513"
+    },
+    {
+      "activity_type": "voice_chat",
+      "duration_minutes": 0.05,
+      "engagement_score": 0.8,
+      "topic": "general_chat",
+      "completed": true,
+      "response_type": "voice",
+      "timestamp": "2025-06-26T09:22:23.713724"
+    },
+    {
+      "activity_type": "text_chat",
+      "duration_minutes": 1,
+      "engagement_score": 0.7,
+      "topic": "text_interaction",
+      "completed": true,
+      "response_type": "text",
+      "timestamp": "2025-06-26T09:22:25.817211"
+    }
+  ]
+}

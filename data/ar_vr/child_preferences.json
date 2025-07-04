@@ -1,0 +1,16 @@
+{
+  "test_child": {
+    "preferred_ar_categories": {
+      "educational": 1
+    },
+    "preferred_vr_themes": {},
+    "optimal_session_duration": 10.0,
+    "comfort_settings": {},
+    "difficulty_preferences": "medium",
+    "content_filters": {
+      "educational_only": false,
+      "age_appropriate": true,
+      "safe_content": true
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "test_child": {
+    "child_id": "test_child",
+    "openness": 1.0,
+    "conscientiousness": 0.5,
+    "extraversion": 0.5833333333333334,
+    "agreeableness": 1.0,
+    "neuroticism": 0.0,
+    "learning_style": "visual",
+    "attention_span": 15,
+    "preferred_difficulty": "medium",
+    "curiosity_level": 0.2,
+    "creativity_level": 1.0,
+    "last_updated": "2025-07-03T01:17:54.342215"
+  }
+}

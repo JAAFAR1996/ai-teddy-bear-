@@ -1,0 +1,22 @@
+{
+  "test_child": [
+    {
+      "session_id": "ar_test_child_20250703_010835",
+      "child_id": "test_child",
+      "experience_id": "ar_alphabet",
+      "type": "ar",
+      "start_time": "2025-07-03T01:08:35.177639",
+      "duration_minutes": 10,
+      "status": "active",
+      "interaction_log": [],
+      "learning_progress": {},
+      "safety_alerts": [],
+      "performance_summary": {
+        "engagement_level": "medium",
+        "learning_effectiveness": "good",
+        "comfort_level": "high",
+        "technical_issues": 0
+      }
+    }
+  ]
+}
