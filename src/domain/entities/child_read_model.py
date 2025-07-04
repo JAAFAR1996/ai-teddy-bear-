@@ -11,7 +11,6 @@ Provides materialized views and projections from domain events.
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
 
 from ...domain.events.child_events import (ChildProfileUpdated,
                                            ChildRegistered,

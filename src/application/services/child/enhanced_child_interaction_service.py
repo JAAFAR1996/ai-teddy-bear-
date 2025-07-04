@@ -11,7 +11,7 @@ Senior Backend Developer & Professor
 import asyncio
 import time
 from dataclasses import dataclass, field
-from typing import Any, AsyncIterator, Dict, List, Optional
+from typing import AsyncIterator, 
 
 import numpy as np
 import structlog
@@ -523,7 +523,7 @@ class EnhancedChildInteractionService:
         )
 
         from src.infrastructure.security.advanced_content_filter import (
-            ContentAnalysisResult, ContentCategory, RiskLevel, SafetyViolation)
+            ContentCategory, RiskLevel, SafetyViolation)
 
         emergency_content_analysis = ContentAnalysisResult(
             is_safe=False,

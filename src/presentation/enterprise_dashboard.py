@@ -12,7 +12,6 @@ Features:
 """
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
 
 import numpy as np
 from PySide6.QtCore import Qt, QTimer, Signal

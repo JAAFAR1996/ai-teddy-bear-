@@ -19,7 +19,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
+from typing import Set
 
 import jwt
 import redis.asyncio as redis

@@ -13,7 +13,6 @@ import sqlite3
 import time
 from collections import defaultdict, deque
 from datetime import datetime
-from typing import Any, Dict, List
 
 import psutil
 

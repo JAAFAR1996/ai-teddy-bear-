@@ -377,7 +377,6 @@ class StreamingService:
         """Fallback to gTTS if ElevenLabs fails"""
         try:
             from gtts import gTTS
-            import io
             
             # Create gTTS object
             tts = gTTS(text=text, lang='ar', slow=False)

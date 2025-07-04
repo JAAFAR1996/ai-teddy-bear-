@@ -16,7 +16,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
+from typing import Set
 
 # JWT and security
 try:

@@ -33,8 +33,6 @@ warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 try:
     import torch
 except ImportError:
-    # Mock torch للاختبارات
-    import sys
     from unittest.mock import MagicMock
     sys.modules['torch'] = MagicMock()
     sys.modules['torch.nn'] = MagicMock()
@@ -43,14 +41,12 @@ except ImportError:
 try:
     import pyaudio
 except ImportError:
-    import sys
     from unittest.mock import MagicMock
     sys.modules['pyaudio'] = MagicMock()
 
 try:
     import redis
 except ImportError:
-    import sys
     from unittest.mock import MagicMock
     sys.modules['redis'] = MagicMock()
 

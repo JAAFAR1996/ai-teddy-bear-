@@ -506,12 +506,9 @@ def create_moderation_request(
 
 # Export legacy classes for backward compatibility
 from .moderation.legacy_adapter import (
-    LegacyModerationParams, 
-    ModerationMetadata, 
     ContentCheckParams,
     create_content_check_params
 )
-from .moderation.models import ModerationSeverity, ContentCategory
 
 # ================== PARAMETER OBJECTS ==================
 

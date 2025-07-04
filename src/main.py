@@ -20,7 +20,6 @@ import logging
 import signal
 import sys
 from pathlib import Path
-from typing import Optional
 
 import structlog
 from dependency_injector import containers, providers

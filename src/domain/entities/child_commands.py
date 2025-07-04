@@ -11,7 +11,6 @@ Handles child registration, profile updates, and safety operations.
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 from uuid import uuid4
 
 from ...domain.events.event_sourcing_examples import ChildAggregateExample
