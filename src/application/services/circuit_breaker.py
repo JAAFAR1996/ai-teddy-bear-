@@ -285,7 +285,7 @@ class CircuitBreaker:
             # Run in event loop if needed
             try:
                 # Try to get running loop (Python 3.7+)
-                if hasattr(asyncio, 'get_running_loop'):
+                if hasattr(asyncio, "get_running_loop"):
                     loop = asyncio.get_running_loop()
                 else:
                     # Fallback for older Python versions
@@ -293,7 +293,7 @@ class CircuitBreaker:
                 return loop.run_until_complete(self.call(func, *args, **kwargs))
             except RuntimeError:
                 # No event loop, create one
-                if hasattr(asyncio, 'run'):
+                if hasattr(asyncio, "run"):
                     return asyncio.run(self.call(func, *args, **kwargs))
                 else:
                     # Fallback for older Python versions

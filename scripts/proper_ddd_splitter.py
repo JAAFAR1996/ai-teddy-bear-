@@ -4,18 +4,17 @@ Proper DDD Splitter - تقسيم صحيح للـ God Classes
 تقسيم الخدمات الكبيرة إلى بنية DDD صحيحة
 """
 
+import logging
 import os
 import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 class ProperDDDSplitter:
-
     def __init__(self):
         self.src_dir = Path("src")
         self.services_dir = self.src_dir / "application" / "services"
@@ -439,8 +438,7 @@ class AccessibilityApplicationService:
                 if any(f.endswith(".py") for f in files):
                     init_file = root_path / "__init__.py"
                     if not init_file.exists():
-                        init_file.write_text(
-                            "# Domain module\\n", encoding="utf-8")
+                        init_file.write_text("# Domain module\\n", encoding="utf-8")
 
     def move_original_to_legacy(self, file_path: Path):
         """نقل الملف الأصلي إلى legacy"""
@@ -473,8 +471,7 @@ class AccessibilityApplicationService:
         for file_path, lines in god_classes:
             filename = file_path.name
             if filename == "accessibility_service.py":
-                files_created = self.split_accessibility_service(
-                    file_path, lines)
+                files_created = self.split_accessibility_service(file_path, lines)
                 total_files_created += len(files_created)
                 self.move_original_to_legacy(file_path)
             else:

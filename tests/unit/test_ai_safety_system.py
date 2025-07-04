@@ -1,18 +1,17 @@
-from typing import List, Optional, Dict, Any
-from dataclasses import dataclass
-from enum import Enum
-import pytest
-import sys
-import os
 import asyncio
 import logging
+import os
+import sys
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+import pytest
 
 logger = logging.getLogger(__name__)
-
 """
 Comprehensive Tests for AI Safety Content Filtering System
 """
-
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../src"))
 
@@ -102,29 +101,46 @@ class SafetyConfig:
     enable_strict_mode: bool = True
 
     def validate(self) -> bool:
-        return all([
-            0 <= self.toxicity_threshold <= 1,
-            0 <= self.high_risk_threshold <= 1,
-            0 <= self.critical_threshold <= 1,
-            self.toxicity_threshold <= self.high_risk_threshold <= self.critical_threshold
-        ])
+        return all(
+            [
+                0 <= self.toxicity_threshold <= 1,
+                0 <= self.high_risk_threshold <= 1,
+                0 <= self.critical_threshold <= 1,
+                self.toxicity_threshold
+                <= self.high_risk_threshold
+                <= self.critical_threshold,
+            ]
+        )
 
 
 class AdvancedContentFilter:
     def __init__(self, config: SafetyConfig = None):
         self.config = config or SafetyConfig()
-        self.metrics = {"total_requests": 0,
-                        "blocked_requests": 0, "avg_processing_time": 0.1}
+        self.metrics = {
+            "total_requests": 0,
+            "blocked_requests": 0,
+            "avg_processing_time": 0.1,
+        }
 
-    async def analyze_content(self, content: str, child_age: int, conversation_history: List[str] = None) -> SafetyAnalysisResult:
+    async def analyze_content(
+        self, content: str, child_age: int, conversation_history: List[str] = None
+    ) -> SafetyAnalysisResult:
         self.metrics["total_requests"] += 1
 
         # Mock analysis logic
         result = SafetyAnalysisResult()
 
         # Simple keyword-based mock analysis
-        harmful_keywords = ["hate", "stupid", "ugly", "address",
-                            "phone number", "real name", "secret", "don't tell"]
+        harmful_keywords = [
+            "hate",
+            "stupid",
+            "ugly",
+            "address",
+            "phone number",
+            "real name",
+            "secret",
+            "don't tell",
+        ]
         educational_keywords = ["learn", "count", "color", "animal", "story"]
 
         if any(keyword in content.lower() for keyword in harmful_keywords):
@@ -133,7 +149,10 @@ class AdvancedContentFilter:
             result.toxicity_result.is_toxic = True
             result.toxicity_result.toxicity_score = 0.8
             self.metrics["blocked_requests"] += 1
-            if any(keyword in content.lower() for keyword in ["address", "phone", "secret", "don't tell"]):
+            if any(
+                keyword in content.lower()
+                for keyword in ["address", "phone", "secret", "don't tell"]
+            ):
                 result.parent_notification_required = True
                 result.overall_risk_level = RiskLevel.CRITICAL
 
@@ -145,7 +164,9 @@ class AdvancedContentFilter:
             result.content_category = ContentCategory.STORY
 
         # Age appropriateness
-        if child_age < 5 and any(word in content.lower() for word in ["scary", "monster", "dark"]):
+        if child_age < 5 and any(
+            word in content.lower() for word in ["scary", "monster", "dark"]
+        ):
             result.age_appropriate = False
 
         if child_age < 7 and "romantic" in content.lower():
@@ -153,7 +174,9 @@ class AdvancedContentFilter:
 
         return result
 
-    async def batch_analyze(self, texts: List[str], child_age: int) -> List[SafetyAnalysisResult]:
+    async def batch_analyze(
+        self, texts: List[str], child_age: int
+    ) -> List[SafetyAnalysisResult]:
         results = []
         for text in texts:
             result = await self.analyze_content(text, child_age)
@@ -195,8 +218,7 @@ class TestAdvancedContentFilter:
         toxic_content = "I hate you, you're stupid and ugly!"
         result = await safety_filter.analyze_content(toxic_content, child_age=6)
         assert result.is_safe is False
-        assert result.overall_risk_level in [
-            RiskLevel.HIGH_RISK, RiskLevel.CRITICAL]
+        assert result.overall_risk_level in [RiskLevel.HIGH_RISK, RiskLevel.CRITICAL]
         assert result.toxicity_result.toxicity_score > 0.3
         assert len(result.required_modifications) > 0
 
@@ -214,8 +236,7 @@ class TestAdvancedContentFilter:
         privacy_risk = "What's your real name and where do you live?"
         result = await safety_filter.analyze_content(privacy_risk, child_age=7)
         assert result.is_safe == False
-        assert result.overall_risk_level in [
-            RiskLevel.HIGH_RISK, RiskLevel.CRITICAL]
+        assert result.overall_risk_level in [RiskLevel.HIGH_RISK, RiskLevel.CRITICAL]
         assert result.parent_notification_required == True
 
     @pytest.mark.asyncio
@@ -274,8 +295,7 @@ class TestAdvancedContentFilter:
         results = await safety_filter.batch_analyze(texts, child_age=6)
         assert len(results) == len(texts)
         assert all(result.is_safe for result in results)
-        assert all(result.overall_risk_level ==
-                   RiskLevel.SAFE for result in results)
+        assert all(result.overall_risk_level == RiskLevel.SAFE for result in results)
 
     @pytest.mark.asyncio
     async def test_age_specific_filtering(self, safety_filter):
@@ -454,8 +474,7 @@ if __name__ == "__main__":
         )
         logger.info(f"Content category: {edu_result.content_category.value}")
         logger.info("\n🎉 All basic tests completed!")
-        logger.info(
-            f"Performance metrics: {filter_instance.get_performance_metrics()}")
+        logger.info(f"Performance metrics: {filter_instance.get_performance_metrics()}")
 
     # asyncio.run compatibility for Python < 3.7
     try:

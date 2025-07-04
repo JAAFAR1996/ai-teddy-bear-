@@ -11,12 +11,19 @@ from unittest.mock import Mock
 
 import pytest
 
-from src.domain.entities.conversation import (ContentType, Conversation,
-                                              EmotionalState, InteractionType,
-                                              Message, MessageRole)
+from src.domain.entities.conversation import (
+    ContentType,
+    Conversation,
+    EmotionalState,
+    InteractionType,
+    Message,
+    MessageRole,
+)
+
 # Import our modules
-from src.infrastructure.persistence.conversation_sqlite_repository import \
-    ConversationSQLiteRepository
+from src.infrastructure.persistence.conversation_sqlite_repository import (
+    ConversationSQLiteRepository,
+)
 
 
 @pytest.fixture
@@ -187,12 +194,14 @@ class TestConversationRepositoryBasicOperations:
         # Assert
         pytest.assume(retrieved_conversation is not None)
         pytest.assume(retrieved_conversation.id == created_conversation.id)
-        pytest.assume(retrieved_conversation.child_id ==
-                      sample_conversation.child_id)
-        pytest.assume(len(retrieved_conversation.messages)
-                      == len(sample_conversation.messages))
-        pytest.assume(len(retrieved_conversation.emotional_states)
-                      == len(sample_conversation.emotional_states))
+        pytest.assume(retrieved_conversation.child_id == sample_conversation.child_id)
+        pytest.assume(
+            len(retrieved_conversation.messages) == len(sample_conversation.messages)
+        )
+        pytest.assume(
+            len(retrieved_conversation.emotional_states)
+            == len(sample_conversation.emotional_states)
+        )
 
     @pytest.mark.asyncio
     async def test_get_conversation_by_session_id(
@@ -209,8 +218,9 @@ class TestConversationRepositoryBasicOperations:
 
         # Assert
         pytest.assume(retrieved_conversation is not None)
-        pytest.assume(retrieved_conversation.session_id ==
-                      sample_conversation.session_id)
+        pytest.assume(
+            retrieved_conversation.session_id == sample_conversation.session_id
+        )
         pytest.assume(retrieved_conversation.id == created_conversation.id)
 
     @pytest.mark.asyncio
@@ -231,8 +241,7 @@ class TestConversationRepositoryBasicOperations:
 
         # Assert
         pytest.assume(updated_conversation.quality_score == 0.95)
-        pytest.assume(updated_conversation.context_summary ==
-                      "Updated summary")
+        pytest.assume(updated_conversation.context_summary == "Updated summary")
         pytest.assume("new_topic" in updated_conversation.topics)
 
     @pytest.mark.asyncio
@@ -271,8 +280,7 @@ class TestConversationRepositoryMessaging:
 
         # Act
         success = await conversation_repository.add_message_to_conversation(
-            created_conversation.id, "user", "This is a new message", {
-                "test": True}
+            created_conversation.id, "user", "This is a new message", {"test": True}
         )
 
         # Assert
@@ -282,8 +290,7 @@ class TestConversationRepositoryMessaging:
         updated_conversation = await conversation_repository.get_by_id(
             created_conversation.id
         )
-        pytest.assume(updated_conversation.total_messages ==
-                      initial_message_count + 1)
+        pytest.assume(updated_conversation.total_messages == initial_message_count + 1)
 
     @pytest.mark.asyncio
     async def test_end_conversation(self, conversation_repository, sample_conversation):
@@ -335,8 +342,7 @@ class TestConversationRepositorySearch:
 
         # Assert
         pytest.assume(len(child_conversations) >= 3)
-        pytest.assume(
-            all(conv.child_id == child_id for conv in child_conversations))
+        pytest.assume(all(conv.child_id == child_id for conv in child_conversations))
 
     @pytest.mark.asyncio
     async def test_get_conversations_by_topics(self, conversation_repository):

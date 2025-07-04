@@ -112,8 +112,7 @@ class AudioIO:
             default_config: Default audio processing configuration
         """
         self.logger = logging.getLogger(__name__)
-        self.temp_dir = temp_dir or os.path.join(
-            tempfile.gettempdir(), "teddy_audio")
+        self.temp_dir = temp_dir or os.path.join(tempfile.gettempdir(), "teddy_audio")
         self.max_temp_files = max_temp_files
         self.auto_cleanup = auto_cleanup
         self.default_config = default_config or AudioProcessingConfig()
@@ -193,8 +192,7 @@ class AudioIO:
                         channels=f.channels,
                         size_bytes=file_stats.st_size,
                         created_at=datetime.fromtimestamp(file_stats.st_ctime),
-                        modified_at=datetime.fromtimestamp(
-                            file_stats.st_mtime),
+                        modified_at=datetime.fromtimestamp(file_stats.st_mtime),
                     )
 
                     # Validate audio constraints
@@ -237,8 +235,7 @@ class AudioIO:
             os.makedirs(os.path.dirname(filename), exist_ok=True)
 
             # Process audio data
-            processed_audio = self._process_audio_data(
-                audio_data, sample_rate, quality)
+            processed_audio = self._process_audio_data(audio_data, sample_rate, quality)
 
             # Determine output format and parameters
             if audio_format == AudioFormat.WAV:
@@ -250,8 +247,7 @@ class AudioIO:
                 )
             else:
                 # Convert using pydub for other formats
-                self._save_with_pydub(
-                    processed_audio, filename, quality, audio_format)
+                self._save_with_pydub(processed_audio, filename, quality, audio_format)
 
             # Create metadata
             file_metadata = self.validate_audio_file(filename)
@@ -456,8 +452,7 @@ class AudioIO:
 
             # Sort by modification time and remove oldest
             temp_files_with_time.sort()
-            files_to_remove = len(temp_files_with_time) - \
-                self.max_temp_files + 10
+            files_to_remove = len(temp_files_with_time) - self.max_temp_files + 10
 
             for _, temp_file in temp_files_with_time[:files_to_remove]:
                 self._remove_temp_file(temp_file)
@@ -499,8 +494,7 @@ class AudioIO:
                 for temp_file in list(self._temp_files):
                     try:
                         if os.path.exists(temp_file):
-                            mtime = datetime.fromtimestamp(
-                                os.path.getmtime(temp_file))
+                            mtime = datetime.fromtimestamp(os.path.getmtime(temp_file))
                             if mtime < cutoff_time:
                                 self._remove_temp_file(temp_file)
                                 count += 1
@@ -515,8 +509,7 @@ class AudioIO:
                 for pattern in ["audio_*.wav", "audio_*.mp3", "*.tmp"]:
                     for file in temp_path.glob(pattern):
                         try:
-                            mtime = datetime.fromtimestamp(
-                                file.stat().st_mtime)
+                            mtime = datetime.fromtimestamp(file.stat().st_mtime)
                             if mtime < cutoff_time:
                                 file.unlink()
                                 count += 1
@@ -574,10 +567,20 @@ class AudioIO:
                 channels=metadata_dict["channels"],
                 bitrate=metadata_dict.get("bitrate"),
                 size_bytes=metadata_dict["size_bytes"],
-                created_at=datetime.fromisoformat(metadata_dict["created_at"]) if hasattr(
-                    datetime, 'fromisoformat') else datetime.strptime(metadata_dict["created_at"], "%Y-%m-%dT%H:%M:%S.%f"),
-                modified_at=datetime.fromisoformat(metadata_dict["modified_at"]) if hasattr(
-                    datetime, 'fromisoformat') else datetime.strptime(metadata_dict["modified_at"], "%Y-%m-%dT%H:%M:%S.%f"),
+                created_at=(
+                    datetime.fromisoformat(metadata_dict["created_at"])
+                    if hasattr(datetime, "fromisoformat")
+                    else datetime.strptime(
+                        metadata_dict["created_at"], "%Y-%m-%dT%H:%M:%S.%f"
+                    )
+                ),
+                modified_at=(
+                    datetime.fromisoformat(metadata_dict["modified_at"])
+                    if hasattr(datetime, "fromisoformat")
+                    else datetime.strptime(
+                        metadata_dict["modified_at"], "%Y-%m-%dT%H:%M:%S.%f"
+                    )
+                ),
                 checksum=metadata_dict.get("checksum"),
                 tags=metadata_dict.get("tags", {}),
             )
@@ -710,8 +713,7 @@ def get_audio_files(
     """
     try:
         audio_files = []
-        supported_extensions = [".wav", ".mp3",
-                                ".ogg", ".flac", ".m4a", ".aac"]
+        supported_extensions = [".wav", ".mp3", ".ogg", ".flac", ".m4a", ".aac"]
 
         directory_path = Path(directory)
         if not directory_path.exists():
@@ -727,8 +729,7 @@ def get_audio_files(
                             {"filepath": str(file_path), "metadata": metadata}
                         )
                     except Exception as e:
-                        logging.warning(
-                            f"Error getting metadata for {file_path}: {e}")
+                        logging.warning(f"Error getting metadata for {file_path}: {e}")
                         audio_files.append(
                             {"filepath": str(file_path), "metadata": None}
                         )
@@ -736,8 +737,7 @@ def get_audio_files(
                     audio_files.append(str(file_path))
 
         return sorted(
-            audio_files, key=lambda x: x if isinstance(
-                x, str) else x["filepath"]
+            audio_files, key=lambda x: x if isinstance(x, str) else x["filepath"]
         )
 
     except Exception as e:
@@ -846,8 +846,7 @@ def validate_audio_for_children(filename: str) -> Dict[str, Any]:
         audio_io = AudioIO()
         metadata = audio_io.validate_audio_file(filename)
 
-        validation_results = {"is_valid": True,
-                              "issues": [], "metadata": metadata}
+        validation_results = {"is_valid": True, "issues": [], "metadata": metadata}
 
         # Check duration (max 5 minutes for children)
         if metadata.duration > 300:
@@ -861,8 +860,7 @@ def validate_audio_for_children(filename: str) -> Dict[str, Any]:
 
         # Check sample rate (should be reasonable)
         if metadata.sample_rate < 8000:
-            validation_results["issues"].append(
-                "Sample rate too low for good quality")
+            validation_results["issues"].append("Sample rate too low for good quality")
 
         validation_results["is_valid"] = len(validation_results["issues"]) == 0
 

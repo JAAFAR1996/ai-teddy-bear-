@@ -8,7 +8,7 @@ import json
 import os
 import tempfile
 import time
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -251,8 +251,7 @@ class TestPhase1SecurityFoundation:
 
     def test_safe_json_logic(self):
         """Test safe JSONLogic processing"""
-        logic = {"and": [{"<": [{"var": "age"}, 18]},
-                         {">": [{"var": "score"}, 80]}]}
+        logic = {"and": [{"<": [{"var": "age"}, 18]}, {">": [{"var": "score"}, 80]}]}
         variables = {"age": 16, "score": 85}
 
         result = safe_json_logic(json.dumps(logic), variables)
@@ -444,13 +443,14 @@ class TestPhase1SecurityFoundation:
     # ================== INTEGRATION TESTS ==================
 
     @pytest.mark.asyncio
-    async def test_security_integration_workflow(self, temp_dir, exception_handler_config, audit_config):
+    async def test_security_integration_workflow(
+        self, temp_dir, exception_handler_config, audit_config
+    ):
         """Test complete security integration workflow"""
         # Initialize all security components
         secrets_manager = create_secrets_manager("testing")
         audit_logger = AuditLogger(audit_config)
-        exception_handler = EnterpriseExceptionHandler(
-            exception_handler_config)
+        exception_handler = EnterpriseExceptionHandler(exception_handler_config)
 
         # Set up a secret
         await secrets_manager.set_secret("test_key", "test_value")
@@ -472,17 +472,17 @@ class TestPhase1SecurityFoundation:
         try:
             raise ValueError("Integration test error")
         except Exception as e:
-            error_details = exception_handler.handle_exception(
-                e, reraise=False)
+            error_details = exception_handler.handle_exception(e, reraise=False)
             assert error_details is not None
 
     @pytest.mark.asyncio
-    async def test_child_safety_workflow(self, temp_dir, exception_handler_config, audit_config):
+    async def test_child_safety_workflow(
+        self, temp_dir, exception_handler_config, audit_config
+    ):
         """Test child safety workflow with all security components"""
         # Initialize components
         audit_logger = AuditLogger(audit_config)
-        exception_handler = EnterpriseExceptionHandler(
-            exception_handler_config)
+        exception_handler = EnterpriseExceptionHandler(exception_handler_config)
 
         # Simulate child interaction
         try:
@@ -511,8 +511,7 @@ class TestPhase1SecurityFoundation:
 
         except Exception as e:
             # Handle any errors
-            error_details = exception_handler.handle_exception(
-                e, reraise=False)
+            error_details = exception_handler.handle_exception(e, reraise=False)
             assert error_details is not None
 
     # ================== PERFORMANCE TESTS ==================
@@ -606,16 +605,31 @@ class TestPhase1SecurityFoundation:
 
         # Test all event types
         event_types = [
-            (AuditEventType.LOGIN_SUCCESS, AuditSeverity.INFO,
-             AuditCategory.AUTHENTICATION),
-            (AuditEventType.CHILD_INTERACTION_START,
-             AuditSeverity.INFO, AuditCategory.CHILD_SAFETY),
-            (AuditEventType.SAFETY_INCIDENT,
-             AuditSeverity.WARNING, AuditCategory.CHILD_SAFETY),
-            (AuditEventType.DATA_ACCESS, AuditSeverity.INFO,
-             AuditCategory.DATA_PROTECTION),
-            (AuditEventType.SECURITY_ALERT, AuditSeverity.CRITICAL,
-             AuditCategory.SYSTEM_SECURITY),
+            (
+                AuditEventType.LOGIN_SUCCESS,
+                AuditSeverity.INFO,
+                AuditCategory.AUTHENTICATION,
+            ),
+            (
+                AuditEventType.CHILD_INTERACTION_START,
+                AuditSeverity.INFO,
+                AuditCategory.CHILD_SAFETY,
+            ),
+            (
+                AuditEventType.SAFETY_INCIDENT,
+                AuditSeverity.WARNING,
+                AuditCategory.CHILD_SAFETY,
+            ),
+            (
+                AuditEventType.DATA_ACCESS,
+                AuditSeverity.INFO,
+                AuditCategory.DATA_PROTECTION,
+            ),
+            (
+                AuditEventType.SECURITY_ALERT,
+                AuditSeverity.CRITICAL,
+                AuditCategory.SYSTEM_SECURITY,
+            ),
         ]
 
         for event_type, severity, category in event_types:

@@ -5,10 +5,11 @@ Testing the interaction between newly split modules
 """
 
 import asyncio
-import pytest
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any, Dict
 from unittest.mock import Mock, patch
+
+import pytest
 
 # AsyncMock compatibility for Python < 3.8
 try:
@@ -22,29 +23,42 @@ except ImportError:
 
             async def coro():
                 return sup.__call__(*args, **kwargs)
+
             return coro()
 
         def __await__(self):
             return self().__await__()
 
-# Import modules to test
-from src.application.services.ai.modules.session_manager import SessionManager, SessionContext
-from src.application.services.ai.modules.emotion_analyzer import EmotionAnalyzer, EmotionResult
+
+from src.application.services.ai.modules.emotion_analyzer import (
+    EmotionAnalyzer,
+    EmotionResult,
+)
 from src.application.services.ai.modules.response_generator import (
-    ResponseGenerator, ResponseContext, ActivityType
+    ActivityType,
+    ResponseContext,
+    ResponseGenerator,
+)
+
+# Import modules to test
+from src.application.services.ai.modules.session_manager import (
+    SessionContext,
+    SessionManager,
 )
 from src.application.services.ai.modules.transcription_service import (
-    TranscriptionService, TranscriptionResult
+    TranscriptionResult,
+    TranscriptionService,
 )
+
 # Import main service with fallback
 try:
     from src.application.services.ai.main_service import AITeddyBearService
 except ImportError:
     # Fallback for testing environment
-    import sys
     import os
-    sys.path.insert(0, os.path.join(
-        os.path.dirname(__file__), '..', '..', 'src'))
+    import sys
+
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
     from application.services.ai.main_service import AITeddyBearService
 
 
@@ -59,15 +73,8 @@ def mock_registry():
 def mock_config():
     """Mock configuration"""
     return {
-        "ai": {
-            "provider": "openai",
-            "model": "gpt-4",
-            "temperature": 0.7
-        },
-        "voice": {
-            "provider": "google",
-            "language": "en-US"
-        }
+        "ai": {"provider": "openai", "model": "gpt-4", "temperature": 0.7},
+        "voice": {"provider": "google", "language": "en-US"},
     }
 
 
@@ -76,13 +83,15 @@ def mock_ai_service():
     """Mock AI service"""
     service = AsyncMock()
     service.generate_response = AsyncMock(return_value="Hello, I'm Teddy!")
-    service.analyze_emotion = AsyncMock(return_value={
-        "primary": "happy",
-        "confidence": 0.9,
-        "secondary": {},
-        "valence": 0.8,
-        "arousal": 0.6
-    })
+    service.analyze_emotion = AsyncMock(
+        return_value={
+            "primary": "happy",
+            "confidence": 0.9,
+            "secondary": {},
+            "valence": 0.8,
+            "arousal": 0.6,
+        }
+    )
     return service
 
 
@@ -91,12 +100,14 @@ def mock_voice_service():
     """Mock voice service"""
     service = AsyncMock()
     service.text_to_speech = AsyncMock(return_value=b"audio_data")
-    service.transcribe = AsyncMock(return_value={
-        "text": "Hello Teddy",
-        "confidence": 0.95,
-        "language": "en",
-        "duration_ms": 1500
-    })
+    service.transcribe = AsyncMock(
+        return_value={
+            "text": "Hello Teddy",
+            "confidence": 0.95,
+            "language": "en",
+            "duration_ms": 1500,
+        }
+    )
     return service
 
 
@@ -126,7 +137,7 @@ class TestSessionManagerIntegration:
             "transcription": "Hello Teddy",
             "response": "Hello! How are you?",
             "emotion": {"primary": "happy"},
-            "activity_type": "conversation"
+            "activity_type": "conversation",
         }
         await manager.add_interaction(session.session_id, interaction)
 
@@ -179,7 +190,7 @@ class TestEmotionAnalyzerIntegration:
             ("I'm feeling sad and lonely", "sad"),
             ("I'm scared of the dark", "scared"),
             ("That makes me angry!", "angry"),
-            ("Okay, that's fine", "neutral")
+            ("Okay, that's fine", "neutral"),
         ]
 
         for text, expected_emotion in test_cases:
@@ -201,7 +212,7 @@ class TestEmotionAnalyzerIntegration:
         audio_data = b"fake_audio_data"
         context = {
             "previous_emotions": [{"primary": "happy", "confidence": 0.8}],
-            "current_activity": ActivityType.GAME
+            "current_activity": ActivityType.GAME,
         }
 
         # Act
@@ -223,7 +234,7 @@ class TestEmotionAnalyzerIntegration:
             (EmotionResult("sad", 0.9, {}, -0.7, 0.3), "sympathetic"),
             (EmotionResult("scared", 0.9, {}, -0.6, 0.7), "comforting"),
             (EmotionResult("angry", 0.9, {}, -0.8, 0.8), "calm"),
-            (EmotionResult("neutral", 0.5, {}, 0.0, 0.5), "warm")
+            (EmotionResult("neutral", 0.5, {}, 0.0, 0.5), "warm"),
         ]
 
         for emotion_result, expected_voice in test_cases:
@@ -243,9 +254,7 @@ class TestResponseGeneratorIntegration:
         # Arrange
         generator = ResponseGenerator()
         session = SessionContext(
-            child_id="child-123",
-            session_id="session-456",
-            start_time=datetime.utcnow()
+            child_id="child-123", session_id="session-456", start_time=datetime.utcnow()
         )
 
         test_cases = [
@@ -253,7 +262,7 @@ class TestResponseGeneratorIntegration:
             ("Let's play a game!", ActivityType.GAME),
             ("What is photosynthesis?", ActivityType.LEARNING),
             ("I'm tired, time for bed", ActivityType.SLEEP_ROUTINE),
-            ("Hello, how are you?", ActivityType.CONVERSATION)
+            ("Hello, how are you?", ActivityType.CONVERSATION),
         ]
 
         for text, expected_activity in test_cases:
@@ -270,9 +279,7 @@ class TestResponseGeneratorIntegration:
         # Arrange
         generator = ResponseGenerator()
         session = SessionContext(
-            child_id="child-123",
-            session_id="session-456",
-            start_time=datetime.utcnow()
+            child_id="child-123", session_id="session-456", start_time=datetime.utcnow()
         )
 
         # Act
@@ -292,7 +299,7 @@ class TestResponseGeneratorIntegration:
             child_id="child-123",
             session_id="session-456",
             start_time=datetime.utcnow(),
-            metadata={"age": 5}
+            metadata={"age": 5},
         )
 
         # Act
@@ -336,11 +343,11 @@ class TestTranscriptionServiceIntegration:
 
         # Test valid formats
         valid_formats = [
-            b'RIFF' + b'\x00' * 4 + b'WAVE',  # WAV
-            b'ID3' + b'\x00' * 100,           # MP3 with ID3
-            b'\xff\xfb' + b'\x00' * 100,      # MP3 without ID3
-            b'OggS' + b'\x00' * 100,          # OGG
-            b'\x00' * 1000                    # Raw PCM
+            b"RIFF" + b"\x00" * 4 + b"WAVE",  # WAV
+            b"ID3" + b"\x00" * 100,  # MP3 with ID3
+            b"\xff\xfb" + b"\x00" * 100,  # MP3 without ID3
+            b"OggS" + b"\x00" * 100,  # OGG
+            b"\x00" * 1000,  # Raw PCM
         ]
 
         for audio in valid_formats:
@@ -348,7 +355,7 @@ class TestTranscriptionServiceIntegration:
             assert asyncio.run(service.validate_audio_format(audio)) is True
 
         # Test invalid format (too small)
-        assert asyncio.run(service.validate_audio_format(b'tiny')) is False
+        assert asyncio.run(service.validate_audio_format(b"tiny")) is False
 
     def test_supported_languages(self):
         """Test supported languages list"""
@@ -371,11 +378,7 @@ class TestMainServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_process_voice_interaction_full_flow(
-        self,
-        mock_registry,
-        mock_config,
-        mock_ai_service,
-        mock_voice_service
+        self, mock_registry, mock_config, mock_ai_service, mock_voice_service
     ):
         """Test complete voice interaction flow"""
         # Arrange
@@ -419,11 +422,7 @@ class TestMainServiceIntegration:
 
     @pytest.mark.asyncio
     async def test_session_lifecycle_with_main_service(
-        self,
-        mock_registry,
-        mock_config,
-        mock_ai_service,
-        mock_voice_service
+        self, mock_registry, mock_config, mock_ai_service, mock_voice_service
     ):
         """Test full session lifecycle through main service"""
         # Arrange
@@ -431,12 +430,14 @@ class TestMainServiceIntegration:
         service.audit_logger = AsyncMock()
         service.ai_service = mock_ai_service
         service.voice_service = mock_voice_service
-        service._get_child_preferences = AsyncMock(return_value={
-            "language": "en",
-            "voice": "default",
-            "age": 5,
-            "interests": ["animals", "space"]
-        })
+        service._get_child_preferences = AsyncMock(
+            return_value={
+                "language": "en",
+                "voice": "default",
+                "age": 5,
+                "interests": ["animals", "space"],
+            }
+        )
 
         # Act - Start session
         start_result = await service.start_session("child-123", {"device": "esp32-001"})
@@ -451,8 +452,7 @@ class TestMainServiceIntegration:
 
         # Act - Process interaction
         interaction_result = await service.process_voice_interaction(
-            session_id,
-            b"child_audio"
+            session_id, b"child_audio"
         )
 
         # Assert interaction processed
@@ -485,15 +485,15 @@ async def test_module_independence():
     # Test ResponseGenerator independently
     response_generator = ResponseGenerator()
     activity = await response_generator.determine_activity_type(
-        "Tell me a story",
-        EmotionResult("neutral", 0.5),
-        session
+        "Tell me a story", EmotionResult("neutral", 0.5), session
     )
     assert activity == ActivityType.STORY
 
     # Test TranscriptionService independently
     transcription_service = TranscriptionService()
-    is_valid = await transcription_service.validate_audio_format(b'RIFF' + b'\x00' * 100 + b'WAVE')
+    is_valid = await transcription_service.validate_audio_format(
+        b"RIFF" + b"\x00" * 100 + b"WAVE"
+    )
     assert is_valid is True
 
 
