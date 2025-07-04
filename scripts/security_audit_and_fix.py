@@ -109,8 +109,10 @@ class SecurityAuditor:
         logger.info(f"Found {len(python_files)} Python files to audit")
         for file_path in python_files:
             await self._audit_file(file_path)
-        self.issues.sort(key=lambda x: self._severity_score(x.severity), reverse=True)
-        logger.info(f"Audit complete. Found {len(self.issues)} security issues")
+        self.issues.sort(key=lambda x: self._severity_score(
+            x.severity), reverse=True)
+        logger.info(
+            f"Audit complete. Found {len(self.issues)} security issues")
         return self.issues
 
     async def _audit_file(self, file_path: Path):
@@ -343,8 +345,7 @@ class SecurityAuditor:
                     lines = self._fix_hardcoded_secret(lines, issue)
                     self.fixed_count += 1
                 elif issue.issue_type == SecurityIssueType.EVAL_EXEC_USAGE:
-                    lines = self._fix_eval_# SECURITY WARNING: exec usage needs manual review
-# exec(lines, issue)
+                    lines = self._fix_eval_exec(lines, issue)
                     self.fixed_count += 1
                 elif issue.issue_type == SecurityIssueType.WEAK_EXCEPTION_HANDLING:
                     lines = self._fix_weak_exception(lines, issue)
@@ -379,8 +380,8 @@ class SecurityAuditor:
                 )
         return lines
 
-    def _fix_eval_# SECURITY WARNING: exec usage needs manual review
-# exec(self, lines: List[str], issue: SecurityIssue) -> List[str]:
+    # SECURITY WARNING: exec usage needs manual review
+    def _fix_eval_exec(self, lines: List[str], issue: SecurityIssue) -> List[str]:
         """Fix eval/exec usage with safe parser"""
         line_idx = issue.line_number - 1
         if line_idx < len(lines):
@@ -392,14 +393,9 @@ class SecurityAuditor:
                     lines,
                     "from infrastructure.security.safe_expression_parser import safe_eval",
                 )
-            elif "# SECURITY FIX: Replaced exec with safe alternative
-# Original: exec(" in line:
-                indent = len(line)
-# TODO: Review and implement safe alternative - len(line.lstrip())
-                lines[
-                    line_idx
-                ] = f"""{' ' * indent}# SECURITY: exec() removed - needs manual refactoring
-"""
+            elif "# SECURITY FIX: Replaced exec with safe alternative" in line:
+                indent = len(line) - len(line.lstrip())
+                lines[line_idx] = f"{' ' * indent}# SECURITY: exec() removed - needs manual refactoring\n"
                 lines.insert(
                     line_idx + 1, f"{' ' * indent}# Original: {line.strip()}\n"
                 )
@@ -416,15 +412,16 @@ class SecurityAuditor:
                 indent = len(line) - len(line.lstrip()) + 4
                 lines.insert(
                     line_idx + 1,
-                    f"""{' ' * indent}logger.error(f'Unexpected error: {{e}}')
-""",
+                    f"{' ' * indent}logger.error(f'Unexpected error: {{e}}')\n",
                 )
                 self._ensure_import(lines, "import logging")
-                self._ensure_import(lines, "logger = logging.getLogger(__name__)")
-            elif "# FIXME: replace with specific exception
-except Exception as exc:" in line:
-                line = line.replace("# FIXME: replace with specific exception
-except Exception as exc:", "except Exception as e:")
+                self._ensure_import(
+                    lines, "logger = logging.getLogger(__name__)")
+            elif "# FIXME: replace with specific exception except Exception as exc:" in line:
+                line = line.replace(
+                    "# FIXME: replace with specific exception except Exception as exc:",
+                    "except Exception as e:"
+                )
                 lines[line_idx] = line
                 indent = len(line) - len(line.lstrip()) + 4
                 lines.insert(
@@ -476,7 +473,8 @@ except Exception as exc:", "except Exception as e:")
         report.append("")
         severity_counts = {}
         for issue in self.issues:
-            severity_counts[issue.severity] = severity_counts.get(issue.severity, 0) + 1
+            severity_counts[issue.severity] = severity_counts.get(
+                issue.severity, 0) + 1
         report.append("Summary by Severity:")
         for severity in ["critical", "high", "medium", "low"]:
             count = severity_counts.get(severity, 0)
@@ -502,7 +500,8 @@ except Exception as exc:", "except Exception as e:")
             report.append(f"Description: {issue.description}")
             report.append(f"Code: {issue.code_snippet}")
             report.append(f"Fix: {issue.suggested_fix}")
-            report.append(f"Auto-fixable: {'Yes' if issue.can_auto_fix else 'No'}")
+            report.append(
+                f"Auto-fixable: {'Yes' if issue.can_auto_fix else 'No'}")
             report.append("-" * 40)
         report.append("\nRecommendations:")
         report.append("1. Address all CRITICAL issues immediately")

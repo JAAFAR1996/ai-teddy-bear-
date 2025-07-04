@@ -53,6 +53,7 @@ class ModerationCacheManager:
     def _generate_key(self, content: str, age: int, language: str) -> str:
         """🔑 توليد مفتاح Cache"""
         key_data = f"{content}:{age}:{language}"
+        # SECURITY: Use SHA-256 instead of MD5
         return hashlib.sha256(key_data.encode()).hexdigest()
 
     def _is_expired(self, timestamp: datetime) -> bool:

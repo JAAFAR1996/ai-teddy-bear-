@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set, Union
 
 #!/usr/bin/env python3
 """
@@ -248,7 +248,7 @@ class PerformanceMonitor:
         self._last_throughput_check = time.time()
         self._last_task_count = 0
 
-    def record_task_completion(TaskResult) -> None:
+    def record_task_completion(self, result: TaskResult, task: ProcessingTask) -> None:
         """Record task completion metrics"""
         self.metrics["tasks_processed"] += 1
 
@@ -261,7 +261,8 @@ class PerformanceMonitor:
 
         self.metrics["total_execution_time"] += result.execution_time
         self.metrics["average_execution_time"] = (
-            self.metrics["total_execution_time"] / self.metrics["tasks_processed"]
+            self.metrics["total_execution_time"] /
+            self.metrics["tasks_processed"]
         )
 
         if result.memory_used > self.metrics["peak_memory_usage"]:
@@ -271,7 +272,7 @@ class PerformanceMonitor:
         if task.worker_id:
             self.metrics["worker_utilization"][task.worker_id] += result.execution_time
 
-    def record_queue_size(int) -> None:
+    def record_queue_size(self, size: int) -> None:
         """Record current queue size"""
         self.metrics["queue_size_history"].append((time.time(), size))
 
@@ -284,7 +285,8 @@ class PerformanceMonitor:
             task_diff = self.metrics["tasks_processed"] - self._last_task_count
             throughput = task_diff / time_diff
 
-            self.metrics["throughput_history"].append((current_time, throughput))
+            self.metrics["throughput_history"].append(
+                (current_time, throughput))
             self._last_throughput_check = current_time
             self._last_task_count = self.metrics["tasks_processed"]
 
@@ -356,8 +358,10 @@ class AdvancedAsyncProcessor:
         self._shutdown_event = asyncio.Event()
 
         # Execution contexts
-        self.thread_executor = ThreadPoolExecutor(max_workers=max_thread_workers)
-        self.process_executor = ProcessPoolExecutor(max_workers=max_process_workers)
+        self.thread_executor = ThreadPoolExecutor(
+            max_workers=max_thread_workers)
+        self.process_executor = ProcessPoolExecutor(
+            max_workers=max_process_workers)
 
         # Task processors registry
         self.processors: Dict[ProcessingType, Callable] = {
@@ -392,7 +396,8 @@ class AdvancedAsyncProcessor:
 
     def _signal_handler(self, signum, frame) -> Any:
         """Handle shutdown signals"""
-        self.logger.info(f"Received signal {signum}, initiating graceful shutdown...")
+        self.logger.info(
+            f"Received signal {signum}, initiating graceful shutdown...")
         asyncio.create_task(self.shutdown())
 
     async def start(self) -> None:
@@ -420,7 +425,8 @@ class AdvancedAsyncProcessor:
             monitoring_task = asyncio.create_task(self._monitoring_loop())
             self.workers.append(monitoring_task)
 
-        self.logger.info(f"Started AsyncProcessor with {self.max_workers} workers")
+        self.logger.info(
+            f"Started AsyncProcessor with {self.max_workers} workers")
 
     async def shutdown(self, timeout: float = 30.0) -> None:
         """Gracefully shutdown the processor"""
@@ -477,9 +483,11 @@ class AdvancedAsyncProcessor:
             await self.priority_queue.put((priority_value, task))
 
             if self.performance_monitor:
-                self.performance_monitor.record_queue_size(self.priority_queue.qsize())
+                self.performance_monitor.record_queue_size(
+                    self.priority_queue.qsize())
 
-        self.logger.debug(f"Submitted task {task.id} of type {task.task_type.value}")
+        self.logger.debug(
+            f"Submitted task {task.id} of type {task.task_type.value}")
         return task.id
 
     async def cancel_task(self, task_id: str) -> bool:
@@ -595,12 +603,14 @@ class AdvancedAsyncProcessor:
 
                 # Record performance metrics
                 if self.performance_monitor:
-                    self.performance_monitor.record_task_completion(task, result)
+                    self.performance_monitor.record_task_completion(
+                        result, task)
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                self.logger.error(f"Worker {worker_id} error: {e}", exc_info=True)
+                self.logger.error(
+                    f"Worker {worker_id} error: {e}", exc_info=True)
 
         self.logger.debug(f"Worker {worker_id} stopped")
 
@@ -616,7 +626,8 @@ class AdvancedAsyncProcessor:
                 return result
 
             # Create asyncio task for cancellation support
-            execution_task = asyncio.create_task(self._run_task_processor(task))
+            execution_task = asyncio.create_task(
+                self._run_task_processor(task))
             self.running_tasks[task.id] = execution_task
 
             # Apply timeout if specified
@@ -677,7 +688,8 @@ class AdvancedAsyncProcessor:
         """Run the appropriate processor for the task"""
         processor = self.processors.get(task.task_type)
         if not processor:
-            raise ValueError(f"No processor found for task type: {task.task_type}")
+            raise ValueError(
+                f"No processor found for task type: {task.task_type}")
 
         # Choose execution context based on task characteristics
         if task.cpu_intensive and not task.io_bound:
@@ -1015,13 +1027,14 @@ async def main():
         # Wait for tasks to complete
         for task_id in tasks:
             result = await processor.wait_for_task(task_id, timeout=30.0)
-            logger.info(f"Task {task_id}: {result.status.value}")
+            logging.info(f"Task {task_id}: {result.status.value}")
             if result.result:
-                logger.info(f"Result: {result.result}")
+                logging.info(f"Result: {result.result}")
 
         # Get performance metrics
         metrics = await processor.get_performance_metrics()
-        logger.info("Performance Metrics:", json.dumps(metrics, indent=2, default=str))
+        logging.info("Performance Metrics: %s", json.dumps(
+            metrics, indent=2, default=str))
 
     finally:
         # Graceful shutdown

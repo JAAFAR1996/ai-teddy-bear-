@@ -6,8 +6,9 @@ Manages AI personality and response style
 from typing import Dict, List, Optional
 
 import structlog
+import secrets
 
-# from src.application.services.core.service_registry import ServiceBase
+from src.application.services.core.service_registry import ServiceBase
 from .models import ResponseMode
 
 logger = structlog.get_logger()
@@ -19,7 +20,8 @@ class PersonalityEngine(ServiceBase):
     def __init__(self, registry, config: Dict):
         super().__init__(registry, config)
         self.personalities = self._load_personalities()
-        self.active_personality = config.get("default_personality", "teddy_bear")
+        self.active_personality = config.get(
+            "default_personality", "teddy_bear")
 
     async def initialize(self) -> None:
         """Initialize the personality engine"""
@@ -131,12 +133,10 @@ class PersonalityEngine(ServiceBase):
 
     def get_catchphrase(self, personality_id: Optional[str] = None) -> str:
         """Get a random catchphrase for the personality"""
-        import random
-
         personality_id = personality_id or self.active_personality
         personality = self.get_personality(personality_id)
         catchphrases = personality.get("catchphrases", [])
-        return random.choice(catchphrases) if catchphrases else ""
+        return secrets.choice(catchphrases) if catchphrases else ""
 
     def enhance_with_personality(
         self,
@@ -150,9 +150,8 @@ class PersonalityEngine(ServiceBase):
 
         # Sometimes add a catchphrase
         if add_catchphrase:
-            import random
-
-            if random.random() < 0.3:  # 30% chance
+            # SECURITY: Use secrets module for cryptographic randomness
+            if secrets.randbelow(10) < 3:  # 30% chance
                 catchphrase = self.get_catchphrase(personality_id)
                 response = f"{catchphrase} {response}"
 

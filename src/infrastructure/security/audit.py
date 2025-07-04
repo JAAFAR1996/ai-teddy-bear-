@@ -1,6 +1,7 @@
 import enum
 from datetime import datetime
 from typing import Any, Dict, Optional
+import uuid
 
 # src/infrastructure/security/audit.py
 from sqlalchemy import JSON, Column, DateTime, Enum, String

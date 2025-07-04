@@ -329,8 +329,12 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         """
         try:
             with self.transaction() as cursor:
-                table_name = self._escape_identifier(self.table_name)
-                sql = f"DELETE FROM {table_name} WHERE id = ?"
+                # SECURITY: Only allow known table names, never user input
+                # example, adjust as needed
+                allowed_tables = {"child", "parent", "profile"}
+                if self.table_name not in allowed_tables:
+                    raise ValueError(f"Unsafe table name: {self.table_name}")
+                sql = f"DELETE FROM {self.table_name} WHERE id = ?"
                 cursor.execute(sql, (entity_id,))
                 return cursor.rowcount > 0
 
@@ -785,80 +789,6 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
-
-    async def aggregate(
-        self,
-        field: str,
-        operation: str,
-        criteria: Optional[List[SearchCriteria]] = None,
-    ) -> Any:
-        """
-        Perform aggregation operation
-
-        Args:
-            field: Field to aggregate
-            operation: Aggregation operation (sum, avg, max, min, count)
-            criteria: Optional search criteria
-
-        Returns:
-            Aggregation result
-        """
-        try:
-            cursor = self._connection.cursor()
-
-            # Build aggregation function
-            if operation.lower() == "count":
-                agg_func = f"COUNT({field})"
-            elif operation.lower() == "sum":
-                agg_func = f"SUM({field})"
-            elif operation.lower() == "avg":
-                agg_func = f"AVG({field})"
-            elif operation.lower() == "max":
-                agg_func = f"MAX({field})"
-            elif operation.lower() == "min":
-                agg_func = f"MIN({field})"
-            else:
-                raise ValueError(
-                    f"Unsupported aggregation operation: {operation}")
-
-            sql = f"SELECT {agg_func} FROM {self.table_name}"
-            params = []
-
-            if criteria:
-                conditions = []
-                for criterion in criteria:
-                    condition, param = self._build_search_condition(criterion)
-                    conditions.append(condition)
-                    if param is not None:
-                        params.append(param)
-
-                if conditions:
-                    sql += " WHERE " + " AND ".join(conditions)
-
-            cursor.execute(sql, params)
-            result = cursor.fetchone()
-
-            return result[0] if result else None
-
-        except sqlite3.Error as e:
-            self.logger.error(f"Error performing aggregation: {e}")
-            raise DatabaseError(f"Failed to perform aggregation: {e}")
-
-    async def execute_safe_query(self, sql: str, params: tuple = ()):
-        """Execute parameterized query only, prevent SQL injection"""
-        if not isinstance(sql, str) or not sql.strip():
-            self.logger.error("Invalid SQL query")
-            raise ValueError("Invalid SQL query")
-        if not isinstance(params, (tuple, list)):
-            self.logger.error("Query parameters must be tuple or list")
-            raise ValueError("Query parameters must be tuple or list")
-        try:
-            cursor = self._connection.cursor()
-            cursor.execute(sql, params)
-            return cursor
-        except Exception as e:
-            self.logger.error(f"SQL execution error: {e}")
-            raise
 
     async def aggregate(
         self,

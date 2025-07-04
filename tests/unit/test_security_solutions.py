@@ -1,21 +1,20 @@
+from src.infrastructure.security.secrets_manager import (
+    SecretProvider, SecretType, create_secrets_manager)
+from src.infrastructure.security.safe_expression_parser import (
+    SecurityLevel, create_safe_parser,
+    safe_eval)
+from src.infrastructure.exception_handling.global_exception_handler import (
+    ChildSafetyException, CircuitBreakerStrategy, CorrelationContext,
+    ExternalServiceException, RetryStrategy, SecurityException,
+    TeddyBearException, handle_exceptions)
+import pytest
 import ast
+safe_ast = ast
 """
 Comprehensive tests for security solutions
 Tests secrets management, safe expression parser, and exception handling
 """
 
-
-import pytest
-
-from src.infrastructure.exception_handling.global_exception_handler import (
-    ChildSafetyException, CircuitBreakerStrategy, CorrelationContext,
-    ExternalServiceException, RetryStrategy, SecurityException,
-    TeddyBearException, handle_exceptions)
-from src.infrastructure.security.safe_expression_parser import (
-    SecurityLevel, create_safe_parser,
-    safe_eval)
-from src.infrastructure.security.secrets_manager import (
-    SecretProvider, SecretType, create_secrets_manager)
 
 # ============================================================================
 # Tests for Secrets Management
@@ -191,9 +190,7 @@ class TestSafeExpressionParser:
 
         # Exec attempts
         with pytest.raises(ValueError):
-            safe_ast.literal_eval("# SECURITY FIX: Replaced exec with safe alternative
-# Original: exec('x = 1')
-# TODO: Review and implement safe alternative")
+            safe_ast.literal_eval("exec('x = 1')")
 
     def test_string_operations(self):
         """Test safe string operations"""
@@ -325,7 +322,8 @@ class TestExceptionHandling:
                 failure_count += 1
 
         # Circuit should be open after threshold
-        assert circuit_breaker.state in ["open", "closed"]  # Depends on implementation
+        assert circuit_breaker.state in [
+            "open", "closed"]  # Depends on implementation
         assert failure_count >= 3
 
     @pytest.mark.asyncio

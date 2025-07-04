@@ -127,11 +127,16 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
             with self.transaction() as cursor:
                 data = self._serialize_child_for_db(child)
 
-                columns = ", ".join(data.keys())
-                placeholders = ", ".join(["?" for _ in data])
-                sql = (
-                    f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
-                )
+                # SECURITY: Only allow known table/column names, never user input
+                # example, adjust as needed
+                allowed_tables = {"child", "parent", "profile"}
+                if self.table_name not in allowed_tables:
+                    raise ValueError(f"Unsafe table name: {self.table_name}")
+                # Columns must be a static list, not user input
+                columns = ', '.join(
+                    [col for col in data.keys() if col in self.allowed_columns])
+                placeholders = ', '.join(['?' for _ in data])
+                sql = f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
 
                 cursor.execute(sql, list(data.values()))
 

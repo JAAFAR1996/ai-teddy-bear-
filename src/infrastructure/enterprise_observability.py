@@ -123,46 +123,48 @@ class EnterpriseMetrics:
                 registry=self.registry,
             )
 
-    def increment_requests(int) -> None:
+    def increment_requests(self, method: str, endpoint: str, status_code: int) -> None:
         """Increment request counter."""
         if self.request_count:
             self.request_count.labels(
                 method=method, endpoint=endpoint, status_code=status_code
             ).inc()
 
-    def record_request_duration(float) -> None:
+    def record_request_duration(self, method: str, endpoint: str, duration: float) -> None:
         """Record request duration."""
         if self.request_duration:
             self.request_duration.labels(method=method, endpoint=endpoint).observe(
                 duration
             )
 
-    def set_active_connections(int) -> None:
+    def set_active_connections(self, count: int) -> None:
         """Set active connections count."""
         if self.active_connections:
             self.active_connections.set(count)
 
-    def increment_errors(str) -> None:
+    def increment_errors(self, error_type: str, component: str) -> None:
         """Increment error counter."""
         if self.error_count:
-            self.error_count.labels(error_type=error_type, component=component).inc()
+            self.error_count.labels(
+                error_type=error_type, component=component).inc()
 
-    def set_health_score(float) -> None:
+    def set_health_score(self, score: float) -> None:
         """Set system health score."""
         if self.system_health:
             self.system_health.set(score)
 
-    def record_ai_processing(float) -> None:
+    def record_ai_processing(self, model_type: str, operation: str, duration: float) -> None:
         """Record AI processing time."""
         if self.ai_processing_time:
             self.ai_processing_time.labels(
                 model_type=model_type, operation=operation
             ).observe(duration)
 
-    def record_audio_latency(float) -> None:
+    def record_audio_latency(self, operation: str, latency: float) -> None:
         """Record audio processing latency."""
         if self.audio_processing_latency:
-            self.audio_processing_latency.labels(operation=operation).observe(latency)
+            self.audio_processing_latency.labels(
+                operation=operation).observe(latency)
 
     def get_metrics(self) -> str:
         """Get Prometheus metrics in text format."""
@@ -183,7 +185,8 @@ class EnterpriseTracer:
     def _setup_tracing(self) -> Any:
         """Setup OpenTelemetry tracing with enterprise configuration."""
         if not OTEL_AVAILABLE:
-            logging.warning("OpenTelemetry not available, using fallback tracing")
+            logging.warning(
+                "OpenTelemetry not available, using fallback tracing")
             return
 
         try:
@@ -225,22 +228,25 @@ class EnterpriseTracer:
                 schema_url="https://opentelemetry.io/schemas/1.21.0",
             )
 
-            logging.info("Enterprise OpenTelemetry tracing initialized successfully")
+            logging.info(
+                "Enterprise OpenTelemetry tracing initialized successfully")
 
         except Exception as e:
             logging.error(f"Failed to initialize OpenTelemetry tracing: {e}")
             self.tracer = None
 
     @contextmanager
-    def start_span(str, **kwargs) -> None:
+    def start_span(self, name: str, **kwargs) -> None:
         """Start a new trace span with enterprise context."""
         if self.tracer and OTEL_AVAILABLE:
             with self.tracer.start_as_current_span(name, **kwargs) as span:
                 try:
                     # Add enterprise metadata
-                    span.set_attribute("enterprise.component", self.service_name)
                     span.set_attribute(
-                        "enterprise.timestamp", datetime.now(timezone.utc).isoformat()
+                        "enterprise.component", self.service_name)
+                    span.set_attribute(
+                        "enterprise.timestamp", datetime.now(
+                            timezone.utc).isoformat()
                     )
                     span.set_attribute(
                         "enterprise.environment",
@@ -249,13 +255,14 @@ class EnterpriseTracer:
                     yield span
                 except Exception as e:
                     span.record_exception(e)
-                    span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+                    span.set_status(trace.Status(
+                        trace.StatusCode.ERROR, str(e)))
                     raise
         else:
             # Fallback context manager
             yield self._create_fallback_span(name)
 
-    def _create_fallback_span(str) -> None:
+    def _create_fallback_span(self, name: str) -> None:
         """Create a fallback span object for when OpenTelemetry is not available."""
         return type(
             "FallbackSpan",
@@ -309,7 +316,8 @@ class EnterpriseObservabilityManager:
         self._error_count = 0
         self._active_connections = 0
 
-        logging.info(f"Enterprise Observability Manager initialized for {service_name}")
+        logging.info(
+            f"Enterprise Observability Manager initialized for {service_name}")
 
     def get_enterprise_status(self) -> Dict[str, Any]:
         """Get comprehensive enterprise system status."""
