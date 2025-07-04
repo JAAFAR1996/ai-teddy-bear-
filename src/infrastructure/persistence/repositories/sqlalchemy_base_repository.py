@@ -145,7 +145,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         if options and options.filters:
             for field, value in options.filters.items():
                 if hasattr(self.model_class, field):
-                    query = query.filter(getattr(self.model_class, field) == value)
+                    query = query.filter(
+                        getattr(self.model_class, field) == value)
 
         # Apply sorting
         if options and options.sort_by:
@@ -365,7 +366,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                 )
 
                 if not existing:
-                    raise EntityNotFoundError(f"Entity with ID {entity.id} not found")
+                    raise EntityNotFoundError(
+                        f"Entity with ID {entity.id} not found")
 
                 # Update fields
                 for key, value in entity.__dict__.items():
@@ -474,7 +476,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         """
         try:
             with self.get_session() as session:
-                query = self._build_query(session, criteria=criteria, options=options)
+                query = self._build_query(
+                    session, criteria=criteria, options=options)
                 entities = query.all()
 
                 return entities
@@ -533,7 +536,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
 
         except SQLAlchemyError as e:
             logger.error(f"Database error during exists check: {e}")
-            raise RepositoryError(f"Failed to check entity existence: {e}") from e
+            raise RepositoryError(
+                f"Failed to check entity existence: {e}") from e
 
     # Bulk Operations
 
@@ -565,7 +569,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                         failed_count += 1
                         entity_id = getattr(entity, "id", "unknown")
                         failed_ids.append(str(entity_id))
-                        logger.warning(f"Failed to add entity {entity_id}: {e}")
+                        logger.warning(
+                            f"Failed to add entity {entity_id}: {e}")
 
                 session.flush()
 
@@ -609,7 +614,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                 for entity in entities:
                     try:
                         if not hasattr(entity, "id") or not entity.id:
-                            raise ValidationError("Entity must have ID for update")
+                            raise ValidationError(
+                                "Entity must have ID for update")
 
                         existing = (
                             session.query(self.model_class)
@@ -633,7 +639,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                         failed_count += 1
                         entity_id = getattr(entity, "id", "unknown")
                         failed_ids.append(str(entity_id))
-                        logger.warning(f"Failed to update entity {entity_id}: {e}")
+                        logger.warning(
+                            f"Failed to update entity {entity_id}: {e}")
 
                 session.flush()
 
@@ -682,7 +689,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
 
                 if failed_count > 0:
                     # Find which IDs failed (simplified approach)
-                    failed_ids = [str(id_) for id_ in entity_ids[-failed_count:]]
+                    failed_ids = [str(id_)
+                                  for id_ in entity_ids[-failed_count:]]
 
         except SQLAlchemyError as e:
             logger.error(f"Database error during bulk delete: {e}")
@@ -762,7 +770,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
                 elif operation.lower() == "max":
                     result = query.with_entities(func.max(field_attr)).scalar()
                 else:
-                    raise ValueError(f"Unsupported aggregation operation: {operation}")
+                    raise ValueError(
+                        f"Unsupported aggregation operation: {operation}")
 
                 return result
 
@@ -776,13 +785,21 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         """
         Execute raw SQL query (use with caution)
 
-        Args:
-            query: Raw SQL query
-            params: Query parameters
-
-        Returns:
-            Query results as list of dictionaries
+        WARNING: This method is dangerous. Never use with untrusted user input.
+        Only parameterized queries are allowed. Dangerous SQL keywords are blocked.
         """
+        # Block dangerous SQL keywords
+        dangerous_keywords = [
+            'drop', 'delete', 'truncate', 'alter', 'insert', 'update', 'exec', 'execute', 'union', 'sp_', 'xp_', ';', '--', '/*', '*/'
+        ]
+        lowered = query.lower()
+        for keyword in dangerous_keywords:
+            if keyword in lowered:
+                logger.error(
+                    f"Blocked dangerous SQL keyword in query: {keyword}")
+                raise RepositoryError(
+                    f"Blocked dangerous SQL keyword in query: {keyword}")
+
         try:
             with self.get_session() as session:
                 result = session.execute(text(query), params or {})
@@ -798,7 +815,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         """Get repository performance statistics"""
         cache_hit_ratio = 0.0
         if self._cache_hits + self._cache_misses > 0:
-            cache_hit_ratio = self._cache_hits / (self._cache_hits + self._cache_misses)
+            cache_hit_ratio = self._cache_hits / \
+                (self._cache_hits + self._cache_misses)
 
         return {
             "model_class": self.model_class.__name__,

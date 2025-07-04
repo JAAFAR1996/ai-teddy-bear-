@@ -1,10 +1,11 @@
 import json
 import logging
 import sqlite3
+import re
 from abc import abstractmethod
 from contextlib import contextmanager
 from datetime import datetime
-from typing import (Any, Dict, List, Optional, Tuple, TypeVar)
+from typing import (Any, Dict, List, Optional, Tuple, TypeVar, Generic)
 
 from src.infrastructure.persistence.base import (BaseRepository,
                                                  BulkOperationResult,
@@ -18,6 +19,11 @@ ID = TypeVar("ID")
 class DatabaseError(Exception):
     """Custom database error"""
 
+    pass
+
+
+class SQLInjectionError(Exception):
+    """SQL injection attempt detected"""
     pass
 
 
@@ -102,7 +108,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         elif hasattr(entity, "__dict__"):
             return entity.__dict__.copy()
         else:
-            raise ValueError(f"Cannot convert entity {type(entity)} to dictionary")
+            raise ValueError(
+                f"Cannot convert entity {type(entity)} to dictionary")
 
     def _dict_to_entity(self, data: Dict[str, Any]) -> T:
         """Convert dictionary from database to entity"""
@@ -138,7 +145,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             if field in processed and processed[field]:
                 if isinstance(processed[field], str):
                     try:
-                        processed[field] = datetime.fromisoformat(processed[field])
+                        processed[field] = datetime.fromisoformat(
+                            processed[field])
                     except ValueError:
                         # Try alternative datetime format
                         try:
@@ -234,7 +242,7 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
     async def get_by_id(self, entity_id: str) -> Optional[T]:
         """
-        Retrieve entity by ID
+        Retrieve entity by ID with SQL injection protection
 
         Args:
             entity_id: Unique identifier
@@ -244,7 +252,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         """
         try:
             cursor = self._connection.cursor()
-            sql = f"SELECT * FROM {self.table_name} WHERE id = ?"
+            # Use validated and escaped table name
+            table_name = self._escape_identifier(self.table_name)
+            sql = f"SELECT * FROM {table_name} WHERE id = ?"
             cursor.execute(sql, (entity_id,))
 
             row = cursor.fetchone()
@@ -258,7 +268,7 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
     async def update(self, entity: T) -> T:
         """
-        Update existing entity
+        Update existing entity with SQL injection protection
 
         Args:
             entity: Entity to update
@@ -278,19 +288,28 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                     k: self._serialize_for_db(v) for k, v in entity_dict.items()
                 }
 
-                # Prepare update SQL
+                # Validate all field names
+                for field_name in serialized_dict.keys():
+                    if field_name != "id":
+                        self._validate_field_name(field_name)
+
+                # Prepare update SQL with escaped identifiers
+                table_name = self._escape_identifier(self.table_name)
                 update_fields = [
-                    f"{k} = ?" for k in serialized_dict.keys() if k != "id"
+                    f"{self._escape_identifier(k)} = ?"
+                    for k in serialized_dict.keys() if k != "id"
                 ]
-                update_values = [v for k, v in serialized_dict.items() if k != "id"]
+                update_values = [
+                    v for k, v in serialized_dict.items() if k != "id"]
                 update_values.append(serialized_dict["id"])
 
-                sql = f"UPDATE {self.table_name} SET {', '.join(update_fields)} WHERE id = ?"
+                sql = f"UPDATE {table_name} SET {', '.join(update_fields)} WHERE id = ?"
 
                 cursor.execute(sql, update_values)
 
                 if cursor.rowcount == 0:
-                    raise ValueError(f"No entity found with ID {entity_dict['id']}")
+                    raise ValueError(
+                        f"No entity found with ID {entity_dict['id']}")
 
                 return entity
 
@@ -300,7 +319,7 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
     async def delete(self, entity_id: str) -> bool:
         """
-        Delete entity by ID
+        Delete entity by ID with SQL injection protection
 
         Args:
             entity_id: Unique identifier
@@ -310,7 +329,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         """
         try:
             with self.transaction() as cursor:
-                sql = f"DELETE FROM {self.table_name} WHERE id = ?"
+                table_name = self._escape_identifier(self.table_name)
+                sql = f"DELETE FROM {table_name} WHERE id = ?"
                 cursor.execute(sql, (entity_id,))
                 return cursor.rowcount > 0
 
@@ -320,7 +340,7 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
     async def list(self, options: Optional[QueryOptions] = None) -> List[T]:
         """
-        List entities with optional filtering and sorting
+        List entities with optional filtering and sorting - SQL injection protected
 
         Args:
             options: Query options for filtering, sorting, pagination
@@ -330,14 +350,18 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         """
         try:
             cursor = self._connection.cursor()
-            sql = f"SELECT * FROM {self.table_name}"
+            table_name = self._escape_identifier(self.table_name)
+            sql = f"SELECT * FROM {table_name}"
             params = []
 
             # Apply filtering if provided
             if options and options.filters:
                 filter_conditions = []
                 for key, value in options.filters.items():
-                    filter_conditions.append(f"{key} = ?")
+                    # Validate field name
+                    self._validate_field_name(key)
+                    escaped_key = self._escape_identifier(key)
+                    filter_conditions.append(f"{escaped_key} = ?")
                     params.append(self._serialize_for_db(value))
 
                 if filter_conditions:
@@ -345,14 +369,20 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
             # Apply sorting
             if options and options.sort_by:
+                self._validate_field_name(options.sort_by)
+                escaped_sort_field = self._escape_identifier(options.sort_by)
                 order = "DESC" if options.sort_order == SortOrder.DESC else "ASC"
-                sql += f" ORDER BY {options.sort_by} {order}"
+                sql += f" ORDER BY {escaped_sort_field} {order}"
 
-            # Apply pagination
+            # Apply pagination (integers are safe)
             if options and options.limit:
+                if not isinstance(options.limit, int) or options.limit < 0:
+                    raise ValueError("Limit must be a positive integer")
                 sql += f" LIMIT {options.limit}"
 
             if options and options.offset:
+                if not isinstance(options.offset, int) or options.offset < 0:
+                    raise ValueError("Offset must be a non-negative integer")
                 sql += f" OFFSET {options.offset}"
 
             cursor.execute(sql, params)
@@ -415,8 +445,12 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             raise DatabaseError(f"Failed to search entities: {e}")
 
     def _build_search_condition(self, criterion: SearchCriteria) -> Tuple[str, Any]:
-        """Build SQL condition from search criteria"""
-        field = criterion.field
+        """Build SQL condition from search criteria with validation"""
+        # Validate field name and operator
+        self._validate_field_name(criterion.field)
+        self._validate_operator(criterion.operator)
+
+        field = self._escape_identifier(criterion.field)
         operator = criterion.operator
         value = self._serialize_for_db(criterion.value)
 
@@ -439,7 +473,6 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         elif operator == "in":
             if isinstance(value, (list, tuple)):
                 placeholders = ", ".join(["?" for _ in value])
-                # Handle separately
                 return f"{field} IN ({placeholders})", None
             else:
                 return f"{field} = ?", value
@@ -514,7 +547,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                             del serialized_dict["id"]
 
                         columns = ", ".join(serialized_dict.keys())
-                        placeholders = ", ".join(["?" for _ in serialized_dict])
+                        placeholders = ", ".join(
+                            ["?" for _ in serialized_dict])
                         sql = f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
 
                         cursor.execute(sql, list(serialized_dict.values()))
@@ -528,7 +562,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                     except Exception as e:
                         entity_id = getattr(entity, "id", "unknown")
                         failed_ids.append(entity_id)
-                        self.logger.error(f"Failed to create entity {entity_id}: {e}")
+                        self.logger.error(
+                            f"Failed to create entity {entity_id}: {e}")
 
         except sqlite3.Error as e:
             self.logger.error(f"Bulk create failed: {e}")
@@ -587,7 +622,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                     except Exception as e:
                         entity_id = getattr(entity, "id", "unknown")
                         failed_ids.append(entity_id)
-                        self.logger.error(f"Failed to update entity {entity_id}: {e}")
+                        self.logger.error(
+                            f"Failed to update entity {entity_id}: {e}")
 
         except sqlite3.Error as e:
             self.logger.error(f"Bulk update failed: {e}")
@@ -626,7 +662,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
                     except Exception as e:
                         failed_ids.append(entity_id)
-                        self.logger.error(f"Failed to delete entity {entity_id}: {e}")
+                        self.logger.error(
+                            f"Failed to delete entity {entity_id}: {e}")
 
         except sqlite3.Error as e:
             self.logger.error(f"Bulk delete failed: {e}")
@@ -781,7 +818,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             elif operation.lower() == "min":
                 agg_func = f"MIN({field})"
             else:
-                raise ValueError(f"Unsupported aggregation operation: {operation}")
+                raise ValueError(
+                    f"Unsupported aggregation operation: {operation}")
 
             sql = f"SELECT {agg_func} FROM {self.table_name}"
             params = []
@@ -822,25 +860,152 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             self.logger.error(f"SQL execution error: {e}")
             raise
 
+    async def aggregate(
+        self,
+        field: str,
+        operation: str,
+        criteria: Optional[List[SearchCriteria]] = None,
+    ) -> Any:
+        """
+        Perform aggregation operation
 
-async def get(self, entity_id: str) -> Optional[T]:
-    """
-    Alias for get_by_id for compatibility
+        Args:
+            field: Field to aggregate
+            operation: Aggregation operation (sum, avg, max, min, count)
+            criteria: Optional search criteria
 
-    Args:
-        entity_id: Entity ID
+        Returns:
+            Aggregation result
+        """
+        try:
+            cursor = self._connection.cursor()
 
-    Returns:
-        Entity or None
-    """
-    return await self.get_by_id(entity_id)
+            # Build aggregation function
+            if operation.lower() == "count":
+                agg_func = f"COUNT({field})"
+            elif operation.lower() == "sum":
+                agg_func = f"SUM({field})"
+            elif operation.lower() == "avg":
+                agg_func = f"AVG({field})"
+            elif operation.lower() == "max":
+                agg_func = f"MAX({field})"
+            elif operation.lower() == "min":
+                agg_func = f"MIN({field})"
+            else:
+                raise ValueError(
+                    f"Unsupported aggregation operation: {operation}")
 
+            sql = f"SELECT {agg_func} FROM {self.table_name}"
+            params = []
 
-def get_table_schema(self) -> str:
-    """
-    Public method to get table schema
+            if criteria:
+                conditions = []
+                for criterion in criteria:
+                    condition, param = self._build_search_condition(criterion)
+                    conditions.append(condition)
+                    if param is not None:
+                        params.append(param)
 
-    Returns:
-        CREATE TABLE SQL statement
-    """
-    return self._get_table_schema()
+                if conditions:
+                    sql += " WHERE " + " AND ".join(conditions)
+
+            cursor.execute(sql, params)
+            result = cursor.fetchone()
+
+            return result[0] if result else None
+
+        except sqlite3.Error as e:
+            self.logger.error(f"Error performing aggregation: {e}")
+            raise DatabaseError(f"Failed to perform aggregation: {e}")
+
+    async def execute_safe_query(self, sql: str, params: tuple = ()):
+        """Execute parameterized query only, prevent SQL injection"""
+        if not isinstance(sql, str) or not sql.strip():
+            self.logger.error("Invalid SQL query")
+            raise ValueError("Invalid SQL query")
+        if not isinstance(params, (tuple, list)):
+            self.logger.error("Query parameters must be tuple or list")
+            raise ValueError("Query parameters must be tuple or list")
+        try:
+            cursor = self._connection.cursor()
+            cursor.execute(sql, params)
+            return cursor
+        except Exception as e:
+            self.logger.error(f"SQL execution error: {e}")
+            raise
+
+    # SQL Injection Protection Methods
+    def _validate_identifier(self, identifier: str, identifier_type: str = "identifier") -> None:
+        """
+        Validate SQL identifiers (table names, column names) to prevent SQL injection
+
+        Args:
+            identifier: The identifier to validate
+            identifier_type: Type description for error messages
+
+        Raises:
+            SQLInjectionError: If identifier contains dangerous characters
+        """
+        if not identifier:
+            raise SQLInjectionError(f"Empty {identifier_type} not allowed")
+
+        # Allow only alphanumeric characters, underscores, and hyphens
+        # Must start with letter or underscore
+        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_-]*$', identifier):
+            raise SQLInjectionError(
+                f"Invalid {identifier_type}: '{identifier}'. "
+                "Only alphanumeric characters, underscores, and hyphens are allowed."
+            )
+
+        # Check for SQL keywords that could be dangerous
+        dangerous_keywords = {
+            'drop', 'delete', 'truncate', 'alter', 'create', 'insert', 'update',
+            'select', 'union', 'exec', 'execute', 'sp_', 'xp_'
+        }
+
+        if identifier.lower() in dangerous_keywords:
+            raise SQLInjectionError(
+                f"Reserved keyword not allowed as {identifier_type}: '{identifier}'")
+
+    def _validate_field_name(self, field_name: str) -> None:
+        """Validate field name for SQL operations"""
+        self._validate_identifier(field_name, "field name")
+
+    def _validate_operator(self, operator: str) -> None:
+        """Validate search operator to prevent SQL injection"""
+        allowed_operators = {
+            'eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'like', 'ilike',
+            'in', 'not_in', 'is_null', 'is_not_null'
+        }
+
+        if operator not in allowed_operators:
+            raise SQLInjectionError(f"Invalid operator: '{operator}'")
+
+    def _escape_identifier(self, identifier: str) -> str:
+        """
+        Safely escape SQL identifier by surrounding with quotes
+        Only use after validation
+        """
+        self._validate_identifier(identifier)
+        return f'"{identifier}"'
+
+    async def get(self, entity_id: str) -> Optional[T]:
+        """
+        Alias for get_by_id for compatibility
+
+        Args:
+            entity_id: Entity ID
+
+        Returns:
+            Entity or None
+        """
+        return await self.get_by_id(entity_id)
+
+    def get_table_schema(self) -> str:
+        """
+        Public method to get table schema
+
+        Returns:
+            CREATE TABLE SQL statement
+        """
+        return self._get_table_schema()
