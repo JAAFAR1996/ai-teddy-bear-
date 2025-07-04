@@ -14,9 +14,9 @@
 
 ### قبل (❌ غير آمن):
 ```python
-# خطر! مفتاح API مكشوف
-OPENAI_API_KEY = "sk-1234567890abcdef"
-database_password = "mySecretPassword123"
+# خطر! مفاتيح API مكشوفة في الكود
+OPENAI_API_KEY = "sk-**********************"  # مفتاح مكشوف
+database_password = "**********************"  # كلمة سر مكشوفة
 ```
 
 ### بعد (✅ آمن):

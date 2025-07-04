@@ -371,7 +371,7 @@ class AudioStream(BaseModel):
 
         return chunk
 
-    def set_error(str) -> None:
+    def set_error(self, error_message: str) -> None:
         """Set stream to error state"""
         self.state = StreamState.ERROR
         self.error_count += 1

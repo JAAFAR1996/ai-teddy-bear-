@@ -281,3 +281,7 @@ deleted/
 unused_services/
 legacy_core/
 duplicates/
+
+
+#Ignore cursor AI rules
+.cursor\rules\codacy.mdc

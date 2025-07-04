@@ -168,11 +168,12 @@ class HumeIntegration:
             }
 
         except Exception as e:
-    logger.error(f"Error: {e}")f"❌ Batch analysis failed: {e}")
+            logger.error(f"❌ Batch analysis failed: {e}")
 
-    # تحديث حالة الجلسة في قاعدة البيانات
-    if session_record:
-    db_manager.update_session_status(session_record.id, "error", str(e))
+            # تحديث حالة الجلسة في قاعدة البيانات
+            if session_record:
+                db_manager.update_session_status(
+                    session_record.id, "error", str(e))
 
         return {
            "status": "error",
@@ -183,7 +184,7 @@ class HumeIntegration:
 
         # ==================== STREAM MODE ====================
 
-        async def analyze_stream(self, audio_path: str, udid: str="TEST_ESP32", child_name: str="طفل اختبار", child_age: int=6) -> Dict[str, Any]:
+        async def analyze_stream(self, audio_path: str, udid: str = "TEST_ESP32", child_name: str = "طفل اختبار", child_age: int = 6) -> Dict[str, Any]:
         """
         ⚡ نمط Stream - تحليل فوري لملف واحد (HUME v0.9.0) مع حفظ في قاعدة البيانات
 
@@ -216,18 +217,18 @@ class HumeIntegration:
 
                 # 💾 حفظ الجلسة في قاعدة البيانات
                 session_record = db_manager.save_session(
-                udid = udid,
-                child_name = child_name,
-                child_age = child_age,
-                mode = "stream",
-                audio_file = audio_path
+                udid=udid,
+                child_name=child_name,
+                child_age=child_age,
+                mode="stream",
+                audio_file=audio_path
             )
 
                 logger.info("🔗 Connecting to HUME Stream...")
 
                 # استخدام واجهة HUME v0.9.0 للـ Stream
                 socket = await self.async_client.expression_measurement.stream.connect(
-                config = {"prosody": {}}  # تحليل نبرة الصوت فقط
+                config={"prosody": {}}  # تحليل نبرة الصوت فقط
             )
 
                 logger.info("📤 Sending audio file...")

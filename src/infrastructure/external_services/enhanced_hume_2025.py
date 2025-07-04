@@ -11,6 +11,7 @@ import asyncio
 import json
 import logging
 import os
+import secrets
 import statistics
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -69,9 +70,9 @@ class EnhancedHumeIntegration:
 
     # ==================== TASK 1: CALIBRATION ====================
 
-    def calibrate_hume(self, confidence_threshold: float) -> Dict[str, float]:
+    def calibrate_hume(self, confidence_threshold: float) -> Dict[str, Union[float, str]]:
         """🎯 معايرة دقة تحليل المشاعر"""
-        logger.info(
+        self.logger.info(
             f"🎯 Calibrating HUME with threshold: {confidence_threshold}")
 
         # Create test samples
@@ -97,7 +98,8 @@ class EnhancedHumeIntegration:
         # Update configuration
         self.config.confidence_threshold = confidence_threshold
 
-        logger.info(f"✅ Calibration complete: {success_rate:.1%} success rate")
+        self.logger.info(
+            f"✅ Calibration complete: {success_rate:.1%} success rate")
 
         return {
             'success_rate': success_rate,
@@ -120,8 +122,9 @@ class EnhancedHumeIntegration:
             t = np.linspace(0, duration, int(sample_rate * duration))
             audio = 0.3 * np.sin(2 * np.pi * freq * t)
 
-            # Add some noise
-            noise = 0.05 * np.random.random(len(audio))
+            # Add some noise using secure random
+            rng = np.random.default_rng(secrets.randbits(128))
+            noise = 0.05 * rng.random(len(audio))
             audio = audio + noise
 
             filename = f"test_{emotion}.wav"
@@ -146,17 +149,18 @@ class EnhancedHumeIntegration:
 
     def _mock_analysis(self, expected_emotion: str) -> Dict:
         """تحليل وهمي للتطوير"""
-        import random
+        # Use cryptographically secure random
+        rng = secrets.SystemRandom()
 
         emotions = {
-            'joy': random.uniform(0.7, 0.9),
-            'sadness': random.uniform(0.2, 0.4),
-            'anger': random.uniform(0.1, 0.3),
-            'calm': random.uniform(0.3, 0.5)
+            'joy': rng.uniform(0.7, 0.9),
+            'sadness': rng.uniform(0.2, 0.4),
+            'anger': rng.uniform(0.1, 0.3),
+            'calm': rng.uniform(0.3, 0.5)
         }
 
         # Make expected emotion dominant
-        emotions[expected_emotion] = random.uniform(0.8, 0.95)
+        emotions[expected_emotion] = rng.uniform(0.8, 0.95)
 
         return {
             'emotions': emotions,
@@ -179,13 +183,13 @@ class EnhancedHumeIntegration:
 
     async def analyze_emotion_multilang(self, audio_file: str, lang: str) -> Dict:
         """🌍 تحليل المشاعر مع دعم اللغات المتعددة"""
-        logger.info(f"🌍 Analyzing emotion in language: {lang}")
+        self.logger.info(f"🌍 Analyzing emotion in language: {lang}")
 
         try:
             # Detect language if auto
             if lang == "auto":
                 detected_lang = await self._detect_language(audio_file)
-                logger.debug(f"🔍 Language detected: {detected_lang}")
+                self.logger.debug(f"🔍 Language detected: {detected_lang}")
             else:
                 detected_lang = lang
 
@@ -211,14 +215,14 @@ class EnhancedHumeIntegration:
             }
 
         except Exception as e:
-    logger.error(f"Error: {e}")f"❌ Multi-language analysis failed: {e}")
-    return {'error': str(e)}
+            self.logger.error(f"❌ Multi-language analysis failed: {e}")
+            return {'error': str(e)}
 
-        async def _detect_language(self, audio_file: str) -> str:
-    """كشف اللغة من الملف الصوتي"""
+    async def _detect_language(self, audio_file: str) -> str:
+        """كشف اللغة من الملف الصوتي"""
         try:
-        # Load audio
-    y, sr= librosa.load(audio_file, sr=16000)
+            # Load audio
+            y, sr = librosa.load(audio_file, sr=16000)
 
             # Simple spectral analysis for language detection
             spectral_centroid = librosa.feature.spectral_centroid(y=y, sr=sr)
@@ -226,95 +230,96 @@ class EnhancedHumeIntegration:
 
             # Simple rule-based classification (can be improved with ML)
             if avg_centroid > 2000:
-    return "en"  # Higher frequencies often in English
+                return "en"  # Higher frequencies often in English
             else:
-    return "ar"  # Lower frequencies often in Arabic
-            except Exception as e:
-        logger.error(f"Error: {e}", exc_info=True)as e:
-        logger.error(f"Error: {e}", exc_info=True)t Exception:
-    return "ar"  # Default to Arabic
+                return "ar"  # Lower frequencies often in Arabic
+        except Exception as e:
+            self.logger.error(f"Language detection error: {e}", exc_info=True)
+            return "ar"  # Default to Arabic
 
-        def _get_language_config(self, language: str) -> Dict:
-    """إعدادات خاصة بكل لغة"""
+    def _get_language_config(self, language: str) -> Dict:
+        """إعدادات خاصة بكل لغة"""
         if language == "ar":
-    return {
-               "prosody": {
+            return {
+                "prosody": {
                     "granularity": "word",
                     "language_context": "arabic"
                 }
             }
-            elif language == "en":
+        elif language == "en":
             return {
-               "prosody": {
+                "prosody": {
                     "granularity": "utterance",
                     "language_context": "english"
                 }
             }
-            else:
+        else:
             return {"prosody": {}}
 
-            def _apply_language_calibration(self, result: Dict, language: str) -> Dict:
-            """تطبيق معايرة خاصة باللغة"""
-            language_weight = self.config.language_weights.get(language, 1.0)
+    def _apply_language_calibration(self, result: Dict, language: str) -> Dict:
+        """تطبيق معايرة خاصة باللغة"""
+        language_weight = self.config.language_weights.get(language, 1.0)
 
-            # Adjust confidence based on language
-            adjusted_confidence = result['confidence'] * language_weight
+        # Adjust confidence based on language
+        adjusted_confidence = result['confidence'] * language_weight
 
-            # Adjust emotion scores
-            adjusted_emotions = {}
-            for emotion, score in result['emotions'].items():
+        # Adjust emotion scores
+        adjusted_emotions = {}
+        for emotion, score in result['emotions'].items():
             adjusted_score = score * language_weight
 
             # Apply confidence threshold
             if adjusted_score >= self.config.confidence_threshold:
-            adjusted_emotions[emotion] = min(adjusted_score, 1.0)
+                adjusted_emotions[emotion] = min(adjusted_score, 1.0)
             else:
-            adjusted_emotions[emotion] = adjusted_score * 0.8
+                adjusted_emotions[emotion] = adjusted_score * 0.8
 
-            return {
+        return {
             'emotions': adjusted_emotions,
             'dominant_emotion': max(adjusted_emotions, key=adjusted_emotions.get),
             'confidence': adjusted_confidence
         }
 
-        def _mock_multilang_analysis(self, language: str) -> Dict:
+    def _mock_multilang_analysis(self, language: str) -> Dict:
         """تحليل وهمي متعدد اللغات"""
-        import random
+        # Use cryptographically secure random
+        rng = secrets.SystemRandom()
 
         # Different emotion patterns for different languages
         if language == "ar":
-        emotions = {
-               'joy': random.uniform(0.6, 0.8),
-                'curiosity': random.uniform(0.5, 0.7),
-                'calmness': random.uniform(0.4, 0.6)
-            }
-            else:  # English
             emotions = {
-               'excitement': random.uniform(0.7, 0.9),
-                'playfulness': random.uniform(0.6, 0.8),
-                'joy': random.uniform(0.5, 0.7)
+                'joy': rng.uniform(0.6, 0.8),
+                'curiosity': rng.uniform(0.5, 0.7),
+                'calmness': rng.uniform(0.4, 0.6)
+            }
+        else:  # English
+            emotions = {
+                'excitement': rng.uniform(0.7, 0.9),
+                'playfulness': rng.uniform(0.6, 0.8),
+                'joy': rng.uniform(0.5, 0.7)
             }
 
-            dominant = max(emotions, key=emotions.get)
+        dominant = max(emotions, key=emotions.get)
 
-            return {
+        return {
             'emotions': emotions,
             'dominant_emotion': dominant,
             'confidence': emotions[dominant]
         }
 
-        # ==================== TASK 3: HISTORICAL DATA ====================
+    # ==================== TASK 3: HISTORICAL DATA ====================
 
-        def merge_historical_data(self, device_id: str, start_date: datetime, end_date: datetime) -> Dict:
+    def merge_historical_data(self, device_id: str, start_date: datetime, end_date: datetime) -> Dict:
         """📊 تكامل البيانات التاريخية"""
-        logger.info(f"📊 Merging historical data for {device_id}")
+        self.logger.info(f"📊 Merging historical data for {device_id}")
 
         try:
             # Fetch historical data (simulated)
-        historical_sessions = self._fetch_historical_sessions(device_id, start_date, end_date)
+            historical_sessions = self._fetch_historical_sessions(
+                device_id, start_date, end_date)
 
             if not historical_sessions:
-        return {'error': 'No historical data found', 'sessions': 0}
+                return {'error': 'No historical data found', 'sessions': 0}
 
             # Process and analyze historical data
             processed_data = self._process_historical_data(historical_sessions)
@@ -324,7 +329,7 @@ class EnhancedHumeIntegration:
 
             # Create comprehensive report
             report = {
-               'device_id': device_id,
+                'device_id': device_id,
                 'period': {
                     'start': start_date.isoformat(),
                     'end': end_date.isoformat(),
@@ -340,62 +345,65 @@ class EnhancedHumeIntegration:
                 'recommendations': insights['recommendations']
             }
 
-                logger.info(f"✅ Historical analysis complete: {len(historical_sessions)} sessions processed")
-                return report
+            self.logger.info(
+                f"✅ Historical analysis complete: {len(historical_sessions)} sessions processed")
+            return report
 
-            except Exception as e:
-            logger.error(f"Error: {e}")f"❌ Historical data merge failed: {e}")
+        except Exception as e:
+            self.logger.error(f"❌ Historical data merge failed: {e}")
             return {'error': str(e)}
 
-            def _fetch_historical_sessions(self, device_id: str, start_date: datetime, end_date: datetime) -> List[Dict]:
-            """جلب الجلسات التاريخية من قاعدة البيانات"""
-            # Simulated historical data
-            sessions = []
-            current_date = start_date
+    def _fetch_historical_sessions(self, device_id: str, start_date: datetime, end_date: datetime) -> List[Dict]:
+        """جلب الجلسات التاريخية من قاعدة البيانات"""
+        # Simulated historical data
+        sessions = []
+        current_date = start_date
+        rng = secrets.SystemRandom()
 
-            while current_date <= end_date:
+        while current_date <= end_date:
             # Generate 1-3 sessions per day
-            num_sessions= np.random.randint(1, 4)
+            num_sessions = rng.randint(1, 4)
 
             for i in range(num_sessions):
-            session = {
-                    'timestamp': current_date + timedelta(hours=np.random.randint(8, 20)),
+                session = {
+                    'timestamp': current_date + timedelta(hours=rng.randint(8, 20)),
                     'device_id': device_id,
-                    'audio_duration': np.random.uniform(5, 30),  # seconds
+                    'audio_duration': rng.uniform(5, 30),  # seconds
                     'emotions': {
-                       'joy': np.random.uniform(0.2, 0.8),
-                        'curiosity': np.random.uniform(0.3, 0.7),
-                        'excitement': np.random.uniform(0.1, 0.6),
-                        'calmness': np.random.uniform(0.2, 0.5)
+                        'joy': rng.uniform(0.2, 0.8),
+                        'curiosity': rng.uniform(0.3, 0.7),
+                        'excitement': rng.uniform(0.1, 0.6),
+                        'calmness': rng.uniform(0.2, 0.5)
                     }
-                    }
+                }
 
-                    # Add dominant emotion
-                    session['dominant_emotion'] = max(session['emotions'], key=session['emotions'].get)
-                    session['confidence'] = session['emotions'][session['dominant_emotion']]
+                # Add dominant emotion
+                session['dominant_emotion'] = max(
+                    session['emotions'], key=session['emotions'].get)
+                session['confidence'] = session['emotions'][session['dominant_emotion']]
 
-                    sessions.append(session)
+                sessions.append(session)
 
-                    current_date += timedelta(days=1)
+            current_date += timedelta(days=1)
 
-                    return sessions
+        return sessions
 
-                    def _process_historical_data(self, sessions: List[Dict]) -> Dict:
-                    """معالجة البيانات التاريخية"""
-                    daily_summaries = {}
-                    all_emotions = {}
+    def _process_historical_data(self, sessions: List[Dict]) -> Dict:
+        """معالجة البيانات التاريخية"""
+        daily_summaries = {}
+        all_emotions = {}
 
-                    for session in sessions:
-                    date_key = session['timestamp'].date().isoformat()
+        for session in sessions:
+            date_key = session['timestamp'].date().isoformat()
 
-                    # Daily summary
-                    if date_key not in daily_summaries:
-                    daily_summaries[date_key] = {
+            # Daily summary
+            if date_key not in daily_summaries:
+                daily_summaries[date_key] = {
                     'sessions': 0,
                     'total_duration': 0,
                     'emotions': {},
                     'dominant_emotions': []
-            }
+                }
 
             daily_summaries[date_key]['sessions'] += 1
             daily_summaries[date_key]['total_duration'] += session['audio_duration']
@@ -421,9 +429,9 @@ class EnhancedHumeIntegration:
         return {
             'daily_summaries': daily_summaries,
             'overall_emotions': {emotion: statistics.mean(scores) for emotion, scores in all_emotions.items()}
-    }
+        }
 
-                        def _generate_historical_insights(self, processed_data: Dict) -> Dict:
+    def _generate_historical_insights(self, processed_data: Dict) -> Dict:
         """توليد الرؤى من البيانات التاريخية"""
         overall_emotions = processed_data['overall_emotions']
         daily_summaries = processed_data['daily_summaries']
@@ -490,11 +498,11 @@ class EnhancedHumeIntegration:
             'stability_score': stability_score,
             'trend': trend,
             'recommendations': recommendations
-    }
+        }
 
-                        # ==================== REAL HUME METHODS ====================
+    # ==================== REAL HUME METHODS ====================
 
-                        def _real_hume_analysis(self, audio_file: str) -> Dict:
+    def _real_hume_analysis(self, audio_file: str) -> Dict:
         """تحليل HUME حقيقي"""
         try:
             # This would use actual HUME client
@@ -505,7 +513,7 @@ class EnhancedHumeIntegration:
             job = self.client.expression_measurement.batch.submit_job(
                 urls=[audio_file],
                 configs=[{"prosody": {}}]
-        )
+            )
 
             # Wait for completion (simplified)
             import time
@@ -522,81 +530,85 @@ class EnhancedHumeIntegration:
                 return self._mock_analysis("neutral")
 
         except Exception as e:
-                        logger.error(f"Error: {e}")f"Real HUME analysis failed: {e}")
-        return self._mock_analysis("neutral")
+            self.logger.error(f"Real HUME analysis failed: {e}")
+            return self._mock_analysis("neutral")
 
-                        async def _hume_analysis_with_language(self, audio_file: str, config: Dict) -> Dict:
+    async def _hume_analysis_with_language(self, audio_file: str, config: Dict) -> Dict:
         """تحليل HUME مع السياق اللغوي"""
         try:
-        # Stream analysis with language config
-            socket= await self.async_client.expression_measurement.stream.connect(config=config)
+            # Stream analysis with language config
+            socket = await self.async_client.expression_measurement.stream.connect(config=config)
 
             with open(audio_file, 'rb') as f:
-                audio_data= f.read()
+                audio_data = f.read()
 
-            result= await socket.send_bytes(audio_data)
+            result = await socket.send_bytes(audio_data)
             await socket.close()
 
             return self._extract_emotions_from_hume(result)
 
         except Exception as e:
-                        logger.error(f"Error: {e}")f"HUME language analysis failed: {e}")
-        return self._mock_multilang_analysis("ar")
+            self.logger.error(f"HUME language analysis failed: {e}")
+            return self._mock_multilang_analysis("ar")
 
-                        def _extract_emotions_from_hume(self, hume_result) -> Dict:
+    def _extract_emotions_from_hume(self, hume_result) -> Dict:
         """استخراج المشاعر من نتيجة HUME"""
-        emotions= {}
+        emotions = {}
 
         try:
             if isinstance(hume_result, dict) and "prosody" in hume_result:
-                predictions= hume_result["prosody"].get("predictions", [])
+                predictions = hume_result["prosody"].get("predictions", [])
                 for pred in predictions:
-                    emotions[pred.get("name", "unknown")]= pred.get("score", 0.0)
+                    emotions[pred.get("name", "unknown")
+                             ] = pred.get("score", 0.0)
             elif isinstance(hume_result, list) and hume_result:
                 # Batch result
-                first_result= hume_result[0]
+                first_result = hume_result[0]
                 if "models" in first_result and "prosody" in first_result["models"]:
-                    prosody= first_result["models"]["prosody"]
+                    prosody = first_result["models"]["prosody"]
                     if "grouped_predictions" in prosody:
-                        predictions= prosody["grouped_predictions"][0].get("predictions", [])
+                        predictions = prosody["grouped_predictions"][0].get(
+                            "predictions", [])
                         for pred in predictions:
-                            emotions[pred.get("name", "unknown")]= pred.get("score", 0.0)
+                            emotions[pred.get("name", "unknown")] = pred.get(
+                                "score", 0.0)
         except Exception as e:
-                        logger.error(f"Error: {e}")f"Error extracting emotions: {e}")
+            self.logger.error(f"Error extracting emotions: {e}")
 
         if emotions:
-            dominant= max(emotions, key=emotions.get)
-            confidence= emotions[dominant]
+            dominant = max(emotions, key=emotions.get)
+            confidence = emotions[dominant]
         else:
-            emotions= {"neutral": 0.5}
-            dominant= "neutral"
-            confidence= 0.5
+            emotions = {"neutral": 0.5}
+            dominant = "neutral"
+            confidence = 0.5
 
         return {
             'emotions': emotions,
             'dominant_emotion': dominant,
             'confidence': confidence
-    }
+        }
 
 
-                        # ==================== USAGE EXAMPLE ====================
+# ==================== USAGE EXAMPLE ====================
 
-                        async def demo_enhanced_hume():
+async def demo_enhanced_hume():
     """مثال شامل للاستخدام"""
+    logger = logging.getLogger(__name__)
     logger.info("🎤 Enhanced HUME AI Integration Demo")
     logger.info("="*50)
 
     # Initialize
     try:
-        hume= EnhancedHumeIntegration()
+        hume = EnhancedHumeIntegration()
         logger.info("✅ HUME Integration initialized")
     except Exception as e:
-    logger.error(f"Error: {e}")f"❌ Initialization failed: {e}")
+        logger.error(f"❌ Initialization failed: {e}")
         return
 
     # Task 1: Calibration
     logger.info("\n🎯 Task 1: Calibrating emotion analysis...")
-    calibration_result= hume.calibrate_hume(confidence_threshold=0.75)
+    calibration_result = hume.calibrate_hume(confidence_threshold=0.75)
     logger.info(f"Success rate: {calibration_result['success_rate']:.1%}")
     logger.info(f"Recommendation: {calibration_result['recommendation']}")
 
@@ -604,9 +616,9 @@ class EnhancedHumeIntegration:
     logger.info("\n🌍 Task 2: Multi-language emotion analysis...")
 
     # Create a test audio file
-    test_samples= hume._create_test_samples()
+    test_samples = hume._create_test_samples()
     if test_samples:
-        result= await hume.analyze_emotion_multilang(test_samples[0]['file'], "auto")
+        result = await hume.analyze_emotion_multilang(test_samples[0]['file'], "auto")
         logger.info(
             f"Detected language: {result.get('detected_language', 'unknown')}")
         logger.info(
@@ -615,10 +627,11 @@ class EnhancedHumeIntegration:
 
     # Task 3: Historical data integration
     logger.info("\n📊 Task 3: Historical data analysis...")
-    start_date= datetime.now() - timedelta(days=14)
-    end_date= datetime.now()
+    start_date = datetime.now() - timedelta(days=14)
+    end_date = datetime.now()
 
-    historical_result= hume.merge_historical_data("TEST_DEVICE_001", start_date, end_date)
+    historical_result = hume.merge_historical_data(
+        "TEST_DEVICE_001", start_date, end_date)
     logger.info(
         f"Sessions analyzed: {historical_result.get('summary', {}).get('total_sessions', 0)}")
     logger.info(
@@ -629,9 +642,10 @@ class EnhancedHumeIntegration:
     logger.info("\n✅ Demo completed successfully!")
 
 
-                        if __name__ == "__main__":
+if __name__ == "__main__":
     # Set demo API key if not present
     if not os.getenv("HUME_API_KEY"):
-        os.environ["HUME_API_KEY"]= f"test_{secrets.token_hex(16)}"  # SECURITY: Generate secure test key
+        # SECURITY: Generate secure test key
+        os.environ["HUME_API_KEY"] = f"test_{secrets.token_hex(16)}"
 
     asyncio.run(demo_enhanced_hume())
