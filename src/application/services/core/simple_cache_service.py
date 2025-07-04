@@ -20,7 +20,8 @@ class SimpleCacheService:
         self.default_ttl = default_ttl
         self._cache: Dict[str, tuple] = {}  # key: (value, timestamp, ttl)
         self._stats = {"hits": 0, "misses": 0, "sets": 0, "evictions": 0}
-        logger.info(f"✅ Simple cache service initialized (max_size: {max_size})")
+        logger.info(
+            f"✅ Simple cache service initialized (max_size: {max_size})")
 
     async def connect(self):
         """Mock connect method for compatibility"""
@@ -125,12 +126,13 @@ class SimpleCacheService:
     def _generate_cache_key(self, prefix: str, args: tuple, kwargs: dict) -> str:
         """Generate unique cache key"""
         key_data = f"{prefix}:{str(args)}:{str(sorted(kwargs.items()))}"
-        return hashlib.md5(key_data.encode()).hexdigest()
+        return hashlib.sha256(key_data.encode()).hexdigest()
 
     def get_stats(self) -> Dict[str, Any]:
         """Get cache statistics"""
         total_requests = self._stats["hits"] + self._stats["misses"]
-        hit_rate = self._stats["hits"] / total_requests if total_requests > 0 else 0
+        hit_rate = self._stats["hits"] / \
+            total_requests if total_requests > 0 else 0
 
         return {
             "size": len(self._cache),
@@ -156,7 +158,8 @@ class SimpleCacheService:
             del self._cache[key]
 
         if expired_keys:
-            logger.info(f"🧹 Cleaned up {len(expired_keys)} expired cache entries")
+            logger.info(
+                f"🧹 Cleaned up {len(expired_keys)} expired cache entries")
 
         return len(expired_keys)
 

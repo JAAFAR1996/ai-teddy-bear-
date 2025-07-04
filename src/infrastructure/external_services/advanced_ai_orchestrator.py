@@ -98,7 +98,8 @@ class ModelRouter:
                 complexity=ModelComplexity.MEDIUM,
                 max_tokens=400,
                 temperature=0.9,
-                specialized_for=[RequestType.CREATIVE, RequestType.STORYTELLING],
+                specialized_for=[RequestType.CREATIVE,
+                                 RequestType.STORYTELLING],
                 safety_level=4,
                 response_time_target=1.5,
                 cost_per_request=0.002,
@@ -109,7 +110,8 @@ class ModelRouter:
                 complexity=ModelComplexity.SIMPLE,
                 max_tokens=200,
                 temperature=0.8,
-                specialized_for=[RequestType.GENERAL_CHAT, RequestType.ENTERTAINMENT],
+                specialized_for=[RequestType.GENERAL_CHAT,
+                                 RequestType.ENTERTAINMENT],
                 safety_level=3,
                 response_time_target=0.8,
                 cost_per_request=0.0,
@@ -240,7 +242,8 @@ class AdvancedAIOrchestrator:
             )
 
             # 4. فحص الكاش
-            cache_key = self._generate_response_cache_key(request, model_config)
+            cache_key = self._generate_response_cache_key(
+                request, model_config)
             if cached_response := self.response_cache.get(cache_key):
                 self.logger.info("🎯 Cache hit for response generation")
                 return cached_response
@@ -384,7 +387,7 @@ class AdvancedAIOrchestrator:
             model_config.model_name,
         ]
 
-        return hashlib.md5("_".join(key_components).encode()).hexdigest()
+        return hashlib.sha256("_".join(key_components).encode()).hexdigest()
 
     async def _update_performance_stats(
         self, model_name: str, processing_time: float, response: Dict[str, Any]

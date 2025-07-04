@@ -77,14 +77,15 @@ class ChildProfileRequest(BaseModel):
 
 class ConversationRecord(BaseModel):
     """Encapsulates conversation data for saving - Parameter Object Pattern"""
-    
+
     device_id: str = Field(..., description="Device identifier")
     message: str = Field(..., description="Child's message")
     response: str = Field(..., description="AI response")
     emotion: str = Field(..., description="Detected emotion")
     category: str = Field(..., description="Conversation category")
-    learning_points: List[str] = Field(default_factory=list, description="Learning points")
-    
+    learning_points: List[str] = Field(
+        default_factory=list, description="Learning points")
+
     def to_metadata(self) -> Dict[str, Any]:
         """Convert analysis data to metadata dictionary"""
         return {
@@ -149,7 +150,8 @@ app.add_middleware(RequestIdMiddleware)
 app.add_middleware(RateLimiterMiddleware, calls=100, period=60)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure properly for production
+    # SECURITY: Restrict CORS origins
+    allow_origins=["https://localhost:3000", "https://localhost:8080"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -231,6 +233,7 @@ async def _validate_and_get_child(device_id: str, child_service: ChildService):
         )
     return child
 
+
 async def _transcribe_audio_data(audio_data: str, language: str, voice_service: VoiceService):
     """
     Transcribe audio data to text with validation.
@@ -239,11 +242,13 @@ async def _transcribe_audio_data(audio_data: str, language: str, voice_service: 
     transcribed_text = await voice_service.transcribe_audio(
         audio_data=audio_data, language=language
     )
-    
+
     if not transcribed_text:
-        raise HTTPException(status_code=422, detail="Could not transcribe audio")
-    
+        raise HTTPException(
+            status_code=422, detail="Could not transcribe audio")
+
     return transcribed_text
+
 
 async def _generate_ai_response(message: str, child, session_id: Optional[str], ai_service: AIService):
     """
@@ -254,6 +259,7 @@ async def _generate_ai_response(message: str, child, session_id: Optional[str], 
         message=message, child=child, session_id=session_id
     )
 
+
 async def _synthesize_response_audio(text: str, emotion: str, language: str, voice_service: VoiceService):
     """
     Convert AI response text to audio.
@@ -262,6 +268,7 @@ async def _synthesize_response_audio(text: str, emotion: str, language: str, voi
     return await voice_service.synthesize_speech(
         text=text, emotion=emotion, language=language
     )
+
 
 async def _save_conversation_data(
     conversation: ConversationRecord,
@@ -277,6 +284,7 @@ async def _save_conversation_data(
         response=conversation.response,
         metadata=conversation.to_metadata(),
     )
+
 
 def _build_ai_response(ai_response, response_audio: str, transcribed_text: str) -> AIResponse:
     """
@@ -295,6 +303,7 @@ def _build_ai_response(ai_response, response_audio: str, transcribed_text: str) 
             "transcribed_text": transcribed_text,
         },
     )
+
 
 @app.post("/api/v1/audio/process", response_model=AIResponse, tags=["audio"])
 async def process_audio(

@@ -26,7 +26,8 @@ def create_graphql_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        # SECURITY: Restrict CORS origins
+        allow_origins=["https://localhost:3000", "https://localhost:8080"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

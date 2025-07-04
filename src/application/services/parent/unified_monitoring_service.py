@@ -101,7 +101,7 @@ class UnifiedMonitoringService:
     def _generate_issue_id(self, title: str, error_type: str) -> str:
         """توليد معرف فريد للمشكلة"""
         content = f"{title}:{error_type}"
-        return hashlib.md5(content.encode()).hexdigest()[:16]
+        return hashlib.sha256(content.encode()).hexdigest()[:16]
 
     # ----- من rate_monitor_service.py -----
 

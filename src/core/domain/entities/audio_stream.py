@@ -57,14 +57,16 @@ class VoiceSettings(BaseModel):
     language: str = Field(default="en", description="Language code")
 
     # Voice characteristics
-    stability: float = Field(default=0.5, ge=0.0, le=1.0, description="Voice stability")
+    stability: float = Field(default=0.5, ge=0.0, le=1.0,
+                             description="Voice stability")
     similarity_boost: float = Field(
         default=0.8, ge=0.0, le=1.0, description="Voice similarity boost"
     )
     style: float = Field(
         default=0.0, ge=0.0, le=1.0, description="Voice style strength"
     )
-    use_speaker_boost: bool = Field(default=True, description="Enable speaker boost")
+    use_speaker_boost: bool = Field(
+        default=True, description="Enable speaker boost")
 
     # Additional settings
     pitch_adjustment: float = Field(
@@ -78,7 +80,8 @@ class VoiceSettings(BaseModel):
     )
 
     # Emotional tone
-    emotional_tone: Optional[str] = Field(None, description="Emotional tone preset")
+    emotional_tone: Optional[str] = Field(
+        None, description="Emotional tone preset")
 
     def to_elevenlabs_format(self) -> Dict[str, Any]:
         """Convert to ElevenLabs API format"""
@@ -99,13 +102,16 @@ class AudioMetrics(BaseModel):
     bit_depth: int = Field(default=16, description="Bit depth")
 
     # Quality metrics
-    signal_to_noise_ratio: Optional[float] = Field(None, description="SNR in dB")
-    peak_amplitude: Optional[float] = Field(None, description="Peak amplitude (0-1)")
+    signal_to_noise_ratio: Optional[float] = Field(
+        None, description="SNR in dB")
+    peak_amplitude: Optional[float] = Field(
+        None, description="Peak amplitude (0-1)")
     rms_level: Optional[float] = Field(None, description="RMS level")
 
     # Performance metrics
     latency_ms: Optional[float] = Field(None, description="End-to-end latency")
-    jitter_ms: Optional[float] = Field(None, description="Jitter in milliseconds")
+    jitter_ms: Optional[float] = Field(
+        None, description="Jitter in milliseconds")
     packet_loss_rate: Optional[float] = Field(
         None, description="Packet loss rate (0-1)"
     )
@@ -114,12 +120,14 @@ class AudioMetrics(BaseModel):
 class AudioChunk(BaseModel):
     """Individual audio chunk in a stream"""
 
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Chunk ID")
+    id: str = Field(default_factory=lambda: str(
+        uuid.uuid4()), description="Chunk ID")
     sequence_number: int = Field(..., description="Sequence number in stream")
     timestamp: datetime = Field(
         default_factory=datetime.now, description="Chunk timestamp"
     )
-    duration_ms: float = Field(..., description="Chunk duration in milliseconds")
+    duration_ms: float = Field(...,
+                               description="Chunk duration in milliseconds")
 
     # Audio data
     data: bytes = Field(..., description="Raw audio data")
@@ -148,13 +156,15 @@ class StreamBuffer(BaseModel):
     chunks: List[AudioChunk] = Field(
         default_factory=list, description="Buffered chunks"
     )
-    max_chunks: int = Field(default=100, description="Maximum chunks to buffer")
+    max_chunks: int = Field(
+        default=100, description="Maximum chunks to buffer")
     target_duration_ms: float = Field(
         default=1000.0, description="Target buffer duration"
     )
 
     # Buffer metrics
-    total_duration_ms: float = Field(default=0.0, description="Total buffered duration")
+    total_duration_ms: float = Field(
+        default=0.0, description="Total buffered duration")
     total_size_bytes: int = Field(default=0, description="Total buffer size")
     underrun_count: int = Field(default=0, description="Buffer underrun count")
     overrun_count: int = Field(default=0, description="Buffer overrun count")
@@ -215,7 +225,8 @@ class AudioTranscript(BaseModel):
 
     # Metadata
     duration_ms: float = Field(..., description="Audio duration")
-    processing_time_ms: Optional[float] = Field(None, description="Processing time")
+    processing_time_ms: Optional[float] = Field(
+        None, description="Processing time")
 
 
 class AudioStream(BaseModel):
@@ -224,14 +235,17 @@ class AudioStream(BaseModel):
     """
 
     # Identification
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Stream ID")
+    id: str = Field(default_factory=lambda: str(
+        uuid.uuid4()), description="Stream ID")
     session_id: str = Field(..., description="Associated session ID")
     child_id: Optional[str] = Field(None, description="Associated child ID")
 
     # Stream properties
     direction: StreamDirection = Field(..., description="Stream direction")
-    state: StreamState = Field(default=StreamState.IDLE, description="Current state")
-    format: AudioFormat = Field(default=AudioFormat.OPUS, description="Audio format")
+    state: StreamState = Field(
+        default=StreamState.IDLE, description="Current state")
+    format: AudioFormat = Field(
+        default=AudioFormat.OPUS, description="Audio format")
     quality: AudioQuality = Field(
         default=AudioQuality.HIGH, description="Quality preset"
     )
@@ -261,7 +275,8 @@ class AudioStream(BaseModel):
     created_at: datetime = Field(
         default_factory=datetime.now, description="Creation time"
     )
-    started_at: Optional[datetime] = Field(None, description="Stream start time")
+    started_at: Optional[datetime] = Field(
+        None, description="Stream start time")
     ended_at: Optional[datetime] = Field(None, description="Stream end time")
     duration: Optional[timedelta] = Field(None, description="Total duration")
 
@@ -272,7 +287,8 @@ class AudioStream(BaseModel):
 
     # WebSocket connection
     websocket_url: Optional[str] = Field(None, description="WebSocket URL")
-    connection_id: Optional[str] = Field(None, description="Connection identifier")
+    connection_id: Optional[str] = Field(
+        None, description="Connection identifier")
 
     # Metadata
     metadata: Dict[str, Any] = Field(
@@ -406,7 +422,8 @@ class AudioStream(BaseModel):
         factors = []
 
         # Buffer health
-        buffer_health = 1.0 - (self.buffer.underrun_count / max(self.total_chunks, 1))
+        buffer_health = 1.0 - \
+            (self.buffer.underrun_count / max(self.total_chunks, 1))
         factors.append(max(0, buffer_health))
 
         # Error rate
@@ -464,7 +481,7 @@ class AudioStream(BaseModel):
             key_parts.append(self.voice_settings.voice_id)
 
         key_string = ":".join(key_parts)
-        return hashlib.md5(key_string.encode()).hexdigest()
+        return hashlib.sha256(key_string.encode()).hexdigest()
 
     class Config:
         """Pydantic configuration"""

@@ -138,7 +138,8 @@ class BaseDataLoader(DataLoader, Generic[K, T]):
                 )
 
                 db_data = await self._fetch_from_repository(missing_keys)
-                db_results = {key: data for key, data in zip(missing_keys, db_data)}
+                db_results = {key: data for key,
+                              data in zip(missing_keys, db_data)}
 
                 # Step 3: Cache the fetched results
                 await self._cache_results_batch(db_results)
@@ -194,9 +195,11 @@ class BaseDataLoader(DataLoader, Generic[K, T]):
             for cached_value in cached_values:
                 if cached_value:
                     try:
-                        results.append(self.config.deserialize_fn(cached_value))
+                        results.append(
+                            self.config.deserialize_fn(cached_value))
                     except Exception as e:
-                        logger.warning("Cache deserialization failed", error=str(e))
+                        logger.warning(
+                            "Cache deserialization failed", error=str(e))
                         results.append(None)
                 else:
                     results.append(None)
@@ -244,7 +247,7 @@ class BaseDataLoader(DataLoader, Generic[K, T]):
     def _generate_cache_key(self, key: K) -> str:
         """Generate cache key for a given key"""
         key_str = str(key)
-        key_hash = hashlib.md5(key_str.encode()).hexdigest()[:8]
+        key_hash = hashlib.sha256(key_str.encode()).hexdigest()[:8]
         return f"{self.config.prefix}:{self.name}:{key_hash}:{key_str}"
 
     async def get_metrics(self) -> Dict[str, Any]:
@@ -303,7 +306,8 @@ class ChildDataLoader(BaseDataLoader[str, Dict[str, Any]]):
             return [result_map.get(child_id) for child_id in child_ids]
 
         except Exception as e:
-            logger.error("Failed to fetch children from repository", error=str(e))
+            logger.error(
+                "Failed to fetch children from repository", error=str(e))
             return [None] * len(child_ids)
 
     def _serialize_child(self, child) -> Dict[str, Any]:
@@ -354,7 +358,8 @@ class ConversationDataLoader(BaseDataLoader[str, Dict[str, Any]]):
             return [result_map.get(conv_id) for conv_id in conversation_ids]
 
         except Exception as e:
-            logger.error("Failed to fetch conversations from repository", error=str(e))
+            logger.error(
+                "Failed to fetch conversations from repository", error=str(e))
             return [None] * len(conversation_ids)
 
     def _serialize_conversation(self, conversation) -> Dict[str, Any]:
@@ -413,7 +418,8 @@ class ConversationByChildLoader(BaseDataLoader[str, List[Dict[str, Any]]]):
             return results
 
         except Exception as e:
-            logger.error("Failed to fetch conversations by child ID", error=str(e))
+            logger.error(
+                "Failed to fetch conversations by child ID", error=str(e))
             return [None] * len(child_ids)
 
     def _serialize_conversation(self, conversation) -> Dict[str, Any]:
@@ -475,7 +481,8 @@ class DataLoaderRegistry:
                 self._repositories["conversation_repository"], self.cache_client
             )
         else:
-            logger.warning("⚠️ Unknown loader or missing repository", loader=loader_name)
+            logger.warning(
+                "⚠️ Unknown loader or missing repository", loader=loader_name)
 
     async def get_all_metrics(self) -> Dict[str, Dict[str, Any]]:
         """Get metrics for all registered DataLoaders"""
@@ -494,7 +501,8 @@ class DataLoaderRegistry:
 
     async def warm_cache(self, warmup_data: Dict[str, List[str]]):
         """Pre-warm caches with commonly accessed data"""
-        logger.info("🔥 Starting cache warmup", loaders=list(warmup_data.keys()))
+        logger.info("🔥 Starting cache warmup",
+                    loaders=list(warmup_data.keys()))
 
         for loader_name, keys in warmup_data.items():
             if loader := self.get_loader(loader_name):

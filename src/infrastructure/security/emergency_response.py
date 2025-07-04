@@ -86,7 +86,8 @@ class EmergencyResponseSystem:
                 self.notification_webhooks = config.get("webhooks", [])
                 self.blocked_ips = config.get("blocked_ips", [])
         except FileNotFoundError:
-            self.logger.warning("ملف تكوين الطوارئ غير موجود، سيتم إنشاء تكوين افتراضي")
+            self.logger.warning(
+                "ملف تكوين الطوارئ غير موجود، سيتم إنشاء تكوين افتراضي")
             self._create_default_config()
 
     def _create_default_config(self) -> None:
@@ -200,7 +201,8 @@ class EmergencyResponseSystem:
 
     async def _revoke_anthropic_key(self, key: str) -> None:
         """إلغاء مفتاح Anthropic"""
-        self.logger.warning(f"⚠️ يجب إلغاء مفتاح Anthropic يدوياً: {key[:20]}...")
+        self.logger.warning(
+            f"⚠️ يجب إلغاء مفتاح Anthropic يدوياً: {key[:20]}...")
 
     async def _generate_replacement_keys(self, old_keys: List[str]) -> None:
         """إنشاء مفاتيح بديلة"""
@@ -252,7 +254,8 @@ class EmergencyResponseSystem:
                     await session.post(webhook_url, json=notification)
                 self.logger.info(f"📧 تم إرسال إشعار إلى {webhook_url}")
             except Exception as e:
-                self.logger.error(f"❌ فشل في إرسال إشعار إلى {webhook_url}: {e}")
+                self.logger.error(
+                    f"❌ فشل في إرسال إشعار إلى {webhook_url}: {e}")
 
     async def _update_firewall_rules(self) -> None:
         """تحديث قواعد جدار الحماية"""
@@ -279,7 +282,7 @@ class EmergencyResponseSystem:
         """إنشاء معرف فريد للحادث"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         hash_input = f"{timestamp}_{len(self.incidents)}"
-        hash_output = hashlib.md5(hash_input.encode()).hexdigest()[:8]
+        hash_output = hashlib.sha256(hash_input.encode()).hexdigest()[:8]
         return f"INC_{timestamp}_{hash_output.upper()}"
 
     async def _handle_unauthorized_access(self, incident: SecurityIncident) -> None:

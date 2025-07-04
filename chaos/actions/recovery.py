@@ -102,10 +102,12 @@ async def clear_chaos_state(configuration: Dict[str, Any] = None) -> Dict[str, A
                     },
                     timeout=15,
                 )
-                clear_results[service_name] = clear_response.status_code in [200, 202]
+                clear_results[service_name] = clear_response.status_code in [
+                    200, 202]
             except Exception as e:
                 clear_results[service_name] = False
-                logger.error(f"❌ Failed to clear chaos state for {service_name}: {e}")
+                logger.error(
+                    f"❌ Failed to clear chaos state for {service_name}: {e}")
         success = all(clear_results.values())
         return {
             "action": "clear_chaos_state",
@@ -136,7 +138,8 @@ async def restore_network_policies(
                 success_count += 1
                 await asyncio.sleep(1)
             except Exception as e:
-                logger.error(f"❌ Network policy restoration failed: {command} - {e}")
+                logger.error(
+                    f"❌ Network policy restoration failed: {command} - {e}")
         success = success_count == len(network_commands)
         return {
             "action": "restore_network_policies",
@@ -169,7 +172,8 @@ async def restart_failed_services(
                 "restart_results": {},
                 "success": True,
             }
-        logger.info(f"Found {len(failed_services)} failed services: {failed_services}")
+        logger.info(
+            f"Found {len(failed_services)} failed services: {failed_services}")
         for service in failed_services:
             try:
                 restart_response = requests.post(
@@ -267,7 +271,9 @@ async def wait_for_service_ready(
             if response.status_code == 200:
                 return True
         # FIXME: replace with specific exception
-except Exception as exc:pass
+        except Exception as exc:
+            logger.error(f"Recovery action failed: {exc}")
+            pass  # Continue with other recovery actions
         await asyncio.sleep(2)
     return False
 
@@ -340,7 +346,8 @@ async def check_performance_metrics() -> Dict[str, Any]:
     """Check system performance metrics"""
     try:
         start_time = time.time()
-        test_response = requests.get("http://graphql-federation:8000/health", timeout=5)
+        test_response = requests.get(
+            "http://graphql-federation:8000/health", timeout=5)
         response_time = time.time() - start_time
         performance_acceptable = (
             test_response.status_code == 200 and response_time < 2.0

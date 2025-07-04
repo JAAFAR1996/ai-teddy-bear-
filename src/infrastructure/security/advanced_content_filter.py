@@ -112,7 +112,8 @@ class ToxicityDetector:
                         child_age, category
                     )
                     category_score += (
-                        self.severity_weights.get(category, 0.5) * age_multiplier
+                        self.severity_weights.get(
+                            category, 0.5) * age_multiplier
                     )
 
             if detected_patterns:
@@ -131,7 +132,8 @@ class ToxicityDetector:
                 violations.append(violation)
 
         if detected_categories:
-            total_score = max(cat["score"] for cat in detected_categories.values())
+            total_score = max(cat["score"]
+                              for cat in detected_categories.values())
 
         return {
             "toxicity_score": total_score,
@@ -182,11 +184,15 @@ class AgeAppropriatenessChecker:
     ) -> Dict[str, Any]:
         """فحص ملاءمة المحتوى للعمر"""
 
-        vocabulary_score = self._analyze_vocabulary_complexity(content, child_age)
-        concept_score = self._analyze_concept_appropriateness(content, child_age)
-        emotional_score = self._analyze_emotional_complexity(content, child_age)
+        vocabulary_score = self._analyze_vocabulary_complexity(
+            content, child_age)
+        concept_score = self._analyze_concept_appropriateness(
+            content, child_age)
+        emotional_score = self._analyze_emotional_complexity(
+            content, child_age)
 
-        overall_score = (vocabulary_score + concept_score + emotional_score) / 3
+        overall_score = (vocabulary_score +
+                         concept_score + emotional_score) / 3
 
         return {
             "is_age_appropriate": overall_score > 0.6,
@@ -385,7 +391,8 @@ class AdvancedContentFilter:
         risk_level = self._calculate_overall_risk(toxicity_result, age_result)
 
         # حساب نقاط الثقة
-        confidence_score = self._calculate_confidence(toxicity_result, age_result)
+        confidence_score = self._calculate_confidence(
+            toxicity_result, age_result)
 
         # تحديد فئة المحتوى
         content_category = (
@@ -412,7 +419,8 @@ class AdvancedContentFilter:
         )
 
         # تحديد ما إذا كان يتطلب إشعار الوالدين
-        parent_notification = self._requires_parent_notification(risk_level, child_age)
+        parent_notification = self._requires_parent_notification(
+            risk_level, child_age)
 
         processing_time = (time.time() - start_time) * 1000
 
@@ -452,7 +460,8 @@ class AdvancedContentFilter:
 
         # نقاط ملاءمة العمر
         if not age_result.get("is_age_appropriate", True):
-            appropriateness_score = age_result.get("appropriateness_score", 1.0)
+            appropriateness_score = age_result.get(
+                "appropriateness_score", 1.0)
             if appropriateness_score < 0.3:
                 risk_scores.append(3)
             elif appropriateness_score < 0.5:
@@ -519,7 +528,8 @@ class AdvancedContentFilter:
 
         # إذا أصبح المحتوى فارغاً أو قصيراً جداً
         if len(safe_alternative.strip()) < 10:
-            safe_alternative = self._generate_safe_replacement_content(child_age)
+            safe_alternative = self._generate_safe_replacement_content(
+                child_age)
             modifications.append("تم استبدال المحتوى بمحتوى آمن")
 
         return modifications, safe_alternative
@@ -560,7 +570,8 @@ class AdvancedContentFilter:
 
         simplified_content = content
         for complex_word, simple_word in simplifications.items():
-            simplified_content = simplified_content.replace(complex_word, simple_word)
+            simplified_content = simplified_content.replace(
+                complex_word, simple_word)
 
         return simplified_content
 
@@ -628,9 +639,9 @@ class AdvancedContentFilter:
         ]
 
         cache_string = "_".join(cache_components)
-        return hashlib.md5(cache_string.encode()).hexdigest()
+        return hashlib.sha256(cache_string.encode()).hexdigest()
 
-    def _update_filter_stats(ContentAnalysisResult) -> None:
+    def _update_filter_stats(self, result: ContentAnalysisResult) -> None:
         """تحديث إحصائيات الفلتر"""
 
         if not result.is_safe:

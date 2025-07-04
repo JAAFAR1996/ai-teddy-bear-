@@ -43,6 +43,21 @@ services:
       - "5432:5432"
     networks:
       - teddy-network
+    # SECURITY: Container hardening
+    user: postgres
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run
+      - /var/run/postgresql
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-teddy_user}"]
       interval: 30s
@@ -63,6 +78,15 @@ services:
       - "6379:6379"
     networks:
       - teddy-network
+    # SECURITY: Container hardening
+    user: redis
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 30s
@@ -91,6 +115,16 @@ services:
       WORKERS: 4
     networks:
       - teddy-network
+    # SECURITY: Container hardening  
+    user: teddy
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/cache
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     depends_on:
       postgres:
         condition: service_healthy
@@ -116,6 +150,23 @@ services:
       - "443:443"
     networks:
       - teddy-network
+    # SECURITY: Container hardening
+    user: nginx
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+      - NET_BIND_SERVICE
     depends_on:
       - teddy-app
     healthcheck:
