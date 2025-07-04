@@ -4,11 +4,11 @@ Child Search Criteria Domain Models
 Contains domain models for child search and filtering operations.
 """
 
+import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, List, Optional, Tuple
-import re
 
 
 class AgeGroup(Enum):
@@ -192,11 +192,19 @@ class ChildSearchCriteria:
 
     def to_sql_conditions(self) -> Tuple[str, List[Any]]:
         """Return SQL WHERE clause and params. All columns are validated and only parameterized queries are allowed."""
+
         def _validate_column(name: str):
             if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
                 raise ValueError(f"Unsafe column name: {name}")
+
         # Validate all column names used in conditions
-        for col in ["parent_id", "cultural_background", "max_daily_interaction_time", "last_interaction", "interests"]:
+        for col in [
+            "parent_id",
+            "cultural_background",
+            "max_daily_interaction_time",
+            "last_interaction",
+            "interests",
+        ]:
             _validate_column(col)
         conditions = []
         params = []

@@ -12,8 +12,14 @@ import pytest
 # Test imports
 try:
     from src.infrastructure.caching_advanced.multi_layer_cache import (
-        CacheConfig, CacheMetrics, ContentType, L1MemoryCache,
-        L2RedisCache, L3CDNCache, MultiLayerCache)
+        CacheConfig,
+        CacheMetrics,
+        ContentType,
+        L1MemoryCache,
+        L2RedisCache,
+        L3CDNCache,
+        MultiLayerCache,
+    )
 
     CACHE_AVAILABLE = True
 except ImportError:
@@ -317,8 +323,7 @@ class TestMultiLayerCache:
 
         # Test model weights (should use L2 and L3, not L1)
         await multi_layer_cache.set_multi_layer(
-            "model_key", {
-                "weights": "large_model_data"}, ContentType.MODEL_WEIGHTS
+            "model_key", {"weights": "large_model_data"}, ContentType.MODEL_WEIGHTS
         )
 
         # Verify values are retrievable

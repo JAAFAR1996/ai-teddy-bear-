@@ -4,16 +4,15 @@ Fix DDD Integration Script
 Properly split God Classes into DDD structure
 """
 
+import logging
 import os
 from pathlib import Path
 from typing import List
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 class DDDFixer:
-
     def __init__(self):
         self.src_dir = Path("src")
         self.services_dir = self.src_dir / "application" / "services"
@@ -368,8 +367,7 @@ class MemoryService:
                 if any(f.endswith(".py") for f in files):
                     init_file = root_path / "__init__.py"
                     if not init_file.exists():
-                        init_file.write_text(
-                            "# Domain module\n", encoding="utf-8")
+                        init_file.write_text("# Domain module\n", encoding="utf-8")
 
     def fix_integration(self):
         """إصلاح الدمج الخاطئ"""

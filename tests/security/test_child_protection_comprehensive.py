@@ -2,7 +2,6 @@
 Comprehensive Child Protection Tests - اختبارات شاملة لحماية الأطفال
 """
 
-from tests.framework import ChildSafetyTestCase
 import asyncio
 from datetime import datetime, timedelta
 
@@ -11,6 +10,8 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from src.application.services.consent_service import ConsentService
+from tests.framework import ChildSafetyTestCase
+
 # Mock services for testing
 """
 Codacy compliance: Provide local mocks for missing services/exceptions if import fails
@@ -18,70 +19,126 @@ Codacy compliance: Provide local mocks for missing services/exceptions if import
 try:
     from src.application.services.content_filter_service import ContentFilterService
 except ImportError:
+
     class ContentFilterService:
         async def is_appropriate(self, content, child_age, context=None):
             return {"is_safe": True}
 
-        def __init__(self): pass
-        def generate_safe_content(self, age, typ): return "safe content"
-        def generate_unsafe_content(self, typ): return "unsafe content"
-        def ai_moderation_check(self, message, child_age): return {
-            "passed": True}
+        def __init__(self):
+            pass
+
+        def generate_safe_content(self, age, typ):
+            return "safe content"
+
+        def generate_unsafe_content(self, typ):
+            return "unsafe content"
+
+        def ai_moderation_check(self, message, child_age):
+            return {"passed": True}
+
+
 try:
     from src.application.services.feature_service import FeatureService
 except ImportError:
-    class FeatureService:
-        async def enable_feature(
-            self, child_id, feature): raise ParentalConsentRequiredException()
-        async def get_status(self, child_id, feature): return {
-            "is_enabled": True, "consent_expiry": datetime.utcnow()}
 
-        def __init__(self): pass
+    class FeatureService:
+        async def enable_feature(self, child_id, feature):
+            raise ParentalConsentRequiredException()
+
+        async def get_status(self, child_id, feature):
+            return {"is_enabled": True, "consent_expiry": datetime.utcnow()}
+
+        def __init__(self):
+            pass
+
+
 try:
     from src.application.services.incident_service import IncidentService
 except ImportError:
-    class IncidentService:
-        async def get_latest(self, child_id): return {
-            "type": "DANGEROUS_CONTENT_BLOCKED", "details": {"blocked_content": ""}}
 
-        def __init__(self): pass
+    class IncidentService:
+        async def get_latest(self, child_id):
+            return {
+                "type": "DANGEROUS_CONTENT_BLOCKED",
+                "details": {"blocked_content": ""},
+            }
+
+        def __init__(self):
+            pass
+
+
 try:
     from src.application.services.interaction_service import InteractionService
 except ImportError:
+
     class InteractionService:
-        async def process(self, child_id, message): return {}
-        def __init__(self): pass
+        async def process(self, child_id, message):
+            return {}
+
+        def __init__(self):
+            pass
+
+
 try:
     from src.application.services.notification_service import NotificationService
 except ImportError:
-    class NotificationService:
-        async def get_pending(self, parent_id): return [
-            {"type": "CONSENT_REQUEST", "child_id": "", "violation_type": "", "timestamp": "", "recommended_action": ""}]
 
-        async def clear_all(self, parent_id): pass
-        def __init__(self): pass
+    class NotificationService:
+        async def get_pending(self, parent_id):
+            return [
+                {
+                    "type": "CONSENT_REQUEST",
+                    "child_id": "",
+                    "violation_type": "",
+                    "timestamp": "",
+                    "recommended_action": "",
+                }
+            ]
+
+        async def clear_all(self, parent_id):
+            pass
+
+        def __init__(self):
+            pass
+
+
 try:
     from src.application.services.safety_service import SafetyService
 except ImportError:
-    class SafetyService:
-        async def check_message(self, child_id, message): return {
-            "action": "ALLOW", "alert_parent": False, "severity": "LOW"}
-        async def ai_moderation_check(self, message, child_age): return {
-            "passed": True}
 
-        def __init__(self): pass
+    class SafetyService:
+        async def check_message(self, child_id, message):
+            return {"action": "ALLOW", "alert_parent": False, "severity": "LOW"}
+
+        async def ai_moderation_check(self, message, child_age):
+            return {"passed": True}
+
+        def __init__(self):
+            pass
+
+
 try:
     from src.domain.exceptions.base import ParentalConsentRequiredException
 except ImportError:
+
     class ParentalConsentRequiredException(Exception):
-        def __init__(self): self.error_code = "PARENTAL_CONSENT_REQUIRED"
+        def __init__(self):
+            self.error_code = "PARENTAL_CONSENT_REQUIRED"
+
+
 try:
     from src.infrastructure.persistence.repositories import DataRepository
 except ImportError:
+
     class DataRepository:
-        async def get_child_data(self, child_id): return {}
-        async def update_child_age(self, child_id, age): pass
-        def __init__(self): pass
+        async def get_child_data(self, child_id):
+            return {}
+
+        async def update_child_age(self, child_id, age):
+            pass
+
+        def __init__(self):
+            pass
 
 
 class TestChildProtectionComprehensive(ChildSafetyTestCase):
@@ -138,8 +195,7 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
         result = await self.content_filter.is_appropriate(
             content=content,
             child_age=child.age,
-            context={"interaction_type": "voice_chat",
-                     "timestamp": datetime.utcnow()},
+            context={"interaction_type": "voice_chat", "timestamp": datetime.utcnow()},
         )
 
         # Assert
@@ -348,9 +404,9 @@ class TestChildProtectionComprehensive(ChildSafetyTestCase):
                 result = await self.content_filter.is_appropriate(
                     content=content, child_age=age
                 )
-                assert result[
-                    "is_safe"
-                ], f"Content '{content}' should be safe for age {age}"
+                assert result["is_safe"], (
+                    f"Content '{content}' should be safe for age {age}"
+                )
 
             # Test content too advanced for younger age
             if age == 5:

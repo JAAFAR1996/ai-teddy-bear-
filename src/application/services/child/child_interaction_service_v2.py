@@ -1,33 +1,45 @@
-from src.domain.exceptions.authorization import AuthorizationException
-from src.infrastructure.monitoring.metrics import (MetricsCollector,
-                                                   track_request_duration)
-from src.infrastructure.exception_handling.global_handler import \
-    get_global_exception_handler
-from src.infrastructure.decorators.exception_handler import (
-    RetryConfig, authenticated, child_safe, handle_exceptions, validate_input,
-    with_circuit_breaker, with_retry)
-from src.domain.exceptions.base import (AgeInappropriateException,
-                                        AuthenticationException, ErrorContext,
-                                        ExternalServiceException,
-                                        InappropriateContentException,
-                                        ParentalConsentRequiredException,
-                                        QuotaExceededException,
-                                        ValidationException,
-                                        AITeddyBearException)
-import structlog
-from typing import Any, Dict, Optional
-from datetime import datetime
-from dataclasses import dataclass
 import asyncio
 import logging
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, Optional
+
+import structlog
+
+from src.domain.exceptions.authorization import AuthorizationException
+from src.domain.exceptions.base import (
+    AgeInappropriateException,
+    AITeddyBearException,
+    AuthenticationException,
+    ErrorContext,
+    ExternalServiceException,
+    InappropriateContentException,
+    ParentalConsentRequiredException,
+    QuotaExceededException,
+    ValidationException,
+)
+from src.infrastructure.decorators.exception_handler import (
+    RetryConfig,
+    authenticated,
+    child_safe,
+    handle_exceptions,
+    validate_input,
+    with_circuit_breaker,
+    with_retry,
+)
+from src.infrastructure.exception_handling.global_handler import (
+    get_global_exception_handler,
+)
+from src.infrastructure.monitoring.metrics import (
+    MetricsCollector,
+    track_request_duration,
+)
 
 logger = logging.getLogger(__name__)
-
 """
 Child Interaction Service V2 - خدمة تفاعل الأطفال المحسنة
 مثال كامل لاستخدام نظام Exception Handling المتقدم
 """
-
 
 logger = structlog.get_logger(__name__)
 
@@ -120,8 +132,7 @@ class QuotaService:
 
     async def check_quota(self, child_id: str) -> Dict[str, Any]:
         """فحص حصة الاستخدام"""
-        usage = self.usage.get(
-            child_id, {"count": 0, "last_reset": datetime.utcnow()})
+        usage = self.usage.get(child_id, {"count": 0, "last_reset": datetime.utcnow()})
         if (datetime.utcnow() - usage["last_reset"]).days >= 1:
             usage = {"count": 0, "last_reset": datetime.utcnow()}
         return {
@@ -133,8 +144,7 @@ class QuotaService:
     async def increment_usage(self, child_id: str) -> None:
         """زيادة عداد الاستخدام"""
         if child_id not in self.usage:
-            self.usage[child_id] = {"count": 0,
-                                    "last_reset": datetime.utcnow()}
+            self.usage[child_id] = {"count": 0, "last_reset": datetime.utcnow()}
         self.usage[child_id]["count"] += 1
 
 
@@ -232,8 +242,7 @@ class ChildInteractionServiceV2:
             child_id=child_id,
             user_id=auth_context.get("parent_id"),
             session_id=auth_context.get("session_id"),
-            additional_data={"child_age": child_age,
-                             "message_length": len(message)},
+            additional_data={"child_age": child_age, "message_length": len(message)},
         )
         try:
             quota_info = await self.quota_service.check_quota(child_id)

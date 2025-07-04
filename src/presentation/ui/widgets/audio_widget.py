@@ -8,11 +8,20 @@ from datetime import datetime
 from typing import Any
 
 import structlog
-from PySide6.QtCore import QTimer, Signal, pyqtSlot, Qt
+from PySide6.QtCore import Qt, QTimer, Signal, pyqtSlot
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QGridLayout, QGroupBox,
-                               QHBoxLayout, QLabel, QProgressBar, QPushButton,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QProgressBar,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from ..audio.audio_config import AudioConfig
 from ..audio.audio_engine import AudioProcessingEngine
@@ -82,8 +91,7 @@ class ModernAudioWidget(QWidget):
         self.sample_rate_combo = QComboBox()
         self.sample_rate_combo.addItems(["16000", "22050", "44100", "48000"])
         self.sample_rate_combo.setCurrentText("16000")
-        self.sample_rate_combo.currentTextChanged.connect(
-            self._update_sample_rate)
+        self.sample_rate_combo.currentTextChanged.connect(self._update_sample_rate)
         layout.addWidget(self.sample_rate_combo, 1, 1)
 
         return group
@@ -95,11 +103,9 @@ class ModernAudioWidget(QWidget):
 
         # Enable processing toggle
         layout.addWidget(QLabel("Enable Processing:"), 0, 0)
-        self.enable_processing_checkbox = QCheckBox(
-            "Enhanced Audio Processing")
+        self.enable_processing_checkbox = QCheckBox("Enhanced Audio Processing")
         self.enable_processing_checkbox.setChecked(True)
-        self.enable_processing_checkbox.toggled.connect(
-            self._toggle_processing)
+        self.enable_processing_checkbox.toggled.connect(self._toggle_processing)
         layout.addWidget(self.enable_processing_checkbox, 0, 1)
 
         # Processing level
@@ -120,8 +126,7 @@ class ModernAudioWidget(QWidget):
 
         self.record_button = QPushButton("🎤 Start Recording")
         self.record_button.setMinimumHeight(60)
-        self.record_button.setStyleSheet(
-            """
+        self.record_button.setStyleSheet("""
             QPushButton {
                 background-color: #2196F3;
                 color: white;
@@ -131,8 +136,7 @@ class ModernAudioWidget(QWidget):
                 font-weight: bold;
             }
             QPushButton:hover { background-color: #1976D2; }
-        """
-        )
+        """)
         self.record_button.clicked.connect(self._toggle_recording)
 
         self.stop_button = QPushButton("⏹️ Stop")

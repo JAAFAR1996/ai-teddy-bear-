@@ -1,16 +1,19 @@
 import json
 import logging
+import re
 import sqlite3
 from abc import abstractmethod
 from contextlib import contextmanager
 from datetime import datetime
-from typing import (Any, Dict, List, Optional, Tuple, TypeVar)
-import re
+from typing import Any, Dict, List, Optional, Tuple, TypeVar
 
-from src.infrastructure.persistence.base import (BaseRepository,
-                                                 BulkOperationResult,
-                                                 QueryOptions, SearchCriteria,
-                                                 SortOrder)
+from src.infrastructure.persistence.base import (
+    BaseRepository,
+    BulkOperationResult,
+    QueryOptions,
+    SearchCriteria,
+    SortOrder,
+)
 
 T = TypeVar("T")
 ID = TypeVar("ID")
