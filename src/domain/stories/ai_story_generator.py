@@ -131,29 +131,61 @@ class FairyLandAIGenerator:
     def _get_animal_characters(self) -> List[str]:
         """Returns a list of animal characters."""
         return [
-            "أرنب صغير", "قطة لطيفة", "كلب وفي", "طائر مغرد", "فيل حكيم",
-            "دولفين ذكي", "سلحفاة صبورة", "نحلة نشيطة", "فراشة جميلة", "أسد شجاع",
+            "أرنب صغير",
+            "قطة لطيفة",
+            "كلب وفي",
+            "طائر مغرد",
+            "فيل حكيم",
+            "دولفين ذكي",
+            "سلحفاة صبورة",
+            "نحلة نشيطة",
+            "فراشة جميلة",
+            "أسد شجاع",
         ]
 
     def _get_fantasy_characters(self) -> List[str]:
         """Returns a list of fantasy characters."""
         return [
-            "تنين ودود", "جنية طيبة", "ساحر حكيم", "أميرة شجاعة", "فارس نبيل",
-            "عملاق لطيف", "روح الغابة", "ملك الحيوانات", "حورية البحر", "طائر العنقاء",
+            "تنين ودود",
+            "جنية طيبة",
+            "ساحر حكيم",
+            "أميرة شجاعة",
+            "فارس نبيل",
+            "عملاق لطيف",
+            "روح الغابة",
+            "ملك الحيوانات",
+            "حورية البحر",
+            "طائر العنقاء",
         ]
 
     def _get_human_characters(self) -> List[str]:
         """Returns a list of human characters."""
         return [
-            "جد حكيم", "جدة محبة", "معلم صبور", "طبيب طيب", "شرطي مساعد",
-            "خباز ماهر", "فنان موهوب", "موسيقي مبدع", "رياضي قوي", "عالم ذكي",
+            "جد حكيم",
+            "جدة محبة",
+            "معلم صبور",
+            "طبيب طيب",
+            "شرطي مساعد",
+            "خباز ماهر",
+            "فنان موهوب",
+            "موسيقي مبدع",
+            "رياضي قوي",
+            "عالم ذكي",
         ]
 
     def _get_object_characters(self) -> List[str]:
         """Returns a list of object characters."""
         return [
-            "كتاب سحري", "مصباح عجيب", "شجرة متكلمة", "نجمة لامعة", "قلم ملون",
-            "حجر كريم", "مرآة سحرية", "صندوق الكنوز", "بوصلة ذهبية", "خريطة قديمة",
+            "كتاب سحري",
+            "مصباح عجيب",
+            "شجرة متكلمة",
+            "نجمة لامعة",
+            "قلم ملون",
+            "حجر كريم",
+            "مرآة سحرية",
+            "صندوق الكنوز",
+            "بوصلة ذهبية",
+            "خريطة قديمة",
         ]
 
     def _load_character_bank(self) -> Dict[str, List[str]]:
@@ -245,7 +277,7 @@ class FairyLandAIGenerator:
         return {
             "قلق": StoryTheme.FRIENDSHIP,  # Friendship stories can be calming
             "متحمس": StoryTheme.ADVENTURE,  # Adventure for high energy
-            "حزين": StoryTheme.FAMILY,    # Family stories for comfort
+            "حزين": StoryTheme.FAMILY,  # Family stories for comfort
             "فضولي": StoryTheme.LEARNING,  # Learning for a curious mind
         }
 
@@ -305,28 +337,33 @@ class FairyLandAIGenerator:
 ### Child's Context
 - **Name:** {context.child_name}
 - **Age:** {context.age}
-- **Friends:** {', '.join(context.friends)}
-- **Family:** {', '.join(context.family_members)}
-- **Interests:** {', '.join(context.interests)}
+- **Friends:** {", ".join(context.friends)}
+- **Family:** {", ".join(context.family_members)}
+- **Interests:** {", ".join(context.interests)}
 - **Emotional State:** {context.emotional_state}
-- **Learning Goals:** {', '.join(context.learning_goals)}
+- **Learning Goals:** {", ".join(context.learning_goals)}
 """
 
-    def _get_prompt_story_elements_section(self, theme: StoryTheme, age_group: AgeGroup, context: StoryContext) -> str:
+    def _get_prompt_story_elements_section(
+        self, theme: StoryTheme, age_group: AgeGroup, context: StoryContext
+    ) -> str:
         """Generates the story elements section for the prompt."""
         template = self.story_templates.get(theme.value, {})
-        characters = random.sample(self.character_bank.get(
-            random.choice(list(self.character_bank.keys())), []), 2)
+        characters = random.sample(
+            self.character_bank.get(
+                random.choice(list(self.character_bank.keys())), []
+            ),
+            2,
+        )
         if context.preferred_characters:
             characters.extend(context.preferred_characters)
-        moral_lesson = random.choice(
-            self.moral_lessons.get(age_group.value, []))
+        moral_lesson = random.choice(self.moral_lessons.get(age_group.value, []))
 
         return f"""
 ### Story Elements
-- **Structure:** {template.get('structure', 'A simple beginning, middle, and end.')}
-- **Key Elements:** {', '.join(template.get('key_elements', []))}
-- **Main Characters:** {', '.join(characters)}
+- **Structure:** {template.get("structure", "A simple beginning, middle, and end.")}
+- **Key Elements:** {", ".join(template.get("key_elements", []))}
+- **Main Characters:** {", ".join(characters)}
 - **Moral Lesson:** {moral_lesson}
 """
 
@@ -353,7 +390,8 @@ class FairyLandAIGenerator:
         intro = self._get_prompt_introduction(theme, length_str)
         context_section = self._get_prompt_context_section(context)
         elements_section = self._get_prompt_story_elements_section(
-            theme, age_group, context)
+            theme, age_group, context
+        )
         style_section = self._get_prompt_style_and_rules_section()
 
         return f"{intro}{context_section}{elements_section}{style_section}"
@@ -429,10 +467,9 @@ class FairyLandAIGenerator:
         else:  # LONG
             story_key = "long_fantasy"
 
-        story = fallback_stories.get(
-            story_key, fallback_stories["short_adventure"])
+        story = fallback_stories.get(story_key, fallback_stories["short_adventure"])
 
-        return f'Title: {story["title"]}\n\n{story["content"]}'
+        return f"Title: {story['title']}\n\n{story['content']}"
 
     async def _enhance_story_content(
         self, raw_content: str, context: StoryContext, theme: StoryTheme
@@ -441,11 +478,9 @@ class FairyLandAIGenerator:
 
         # استخراج العنوان
         lines = raw_content.strip().split("\n")
-        title_line = next(
-            (line for line in lines if line.startswith("عنوان:")), "")
+        title_line = next((line for line in lines if line.startswith("عنوان:")), "")
         title = (
-            title_line.replace("عنوان:", "").strip(
-            ) or f"مغامرة {context.child_name}"
+            title_line.replace("عنوان:", "").strip() or f"مغامرة {context.child_name}"
         )
 
         # إزالة سطر العنوان من المحتوى
@@ -461,8 +496,7 @@ class FairyLandAIGenerator:
         moral_lesson = self._extract_moral_lesson(content, context.age)
 
         # تحديد العناصر التعليمية
-        educational_elements = self._extract_educational_elements(
-            content, theme)
+        educational_elements = self._extract_educational_elements(content, theme)
 
         # تحديد العلامات العاطفية
         emotional_tags = self._extract_emotional_tags(content)
@@ -534,8 +568,7 @@ class FairyLandAIGenerator:
     def _extract_moral_lesson(self, content: str, age: int) -> str:
         """استخراج الدرس الأخلاقي من القصة"""
         # This would ideally use a more advanced NLP model
-        lessons = self.moral_lessons.get(
-            self._determine_age_group(age).value, [])
+        lessons = self.moral_lessons.get(self._determine_age_group(age).value, [])
         for lesson in lessons:
             if lesson.split()[0] in content or lesson.split()[-1] in content:
                 return lesson
@@ -560,7 +593,8 @@ class FairyLandAIGenerator:
         keywords_for_theme = theme_keywords.get(theme, [])
 
         found_elements = [
-            keyword for keyword in keywords_for_theme if keyword in content]
+            keyword for keyword in keywords_for_theme if keyword in content
+        ]
 
         # Add a default element if none are found
         if not found_elements and keywords_for_theme:
@@ -626,8 +660,7 @@ class FairyLandAIGenerator:
 
         # نقاط للحالة العاطفية
         emotional_alignment = len(
-            [tag for tag in story["emotional_tags"]
-                if context.emotional_state in tag]
+            [tag for tag in story["emotional_tags"] if context.emotional_state in tag]
         )
         if emotional_alignment > 0:
             score += 1.5

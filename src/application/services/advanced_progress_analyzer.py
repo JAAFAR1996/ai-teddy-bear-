@@ -25,41 +25,53 @@ try:
     from nltk.sentiment import SentimentIntensityAnalyzer
     from spacy import displacy
     from textstat import flesch_reading_ease, syllable_count
+
     NLP_AVAILABLE = True
 except ImportError:
     NLP_AVAILABLE = False
     logger.warning(
-        "⚠️ NLP libraries not available. Install with: pip install spacy nltk textstat")
+        "⚠️ NLP libraries not available. Install with: pip install spacy nltk textstat"
+    )
 
 # Transformers for advanced analysis
 try:
     from transformers import AutoModel, AutoTokenizer, pipeline
+
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     try:
         import torch
+
         from src.infrastructure.external_services.mock.transformers import (
-            AutoModel, AutoTokenizer, pipeline)
+            AutoModel,
+            AutoTokenizer,
+            pipeline,
+        )
+
         TRANSFORMERS_AVAILABLE = True
     except ImportError:
         TRANSFORMERS_AVAILABLE = False
         logger.warning(
-            "⚠️ Transformers not available. Install with: pip install transformers torch")
+            "⚠️ Transformers not available. Install with: pip install transformers torch"
+        )
 
 # LLM Integration
 try:
     import openai
     from anthropic import Anthropic
+
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
     logger.warning(
-        "⚠️ LLM libraries not available. Install with: pip install openai anthropic")
+        "⚠️ LLM libraries not available. Install with: pip install openai anthropic"
+    )
 
 
 @dataclass
 class ProgressMetrics:
     """Advanced progress metrics using NLP analysis"""
+
     child_id: int
     analysis_date: datetime
 
@@ -108,6 +120,7 @@ class ProgressMetrics:
 @dataclass
 class LLMRecommendation:
     """LLM-generated recommendation with reasoning"""
+
     category: str  # "emotional", "cognitive", "social", "learning"
     recommendation: str
     reasoning: str
@@ -162,11 +175,10 @@ class AdvancedProgressAnalyzer:
             if TRANSFORMERS_AVAILABLE:
                 self.emotion_classifier = pipeline(
                     "text-classification",
-                    model="j-hartmann/emotion-english-distilroberta-base"
+                    model="j-hartmann/emotion-english-distilroberta-base",
                 )
                 self.topic_classifier = pipeline(
-                    "zero-shot-classification",
-                    model="facebook/bart-large-mnli"
+                    "zero-shot-classification", model="facebook/bart-large-mnli"
                 )
 
             self.logger.info("✅ NLP models initialized successfully")
@@ -184,12 +196,12 @@ class AdvancedProgressAnalyzer:
 
         try:
             # Initialize OpenAI client
-            openai_key = self.config.get('openai_api_key')
+            openai_key = self.config.get("openai_api_key")
             if openai_key:
                 self.openai_client = openai.OpenAI(api_key=openai_key)
 
             # Initialize Anthropic client
-            anthropic_key = self.config.get('anthropic_api_key')
+            anthropic_key = self.config.get("anthropic_api_key")
             if anthropic_key:
                 self.anthropic_client = Anthropic(api_key=anthropic_key)
 
@@ -226,7 +238,6 @@ class AdvancedProgressAnalyzer:
                 الخطوة 5: توليد التوصيات المخصصة
                 بناءً على التحليل أعلاه، قدم 3 توصيات مخصصة للوالدين:
             """,
-
             "recommendation_generation": """
                 توليد توصية مخصصة للطفل:
                 
@@ -254,23 +265,27 @@ class AdvancedProgressAnalyzer:
                 {success_criteria}
                 
                 التوصية النهائية:
-            """
+            """,
         }
 
-    async def _get_interactions_for_period(self, child_id: int, period_days: int) -> List[Dict]:
+    async def _get_interactions_for_period(
+        self, child_id: int, period_days: int
+    ) -> List[Dict]:
         """Fetches interactions for a given child over a specified period."""
         end_date = datetime.now()
         start_date = end_date - timedelta(days=period_days)
         return await self._get_interactions_with_text(child_id, start_date, end_date)
 
-    async def _run_analyses_in_parallel(self, conversation_texts: List[str], interactions: List[Dict]) -> Dict[str, Any]:
+    async def _run_analyses_in_parallel(
+        self, conversation_texts: List[str], interactions: List[Dict]
+    ) -> Dict[str, Any]:
         """Runs all NLP analyses in parallel for efficiency."""
         results = await asyncio.gather(
             self._analyze_vocabulary_development(conversation_texts),
             self._analyze_emotional_intelligence(conversation_texts),
             self._analyze_cognitive_development(conversation_texts),
             self._analyze_social_skills(conversation_texts),
-            self._analyze_behavioral_patterns(interactions)
+            self._analyze_behavioral_patterns(interactions),
         )
         return {
             "vocabulary": results[0],
@@ -280,7 +295,9 @@ class AdvancedProgressAnalyzer:
             "behavioral": results[4],
         }
 
-    def _aggregate_analysis_results(self, child_id: int, analyses: Dict[str, Any]) -> ProgressMetrics:
+    def _aggregate_analysis_results(
+        self, child_id: int, analyses: Dict[str, Any]
+    ) -> ProgressMetrics:
         """Aggregates results from all analyses into a ProgressMetrics object."""
         concerns = self._identify_developmental_concerns(
             analyses["vocabulary"], analyses["emotional"], analyses["cognitive"]
@@ -288,33 +305,35 @@ class AdvancedProgressAnalyzer:
         return ProgressMetrics(
             child_id=child_id,
             analysis_date=datetime.now(),
-            total_unique_words=analyses["vocabulary"]['unique_words'],
-            new_words_this_period=analyses["vocabulary"]['new_words'],
-            vocabulary_complexity_score=analyses["vocabulary"]['complexity_score'],
-            reading_level_equivalent=analyses["vocabulary"]['reading_level'],
-            average_sentence_length=analyses["vocabulary"]['avg_sentence_length'],
-            grammar_accuracy_score=analyses["vocabulary"]['grammar_score'],
-            question_sophistication_level=analyses["vocabulary"]['question_level'],
-            conversation_coherence_score=analyses["vocabulary"]['coherence_score'],
-            emotion_vocabulary_richness=analyses["emotional"]['emotion_vocab_size'],
-            empathy_expression_frequency=analyses["emotional"]['empathy_frequency'],
-            emotional_regulation_indicators=analyses["emotional"]['regulation_indicators'],
-            social_awareness_metrics=analyses["emotional"]['social_awareness'],
-            abstract_thinking_indicators=analyses["cognitive"]['abstract_thinking'],
-            problem_solving_approaches=analyses["cognitive"]['problem_solving'],
-            creativity_markers=analyses["cognitive"]['creativity_markers'],
-            attention_span_trends=analyses["behavioral"]['attention_trends'],
-            preferred_learning_styles=analyses["cognitive"]['learning_styles'],
-            knowledge_retention_rate=analyses["cognitive"]['retention_rate'],
-            curiosity_indicators=analyses["cognitive"]['curiosity_indicators'],
-            learning_velocity=analyses["vocabulary"]['learning_velocity'],
-            initiative_taking_frequency=analyses["behavioral"]['initiative_frequency'],
-            cooperation_patterns=analyses["social"]['cooperation_patterns'],
-            conflict_resolution_skills=analyses["social"]['conflict_resolution'],
-            independence_level=analyses["behavioral"]['independence_level'],
-            developmental_concerns=concerns['concerns'],
-            intervention_recommendations=concerns['interventions'],
-            urgency_level=concerns['urgency_level']
+            total_unique_words=analyses["vocabulary"]["unique_words"],
+            new_words_this_period=analyses["vocabulary"]["new_words"],
+            vocabulary_complexity_score=analyses["vocabulary"]["complexity_score"],
+            reading_level_equivalent=analyses["vocabulary"]["reading_level"],
+            average_sentence_length=analyses["vocabulary"]["avg_sentence_length"],
+            grammar_accuracy_score=analyses["vocabulary"]["grammar_score"],
+            question_sophistication_level=analyses["vocabulary"]["question_level"],
+            conversation_coherence_score=analyses["vocabulary"]["coherence_score"],
+            emotion_vocabulary_richness=analyses["emotional"]["emotion_vocab_size"],
+            empathy_expression_frequency=analyses["emotional"]["empathy_frequency"],
+            emotional_regulation_indicators=analyses["emotional"][
+                "regulation_indicators"
+            ],
+            social_awareness_metrics=analyses["emotional"]["social_awareness"],
+            abstract_thinking_indicators=analyses["cognitive"]["abstract_thinking"],
+            problem_solving_approaches=analyses["cognitive"]["problem_solving"],
+            creativity_markers=analyses["cognitive"]["creativity_markers"],
+            attention_span_trends=analyses["behavioral"]["attention_trends"],
+            preferred_learning_styles=analyses["cognitive"]["learning_styles"],
+            knowledge_retention_rate=analyses["cognitive"]["retention_rate"],
+            curiosity_indicators=analyses["cognitive"]["curiosity_indicators"],
+            learning_velocity=analyses["vocabulary"]["learning_velocity"],
+            initiative_taking_frequency=analyses["behavioral"]["initiative_frequency"],
+            cooperation_patterns=analyses["social"]["cooperation_patterns"],
+            conflict_resolution_skills=analyses["social"]["conflict_resolution"],
+            independence_level=analyses["behavioral"]["independence_level"],
+            developmental_concerns=concerns["concerns"],
+            intervention_recommendations=concerns["interventions"],
+            urgency_level=concerns["urgency_level"],
         )
 
     async def _fetch_child_data(self, child_id: int) -> Dict[str, Any]:
@@ -323,29 +342,38 @@ class AdvancedProgressAnalyzer:
         # This is a placeholder. In a real implementation, this would query the database.
         return {"id": child_id, "name": "Test Child", "age": 5}
 
-    async def _fetch_interaction_data(self, child_id: int, period_days: int) -> List[Dict]:
+    async def _fetch_interaction_data(
+        self, child_id: int, period_days: int
+    ) -> List[Dict]:
         """Fetches interaction data for a given period."""
-        self.logger.info(
-            f"Fetching interactions for the last {period_days} days.")
+        self.logger.info(f"Fetching interactions for the last {period_days} days.")
         return await self._get_interactions_for_period(child_id, period_days)
 
-    async def _process_and_analyze_data(self, child_id: int, interactions: List[Dict]) -> ProgressMetrics:
+    async def _process_and_analyze_data(
+        self, child_id: int, interactions: List[Dict]
+    ) -> ProgressMetrics:
         """Processes interactions and runs various analyses."""
         if not interactions:
             self.logger.warning(
-                f"No interactions found for child {child_id}. Returning empty metrics.")
+                f"No interactions found for child {child_id}. Returning empty metrics."
+            )
             return self._create_empty_metrics(child_id)
 
         conversation_texts = self._extract_conversation_texts(interactions)
-        analysis_results = await self._run_analyses_in_parallel(conversation_texts, interactions)
+        analysis_results = await self._run_analyses_in_parallel(
+            conversation_texts, interactions
+        )
         return self._aggregate_analysis_results(child_id, analysis_results)
 
-    async def _generate_and_store_report(self, metrics: ProgressMetrics, child_info: Dict[str, Any]) -> str:
+    async def _generate_and_store_report(
+        self, metrics: ProgressMetrics, child_info: Dict[str, Any]
+    ) -> str:
         """Generates recommendations and stores the final report."""
         recommendations = await self.generate_llm_recommendations(metrics, child_info)
         report_id = await self.store_analysis_results(metrics, recommendations)
         self.logger.info(
-            f"✅ Analysis complete for child {metrics.child_id}. Report ID: {report_id}")
+            f"✅ Analysis complete for child {metrics.child_id}. Report ID: {report_id}"
+        )
         return report_id
 
     async def analyze_progress(self, child_id: int, period_days: int = 7) -> str:
@@ -361,7 +389,8 @@ class AdvancedProgressAnalyzer:
             The ID of the stored analysis report.
         """
         self.logger.info(
-            f"Starting progress analysis for child_id: {child_id} over {period_days} days.")
+            f"Starting progress analysis for child_id: {child_id} over {period_days} days."
+        )
 
         child_info = await self._fetch_child_data(child_id)
         interactions = await self._fetch_interaction_data(child_id, period_days)
@@ -381,46 +410,65 @@ class AdvancedProgressAnalyzer:
         doc = self.nlp_en(all_text)
 
         # Extract words and analyze complexity
-        words = [token.lemma_.lower()
-                 for token in doc if token.is_alpha and not token.is_stop]
+        words = [
+            token.lemma_.lower()
+            for token in doc
+            if token.is_alpha and not token.is_stop
+        ]
         unique_words = list(set(words))
 
         # Calculate vocabulary complexity
         complexity_indicators = {
-            'avg_word_length': sum(len(word) for word in unique_words) / len(unique_words) if unique_words else 0,
-            'rare_words_count': len([w for w in unique_words if len(w) > 6]),
-            'abstract_concepts': len([token for token in doc if token.pos_ in ['NOUN', 'ADJ'] and len(token.lemma_) > 5])
+            "avg_word_length": (
+                sum(len(word) for word in unique_words) / len(unique_words)
+                if unique_words
+                else 0
+            ),
+            "rare_words_count": len([w for w in unique_words if len(w) > 6]),
+            "abstract_concepts": len(
+                [
+                    token
+                    for token in doc
+                    if token.pos_ in ["NOUN", "ADJ"] and len(token.lemma_) > 5
+                ]
+            ),
         }
 
-        complexity_score = min(1.0, (
-            complexity_indicators['avg_word_length'] / 8 +
-            complexity_indicators['rare_words_count'] / 20 +
-            complexity_indicators['abstract_concepts'] / 15
-        ) / 3)
+        complexity_score = min(
+            1.0,
+            (
+                complexity_indicators["avg_word_length"] / 8
+                + complexity_indicators["rare_words_count"] / 20
+                + complexity_indicators["abstract_concepts"] / 15
+            )
+            / 3,
+        )
 
         # Analyze sentence structure
         sentences = list(doc.sents)
-        avg_sentence_length = sum(
-            len(sent) for sent in sentences) / len(sentences) if sentences else 0
+        avg_sentence_length = (
+            sum(len(sent) for sent in sentences) / len(sentences) if sentences else 0
+        )
 
         # Estimate reading level
         reading_level = self._estimate_reading_level(
-            complexity_score, avg_sentence_length)
+            complexity_score, avg_sentence_length
+        )
 
         # Detect new words (simplified - in real implementation, compare with historical data)
         # Last 10 words as "new"
-        new_words = unique_words[-min(10, len(unique_words)):]
+        new_words = unique_words[-min(10, len(unique_words)) :]
 
         return {
-            'unique_words': len(unique_words),
-            'new_words': new_words,
-            'complexity_score': complexity_score,
-            'reading_level': reading_level,
-            'avg_sentence_length': avg_sentence_length,
-            'grammar_score': self._estimate_grammar_accuracy(doc),
-            'question_level': self._analyze_question_sophistication(texts),
-            'coherence_score': self._calculate_coherence_score(doc),
-            'learning_velocity': len(new_words) / 7  # per day
+            "unique_words": len(unique_words),
+            "new_words": new_words,
+            "complexity_score": complexity_score,
+            "reading_level": reading_level,
+            "avg_sentence_length": avg_sentence_length,
+            "grammar_score": self._estimate_grammar_accuracy(doc),
+            "question_level": self._analyze_question_sophistication(texts),
+            "coherence_score": self._calculate_coherence_score(doc),
+            "learning_velocity": len(new_words) / 7,  # per day
         }
 
     async def _analyze_emotional_intelligence(self, texts: List[str]) -> Dict[str, Any]:
@@ -441,10 +489,10 @@ class AdvancedProgressAnalyzer:
         social_awareness = self._assess_social_awareness(texts)
 
         return {
-            'emotion_vocab_size': len(emotion_words),
-            'empathy_frequency': len(empathy_indicators) / len(texts) if texts else 0,
-            'regulation_indicators': regulation_indicators,
-            'social_awareness': social_awareness
+            "emotion_vocab_size": len(emotion_words),
+            "empathy_frequency": len(empathy_indicators) / len(texts) if texts else 0,
+            "regulation_indicators": regulation_indicators,
+            "social_awareness": social_awareness,
         }
 
     async def _analyze_cognitive_development(self, texts: List[str]) -> Dict[str, Any]:
@@ -465,12 +513,12 @@ class AdvancedProgressAnalyzer:
         learning_styles = self._infer_learning_styles(texts)
 
         return {
-            'abstract_thinking': len(abstract_thinking),
-            'problem_solving': problem_solving,
-            'creativity_markers': creativity_markers,
-            'learning_styles': learning_styles,
-            'retention_rate': 0.85,  # Placeholder - would calculate from historical data
-            'curiosity_indicators': self._identify_curiosity_markers(texts)
+            "abstract_thinking": len(abstract_thinking),
+            "problem_solving": problem_solving,
+            "creativity_markers": creativity_markers,
+            "learning_styles": learning_styles,
+            "retention_rate": 0.85,  # Placeholder - would calculate from historical data
+            "curiosity_indicators": self._identify_curiosity_markers(texts),
         }
 
     async def _analyze_social_skills(self, texts: List[str]) -> Dict[str, Any]:
@@ -479,26 +527,26 @@ class AdvancedProgressAnalyzer:
         conflict_resolution = self._identify_conflict_resolution_skills(texts)
 
         return {
-            'cooperation_patterns': cooperation_patterns,
-            'conflict_resolution': conflict_resolution
+            "cooperation_patterns": cooperation_patterns,
+            "conflict_resolution": conflict_resolution,
         }
 
-    async def _analyze_behavioral_patterns(self, interactions: List[Dict]) -> Dict[str, Any]:
+    async def _analyze_behavioral_patterns(
+        self, interactions: List[Dict]
+    ) -> Dict[str, Any]:
         """Analyze behavioral patterns from interaction data"""
         attention_trends = self._calculate_attention_trends(interactions)
         initiative_frequency = self._count_initiative_indicators(interactions)
         independence_level = self._assess_independence_level(interactions)
 
         return {
-            'attention_trends': attention_trends,
-            'initiative_frequency': initiative_frequency,
-            'independence_level': independence_level
+            "attention_trends": attention_trends,
+            "initiative_frequency": initiative_frequency,
+            "independence_level": independence_level,
         }
 
     async def generate_llm_recommendations(
-        self,
-        metrics: ProgressMetrics,
-        child_info: Dict[str, Any]
+        self, metrics: ProgressMetrics, child_info: Dict[str, Any]
     ) -> List[LLMRecommendation]:
         """
         Generate personalized recommendations using LLM with Chain-of-Thought prompting
@@ -507,7 +555,8 @@ class AdvancedProgressAnalyzer:
             return self._generate_fallback_recommendations(metrics)
 
         self.logger.info(
-            "🤖 Generating LLM recommendations with Chain-of-Thought prompting")
+            "🤖 Generating LLM recommendations with Chain-of-Thought prompting"
+        )
 
         recommendations = []
 
@@ -522,16 +571,12 @@ class AdvancedProgressAnalyzer:
                 if recommendation:
                     recommendations.append(recommendation)
             except Exception as e:
-                self.logger.error(
-                    f"Failed to generate {category} recommendation: {e}")
+                self.logger.error(f"Failed to generate {category} recommendation: {e}")
 
         return recommendations[:3]  # Return top 3 recommendations
 
     async def _generate_category_recommendation(
-        self,
-        category: str,
-        metrics: ProgressMetrics,
-        child_info: Dict[str, Any]
+        self, category: str, metrics: ProgressMetrics, child_info: Dict[str, Any]
     ) -> Optional[LLMRecommendation]:
         """Generate a single category recommendation using Chain-of-Thought"""
 
@@ -564,12 +609,12 @@ class AdvancedProgressAnalyzer:
         استخدم منهجية التفكير خطوة بخطوة (Chain-of-Thought) للوصول لأفضل توصية.
         
         بيانات الطفل:
-        - الاسم: {context['child_name']}
-        - العمر: {context['age']} سنوات
+        - الاسم: {context["child_name"]}
+        - العمر: {context["age"]} سنوات
         - المجال المطلوب: {category}
         
         المقاييس الحالية:
-        {self._format_metrics_for_prompt(category, context['metrics'])}
+        {self._format_metrics_for_prompt(category, context["metrics"])}
         
         التفكير خطوة بخطوة:
         
@@ -577,7 +622,7 @@ class AdvancedProgressAnalyzer:
         قم بتحليل نقاط القوة والضعف في مجال {category} بناءً على البيانات أعلاه.
         
         الخطوة 2: تحديد الهدف المناسب للعمر
-        ما هو الهدف التطويري المناسب لطفل عمره {context['age']} سنوات في مجال {category}؟
+        ما هو الهدف التطويري المناسب لطفل عمره {context["age"]} سنوات في مجال {category}؟
         
         الخطوة 3: اختيار الاستراتيجية
         ما هي أفضل استراتيجية لتحقيق هذا الهدف مع مراعاة شخصية الطفل؟
@@ -604,7 +649,7 @@ class AdvancedProgressAnalyzer:
 
     async def _call_openai_with_cot(self, prompt: str) -> str:
         """Calls OpenAI with Chain-of-Thought prompt and returns the response."""
-        if not hasattr(self, 'openai_client'):
+        if not hasattr(self, "openai_client"):
             raise Exception("OpenAI client not initialized")
 
         response = await asyncio.to_thread(
@@ -613,32 +658,31 @@ class AdvancedProgressAnalyzer:
             messages=[
                 {
                     "role": "system",
-                    "content": "أنت خبير في تطوير الطفل. استخدم التفكير المنطقي خطوة بخطوة لتقديم توصيات مخصصة ومفيدة."
+                    "content": "أنت خبير في تطوير الطفل. استخدم التفكير المنطقي خطوة بخطوة لتقديم توصيات مخصصة ومفيدة.",
                 },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
+                {"role": "user", "content": prompt},
             ],
             max_tokens=1500,
             temperature=0.7,
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
         )
 
         return response.choices[0].message.content
 
-    def _parse_llm_recommendation(self, category: str, response: str) -> LLMRecommendation:
+    def _parse_llm_recommendation(
+        self, category: str, response: str
+    ) -> LLMRecommendation:
         """Parse LLM response into structured recommendation"""
         try:
             data = json.loads(response)
             return LLMRecommendation(
-                category=data.get('category', category),
-                recommendation=data.get('recommendation', ''),
-                reasoning=data.get('reasoning', ''),
-                expected_impact=data.get('expected_impact', ''),
-                implementation_steps=data.get('implementation_steps', []),
-                success_metrics=data.get('success_metrics', []),
-                priority_level=data.get('priority_level', 3)
+                category=data.get("category", category),
+                recommendation=data.get("recommendation", ""),
+                reasoning=data.get("reasoning", ""),
+                expected_impact=data.get("expected_impact", ""),
+                implementation_steps=data.get("implementation_steps", []),
+                success_metrics=data.get("success_metrics", []),
+                priority_level=data.get("priority_level", 3),
             )
         except json.JSONDecodeError:
             # Fallback parsing if JSON fails
@@ -649,25 +693,23 @@ class AdvancedProgressAnalyzer:
                 expected_impact="تحسين في المجال المحدد",
                 implementation_steps=["متابعة التطبيق", "قياس النتائج"],
                 success_metrics=["تحسن ملحوظ في التفاعل"],
-                priority_level=3
+                priority_level=3,
             )
 
     async def store_analysis_results(
-        self,
-        metrics: ProgressMetrics,
-        recommendations: List[LLMRecommendation]
+        self, metrics: ProgressMetrics, recommendations: List[LLMRecommendation]
     ) -> str:
         """Store analysis results in parent_reports table"""
         if not self.db:
             raise Exception("Database service not available")
 
         report_data = {
-            'child_id': metrics.child_id,
-            'generated_at': metrics.analysis_date.isoformat(),
-            'metrics': asdict(metrics),
-            'recommendations': [asdict(rec) for rec in recommendations],
-            'analysis_version': '2.0',
-            'llm_used': True
+            "child_id": metrics.child_id,
+            "generated_at": metrics.analysis_date.isoformat(),
+            "metrics": asdict(metrics),
+            "recommendations": [asdict(rec) for rec in recommendations],
+            "analysis_version": "2.0",
+            "llm_used": True,
         }
 
         try:
@@ -680,11 +722,11 @@ class AdvancedProgressAnalyzer:
                 """,
                 (
                     metrics.child_id,
-                    report_data['generated_at'],
-                    json.dumps(report_data['metrics']),
-                    json.dumps(report_data['recommendations']),
-                    report_data['analysis_version']
-                )
+                    report_data["generated_at"],
+                    json.dumps(report_data["metrics"]),
+                    json.dumps(report_data["recommendations"]),
+                    report_data["analysis_version"],
+                ),
             )
 
             self.logger.info(f"✅ Analysis results stored with ID: {report_id}")
@@ -700,11 +742,13 @@ class AdvancedProgressAnalyzer:
         """Extract text content from interactions"""
         texts = []
         for interaction in interactions:
-            if 'text' in interaction and interaction['text']:
-                texts.append(interaction['text'])
+            if "text" in interaction and interaction["text"]:
+                texts.append(interaction["text"])
         return texts
 
-    def _estimate_reading_level(self, complexity_score: float, avg_sentence_length: float) -> str:
+    def _estimate_reading_level(
+        self, complexity_score: float, avg_sentence_length: float
+    ) -> str:
         """Estimate reading level based on complexity"""
         if complexity_score < 0.3:
             return "مبتدئ"
@@ -716,35 +760,35 @@ class AdvancedProgressAnalyzer:
     def _empty_vocabulary_analysis(self) -> Dict[str, Any]:
         """Return empty vocabulary analysis"""
         return {
-            'unique_words': 0,
-            'new_words': [],
-            'complexity_score': 0.0,
-            'reading_level': 'غير محدد',
-            'avg_sentence_length': 0.0,
-            'grammar_score': 0.0,
-            'question_level': 1,
-            'coherence_score': 0.0,
-            'learning_velocity': 0.0
+            "unique_words": 0,
+            "new_words": [],
+            "complexity_score": 0.0,
+            "reading_level": "غير محدد",
+            "avg_sentence_length": 0.0,
+            "grammar_score": 0.0,
+            "question_level": 1,
+            "coherence_score": 0.0,
+            "learning_velocity": 0.0,
         }
 
     def _empty_emotional_analysis(self) -> Dict[str, Any]:
         """Return empty emotional analysis"""
         return {
-            'emotion_vocab_size': 0,
-            'empathy_frequency': 0.0,
-            'regulation_indicators': [],
-            'social_awareness': {}
+            "emotion_vocab_size": 0,
+            "empathy_frequency": 0.0,
+            "regulation_indicators": [],
+            "social_awareness": {},
         }
 
     def _empty_cognitive_analysis(self) -> Dict[str, Any]:
         """Return empty cognitive analysis"""
         return {
-            'abstract_thinking': 0,
-            'problem_solving': [],
-            'creativity_markers': [],
-            'learning_styles': [],
-            'retention_rate': 0.0,
-            'curiosity_indicators': []
+            "abstract_thinking": 0,
+            "problem_solving": [],
+            "creativity_markers": [],
+            "learning_styles": [],
+            "retention_rate": 0.0,
+            "curiosity_indicators": [],
         }
 
     def _create_empty_metrics(self, child_id: int) -> ProgressMetrics:
@@ -778,14 +822,11 @@ class AdvancedProgressAnalyzer:
             independence_level=0.0,
             developmental_concerns=["عدم توفر بيانات كافية للتحليل"],
             intervention_recommendations=["زيادة التفاعل مع النظام"],
-            urgency_level=0
+            urgency_level=0,
         )
 
     async def _get_interactions_with_text(
-        self,
-        child_id: int,
-        start_date: datetime,
-        end_date: datetime
+        self, child_id: int, start_date: datetime, end_date: datetime
     ) -> List[Dict]:
         """Get interactions with text content for analysis"""
         if not self.db:
@@ -798,7 +839,7 @@ class AdvancedProgressAnalyzer:
                 WHERE child_id = ? AND created_at BETWEEN ? AND ?
                 ORDER BY created_at DESC
                 """,
-                (child_id, start_date.isoformat(), end_date.isoformat())
+                (child_id, start_date.isoformat(), end_date.isoformat()),
             )
             return [dict(row) for row in interactions]
         except Exception as e:
@@ -810,8 +851,7 @@ class AdvancedProgressAnalyzer:
 
     def _extract_emotion_words(self, texts: List[str]) -> List[str]:
         """Extract emotion-related words from texts"""
-        emotion_keywords = ['سعيد', 'حزين', 'غاضب',
-                            'خائف', 'متحمس', 'قلق', 'مرتاح']
+        emotion_keywords = ["سعيد", "حزين", "غاضب", "خائف", "متحمس", "قلق", "مرتاح"]
         found_emotions = []
         for text in texts:
             for emotion in emotion_keywords:
@@ -821,7 +861,7 @@ class AdvancedProgressAnalyzer:
 
     def _detect_empathy_expressions(self, texts: List[str]) -> List[str]:
         """Detect empathy expressions in text"""
-        empathy_patterns = ['أشعر بـ', 'أفهم', 'أتفهم', 'أحس']
+        empathy_patterns = ["أشعر بـ", "أفهم", "أتفهم", "أحس"]
         expressions = []
         for text in texts:
             for pattern in empathy_patterns:
@@ -831,8 +871,7 @@ class AdvancedProgressAnalyzer:
 
     def _extract_emotion_words(self, texts: List[str]) -> List[str]:
         """Extract emotion-related words from texts"""
-        emotion_keywords = ['سعيد', 'حزين', 'غاضب',
-                            'خائف', 'متحمس', 'قلق', 'مرتاح']
+        emotion_keywords = ["سعيد", "حزين", "غاضب", "خائف", "متحمس", "قلق", "مرتاح"]
         found_emotions = []
         for text in texts:
             for emotion in emotion_keywords:
@@ -842,7 +881,7 @@ class AdvancedProgressAnalyzer:
 
     def _detect_empathy_expressions(self, texts: List[str]) -> List[str]:
         """Detect empathy expressions in text"""
-        empathy_patterns = ['أشعر بـ', 'أفهم', 'أتفهم', 'أحس']
+        empathy_patterns = ["أشعر بـ", "أفهم", "أتفهم", "أحس"]
         expressions = []
         for text in texts:
             for pattern in empathy_patterns:

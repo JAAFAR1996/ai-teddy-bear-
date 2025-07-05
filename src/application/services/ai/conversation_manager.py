@@ -106,28 +106,40 @@ class ConversationManager(ServiceBase):
         self._update_context_metadata(context, emotion, topic)
 
         # Persist all updates
-        await self._persist_conversation_updates(context, session_id, user_message, ai_response, emotion, topic)
+        await self._persist_conversation_updates(
+            context, session_id, user_message, ai_response, emotion, topic
+        )
 
-    def _update_conversation_history(self, context: ConversationContext, user_message: str, ai_response: str) -> None:
+    def _update_conversation_history(
+        self, context: ConversationContext, user_message: str, ai_response: str
+    ) -> None:
         """Update conversation history with new messages"""
         # Add to history
-        context.conversation_history.append({
-            "role": "user",
-            "content": user_message,
-            "timestamp": datetime.utcnow().isoformat(),
-        })
+        context.conversation_history.append(
+            {
+                "role": "user",
+                "content": user_message,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        )
 
-        context.conversation_history.append({
-            "role": "assistant",
-            "content": ai_response,
-            "timestamp": datetime.utcnow().isoformat(),
-        })
+        context.conversation_history.append(
+            {
+                "role": "assistant",
+                "content": ai_response,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        )
 
         # Trim history if too long
         if len(context.conversation_history) > self._max_history_length:
-            context.conversation_history = context.conversation_history[-self._max_history_length:]
+            context.conversation_history = context.conversation_history[
+                -self._max_history_length :
+            ]
 
-    def _update_context_metadata(self, context: ConversationContext, emotion: Optional[str], topic: Optional[str]) -> None:
+    def _update_context_metadata(
+        self, context: ConversationContext, emotion: Optional[str], topic: Optional[str]
+    ) -> None:
         """Update context metadata including mood, topic, and interaction count"""
         # Update mood history
         if emotion:
@@ -145,8 +157,13 @@ class ConversationManager(ServiceBase):
         context.interaction_count += 1
 
     async def _persist_conversation_updates(
-        self, context: ConversationContext, session_id: str, user_message: str,
-        ai_response: str, emotion: Optional[str], topic: Optional[str]
+        self,
+        context: ConversationContext,
+        session_id: str,
+        user_message: str,
+        ai_response: str,
+        emotion: Optional[str],
+        topic: Optional[str],
     ) -> None:
         """Persist conversation updates to session manager and memory service"""
         # Save to session

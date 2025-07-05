@@ -7,6 +7,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import secrets
 import time
 from datetime import datetime
 from functools import lru_cache
@@ -14,16 +15,15 @@ from typing import Any, Dict, List, Optional
 
 from openai import APIError, APITimeoutError, AsyncOpenAI, RateLimitError
 from openai.types.chat import ChatCompletion
-import secrets
 
-from src.application.services.ai.analyzers.emotion_analyzer_service import \
-    EmotionAnalyzerService
-from src.application.services.ai.fallback_response_service import \
-    FallbackResponseService
-from src.application.services.ai.core import \
-    IAIService
-from src.application.services.ai.models.ai_response_models import \
-    AIResponseModel
+from src.application.services.ai.analyzers.emotion_analyzer_service import (
+    EmotionAnalyzerService,
+)
+from src.application.services.ai.core import IAIService
+from src.application.services.ai.fallback_response_service import (
+    FallbackResponseService,
+)
+from src.application.services.ai.models.ai_response_models import AIResponseModel
 from src.core.domain.entities.child import Child
 from src.infrastructure.caching.simple_cache_service import CacheService
 from src.infrastructure.config import Settings
@@ -49,14 +49,16 @@ class ModernOpenAIService(IAIService):
         fallback_service: FallbackResponseService,
     ):
         self._initialize_services(
-            settings, cache_service, emotion_analyzer, fallback_service)
+            settings, cache_service, emotion_analyzer, fallback_service
+        )
         self._initialize_caching()
         self._initialize_performance_tracking()
         self._initialize_client()
-        logger.info(
-            "✅ Modern OpenAI Service initialized with enhanced features")
+        logger.info("✅ Modern OpenAI Service initialized with enhanced features")
 
-    def _initialize_services(self, settings, cache_service, emotion_analyzer, fallback_service):
+    def _initialize_services(
+        self, settings, cache_service, emotion_analyzer, fallback_service
+    ):
         """Initializes service dependencies."""
         self.settings = settings
         self.cache = cache_service
@@ -87,8 +89,7 @@ class ModernOpenAIService(IAIService):
                 logger.error("🚫 OpenAI API key not configured")
                 raise ValueError("OpenAI API key is required for AI service")
 
-            self.client = AsyncOpenAI(
-                api_key=api_key, timeout=30.0, max_retries=3)
+            self.client = AsyncOpenAI(api_key=api_key, timeout=30.0, max_retries=3)
             logger.info("✅ OpenAI client initialized successfully")
 
         except Exception as e:
@@ -119,8 +120,7 @@ class ModernOpenAIService(IAIService):
             else:
                 # Remove expired entry
                 del self.memory_cache[cache_key]
-                logger.debug(
-                    f"🧹 Expired cache entry removed: {cache_key[:8]}...")
+                logger.debug(f"🧹 Expired cache entry removed: {cache_key[:8]}...")
 
         return None
 
@@ -156,9 +156,11 @@ class ModernOpenAIService(IAIService):
 
         try:
             # Prepare request context and check cache
-            session_id, cache_key, cached_response = await self._prepare_request_context(
-                message, child, session_id, context
-            )
+            (
+                session_id,
+                cache_key,
+                cached_response,
+            ) = await self._prepare_request_context(message, child, session_id, context)
 
             if cached_response:
                 return cached_response
@@ -172,7 +174,11 @@ class ModernOpenAIService(IAIService):
             return await self._handle_api_errors(e, message, child, session_id)
 
     async def _prepare_request_context(
-        self, message: str, child: Child, session_id: Optional[str], context: Optional[Dict[str, Any]]
+        self,
+        message: str,
+        child: Child,
+        session_id: Optional[str],
+        context: Optional[Dict[str, Any]],
     ) -> tuple[str, str, Optional[AIResponseModel]]:
         """Prepare request context and check for cached responses"""
         # Generate session ID if not provided
@@ -209,13 +215,17 @@ class ModernOpenAIService(IAIService):
         return session_id, cache_key, None
 
     async def _process_with_openai(
-        self, message: str, child: Child, session_id: str,
-        context: Optional[Dict[str, Any]], cache_key: str, start_time: datetime
+        self,
+        message: str,
+        child: Child,
+        session_id: str,
+        context: Optional[Dict[str, Any]],
+        cache_key: str,
+        start_time: datetime,
     ) -> AIResponseModel:
         """Process message with OpenAI API and create response"""
         # Start parallel tasks
-        emotion_task = asyncio.create_task(
-            self._enhanced_emotion_analysis(message))
+        emotion_task = asyncio.create_task(self._enhanced_emotion_analysis(message))
         category_task = asyncio.create_task(self.categorize_message(message))
 
         # Get conversation history and build system prompt
@@ -233,13 +243,26 @@ class ModernOpenAIService(IAIService):
 
         # Create and cache response
         return await self._create_response_model(
-            response, message, emotion_task, category_task,
-            session_id, device_id, cache_key, start_time
+            response,
+            message,
+            emotion_task,
+            category_task,
+            session_id,
+            device_id,
+            cache_key,
+            start_time,
         )
 
     async def _create_response_model(
-        self, response, message: str, emotion_task, category_task,
-        session_id: str, device_id: str, cache_key: str, start_time: datetime
+        self,
+        response,
+        message: str,
+        emotion_task,
+        category_task,
+        session_id: str,
+        device_id: str,
+        cache_key: str,
+        start_time: datetime,
     ) -> AIResponseModel:
         """Create the final AI response model with all metadata"""
         # Extract response data
@@ -250,8 +273,7 @@ class ModernOpenAIService(IAIService):
         learning_points = await self._extract_learning_points(message, response_text)
 
         # Calculate processing time
-        processing_time = int(
-            (datetime.utcnow() - start_time).total_seconds() * 1000)
+        processing_time = int((datetime.utcnow() - start_time).total_seconds() * 1000)
         self.total_processing_time += processing_time
 
         # Create enhanced response model
@@ -285,7 +307,8 @@ class ModernOpenAIService(IAIService):
         )
 
         logger.info(
-            f"✅ AI response generated in {processing_time}ms (model: {response.model})")
+            f"✅ AI response generated in {processing_time}ms (model: {response.model})"
+        )
         return ai_response
 
     async def _handle_api_errors(
@@ -294,8 +317,7 @@ class ModernOpenAIService(IAIService):
         """Handle different types of API errors with appropriate fallbacks"""
         if isinstance(error, RateLimitError):
             self.rate_limit_count += 1
-            logger.warning(
-                f"⚠️ OpenAI rate limit hit (#{self.rate_limit_count})")
+            logger.warning(f"⚠️ OpenAI rate limit hit (#{self.rate_limit_count})")
             return await self.fallback_service.create_rate_limit_fallback(
                 message, child, session_id
             )
@@ -313,8 +335,7 @@ class ModernOpenAIService(IAIService):
             )
         else:
             self.error_count += 1
-            logger.error(
-                f"💥 Unexpected AI service error: {str(error)}", exc_info=True)
+            logger.error(f"💥 Unexpected AI service error: {str(error)}", exc_info=True)
             return await self.fallback_service.create_generic_fallback(
                 message, child, session_id, str(error)
             )
@@ -330,7 +351,7 @@ class ModernOpenAIService(IAIService):
         messages = [{"role": "system", "content": system_prompt}]
 
         # Add conversation history
-        messages.extend(history[-self.max_history_length:])
+        messages.extend(history[-self.max_history_length :])
 
         # Add emotion context to message
         enhanced_message = (
@@ -362,8 +383,7 @@ class ModernOpenAIService(IAIService):
             return emotion_result.primary_emotion
 
         except Exception as e:
-            logger.warning(
-                f"⚠️ Emotion analyzer failed, using fallback: {str(e)}")
+            logger.warning(f"⚠️ Emotion analyzer failed, using fallback: {str(e)}")
             return self._basic_emotion_detection(message)
 
     def _basic_emotion_detection(self, message: str) -> str:
@@ -419,8 +439,8 @@ class ModernOpenAIService(IAIService):
 معلومات الطفل:
 - الاسم: {child.name}
 - العمر: {child.age} سنوات
-- مستوى التعلم: {getattr(child, 'learning_level', 'متوسط')}
-- الجهاز: {getattr(child, 'device_id', 'غير محدد')}
+- مستوى التعلم: {getattr(child, "learning_level", "متوسط")}
+- الجهاز: {getattr(child, "device_id", "غير محدد")}
 
 شخصيتك المحدثة 2025:
 - محبوب وودود ومرح وذكي
@@ -537,7 +557,7 @@ class ModernOpenAIService(IAIService):
         # Keep only recent history
         if len(history) > self.max_history_length * 2:
             self.conversation_history[device_id] = history[
-                -self.max_history_length * 2:
+                -self.max_history_length * 2 :
             ]
 
     def _get_conversation_history(self, device_id: str) -> List[Dict]:

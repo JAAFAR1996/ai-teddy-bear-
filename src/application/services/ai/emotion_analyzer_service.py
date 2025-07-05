@@ -7,12 +7,11 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.application.services.ai.emotion_analyzer_service import \
-    EmotionAnalyzer as DomainEmotionAnalyzer
-from src.application.services.ai.core import \
-    IEmotionAnalyzer
-from src.application.services.ai.models.ai_response_models import \
-    EmotionAnalysis
+from src.application.services.ai.core import IEmotionAnalyzer
+from src.application.services.ai.emotion_analyzer_service import (
+    EmotionAnalyzer as DomainEmotionAnalyzer,
+)
+from src.application.services.ai.models.ai_response_models import EmotionAnalysis
 
 logger = logging.getLogger(__name__)
 
@@ -202,8 +201,7 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
                     score += data["weight"]
 
             # Apply contextual multipliers
-            score = self._apply_contextual_multipliers(
-                text_lower, emotion, score)
+            score = self._apply_contextual_multipliers(text_lower, emotion, score)
 
             if score > 0:
                 emotion_scores[emotion] = score
@@ -235,8 +233,7 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             multiplier *= 0.3
 
         # Intensifiers
-        intensifiers = ["جداً", "كثيراً", "very",
-                        "really", "extremely", "super"]
+        intensifiers = ["جداً", "كثيراً", "very", "really", "extremely", "super"]
         if any(intensifier in text for intensifier in intensifiers):
             multiplier *= 1.5
 
@@ -350,14 +347,14 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             1 for e in emotions[: len(emotions) // 2] if e in positive_emotions
         )
         late_positive = sum(
-            1 for e in emotions[len(emotions) // 2:] if e in positive_emotions
+            1 for e in emotions[len(emotions) // 2 :] if e in positive_emotions
         )
 
         early_negative = sum(
             1 for e in emotions[: len(emotions) // 2] if e in negative_emotions
         )
         late_negative = sum(
-            1 for e in emotions[len(emotions) // 2:] if e in negative_emotions
+            1 for e in emotions[len(emotions) // 2 :] if e in negative_emotions
         )
 
         return late_positive > early_positive or late_negative < early_negative
@@ -375,14 +372,14 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             1 for e in emotions[: len(emotions) // 2] if e in positive_emotions
         )
         late_positive = sum(
-            1 for e in emotions[len(emotions) // 2:] if e in positive_emotions
+            1 for e in emotions[len(emotions) // 2 :] if e in positive_emotions
         )
 
         early_negative = sum(
             1 for e in emotions[: len(emotions) // 2] if e in negative_emotions
         )
         late_negative = sum(
-            1 for e in emotions[len(emotions) // 2:] if e in negative_emotions
+            1 for e in emotions[len(emotions) // 2 :] if e in negative_emotions
         )
 
         return late_positive < early_positive or late_negative > early_negative

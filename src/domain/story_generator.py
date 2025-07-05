@@ -24,14 +24,16 @@ class PersonalizedStoryGenerator:
         openai.api_key = openai_key
         self.story_history = []
 
-    def _build_story_prompt(self, child_name: str, age: int, mood: str, interests: List[str], theme: str) -> str:
+    def _build_story_prompt(
+        self, child_name: str, age: int, mood: str, interests: List[str], theme: str
+    ) -> str:
         """Builds the prompt for the story generation API."""
         return f"""
         اكتب قصة {theme} للطفل {child_name} عمره {age} سنوات.
         
         معلومات عن الطفل:
         - المزاج الحالي: {mood}
-        - الاهتمامات: {', '.join(interests)}
+        - الاهتمامات: {", ".join(interests)}
         
         متطلبات القصة:
         1. {child_name} هو البطل الرئيسي
@@ -58,8 +60,7 @@ class PersonalizedStoryGenerator:
     ) -> Dict:
         """توليد قصة مخصصة للطفل"""
         length_tokens = {"short": 500, "medium": 800, "long": 1200}
-        prompt = self._build_story_prompt(
-            child_name, age, mood, interests, theme)
+        prompt = self._build_story_prompt(child_name, age, mood, interests, theme)
 
         messages = [
             {"role": "system", "content": "أنت راوي قصص محترف للأطفال"},

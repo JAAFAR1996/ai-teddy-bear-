@@ -12,9 +12,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from src.core.domain.entities.child import Child
-from src.infrastructure.persistence.base import (QueryOptions, SortOrder)
-from src.infrastructure.persistence.base_sqlite_repository import \
-    BaseSQLiteRepository
+from src.infrastructure.persistence.base import QueryOptions, SortOrder
+from src.infrastructure.persistence.base_sqlite_repository import BaseSQLiteRepository
 from src.infrastructure.persistence.child_repository import ChildRepository
 
 
@@ -27,13 +26,32 @@ class ChildSQLiteRepositoryRefactored(
     """
 
     _columns = [
-        'id', 'name', 'age', 'date_of_birth', 'gender', 'interests',
-        'personality_traits', 'learning_preferences', 'communication_style',
-        'max_daily_interaction_time', 'allowed_topics', 'restricted_topics',
-        'language_preference', 'cultural_background', 'parental_controls',
-        'emergency_contacts', 'medical_notes', 'educational_level',
-        'special_needs', 'created_at', 'updated_at', 'last_interaction',
-        'total_interaction_time', 'is_active', 'privacy_settings', 'custom_settings'
+        "id",
+        "name",
+        "age",
+        "date_of_birth",
+        "gender",
+        "interests",
+        "personality_traits",
+        "learning_preferences",
+        "communication_style",
+        "max_daily_interaction_time",
+        "allowed_topics",
+        "restricted_topics",
+        "language_preference",
+        "cultural_background",
+        "parental_controls",
+        "emergency_contacts",
+        "medical_notes",
+        "educational_level",
+        "special_needs",
+        "created_at",
+        "updated_at",
+        "last_interaction",
+        "total_interaction_time",
+        "is_active",
+        "privacy_settings",
+        "custom_settings",
     ]
 
     def __init__(
@@ -144,8 +162,7 @@ class ChildSQLiteRepositoryRefactored(
             if k in self._columns and k not in ("id", "created_at")
         }
         if not update_data:
-            self.logger.warning(
-                f"No valid fields to update for child {child.id}")
+            self.logger.warning(f"No valid fields to update for child {child.id}")
             return {}
 
         update_data["updated_at"] = datetime.now().isoformat()
@@ -202,13 +219,16 @@ class ChildSQLiteRepositoryRefactored(
                 raise ValueError(f"Invalid sort column: {options.sort_by}")
             order = (
                 "DESC"
-                if hasattr(options, "sort_order") and options.sort_order == SortOrder.DESC
+                if hasattr(options, "sort_order")
+                and options.sort_order == SortOrder.DESC
                 else "ASC"
             )
             sql += f" ORDER BY {options.sort_by} {order}"
         return sql
 
-    def _apply_pagination(self, sql: str, params: List, options: QueryOptions) -> (str, List):
+    def _apply_pagination(
+        self, sql: str, params: List, options: QueryOptions
+    ) -> (str, List):
         """Applies pagination (limit and offset) to the SQL query."""
         if hasattr(options, "limit") and options.limit:
             sql += " LIMIT ?"
@@ -294,9 +314,15 @@ class ChildSQLiteRepositoryRefactored(
     def _deserialize_json_fields(self, data: Dict[str, Any]):
         """Deserializes all JSON-encoded fields in the data dictionary."""
         json_fields = [
-            "interests", "personality_traits", "learning_preferences",
-            "allowed_topics", "restricted_topics", "parental_controls",
-            "emergency_contacts", "privacy_settings", "custom_settings",
+            "interests",
+            "personality_traits",
+            "learning_preferences",
+            "allowed_topics",
+            "restricted_topics",
+            "parental_controls",
+            "emergency_contacts",
+            "privacy_settings",
+            "custom_settings",
         ]
         for field in json_fields:
             if field in data and data[field]:
@@ -322,7 +348,8 @@ class ChildSQLiteRepositoryRefactored(
         if "date_of_birth" in data and data["date_of_birth"]:
             try:
                 data["date_of_birth"] = datetime.fromisoformat(
-                    data["date_of_birth"]).date()
+                    data["date_of_birth"]
+                ).date()
             except (ValueError, TypeError):
                 data["date_of_birth"] = None
 

@@ -162,8 +162,7 @@ class AdvancedBehavioralAnalyzer:
 
         # محاكاة تحليل التوقفات
         pause_frequency = random.uniform(0.1, 0.8)  # نسبة التوقفات
-        pause_duration_avg = random.uniform(
-            0.2, 2.0)  # متوسط مدة التوقف بالثواني
+        pause_duration_avg = random.uniform(0.2, 2.0)  # متوسط مدة التوقف بالثواني
 
         # محاكاة تحليل طبقة الصوت
         pitch_variation = random.uniform(0.1, 1.0)  # تنوع الطبقة
@@ -225,7 +224,9 @@ class AdvancedBehavioralAnalyzer:
         scores["text_length"] = word_count
         return scores
 
-    def _determine_emotional_tone(self, voice_features: Dict, text_analysis: Dict) -> str:
+    def _determine_emotional_tone(
+        self, voice_features: Dict, text_analysis: Dict
+    ) -> str:
         """Determines the emotional tone from combined analysis."""
         if text_analysis["anxiety_score"] > 0.3:
             return "قلق"
@@ -237,7 +238,9 @@ class AdvancedBehavioralAnalyzer:
             return "متحمس"
         return "عادي"
 
-    def _detect_voice_patterns(self, combined_confidence: float, text_analysis: Dict, voice_features: Dict) -> List[VoicePattern]:
+    def _detect_voice_patterns(
+        self, combined_confidence: float, text_analysis: Dict, voice_features: Dict
+    ) -> List[VoicePattern]:
         """Detects voice patterns from combined analysis."""
         patterns = []
         if combined_confidence < 0.4:
@@ -264,16 +267,16 @@ class AdvancedBehavioralAnalyzer:
             + (1.0 - voice_features["volume_consistency"]) * 0.3
         )
         text_confidence = (
-            text_analysis["confidence_score"] -
-            text_analysis["hesitation_score"]
+            text_analysis["confidence_score"] - text_analysis["hesitation_score"]
         )
         combined_confidence = max(
-            0.0, min(1.0, voice_confidence * 0.6 + text_confidence * 0.4))
+            0.0, min(1.0, voice_confidence * 0.6 + text_confidence * 0.4)
+        )
 
-        emotional_tone = self._determine_emotional_tone(
-            voice_features, text_analysis)
+        emotional_tone = self._determine_emotional_tone(voice_features, text_analysis)
         detected_patterns = self._detect_voice_patterns(
-            combined_confidence, text_analysis, voice_features)
+            combined_confidence, text_analysis, voice_features
+        )
 
         return {
             "confidence_score": combined_confidence,
@@ -302,7 +305,9 @@ class AdvancedBehavioralAnalyzer:
 
         return analysis
 
-    def _get_or_create_profile(self, child_name: str, device_id: str) -> PsychologicalProfile:
+    def _get_or_create_profile(
+        self, child_name: str, device_id: str
+    ) -> PsychologicalProfile:
         """Gets an existing psychological profile or creates a new one."""
         profile_key = f"{device_id}_{child_name}"
         if profile_key not in self.psychological_profiles:
@@ -320,25 +325,39 @@ class AdvancedBehavioralAnalyzer:
             )
         return self.psychological_profiles[profile_key]
 
-    def _update_profile_trends(self, profile: PsychologicalProfile, voice_analysis: VoiceAnalysis):
+    def _update_profile_trends(
+        self, profile: PsychologicalProfile, voice_analysis: VoiceAnalysis
+    ):
         """Updates the confidence and emotional pattern trends for a profile."""
         profile.confidence_trend.append(voice_analysis.confidence_score)
         if len(profile.confidence_trend) > 20:
             profile.confidence_trend.pop(0)
 
         emotional_tone = voice_analysis.emotional_tone
-        profile.emotional_patterns.setdefault(
-            emotional_tone, []).append(voice_analysis.confidence_score)
+        profile.emotional_patterns.setdefault(emotional_tone, []).append(
+            voice_analysis.confidence_score
+        )
 
-    def _update_profile_indicators(self, profile: PsychologicalProfile, voice_analysis: VoiceAnalysis):
+    def _update_profile_indicators(
+        self, profile: PsychologicalProfile, voice_analysis: VoiceAnalysis
+    ):
         """Updates stress indicators and strengths based on the latest analysis."""
-        if VoicePattern.ANXIOUS in voice_analysis.detected_patterns and "قلق متكرر" not in profile.stress_indicators:
+        if (
+            VoicePattern.ANXIOUS in voice_analysis.detected_patterns
+            and "قلق متكرر" not in profile.stress_indicators
+        ):
             profile.stress_indicators.append("قلق متكرر")
 
-        if voice_analysis.confidence_score < 0.3 and "ثقة منخفضة" not in profile.stress_indicators:
+        if (
+            voice_analysis.confidence_score < 0.3
+            and "ثقة منخفضة" not in profile.stress_indicators
+        ):
             profile.stress_indicators.append("ثقة منخفضة")
 
-        if voice_analysis.confidence_score > 0.7 and "ثقة عالية بالنفس" not in profile.strengths:
+        if (
+            voice_analysis.confidence_score > 0.7
+            and "ثقة عالية بالنفس" not in profile.strengths
+        ):
             profile.strengths.append("ثقة عالية بالنفس")
 
     async def _update_psychological_profile(
@@ -419,8 +438,7 @@ class AdvancedBehavioralAnalyzer:
     ):
         """فحص انخفاض الثقة"""
 
-        recent_confidence = [
-            analysis.confidence_score for analysis in analyses[-5:]]
+        recent_confidence = [analysis.confidence_score for analysis in analyses[-5:]]
         avg_confidence = sum(recent_confidence) / len(recent_confidence)
 
         threshold = self.concern_thresholds[BehavioralConcern.LOW_CONFIDENCE]
@@ -500,7 +518,9 @@ class AdvancedBehavioralAnalyzer:
 
         return self._build_psychological_report_dict(profile, recommendations)
 
-    def _build_psychological_report_dict(self, profile: PsychologicalProfile, recommendations: List[str]) -> Dict[str, Any]:
+    def _build_psychological_report_dict(
+        self, profile: PsychologicalProfile, recommendations: List[str]
+    ) -> Dict[str, Any]:
         """Builds the psychological report dictionary from a profile and recommendations."""
         main_trait = (
             max(profile.personality_traits, key=profile.personality_traits.get)
@@ -565,8 +585,7 @@ class AdvancedBehavioralAnalyzer:
                     ]
                 )
             elif avg_confidence > 0.7:
-                recommendations.append(
-                    "الطفل يُظهر ثقة جيدة بالنفس - استمر في التشجيع")
+                recommendations.append("الطفل يُظهر ثقة جيدة بالنفس - استمر في التشجيع")
 
         # توصيات بناءً على المهارات الاجتماعية
         if profile.social_skills_level < 0.4:

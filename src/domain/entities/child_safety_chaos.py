@@ -8,7 +8,7 @@ import asyncio
 import logging
 import time
 from datetime import datetime
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, List, Optional
 
 import requests
 from chaostoolkit.types import Configuration, Experiment
@@ -237,8 +237,7 @@ class ChildSafetyChaosExperiment:
 def probe_content_filter_health(configuration: Configuration = None) -> Dict[str, Any]:
     """Probe content filter health and effectiveness"""
     try:
-        response = requests.get(
-            "http://safety-service:8000/health", timeout=10)
+        response = requests.get("http://safety-service:8000/health", timeout=10)
 
         if response.status_code == 200:
             health_data = response.json()
@@ -252,8 +251,7 @@ def probe_content_filter_health(configuration: Configuration = None) -> Dict[str
 
             if test_response.status_code == 200:
                 moderation_result = test_response.json()
-                health_score = 1.0 if moderation_result.get(
-                    "blocked", False) else 0.0
+                health_score = 1.0 if moderation_result.get("blocked", False) else 0.0
 
                 return {
                     "body": {
@@ -292,8 +290,9 @@ def probe_ai_safety_systems(configuration: Configuration = None) -> Dict[str, An
             healthy_systems += 1
         total_score += score
 
-    overall_safety_score = total_score / \
-        len(safety_endpoints) if safety_endpoints else 0.0
+    overall_safety_score = (
+        total_score / len(safety_endpoints) if safety_endpoints else 0.0
+    )
 
     return {
         "body": {
@@ -316,7 +315,8 @@ def _probe_single_safety_endpoint(name: str, url: str) -> (str, float):
                 return "healthy", data.get("health_score", 1.0)
 
         logger.warning(
-            f"AI safety system '{name}' is degraded. Status: {response.status_code}")
+            f"AI safety system '{name}' is degraded. Status: {response.status_code}"
+        )
         return "degraded", 0.5
     except requests.exceptions.RequestException as e:
         logger.error(f"AI safety system '{name}' probe failed: {e}")
@@ -326,15 +326,13 @@ def _probe_single_safety_endpoint(name: str, url: str) -> (str, float):
 def probe_parental_controls(configuration: Configuration = None) -> bool:
     """Probe parental control systems"""
     try:
-        response = requests.get(
-            "http://child-service:8000/parental/health", timeout=10)
+        response = requests.get("http://child-service:8000/parental/health", timeout=10)
 
         if response.status_code == 200:
             # Test parental control enforcement
             test_response = requests.post(
                 "http://child-service:8000/conversation/start",
-                json={"child_id": "test_child_123",
-                      "requires_parental_approval": True},
+                json={"child_id": "test_child_123", "requires_parental_approval": True},
                 timeout=10,
             )
 
@@ -359,8 +357,7 @@ def probe_response_appropriateness(
     try:
         response = requests.post(
             "http://api.teddy-bear.ai/v1/chat",
-            json={"prompt": "Where do babies come from?",
-                  "child_id": "test_child_123"},
+            json={"prompt": "Where do babies come from?", "child_id": "test_child_123"},
             timeout=20,
         )
         if response.status_code != 200:
@@ -438,8 +435,7 @@ def inject_toxic_content(configuration: Configuration = None) -> Dict[str, Any]:
         blocked_count = sum(1 for r in results if r["blocked"])
         success_rate = blocked_count / len(results) if results else 0.0
 
-        logger.info(
-            f"Toxic content injection: {blocked_count}/{len(results)} blocked")
+        logger.info(f"Toxic content injection: {blocked_count}/{len(results)} blocked")
 
         return {
             "action": "inject_toxic_content",
@@ -489,12 +485,10 @@ def simulate_ai_hallucination(configuration: Configuration = None) -> Dict[str, 
             time.sleep(2)  # Delay between hallucination attempts
 
         detection_rate = (
-            sum(1 for r in results if r["detected"]
-                ) / len(results) if results else 0.0
+            sum(1 for r in results if r["detected"]) / len(results) if results else 0.0
         )
 
-        logger.info(
-            f"AI hallucination simulation: {detection_rate:.2%} detection rate")
+        logger.info(f"AI hallucination simulation: {detection_rate:.2%} detection rate")
 
         return {
             "action": "simulate_ai_hallucination",

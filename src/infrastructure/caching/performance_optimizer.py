@@ -54,8 +54,7 @@ class PerformanceOptimizer:
     def __init__(self):
         self.metrics_history: List[PerformanceMetrics] = []
         self.analysis_window_hours = 24
-        self.logger = logging.getLogger(
-            f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     def record_metrics(self, cache_system) -> PerformanceMetrics:
         """Record current performance metrics."""
@@ -149,7 +148,9 @@ class PerformanceOptimizer:
             "performance_score": self._calculate_performance_score(stats),
         }
 
-    def _analyze_hit_rate(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+    def _analyze_hit_rate(
+        self, latest_metrics, current_config
+    ) -> Optional[OptimizationRecommendation]:
         """Analyzes hit rate and suggests increasing cache size if it's too low."""
         if latest_metrics.hit_rate < 0.4:
             return OptimizationRecommendation(
@@ -164,7 +165,9 @@ class PerformanceOptimizer:
             )
         return None
 
-    def _analyze_latency(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+    def _analyze_latency(
+        self, latest_metrics, current_config
+    ) -> Optional[OptimizationRecommendation]:
         """Analyzes latency and suggests enabling compression if it's too high."""
         if latest_metrics.average_latency_ms > 100:
             return OptimizationRecommendation(
@@ -179,7 +182,9 @@ class PerformanceOptimizer:
             )
         return None
 
-    def _analyze_memory_usage(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+    def _analyze_memory_usage(
+        self, latest_metrics, current_config
+    ) -> Optional[OptimizationRecommendation]:
         """Analyzes memory usage and suggests optimizing TTL settings if it's too high."""
         memory_threshold = current_config.l1_max_size_mb * 0.8
         if latest_metrics.memory_usage_mb > memory_threshold:
@@ -195,7 +200,9 @@ class PerformanceOptimizer:
             )
         return None
 
-    def _analyze_eviction_rate(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+    def _analyze_eviction_rate(
+        self, latest_metrics, current_config
+    ) -> Optional[OptimizationRecommendation]:
         """Analyzes eviction rate and suggests implementing a smart eviction policy if it's too high."""
         if latest_metrics.evictions_per_hour > 100:
             return OptimizationRecommendation(
@@ -210,7 +217,9 @@ class PerformanceOptimizer:
             )
         return None
 
-    def _analyze_error_rate(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+    def _analyze_error_rate(
+        self, latest_metrics, current_config
+    ) -> Optional[OptimizationRecommendation]:
         """Analyzes error rate and suggests improving error handling if it's too high."""
         if latest_metrics.error_rate > 0.05:
             return OptimizationRecommendation(
@@ -260,8 +269,7 @@ class PerformanceOptimizer:
             self._analyze_hit_rate_trend(trends),
         ]
 
-        recommendations = [
-            rec for rec in potential_recommendations if rec is not None]
+        recommendations = [rec for rec in potential_recommendations if rec is not None]
 
         priority_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
         recommendations.sort(key=lambda x: priority_order[x.priority])
@@ -281,8 +289,7 @@ class PerformanceOptimizer:
         y_mean = sum(values) / n
 
         # Calculate slope
-        numerator = sum((x - x_mean) * (y - y_mean)
-                        for x, y in zip(x_values, values))
+        numerator = sum((x - x_mean) * (y - y_mean) for x, y in zip(x_values, values))
         denominator = sum((x - x_mean) ** 2 for x in x_values)
 
         return numerator / denominator if denominator != 0 else 0.0
@@ -319,8 +326,7 @@ class PerformanceOptimizer:
         # Normalize throughput (relative to average)
         avg_throughput = stats["throughput"]["average"]
         current_throughput = stats["throughput"]["current"]
-        throughput_score = min(
-            100, (current_throughput / max(1, avg_throughput)) * 100)
+        throughput_score = min(100, (current_throughput / max(1, avg_throughput)) * 100)
 
         # Calculate weighted score
         total_score = (
@@ -413,13 +419,15 @@ class CacheHealthMonitor:
             "error_rate_max": 0.1,
             "memory_usage_max_pct": 90,
         }
-        self.logger = logging.getLogger(
-            f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
-    def _check_metric(self, metric_name: str, current_value: float, threshold: float, is_max: bool) -> Optional[Dict]:
+    def _check_metric(
+        self, metric_name: str, current_value: float, threshold: float, is_max: bool
+    ) -> Optional[Dict]:
         """Checks a single metric against its threshold and returns an alert if triggered."""
-        triggered = (current_value > threshold) if is_max else (
-            current_value < threshold)
+        triggered = (
+            (current_value > threshold) if is_max else (current_value < threshold)
+        )
         if triggered:
             level = "CRITICAL" if metric_name == "error_rate" else "WARNING"
             comparison_text = "above" if is_max else "below"
@@ -441,23 +449,54 @@ class CacheHealthMonitor:
         alerts = []
 
         # Check all metrics
-        alerts.append(self._check_metric(
-            "hit_rate", latest_metrics.hit_rate, self.alert_thresholds["hit_rate_min"], False))
-        alerts.append(self._check_metric(
-            "latency", latest_metrics.average_latency_ms, self.alert_thresholds["latency_max_ms"], True))
-        alerts.append(self._check_metric(
-            "error_rate", latest_metrics.error_rate, self.alert_thresholds["error_rate_max"], True))
+        alerts.append(
+            self._check_metric(
+                "hit_rate",
+                latest_metrics.hit_rate,
+                self.alert_thresholds["hit_rate_min"],
+                False,
+            )
+        )
+        alerts.append(
+            self._check_metric(
+                "latency",
+                latest_metrics.average_latency_ms,
+                self.alert_thresholds["latency_max_ms"],
+                True,
+            )
+        )
+        alerts.append(
+            self._check_metric(
+                "error_rate",
+                latest_metrics.error_rate,
+                self.alert_thresholds["error_rate_max"],
+                True,
+            )
+        )
 
-        memory_pct = (latest_metrics.memory_usage_mb /
-                      current_config.l1_max_size_mb) * 100
-        alerts.append(self._check_metric("memory_usage", memory_pct,
-                      self.alert_thresholds["memory_usage_max_pct"], True))
+        memory_pct = (
+            latest_metrics.memory_usage_mb / current_config.l1_max_size_mb
+        ) * 100
+        alerts.append(
+            self._check_metric(
+                "memory_usage",
+                memory_pct,
+                self.alert_thresholds["memory_usage_max_pct"],
+                True,
+            )
+        )
 
         valid_alerts = [alert for alert in alerts if alert]
 
         return {
             "health_check_timestamp": datetime.now().isoformat(),
-            "overall_status": ("CRITICAL" if any(a["level"] == "CRITICAL" for a in valid_alerts) else "WARNING" if valid_alerts else "HEALTHY"),
+            "overall_status": (
+                "CRITICAL"
+                if any(a["level"] == "CRITICAL" for a in valid_alerts)
+                else "WARNING"
+                if valid_alerts
+                else "HEALTHY"
+            ),
             "alerts": valid_alerts,
             "metrics_summary": {
                 "hit_rate": latest_metrics.hit_rate,
@@ -471,11 +510,9 @@ class CacheHealthMonitor:
         """Update alert threshold for specific metric."""
         if metric in self.alert_thresholds:
             self.alert_thresholds[metric] = value
-            self.logger.info(
-                f"Updated alert threshold for {metric} to {value}")
+            self.logger.info(f"Updated alert threshold for {metric} to {value}")
         else:
-            self.logger.warning(
-                f"Unknown metric for alert threshold: {metric}")
+            self.logger.warning(f"Unknown metric for alert threshold: {metric}")
 
 
 # Factory functions

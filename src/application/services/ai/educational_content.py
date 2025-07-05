@@ -59,16 +59,14 @@ class EducationalContentProvider(ServiceBase):
         # Translate if needed
         if language == "ar":
             facts = self._translate_to_arabic(facts, topic)
-            activities = self._translate_to_arabic_activities(
-                activities, topic)
+            activities = self._translate_to_arabic_activities(activities, topic)
 
         return {
             "topic": topic,
             "age_group": age_group,
             "facts": random.sample(facts, min(3, len(facts))) if facts else [],
             "activities": (
-                random.sample(activities, min(2, len(activities))
-                              ) if activities else []
+                random.sample(activities, min(2, len(activities))) if activities else []
             ),
             "learning_objectives": self._get_learning_objectives(topic, age_group),
             "keywords": self._get_topic_keywords(topic, language),

@@ -95,8 +95,7 @@ class EducationalValueEvaluator:
         )
 
         # Assess cognitive complexity
-        cognitive_complexity = self._assess_cognitive_complexity(
-            content, child_age)
+        cognitive_complexity = self._assess_cognitive_complexity(content, child_age)
 
         # Identify skill development opportunities
         skill_development = self._identify_skill_development(content)
@@ -163,13 +162,11 @@ class EducationalValueEvaluator:
         base_score += min(0.3, category_score)
 
         # Score based on age-appropriate curriculum alignment
-        curriculum_score = self._assess_curriculum_alignment(
-            content, child_age)
+        curriculum_score = self._assess_curriculum_alignment(content, child_age)
         base_score += curriculum_score * 0.3
 
         # Bonus for interactive elements
-        interactive_keywords = ["what", "how",
-                                "why", "can you", "try to", "let's"]
+        interactive_keywords = ["what", "how", "why", "can you", "try to", "let's"]
         interactive_content = sum(
             1 for keyword in interactive_keywords if keyword in content_lower
         )
@@ -222,8 +219,7 @@ class EducationalValueEvaluator:
 
     def _check_age_alignment(self, content: str, child_age: int) -> float:
         """Check how well content aligns with age-appropriate learning"""
-        age_curriculum = self.age_curricula.get(
-            child_age, self.age_curricula[6])
+        age_curriculum = self.age_curricula.get(child_age, self.age_curricula[6])
         content_lower = content.lower()
 
         alignment_score = 0.0
@@ -244,8 +240,7 @@ class EducationalValueEvaluator:
 
     def _assess_curriculum_alignment(self, content: str, child_age: int) -> float:
         """Assess alignment with educational curriculum"""
-        age_curriculum = self.age_curricula.get(
-            child_age, self.age_curricula[6])
+        age_curriculum = self.age_curricula.get(child_age, self.age_curricula[6])
         content_lower = content.lower()
 
         total_skills = sum(len(skills) for skills in age_curriculum.values())
@@ -281,7 +276,8 @@ class EducationalValueEvaluator:
         suggestions = []
         content_lower = content.lower()
         age_curriculum = self.age_curricula.get(
-            child_age, self.age_curricula.get(6, {}))
+            child_age, self.age_curricula.get(6, {})
+        )
 
         for category, skills in age_curriculum.items():
             if not self._check_category_presence(content_lower, skills):
@@ -291,8 +287,7 @@ class EducationalValueEvaluator:
         self._suggest_interactive_elements(content_lower, suggestions)
 
         if current_score < 0.5:
-            suggestions.append(
-                "Increase educational content and learning objectives")
+            suggestions.append("Increase educational content and learning objectives")
 
         return suggestions
 
@@ -305,8 +300,7 @@ class EducationalValueEvaluator:
         skill_development_over_time = {}
 
         for i, content in enumerate(conversation_history):
-            result = asyncio.run(
-                self.evaluate_educational_value(content, child_age))
+            result = asyncio.run(self.evaluate_educational_value(content, child_age))
 
             learning_timeline.append(
                 {
@@ -373,34 +367,37 @@ class EducationalValueEvaluator:
         """Adds recommendations based on the learning progression trend."""
         if trend == "declining":
             recommendations.append(
-                "Educational content decreasing - add more learning activities")
+                "Educational content decreasing - add more learning activities"
+            )
 
-    def _add_skill_gap_recommendations(self, mastery: Dict[str, str], age: int, recommendations: List[str]):
+    def _add_skill_gap_recommendations(
+        self, mastery: Dict[str, str], age: int, recommendations: List[str]
+    ):
         """Adds recommendations based on identified skill gaps."""
         expected_skills = self.age_curricula.get(age, {})
         for category, skills in expected_skills.items():
-            covered_skills = [
-                s for s in mastery.keys() if s.endswith(category)]
+            covered_skills = [s for s in mastery.keys() if s.endswith(category)]
             if len(covered_skills) < len(skills) * 0.5:
                 recommendations.append(f"Focus more on {category} development")
 
-    def _add_skill_advancement_recommendations(self, mastery: Dict[str, str], recommendations: List[str]):
+    def _add_skill_advancement_recommendations(
+        self, mastery: Dict[str, str], recommendations: List[str]
+    ):
         """Adds recommendations for advancing mastered skills."""
-        mastered_skills = [skill for skill,
-                           level in mastery.items() if level == "mastered"]
+        mastered_skills = [
+            skill for skill, level in mastery.items() if level == "mastered"
+        ]
         if len(mastered_skills) > 3:
             recommendations.append(
-                "Child showing mastery - consider advancing to more complex topics")
+                "Child showing mastery - consider advancing to more complex topics"
+            )
 
     def _generate_learning_recommendations(
         self, progression_trend: str, skill_mastery: Dict[str, str], child_age: int
     ) -> List[str]:
         """Generate learning recommendations"""
         recommendations = []
-        self._add_progression_recommendations(
-            progression_trend, recommendations)
-        self._add_skill_gap_recommendations(
-            skill_mastery, child_age, recommendations)
-        self._add_skill_advancement_recommendations(
-            skill_mastery, recommendations)
+        self._add_progression_recommendations(progression_trend, recommendations)
+        self._add_skill_gap_recommendations(skill_mastery, child_age, recommendations)
+        self._add_skill_advancement_recommendations(skill_mastery, recommendations)
         return recommendations
