@@ -456,8 +456,8 @@ class AIResponseDto:
         self._create_cqrs_classes()
         self._create_dto_classes()
 
-    def _create_infrastructure_base_classes(self):
-        """Create infrastructure layer base classes"""
+    def _create_repository_interfaces(self) -> None:
+        """Create repository interface classes."""
         repo_content = """""\"
 🗄️ Repository Interfaces and Implementations
 Lead Architect: جعفر أديب
@@ -524,6 +524,9 @@ class IConversationRepository(Repository):
             / "src/infrastructure/persistence/repositories/__init__.py"
         )
         repo_file.write_text(repo_content)
+
+    def _create_ai_service_interfaces(self) -> None:
+        """Create AI service interface classes."""
         ai_content = """""\"
 🤖 AI Service Interfaces
 Lead Architect: جعفر أديب
@@ -582,8 +585,13 @@ class IEmotionService(Protocol):
         ai_file = self.project_root / "src/infrastructure/ai/__init__.py"
         ai_file.write_text(ai_content)
 
-    def _create_presentation_base_classes(self):
-        """Create presentation layer base classes"""
+    def _create_infrastructure_base_classes(self):
+        """Create infrastructure layer base classes"""
+        self._create_repository_interfaces()
+        self._create_ai_service_interfaces()
+
+    def _create_api_base_classes(self) -> None:
+        """Create API base classes."""
         api_content = """""\"
 🌐 API Base Classes
 Lead Architect: جعفر أديب
@@ -656,6 +664,10 @@ class BaseWebSocketHandler(ABC):
 """
         api_file = self.project_root / "src/presentation/api/__init__.py"
         api_file.write_text(api_content)
+
+    def _create_presentation_base_classes(self):
+        """Create presentation layer base classes"""
+        self._create_api_base_classes()
 
     def _create_config_files(self):
         """Create configuration files"""
