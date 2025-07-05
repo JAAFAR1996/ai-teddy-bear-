@@ -169,10 +169,8 @@ class DDDArchitectureAnalyzer:
             )
             visitor = FileVisitor(analysis)
             visitor.visit(tree)
-            analysis.domain_layer = self._classify_domain_layer(
-                file_path, analysis)
-            analysis.complexity_score = self._calculate_file_complexity(
-                analysis)
+            analysis.domain_layer = self._classify_domain_layer(file_path, analysis)
+            analysis.complexity_score = self._calculate_file_complexity(analysis)
             return analysis
         except Exception as e:
             logger.error(f"Error analyzing {file_path}: {e}")
@@ -202,9 +200,13 @@ class DDDArchitectureAnalyzer:
         """Classify domain files based on content patterns."""
         if any(pattern in file_content for pattern in self.domain_patterns["entity"]):
             return "domain_entity"
-        elif any(pattern in file_content for pattern in self.domain_patterns["value_object"]):
+        elif any(
+            pattern in file_content for pattern in self.domain_patterns["value_object"]
+        ):
             return "value_object"
-        elif any(pattern in file_content for pattern in self.domain_patterns["service"]):
+        elif any(
+            pattern in file_content for pattern in self.domain_patterns["service"]
+        ):
             return "domain_service"
         else:
             return "domain"
@@ -321,8 +323,7 @@ class DDDArchitectureAnalyzer:
                     methods=[],
                     properties=[],
                     relationships=[],
-                    is_aggregate_root=self._is_aggregate_root(
-                        class_name, file_path),
+                    is_aggregate_root=self._is_aggregate_root(class_name, file_path),
                 )
                 self.domain_entities.append(entity)
 
@@ -342,12 +343,9 @@ class DDDArchitectureAnalyzer:
     def _calculate_complexity_metrics(self) -> Dict[str, Any]:
         """Calculate various complexity metrics"""
         total_files = len(self.files_analysis)
-        total_lines = sum(
-            a.lines_of_code for a in self.files_analysis.values())
-        total_classes = sum(len(a.classes)
-                            for a in self.files_analysis.values())
-        total_functions = sum(len(a.functions)
-                              for a in self.files_analysis.values())
+        total_lines = sum(a.lines_of_code for a in self.files_analysis.values())
+        total_classes = sum(len(a.classes) for a in self.files_analysis.values())
+        total_functions = sum(len(a.functions) for a in self.files_analysis.values())
         return {
             "total_files": total_files,
             "total_lines_of_code": total_lines,
@@ -399,13 +397,15 @@ class DDDArchitectureAnalyzer:
 
         for title, files, hours_per_file in layer_configs:
             if files:
-                steps.append({
-                    "phase": phase,
-                    "title": f"Migrate {title}",
-                    "description": f"Migrate {len(files)} {title.lower()}",
-                    "files": [str(f) for f in files],
-                    "estimated_hours": len(files) * hours_per_file,
-                })
+                steps.append(
+                    {
+                        "phase": phase,
+                        "title": f"Migrate {title}",
+                        "description": f"Migrate {len(files)} {title.lower()}",
+                        "files": [str(f) for f in files],
+                        "estimated_hours": len(files) * hours_per_file,
+                    }
+                )
                 phase += 1
 
         return steps
@@ -426,7 +426,7 @@ class DDDArchitectureAnalyzer:
                 "description": "Run tests and validate migration success",
                 "actions": ["run_tests", "validate_architecture"],
                 "estimated_hours": 4,
-            }
+            },
         ]
 
     def _generate_migration_plan(self) -> MigrationPlan:
