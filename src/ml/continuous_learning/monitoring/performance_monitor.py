@@ -174,76 +174,56 @@ class PerformanceMonitor:
 
         return current_metrics
 
+    def _get_base_metrics(self) -> Dict[str, float]:
+        return {
+            "safety_score": 0.96, "child_satisfaction": 0.83, "response_time_ms": 750,
+            "accuracy": 0.87, "throughput_rps": 95, "error_rate": 0.008,
+            "memory_usage_mb": 512, "cpu_usage_percent": 45, "engagement_rate": 0.79,
+            "learning_effectiveness": 0.74, "parent_approval": 0.86,
+        }
+
+    def _get_simulation_function(self, metric: str) -> callable:
+        simulators = {
+            "response_time_ms": lambda bv: max(200, np.random.gamma(2, bv / 2)),
+            "error_rate": lambda bv: max(0.001, np.random.exponential(bv)),
+            "throughput_rps": lambda bv: max(50, np.random.poisson(bv)),
+            "memory_usage_mb": lambda bv: max(256, np.random.normal(bv, bv * 0.1)),
+            "cpu_usage_percent": lambda bv: np.random.beta(3, 5) * 100,
+        }
+        return simulators.get(metric, self._default_beta_simulation)
+
+    def _default_beta_simulation(self, base_value: float) -> float:
+        alpha = base_value * 20
+        beta = (1 - base_value) * 20
+        return np.random.beta(alpha, beta)
+
+    def _apply_time_trends(self, metrics: Dict[str, float]):
+        time_factor = (datetime.utcnow().minute % 60) / 60.0
+        metrics["child_satisfaction"] *= 1 + time_factor * 0.02
+        metrics["accuracy"] *= 1 + time_factor * 0.01
+        metrics["response_time_ms"] *= 1 + time_factor * 0.05
+        metrics["memory_usage_mb"] *= 1 + time_factor * 0.03
+
+    def _apply_metric_limits(self, metrics: Dict[str, float]):
+        unlimited_metrics = [
+            "response_time_ms", "throughput_rps", "memory_usage_mb", "cpu_usage_percent"]
+        for metric in metrics:
+            if metric not in unlimited_metrics:
+                metrics[metric] = max(0, min(1, metrics[metric]))
+
     async def _simulate_model_metrics(
         self, model_id: str, model_data: Any
     ) -> Dict[str, float]:
         """محاكاة مقاييس النموذج"""
+        base_metrics = self._get_base_metrics()
 
-        # محاكاة مقاييس واقعية مع اتجاهات وضوضاء
-        base_metrics = {
-            "safety_score": 0.96,
-            "child_satisfaction": 0.83,
-            "response_time_ms": 750,
-            "accuracy": 0.87,
-            "throughput_rps": 95,
-            "error_rate": 0.008,
-            "memory_usage_mb": 512,
-            "cpu_usage_percent": 45,
-            "engagement_rate": 0.79,
-            "learning_effectiveness": 0.74,
-            "parent_approval": 0.86,
-        }
-
-        # إضافة ضوضاء واقعية
         current_metrics = {}
         for metric, base_value in base_metrics.items():
-            if metric == "response_time_ms":
-                # وقت الاستجابة - توزيع جاما
-                current_metrics[metric] = max(
-                    200, np.random.gamma(2, base_value / 2))
-            elif metric in ["error_rate"]:
-                # معدل الخطأ - توزيع أسي
-                current_metrics[metric] = max(
-                    0.001, np.random.exponential(base_value))
-            elif metric in ["throughput_rps"]:
-                # الإنتاجية - توزيع بواسون
-                current_metrics[metric] = max(
-                    50, np.random.poisson(base_value))
-            elif metric in ["memory_usage_mb"]:
-                # استخدام الذاكرة - توزيع طبيعي
-                current_metrics[metric] = max(
-                    256, np.random.normal(base_value, base_value * 0.1)
-                )
-            elif metric in ["cpu_usage_percent"]:
-                # استخدام المعالج - توزيع بيتا مقيس
-                current_metrics[metric] = np.random.beta(3, 5) * 100
-            else:
-                # مقاييس الجودة - توزيع بيتا
-                alpha = base_value * 20
-                beta = (1 - base_value) * 20
-                current_metrics[metric] = np.random.beta(alpha, beta)
+            current_metrics[metric] = self._get_simulation_function(
+                metric)(base_value)
 
-        # إضافة اتجاهات زمنية طفيفة
-        time_factor = (datetime.utcnow().minute % 60) / 60.0
-
-        # تحسن طفيف مع الوقت لبعض المقاييس
-        current_metrics["child_satisfaction"] *= 1 + time_factor * 0.02
-        current_metrics["accuracy"] *= 1 + time_factor * 0.01
-
-        # تدهور طفيف لمقاييس الموارد
-        current_metrics["response_time_ms"] *= 1 + time_factor * 0.05
-        current_metrics["memory_usage_mb"] *= 1 + time_factor * 0.03
-
-        # تطبيق الحدود
-        for metric in current_metrics:
-            if metric not in [
-                "response_time_ms",
-                "throughput_rps",
-                "memory_usage_mb",
-                "cpu_usage_percent",
-            ]:
-                current_metrics[metric] = max(
-                    0, min(1, current_metrics[metric]))
+        self._apply_time_trends(current_metrics)
+        self._apply_metric_limits(current_metrics)
 
         return current_metrics
 
@@ -392,6 +372,30 @@ class PerformanceMonitor:
 
         return False
 
+    def _create_performance_alert(
+        self,
+        deployment_id: str,
+        rule_name: str,
+        rule_config: Dict[str, Any],
+        snapshot: MetricSnapshot,
+    ) -> PerformanceAlert:
+        """Create a new performance alert object."""
+        return PerformanceAlert(
+            alert_id=f"alert_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{rule_name}",
+            timestamp=datetime.utcnow(),
+            severity=AlertSeverity(rule_config["severity"]),
+            metric_name=rule_config["metric"],
+            current_value=snapshot.metrics.get(rule_config["metric"], 0),
+            threshold_value=rule_config.get("default_threshold", 0),
+            message=rule_config["message"].format(
+                model_id=snapshot.model_id,
+                current_value=snapshot.metrics.get(rule_config["metric"], 0),
+                threshold=rule_config.get("default_threshold", 0),
+            ),
+            affected_models=[snapshot.model_id],
+            recommended_actions=rule_config.get("actions", []),
+        )
+
     async def _trigger_alert(
         self,
         deployment_id: str,
@@ -402,40 +406,13 @@ class PerformanceMonitor:
         """تشغيل التنبيه"""
 
         # فحص ما إذا كان التنبيه مكرر
-        existing_alert = self._find_existing_alert(
-            rule_name, snapshot.model_id)
-        if existing_alert and not existing_alert.auto_resolved:
+        if self._find_existing_alert(rule_name, snapshot.model_id):
             return  # تجنب التنبيهات المكررة
 
         # إنشاء تنبيه جديد
-        alert = PerformanceAlert(
-            alert_id=f"alert_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{rule_name}",
-            timestamp=datetime.utcnow(),
-            severity=AlertSeverity(
-                rule_config["severity"]),
-            metric_name=rule_config["metric"],
-            current_value=snapshot.metrics.get(
-                rule_config["metric"],
-                0),
-            threshold_value=rule_config.get(
-                "default_threshold",
-                0),
-            message=rule_config["message"].format(
-                model_id=snapshot.model_id,
-                current_value=snapshot.metrics.get(
-                    rule_config["metric"],
-                    0),
-                threshold=rule_config.get(
-                    "default_threshold",
-                    0),
-            ),
-            affected_models=[
-                snapshot.model_id],
-            recommended_actions=rule_config.get(
-                "actions",
-                []),
+        alert = self._create_performance_alert(
+            deployment_id, rule_name, rule_config, snapshot
         )
-
         self.active_alerts.append(alert)
 
         # إرسال التنبيه
@@ -611,61 +588,51 @@ class PerformanceMonitor:
 
     def _initialize_alert_rules(self) -> Dict[str, Dict[str, Any]]:
         """تهيئة قواعد التنبيه"""
+        rules = {}
+        rules.update(self._get_critical_alert_rules())
+        rules.update(self._get_high_severity_alert_rules())
+        rules.update(self._get_medium_severity_alert_rules())
+        return rules
 
+    def _get_critical_alert_rules(self) -> Dict[str, Dict[str, Any]]:
         return {
             "safety_score_critical": {
-                "metric": "safety_score",
-                "condition": "less_than",
-                "default_threshold": 0.95,
-                "severity": "critical",
-                "message": "CRITICAL: Safety score for {model_id} dropped to {current_value:.3f} (threshold: {threshold})",
-                "actions": ["immediate_rollback", "escalate_to_safety_team"],
-                "auto_resolve": False,
+                "metric": "safety_score", "condition": "less_than", "default_threshold": 0.95,
+                "severity": "critical", "message": "CRITICAL: Safety score for {model_id} dropped to {current_value:.3f} (threshold: {threshold})",
+                "actions": ["immediate_rollback", "escalate_to_safety_team"], "auto_resolve": False,
             },
+        }
+
+    def _get_high_severity_alert_rules(self) -> Dict[str, Dict[str, Any]]:
+        return {
             "child_satisfaction_low": {
-                "metric": "child_satisfaction",
-                "condition": "less_than",
-                "default_threshold": 0.75,
-                "severity": "high",
-                "message": "Child satisfaction for {model_id} is low: {current_value:.3f} (threshold: {threshold})",
-                "actions": ["review_conversation_quality", "check_personalization"],
-                "auto_resolve": False,
-            },
-            "response_time_high": {
-                "metric": "response_time_ms",
-                "condition": "greater_than",
-                "default_threshold": 2000,
-                "severity": "medium",
-                "message": "Response time for {model_id} is high: {current_value:.0f}ms (threshold: {threshold}ms)",
-                "actions": ["scale_up_resources", "optimize_model"],
-                "auto_resolve": True,
+                "metric": "child_satisfaction", "condition": "less_than", "default_threshold": 0.75,
+                "severity": "high", "message": "Child satisfaction for {model_id} is low: {current_value:.3f} (threshold: {threshold})",
+                "actions": ["review_conversation_quality", "check_personalization"], "auto_resolve": False,
             },
             "error_rate_high": {
-                "metric": "error_rate",
-                "condition": "greater_than",
-                "default_threshold": 0.02,
-                "severity": "high",
-                "message": "Error rate for {model_id} is high: {current_value:.3f} (threshold: {threshold})",
-                "actions": ["check_model_health", "review_recent_changes"],
-                "auto_resolve": True,
+                "metric": "error_rate", "condition": "greater_than", "default_threshold": 0.02,
+                "severity": "high", "message": "Error rate for {model_id} is high: {current_value:.3f} (threshold: {threshold})",
+                "actions": ["check_model_health", "review_recent_changes"], "auto_resolve": True,
+            },
+        }
+
+    def _get_medium_severity_alert_rules(self) -> Dict[str, Dict[str, Any]]:
+        return {
+            "response_time_high": {
+                "metric": "response_time_ms", "condition": "greater_than", "default_threshold": 2000,
+                "severity": "medium", "message": "Response time for {model_id} is high: {current_value:.0f}ms (threshold: {threshold}ms)",
+                "actions": ["scale_up_resources", "optimize_model"], "auto_resolve": True,
             },
             "memory_usage_high": {
-                "metric": "memory_usage_mb",
-                "condition": "greater_than",
-                "default_threshold": 1024,
-                "severity": "medium",
-                "message": "Memory usage for {model_id} is high: {current_value:.0f}MB (threshold: {threshold}MB)",
-                "actions": ["increase_memory_limits", "optimize_memory_usage"],
-                "auto_resolve": True,
+                "metric": "memory_usage_mb", "condition": "greater_than", "default_threshold": 1024,
+                "severity": "medium", "message": "Memory usage for {model_id} is high: {current_value:.0f}MB (threshold: {threshold}MB)",
+                "actions": ["increase_memory_limits", "optimize_memory_usage"], "auto_resolve": True,
             },
             "anomaly_detected": {
-                "metric": "any",
-                "condition": "anomaly",
-                "default_threshold": 0,
-                "severity": "medium",
-                "message": "Anomaly detected in {model_id} metrics",
-                "actions": ["investigate_anomaly", "compare_with_baseline"],
-                "auto_resolve": False,
+                "metric": "any", "condition": "anomaly", "default_threshold": 0,
+                "severity": "medium", "message": "Anomaly detected in {model_id} metrics",
+                "actions": ["investigate_anomaly", "compare_with_baseline"], "auto_resolve": False,
             },
         }
 

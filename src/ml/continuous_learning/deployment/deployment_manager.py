@@ -416,48 +416,13 @@ class DeploymentManager:
         self, result: DeploymentResult, config: DeploymentConfig
     ) -> Dict[str, Any]:
         """إجراء فحص الصحة"""
-
-        # محاكاة مقاييس الأداء
-        current_metrics = {
-            "safety_score": np.random.beta(20, 1),  # عالي جداً
-            "response_time_ms": np.random.gamma(2, 300),  # ~600ms متوسط
-            "error_rate": np.random.exponential(0.005),  # منخفض جداً
-            "child_satisfaction": np.random.beta(8, 2),
-            "throughput_rps": np.random.poisson(100),
-            "memory_usage_percent": np.random.uniform(40, 80),
-            "cpu_usage_percent": np.random.uniform(30, 70),
-        }
-
-        # تحديث مقاييس الأداء
+        current_metrics = self._get_simulated_metrics()
         result.performance_metrics.update(current_metrics)
 
-        # فحص العتبات
-        issues = []
-        healthy = True
-
-        for metric, threshold in config.performance_thresholds.items():
-            current_value = current_metrics.get(metric.replace("_ms", ""), 0)
-
-            if metric == "response_time_ms" and current_value > threshold:
-                issues.append(
-                    f"Response time {current_value:.0f}ms exceeds threshold {threshold}ms"
-                )
-                healthy = False
-            elif metric == "error_rate" and current_value > threshold:
-                issues.append(
-                    f"Error rate {current_value:.3f} exceeds threshold {threshold}"
-                )
-                healthy = False
-            elif metric == "safety_score" and current_value < threshold:
-                issues.append(
-                    f"Safety score {current_value:.3f} below threshold {threshold}"
-                )
-                healthy = False
-            elif metric == "child_satisfaction" and current_value < threshold:
-                issues.append(
-                    f"Child satisfaction {current_value:.3f} below threshold {threshold}"
-                )
-                healthy = False
+        issues = self._check_performance_thresholds(
+            current_metrics, config.performance_thresholds
+        )
+        healthy = not issues
 
         return {
             "timestamp": datetime.utcnow(),
@@ -466,6 +431,46 @@ class DeploymentManager:
             "issues": issues,
             "gates_passed": len(config.safety_gates) - len(issues),
         }
+
+    def _get_simulated_metrics(self) -> Dict[str, float]:
+        """Generates simulated performance metrics."""
+        return {
+            "safety_score": np.random.beta(20, 1),
+            "response_time": np.random.gamma(2, 300),
+            "error_rate": np.random.exponential(0.005),
+            "child_satisfaction": np.random.beta(8, 2),
+            "throughput_rps": np.random.poisson(100),
+            "memory_usage_percent": np.random.uniform(40, 80),
+            "cpu_usage_percent": np.random.uniform(30, 70),
+        }
+
+    def _check_performance_thresholds(
+        self, metrics: Dict[str, float], thresholds: Dict[str, float]
+    ) -> List[str]:
+        """Checks performance metrics against thresholds."""
+        issues = []
+        for metric, threshold in thresholds.items():
+            current_value = metrics.get(metric.replace("_ms", ""), 0)
+
+            is_issue = False
+            message = ""
+
+            if metric == "response_time_ms" and current_value > threshold:
+                is_issue = True
+                message = f"Response time {current_value:.0f}ms exceeds threshold {threshold}ms"
+            elif metric == "error_rate" and current_value > threshold:
+                is_issue = True
+                message = f"Error rate {current_value:.3f} exceeds threshold {threshold}"
+            elif metric == "safety_score" and current_value < threshold:
+                is_issue = True
+                message = f"Safety score {current_value:.3f} below threshold {threshold}"
+            elif metric == "child_satisfaction" and current_value < threshold:
+                is_issue = True
+                message = f"Child satisfaction {current_value:.3f} below threshold {threshold}"
+
+            if is_issue:
+                issues.append(message)
+        return issues
 
     async def _trigger_rollback(
         self, result: DeploymentResult, issues: List[str]
@@ -727,14 +732,30 @@ class DeploymentManager:
         control_metrics = test_results["control_metrics"]
         treatment_metrics = test_results["treatment_metrics"]
 
+        analysis = self._calculate_significance_for_all_metrics(
+            control_metrics, treatment_metrics
+        )
+        recommendation = self._determine_ab_test_recommendation(analysis)
+        summary = self._create_ab_test_summary(analysis)
+
+        return {
+            "analysis_details": analysis,
+            "recommendation": recommendation,
+            "summary": summary,
+        }
+
+    def _calculate_significance_for_all_metrics(
+        self, control_metrics, treatment_metrics
+    ) -> Dict[str, Any]:
         analysis = {}
         for metric in control_metrics:
             analysis[metric] = self._calculate_metric_significance(
-                control_metrics.get(metric, 0), treatment_metrics.get(metric, 0)
+                control_metrics.get(
+                    metric, 0), treatment_metrics.get(metric, 0)
             )
+        return analysis
 
-        recommendation = self._determine_ab_test_recommendation(analysis)
-
+    def _create_ab_test_summary(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
         significant_improvements = sum(
             1
             for r in analysis.values()
@@ -745,16 +766,11 @@ class DeploymentManager:
             for r in analysis.values()
             if r["significant"] and r["percentage_change"] < 0
         )
-
         return {
-            "analysis_details": analysis,
-            "recommendation": recommendation,
-            "summary": {
-                "significant_improvements": significant_improvements,
-                "significant_degradations": significant_degradations,
-                "confidence_level": 0.95,
-                "overall_p_value": np.mean([r["p_value"] for r in analysis.values()]),
-            },
+            "significant_improvements": significant_improvements,
+            "significant_degradations": significant_degradations,
+            "confidence_level": 0.95,
+            "overall_p_value": np.mean([r["p_value"] for r in analysis.values()]),
         }
 
     def _initialize_infrastructure(self) -> Dict[str, Any]:

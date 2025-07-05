@@ -174,21 +174,29 @@ class RateLimiter:
 
         timestamps = self._filter_timestamps(timestamps, current_time)
 
-        minute_count = self._count_requests(timestamps, 60, current_time)
-        hour_count = self._count_requests(timestamps, 3600, current_time)
-        day_count = len(timestamps)
-
-        if (
-            minute_count >= self.config.requests_per_minute
-            or hour_count >= self.config.requests_per_hour
-            or day_count >= self.config.requests_per_day
-        ):
+        if self._is_rate_limited(timestamps, current_time):
             return False
 
         timestamps.append(current_time)
         self.local_cache[identifier] = timestamps
 
         return True
+
+    def _is_rate_limited(self, timestamps: List[float], current_time: float) -> bool:
+        """Check if the rate limit has been exceeded."""
+        minute_count = self._count_requests(timestamps, 60, current_time)
+        if minute_count >= self.config.requests_per_minute:
+            return True
+
+        hour_count = self._count_requests(timestamps, 3600, current_time)
+        if hour_count >= self.config.requests_per_hour:
+            return True
+
+        day_count = len(timestamps)
+        if day_count >= self.config.requests_per_day:
+            return True
+
+        return False
 
     def get_retry_after(self, identifier: str) -> int:
         """Get seconds until rate limit resets"""

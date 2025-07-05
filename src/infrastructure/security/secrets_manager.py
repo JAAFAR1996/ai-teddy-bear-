@@ -164,8 +164,10 @@ class HashiCorpVaultProvider(ISecretsProvider):
                         name=name,
                         provider=SecretProvider.HASHICORP_VAULT,
                         secret_type=SecretType[data.get("type", "API_KEY")],
-                        created_at=datetime.fromisoformat(metadata.get("created_time")),
-                        updated_at=datetime.fromisoformat(metadata.get("updated_time")),
+                        created_at=datetime.fromisoformat(
+                            metadata.get("created_time")),
+                        updated_at=datetime.fromisoformat(
+                            metadata.get("updated_time")),
                         version=metadata.get("version", 1),
                         tags=data.get("tags", {}),
                         description=data.get("description"),
@@ -307,7 +309,8 @@ class AWSSecretsManagerProvider(ISecretsProvider):
                     metadata=SecretMetadata(
                         name=name,
                         provider=SecretProvider.AWS_SECRETS_MANAGER,
-                        secret_type=SecretType[secret_data.get("type", "API_KEY")],
+                        secret_type=SecretType[secret_data.get(
+                            "type", "API_KEY")],
                         created_at=response.get(
                             "CreatedDate", datetime.now(timezone.utc)
                         ),
@@ -347,7 +350,8 @@ class AWSSecretsManagerProvider(ISecretsProvider):
                     Name=secret_id,
                     Description=metadata.description or f"AI Teddy Bear secret: {name}",
                     SecretString=json.dumps(secret_data),
-                    Tags=[{"Key": k, "Value": v} for k, v in metadata.tags.items()],
+                    Tags=[{"Key": k, "Value": v}
+                          for k, v in metadata.tags.items()],
                 )
             except ClientError as e:
                 if e.response["Error"]["Code"] == "ResourceExistsException":
@@ -671,7 +675,10 @@ class SecretsManager:
             selected_provider = provider or self.config.default_provider
             secret = await self._get_from_provider(name, selected_provider)
 
-            return secret.value.get_secret_value() if secret else None
+            if not secret:
+                return None
+
+            return secret.value.get_secret_value()
 
         except Exception as e:
             logger.error(f"Failed to get secret {name}: {e}")

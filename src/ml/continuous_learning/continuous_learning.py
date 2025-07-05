@@ -144,105 +144,70 @@ class ContinuousLearningSystem:
 
     async def continuous_improvement_loop(self) -> None:
         """حلقة التحسين المستمر"""
-
-        cycle_interval = (
-            self.config.get("learning_cycle_hours", 24) * 3600
-        )  # Default: 24 hours
-
+        cycle_interval = self.config.get("learning_cycle_hours", 24) * 3600
         while self.is_running:
             try:
-                cycle_start = datetime.utcnow()
-                logger.info(
-                    f"🔄 Starting learning cycle {self.learning_stats['total_learning_cycles'] + 1}"
-                )
-
-                # جمع التغذية الراجعة من جميع المصادر
-                feedback_data = await self.feedback_collector.collect_daily_feedback()
-                logger.info(
-                    f"📊 Collected feedback from {len(feedback_data)} interactions"
-                )
-
-                # تقييم الأداء الحالي للنماذج
-                performance_results = (
-                    await self.model_evaluator.evaluate_current_models()
-                )
-                logger.info(f"📈 Evaluated {len(performance_results)} models")
-
-                # تحليل الحاجة لإعادة التدريب
-                retrain_decisions = await self._analyze_retraining_needs(
-                    feedback_data, performance_results
-                )
-
-                if retrain_decisions["should_retrain"]:
-                    logger.info(
-                        "🎯 Retraining required - starting model improvement process"
-                    )
-
-                    # إعداد بيانات التدريب الجديدة
-                    training_data = await self._prepare_enhanced_training_data(
-                        feedback_data, retrain_decisions["focus_areas"]
-                    )
-
-                    # تدريب النماذج المحسنة
-                    new_models = await self.training_pipeline.train_enhanced_models(
-                        training_data=training_data,
-                        previous_performance=performance_results,
-                        learning_strategy=retrain_decisions["strategy"],
-                    )
-
-                    # تشغيل اختبارات A/B للمقارنة
-                    ab_test_results = await self._run_comprehensive_ab_test(
-                        current_models=self.current_models,
-                        new_models=new_models,
-                        test_duration_hours=self.config.get(
-                            "ab_test_duration_hours", 6
-                        ),
-                    )
-
-                    # نشر النماذج المحسنة إذا كانت أفضل
-                    if ab_test_results["new_models_superior"]:
-                        await self._deploy_improved_models(new_models, ab_test_results)
-                        self.learning_stats["models_improved"] += len(
-                            new_models)
-                        self.learning_stats["successful_deployments"] += 1
-
-                    else:
-                        logger.info(
-                            "🤔 New models did not show significant improvement - keeping current models"
-                        )
-
-                # استخراج الرؤى من التفاعلات
-                learning_insights = await self._extract_learning_insights(
-                    feedback_data, performance_results
-                )
-                await self._update_insights_database(learning_insights)
-
-                # تحديث قاعدة المعرفة
-                await self._update_knowledge_base(learning_insights, feedback_data)
-
-                # تحليل الاتجاهات طويلة المدى
-                trend_analysis = await self._analyze_long_term_trends()
-                await self._apply_trend_insights(trend_analysis)
-
-                # تحديث الإحصائيات
-                cycle_duration = (
-                    datetime.utcnow() -
-                    cycle_start).total_seconds()
-                self.learning_stats["total_learning_cycles"] += 1
-
-                logger.info(
-                    f"✅ Learning cycle completed in {cycle_duration:.1f} seconds"
-                )
-
-                # النوم حتى الدورة التالية
+                await self._run_learning_cycle()
                 await asyncio.sleep(cycle_interval)
-
             except asyncio.CancelledError:
                 logger.info("Continuous learning cancelled")
                 break
             except Exception as e:
                 logger.error(f"Error in learning cycle: {str(e)}")
-                await asyncio.sleep(3600)  # Wait 1 hour before retry
+                await asyncio.sleep(3600)
+
+    async def _run_learning_cycle(self):
+        """Runs a single learning cycle."""
+        cycle_start = datetime.utcnow()
+        logger.info(
+            f"🔄 Starting learning cycle {self.learning_stats['total_learning_cycles'] + 1}")
+
+        feedback_data = await self.feedback_collector.collect_daily_feedback()
+        logger.info(
+            f"📊 Collected feedback from {len(feedback_data)} interactions")
+
+        performance_results = await self.model_evaluator.evaluate_current_models()
+        logger.info(f"📈 Evaluated {len(performance_results)} models")
+
+        retrain_decisions = await self._analyze_retraining_needs(feedback_data, performance_results)
+        if retrain_decisions["should_retrain"]:
+            await self._handle_retraining(retrain_decisions, feedback_data, performance_results)
+
+        await self._extract_and_apply_insights(feedback_data, performance_results)
+
+        cycle_duration = (datetime.utcnow() - cycle_start).total_seconds()
+        self.learning_stats["total_learning_cycles"] += 1
+        logger.info(
+            f"✅ Learning cycle completed in {cycle_duration:.1f} seconds")
+
+    async def _handle_retraining(self, retrain_decisions: Dict[str, Any], feedback_data: Dict[str, Any], performance_results: Dict[str, Any]):
+        logger.info(
+            "🎯 Retraining required - starting model improvement process")
+        training_data = await self._prepare_enhanced_training_data(feedback_data, retrain_decisions["focus_areas"])
+        new_models = await self.training_pipeline.train_enhanced_models(
+            training_data=training_data,
+            previous_performance=performance_results,
+            learning_strategy=retrain_decisions["strategy"],
+        )
+        ab_test_results = await self._run_comprehensive_ab_test(
+            current_models=self.current_models,
+            new_models=new_models,
+            test_duration_hours=self.config.get("ab_test_duration_hours", 6),
+        )
+        if ab_test_results["new_models_superior"]:
+            await self._deploy_improved_models(new_models, ab_test_results)
+            self.learning_stats["models_improved"] += len(new_models)
+            self.learning_stats["successful_deployments"] += 1
+        else:
+            logger.info(
+                "🤔 New models did not show significant improvement - keeping current models")
+
+    async def _extract_and_apply_insights(self, feedback_data: Dict[str, Any], performance_results: Dict[str, Any]):
+        learning_insights = await self._extract_learning_insights(feedback_data, performance_results)
+        await self._update_insights_database(learning_insights)
+        await self._update_knowledge_base(learning_insights, feedback_data)
+        trend_analysis = await self._analyze_long_term_trends()
+        await self._apply_trend_insights(trend_analysis)
 
     async def _analyze_retraining_needs(
         self, feedback_data: Dict, performance_results: Dict
@@ -359,71 +324,61 @@ class ContinuousLearningSystem:
             },
         }
 
+    def _get_ab_test_config(self, test_duration_hours: int) -> Dict[str, Any]:
+        return {
+            "duration_hours": test_duration_hours,
+            "traffic_split": 0.1,
+            "metrics_to_track": [
+                "child_satisfaction", "safety_score", "response_accuracy",
+                "engagement_time", "parent_approval", "learning_effectiveness",
+            ],
+            "safety_thresholds": {"min_safety_score": 0.95, "max_response_time": 2.0, "min_accuracy": 0.85},
+        }
+
+    async def _analyze_ab_test_results(self, test_results: Dict[str, Any]) -> Dict[str, Any]:
+        statistical_analysis = await self._perform_statistical_analysis(test_results)
+        improvement_score = await self._calculate_improvement_score(
+            current_performance=test_results["control_metrics"],
+            new_performance=test_results["treatment_metrics"],
+        )
+        new_models_superior = self._are_new_models_superior(
+            statistical_analysis, improvement_score, test_results)
+
+        return {
+            "new_models_superior": new_models_superior,
+            "improvement_score": improvement_score,
+            "statistical_significance": statistical_analysis["p_value"],
+            "safety_maintained": test_results["treatment_metrics"]["safety_score"] >= 0.95,
+            "detailed_results": test_results,
+            "recommendation": "deploy" if new_models_superior else "keep_current",
+            "confidence": statistical_analysis["confidence_interval"],
+        }
+
+    def _are_new_models_superior(self, statistical_analysis: Dict[str, Any], improvement_score: float, test_results: Dict[str, Any]) -> bool:
+        significance_threshold = self.config.get(
+            "significance_threshold", 0.05)
+        improvement_threshold = self.config.get("improvement_threshold", 0.02)
+        return (
+            statistical_analysis["p_value"] < significance_threshold
+            and improvement_score > improvement_threshold
+            and test_results["treatment_metrics"]["safety_score"] >= 0.95
+        )
+
     async def _run_comprehensive_ab_test(
         self, current_models: Dict, new_models: Dict, test_duration_hours: int
     ) -> Dict[str, Any]:
         """تشغيل اختبارات A/B شاملة"""
-
         logger.info(
-            f"🧪 Starting comprehensive A/B test for {test_duration_hours} hours"
-        )
+            f"🧪 Starting comprehensive A/B test for {test_duration_hours} hours")
+        test_config = self._get_ab_test_config(test_duration_hours)
 
-        # إعداد اختبار A/B
-        test_config = {
-            "duration_hours": test_duration_hours,
-            "traffic_split": 0.1,  # 10% traffic to new models
-            "metrics_to_track": [
-                "child_satisfaction",
-                "safety_score",
-                "response_accuracy",
-                "engagement_time",
-                "parent_approval",
-                "learning_effectiveness",
-            ],
-            "safety_thresholds": {
-                "min_safety_score": 0.95,
-                "max_response_time": 2.0,
-                "min_accuracy": 0.85,
-            },
-        }
-
-        # تشغيل الاختبار مع مراقبة مستمرة
         test_results = await self.deployment_manager.run_ab_test(
             control_models=current_models,
             treatment_models=new_models,
             config=test_config,
         )
 
-        # تحليل النتائج إحصائياً
-        statistical_analysis = await self._perform_statistical_analysis(test_results)
-
-        # تقييم التحسن الإجمالي
-        improvement_score = await self._calculate_improvement_score(
-            current_performance=test_results["control_metrics"],
-            new_performance=test_results["treatment_metrics"],
-        )
-
-        # تحديد ما إذا كانت النماذج الجديدة أفضل بشكل كبير
-        significance_threshold = self.config.get(
-            "significance_threshold", 0.05)
-        improvement_threshold = self.config.get("improvement_threshold", 0.02)
-
-        new_models_superior = (
-            statistical_analysis["p_value"] < significance_threshold
-            and improvement_score > improvement_threshold
-            and test_results["treatment_metrics"]["safety_score"] >= 0.95
-        )
-
-        return {
-            "new_models_superior": new_models_superior,
-            "improvement_score": improvement_score,
-            "statistical_significance": statistical_analysis["p_value"],
-            "safety_maintained": test_results["treatment_metrics"]["safety_score"]
-            >= 0.95,
-            "detailed_results": test_results,
-            "recommendation": "deploy" if new_models_superior else "keep_current",
-            "confidence": statistical_analysis["confidence_interval"],
-        }
+        return await self._analyze_ab_test_results(test_results)
 
     async def _deploy_improved_models(
         self, new_models: Dict, ab_test_results: Dict

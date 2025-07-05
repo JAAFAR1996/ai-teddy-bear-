@@ -231,26 +231,37 @@ class SecurityValidator:
 
     def _validate_node(self, node: ast.AST) -> bool:
         """Validate a single AST node for security risks."""
-        # Check for dangerous node types
+        if not self._validate_import_nodes(node):
+            return False
+        if not self._validate_call_nodes(node):
+            return False
+        return True
+
+    def _validate_import_nodes(self, node: ast.AST) -> bool:
+        """Validate for dangerous import-related nodes."""
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             logger.warning("🚨 Import statement in AST")
             return False
+        return True
 
-        # Check for dangerous function calls
-        if isinstance(node, ast.Call):
-            if isinstance(node.func, ast.Name):
-                func_name = node.func.id
-                if func_name in ["eval", "exec", "compile", "open", "file"]:
-                    logger.warning(f"🚨 Dangerous function call: {func_name}")
-                    return False
+    def _validate_call_nodes(self, node: ast.AST) -> bool:
+        """Validate for dangerous function call nodes."""
+        if not isinstance(node, ast.Call):
+            return True
 
-            if isinstance(node.func, ast.Attribute):
-                if (
-                    isinstance(node.func.value, ast.Name)
-                    and node.func.value.id == "__builtins__"
-                ):
-                    logger.warning("🚨 Builtins access detected")
-                    return False
+        if isinstance(node.func, ast.Name):
+            func_name = node.func.id
+            if func_name in ["eval", "exec", "compile", "open", "file"]:
+                logger.warning(f"🚨 Dangerous function call: {func_name}")
+                return False
+
+        if isinstance(node.func, ast.Attribute):
+            if (
+                isinstance(node.func.value, ast.Name)
+                and node.func.value.id == "__builtins__"
+            ):
+                logger.warning("🚨 Builtins access detected")
+                return False
         return True
 
     def validate_ast(self, node: ast.AST) -> bool:
@@ -447,6 +458,14 @@ class SafeASTEvaluator:
             context: ExpressionContext) -> Any:
         func_node = self._evaluate_node(node.func, context)
 
+        self._validate_callable(func_node, node, context)
+
+        args, kwargs = self._prepare_call_arguments(node, context)
+
+        return func_node(*args, **kwargs)
+
+    def _validate_callable(self, func_node: Any, node: ast.Call, context: ExpressionContext):
+        """Validate if a function call is safe and allowed."""
         if not callable(func_node):
             raise ExpressionValidationError(
                 "Expression tries to call a non-callable object"
@@ -461,13 +480,15 @@ class SafeASTEvaluator:
                 raise ExpressionSecurityError(
                     f"Unsafe function call: {func_name}")
 
+    def _prepare_call_arguments(self, node: ast.Call, context: ExpressionContext) -> tuple[list, dict]:
+        """Prepare arguments for a function call."""
         args = [self._evaluate_node(arg, context) for arg in node.args]
         kwargs = {
             kw.arg: self._evaluate_node(
                 kw.value,
-                context) for kw in node.keywords}
-
-        return func_node(*args, **kwargs)
+                context) for kw in node.keywords
+        }
+        return args, kwargs
 
     def _evaluate_list(
             self,

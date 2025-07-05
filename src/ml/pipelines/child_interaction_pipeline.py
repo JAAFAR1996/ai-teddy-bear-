@@ -7,7 +7,7 @@ import logging
 import json
 from typing import Any, Dict, List, Optional
 
-﻿  # ===================================================================
+# ===================================================================
 # 🤖 AI Teddy Bear - Advanced Child Interaction Pipeline
 # Enterprise-Grade AI Pipeline with Child Safety Focus
 # AI Team Lead: Senior AI Engineer
@@ -121,81 +121,70 @@ def generate_safe_response(
     """توليد استجابة آمنة ومناسبة للطفل مع فحص شامل للأمان"""
     import json
     from datetime import datetime
-
     import openai
 
-    logger.info("Starting safe response generation")
-
-    try:
-        # تحميل السياق والعواطف
-        with open(child_context.path, 'r') as f:
+    def _load_context_and_emotions(child_context_path, emotion_data_path):
+        with open(child_context_path, 'r') as f:
             context = json.load(f)
-
-        with open(emotion_data.path, 'r') as f:
+        with open(emotion_data_path, 'r') as f:
             emotions = json.load(f)
+        return context, emotions
 
-        # إعداد العميل OpenAI
+    def _generate_initial_response(transcription, context, emotions):
         client = openai.OpenAI()
-
-        # بناء النظام prompt المخصص
         system_prompt = build_age_appropriate_prompt(
-            age=context['age'],
-            interests=context.get('interests', []),
+            age=context['age'], interests=context.get('interests', []),
             emotion=emotions.get('primary_emotion', 'neutral'),
             cultural_context=context.get('cultural_background', 'general')
         )
-
-        # توليد الاستجابة الأولية
         response = client.chat.completions.create(
             model="gpt-4-turbo-preview",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": transcription}
             ],
-            temperature=0.7,
-            max_tokens=150,
-            frequency_penalty=0.1,
-            presence_penalty=0.1
+            temperature=0.7, max_tokens=150, frequency_penalty=0.1, presence_penalty=0.1
         )
+        return response.choices[0].message.content
 
-        generated_text = response.choices[0].message.content
-
-        # فحص الأمان متعدد المستويات
-        safety_checker = ChildSafetyChecker()
-        safety_result = safety_checker.comprehensive_check(
-            text=generated_text,
-            child_age=context['age'],
-            context=context
-        )
-
-        # معالجة النتيجة النهائية
+    def _prepare_outputs(generated_text, safety_result, context):
         final_response = {
-            'text': safety_result.safe_text,
-            'original_text': generated_text,
-            'safety_score': safety_result.overall_score,
-            'modifications_made': safety_result.modifications,
+            'text': safety_result.safe_text, 'original_text': generated_text,
+            'safety_score': safety_result.overall_score, 'modifications_made': safety_result.modifications,
             'educational_elements': safety_result.educational_content,
             'emotion_response': safety_result.emotion_appropriateness,
             'generation_timestamp': datetime.now().isoformat(),
-            'model_version': "gpt-4-turbo",
-            'child_id': context.get('child_id', 'unknown')
+            'model_version': "gpt-4-turbo", 'child_id': context.get('child_id', 'unknown')
         }
-
-        # حفظ الاستجابة
-        with open(ai_response.path, 'w') as f:
-            json.dump(final_response, f, indent=2, ensure_ascii=False)
-
-        # حفظ تقرير الأمان
         safety_report_data = {
-            'safety_checks_performed': safety_result.checks_performed,
-            'risk_factors_detected': safety_result.risk_factors,
-            'safety_score_breakdown': safety_result.score_breakdown,
-            'compliance_status': safety_result.compliance_status,
+            'safety_checks_performed': safety_result.checks_performed, 'risk_factors_detected': safety_result.risk_factors,
+            'safety_score_breakdown': safety_result.score_breakdown, 'compliance_status': safety_result.compliance_status,
             'recommendations': safety_result.recommendations
         }
+        return final_response, safety_report_data
 
-        with open(safety_report.path, 'w') as f:
+    def _save_outputs(ai_response_path, final_response, safety_report_path, safety_report_data):
+        with open(ai_response_path, 'w') as f:
+            json.dump(final_response, f, indent=2, ensure_ascii=False)
+        with open(safety_report_path, 'w') as f:
             json.dump(safety_report_data, f, indent=2)
+
+    logger.info("Starting safe response generation")
+
+    try:
+        context, emotions = _load_context_and_emotions(
+            child_context.path, emotion_data.path)
+        generated_text = _generate_initial_response(
+            transcription, context, emotions)
+
+        safety_checker = ChildSafetyChecker()
+        safety_result = safety_checker.comprehensive_check(
+            text=generated_text, child_age=context['age'], context=context)
+
+        final_response, safety_report_data = _prepare_outputs(
+            generated_text, safety_result, context)
+        _save_outputs(ai_response.path, final_response,
+                      safety_report.path, safety_report_data)
 
         logger.info(
             f"Response generated safely with score: {safety_result.overall_score}")
@@ -203,7 +192,15 @@ def generate_safe_response(
 
     except Exception as e:
         logger.error(f"Safe response generation failed: {str(e)}")
-        emergency_response = create_emergency_safe_response(context['age'])
+        # It's better to have context available for the emergency response
+        try:
+            with open(child_context.path, 'r') as f:
+                context = json.load(f)
+            age = context.get('age', 5)
+        except (IOError, json.JSONDecodeError):
+            age = 5  # Default age if context is unreadable
+
+        emergency_response = create_emergency_safe_response(age)
         with open(ai_response.path, 'w') as f:
             json.dump(emergency_response, f, indent=2)
         raise

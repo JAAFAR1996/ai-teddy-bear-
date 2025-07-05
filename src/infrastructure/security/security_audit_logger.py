@@ -323,18 +323,26 @@ class SecurityAuditLogger:
     ) -> str:
         """Log a security event using a context object."""
         event = self._create_event_from_context(event_type, context)
+        log_entry = await self._process_and_finalize_event(event)
+        self._log_event_info(event, log_entry)
+        return event.event_id
+
+    async def _process_and_finalize_event(self, event: SecurityEvent) -> AuditLogEntry:
+        """Process and finalize a single security event."""
         log_entry = await self._process_event(event)
         await self._finalize_event_logging(event, log_entry)
+        return log_entry
 
+    def _log_event_info(self, event: SecurityEvent, log_entry: AuditLogEntry):
+        """Log informational message about the event."""
         logger.info(
             "Security event logged",
             event_id=event.event_id,
-            event_type=event_type.value,
-            user_id=context.user_id,
+            event_type=event.event_type.value,
+            user_id=event.user_id,
             threat_level=event.threat_level.value,
             risk_score=log_entry.risk_score,
         )
-        return event.event_id
 
     async def _enrich_event(self, event: SecurityEvent):
         """Enrich event with additional metadata"""

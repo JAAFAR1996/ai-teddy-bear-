@@ -147,48 +147,11 @@ class ServiceHealthMonitor:
             instance: ServiceInstance):
         """Check health of a specific service"""
         try:
-            # Execute health check with timeout
             health_check_result = await asyncio.wait_for(
                 instance.registration.health_check(), timeout=self.health_check_timeout
             )
-
-            # Update health history
-            if service_name not in self._health_history:
-                self._health_history[service_name] = []
-
-            self._health_history[service_name].append(health_check_result)
-
-            # Keep only last 10 checks
-            if len(self._health_history[service_name]) > 10:
-                self._health_history[service_name] = self._health_history[service_name][
-                    -10:
-                ]
-
-            # Update service status
-            instance.last_health_check = datetime.utcnow()
-
-            if health_check_result:
-                instance.health_check_failures = 0
-                if instance.status == ServiceStatus.DEGRADED:
-                    instance.status = ServiceStatus.HEALTHY
-                    logger.info("Service recovered", service=service_name)
-            else:
-                instance.health_check_failures += 1
-
-                if instance.health_check_failures >= self.max_failures:
-                    if instance.status != ServiceStatus.UNHEALTHY:
-                        instance.status = ServiceStatus.UNHEALTHY
-                        logger.error(
-                            "Service marked as unhealthy",
-                            service=service_name,
-                            failures=instance.health_check_failures,
-                        )
-
-                        # Trigger service recovery
-                        await self._attempt_service_recovery(service_name, instance)
-                elif instance.status == ServiceStatus.HEALTHY:
-                    instance.status = ServiceStatus.DEGRADED
-                    logger.warning("Service degraded", service=service_name)
+            self._update_health_history(service_name, health_check_result)
+            await self._update_service_status(service_name, instance, health_check_result)
 
         except asyncio.TimeoutError:
             logger.warning("Health check timeout", service=service_name)
@@ -199,6 +162,45 @@ class ServiceHealthMonitor:
                 service=service_name,
                 error=str(e))
             instance.health_check_failures += 1
+
+    def _update_health_history(self, service_name: str, result: bool):
+        """Updates the health history for a service."""
+        if service_name not in self._health_history:
+            self._health_history[service_name] = []
+        self._health_history[service_name].append(result)
+        if len(self._health_history[service_name]) > 10:
+            self._health_history[service_name] = self._health_history[service_name][-10:]
+
+    async def _update_service_status(self, service_name: str, instance: ServiceInstance, result: bool):
+        """Updates the service status based on health check result."""
+        instance.last_health_check = datetime.utcnow()
+        if result:
+            self._handle_healthy_service(service_name, instance)
+        else:
+            await self._handle_unhealthy_service(service_name, instance)
+
+    def _handle_healthy_service(self, service_name: str, instance: ServiceInstance):
+        """Handles a healthy service."""
+        instance.health_check_failures = 0
+        if instance.status == ServiceStatus.DEGRADED:
+            instance.status = ServiceStatus.HEALTHY
+            logger.info("Service recovered", service=service_name)
+
+    async def _handle_unhealthy_service(self, service_name: str, instance: ServiceInstance):
+        """Handles an unhealthy service."""
+        instance.health_check_failures += 1
+        if instance.health_check_failures >= self.max_failures:
+            if instance.status != ServiceStatus.UNHEALTHY:
+                instance.status = ServiceStatus.UNHEALTHY
+                logger.error(
+                    "Service marked as unhealthy",
+                    service=service_name,
+                    failures=instance.health_check_failures,
+                )
+                await self._attempt_service_recovery(service_name, instance)
+        elif instance.status == ServiceStatus.HEALTHY:
+            instance.status = ServiceStatus.DEGRADED
+            logger.warning("Service degraded", service=service_name)
 
     async def _attempt_service_recovery(
         self, service_name: str, instance: ServiceInstance

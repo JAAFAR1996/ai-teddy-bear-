@@ -216,69 +216,48 @@ class ModelEvaluator:
             sample_size=1000,  # محاكاة حجم العينة
         )
 
+    def _get_base_performance_metrics(self) -> Dict[str, float]:
+        return {
+            "accuracy": 0.85, "child_satisfaction": 0.82, "safety_score": 0.96,
+            "response_time": 1.2, "engagement_rate": 0.78,
+            "learning_effectiveness": 0.73, "parent_approval": 0.88,
+            "compliance_score": 0.94,
+        }
+
+    def _adjust_performance_by_model_type(self, model_id: str, performance: Dict[str, float]):
+        adjustments = {
+            "speech_recognition": {"accuracy": np.random.beta(18, 3), "response_time": np.random.gamma(2, 0.3)},
+            "conversation": {"child_satisfaction": np.random.beta(16, 3), "engagement_rate": np.random.beta(15, 4), "response_time": np.random.gamma(3, 0.4)},
+            "emotion": {"accuracy": np.random.beta(12, 4), "learning_effectiveness": np.random.beta(14, 5)},
+            "safety": {"safety_score": np.random.beta(25, 1), "compliance_score": np.random.beta(22, 2)},
+            "learning": {"learning_effectiveness": np.random.beta(16, 4), "child_satisfaction": np.random.beta(14, 5)},
+        }
+        for type_key, values in adjustments.items():
+            if type_key in model_id:
+                performance.update(values)
+                break
+
+    def _apply_age_degradation(self, model_info: Dict[str, Any], performance: Dict[str, float]):
+        days_since_deployment = (
+            datetime.utcnow() - model_info["deployment_date"]).days
+        degradation_factor = max(0.9, 1 - (days_since_deployment * 0.001))
+        for metric in performance:
+            if metric != "response_time":
+                performance[metric] *= degradation_factor
+
+    def _add_realistic_noise(self, performance: Dict[str, float]):
+        for metric in performance:
+            noise = np.random.normal(0, 0.02)
+            performance[metric] = max(0, min(1, performance[metric] + noise))
+
     async def _measure_model_performance(
         self, model_id: str, model_info: Dict[str, Any]
     ) -> Dict[str, float]:
         """قياس أداء النموذج"""
-
-        # محاكاة قياسات الأداء بناءً على نوع النموذج
-        base_performance = {
-            "accuracy": 0.85,
-            "child_satisfaction": 0.82,
-            "safety_score": 0.96,
-            "response_time": 1.2,  # seconds
-            "engagement_rate": 0.78,
-            "learning_effectiveness": 0.73,
-            "parent_approval": 0.88,
-            "compliance_score": 0.94,
-        }
-
-        # تعديل الأداء بناءً على نوع النموذج
-        if "speech_recognition" in model_id:
-            base_performance["accuracy"] = np.random.beta(
-                18, 3
-            )  # عالي للتعرف على الكلام
-            base_performance["response_time"] = np.random.gamma(2, 0.3)  # سريع
-
-        elif "conversation" in model_id:
-            base_performance["child_satisfaction"] = np.random.beta(
-                16, 3
-            )  # عالي للمحادثة
-            base_performance["engagement_rate"] = np.random.beta(15, 4)
-            base_performance["response_time"] = np.random.gamma(3, 0.4)
-
-        elif "emotion" in model_id:
-            base_performance["accuracy"] = np.random.beta(
-                12, 4)  # متوسط لتحليل المشاعر
-            base_performance["learning_effectiveness"] = np.random.beta(14, 5)
-
-        elif "safety" in model_id:
-            base_performance["safety_score"] = np.random.beta(
-                25, 1)  # عالي جداً للأمان
-            base_performance["compliance_score"] = np.random.beta(22, 2)
-
-        elif "learning" in model_id:
-            base_performance["learning_effectiveness"] = np.random.beta(16, 4)
-            base_performance["child_satisfaction"] = np.random.beta(14, 5)
-
-        # إضافة تأثير عمر النموذج
-        days_since_deployment = (
-            datetime.utcnow() -
-            model_info["deployment_date"]).days
-        degradation_factor = max(
-            0.9, 1 - (days_since_deployment * 0.001)
-        )  # تدهور طفيف مع الوقت
-
-        for metric in base_performance:
-            if metric != "response_time":  # وقت الاستجابة لا يتدهور
-                base_performance[metric] *= degradation_factor
-
-        # إضافة ضوضاء واقعية
-        for metric in base_performance:
-            noise = np.random.normal(0, 0.02)  # ضوضاء 2%
-            base_performance[metric] = max(
-                0, min(1, base_performance[metric] + noise))
-
+        base_performance = self._get_base_performance_metrics()
+        self._adjust_performance_by_model_type(model_id, base_performance)
+        self._apply_age_degradation(model_info, base_performance)
+        self._add_realistic_noise(base_performance)
         return base_performance
 
     async def _calculate_performance_grade(
@@ -394,74 +373,63 @@ class ModelEvaluator:
 
         return list(set(strengths))
 
+    WEAKNESS_CRITERIA = {
+        "safety_score": {"threshold": 0.95, "condition": "lt", "message": "Safety score below critical threshold"},
+        "child_satisfaction": {"threshold": 0.75, "condition": "lt", "message": "Low child satisfaction rates"},
+        "accuracy": {"threshold": 0.80, "condition": "lt", "message": "Accuracy below acceptable level"},
+        "parent_approval": {"threshold": 0.75, "condition": "lt", "message": "Insufficient parent approval"},
+        "response_time": {"threshold": 2.0, "condition": "gt", "message": "Slow response times"},
+        "learning_effectiveness": {"threshold": 0.65, "condition": "lt", "message": "Poor learning outcomes"},
+        "engagement_rate": {"threshold": 0.70, "condition": "lt", "message": "Low user engagement"},
+        "compliance_score": {"threshold": 0.90, "condition": "lt", "message": "Compliance issues detected"},
+    }
+
+    def _check_weakness(self, metric_name: str, value: float) -> Optional[str]:
+        """Check a single metric for weakness based on predefined criteria."""
+        criteria = self.WEAKNESS_CRITERIA.get(metric_name)
+        if not criteria:
+            return None
+
+        is_weak = False
+        if criteria["condition"] == "gt" and value > criteria["threshold"]:
+            is_weak = True
+        elif criteria["condition"] == "lt" and value < criteria["threshold"]:
+            is_weak = True
+
+        return criteria["message"] if is_weak else None
+
     async def _identify_model_weaknesses(
         self, metrics: Dict[str, float], model_info: Dict[str, Any]
     ) -> List[str]:
         """تحديد نقاط ضعف النموذج"""
-
         weaknesses = []
+        for metric_name, value in metrics.items():
+            weakness_message = self._check_weakness(metric_name, value)
+            if weakness_message:
+                weaknesses.append(weakness_message)
 
-        # فحص المقاييس المنخفضة
-        if metrics.get("safety_score", 1.0) < 0.95:
-            weaknesses.append("Safety score below critical threshold")
-
-        if metrics.get("child_satisfaction", 1.0) < 0.75:
-            weaknesses.append("Low child satisfaction rates")
-
-        if metrics.get("accuracy", 1.0) < 0.80:
-            weaknesses.append("Accuracy below acceptable level")
-
-        if metrics.get("parent_approval", 1.0) < 0.75:
-            weaknesses.append("Insufficient parent approval")
-
-        if metrics.get("response_time", 0) > 2.0:
-            weaknesses.append("Slow response times")
-
-        if metrics.get("learning_effectiveness", 1.0) < 0.65:
-            weaknesses.append("Poor learning outcomes")
-
-        if metrics.get("engagement_rate", 1.0) < 0.70:
-            weaknesses.append("Low user engagement")
-
-        if metrics.get("compliance_score", 1.0) < 0.90:
-            weaknesses.append("Compliance issues detected")
-
-        # فحص عمر النموذج
         days_since_deployment = (
-            datetime.utcnow() -
-            model_info["deployment_date"]).days
+            datetime.utcnow() - model_info["deployment_date"]).days
         if days_since_deployment > 60:
             weaknesses.append("Model may need updating due to age")
 
         return weaknesses
 
+    RECOMMENDATION_MAPPING = {
+        "Safety score below critical threshold": "Immediate safety model retraining required",
+        "Low child satisfaction rates": "Enhance conversation flow and personalization",
+        "Accuracy below acceptable level": "Increase training data quality and quantity",
+        "Slow response times": "Optimize model inference speed",
+        "Poor learning outcomes": "Improve educational content and delivery",
+    }
+
     async def _generate_model_recommendations(
         self, metrics: Dict[str, float], strengths: List[str], weaknesses: List[str]
     ) -> List[str]:
         """إنشاء توصيات للنموذج"""
+        recommendations = [self.RECOMMENDATION_MAPPING[w]
+                           for w in weaknesses if w in self.RECOMMENDATION_MAPPING]
 
-        recommendations = []
-
-        # توصيات بناءً على نقاط الضعف
-        if metrics.get("safety_score", 1.0) < 0.95:
-            recommendations.append(
-                "Immediate safety model retraining required")
-
-        if metrics.get("child_satisfaction", 1.0) < 0.75:
-            recommendations.append(
-                "Enhance conversation flow and personalization")
-
-        if metrics.get("accuracy", 1.0) < 0.80:
-            recommendations.append(
-                "Increase training data quality and quantity")
-
-        if metrics.get("response_time", 0) > 2.0:
-            recommendations.append("Optimize model inference speed")
-
-        if metrics.get("learning_effectiveness", 1.0) < 0.65:
-            recommendations.append("Improve educational content and delivery")
-
-        # توصيات عامة للتحسين
         if len(weaknesses) > 3:
             recommendations.append("Consider comprehensive model redesign")
         elif len(weaknesses) > 1:
@@ -471,7 +439,7 @@ class ModelEvaluator:
             recommendations.append(
                 "Model performing well - maintain current approach")
 
-        return recommendations
+        return list(set(recommendations))
 
     async def _calculate_confidence_intervals(
         self, metrics: Dict[str, float]
@@ -604,49 +572,45 @@ class ModelEvaluator:
 
         return trends
 
+    def _collect_issues_and_recs(self, evaluations: List[ModelEvaluationResult]) -> Tuple[List[str], List[str]]:
+        all_issues = []
+        all_recommendations = []
+        for eval_result in evaluations:
+            all_issues.extend(eval_result.weaknesses)
+            all_recommendations.extend(eval_result.recommendations)
+        return all_issues, all_recommendations
+
+    def _prioritize_issues(self, all_issues: List[str]) -> List[Tuple[str, int]]:
+        issue_counts = {}
+        for issue in all_issues:
+            issue_counts[issue] = issue_counts.get(issue, 0) + 1
+        return sorted(issue_counts.items(), key=lambda x: x[1], reverse=True)
+
+    def _generate_system_recommendations(self, priority_issues: List[Tuple[str, int]]) -> List[str]:
+        system_recommendations = []
+        top_issues = [issue.lower() for issue, _ in priority_issues[:3]]
+        if any("safety" in issue for issue in top_issues):
+            system_recommendations.append(
+                "Implement system-wide safety improvements")
+        if any("satisfaction" in issue for issue in top_issues):
+            system_recommendations.append(
+                "Focus on user experience enhancements")
+        if any("accuracy" in issue for issue in top_issues):
+            system_recommendations.append(
+                "Increase overall model training quality")
+        return system_recommendations
+
     async def _identify_issues_and_recommendations(
         self, evaluations: List[ModelEvaluationResult]
     ) -> Dict[str, List[str]]:
         """تحديد المشاكل والتوصيات"""
-
-        all_issues = []
-        all_recommendations = []
-
-        # تجميع المشاكل والتوصيات من جميع النماذج
-        for eval_result in evaluations:
-            all_issues.extend(eval_result.weaknesses)
-            all_recommendations.extend(eval_result.recommendations)
-
-        # تحديد المشاكل الشائعة
-        issue_counts = {}
-        for issue in all_issues:
-            issue_counts[issue] = issue_counts.get(issue, 0) + 1
-
-        # ترتيب المشاكل حسب الأولوية
-        priority_issues = sorted(
-            issue_counts.items(),
-            key=lambda x: x[1],
-            reverse=True)
-
-        # إنشاء توصيات على مستوى النظام
-        system_recommendations = []
-
-        if any("safety" in issue.lower() for issue, _ in priority_issues[:3]):
-            system_recommendations.append(
-                "Implement system-wide safety improvements")
-
-        if any("satisfaction" in issue.lower()
-               for issue, _ in priority_issues[:3]):
-            system_recommendations.append(
-                "Focus on user experience enhancements")
-
-        if any("accuracy" in issue.lower()
-               for issue, _ in priority_issues[:3]):
-            system_recommendations.append(
-                "Increase overall model training quality")
+        all_issues, all_recommendations = self._collect_issues_and_recs(
+            evaluations)
+        priority_issues = self._prioritize_issues(all_issues)
+        system_recommendations = self._generate_system_recommendations(
+            priority_issues)
 
         return {
-            # أهم 10 مشاكل
             "issues": [issue for issue, _ in priority_issues[:10]],
             "recommendations": list(set(all_recommendations + system_recommendations)),
         }

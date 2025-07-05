@@ -147,6 +147,35 @@ class TrainingPipeline:
             ),
         }
 
+    PERFORMANCE_THRESHOLDS = {
+        "accuracy": (0.85, ModelType.SPEECH_RECOGNITION, "🎤 Speech recognition model needs improvement"),
+        "child_satisfaction": (0.80, ModelType.CONVERSATION_MODEL, "💬 Conversation model needs improvement"),
+        "engagement_rate": (0.75, ModelType.EMOTION_ANALYSIS, "😊 Emotion analysis model needs improvement"),
+        "safety_score": (0.95, ModelType.SAFETY_CLASSIFIER, "🛡️ Safety classifier needs immediate improvement"),
+        "learning_effectiveness": (0.70, ModelType.LEARNING_RECOMMENDER, "📚 Learning recommender needs improvement"),
+    }
+
+    def _identify_models_from_performance(self, previous_performance: Dict[str, Any]) -> List[ModelType]:
+        models_to_train = []
+        performance_metrics = previous_performance.get("overall_metrics", {})
+        for metric, (threshold, model_type, log_message) in self.PERFORMANCE_THRESHOLDS.items():
+            if performance_metrics.get(metric, 1.0) < threshold:
+                models_to_train.append(model_type)
+                logger.info(log_message)
+        return models_to_train
+
+    def _get_models_from_strategy(self, strategy: TrainingStrategy, current_models: List[ModelType]) -> List[ModelType]:
+        if strategy == TrainingStrategy.FULL_RETRAIN:
+            logger.info("🔄 Full retrain strategy - training all models")
+            return list(ModelType)
+
+        if strategy == TrainingStrategy.MULTI_TASK_LEARNING and len(current_models) < 2:
+            logger.info(
+                "🎯 Multi-task learning strategy - training interconnected models")
+            return [ModelType.CONVERSATION_MODEL, ModelType.EMOTION_ANALYSIS]
+
+        return []
+
     async def _identify_models_for_training(
         self,
         training_data: Dict[str, Any],
@@ -154,60 +183,15 @@ class TrainingPipeline:
         strategy: TrainingStrategy,
     ) -> List[ModelType]:
         """تحديد النماذج التي تحتاج تدريب"""
+        models_to_train = self._identify_models_from_performance(
+            previous_performance)
+        models_to_train.extend(
+            self._get_models_from_strategy(strategy, models_to_train))
 
-        models_to_train = []
-
-        # تحليل الأداء السابق لتحديد النماذج التي تحتاج تحسين
-        performance_metrics = previous_performance.get("overall_metrics", {})
-
-        # فحص نماذج التعرف على الكلام
-        if performance_metrics.get("accuracy", 1.0) < 0.85:
-            models_to_train.append(ModelType.SPEECH_RECOGNITION)
-            logger.info("🎤 Speech recognition model needs improvement")
-
-        # فحص نماذج المحادثة
-        if performance_metrics.get("child_satisfaction", 1.0) < 0.80:
-            models_to_train.append(ModelType.CONVERSATION_MODEL)
-            logger.info("💬 Conversation model needs improvement")
-
-        # فحص نماذج تحليل المشاعر
-        if performance_metrics.get("engagement_rate", 1.0) < 0.75:
-            models_to_train.append(ModelType.EMOTION_ANALYSIS)
-            logger.info("😊 Emotion analysis model needs improvement")
-
-        # فحص نماذج الأمان (دائماً أولوية عالية)
-        if performance_metrics.get("safety_score", 1.0) < 0.95:
-            models_to_train.append(ModelType.SAFETY_CLASSIFIER)
-            logger.warning("🛡️ Safety classifier needs immediate improvement")
-
-        # فحص نماذج التوصيات التعليمية
-        if performance_metrics.get("learning_effectiveness", 1.0) < 0.70:
-            models_to_train.append(ModelType.LEARNING_RECOMMENDER)
-            logger.info("📚 Learning recommender needs improvement")
-
-        # إضافة نماذج إضافية بناءً على الاستراتيجية
-        if strategy == TrainingStrategy.FULL_RETRAIN:
-            # إعادة تدريب جميع النماذج
-            models_to_train = list(ModelType)
-            logger.info("🔄 Full retrain strategy - training all models")
-
-        elif strategy == TrainingStrategy.MULTI_TASK_LEARNING:
-            # تدريب نماذج متعددة المهام
-            if len(models_to_train) < 2:
-                models_to_train.extend(
-                    [ModelType.CONVERSATION_MODEL, ModelType.EMOTION_ANALYSIS]
-                )
-            logger.info(
-                "🎯 Multi-task learning strategy - training interconnected models"
-            )
-
-        # إزالة التكرارات
         models_to_train = list(set(models_to_train))
-
         logger.info(
             f"📋 Identified {len(models_to_train)} models for training: {[m.value for m in models_to_train]}"
         )
-
         return models_to_train
 
     async def _prepare_training_configs(
@@ -243,75 +227,33 @@ class TrainingPipeline:
 
         return configs
 
+    def _get_speech_recognition_config(self) -> TrainingConfig:
+        return TrainingConfig(model_type=ModelType.SPEECH_RECOGNITION, strategy=TrainingStrategy.INCREMENTAL, learning_rate=0.0001, batch_size=32, epochs=50, validation_split=0.2, early_stopping_patience=5, safety_constraints={}, privacy_settings={}, compute_resources={})
+
+    def _get_conversation_model_config(self) -> TrainingConfig:
+        return TrainingConfig(model_type=ModelType.CONVERSATION_MODEL, strategy=TrainingStrategy.INCREMENTAL, learning_rate=0.00005, batch_size=16, epochs=30, validation_split=0.15, early_stopping_patience=3, safety_constraints={}, privacy_settings={}, compute_resources={})
+
+    def _get_emotion_analysis_config(self) -> TrainingConfig:
+        return TrainingConfig(model_type=ModelType.EMOTION_ANALYSIS, strategy=TrainingStrategy.INCREMENTAL, learning_rate=0.0002, batch_size=64, epochs=40, validation_split=0.2, early_stopping_patience=5, safety_constraints={}, privacy_settings={}, compute_resources={})
+
+    def _get_safety_classifier_config(self) -> TrainingConfig:
+        return TrainingConfig(model_type=ModelType.SAFETY_CLASSIFIER, strategy=TrainingStrategy.FULL_RETRAIN, learning_rate=0.0001, batch_size=128, epochs=100, validation_split=0.25, early_stopping_patience=10, safety_constraints={}, privacy_settings={}, compute_resources={})
+
+    def _get_learning_recommender_config(self) -> TrainingConfig:
+        return TrainingConfig(model_type=ModelType.LEARNING_RECOMMENDER, strategy=TrainingStrategy.INCREMENTAL, learning_rate=0.001, batch_size=256, epochs=25, validation_split=0.2, early_stopping_patience=3, safety_constraints={}, privacy_settings={}, compute_resources={})
+
     def _get_base_training_config(
             self, model_type: ModelType) -> TrainingConfig:
         """الحصول على التكوين الأساسي للتدريب"""
-
         base_configs = {
-            ModelType.SPEECH_RECOGNITION: TrainingConfig(
-                model_type=model_type,
-                strategy=TrainingStrategy.INCREMENTAL,
-                learning_rate=0.0001,
-                batch_size=32,
-                epochs=50,
-                validation_split=0.2,
-                early_stopping_patience=5,
-                safety_constraints={},
-                privacy_settings={},
-                compute_resources={},
-            ),
-            ModelType.CONVERSATION_MODEL: TrainingConfig(
-                model_type=model_type,
-                strategy=TrainingStrategy.INCREMENTAL,
-                learning_rate=0.00005,
-                batch_size=16,
-                epochs=30,
-                validation_split=0.15,
-                early_stopping_patience=3,
-                safety_constraints={},
-                privacy_settings={},
-                compute_resources={},
-            ),
-            ModelType.EMOTION_ANALYSIS: TrainingConfig(
-                model_type=model_type,
-                strategy=TrainingStrategy.INCREMENTAL,
-                learning_rate=0.0002,
-                batch_size=64,
-                epochs=40,
-                validation_split=0.2,
-                early_stopping_patience=5,
-                safety_constraints={},
-                privacy_settings={},
-                compute_resources={},
-            ),
-            ModelType.SAFETY_CLASSIFIER: TrainingConfig(
-                model_type=model_type,
-                strategy=TrainingStrategy.FULL_RETRAIN,  # الأمان دائماً تدريب كامل
-                learning_rate=0.0001,
-                batch_size=128,
-                epochs=100,
-                validation_split=0.25,
-                early_stopping_patience=10,
-                safety_constraints={},
-                privacy_settings={},
-                compute_resources={},
-            ),
-            ModelType.LEARNING_RECOMMENDER: TrainingConfig(
-                model_type=model_type,
-                strategy=TrainingStrategy.INCREMENTAL,
-                learning_rate=0.001,
-                batch_size=256,
-                epochs=25,
-                validation_split=0.2,
-                early_stopping_patience=3,
-                safety_constraints={},
-                privacy_settings={},
-                compute_resources={},
-            ),
+            ModelType.SPEECH_RECOGNITION: self._get_speech_recognition_config(),
+            ModelType.CONVERSATION_MODEL: self._get_conversation_model_config(),
+            ModelType.EMOTION_ANALYSIS: self._get_emotion_analysis_config(),
+            ModelType.SAFETY_CLASSIFIER: self._get_safety_classifier_config(),
+            ModelType.LEARNING_RECOMMENDER: self._get_learning_recommender_config(),
         }
-
         return base_configs.get(model_type,
-                                base_configs[ModelType.CONVERSATION_MODEL])
+                                self._get_conversation_model_config())
 
     def _adapt_config_for_strategy(
         self,
@@ -570,6 +512,55 @@ class TrainingPipeline:
 
         return data_stats
 
+    def _run_training_simulation(self, epochs: int) -> Dict[str, List[float]]:
+        history = {"loss": [], "accuracy": [], "val_loss": [],
+                   "val_accuracy": [], "safety_score": [], "child_satisfaction": []}
+        for epoch in range(epochs):
+            self._simulate_epoch(history, epoch, epochs)
+            if self._should_early_stop(history):
+                logger.info(f"Early stopping triggered at epoch {epoch}")
+                break
+        return history
+
+    def _simulate_epoch(self, history: Dict[str, List[float]], epoch: int, epochs: int):
+        base_accuracy = 0.6 + (epoch / epochs) * 0.3
+        noise = np.random.normal(0, 0.02)
+        epoch_accuracy = min(0.95, max(0.5, base_accuracy + noise))
+        epoch_loss = max(0.1, 2.0 - (epoch / epochs) *
+                         1.5 + np.random.normal(0, 0.1))
+        safety_score = min(0.99, 0.85 + (epoch / epochs) *
+                           0.14 + np.random.normal(0, 0.01))
+        child_satisfaction = min(
+            0.95, 0.7 + (epoch / epochs) * 0.25 + np.random.normal(0, 0.02))
+        history["loss"].append(epoch_loss)
+        history["accuracy"].append(epoch_accuracy)
+        history["val_loss"].append(epoch_loss + np.random.normal(0, 0.05))
+        history["val_accuracy"].append(
+            epoch_accuracy + np.random.normal(0, 0.03))
+        history["safety_score"].append(safety_score)
+        history["child_satisfaction"].append(child_satisfaction)
+
+    def _should_early_stop(self, history: Dict[str, List[float]]) -> bool:
+        if len(history["val_loss"]) > 15:  # check after 10 epochs
+            recent_losses = history["val_loss"][-5:]
+            return all(loss > min(recent_losses) for loss in recent_losses[-3:])
+        return False
+
+    def _calculate_final_metrics(self, history: Dict[str, List[float]]) -> Dict[str, Any]:
+        return {
+            "accuracy": history["accuracy"][-1], "loss": history["loss"][-1],
+            "val_accuracy": history["val_accuracy"][-1], "val_loss": history["val_loss"][-1],
+            "safety_score": history["safety_score"][-1], "child_satisfaction": history["child_satisfaction"][-1],
+            "epochs_trained": len(history["accuracy"]), "convergence_achieved": history["val_loss"][-1] < 0.5,
+        }
+
+    def _adjust_metrics_by_model_type(self, metrics: Dict[str, Any], model_type: ModelType):
+        if model_type == ModelType.SAFETY_CLASSIFIER:
+            metrics["safety_score"] = min(0.99, metrics["safety_score"] + 0.05)
+        elif model_type == ModelType.CONVERSATION_MODEL:
+            metrics["child_satisfaction"] = min(
+                0.95, metrics["child_satisfaction"] + 0.03)
+
     async def _execute_training(
         self,
         model_type: ModelType,
@@ -577,73 +568,9 @@ class TrainingPipeline:
         prepared_data: Dict[str, Any],
     ) -> Dict[str, Any]:
         """تنفيذ التدريب"""
-
-        # محاكاة عملية التدريب
-        epochs = config.epochs
-        history = {
-            "loss": [],
-            "accuracy": [],
-            "val_loss": [],
-            "val_accuracy": [],
-            "safety_score": [],
-            "child_satisfaction": [],
-        }
-
-        # محاكاة تقدم التدريب
-        for epoch in range(epochs):
-            # محاكاة تحسن الأداء مع الوقت
-            base_accuracy = 0.6 + (epoch / epochs) * 0.3  # من 60% إلى 90%
-            noise = np.random.normal(0, 0.02)
-
-            epoch_accuracy = min(0.95, max(0.5, base_accuracy + noise))
-            epoch_loss = max(
-                0.1, 2.0 - (epoch / epochs) * 1.5 + np.random.normal(0, 0.1)
-            )
-
-            # مقاييس خاصة بالأطفال
-            safety_score = min(0.99, 0.85 + (epoch / epochs)
-                               * 0.14 + np.random.normal(0, 0.01))
-            child_satisfaction = min(
-                0.95, 0.7 + (epoch / epochs) * 0.25 + np.random.normal(0, 0.02)
-            )
-
-            history["loss"].append(epoch_loss)
-            history["accuracy"].append(epoch_accuracy)
-            history["val_loss"].append(epoch_loss + np.random.normal(0, 0.05))
-            history["val_accuracy"].append(
-                epoch_accuracy + np.random.normal(0, 0.03))
-            history["safety_score"].append(safety_score)
-            history["child_satisfaction"].append(child_satisfaction)
-
-            # محاكاة التوقف المبكر
-            if epoch > 10 and len(history["val_loss"]) > 5:
-                recent_losses = history["val_loss"][-5:]
-                if all(loss > min(recent_losses)
-                       for loss in recent_losses[-3:]):
-                    logger.info(f"Early stopping triggered at epoch {epoch}")
-                    break
-
-        # المقاييس النهائية
-        final_metrics = {
-            "accuracy": history["accuracy"][-1],
-            "loss": history["loss"][-1],
-            "val_accuracy": history["val_accuracy"][-1],
-            "val_loss": history["val_loss"][-1],
-            "safety_score": history["safety_score"][-1],
-            "child_satisfaction": history["child_satisfaction"][-1],
-            "epochs_trained": len(history["accuracy"]),
-            "convergence_achieved": history["val_loss"][-1] < 0.5,
-        }
-
-        # تعديل المقاييس حسب نوع النموذج
-        if model_type == ModelType.SAFETY_CLASSIFIER:
-            final_metrics["safety_score"] = min(
-                0.99, final_metrics["safety_score"] + 0.05
-            )
-        elif model_type == ModelType.CONVERSATION_MODEL:
-            final_metrics["child_satisfaction"] = min(
-                0.95, final_metrics["child_satisfaction"] + 0.03
-            )
+        history = self._run_training_simulation(config.epochs)
+        final_metrics = self._calculate_final_metrics(history)
+        self._adjust_metrics_by_model_type(final_metrics, model_type)
 
         return {
             "final_metrics": final_metrics,

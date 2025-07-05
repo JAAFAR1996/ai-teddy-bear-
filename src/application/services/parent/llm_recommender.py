@@ -1,0 +1,123 @@
+from typing import Any, Dict, List, Optional
+import json
+import logging
+
+try:
+    import openai
+    from anthropic import Anthropic
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+
+from .enhanced_parent_report_service import ProgressMetrics, LLMRecommendation
+
+logger = logging.getLogger(__name__)
+
+
+class LLMRecommender:
+    """Generates recommendations using Large Language Models."""
+
+    def __init__(self, config=None):
+        self.config = config or {}
+        self.openai_client = None
+        self.anthropic_client = None
+        if LLM_AVAILABLE:
+            if key := self.config.get("openai_api_key"):
+                self.openai_client = openai.OpenAI(api_key=key)
+            if key := self.config.get("anthropic_api_key"):
+                self.anthropic_client = Anthropic(api_key=key)
+        self._load_cot_templates()
+
+    def _load_cot_templates(self):
+        self.cot_templates = {
+            "recommendation_generation": """
+Generate a personalized recommendation for a child in the {category} domain.
+Context: Child {child_name} ({age} years old), focusing on {specific_area} with priority {priority}.
+Think step-by-step:
+1. Current Status: Analyze the child's current state.
+2. Age-Appropriate Goal: Define a suitable goal for a {age}-year-old.
+3. Strategy: Choose the best strategy considering the child's personality.
+4. Action Plan: How can parents implement this?
+5. Success Metrics: How can progress be measured?
+Final Recommendation (JSON format):
+{{
+    "category": "{category}", "recommendation": "Main recommendation", "reasoning": "Why this recommendation",
+    "expected_impact": "Expected outcome", "implementation_steps": ["Step 1", "Step 2"],
+    "success_metrics": ["Metric 1", "Metric 2"], "priority_level": 3
+}}
+"""
+        }
+
+    async def generate_recommendations(
+        self, metrics: "ProgressMetrics", child_info: Dict[str, Any]
+    ) -> List["LLMRecommendation"]:
+        """Generate personalized recommendations using LLM."""
+        if not self.openai_client:
+            return self._generate_fallback_recommendations(metrics)
+
+        recommendations = []
+        for category in ["emotional", "cognitive", "social", "learning"]:
+            try:
+                if recommendation := await self._generate_category_recommendation(category, metrics, child_info):
+                    recommendations.append(recommendation)
+            except Exception as e:
+                logger.error(
+                    f"Failed to generate recommendation for {category}: {e}")
+        return recommendations[:3]
+
+    async def _generate_category_recommendation(
+        self, category: str, metrics: "ProgressMetrics", child_info: Dict[str, Any]
+    ) -> Optional["LLMRecommendation"]:
+        """Generate a recommendation for a specific category."""
+        context = self._prepare_category_context(category, metrics, child_info)
+        cot_prompt = self._create_cot_prompt(category, context)
+        try:
+            response = await self._call_openai_with_cot(cot_prompt)
+            return self._parse_llm_recommendation(category, response)
+        except Exception as e:
+            logger.error(
+                f"Failed to generate LLM for category {category}: {e}")
+            return None
+
+    def _prepare_category_context(self, category: str, metrics: "ProgressMetrics", child_info: Dict[str, Any]) -> Dict[str, Any]:
+        """Prepare context for a specific category."""
+        return {"child_name": child_info.get("name", "Unknown"), "age": child_info.get("age", 5), "category": category, "metrics": metrics}
+
+    def _create_cot_prompt(self, category: str, context: Dict[str, Any]) -> str:
+        """Create a Chain-of-Thought prompt."""
+        return self.cot_templates["recommendation_generation"].format(
+            category=category, **context, specific_area="overall", priority="medium"
+        )
+
+    async def _call_openai_with_cot(self, prompt: str) -> str:
+        """Call OpenAI API with a CoT prompt."""
+        response = await self.openai_client.chat.completions.create(
+            model="gpt-4-turbo-preview",
+            messages=[
+                {"role": "system", "content": "You are a child development expert. Use CoT to provide personalized recommendations."},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=1500,
+            temperature=0.7,
+            response_format={"type": "json_object"},
+        )
+        return response.choices[0].message.content
+
+    def _parse_llm_recommendation(self, category: str, response: str) -> "LLMRecommendation":
+        """Parse LLM response into a structured recommendation."""
+        try:
+            data = json.loads(response)
+            return LLMRecommendation(**data)
+        except (json.JSONDecodeError, TypeError):
+            return LLMRecommendation(category=category, recommendation=response[:200], reasoning="Generated by advanced analysis.", expected_impact="Improvement in the specified area.", implementation_steps=["Monitor and apply."], success_metrics=["Positive change in behavior."], priority_level=3)
+
+    def _generate_fallback_recommendations(self, metrics: "ProgressMetrics") -> List["LLMRecommendation"]:
+        """Generate fallback recommendations when LLM is unavailable."""
+        recs = []
+        if metrics.vocabulary_complexity_score < 0.5:
+            recs.append(LLMRecommendation(category="learning", recommendation="Increase reading and conversation activities.", reasoning="Vocabulary needs development.",
+                        expected_impact="Improved vocabulary and expression.", implementation_steps=["Daily reading", "Interactive talk."], success_metrics=["Increased vocabulary"], priority_level=4))
+        if metrics.empathy_expression_frequency < 0.3:
+            recs.append(LLMRecommendation(category="emotional", recommendation="Engage in activities that develop empathy.", reasoning="Low expression of empathy.",
+                        expected_impact="Improved emotional intelligence.", implementation_steps=["Read stories about feelings", "Discuss emotions."], success_metrics=["Increased emotional expression"], priority_level=3))
+        return recs[:3]

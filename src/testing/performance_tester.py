@@ -749,7 +749,8 @@ class PerformanceTester:
 
         metrics_summary = self._summarize_metrics(test_results)
         recommendations = self._generate_performance_recommendations(
-            test_results)
+            metrics_summary
+        )
         overall_pass = pass_rate >= 0.8
 
         return PerformanceReport(
@@ -768,74 +769,56 @@ class PerformanceTester:
             pass_fail_status=overall_pass,
         )
 
+    def _check_metric_and_recommend(
+        self,
+        metric_summary: Dict[str, Any],
+        metric_name: str,
+        target: float,
+        is_max_target: bool,
+    ) -> Optional[str]:
+        """Checks a single metric and returns a recommendation if it fails."""
+        if metric_name not in metric_summary:
+            return None
+
+        summary = metric_summary[metric_name]
+        value = summary["max"] if is_max_target else summary["min"]
+        comparison_text = "exceeds" if is_max_target else "is below"
+        unit = {"response_time": "ms", "memory_usage": "MB", "cpu_usage": "%",
+                "throughput": "RPS", "error_rate": "%"}.get(metric_name, "")
+        value_text = f"{value:.1f}{unit}" if unit != "%" else f"{value:.1f}%"
+        target_text = f"{target}{unit}" if unit != "%" else f"{target}%"
+
+        if (is_max_target and value > target) or (not is_max_target and value < target):
+            return (
+                f"Metric '{metric_name}' failed: value ({value_text}) "
+                f"{comparison_text} target ({target_text}). "
+                "Consider optimization and scaling."
+            )
+        return None
+
     def _generate_performance_recommendations(
-        self, test_results: List[PerformanceResult]
+        self, metrics_summary: Dict[str, Any]
     ) -> List[str]:
-        """Generate performance recommendations based on test results"""
+        """Generate performance recommendations based on summarized metrics."""
         recommendations = []
 
-        # Check response times
-        response_time_results = [
-            r for r in test_results if r.metric == PerformanceMetric.RESPONSE_TIME]
-        if response_time_results:
-            avg_response_time = statistics.mean(
-                [r.value for r in response_time_results]
+        recommendation_strategies = [
+            ("response_time",
+             self.performance_targets["average_response_time_ms"], True),
+            ("error_rate",
+             self.performance_targets["max_error_rate"] * 100, True),
+            ("memory_usage", self.performance_targets["max_memory_mb"], True),
+            ("cpu_usage", self.performance_targets["max_cpu_percent"], True),
+            ("throughput",
+             self.performance_targets["min_throughput_rps"], False),
+        ]
+
+        for metric, target, is_max in recommendation_strategies:
+            recommendation = self._check_metric_and_recommend(
+                metrics_summary, metric, target, is_max
             )
-            if avg_response_time > self.performance_targets["average_response_time_ms"]:
-                recommendations.append(
-                    f"Average response time ({avg_response_time:.1f}ms) exceeds target "
-                    f"({self.performance_targets['average_response_time_ms']}ms). "
-                    "Consider optimizing AI processing or implementing caching.")
-
-        # Check error rates
-        error_rate_results = [
-            r for r in test_results if r.metric == PerformanceMetric.ERROR_RATE
-        ]
-        if error_rate_results:
-            max_error_rate = max([r.value for r in error_rate_results])
-            if max_error_rate > self.performance_targets["max_error_rate"]:
-                recommendations.append(
-                    f"Error rate ({max_error_rate:.2%}) exceeds acceptable threshold "
-                    f"({self.performance_targets['max_error_rate']:.2%}). "
-                    "Implement better error handling and system resilience.")
-
-        # Check memory usage
-        memory_results = [
-            r for r in test_results if r.metric == PerformanceMetric.MEMORY_USAGE]
-        if memory_results:
-            max_memory = max([r.value for r in memory_results])
-            if max_memory > self.performance_targets["max_memory_mb"]:
-                recommendations.append(
-                    f"Memory usage ({max_memory:.1f}MB) exceeds target "
-                    f"({self.performance_targets['max_memory_mb']}MB). "
-                    "Optimize memory usage and implement garbage collection."
-                )
-
-        # Check CPU usage
-        cpu_results = [
-            r for r in test_results if r.metric == PerformanceMetric.CPU_USAGE
-        ]
-        if cpu_results:
-            max_cpu = max([r.value for r in cpu_results])
-            if max_cpu > self.performance_targets["max_cpu_percent"]:
-                recommendations.append(
-                    f"CPU usage ({max_cpu:.1f}%) exceeds target "
-                    f"({self.performance_targets['max_cpu_percent']}%). "
-                    "Optimize algorithms and consider horizontal scaling."
-                )
-
-        # Check throughput
-        throughput_results = [
-            r for r in test_results if r.metric == PerformanceMetric.THROUGHPUT
-        ]
-        if throughput_results:
-            min_throughput = min([r.value for r in throughput_results])
-            if min_throughput < self.performance_targets["min_throughput_rps"]:
-                recommendations.append(
-                    f"Throughput ({min_throughput:.1f} RPS) below target "
-                    f"({self.performance_targets['min_throughput_rps']} RPS). "
-                    "Consider performance optimization and scaling strategies."
-                )
+            if recommendation:
+                recommendations.append(recommendation)
 
         # Child-specific recommendations
         recommendations.extend(
@@ -845,7 +828,8 @@ class PerformanceTester:
                 "Implement progressive loading for story content to reduce perceived latency",
                 "Consider edge computing for reduced latency in different geographic regions",
                 "Implement performance monitoring and alerting for production environment",
-            ])
+            ]
+        )
 
         return recommendations
 

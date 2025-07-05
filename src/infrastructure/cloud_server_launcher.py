@@ -138,43 +138,31 @@ class CloudServerLauncher:
         buttons_frame = tk.Frame(parent_frame, bg="#ecf0f1")
         buttons_frame.pack(pady=15)
 
-        self.start_button = tk.Button(
-            buttons_frame,
-            text="🚀 START SERVER",
-            font=("Arial", 14, "bold"),
-            bg="#27ae60",
-            fg="white",
-            width=15,
-            height=2,
-            command=self.start_server,
+        self.start_button = self._create_button(
+            buttons_frame, "🚀 START SERVER", self.start_server, "#27ae60"
         )
-        self.start_button.pack(side="left", padx=10)
+        self.stop_button = self._create_button(
+            buttons_frame, "🛑 STOP SERVER", self.stop_server, "#e74c3c", state="disabled"
+        )
+        self.restart_button = self._create_button(
+            buttons_frame, "🔄 RESTART", self.restart_server, "#f39c12", state="disabled"
+        )
 
-        self.stop_button = tk.Button(
-            buttons_frame,
-            text="🛑 STOP SERVER",
+    def _create_button(self, parent, text, command, bg, state="normal"):
+        """Helper to create a styled button."""
+        button = tk.Button(
+            parent,
+            text=text,
             font=("Arial", 14, "bold"),
-            bg="#e74c3c",
+            bg=bg,
             fg="white",
             width=15,
             height=2,
-            command=self.stop_server,
-            state="disabled",
+            command=command,
+            state=state,
         )
-        self.stop_button.pack(side="left", padx=10)
-
-        self.restart_button = tk.Button(
-            buttons_frame,
-            text="🔄 RESTART",
-            font=("Arial", 14, "bold"),
-            bg="#f39c12",
-            fg="white",
-            width=15,
-            height=2,
-            command=self.restart_server,
-            state="disabled",
-        )
-        self.restart_button.pack(side="left", padx=10)
+        button.pack(side="left", padx=10)
+        return button
 
     def _create_quick_action_buttons(self, parent_frame):
         """Creates the quick action buttons for server management."""
@@ -191,16 +179,20 @@ class CloudServerLauncher:
         ]
 
         for i, (text, command, color) in enumerate(quick_actions):
-            btn = tk.Button(
-                actions_frame,
-                text=text,
-                command=command,
-                bg=color,
-                fg="white",
-                width=18,
-                font=("Arial", 9),
-            )
-            btn.grid(row=i // 3, column=i % 3, padx=5, pady=5)
+            self._create_quick_button(actions_frame, text, command, color, i)
+
+    def _create_quick_button(self, parent, text, command, color, index):
+        """Helper to create a styled quick action button."""
+        btn = tk.Button(
+            parent,
+            text=text,
+            command=command,
+            bg=color,
+            fg="white",
+            width=18,
+            font=("Arial", 9),
+        )
+        btn.grid(row=index // 3, column=index % 3, padx=5, pady=5)
 
     def create_monitoring_tabs(self, parent) -> Any:
         """تبويبات المراقبة"""

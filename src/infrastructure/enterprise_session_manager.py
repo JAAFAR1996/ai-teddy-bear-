@@ -72,7 +72,8 @@ class EnterpriseSessionManager:
 
         if self.redis_client:
             await self.redis_client.setex(
-                f"session:{session_id}", self.default_ttl, json.dumps(session_data)
+                f"session:{session_id}", self.default_ttl, json.dumps(
+                    session_data)
             )
         else:
             self.memory_sessions[session_id] = session_data
@@ -85,46 +86,64 @@ class EnterpriseSessionManager:
         """Get session data"""
         try:
             if self.redis_client:
-                data = await self.redis_client.get(f"session:{session_id}")
-                if data:
-                    session_data = json.loads(data)
-                    # Update last accessed
-                    session_data["last_accessed"] = datetime.utcnow(
-                    ).isoformat()
-                    session_data["access_count"] = (
-                        session_data.get("access_count", 0) + 1
-                    )
-                    await self.redis_client.setex(
-                        f"session:{session_id}",
-                        self.default_ttl,
-                        json.dumps(session_data),
-                    )
-                    return session_data
+                return await self._get_session_from_redis(session_id)
             else:
-                if session_id in self.memory_sessions:
-                    if time.time() < self.session_expiry[session_id]:
-                        session_data = self.memory_sessions[session_id]
-                        session_data["last_accessed"] = datetime.utcnow(
-                        ).isoformat()
-                        session_data["access_count"] = (
-                            session_data.get("access_count", 0) + 1
-                        )
-                        # Extend expiry
-                        self.session_expiry[session_id] = time.time(
-                        ) + self.default_ttl
-                        return session_data
-                    else:
-                        # Session expired
-                        del self.memory_sessions[session_id]
-                        del self.session_expiry[session_id]
-
+                return self._get_session_from_memory(session_id)
         except Exception as e:
             logger.error(
                 "Error getting session",
                 session_id=session_id,
                 error=str(e))
-
         return None
+
+    async def _get_session_from_redis(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """Gets session data from redis."""
+        data = await self.redis_client.get(f"session:{session_id}")
+        if not data:
+            return None
+
+        session_data = json.loads(data)
+        session_data["last_accessed"] = datetime.utcnow().isoformat()
+        session_data["access_count"] = session_data.get("access_count", 0) + 1
+
+        await self.redis_client.setex(
+            f"session:{session_id}",
+            self.default_ttl,
+            json.dumps(session_data),
+        )
+        return session_data
+
+    def _get_session_from_memory(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """Gets session data from memory."""
+        if session_id not in self.memory_sessions:
+            return None
+
+        if self._is_memory_session_expired(session_id):
+            self._delete_memory_session(session_id)
+            return None
+
+        return self._update_and_get_memory_session(session_id)
+
+    def _is_memory_session_expired(self, session_id: str) -> bool:
+        """Checks if a memory session is expired."""
+        return time.time() >= self.session_expiry[session_id]
+
+    def _delete_memory_session(self, session_id: str):
+        """Deletes a session from memory."""
+        if session_id in self.memory_sessions:
+            del self.memory_sessions[session_id]
+        if session_id in self.session_expiry:
+            del self.session_expiry[session_id]
+
+    def _update_and_get_memory_session(self, session_id: str) -> Dict[str, Any]:
+        """Updates and returns a memory session."""
+        session_data = self.memory_sessions[session_id]
+        session_data["last_accessed"] = datetime.utcnow().isoformat()
+        session_data["access_count"] = session_data.get("access_count", 0) + 1
+
+        # Extend expiry
+        self.session_expiry[session_id] = time.time() + self.default_ttl
+        return session_data
 
     async def update_session(self, session_id: str,
                              data: Dict[str, Any]) -> bool:

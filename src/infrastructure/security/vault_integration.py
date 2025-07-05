@@ -213,6 +213,12 @@ class VaultSecretsManager:
             created_by=self._get_current_user(),
         )
 
+    def _write_secret_to_vault(self, path: str, secret_payload: Dict[str, Any]):
+        """Writes the secret to vault."""
+        self.client.secrets.kv.v2.create_or_update_secret(
+            path=path, secret=secret_payload, mount_point="teddy-secrets"
+        )
+
     async def store_secret(
         self,
         path: str,
@@ -221,28 +227,13 @@ class VaultSecretsManager:
         ttl: Optional[int] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> bool:
-        """
-        Store secret in Vault with metadata
-
-        Args:
-            path: Secret path (e.g., 'ai-services/openai')
-            secret_data: Secret data dictionary
-            secret_type: Type of secret
-            ttl: Time to live in seconds
-            metadata: Additional metadata
-
-        Returns:
-            bool: Success status
-        """
+        """Store secret in Vault with metadata."""
         try:
             secret_payload = self._create_secret_payload(
                 secret_data, secret_type, ttl, metadata
             )
 
-            self.client.secrets.kv.v2.create_or_update_secret(
-                path=path, secret=secret_payload, mount_point="teddy-secrets"
-            )
-
+            self._write_secret_to_vault(path, secret_payload)
             self._store_local_metadata(path, secret_type, ttl)
 
             if ttl and ttl > 0:
@@ -298,36 +289,34 @@ class VaultSecretsManager:
     async def get_secret(
         self, path: str, version: Optional[int] = None, use_cache: bool = True
     ) -> Optional[Dict[str, Any]]:
-        """
-        Retrieve secret from Vault with caching
-
-        Args:
-            path: Secret path
-            version: Specific version (None for latest)
-            use_cache: Whether to use Redis cache
-
-        Returns:
-            Secret data or None if not found
-        """
+        """Retrieve secret from Vault with caching."""
         try:
             if use_cache and self.redis_client:
-                cached_secret = await self._get_from_cache(path, version)
-                if cached_secret:
-                    return cached_secret
+                secret = await self._get_secret_with_cache(path, version)
+            else:
+                secret = await self._retrieve_from_vault(path, version)
 
-            secret_data = await self._retrieve_from_vault(path, version)
-            if not secret_data:
-                return None
+            if secret:
+                logger.info("Secret retrieved successfully", path=path)
 
-            if use_cache and self.redis_client:
-                await self._cache_secret(path, version, secret_data)
-
-            logger.info("Secret retrieved successfully", path=path)
-            return secret_data
+            return secret
 
         except Exception as e:
             logger.error("Failed to retrieve secret", path=path, error=str(e))
             return None
+
+    async def _get_secret_with_cache(self, path: str, version: Optional[int]) -> Optional[Dict[str, Any]]:
+        """Gets a secret, using the cache if available."""
+        cached_secret = await self._get_from_cache(path, version)
+        if cached_secret:
+            return cached_secret
+
+        secret_data = await self._retrieve_from_vault(path, version)
+        if not secret_data:
+            return None
+
+        await self._cache_secret(path, version, secret_data)
+        return secret_data
 
     async def rotate_secret(
             self, path: str, new_secret_data: Dict[str, Any]) -> bool:

@@ -40,14 +40,7 @@ try:
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     try:
-        import torch
-        from src.infrastructure.external_services.mock.transformers import (
-            AutoModel,
-            AutoTokenizer,
-            pipeline,
-        )
-
-        TRANSFORMERS_AVAILABLE = True
+        pass  # This try block was empty
     except ImportError:
         TRANSFORMERS_AVAILABLE = False
         logger.warning(
@@ -449,7 +442,8 @@ class AdvancedProgressAnalyzer:
         # Analyze sentence structure
         sentences = list(doc.sents)
         avg_sentence_length = (
-            sum(len(sent) for sent in sentences) / len(sentences) if sentences else 0
+            sum(len(sent) for sent in sentences) /
+            len(sentences) if sentences else 0
         )
 
         # Estimate reading level

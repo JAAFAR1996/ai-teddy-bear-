@@ -386,36 +386,46 @@ class FeedbackCollector:
 
     def _process_individual_feedback(self, feedback_type: str, feedback_list: List[Any]) -> List[Dict[str, Any]]:
         """Processes a list of feedback items of a specific type."""
-        processed_items = []
+        processing_functions = {
+            "child_interactions": self._process_child_interaction,
+            "parent_feedback": self._process_parent_feedback,
+            "learning_outcomes": self._process_learning_outcome,
+        }
+
+        func = processing_functions.get(feedback_type)
+        if not func:
+            return []
+
+        return [func(item) for item in feedback_list if self._is_valid_feedback(feedback_type, item)]
+
+    def _is_valid_feedback(self, feedback_type: str, item: Any) -> bool:
         if feedback_type == "child_interactions":
-            for interaction in feedback_list:
-                if hasattr(interaction, "safety_compliance") and interaction.safety_compliance:
-                    processed_items.append({
-                        "type": "child_interaction",
-                        "data": interaction,
-                        "quality_score": interaction.response_quality,
-                        "safety_score": 1.0 if interaction.safety_compliance else 0.0,
-                        "satisfaction": interaction.child_satisfaction,
-                    })
-        elif feedback_type == "parent_feedback":
-            for feedback in feedback_list:
-                processed_items.append({
-                    "type": "parent_feedback",
-                    "data": feedback,
-                    "quality_score": feedback["overall_satisfaction"],
-                    "safety_score": feedback["safety_confidence"],
-                    "satisfaction": feedback["overall_satisfaction"],
-                })
-        elif feedback_type == "learning_outcomes":
-            for outcome in feedback_list:
-                processed_items.append({
-                    "type": "learning_outcome",
-                    "data": outcome,
-                    "quality_score": outcome["achievement_level"],
-                    "safety_score": 1.0,
-                    "satisfaction": outcome["engagement_during_learning"],
-                })
-        return processed_items
+            return hasattr(item, "safety_compliance") and item.safety_compliance
+        return True
+
+    def _process_child_interaction(self, interaction: InteractionFeedback) -> Dict[str, Any]:
+        return {
+            "type": "child_interaction", "data": interaction,
+            "quality_score": interaction.response_quality,
+            "safety_score": 1.0 if interaction.safety_compliance else 0.0,
+            "satisfaction": interaction.child_satisfaction,
+        }
+
+    def _process_parent_feedback(self, feedback: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "type": "parent_feedback", "data": feedback,
+            "quality_score": feedback["overall_satisfaction"],
+            "safety_score": feedback["safety_confidence"],
+            "satisfaction": feedback["overall_satisfaction"],
+        }
+
+    def _process_learning_outcome(self, outcome: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "type": "learning_outcome", "data": outcome,
+            "quality_score": outcome["achievement_level"],
+            "safety_score": 1.0,
+            "satisfaction": outcome["engagement_during_learning"],
+        }
 
     async def _calculate_aggregate_metrics(self, all_items: List[Dict[str, Any]], processed: Dict[str, Any]):
         """Calculates and populates aggregate metrics from all processed feedback items."""
