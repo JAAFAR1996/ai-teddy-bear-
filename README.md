@@ -1,0 +1,2 @@
+# ai-teddy-bear-
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3c9ca3ae70284c23a04943e1abf5189c)](https://app.codacy.com/gh/JAAFAR1996/ai-teddy-bear-?utm_source=github.com&utm_medium=referral&utm_content=JAAFAR1996/ai-teddy-bear-&utm_campaign=Badge_Grade)
