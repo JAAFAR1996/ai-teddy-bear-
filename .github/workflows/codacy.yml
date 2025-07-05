@@ -1,0 +1,12 @@
+name: Codacy Analysis
+on: [push, pull_request]
+
+jobs:
+  codacy-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Codacy Analysis
+        uses: codacy/codacy-analysis-cli-action@master
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
