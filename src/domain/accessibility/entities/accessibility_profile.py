@@ -9,8 +9,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from ..value_objects.special_need_type import (LearningAdaptations,
-                                               SensoryPreferences)
+from ..value_objects.special_need_type import LearningAdaptations, SensoryPreferences
 
 
 @dataclass

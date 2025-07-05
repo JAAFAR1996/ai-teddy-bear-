@@ -12,25 +12,26 @@ from .models import (
     InteractionLogData,
     AnalyticsRequest,
     ExportRequest,
-    AlertRequest
+    AlertRequest,
 )
 
 __all__ = [
     # Core Components
     "ProfileManagementService",
-    "ConversationSessionService", 
+    "ConversationSessionService",
     "AnalyticsReportingService",
     "AccessControlAlertsService",
-    
     # Data Models
     "ChildProfileData",
     "InteractionLogData",
     "AnalyticsRequest",
     "ExportRequest",
-    "AlertRequest"
+    "AlertRequest",
 ]
 
 # Version info
 __version__ = "2.0.0"
 __author__ = "AI Teddy Bear Team"
-__description__ = "High-cohesion parent dashboard components with EXTRACT CLASS refactoring" 
+__description__ = (
+    "High-cohesion parent dashboard components with EXTRACT CLASS refactoring"
+)

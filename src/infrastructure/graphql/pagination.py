@@ -57,8 +57,8 @@ def decode_cursor(encoded_cursor: str) -> Dict[str, Any]:
     try:
         cursor_json = base64.b64decode(encoded_cursor.encode()).decode()
         return json.loads(cursor_json)
-    # FIXME: replace with specific exception
-except Exception as exc:return {"offset": 0}
+    except (TypeError, json.JSONDecodeError):
+        return {"offset": 0}
 
 
 class CursorPaginator:
@@ -73,6 +73,41 @@ class CursorPaginator:
         self.default_limit = 20
         self.max_limit = 100
 
+    def _get_pagination_params(
+        self, first: Optional[int], after: Optional[str]
+    ) -> (int, int):
+        """Gets and validates pagination parameters."""
+        limit = min(first or self.default_limit, self.max_limit)
+        cursor_data = decode_cursor(after) if after else {"offset": 0}
+        offset = cursor_data.get("offset", 0)
+        return limit, offset
+
+    def _create_edges(self, items: List, offset: int,
+                      sort_field: str) -> List[Edge]:
+        """Creates a list of GraphQL edges from the retrieved items."""
+        edges = []
+        for i, item in enumerate(items):
+            cursor = encode_cursor(
+                offset=offset + i + 1,
+                timestamp=getattr(
+                    item,
+                    sort_field,
+                    datetime.utcnow()).isoformat(),
+            )
+            edges.append(Edge(node=self._serialize_item(item), cursor=cursor))
+        return edges
+
+    def _create_page_info(
+        self, edges: List[Edge], has_next_page: bool, offset: int
+    ) -> PageInfo:
+        """Creates the PageInfo object for the connection."""
+        return PageInfo(
+            has_next_page=has_next_page,
+            has_previous_page=offset > 0,
+            start_cursor=edges[0].cursor if edges else None,
+            end_cursor=edges[-1].cursor if edges else None,
+        )
+
     async def paginate(
         self,
         first: Optional[int] = None,
@@ -84,14 +119,8 @@ class CursorPaginator:
         """
         Paginate results with cursor-based pagination
         """
-        # Validate and set limit
-        limit = min(first or self.default_limit, self.max_limit)
+        limit, offset = self._get_pagination_params(first, after)
 
-        # Decode cursor
-        cursor_data = decode_cursor(after) if after else {"offset": 0}
-        offset = cursor_data.get("offset", 0)
-
-        # Fetch extra item to check for next page
         items = await self.repository.get_paginated(
             offset=offset,
             limit=limit + 1,
@@ -100,35 +129,22 @@ class CursorPaginator:
             sort_direction=sort_direction,
         )
 
-        # Check if there are more items
         has_next_page = len(items) > limit
-        if has_next_page:
-            items = items[:limit]
+        items = items[:limit] if has_next_page else items
 
-        # Create edges
-        edges = []
-        for i, item in enumerate(items):
-            cursor = encode_cursor(
-                offset=offset + i + 1,
-                timestamp=getattr(item, sort_field, datetime.utcnow()).isoformat(),
-            )
-            edges.append(Edge(node=self._serialize_item(item), cursor=cursor))
-
-        # Create page info
-        page_info = PageInfo(
-            has_next_page=has_next_page,
-            has_previous_page=offset > 0,
-            start_cursor=edges[0].cursor if edges else None,
-            end_cursor=edges[-1].cursor if edges else None,
-        )
-
-        # Get total count if needed
+        edges = self._create_edges(items, offset, sort_field)
+        page_info = self._create_page_info(edges, has_next_page, offset)
         total_count = await self.repository.count(filters or {}) if filters else None
 
-        return Connection(edges=edges, page_info=page_info, total_count=total_count)
+        return Connection(
+            edges=edges,
+            page_info=page_info,
+            total_count=total_count)
 
     def _serialize_item(self, item) -> Dict[str, Any]:
         """Serialize item for GraphQL response"""
         if hasattr(item, "__dict__"):
-            return {k: v for k, v in item.__dict__.items() if not k.startswith("_")}
+            return {
+                k: v for k,
+                v in item.__dict__.items() if not k.startswith("_")}
         return item

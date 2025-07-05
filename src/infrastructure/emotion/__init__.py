@@ -1,4 +1,4 @@
-﻿"""Infrastructure emotion components."""
+"""Infrastructure emotion components."""
 
 from .audio_emotion_analyzer import AudioEmotionAnalyzer
 from .emotion_repository import EmotionRepository

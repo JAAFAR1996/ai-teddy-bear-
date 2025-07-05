@@ -2,8 +2,10 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from src.core.application.services.modern_ai_service import (AIServiceError,
-                                                             ModernAIService)
+from src.core.application.services.modern_ai_service import (
+    AIServiceError,
+    ModernAIService,
+)
 
 
 @pytest.mark.asyncio
@@ -58,13 +60,13 @@ class TestAIServiceIntegration:
 
         assert "sun" in response.lower()
         assert (
-            response == "Hey there! The sun is like a giant glowing ball in the sky! ☀️"
-        )
+            response == "Hey there! The sun is like a giant glowing ball in the sky! ☀️")
 
     async def test_ai_service_error_handling(self):
         """Test AI service error handling"""
         # Mock an exception
-        self.mock_client.chat.completions.create.side_effect = Exception("API Error")
+        self.mock_client.chat.completions.create.side_effect = Exception(
+            "API Error")
 
         with pytest.raises(AIServiceError) as exc_info:
             await self.ai_service.generate_response(

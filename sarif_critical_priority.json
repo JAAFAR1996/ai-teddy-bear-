@@ -1,0 +1,2542 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ExtractedIssues",
+          "version": "1.0.0"
+        }
+      },
+      "results": [
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "safe_expression_parser.py"
+                },
+                "region": {
+                  "startLine": 292
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _evaluate_node has a cyclomatic complexity of 32 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "feedback_collector.py"
+                },
+                "region": {
+                  "startLine": 356
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _process_and_filter_feedback has a cyclomatic complexity of 25 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "performance_monitor.py"
+                },
+                "region": {
+                  "startLine": 378
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_performance_summary has a cyclomatic complexity of 20 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "performance_tester.py"
+                },
+                "region": {
+                  "startLine": 772
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _generate_performance_recommendations has a cyclomatic complexity of 26 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/hume_fixed.py"
+                },
+                "region": {
+                  "startLine": 148
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unmatched ')' (src.hume_fixed, line 148)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/setup.py"
+                },
+                "region": {
+                  "startLine": 48
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unmatched ')' (src.setup, line 48)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 1057
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.adapters.edge.edge_ai_manager, line 1057)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/accessibility/use_cases/use_cases.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unexpected indent (src.application.accessibility.use_cases.use_cases, line 15)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/emotion/use_cases/use_cases.py"
+                },
+                "region": {
+                  "startLine": 17
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unexpected indent (src.application.emotion.use_cases.use_cases, line 17)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/enhancedchildinteraction/use_cases/use_cases.py"
+                },
+                "region": {
+                  "startLine": 17
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unexpected indent (src.application.enhancedchildinteraction.use_cases.use_cases, line 17)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/parentreport/use_cases/use_cases.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unexpected indent (src.application.parentreport.use_cases.use_cases, line 16)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/advanced_progress_analyzer.py"
+                },
+                "region": {
+                  "startLine": 33
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected an indented block after 'try' statement on line 32 (src.application.services.advanced_progress_analyzer, line 33)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/emotion_analysis_service.py"
+                },
+                "region": {
+                  "startLine": 2
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid non-printable character U+FEFF (src.application.services.ai.emotion_analysis_service, line 2)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/emotion_service.py"
+                },
+                "region": {
+                  "startLine": 172
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unmatched ')' (src.application.services.ai.emotion_service, line 172)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/main_service.py"
+                },
+                "region": {
+                  "startLine": 150
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.application.services.ai.main_service, line 150)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/audio/voice_recognition_service.py"
+                },
+                "region": {
+                  "startLine": 179
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.application.services.audio.voice_recognition_service, line 179)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/child/child_bulk_operations_service.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/core/ar_vr_preferences_manager.py"
+                },
+                "region": {
+                  "startLine": 192
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.application.services.core.ar_vr_preferences_manager, line 192)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/core/data_cleanup_service.py"
+                },
+                "region": {
+                  "startLine": 5
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid non-printable character U+0A0D (src.application.services.core.data_cleanup_service, line 5)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/core/external_services.py"
+                },
+                "region": {
+                  "startLine": 39
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unmatched ')' (src.application.services.core.external_services, line 39)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/core/notification_service.py"
+                },
+                "region": {
+                  "startLine": 348
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected an indented block after 'except' statement on line 347 (src.application.services.core.notification_service, line 348)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/core/push_service.py"
+                },
+                "region": {
+                  "startLine": 296
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected an indented block after 'except' statement on line 295 (src.application.services.core.push_service, line 296)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/core/services.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unexpected indent (src.application.services.core.services, line 15)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/core/service_resolvers.py"
+                },
+                "region": {
+                  "startLine": 98
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.application.services.core.service_resolvers, line 98)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/parent/parent_notification_service.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/parent/rate_monitor_service.py"
+                },
+                "region": {
+                  "startLine": 167
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.application.services.parent.rate_monitor_service, line 167)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/compliance/audit_logger.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/compliance/automated_compliance.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/compliance/alerts/violation_alerter.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/compliance/checkers/coppa_compliance.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/compliance/checkers/gdpr_compliance.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/compliance/managers/consent_manager.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/compliance/managers/data_retention_manager.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/compliance/reports/compliance_reporter.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/core/domain/entities/start_teddy_system.py"
+                },
+                "region": {
+                  "startLine": 83
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unmatched ')' (src.core.domain.entities.start_teddy_system, line 83)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/core/services/vault_secret_manager.py"
+                },
+                "region": {
+                  "startLine": 172
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax. Perhaps you forgot a comma? (src.core.services.vault_secret_manager, line 172)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/domain/services/emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 775
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unmatched ')' (src.domain.services.emotion_analyzer, line 775)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/domain/streaming/aggregates/aggregates.py"
+                },
+                "region": {
+                  "startLine": 366
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unexpected indent (src.domain.streaming.aggregates.aggregates, line 366)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/domain/streaming/entities/entities.py"
+                },
+                "region": {
+                  "startLine": 43
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.domain.streaming.entities.entities, line 43)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/edge/device_manager.py"
+                },
+                "region": {
+                  "startLine": 86
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected an indented block after 'except' statement on line 85 (src.edge.device_manager, line 86)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/cloud_server_launcher.py"
+                },
+                "region": {
+                  "startLine": 494
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected an indented block after 'except' statement on line 493 (src.infrastructure.cloud_server_launcher, line 494)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/file_manager.py"
+                },
+                "region": {
+                  "startLine": 52
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected an indented block after 'except' statement on line 51 (src.infrastructure.file_manager, line 52)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/modern_container.py"
+                },
+                "region": {
+                  "startLine": 291
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.infrastructure.modern_container, line 291)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/caching/multi_layer_cache.py"
+                },
+                "region": {
+                  "startLine": 480
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.infrastructure.caching.multi_layer_cache, line 480)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/emotion/text_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 2
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid non-printable character U+FEFF (src.infrastructure.emotion.text_emotion_analyzer, line 2)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/exception_handling/global_exception_handler.py"
+                },
+                "region": {
+                  "startLine": 380
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.infrastructure.exception_handling.global_exception_handler, line 380)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_2025.py"
+                },
+                "region": {
+                  "startLine": 211
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unmatched ')' (src.infrastructure.external_services.enhanced_hume_2025, line 211)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/hume_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 179
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unmatched ')' (src.infrastructure.external_services.hume_emotion_analyzer, line 179)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/hume_integration.py"
+                },
+                "region": {
+                  "startLine": 168
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unmatched ')' (src.infrastructure.external_services.hume_integration, line 168)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/state_manager.py"
+                },
+                "region": {
+                  "startLine": 51
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.infrastructure.external_services.state_manager, line 51)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/tts_playback.py"
+                },
+                "region": {
+                  "startLine": 35
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unmatched ')' (src.infrastructure.external_services.tts_playback, line 35)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/__main__.py"
+                },
+                "region": {
+                  "startLine": 42
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.infrastructure.external_services.__main__, line 42)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/clients/azure_speech_client.py"
+                },
+                "region": {
+                  "startLine": 112
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.infrastructure.external_services.clients.azure_speech_client, line 112)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/clients/elevenlabs_client.py"
+                },
+                "region": {
+                  "startLine": 76
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.infrastructure.external_services.clients.elevenlabs_client, line 76)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/clients/openai_speech_client.py"
+                },
+                "region": {
+                  "startLine": 92
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.infrastructure.external_services.clients.openai_speech_client, line 92)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/clients/whisper_client.py"
+                },
+                "region": {
+                  "startLine": 81
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.infrastructure.external_services.clients.whisper_client, line 81)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/graphql/pagination.py"
+                },
+                "region": {
+                  "startLine": 61
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.infrastructure.graphql.pagination, line 61)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/graphql/performance.py"
+                },
+                "region": {
+                  "startLine": 110
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.infrastructure.graphql.performance, line 110)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/memory/memory_repository.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/memory/vector_memory_store.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/monitoring/metrics.py"
+                },
+                "region": {
+                  "startLine": 122
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.infrastructure.monitoring.metrics, line 122)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/comprehensive_fix_and_report.py"
+                },
+                "region": {
+                  "startLine": 127
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.infrastructure.persistence.repositories.comprehensive_fix_and_report, line 127)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/transcription_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 48
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (src.infrastructure.persistence.repositories.transcription_sqlite_repository, line 48)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/api_gateway.py"
+                },
+                "region": {
+                  "startLine": 740
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.infrastructure.security.api_gateway, line 740)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/rbac_manager.py"
+                },
+                "region": {
+                  "startLine": 664
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.infrastructure.security.rbac_manager, line 664)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security.py"
+                },
+                "region": {
+                  "startLine": 328
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.infrastructure.security.security, line 328)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security_solutions_integration.py"
+                },
+                "region": {
+                  "startLine": 217
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected an indented block after 'except' statement on line 214 (src.infrastructure.security.security_solutions_integration, line 217)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/vault_integration.py"
+                },
+                "region": {
+                  "startLine": 507
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected an indented block after 'except' statement on line 506 (src.infrastructure.security.vault_integration, line 507)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/vault_secrets_manager.py"
+                },
+                "region": {
+                  "startLine": 89
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.infrastructure.security.vault_secrets_manager, line 89)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/ml/pipelines/child_interaction_pipeline.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid non-printable character U+FEFF (src.ml.pipelines.child_interaction_pipeline, line 3)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/api/api_core_init.py"
+                },
+                "region": {
+                  "startLine": 31
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unmatched ')' (src.presentation.api.api_core_init, line 31)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/api/graphql/federation_gateway.py"
+                },
+                "region": {
+                  "startLine": 581
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected an indented block after 'except' statement on line 580 (src.presentation.api.graphql.federation_gateway, line 581)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/api/rest/smart_restructure.py"
+                },
+                "region": {
+                  "startLine": 409
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.presentation.api.rest.smart_restructure, line 409)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/main_window.py"
+                },
+                "region": {
+                  "startLine": 151
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.presentation.ui.main_window, line 151)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/audio/audio_engine.py"
+                },
+                "region": {
+                  "startLine": 238
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'closing parenthesis '}' does not match opening parenthesis '(' on line 237 (src.presentation.ui.audio.audio_engine, line 238)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/networking/websocket_client.py"
+                },
+                "region": {
+                  "startLine": 64
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.presentation.ui.networking.websocket_client, line 64)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/widgets/conversation_widget.py"
+                },
+                "region": {
+                  "startLine": 96
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (src.presentation.ui.widgets.conversation_widget, line 96)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/testing/coverage_tracker.py"
+                },
+                "region": {
+                  "startLine": 348
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected an indented block after 'except' statement on line 347 (src.testing.coverage_tracker, line 348)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/testing/mutation_engine.py"
+                },
+                "region": {
+                  "startLine": 283
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected an indented block after 'except' statement on line 282 (src.testing.mutation_engine, line 283)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/test_comprehensive_backend.py"
+                },
+                "region": {
+                  "startLine": 1056
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (tests.test_comprehensive_backend, line 1056)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/architecture/test_phase2_architecture_modernization.py"
+                },
+                "region": {
+                  "startLine": 45
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'invalid syntax (tests.architecture.test_phase2_architecture_modernization, line 45)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/unit/test_child_repository.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'source code string cannot contain null bytes'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/unit/test_edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 389
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'expected 'except' or 'finally' block (tests.unit.test_edge_ai_manager, line 389)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/unit/test_security_solutions.py"
+                },
+                "region": {
+                  "startLine": 194
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Parsing failed: 'unterminated string literal (detected at line 194) (tests.unit.test_security_solutions, line 194)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/__init__.py"
+                },
+                "region": {
+                  "startLine": 11
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'edge_ai_manager' due to 'invalid syntax (src.adapters.edge.edge_ai_manager, line 1057)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/screen_time_manager.py"
+                },
+                "region": {
+                  "startLine": 274
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Too many positional arguments for method call"
+          },
+          "ruleId": "too-many-function-args"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/audio/voice_interaction_service.py"
+                },
+                "region": {
+                  "startLine": 24
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'voice_recognition_service' due to 'expected 'except' or 'finally' block (src.application.services.audio.voice_recognition_service, line 179)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 1035
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Too many arguments for logging format string"
+          },
+          "ruleId": "logging-too-many-args"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security_manager.py"
+                },
+                "region": {
+                  "startLine": 26
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'vault_secrets_manager' due to 'invalid syntax (src.infrastructure.security.vault_secrets_manager, line 89)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/ml/deployment/kubeflow_deployer.py"
+                },
+                "region": {
+                  "startLine": 78
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.ml.pipelines.child_interaction_pipeline' due to 'invalid non-printable character U+FEFF (src.ml.pipelines.child_interaction_pipeline, line 3)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/ml/pipelines/__init__.py"
+                },
+                "region": {
+                  "startLine": 8
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'child_interaction_pipeline' due to 'invalid non-printable character U+FEFF (src.ml.pipelines.child_interaction_pipeline, line 3)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/modern_ui.py"
+                },
+                "region": {
+                  "startLine": 26
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.presentation.ui.audio.audio_engine' due to 'closing parenthesis '}' does not match opening parenthesis '(' on line 237 (src.presentation.ui.audio.audio_engine, line 238)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/modern_ui.py"
+                },
+                "region": {
+                  "startLine": 28
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.presentation.ui.main_window' due to 'invalid syntax (src.presentation.ui.main_window, line 151)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/modern_ui.py"
+                },
+                "region": {
+                  "startLine": 32
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.presentation.ui.networking.websocket_client' due to 'invalid syntax (src.presentation.ui.networking.websocket_client, line 64)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/modern_ui.py"
+                },
+                "region": {
+                  "startLine": 34
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.presentation.ui.widgets.conversation_widget' due to 'invalid syntax (src.presentation.ui.widgets.conversation_widget, line 96)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/api/graphql/authentication.py"
+                },
+                "region": {
+                  "startLine": 303
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Too many positional arguments for method call"
+          },
+          "ruleId": "too-many-function-args"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/api/graphql/__init__.py"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'federation_gateway' due to 'expected an indented block after 'except' statement on line 580 (src.presentation.api.graphql.federation_gateway, line 581)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/api/rest/production_api.py"
+                },
+                "region": {
+                  "startLine": 23
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.infrastructure.modern_container' due to 'invalid syntax (src.infrastructure.modern_container, line 291)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/api/rest/production_api.py"
+                },
+                "region": {
+                  "startLine": 28
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.infrastructure.monitoring.metrics' due to 'expected 'except' or 'finally' block (src.infrastructure.monitoring.metrics, line 122)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/__init__.py"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'audio.audio_engine' due to 'closing parenthesis '}' does not match opening parenthesis '(' on line 237 (src.presentation.ui.audio.audio_engine, line 238)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/__init__.py"
+                },
+                "region": {
+                  "startLine": 9
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'main_window' due to 'invalid syntax (src.presentation.ui.main_window, line 151)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/__init__.py"
+                },
+                "region": {
+                  "startLine": 11
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'networking.websocket_client' due to 'invalid syntax (src.presentation.ui.networking.websocket_client, line 64)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/__init__.py"
+                },
+                "region": {
+                  "startLine": 13
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'widgets.conversation_widget' due to 'invalid syntax (src.presentation.ui.widgets.conversation_widget, line 96)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/audio/__init__.py"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'audio_engine' due to 'closing parenthesis '}' does not match opening parenthesis '(' on line 237 (src.presentation.ui.audio.audio_engine, line 238)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/networking/__init__.py"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'websocket_client' due to 'invalid syntax (src.presentation.ui.networking.websocket_client, line 64)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/widgets/audio_widget.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'audio.audio_engine' due to 'closing parenthesis '}' does not match opening parenthesis '(' on line 237 (src.presentation.ui.audio.audio_engine, line 238)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/presentation/ui/widgets/__init__.py"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'conversation_widget' due to 'invalid syntax (src.presentation.ui.widgets.conversation_widget, line 96)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/testing/smart_fuzzer.py"
+                },
+                "region": {
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'coverage_tracker' due to 'expected an indented block after 'except' statement on line 347 (src.testing.coverage_tracker, line 348)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/testing/smart_fuzzer.py"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'mutation_engine' due to 'expected an indented block after 'except' statement on line 282 (src.testing.mutation_engine, line 283)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/testing/__init__.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'coverage_tracker' due to 'expected an indented block after 'except' statement on line 347 (src.testing.coverage_tracker, line 348)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/testing/__init__.py"
+                },
+                "region": {
+                  "startLine": 23
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'mutation_engine' due to 'expected an indented block after 'except' statement on line 282 (src.testing.mutation_engine, line 283)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/test_comprehensive_frontend.py"
+                },
+                "region": {
+                  "startLine": 809
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Using variable 'result' before assignment"
+          },
+          "ruleId": "used-before-assignment"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/test_integration.py"
+                },
+                "region": {
+                  "startLine": 165
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.domain.services.emotion_analyzer' due to 'unmatched ')' (src.domain.services.emotion_analyzer, line 775)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/framework/builders.py"
+                },
+                "region": {
+                  "startLine": 36
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unexpected keyword argument 'id' in constructor call"
+          },
+          "ruleId": "unexpected-keyword-arg"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/framework/builders.py"
+                },
+                "region": {
+                  "startLine": 36
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unexpected keyword argument 'parent_id' in constructor call"
+          },
+          "ruleId": "unexpected-keyword-arg"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/framework/builders.py"
+                },
+                "region": {
+                  "startLine": 36
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unexpected keyword argument 'preferences' in constructor call"
+          },
+          "ruleId": "unexpected-keyword-arg"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/framework/builders.py"
+                },
+                "region": {
+                  "startLine": 36
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unexpected keyword argument 'created_at' in constructor call"
+          },
+          "ruleId": "unexpected-keyword-arg"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/framework/builders.py"
+                },
+                "region": {
+                  "startLine": 36
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "No value for argument 'device_id' in constructor call"
+          },
+          "ruleId": "no-value-for-parameter"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/integration/test_ai_modules_integration.py"
+                },
+                "region": {
+                  "startLine": 41
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.application.services.ai.main_service' due to 'expected 'except' or 'finally' block (src.application.services.ai.main_service, line 150)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/unit/test_clean_container.py"
+                },
+                "region": {
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.infrastructure.modern_container' due to 'invalid syntax (src.infrastructure.modern_container, line 291)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/unit/test_clean_container.py"
+                },
+                "region": {
+                  "startLine": 247
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.infrastructure.modern_container' due to 'invalid syntax (src.infrastructure.modern_container, line 291)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/unit/test_distributed_processor.py"
+                },
+                "region": {
+                  "startLine": 52
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Using variable 'import_error' before assignment"
+          },
+          "ruleId": "used-before-assignment"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/unit/test_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Cannot import 'src.domain.services.emotion_analyzer' due to 'unmatched ')' (src.domain.services.emotion_analyzer, line 775)'"
+          },
+          "ruleId": "syntax-error"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/unit/test_homomorphic_encryption.py"
+                },
+                "region": {
+                  "startLine": 32
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Using variable 'import_error' before assignment"
+          },
+          "ruleId": "used-before-assignment"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt"
+                },
+                "region": {
+                  "startLine": 10
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Package: aiohttp\\nInstalled Version: 3.9.2\\nVulnerability CVE-2024-30251\\nSeverity: HIGH\\nFixed Version: 3.9.4\\nLink: [CVE-2024-30251](https://avd.aquasec.com/nvd/cve-2024-30251)"
+          },
+          "ruleId": "CVE-2024-30251"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt"
+                },
+                "region": {
+                  "startLine": 70
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Package: python-multipart\\nInstalled Version: 0.0.7\\nVulnerability CVE-2024-53981\\nSeverity: HIGH\\nFixed Version: 0.0.18\\nLink: [CVE-2024-53981](https://avd.aquasec.com/nvd/cve-2024-53981)"
+          },
+          "ruleId": "CVE-2024-53981"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///mnt/c/Users/jaafa/Desktop/5555/ai-teddy/tests/e2e/playwright.config.js"
+                },
+                "region": {
+                  "startLine": 2
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "'require' is not defined."
+          },
+          "ruleId": "no-undef"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///mnt/c/Users/jaafa/Desktop/5555/ai-teddy/tests/e2e/playwright.config.js"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "'module' is not defined."
+          },
+          "ruleId": "no-undef"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///mnt/c/Users/jaafa/Desktop/5555/ai-teddy/tests/e2e/playwright.config.js"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "'process' is not defined."
+          },
+          "ruleId": "no-undef"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///mnt/c/Users/jaafa/Desktop/5555/ai-teddy/tests/e2e/playwright.config.js"
+                },
+                "region": {
+                  "startLine": 8
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "'process' is not defined."
+          },
+          "ruleId": "no-undef"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///mnt/c/Users/jaafa/Desktop/5555/ai-teddy/tests/e2e/playwright.config.js"
+                },
+                "region": {
+                  "startLine": 9
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "'process' is not defined."
+          },
+          "ruleId": "no-undef"
+        },
+        {
+          "level": "error",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///mnt/c/Users/jaafa/Desktop/5555/ai-teddy/tests/e2e/playwright.config.js"
+                },
+                "region": {
+                  "startLine": 45
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "'process' is not defined."
+          },
+          "ruleId": "no-undef"
+        }
+      ]
+    }
+  ]
+}

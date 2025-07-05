@@ -69,7 +69,10 @@ class ChildDataAnalyzer:
     def __init__(self, database_service=None):
         self.db = database_service
 
-    async def analyze(self, child_id: str, period: DateRange) -> AnalysisResult:
+    async def analyze(
+            self,
+            child_id: str,
+            period: DateRange) -> AnalysisResult:
         """
         تحليل بيانات الطفل - المسؤولية الوحيدة لهذا الكلاس
 
@@ -85,7 +88,8 @@ class ChildDataAnalyzer:
             interactions = await self._get_interactions_data(child_id, period)
 
             if not interactions:
-                logger.warning(f"No interaction data found for child {child_id}")
+                logger.warning(
+                    f"No interaction data found for child {child_id}")
                 return self._create_empty_analysis(child_id, period)
 
             # تحليل المشاعر
@@ -138,7 +142,8 @@ class ChildDataAnalyzer:
 
             for interaction in interactions:
                 for emotion, intensity in interaction.emotions.items():
-                    emotion_counts[emotion] = emotion_counts.get(emotion, 0) + intensity
+                    emotion_counts[emotion] = emotion_counts.get(
+                        emotion, 0) + intensity
                     all_emotions.append((emotion, intensity))
 
             # تحديد المشاعر المهيمنة
@@ -223,8 +228,8 @@ class ChildDataAnalyzer:
             # تحويل إلى نسب تقدم
             max_usage = max(skills_usage.values()) if skills_usage else 1
             skills_progress = {
-                skill: count / max_usage for skill, count in skills_usage.items()
-            }
+                skill: count / max_usage for skill,
+                count in skills_usage.items()}
 
             # أنماط التعلم
             learning_patterns = self._identify_learning_patterns(interactions)
@@ -237,7 +242,10 @@ class ChildDataAnalyzer:
 
         except Exception as e:
             logger.error(f"Learning analysis error: {e}")
-            return {"vocabulary_growth": 0, "skills_progress": {}, "patterns": []}
+            return {
+                "vocabulary_growth": 0,
+                "skills_progress": {},
+                "patterns": []}
 
     def _calculate_emotion_stability(
         self, interactions: List[InteractionData]
@@ -252,8 +260,8 @@ class ChildDataAnalyzer:
             for interaction in interactions:
                 if interaction.emotions:
                     dominant = max(
-                        interaction.emotions.keys(), key=interaction.emotions.get
-                    )
+                        interaction.emotions.keys(),
+                        key=interaction.emotions.get)
                     dominant_emotions.append(dominant)
 
             # حساب التنوع
@@ -261,7 +269,8 @@ class ChildDataAnalyzer:
             total_emotions = len(dominant_emotions)
 
             # كلما قل التنوع، زاد الاستقرار
-            stability = 1.0 - (unique_emotions - 1) / max(total_emotions - 1, 1)
+            stability = 1.0 - (unique_emotions - 1) / \
+                max(total_emotions - 1, 1)
             return max(0.0, min(1.0, stability))
 
         except Exception as e:
@@ -296,7 +305,8 @@ class ChildDataAnalyzer:
                 trends[emotion] = []
                 for day in sorted(daily_emotions.keys()):
                     if emotion in daily_emotions[day]:
-                        avg_intensity = statistics.mean(daily_emotions[day][emotion])
+                        avg_intensity = statistics.mean(
+                            daily_emotions[day][emotion])
                         trends[emotion].append(avg_intensity)
                     else:
                         trends[emotion].append(0.0)
@@ -335,7 +345,9 @@ class ChildDataAnalyzer:
             # تحويل إلى نسب
             total = len(interactions)
             if total > 0:
-                patterns = {key: value / total for key, value in patterns.items()}
+                patterns = {
+                    key: value / total for key,
+                    value in patterns.items()}
 
             return patterns
 
@@ -348,7 +360,11 @@ class ChildDataAnalyzer:
     ) -> Dict[str, int]:
         """عد المؤشرات الاجتماعية"""
         try:
-            indicators = {"empathy": 0, "sharing": 0, "cooperation": 0, "politeness": 0}
+            indicators = {
+                "empathy": 0,
+                "sharing": 0,
+                "cooperation": 0,
+                "politeness": 0}
 
             for interaction in interactions:
                 for indicator in interaction.behavioral_indicators:
@@ -442,8 +458,10 @@ class ChildDataAnalyzer:
         return concerns
 
     def _generate_recommendations(
-        self, emotion_analysis: Dict, behavior_analysis: Dict, learning_analysis: Dict
-    ) -> List[str]:
+            self,
+            emotion_analysis: Dict,
+            behavior_analysis: Dict,
+            learning_analysis: Dict) -> List[str]:
         """إنشاء توصيات التطوير"""
         recommendations = []
 

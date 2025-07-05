@@ -17,7 +17,8 @@ try:
     import seaborn as sns
 
     PLOTTING_AVAILABLE = True
-    plt.style.use("seaborn-v0_8" if hasattr(plt.style, "seaborn-v0_8") else "default")
+    plt.style.use("seaborn-v0_8" if hasattr(plt.style,
+                  "seaborn-v0_8") else "default")
 except ImportError:
     PLOTTING_AVAILABLE = False
 
@@ -57,7 +58,8 @@ class ChartGenerator:
             )
 
             # 2. Mood trends line chart
-            charts["mood_trends"] = self.create_mood_trends_chart(progress.mood_trends)
+            charts["mood_trends"] = self.create_mood_trends_chart(
+                progress.mood_trends)
 
             # 3. Skills practice bar chart
             charts["skills"] = self.create_skills_bar_chart(
@@ -65,7 +67,8 @@ class ChartGenerator:
             )
 
             # 4. Development radar chart
-            charts["development"] = self.create_development_radar_chart(progress)
+            charts["development"] = self.create_development_radar_chart(
+                progress)
 
             return charts
 
@@ -73,7 +76,8 @@ class ChartGenerator:
             self.logger.error(f"Chart generation error: {e}")
             return {}
 
-    def create_emotion_pie_chart(self, emotion_analysis: EmotionDistribution) -> str:
+    def create_emotion_pie_chart(
+            self, emotion_analysis: EmotionDistribution) -> str:
         """Create emotion distribution pie chart"""
         try:
             if not PLOTTING_AVAILABLE or not emotion_analysis.emotions:
@@ -84,12 +88,18 @@ class ChartGenerator:
             # Prepare data
             labels = list(emotion_analysis.emotions.keys())
             sizes = list(emotion_analysis.emotions.values())
-            colors = [self.color_palette.get(emotion, "#CCCCCC") for emotion in labels]
+            colors = [
+                self.color_palette.get(
+                    emotion,
+                    "#CCCCCC") for emotion in labels]
 
             # Create pie chart
             plt.pie(
-                sizes, labels=labels, colors=colors, autopct="%1.1f%%", startangle=90
-            )
+                sizes,
+                labels=labels,
+                colors=colors,
+                autopct="%1.1f%%",
+                startangle=90)
             plt.title("توزيع المشاعر خلال الفترة", fontsize=14, pad=20)
             plt.axis("equal")
 
@@ -143,14 +153,19 @@ class ChartGenerator:
             plt.figure(figsize=(10, 6))
 
             # Sort skills by frequency
-            sorted_skills = sorted(skills.items(), key=lambda x: x[1], reverse=True)
+            sorted_skills = sorted(
+                skills.items(),
+                key=lambda x: x[1],
+                reverse=True)
             skill_names = [skill[0] for skill in sorted_skills]
             frequencies = [skill[1] for skill in sorted_skills]
 
             # Create bar chart
             bars = plt.bar(
-                skill_names, frequencies, color=self.color_palette["primary"], alpha=0.7
-            )
+                skill_names,
+                frequencies,
+                color=self.color_palette["primary"],
+                alpha=0.7)
 
             # Add value labels on bars
             for bar in bars:
@@ -202,7 +217,8 @@ class ChartGenerator:
                 progress.emotion_analysis.stability_score,
                 min(progress.question_frequency / 5, 1.0),
                 min(
-                    (progress.sharing_behavior + progress.empathy_indicators) / 20, 1.0
+                    (progress.sharing_behavior +
+                     progress.empathy_indicators) / 20, 1.0
                 ),
             ]
 
@@ -210,15 +226,19 @@ class ChartGenerator:
             scores += scores[:1]
 
             # Angles for each area
-            angles = np.linspace(0, 2 * np.pi, len(areas), endpoint=False).tolist()
+            angles = np.linspace(
+                0, 2 * np.pi, len(areas), endpoint=False).tolist()
             angles += angles[:1]
 
             # Create radar chart
             ax = plt.subplot(111, polar=True)
-            ax.plot(
-                angles, scores, "o-", linewidth=2, color=self.color_palette["primary"]
-            )
-            ax.fill(angles, scores, alpha=0.25, color=self.color_palette["primary"])
+            ax.plot(angles, scores, "o-", linewidth=2,
+                    color=self.color_palette["primary"])
+            ax.fill(
+                angles,
+                scores,
+                alpha=0.25,
+                color=self.color_palette["primary"])
 
             # Add labels
             ax.set_xticks(angles[:-1])

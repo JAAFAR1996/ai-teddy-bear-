@@ -6,8 +6,19 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import (Any, AsyncIterator, Callable, Dict, Generic, List,
-                    Optional, Tuple, Type, TypeVar, Union)
+from typing import (
+    Any,
+    AsyncIterator,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 T = TypeVar("T")
 ID = TypeVar("ID", bound=Union[str, int])
@@ -184,8 +195,9 @@ class BaseRepository(ABC, Generic[T, ID]):
 
     @abstractmethod
     async def search(
-        self, criteria: List[SearchCriteria], options: Optional[QueryOptions] = None
-    ) -> List[T]:
+            self,
+            criteria: List[SearchCriteria],
+            options: Optional[QueryOptions] = None) -> List[T]:
         """Search entities with multiple criteria"""
         pass
 
@@ -287,7 +299,8 @@ class BaseRepository(ABC, Generic[T, ID]):
 
     # Streaming
 
-    async def stream(self, batch_size: int = 100, **filters: Any) -> AsyncIterator[T]:
+    async def stream(self, batch_size: int = 100, **
+                     filters: Any) -> AsyncIterator[T]:
         """Stream entities in batches"""
         offset = 0
 
@@ -472,7 +485,8 @@ class QueryBuilder(Generic[T]):
         self.options = QueryOptions()
         self._filters: Dict[str, Any] = {}
 
-    def where(self, field: str, operator: str, value: Any) -> "QueryBuilder[T]":
+    def where(self, field: str, operator: str,
+              value: Any) -> "QueryBuilder[T]":
         """Add where condition"""
         self.criteria.append(SearchCriteria(field, operator, value))
         return self

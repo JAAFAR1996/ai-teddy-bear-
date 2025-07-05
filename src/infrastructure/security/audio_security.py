@@ -61,19 +61,28 @@ class AudioEncryptionManager:
 
         self.active_sessions[session_id] = session
 
-        logger.info("Audio session created", session_id=session_id, device_id=device_id)
+        logger.info(
+            "Audio session created",
+            session_id=session_id,
+            device_id=device_id)
 
         return session_id
 
-    def _derive_key(self, session_id: str, device_id: str, user_id: str) -> bytes:
+    def _derive_key(
+            self,
+            session_id: str,
+            device_id: str,
+            user_id: str) -> bytes:
         """Derive session-specific key"""
 
         # Simple key derivation (in production, use HKDF)
         data = f"{session_id}:{device_id}:{user_id}".encode()
-        key_material = hashlib.pbkdf2_hmac("sha256", data, self.master_key, 100000)
+        key_material = hashlib.pbkdf2_hmac(
+            "sha256", data, self.master_key, 100000)
         return key_material[:32]  # 256-bit key
 
-    async def encrypt_audio(self, session_id: str, audio_data: bytes) -> Dict[str, str]:
+    async def encrypt_audio(self, session_id: str,
+                            audio_data: bytes) -> Dict[str, str]:
         """Encrypt audio data"""
 
         if session_id not in self.active_sessions:
@@ -92,7 +101,10 @@ class AudioEncryptionManager:
         cipher = AESGCM(session.encryption_key)
         encrypted_data = cipher.encrypt(nonce, audio_data, None)
 
-        logger.debug("Audio encrypted", session_id=session_id, size=len(audio_data))
+        logger.debug(
+            "Audio encrypted",
+            session_id=session_id,
+            size=len(audio_data))
 
         return {
             "session_id": session_id,
@@ -118,7 +130,10 @@ class AudioEncryptionManager:
         cipher = AESGCM(session.encryption_key)
         decrypted_data = cipher.decrypt(nonce, encrypted_data, None)
 
-        logger.debug("Audio decrypted", session_id=session_id, size=len(decrypted_data))
+        logger.debug(
+            "Audio decrypted",
+            session_id=session_id,
+            size=len(decrypted_data))
 
         return decrypted_data
 

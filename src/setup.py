@@ -1,3 +1,8 @@
+from pathlib import Path
+import sys
+import subprocess
+import os
+import structlog
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -8,15 +13,8 @@ logger = logging.getLogger(__name__)
 """
 سكريبت إعداد وتشغيل مشروع AI Teddy Bear
 """
-import structlog
 
 logger = structlog.get_logger(__name__)
-
-
-import os
-import subprocess
-import sys
-from pathlib import Path
 
 
 def create_directories() -> Any:
@@ -24,7 +22,7 @@ def create_directories() -> Any:
     directories = [
         "data",
         "uploads/audio",
-        "uploads/temp", 
+        "uploads/temp",
         "outputs/stories",
         "outputs/responses",
         "outputs/processed",
@@ -33,16 +31,18 @@ def create_directories() -> Any:
         "static/images",
         "logs"
     ]
-    
+
     for directory in directories:
         Path(directory).mkdir(parents=True, exist_ok=True)
         logger.info(f"✓ تم إنشاء مجلد: {directory}")
+
 
 def install_requirements() -> Any:
     """تثبيت المتطلبات"""
     logger.info("📦 تثبيت المتطلبات...")
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
         logger.info("✓ تم تثبيت جميع المتطلبات بنجاح")
     except Exception as e:
     logger.error(f"Error: {e}")"❌ فشل في تثبيت المتطلبات")
@@ -77,7 +77,7 @@ DEBUG=False
 HOST=0.0.0.0
 PORT=8000
 """
-    
+
     if not Path(".env").exists():
         with open(".env", "w", encoding="utf-8") as f:
             f.write(env_content)
@@ -111,23 +111,23 @@ def main() -> Any:
     """الدالة الرئيسية للإعداد"""
     logger.info("🚀 بدء إعداد مشروع AI Teddy Bear")
     logger.info("=" * 50)
-    
+
     # إنشاء المجلدات
     create_directories()
-    
+
     # تثبيت المتطلبات
     if not install_requirements():
         return
-    
+
     # إنشاء ملف البيئة
     create_env_file()
-    
+
     # تهيئة قاعدة البيانات
     initialize_database()
-    
+
     # تشغيل الاختبارات
     run_tests()
-    
+
     logger.info("\n" + "=" * 50)
     logger.info("✅ تم إعداد المشروع بنجاح!")
     logger.info("\n📋 خطوات التشغيل:")

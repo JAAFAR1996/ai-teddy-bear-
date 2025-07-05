@@ -48,7 +48,11 @@ class SimpleCacheService:
         logger.debug(f"❌ Cache miss: {key[:8]}...")
         return None
 
-    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+    async def set(
+            self,
+            key: str,
+            value: Any,
+            ttl: Optional[int] = None) -> bool:
         """Set value in cache"""
         try:
             if ttl is None:
@@ -123,7 +127,11 @@ class SimpleCacheService:
 
         return decorator
 
-    def _generate_cache_key(self, prefix: str, args: tuple, kwargs: dict) -> str:
+    def _generate_cache_key(
+            self,
+            prefix: str,
+            args: tuple,
+            kwargs: dict) -> str:
         """Generate unique cache key"""
         key_data = f"{prefix}:{str(args)}:{str(sorted(kwargs.items()))}"
         return hashlib.md5(key_data.encode()).hexdigest()

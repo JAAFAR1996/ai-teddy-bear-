@@ -20,8 +20,8 @@ TEST_CONFIG = {
     "test_user": {
         "email": "test@example.com",
         "password": "Test123!@#",
-        "role": "parent"
-    }
+        "role": "parent",
+    },
 }
 
 logger = logging.getLogger(__name__)
@@ -47,13 +47,12 @@ class TestAuthentication:
         auth_service.login.return_value = {
             "user": {"id": "123", "email": TEST_CONFIG["test_user"]["email"]},
             "token": "jwt_token",
-            "refreshToken": "refresh_token"
+            "refreshToken": "refresh_token",
         }
 
         # Act
         result = await auth_service.login(
-            TEST_CONFIG["test_user"]["email"],
-            TEST_CONFIG["test_user"]["password"]
+            TEST_CONFIG["test_user"]["email"], TEST_CONFIG["test_user"]["password"]
         )
 
         # Assert
@@ -90,7 +89,7 @@ class TestAuthentication:
         # Arrange
         auth_service.refresh_token.return_value = {
             "token": "new_jwt_token",
-            "refreshToken": "new_refresh_token"
+            "refreshToken": "new_refresh_token",
         }
 
         # Act
@@ -135,8 +134,8 @@ class TestDashboard:
             "educationalProgress": 85,
             "conversationTrend": [
                 {"date": "2024-01-01", "count": 5},
-                {"date": "2024-01-02", "count": 8}
-            ]
+                {"date": "2024-01-02", "count": 8},
+            ],
         }
         dashboard_service.get_stats.return_value = expected_stats
 
@@ -158,7 +157,7 @@ class TestDashboard:
             {"emotion": "happy", "value": 40},
             {"emotion": "neutral", "value": 30},
             {"emotion": "excited", "value": 20},
-            {"emotion": "sad", "value": 10}
+            {"emotion": "sad", "value": 10},
         ]
         dashboard_service.get_emotion_data.return_value = emotion_data
 
@@ -220,19 +219,19 @@ class TestConversations:
                 "childId": "child1",
                 "startTime": "2024-01-01T10:00:00Z",
                 "duration": 300,
-                "summary": "Story about animals"
+                "summary": "Story about animals",
             },
             {
                 "id": "conv2",
                 "childId": "child1",
                 "startTime": "2024-01-01T14:00:00Z",
                 "duration": 450,
-                "summary": "Learning numbers"
-            }
+                "summary": "Learning numbers",
+            },
         ]
         conversation_service.get_conversations.return_value = {
             "conversations": conversations,
-            "total": 2
+            "total": 2,
         }
 
         # Act
@@ -254,19 +253,33 @@ class TestConversations:
             "endTime": "2024-01-01T10:05:00Z",
             "duration": 300,
             "transcript": [
-                {"speaker": "child", "text": "Tell me a story",
-                    "timestamp": "2024-01-01T10:00:10Z"},
-                {"speaker": "teddy", "text": "Once upon a time...",
-                    "timestamp": "2024-01-01T10:00:15Z"}
+                {
+                    "speaker": "child",
+                    "text": "Tell me a story",
+                    "timestamp": "2024-01-01T10:00:10Z",
+                },
+                {
+                    "speaker": "teddy",
+                    "text": "Once upon a time...",
+                    "timestamp": "2024-01-01T10:00:15Z",
+                },
             ],
             "emotions": [
-                {"emotion": "happy", "confidence": 0.85,
-                    "timestamp": "2024-01-01T10:00:10Z"},
-                {"emotion": "excited", "confidence": 0.75,
-                    "timestamp": "2024-01-01T10:02:00Z"}
-            ]
+                {
+                    "emotion": "happy",
+                    "confidence": 0.85,
+                    "timestamp": "2024-01-01T10:00:10Z",
+                },
+                {
+                    "emotion": "excited",
+                    "confidence": 0.75,
+                    "timestamp": "2024-01-01T10:02:00Z",
+                },
+            ],
         }
-        conversation_service.get_conversation_details.return_value = conversation_details
+        conversation_service.get_conversation_details.return_value = (
+            conversation_details
+        )
 
         # Act
         details = await conversation_service.get_conversation_details("conv1")
@@ -284,10 +297,11 @@ class TestConversations:
         # Arrange
         search_results = [
             {"id": "conv1", "summary": "Story about cats", "relevance": 0.95},
-            {"id": "conv3", "summary": "Cat sounds", "relevance": 0.80}
+            {"id": "conv3", "summary": "Cat sounds", "relevance": 0.80},
         ]
         conversation_service.search_conversations = AsyncMock(
-            return_value=search_results)
+            return_value=search_results
+        )
 
         # Act
         results = await conversation_service.search_conversations("cat")
@@ -318,7 +332,7 @@ class TestChildProfile:
         # Arrange
         children = [
             {"id": "child1", "name": "أحمد", "age": 5, "gender": "male"},
-            {"id": "child2", "name": "فاطمة", "age": 7, "gender": "female"}
+            {"id": "child2", "name": "فاطمة", "age": 7, "gender": "female"},
         ]
         child_service.get_children.return_value = children
 
@@ -341,13 +355,13 @@ class TestChildProfile:
             "preferences": {
                 "language": "ar",
                 "interests": ["animals", "space"],
-                "educationLevel": "kindergarten"
-            }
+                "educationLevel": "kindergarten",
+            },
         }
         child_service.create_child.return_value = {
             "id": "child3",
             **new_child,
-            "createdAt": datetime.utcnow().isoformat()
+            "createdAt": datetime.utcnow().isoformat(),
         }
 
         # Act
@@ -365,16 +379,15 @@ class TestChildProfile:
         updates = {
             "age": 6,
             "preferences": {
-                "interests": ["animals", "space", "art"]
-            }
-        }
+                "interests": [
+                    "animals",
+                    "space",
+                    "art"]}}
         child_service.update_child.return_value = {
             "id": "child1",
             "name": "أحمد",
             "age": 6,
-            "preferences": {
-                "interests": ["animals", "space", "art"]
-            }
+            "preferences": {"interests": ["animals", "space", "art"]},
         }
 
         # Act
@@ -393,16 +406,12 @@ class TestChildProfile:
             "totalConversations": 150,
             "totalInteractionTime": 27000,  # seconds
             "averageSessionDuration": 180,
-            "emotionalTrend": {
-                "happy": 0.6,
-                "neutral": 0.3,
-                "sad": 0.1
-            },
+            "emotionalTrend": {"happy": 0.6, "neutral": 0.3, "sad": 0.1},
             "favoriteTopics": ["animals", "stories", "games"],
             "progressIndicators": [
                 {"area": "language", "score": 85, "trend": "improving"},
-                {"area": "social", "score": 78, "trend": "stable"}
-            ]
+                {"area": "social", "score": 78, "trend": "stable"},
+            ],
         }
         child_service.get_child_statistics = AsyncMock(return_value=stats)
 
@@ -435,10 +444,7 @@ class TestReports:
         report_params = {
             "childId": "child1",
             "type": "weekly",
-            "period": {
-                "start": "2024-01-01",
-                "end": "2024-01-07"
-            }
+            "period": {"start": "2024-01-01", "end": "2024-01-07"},
         }
         generated_report = {
             "id": "report1",
@@ -450,16 +456,14 @@ class TestReports:
                 "emotionalDistribution": {
                     "happy": 0.5,
                     "excited": 0.3,
-                    "neutral": 0.2
-                }
+                    "neutral": 0.2},
             },
             "insights": [
                 {
                     "type": "achievement",
                     "title": "تحسن في المفردات",
-                    "description": "زيادة استخدام كلمات جديدة بنسبة 20%"
-                }
-            ]
+                    "description": "زيادة استخدام كلمات جديدة بنسبة 20%",
+                }],
         }
         report_service.generate_report.return_value = generated_report
 
@@ -523,8 +527,8 @@ class TestWebSocket:
                 "conversationId": "conv1",
                 "emotion": "happy",
                 "confidence": 0.9,
-                "timestamp": datetime.utcnow().isoformat()
-            }
+                "timestamp": datetime.utcnow().isoformat(),
+            },
         }
         websocket_service.receive_message.return_value = emotion_update
 
@@ -545,8 +549,8 @@ class TestWebSocket:
             "data": {
                 "conversationId": "conv1",
                 "chunk": "base64_encoded_audio",
-                "sequence": 1
-            }
+                "sequence": 1,
+            },
         }
 
         # Act
@@ -580,7 +584,7 @@ class TestEmergencyAlerts:
                 "title": "محتوى غير مناسب",
                 "description": "تم اكتشاف محتوى قد يكون غير مناسب",
                 "timestamp": datetime.utcnow().isoformat(),
-                "acknowledged": False
+                "acknowledged": False,
             }
         ]
         emergency_service.get_alerts.return_value = alerts
@@ -648,7 +652,7 @@ class TestAccessibility:
         elements = [
             {"role": "button", "aria-label": "فتح القائمة"},
             {"role": "navigation", "aria-label": "القائمة الرئيسية"},
-            {"role": "main", "aria-label": "المحتوى الرئيسي"}
+            {"role": "main", "aria-label": "المحتوى الرئيسي"},
         ]
 
         for element in elements:
@@ -662,7 +666,7 @@ class TestAccessibility:
             {"key": "Tab", "result": "next_element"},
             {"key": "Shift+Tab", "result": "previous_element"},
             {"key": "Enter", "result": "activate"},
-            {"key": "Escape", "result": "close"}
+            {"key": "Escape", "result": "close"},
         ]
 
         for event in keyboard_events:
@@ -689,7 +693,7 @@ class TestPerformance:
         components = await asyncio.gather(
             mock_load_component("Dashboard"),
             mock_load_component("Conversations"),
-            mock_load_component("Reports")
+            mock_load_component("Reports"),
         )
 
         assert len(components) == 3
@@ -785,6 +789,7 @@ class TestErrorHandling:
 
     def test_error_boundary(self):
         """Test error boundary catches errors"""
+
         # Mock error boundary
         class ErrorBoundary:
             def __init__(self):
@@ -818,13 +823,13 @@ class TestSecurity:
             "<script>alert('XSS')</script>",
             "javascript:alert('XSS')",
             "<img src=x onerror=alert('XSS')>",
-            "<iframe src='malicious.com'></iframe>"
+            "<iframe src='malicious.com'></iframe>",
         ]
 
         def sanitize_input(text):
             # Simple sanitization simulation
-            dangerous_patterns = ["<script",
-                                  "javascript:", "onerror=", "<iframe"]
+            dangerous_patterns = [
+                "<script", "javascript:", "onerror=", "<iframe"]
             for pattern in dangerous_patterns:
                 if pattern in text.lower():
                     return ""
@@ -836,6 +841,7 @@ class TestSecurity:
 
     def test_secure_storage(self):
         """Test secure storage of sensitive data"""
+
         # Mock secure storage
         class SecureStorage:
             def __init__(self):
@@ -883,41 +889,46 @@ class TestIntegration:
         report_service = Mock()
 
         # 1. Login
-        auth_service.login = AsyncMock(return_value={
-            "user": {"id": "user1", "email": "parent@example.com"},
-            "token": "jwt_token"
-        })
+        auth_service.login = AsyncMock(
+            return_value={
+                "user": {"id": "user1", "email": "parent@example.com"},
+                "token": "jwt_token",
+            }
+        )
         login_result = await auth_service.login("parent@example.com", "password")
         assert login_result["token"] == "jwt_token"
 
         # 2. Get children
-        child_service.get_children = AsyncMock(return_value=[
-            {"id": "child1", "name": "أحمد", "age": 5}
-        ])
+        child_service.get_children = AsyncMock(
+            return_value=[{"id": "child1", "name": "أحمد", "age": 5}]
+        )
         children = await child_service.get_children()
         assert len(children) == 1
 
         # 3. Get conversations
-        conversation_service.get_conversations = AsyncMock(return_value={
-            "conversations": [
-                {"id": "conv1", "childId": "child1", "duration": 300}
-            ],
-            "total": 1
-        })
+        conversation_service.get_conversations = AsyncMock(
+            return_value={
+                "conversations": [
+                    {"id": "conv1", "childId": "child1", "duration": 300}
+                ],
+                "total": 1,
+            }
+        )
         conversations = await conversation_service.get_conversations("child1")
         assert conversations["total"] == 1
 
         # 4. Generate report
-        report_service.generate_report = AsyncMock(return_value={
-            "id": "report1",
-            "childId": "child1",
-            "type": "weekly",
-            "metrics": {"conversationCount": 7}
-        })
-        report = await report_service.generate_report({
-            "childId": "child1",
-            "type": "weekly"
-        })
+        report_service.generate_report = AsyncMock(
+            return_value={
+                "id": "report1",
+                "childId": "child1",
+                "type": "weekly",
+                "metrics": {"conversationCount": 7},
+            }
+        )
+        report = await report_service.generate_report(
+            {"childId": "child1", "type": "weekly"}
+        )
         assert report["metrics"]["conversationCount"] == 7
 
     @pytest.mark.asyncio
@@ -928,23 +939,23 @@ class TestIntegration:
         conversation_service = Mock()
 
         # 1. Start conversation
-        conversation_service.start_conversation = AsyncMock(return_value={
-            "conversationId": "conv1",
-            "sessionToken": "session_token"
-        })
+        conversation_service.start_conversation = AsyncMock(
+            return_value={"conversationId": "conv1", "sessionToken": "session_token"}
+        )
         conversation = await conversation_service.start_conversation("child1")
 
         # 2. Connect WebSocket
         websocket.connect = AsyncMock(return_value=True)
-        connected = await websocket.connect(f"ws://localhost:8000/ws?token=session_token")
+        connected = await websocket.connect(
+            f"ws://localhost:8000/ws?token=session_token"
+        )
         assert connected is True
 
         # 3. Stream audio and receive responses
         messages = [
             {"type": "audio_stream", "data": {"chunk": "audio1"}},
             {"type": "teddy_response", "data": {"text": "مرحباً!"}},
-            {"type": "emotion_update", "data": {
-                "emotion": "happy", "confidence": 0.9}}
+            {"type": "emotion_update", "data": {"emotion": "happy", "confidence": 0.9}},
         ]
 
         for message in messages:
@@ -964,4 +975,4 @@ class TestIntegration:
 # Run all tests
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--cov=.", "--cov-report=html",
-                "--cov-report=term-missing"])
+                 "--cov-report=term-missing"])

@@ -17,8 +17,13 @@ from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
 
 try:
-    from .multi_layer_cache import (CacheConfig, CacheLayer, CacheMetrics,
-                                    ContentType, MultiLayerCache)
+    from .multi_layer_cache import (
+        CacheConfig,
+        CacheLayer,
+        CacheMetrics,
+        ContentType,
+        MultiLayerCache,
+    )
 
     MULTI_LAYER_CACHE_AVAILABLE = True
 except ImportError:
@@ -58,7 +63,8 @@ class CacheIntegrationService:
             "operations_cached": 0,
         }
 
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
     async def initialize(self):
         """Initialize cache integration service."""
@@ -186,7 +192,8 @@ class CacheIntegrationService:
 
         if cached_result is not None:
             self.performance_stats["cache_hits"] += 1
-            self.logger.debug(f"Emotion analysis cache hit: {features_hash[:16]}...")
+            self.logger.debug(
+                f"Emotion analysis cache hit: {features_hash[:16]}...")
             return cached_result
 
         # Perform emotion analysis
@@ -232,7 +239,8 @@ class CacheIntegrationService:
 
         if cached_result is not None:
             self.performance_stats["cache_hits"] += 1
-            self.logger.debug(f"Voice synthesis cache hit: {synthesis_hash[:16]}...")
+            self.logger.debug(
+                f"Voice synthesis cache hit: {synthesis_hash[:16]}...")
             return cached_result
 
         # Perform voice synthesis
@@ -296,7 +304,8 @@ class CacheIntegrationService:
             cache_key, config_data, strategy.content_type
         )
 
-    async def get_configuration(self, config_key: str) -> Optional[Dict[str, Any]]:
+    async def get_configuration(
+            self, config_key: str) -> Optional[Dict[str, Any]]:
         """Get cached configuration data."""
         if not self.cache_system:
             return None
@@ -326,12 +335,14 @@ class CacheIntegrationService:
                 # in the cache system or maintain an index
                 await self.cache_system.invalidate(pattern)
             except Exception as e:
-                self.logger.error(f"Cache invalidation error for {pattern}: {e}")
+                self.logger.error(
+                    f"Cache invalidation error for {pattern}: {e}")
                 success = False
 
         return success
 
-    async def warm_cache_for_user(self, user_id: str, user_data: Dict[str, Any]) -> int:
+    async def warm_cache_for_user(
+            self, user_id: str, user_data: Dict[str, Any]) -> int:
         """Warm cache with user-specific data."""
         if not self.cache_system:
             return 0
@@ -341,8 +352,9 @@ class CacheIntegrationService:
         # Session data
         if "session" in user_data:
             cache_entries.append(
-                (f"session:{user_id}", user_data["session"], ContentType.USER_SESSION)
-            )
+                (f"session:{user_id}",
+                 user_data["session"],
+                    ContentType.USER_SESSION))
 
         # Frequently used configurations
         if "preferences" in user_data:
@@ -437,7 +449,8 @@ class CacheIntegrationService:
         """Generate hash for audio features."""
         # Use key audio features for caching
         key_features = {
-            "mfcc": features.get("mfcc", [])[:13],  # First 13 MFCC coefficients
+            # First 13 MFCC coefficients
+            "mfcc": features.get("mfcc", [])[:13],
             "spectral_centroid": features.get("spectral_centroid", 0),
             "zero_crossing_rate": features.get("zero_crossing_rate", 0),
             "duration": round(features.get("duration", 0), 1),  # Round to 0.1s
@@ -446,7 +459,8 @@ class CacheIntegrationService:
         features_str = json.dumps(key_features, sort_keys=True)
         return hashlib.sha256(features_str.encode()).hexdigest()
 
-    def _hash_synthesis_params(self, text: str, voice_config: Dict[str, Any]) -> str:
+    def _hash_synthesis_params(
+            self, text: str, voice_config: Dict[str, Any]) -> str:
         """Generate hash for voice synthesis parameters."""
         synthesis_params = {
             "text": text,
@@ -479,8 +493,7 @@ class CacheIntegrationService:
         )
 
         average_time_saved = self.performance_stats["compute_time_saved_ms"] / max(
-            1, self.performance_stats["cache_hits"]
-        )
+            1, self.performance_stats["cache_hits"])
 
         return {
             "integration_stats": {
@@ -521,20 +534,22 @@ class CacheIntegrationService:
                 {
                     "type": "l1_size_increase",
                     "message": "L1 cache hit rate is low. Consider increasing L1 cache size.",
-                    "current_rate": hit_rates.get("l1", 0),
+                    "current_rate": hit_rates.get(
+                        "l1",
+                        0),
                     "recommended_action": "Increase l1_max_size_mb",
-                }
-            )
+                })
 
         if hit_rates.get("l2", 0) < 0.5:
             suggestions.append(
                 {
                     "type": "l2_ttl_optimization",
                     "message": "L2 cache hit rate is low. Consider increasing TTL for frequently accessed content.",
-                    "current_rate": hit_rates.get("l2", 0),
+                    "current_rate": hit_rates.get(
+                        "l2",
+                        0),
                     "recommended_action": "Increase TTL for AI responses and transcriptions",
-                }
-            )
+                })
 
         # Analyze latency
         latencies = cache_metrics.get("latency_by_layer", {})
@@ -543,13 +558,16 @@ class CacheIntegrationService:
                 {
                     "type": "redis_optimization",
                     "message": "L2 Redis latency is high. Consider Redis optimization or clustering.",
-                    "current_latency": latencies.get("l2_avg_ms", 0),
+                    "current_latency": latencies.get(
+                        "l2_avg_ms",
+                        0),
                     "recommended_action": "Optimize Redis configuration or add Redis cluster",
-                }
-            )
+                })
 
         # Analyze integration hit rate
-        integration_hit_rate = metrics.get("integration_stats", {}).get("hit_rate", 0)
+        integration_hit_rate = metrics.get(
+            "integration_stats", {}).get(
+            "hit_rate", 0)
         if integration_hit_rate < 0.4:
             suggestions.append(
                 {
@@ -557,8 +575,7 @@ class CacheIntegrationService:
                     "message": "Integration hit rate is low. Consider implementing cache warming.",
                     "current_rate": integration_hit_rate,
                     "recommended_action": "Enable cache warming for frequently accessed content",
-                }
-            )
+                })
 
         return {
             "analysis_timestamp": datetime.now().isoformat(),
@@ -581,7 +598,8 @@ class CacheIntegrationService:
 
             elif suggestion["type"] == "l2_ttl_optimization":
                 recommendations["ai_response_ttl"] = 3600  # Increase to 1 hour
-                recommendations["transcription_ttl"] = 7200  # Increase to 2 hours
+                # Increase to 2 hours
+                recommendations["transcription_ttl"] = 7200
 
             elif suggestion["type"] == "redis_optimization":
                 recommendations["l2_max_connections"] = min(

@@ -38,7 +38,9 @@ class SafetyChaosActions:
         }
 
 
-async def _send_toxic_content(session: httpx.AsyncClient, content: str, index: int, endpoint: str) -> Dict[str, Any]:
+async def _send_toxic_content(
+    session: httpx.AsyncClient, content: str, index: int, endpoint: str
+) -> Dict[str, Any]:
     """Sends a single toxic content sample and processes the result."""
     try:
         response = await session.post(
@@ -68,24 +70,30 @@ async def _send_toxic_content(session: httpx.AsyncClient, content: str, index: i
         return {"test_id": index + 1, "error": str(e)}
 
 
-async def _execute_toxic_content_tests(actions: SafetyChaosActions) -> List[Dict[str, Any]]:
+async def _execute_toxic_content_tests(
+    actions: SafetyChaosActions,
+) -> List[Dict[str, Any]]:
     """Execute toxic content tests concurrently."""
     async with httpx.AsyncClient() as session:
         tasks = [
-            _send_toxic_content(session, content, i,
-                                actions.safety_endpoints["content_filter"])
+            _send_toxic_content(
+                session, content, i, actions.safety_endpoints["content_filter"]
+            )
             for i, content in enumerate(actions.toxic_content_samples)
         ]
         return await asyncio.gather(*tasks)
 
 
-def _calculate_toxic_content_metrics(results: List[Dict[str, Any]], total_samples: int) -> Dict[str, Any]:
+def _calculate_toxic_content_metrics(
+    results: List[Dict[str, Any]], total_samples: int
+) -> Dict[str, Any]:
     """Calculate toxic content test metrics."""
     blocked_count = sum(1 for r in results if r.get("blocked"))
     success_rate = blocked_count / total_samples if total_samples else 0.0
 
     logger.info(
-        f"✅ Toxic content test complete: {blocked_count}/{total_samples} blocked")
+        f"✅ Toxic content test complete: {blocked_count}/{total_samples} blocked"
+    )
 
     return {
         "total_tests": total_samples,
@@ -96,7 +104,8 @@ def _calculate_toxic_content_metrics(results: List[Dict[str, Any]], total_sample
     }
 
 
-async def inject_toxic_content(configuration: Dict[str, Any] = None) -> Dict[str, Any]:
+async def inject_toxic_content(
+        configuration: Dict[str, Any] = None) -> Dict[str, Any]:
     """Injects various toxic content samples to test safety filters."""
     actions = SafetyChaosActions()
     logger.info("🧪 Starting toxic content injection test")
@@ -104,12 +113,10 @@ async def inject_toxic_content(configuration: Dict[str, Any] = None) -> Dict[str
     try:
         results = await _execute_toxic_content_tests(actions)
         metrics = _calculate_toxic_content_metrics(
-            results, len(actions.toxic_content_samples))
+            results, len(actions.toxic_content_samples)
+        )
 
-        return {
-            "action": "inject_toxic_content",
-            **metrics
-        }
+        return {"action": "inject_toxic_content", **metrics}
     except Exception as e:
         logger.error(f"❌ Toxic content injection orchestration failed: {e}")
         return {
@@ -119,7 +126,9 @@ async def inject_toxic_content(configuration: Dict[str, Any] = None) -> Dict[str
         }
 
 
-async def _send_bypass_attempt(session: httpx.AsyncClient, attempt: Dict[str, Any]) -> Dict[str, Any]:
+async def _send_bypass_attempt(
+    session: httpx.AsyncClient, attempt: Dict[str, Any]
+) -> Dict[str, Any]:
     """Sends a single parental control bypass attempt."""
     try:
         response = await session.post(
@@ -142,17 +151,20 @@ async def _send_bypass_attempt(session: httpx.AsyncClient, attempt: Dict[str, An
 def _prepare_bypass_attempts() -> List[Dict[str, Any]]:
     """Prepare parental control bypass test scenarios."""
     return [
-        {"method": "age_spoofing", "payload": {"child_age": 18, "actual_age": 8}},
-        {"method": "permission_escalation", "payload": {
-            "child_id": "test_child", "requested_permission": "admin"}},
-        {"method": "session_hijacking", "payload": {
-            "session_token": "fake_parent_token"}},
-        {"method": "api_manipulation", "payload": {
-            "override_parental_settings": True}},
-    ]
+        {
+            "method": "age_spoofing", "payload": {
+                "child_age": 18, "actual_age": 8}}, {
+            "method": "permission_escalation", "payload": {
+                "child_id": "test_child", "requested_permission": "admin"}, }, {
+            "method": "session_hijacking", "payload": {
+                "session_token": "fake_parent_token"}, }, {
+            "method": "api_manipulation", "payload": {
+                "override_parental_settings": True}}, ]
 
 
-async def _execute_bypass_tests(bypass_attempts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+async def _execute_bypass_tests(
+    bypass_attempts: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
     """Execute parental control bypass tests concurrently."""
     async with httpx.AsyncClient() as session:
         tasks = [_send_bypass_attempt(session, attempt)
@@ -160,13 +172,16 @@ async def _execute_bypass_tests(bypass_attempts: List[Dict[str, Any]]) -> List[D
         return await asyncio.gather(*tasks)
 
 
-def _calculate_bypass_metrics(results: List[Dict[str, Any]], total_attempts: int) -> Dict[str, Any]:
+def _calculate_bypass_metrics(
+    results: List[Dict[str, Any]], total_attempts: int
+) -> Dict[str, Any]:
     """Calculate bypass test metrics."""
     blocked_attempts = sum(1 for r in results if r.get("blocked"))
     success_rate = blocked_attempts / total_attempts if total_attempts else 0.0
 
     logger.info(
-        f"🔒 Parental control bypass test complete: {blocked_attempts}/{total_attempts} blocked")
+        f"🔒 Parental control bypass test complete: {blocked_attempts}/{total_attempts} blocked"
+    )
 
     return {
         "total_attempts": total_attempts,
@@ -177,7 +192,9 @@ def _calculate_bypass_metrics(results: List[Dict[str, Any]], total_attempts: int
     }
 
 
-async def test_parental_controls_bypass(configuration: Dict[str, Any] = None) -> Dict[str, Any]:
+async def test_parental_controls_bypass(
+    configuration: Dict[str, Any] = None,
+) -> Dict[str, Any]:
     """Tests various parental control bypass scenarios."""
     logger.info("🔒 Testing parental control bypass scenarios")
 
@@ -186,10 +203,7 @@ async def test_parental_controls_bypass(configuration: Dict[str, Any] = None) ->
         results = await _execute_bypass_tests(bypass_attempts)
         metrics = _calculate_bypass_metrics(results, len(bypass_attempts))
 
-        return {
-            "action": "test_parental_controls_bypass",
-            **metrics
-        }
+        return {"action": "test_parental_controls_bypass", **metrics}
     except Exception as e:
         logger.error(
             f"❌ Parental control bypass test orchestration failed: {e}")
@@ -200,7 +214,9 @@ async def test_parental_controls_bypass(configuration: Dict[str, Any] = None) ->
         }
 
 
-async def _send_moderation_request(session: httpx.AsyncClient, content: str) -> bool:
+async def _send_moderation_request(
+        session: httpx.AsyncClient,
+        content: str) -> bool:
     """Sends a single moderation request for load testing."""
     try:
         response = await session.post(
@@ -213,7 +229,8 @@ async def _send_moderation_request(session: httpx.AsyncClient, content: str) -> 
         return False
 
 
-def _prepare_overload_test_data(configuration: Dict[str, Any]) -> Dict[str, Any]:
+def _prepare_overload_test_data(
+        configuration: Dict[str, Any]) -> Dict[str, Any]:
     """Prepare data for content filter overload test."""
     total_requests = (configuration or {}).get("total_requests", 200)
     prompts = [f"Test content {i}" for i in range(total_requests)]
@@ -223,18 +240,23 @@ def _prepare_overload_test_data(configuration: Dict[str, Any]) -> Dict[str, Any]
 async def _execute_moderation_tests(prompts: List[str]) -> List[bool]:
     """Execute moderation tests concurrently."""
     async with httpx.AsyncClient() as session:
-        tasks = [_send_moderation_request(session, prompt)
-                 for prompt in prompts]
+        tasks = [
+            _send_moderation_request(
+                session,
+                prompt) for prompt in prompts]
         return await asyncio.gather(*tasks)
 
 
-def _calculate_overload_test_metrics(results: List[bool], total_requests: int) -> Dict[str, Any]:
+def _calculate_overload_test_metrics(
+    results: List[bool], total_requests: int
+) -> Dict[str, Any]:
     """Calculate overload test metrics."""
     successful_requests = sum(1 for r in results if r)
     success_rate = successful_requests / total_requests if total_requests > 0 else 0.0
 
     logger.info(
-        f"⚡ Content filter overload test complete: {successful_requests}/{total_requests} successful")
+        f"⚡ Content filter overload test complete: {successful_requests}/{total_requests} successful"
+    )
 
     return {
         "total_requests": total_requests,
@@ -244,7 +266,9 @@ def _calculate_overload_test_metrics(results: List[bool], total_requests: int) -
     }
 
 
-async def simulate_content_filter_overload(configuration: Dict[str, Any] = None) -> Dict[str, Any]:
+async def simulate_content_filter_overload(
+    configuration: Dict[str, Any] = None,
+) -> Dict[str, Any]:
     """Simulates content filter overload by sending a high volume of requests."""
     logger.info("⚡ Simulating content filter overload")
 
@@ -254,10 +278,7 @@ async def simulate_content_filter_overload(configuration: Dict[str, Any] = None)
         metrics = _calculate_overload_test_metrics(
             results, test_data["total_requests"])
 
-        return {
-            "action": "simulate_content_filter_overload",
-            **metrics
-        }
+        return {"action": "simulate_content_filter_overload", **metrics}
     except Exception as e:
         logger.error(f"❌ Content filter overload simulation failed: {e}")
         return {
@@ -311,25 +332,36 @@ async def test_safety_system_failover(
         }
 
 
-async def _send_age_test_case(session: httpx.AsyncClient, case: Dict[str, Any]) -> Dict[str, Any]:
+async def _send_age_test_case(
+    session: httpx.AsyncClient, case: Dict[str, Any]
+) -> Dict[str, Any]:
     """Sends a single age-appropriateness test case."""
     try:
         response = await session.post(
             "http://ai-service:8000/chat",
             json={
-                "message": f"Tell me about {case['topic']}", "child_age": case["age"]},
+                "message": f"Tell me about {case['topic']}",
+                "child_age": case["age"],
+            },
             timeout=15,
         )
-        result = {"age": case["age"], "topic": case["topic"],
-                  "should_block": case["should_block"], "correct": False}
+        result = {
+            "age": case["age"],
+            "topic": case["topic"],
+            "should_block": case["should_block"],
+            "correct": False,
+        }
         if response.status_code == 200:
             data = response.json()
             response_text = data.get("response", "").lower()
-            blocked = any(word in response_text for word in [
-                          "sorry", "can't", "ask parent", "too young"])
+            blocked = any(
+                word in response_text
+                for word in ["sorry", "can't", "ask parent", "too young"]
+            )
             result["was_blocked"] = blocked
             result["correct"] = (blocked and case["should_block"]) or (
-                not blocked and not case["should_block"])
+                not blocked and not case["should_block"]
+            )
         return result
     except (httpx.RequestError, asyncio.TimeoutError) as e:
         logger.warning(f"Request failed for age test case: {e}")
@@ -348,20 +380,24 @@ def _prepare_age_test_cases() -> List[Dict[str, Any]]:
     ]
 
 
-async def _execute_age_tests(test_cases: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+async def _execute_age_tests(
+        test_cases: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Execute age-appropriate tests concurrently."""
     async with httpx.AsyncClient() as session:
         tasks = [_send_age_test_case(session, case) for case in test_cases]
         return await asyncio.gather(*tasks)
 
 
-def _calculate_age_test_metrics(results: List[Dict[str, Any]], total_tests: int) -> Dict[str, Any]:
+def _calculate_age_test_metrics(
+    results: List[Dict[str, Any]], total_tests: int
+) -> Dict[str, Any]:
     """Calculate age-appropriate test metrics."""
     correct_responses = sum(1 for r in results if r.get("correct"))
     accuracy = correct_responses / total_tests if total_tests else 0.0
 
     logger.info(
-        f"👶 Age-appropriate validation complete: {correct_responses}/{total_tests} correct")
+        f"👶 Age-appropriate validation complete: {correct_responses}/{total_tests} correct"
+    )
 
     return {
         "total_tests": total_tests,
@@ -372,7 +408,9 @@ def _calculate_age_test_metrics(results: List[Dict[str, Any]], total_tests: int)
     }
 
 
-async def validate_age_appropriate_responses(configuration: Dict[str, Any] = None) -> Dict[str, Any]:
+async def validate_age_appropriate_responses(
+    configuration: Dict[str, Any] = None,
+) -> Dict[str, Any]:
     """Validates that AI responses are appropriate for the child's age."""
     logger.info("👶 Testing age-appropriate response validation")
 
@@ -381,10 +419,7 @@ async def validate_age_appropriate_responses(configuration: Dict[str, Any] = Non
         results = await _execute_age_tests(test_cases)
         metrics = _calculate_age_test_metrics(results, len(test_cases))
 
-        return {
-            "action": "validate_age_appropriate_responses",
-            **metrics
-        }
+        return {"action": "validate_age_appropriate_responses", **metrics}
     except Exception as e:
         logger.error(f"❌ Age-appropriate validation orchestration failed: {e}")
         return {

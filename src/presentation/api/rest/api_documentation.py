@@ -12,24 +12,24 @@ def custom_openapi(FastAPI) -> None:
         version="2.0.0",
         description="""
         # AI Teddy Bear API Documentation
-        
+
         ## Overview
-        The AI Teddy Bear API provides a secure, scalable interface for 
+        The AI Teddy Bear API provides a secure, scalable interface for
         interactive AI-powered conversations with children.
-        
+
         ## Authentication
         All endpoints require JWT authentication. Obtain a token via `/auth/login`.
-        
+
         ## Rate Limiting
         - 60 requests per minute per user
         - 10 concurrent connections per user
-        
+
         ## Supported Languages
         - Arabic (ar)
         - English (en)
         - Spanish (es)
         - French (fr)
-        
+
         ## Error Codes
         - 400: Bad Request
         - 401: Unauthorized
@@ -41,18 +41,25 @@ def custom_openapi(FastAPI) -> None:
     )
 
     # Add security schemes
-    openapi_schema["components"]["securitySchemes"] = {
-        "bearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}
-    }
+    openapi_schema["components"]["securitySchemes"] = {"bearerAuth": {
+        "type": "http", "scheme": "bearer", "bearerFormat": "JWT"}}
 
     # Add example schemas
     openapi_schema["components"]["schemas"]["ConversationStartedEvent"] = {
         "type": "object",
         "properties": {
-            "event_type": {"type": "string", "example": "conversation.started"},
-            "child_id": {"type": "string", "example": "child-123"},
-            "session_id": {"type": "string", "example": "session-456"},
-            "timestamp": {"type": "string", "format": "date-time"},
+            "event_type": {
+                "type": "string",
+                "example": "conversation.started"},
+            "child_id": {
+                "type": "string",
+                "example": "child-123"},
+            "session_id": {
+                "type": "string",
+                "example": "session-456"},
+            "timestamp": {
+                "type": "string",
+                "format": "date-time"},
         },
     }
 
@@ -84,12 +91,12 @@ def get_conversation_docs() -> Any:
         "summary": "Start a new conversation",
         "description": """
         Start a new conversation session for a child.
-        
+
         **Requirements:**
         - Valid JWT token
         - Child must exist and belong to authenticated parent
         - Child cannot have active session
-        
+
         **Response:**
         Returns session details and welcome message.
         """,

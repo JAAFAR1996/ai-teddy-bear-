@@ -3,6 +3,7 @@
 WSGI config for AI Teddy Bear project.
 """
 
+from main import app
 import os
 import sys
 from pathlib import Path
@@ -15,7 +16,6 @@ sys.path.insert(0, str(project_root))
 os.environ.setdefault("DEPLOYMENT_ENV", "production")
 
 # استيراد التطبيق
-from main import app
 
 # تطبيق WSGI
 application = app

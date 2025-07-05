@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 """
 🔐 Enhanced JWT Authentication - Refresh Tokens & Advanced Security
@@ -100,17 +100,11 @@ class EnhancedJWTManager:
         """Generate secure secret key"""
         return secrets.token_urlsafe(64)
 
-    async def create_token_pair(
-        self, claims: TokenClaims, device_fingerprint: Optional[str] = None
-    ) -> TokenPair:
-        """Create access and refresh token pair"""
-
-        now = datetime.utcnow()
-        access_expires_at = now + self.access_token_expire
-        refresh_expires_at = now + self.refresh_token_expire
-
-        # Access token claims
-        access_claims = {
+    def _create_access_token_claims(
+        self, claims: TokenClaims, expires_at: datetime, now: datetime
+    ) -> Dict[str, Any]:
+        """Creates the claims for an access token."""
+        return {
             "user_id": claims.user_id,
             "username": claims.username,
             "email": claims.email,
@@ -122,31 +116,58 @@ class EnhancedJWTManager:
             "is_child": claims.is_child,
             "token_type": TokenType.ACCESS.value,
             "iat": now,
-            "exp": access_expires_at,
-            "iss": "ai-teddy-bear",
-            "jti": secrets.token_hex(16),  # Unique token ID
-        }
-
-        # Refresh token claims (minimal)
-        refresh_claims = {
-            "user_id": claims.user_id,
-            "token_type": TokenType.REFRESH.value,
-            "device_fingerprint": device_fingerprint,
-            "iat": now,
-            "exp": refresh_expires_at,
+            "exp": expires_at,
             "iss": "ai-teddy-bear",
             "jti": secrets.token_hex(16),
         }
 
-        # Generate tokens
+    def _create_refresh_token_claims(
+        self,
+        user_id: str,
+        device_fingerprint: Optional[str],
+        expires_at: datetime,
+        now: datetime,
+    ) -> Dict[str, Any]:
+        """Creates the claims for a refresh token."""
+        return {
+            "user_id": user_id,
+            "token_type": TokenType.REFRESH.value,
+            "device_fingerprint": device_fingerprint,
+            "iat": now,
+            "exp": expires_at,
+            "iss": "ai-teddy-bear",
+            "jti": secrets.token_hex(16),
+        }
+
+    def _encode_tokens(
+        self, access_claims: Dict[str, Any], refresh_claims: Dict[str, Any]
+    ) -> Tuple[str, str]:
+        """Encodes the access and refresh tokens."""
         access_token = jwt.encode(
             access_claims, self.secret_key, algorithm=self.algorithm
         )
         refresh_token = jwt.encode(
             refresh_claims, self.secret_key, algorithm=self.algorithm
         )
+        return access_token, refresh_token
 
-        # Store refresh token info
+    async def create_token_pair(
+        self, claims: TokenClaims, device_fingerprint: Optional[str] = None
+    ) -> TokenPair:
+        """Create access and refresh token pair"""
+        now = datetime.utcnow()
+        access_expires_at = now + self.access_token_expire
+        refresh_expires_at = now + self.refresh_token_expire
+
+        access_claims = self._create_access_token_claims(
+            claims, access_expires_at, now)
+        refresh_claims = self._create_refresh_token_claims(
+            claims.user_id, device_fingerprint, refresh_expires_at, now
+        )
+
+        access_token, refresh_token = self._encode_tokens(
+            access_claims, refresh_claims)
+
         await self._store_refresh_token(
             refresh_token, claims.user_id, device_fingerprint
         )
@@ -175,7 +196,9 @@ class EnhancedJWTManager:
                 return None
 
             # Decode token
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            payload = jwt.decode(
+                token, self.secret_key, algorithms=[
+                    self.algorithm])
 
             # Verify token type
             if payload.get("token_type") != TokenType.ACCESS.value:
@@ -207,62 +230,57 @@ class EnhancedJWTManager:
             logger.error("Token verification error", error=str(e))
             return None
 
+    async def _verify_refresh_token(
+        self, refresh_token: str, device_fingerprint: Optional[str]
+    ) -> Dict[str, Any]:
+        """Verifies and decodes a refresh token."""
+        payload = jwt.decode(
+            refresh_token, self.secret_key, algorithms=[self.algorithm]
+        )
+
+        if payload.get("token_type") != TokenType.REFRESH.value:
+            raise InvalidTokenError("Invalid token type for refresh token")
+
+        user_id = payload["user_id"]
+        stored_fingerprint = payload.get("device_fingerprint")
+
+        if stored_fingerprint and device_fingerprint != stored_fingerprint:
+            logger.warning("Device fingerprint mismatch", user_id=user_id)
+            await self._blacklist_token(refresh_token)
+            raise InvalidTokenError("Device fingerprint mismatch")
+
+        if not await self._check_refresh_attempts(user_id):
+            raise InvalidTokenError("Too many refresh attempts")
+
+        return payload
+
     async def refresh_access_token(
         self, refresh_token: str, device_fingerprint: Optional[str] = None
     ) -> Optional[TokenPair]:
         """Refresh access token using refresh token"""
-
         try:
-            # Decode refresh token
-            payload = jwt.decode(
-                refresh_token, self.secret_key, algorithms=[self.algorithm]
+            payload = await self._verify_refresh_token(
+                refresh_token, device_fingerprint
             )
-
-            # Verify token type
-            if payload.get("token_type") != TokenType.REFRESH.value:
-                logger.warning("Invalid token type for refresh token")
-                return None
-
             user_id = payload["user_id"]
-            stored_fingerprint = payload.get("device_fingerprint")
 
-            # Verify device fingerprint
-            if stored_fingerprint and device_fingerprint != stored_fingerprint:
-                logger.warning("Device fingerprint mismatch", user_id=user_id)
-                await self._blacklist_token(refresh_token)
-                return None
-
-            # Check refresh attempts
-            if not await self._check_refresh_attempts(user_id):
-                logger.warning("Too many refresh attempts", user_id=user_id)
-                return None
-
-            # Get user claims (this would typically come from database)
             claims = await self._get_user_claims(user_id)
             if not claims:
                 logger.warning("User not found for refresh", user_id=user_id)
                 return None
 
-            # Blacklist old refresh token
             await self._blacklist_token(refresh_token)
-
-            # Create new token pair
             new_token_pair = await self.create_token_pair(claims, device_fingerprint)
-
-            # Reset refresh attempts
             await self._reset_refresh_attempts(user_id)
 
             logger.info("Access token refreshed", user_id=user_id)
             return new_token_pair
 
-        except ExpiredSignatureError:
-            logger.debug("Refresh token expired")
-            return None
-        except InvalidTokenError as e:
-            logger.warning("Invalid refresh token", error=str(e))
+        except (InvalidTokenError, ExpiredSignatureError) as e:
+            logger.warning(f"Token refresh failed: {e}")
             return None
         except Exception as e:
-            logger.error("Token refresh error", error=str(e))
+            logger.error(f"Token refresh error", error=str(e))
             return None
 
     async def revoke_token(self, token: str) -> bool:
@@ -300,7 +318,8 @@ class EnhancedJWTManager:
             # For now, we'll add user to a revoked users set
             if self.redis_client:
                 await self.redis_client.sadd("revoked_users", user_id)
-                await self.redis_client.expire("revoked_users", 86400 * 30)  # 30 days
+                # 30 days
+                await self.redis_client.expire("revoked_users", 86400 * 30)
 
             logger.info("All user tokens revoked", user_id=user_id)
             return True
@@ -328,20 +347,29 @@ class EnhancedJWTManager:
             "jti": secrets.token_hex(16),
         }
 
-        device_token = jwt.encode(claims, self.secret_key, algorithm=self.algorithm)
+        device_token = jwt.encode(
+            claims,
+            self.secret_key,
+            algorithm=self.algorithm)
 
         # Store device token info
         await self._store_device_token(device_token, user_id, device_id, device_info)
 
-        logger.info("Device token created", user_id=user_id, device_id=device_id)
+        logger.info(
+            "Device token created",
+            user_id=user_id,
+            device_id=device_id)
 
         return device_token
 
-    async def verify_device_token(self, token: str) -> Optional[Dict[str, Any]]:
+    async def verify_device_token(
+            self, token: str) -> Optional[Dict[str, Any]]:
         """Verify device token"""
 
         try:
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            payload = jwt.decode(
+                token, self.secret_key, algorithms=[
+                    self.algorithm])
 
             if payload.get("token_type") != TokenType.DEVICE.value:
                 return None
@@ -356,7 +384,10 @@ class EnhancedJWTManager:
             logger.warning("Device token verification failed", error=str(e))
             return None
 
-    def generate_device_fingerprint(self, user_agent: str, ip_address: str) -> str:
+    def generate_device_fingerprint(
+            self,
+            user_agent: str,
+            ip_address: str) -> str:
         """Generate device fingerprint"""
 
         # Combine user agent and IP for fingerprinting
@@ -415,7 +446,8 @@ class EnhancedJWTManager:
         if self.redis_client:
             await self.redis_client.sadd("blacklisted_tokens", token)
             # Set expiration to match token expiration
-            await self.redis_client.expire("blacklisted_tokens", 86400 * 30)  # 30 days
+            # 30 days
+            await self.redis_client.expire("blacklisted_tokens", 86400 * 30)
         else:
             self.blacklisted_tokens.add(token)
 

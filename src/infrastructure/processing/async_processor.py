@@ -135,11 +135,11 @@ class ProcessingTask:
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "completed_at": (
-                self.completed_at.isoformat() if self.completed_at else None
-            ),
+                self.completed_at.isoformat() if self.completed_at else None),
             "retry_count": self.retry_count,
             "max_retries": self.max_retries,
-            "tags": list(self.tags),
+            "tags": list(
+                self.tags),
             "worker_id": self.worker_id,
         }
 
@@ -165,7 +165,10 @@ class TaskManager:
                 self.dependencies[task.id].add(dep_id)
                 self.dependents[dep_id].add(task.id)
 
-    async def complete_task(self, task_id: str, result: TaskResult) -> List[str]:
+    async def complete_task(
+            self,
+            task_id: str,
+            result: TaskResult) -> List[str]:
         """Mark task as complete and return newly ready tasks"""
         async with self._lock:
             if task_id in self.tasks:
@@ -202,7 +205,8 @@ class TaskManager:
         async with self._lock:
             ready = []
             for task_id, task in self.tasks.items():
-                if task.status == TaskStatus.PENDING and self._is_task_ready(task_id):
+                if task.status == TaskStatus.PENDING and self._is_task_ready(
+                        task_id):
                     ready.append(task_id)
             return ready
 
@@ -247,7 +251,10 @@ class PerformanceMonitor:
         self._last_throughput_check = time.time()
         self._last_task_count = 0
 
-    def record_task_completion(self, task: ProcessingTask, result: TaskResult) -> None:
+    def record_task_completion(
+            self,
+            task: ProcessingTask,
+            result: TaskResult) -> None:
         """Record task completion metrics"""
         self.metrics["tasks_processed"] += 1
 
@@ -261,8 +268,7 @@ class PerformanceMonitor:
         self.metrics["total_execution_time"] += result.execution_time
         self.metrics["average_execution_time"] = (
             self.metrics["total_execution_time"] /
-            self.metrics["tasks_processed"]
-        )
+            self.metrics["tasks_processed"])
 
         if result.memory_used > self.metrics["peak_memory_usage"]:
             self.metrics["peak_memory_usage"] = result.memory_used
@@ -553,126 +559,131 @@ class AdvancedAsyncProcessor:
 
     # Worker and processing methods
 
+    async def _get_next_task(self) -> Optional[ProcessingTask]:
+        """Gets the next task from the queue."""
+        try:
+            priority, task = await asyncio.wait_for(
+                self.priority_queue.get(), timeout=1.0
+            )
+            return task
+        except asyncio.TimeoutError:
+            return None
+
+    async def _process_task(self, task: ProcessingTask, worker_id: str):
+        """Processes a single task."""
+        if task is None or task.id in self.cancelled_tasks:
+            return
+
+        task.status = TaskStatus.RUNNING
+        task.started_at = datetime.utcnow()
+        task.worker_id = worker_id
+
+        result = await self._execute_task(task, worker_id)
+        ready_tasks = await self.task_manager.complete_task(task.id, result)
+
+        for ready_task_id in ready_tasks:
+            ready_task = self.task_manager.tasks[ready_task_id]
+            await self.priority_queue.put((ready_task.priority.value, ready_task))
+
+        self.worker_stats[worker_id]["tasks_processed"] += 1
+        self.worker_stats[worker_id]["total_execution_time"] += result.execution_time
+        self.worker_stats[worker_id]["last_active"] = time.time()
+
+        if self.performance_monitor:
+            self.performance_monitor.record_task_completion(task, result)
+
     async def _worker(self, worker_id: str) -> None:
         """Main worker coroutine"""
         self.logger.debug(f"Worker {worker_id} started")
 
         while self._running:
             try:
-                # Get next task from priority queue
-                try:
-                    priority, task = await asyncio.wait_for(
-                        self.priority_queue.get(), timeout=1.0
-                    )
-                except asyncio.TimeoutError:
+                task = await self._get_next_task()
+                if task is None:
                     continue
 
-                # Check for shutdown signal
-                if task is None:
+                if task.id == "shutdown":  # Special signal
                     break
 
-                # Skip cancelled tasks
-                if task.id in self.cancelled_tasks:
-                    continue
-
-                # Update task status
-                task.status = TaskStatus.RUNNING
-                task.started_at = datetime.utcnow()
-                task.worker_id = worker_id
-
-                # Process the task
-                result = await self._execute_task(task, worker_id)
-
-                # Complete task and handle dependencies
-                ready_tasks = await self.task_manager.complete_task(task.id, result)
-
-                # Submit newly ready tasks
-                for ready_task_id in ready_tasks:
-                    ready_task = self.task_manager.tasks[ready_task_id]
-                    await self.priority_queue.put(
-                        (ready_task.priority.value, ready_task)
-                    )
-
-                # Update worker stats
-                self.worker_stats[worker_id]["tasks_processed"] += 1
-                self.worker_stats[worker_id][
-                    "total_execution_time"
-                ] += result.execution_time
-                self.worker_stats[worker_id]["last_active"] = time.time()
-
-                # Record performance metrics
-                if self.performance_monitor:
-                    self.performance_monitor.record_task_completion(
-                        task, result)
+                await self._process_task(task, worker_id)
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
                 self.logger.error(
-                    f"Worker {worker_id} error: {e}", exc_info=True)
+                    f"Worker {worker_id} error: {e}",
+                    exc_info=True)
 
         self.logger.debug(f"Worker {worker_id} stopped")
 
-    async def _execute_task(self, task: ProcessingTask, worker_id: str) -> TaskResult:
-        """Execute a single task"""
-        start_time = time.time()
-        result = TaskResult(task_id=task.id, status=TaskStatus.RUNNING)
+    async def _execute_with_timeout(
+            self,
+            task: ProcessingTask,
+            execution_task):
+        """Executes a task with an optional timeout."""
+        if task.timeout:
+            return await asyncio.wait_for(execution_task, timeout=task.timeout)
+        return await execution_task
 
-        try:
-            # Check if task was cancelled
-            if task.id in self.cancelled_tasks:
-                result.status = TaskStatus.CANCELLED
-                return result
+    async def _handle_callback(self, task: ProcessingTask, result: TaskResult):
+        """Handles the callback for a completed task."""
+        if task.callback:
+            try:
+                if asyncio.iscoroutinefunction(task.callback):
+                    await task.callback(result)
+                else:
+                    task.callback(result)
+            except Exception as e:
+                self.logger.warning(f"Task callback failed: {e}")
 
-            # Create asyncio task for cancellation support
-            execution_task = asyncio.create_task(
-                self._run_task_processor(task))
-            self.running_tasks[task.id] = execution_task
-
-            # Apply timeout if specified
-            if task.timeout:
-                try:
-                    task_result = await asyncio.wait_for(
-                        execution_task, timeout=task.timeout
-                    )
-                except asyncio.TimeoutError:
-                    execution_task.cancel()
-                    result.status = TaskStatus.TIMEOUT
-                    result.error = f"Task timed out after {task.timeout} seconds"
-                    return result
-            else:
-                task_result = await execution_task
-
-            # Success
-            result.status = TaskStatus.COMPLETED
-            result.result = task_result
-
-            # Execute callback if provided
-            if task.callback:
-                try:
-                    if asyncio.iscoroutinefunction(task.callback):
-                        await task.callback(result)
-                    else:
-                        task.callback(result)
-                except Exception as e:
-                    self.logger.warning(f"Task callback failed: {e}")
-
-        except asyncio.CancelledError:
+    async def _handle_task_execution_error(
+        self, task: ProcessingTask, result: TaskResult, error: Exception
+    ):
+        """Handles errors that occur during task execution."""
+        if isinstance(error, asyncio.TimeoutError):
+            result.status = TaskStatus.TIMEOUT
+            result.error = f"Task timed out after {task.timeout} seconds"
+        elif isinstance(error, asyncio.CancelledError):
             result.status = TaskStatus.CANCELLED
-        except Exception as e:
+        else:
             result.status = TaskStatus.FAILED
-            result.error = str(e)
-            self.logger.error(f"Task {task.id} failed: {e}", exc_info=True)
-
-            # Retry logic
+            result.error = str(error)
+            self.logger.error(f"Task {task.id} failed: {error}", exc_info=True)
             if task.retry_count < task.max_retries:
                 task.retry_count += 1
                 task.status = TaskStatus.PENDING
                 await self.priority_queue.put((task.priority.value, task))
-                result.status = TaskStatus.PENDING  # Will be retried
+                result.status = TaskStatus.PENDING
+
+    async def _execute_task(
+            self,
+            task: ProcessingTask,
+            worker_id: str) -> TaskResult:
+        """Execute a single task"""
+        start_time = time.time()
+        result = TaskResult(task_id=task.id, status=TaskStatus.RUNNING)
+        execution_task = None
+        try:
+            if task.id in self.cancelled_tasks:
+                result.status = TaskStatus.CANCELLED
+                return result
+
+            execution_task = asyncio.create_task(
+                self._run_task_processor(task))
+            self.running_tasks[task.id] = execution_task
+
+            task_result = await self._execute_with_timeout(task, execution_task)
+
+            result.status = TaskStatus.COMPLETED
+            result.result = task_result
+            await self._handle_callback(task, result)
+
+        except (asyncio.TimeoutError, asyncio.CancelledError, Exception) as e:
+            if execution_task:
+                execution_task.cancel()
+            await self._handle_task_execution_error(task, result, e)
 
         finally:
-            # Cleanup
             if task.id in self.running_tasks:
                 del self.running_tasks[task.id]
             if task.id in self.cancelled_tasks:
@@ -707,7 +718,10 @@ class AdvancedAsyncProcessor:
             # Async tasks run directly
             return await processor(task)
 
-    def _sync_processor_wrapper(self, processor: Callable, task: ProcessingTask) -> Any:
+    def _sync_processor_wrapper(
+            self,
+            processor: Callable,
+            task: ProcessingTask) -> Any:
         """Wrapper for synchronous processors"""
         try:
             if asyncio.iscoroutinefunction(processor):
@@ -771,7 +785,8 @@ class AdvancedAsyncProcessor:
             "processing_time": 0.1,
         }
 
-    async def _process_audio_enhancement(self, task: ProcessingTask) -> Dict[str, Any]:
+    async def _process_audio_enhancement(
+            self, task: ProcessingTask) -> Dict[str, Any]:
         """Process audio enhancement (noise reduction, normalization)"""
         audio_data = task.payload.get("audio_data")
         sample_rate = task.payload.get("sample_rate", 44100)
@@ -789,7 +804,8 @@ class AdvancedAsyncProcessor:
             "sample_rate": sample_rate,
         }
 
-    async def _process_ai_response(self, task: ProcessingTask) -> Dict[str, Any]:
+    async def _process_ai_response(
+            self, task: ProcessingTask) -> Dict[str, Any]:
         """Process AI response generation"""
         prompt = task.payload.get("prompt")
         model = task.payload.get("model", "gpt-3.5-turbo")
@@ -808,7 +824,8 @@ class AdvancedAsyncProcessor:
             "confidence": 0.88,
         }
 
-    async def _process_emotion_analysis(self, task: ProcessingTask) -> Dict[str, Any]:
+    async def _process_emotion_analysis(
+            self, task: ProcessingTask) -> Dict[str, Any]:
         """Process emotion analysis using HUME AI or similar"""
         audio_data = task.payload.get("audio_data")
         text = task.payload.get("text")
@@ -831,7 +848,8 @@ class AdvancedAsyncProcessor:
             "analysis_method": "hume_ai",
         }
 
-    async def _process_image_generation(self, task: ProcessingTask) -> Dict[str, Any]:
+    async def _process_image_generation(
+            self, task: ProcessingTask) -> Dict[str, Any]:
         """Process image generation (DALL-E, Stable Diffusion)"""
         prompt = task.payload.get("prompt")
         style = task.payload.get("style", "realistic")
@@ -851,7 +869,8 @@ class AdvancedAsyncProcessor:
             "generation_time": 2.0,
         }
 
-    async def _process_image_processing(self, task: ProcessingTask) -> Dict[str, Any]:
+    async def _process_image_processing(
+            self, task: ProcessingTask) -> Dict[str, Any]:
         """Process image manipulation (resize, filter, enhance)"""
         image_data = task.payload.get("image_data")
         operation = task.payload.get("operation", "resize")
@@ -870,7 +889,8 @@ class AdvancedAsyncProcessor:
             "processing_time": 0.2,
         }
 
-    async def _process_text_analysis(self, task: ProcessingTask) -> Dict[str, Any]:
+    async def _process_text_analysis(
+            self, task: ProcessingTask) -> Dict[str, Any]:
         """Process text analysis (sentiment, keywords, topics)"""
         text = task.payload.get("text")
         analysis_type = task.payload.get("analysis_type", "sentiment")
@@ -890,7 +910,8 @@ class AdvancedAsyncProcessor:
             "word_count": len(text.split()),
         }
 
-    async def _process_data_analytics(self, task: ProcessingTask) -> Dict[str, Any]:
+    async def _process_data_analytics(
+            self, task: ProcessingTask) -> Dict[str, Any]:
         """Process data analytics and insights"""
         data = task.payload.get("data")
         analysis_type = task.payload.get("analysis_type", "summary")
@@ -911,7 +932,8 @@ class AdvancedAsyncProcessor:
             "processing_time": 0.3,
         }
 
-    async def _process_database_operation(self, task: ProcessingTask) -> Dict[str, Any]:
+    async def _process_database_operation(
+            self, task: ProcessingTask) -> Dict[str, Any]:
         """Process database operations"""
         operation = task.payload.get("operation")
         table = task.payload.get("table")
@@ -931,7 +953,8 @@ class AdvancedAsyncProcessor:
             "execution_time": 0.05,
         }
 
-    async def _process_notification(self, task: ProcessingTask) -> Dict[str, Any]:
+    async def _process_notification(
+            self, task: ProcessingTask) -> Dict[str, Any]:
         """Process notification sending"""
         notification_type = task.payload.get("type", "email")
         recipient = task.payload.get("recipient")
@@ -1032,8 +1055,12 @@ async def main():
 
         # Get performance metrics
         metrics = await processor.get_performance_metrics()
-        logger.info("Performance Metrics:", json.dumps(
-            metrics, indent=2, default=str))
+        logger.info(
+            "Performance Metrics:",
+            json.dumps(
+                metrics,
+                indent=2,
+                default=str))
 
     finally:
         # Graceful shutdown

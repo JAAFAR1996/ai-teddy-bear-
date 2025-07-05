@@ -10,13 +10,18 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from src.domain.parentdashboard import (AccessControlService,
-                                        AnalyticsDomainService, ChildProfile,
-                                        ContentAnalysisService,
-                                        ParentalControl, ParentUser)
+from src.domain.parentdashboard import (
+    AccessControlService,
+    AnalyticsDomainService,
+    ChildProfile,
+    ContentAnalysisService,
+    ParentalControl,
+    ParentUser,
+)
 from src.infrastructure.persistence.child_repository import ChildRepository
-from src.infrastructure.persistence.conversation_repository import \
-    ConversationRepository
+from src.infrastructure.persistence.conversation_repository import (
+    ConversationRepository,
+)
 
 
 class DashboardOrchestrator:
@@ -41,8 +46,11 @@ class DashboardOrchestrator:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     async def create_parent_account(
-        self, email: str, name: str, phone: Optional[str] = None, timezone: str = "UTC"
-    ) -> ParentUser:
+            self,
+            email: str,
+            name: str,
+            phone: Optional[str] = None,
+            timezone: str = "UTC") -> ParentUser:
         """Create a new parent account with validation"""
 
         # Validate email format
@@ -50,7 +58,11 @@ class DashboardOrchestrator:
             raise ValueError("Invalid email format")
 
         # Create parent user
-        parent = ParentUser(email=email, name=name, phone=phone, timezone=timezone)
+        parent = ParentUser(
+            email=email,
+            name=name,
+            phone=phone,
+            timezone=timezone)
 
         # Validate business rules
         if not parent.validate_email_format():
@@ -111,7 +123,8 @@ class DashboardOrchestrator:
             if child:
                 # Age-appropriate validation
                 if not self._validate_controls_for_age(controls, child.age):
-                    raise ValueError("Controls not appropriate for child's age")
+                    raise ValueError(
+                        "Controls not appropriate for child's age")
 
             self.logger.info(f"Updated parental controls for child {child_id}")
             return True
@@ -158,7 +171,8 @@ class DashboardOrchestrator:
                         child.id, start_date=datetime.now() - timedelta(days=7)
                     )
 
-                    analytics = self.analytics_service.calculate_analytics(logs)
+                    analytics = self.analytics_service.calculate_analytics(
+                        logs)
                     child_data["weekly_analytics"] = analytics.__dict__
 
                 dashboard_data["children"].append(child_data)
@@ -194,7 +208,8 @@ class DashboardOrchestrator:
             # Note: In real implementation, would get schedules from database
             schedules = []  # Would load from database
 
-            is_allowed, reason = self.access_service.check_access_allowed(schedules)
+            is_allowed, reason = self.access_service.check_access_allowed(
+                schedules)
 
             if not is_allowed:
                 return {"allowed": False, "reason": reason}
@@ -246,7 +261,8 @@ class DashboardOrchestrator:
 
         # Get age-appropriate limits
         daily_limit = child.get_recommended_daily_limit()
-        session_limit = min(daily_limit // 2, 30)  # Half of daily or 30 min max
+        # Half of daily or 30 min max
+        session_limit = min(daily_limit // 2, 30)
 
         return ParentalControl(
             child_id=child.id,
@@ -255,7 +271,10 @@ class DashboardOrchestrator:
             content_filter_level="strict" if child.age < 10 else "moderate",
         )
 
-    def _validate_controls_for_age(self, controls: ParentalControl, age: int) -> bool:
+    def _validate_controls_for_age(
+            self,
+            controls: ParentalControl,
+            age: int) -> bool:
         """Validate that controls are appropriate for child's age"""
 
         # Stricter limits for younger children
@@ -271,7 +290,10 @@ class DashboardOrchestrator:
         """Get current status for a child"""
 
         # Would check active sessions, etc.
-        return {"is_online": False, "last_activity": None, "current_session_minutes": 0}
+        return {
+            "is_online": False,
+            "last_activity": None,
+            "current_session_minutes": 0}
 
     async def _calculate_summary_stats(
         self, children: List[ChildProfile]

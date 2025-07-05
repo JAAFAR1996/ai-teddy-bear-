@@ -1,4 +1,4 @@
-﻿"""
+"""
 Child Profile Service - Manages child profiles connected to ESP32 devices
 """
 
@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 class InteractionType(str, Enum):
     """Types of child interactions"""
+
     CONVERSATION = "conversation"
     STORY_REQUEST = "story_request"
     GAME = "game"
@@ -22,14 +23,13 @@ class InteractionType(str, Enum):
 
 class ChildProfile:
     """Child profile model"""
-    
+
     def __init__(
-        self, 
-        name: str, 
-        age: int, 
-        device_id: str, 
-        language: str = "Arabic"
-    ):
+            self,
+            name: str,
+            age: int,
+            device_id: str,
+            language: str = "Arabic"):
         self.id = str(uuid.uuid4())
         self.name = name
         self.age = age
@@ -39,7 +39,7 @@ class ChildProfile:
         self.preferences = {}
         self.conversation_history = []
         self.learning_progress = {}
-        
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
@@ -50,13 +50,13 @@ class ChildProfile:
             "created_at": self.created_at.isoformat(),
             "preferences": self.preferences,
             "conversation_count": len(self.conversation_history),
-            "learning_progress": self.learning_progress
+            "learning_progress": self.learning_progress,
         }
 
 
 class SessionData:
     """Conversation session data"""
-    
+
     def __init__(self, child_id: str, device_id: str):
         self.session_id = str(uuid.uuid4())
         self.child_id = child_id
@@ -64,14 +64,17 @@ class SessionData:
         self.started_at = datetime.utcnow()
         self.messages = []
         self.interaction_type = InteractionType.CONVERSATION
-        
-    def add_message(self, message: str, response: str, metadata: Dict[str, Any] = None):
-        self.messages.append({
-            "timestamp": datetime.utcnow().isoformat(),
-            "user_message": message,
-            "ai_response": response,
-            "metadata": metadata or {}
-        })
+
+    def add_message(self, message: str, response: str,
+                    metadata: Dict[str, Any] = None):
+        self.messages.append(
+            {
+                "timestamp": datetime.utcnow().isoformat(),
+                "user_message": message,
+                "ai_response": response,
+                "metadata": metadata or {},
+            }
+        )
 
 
 class CloudChildService:
@@ -84,23 +87,23 @@ class CloudChildService:
         logger.info("CloudChildService initialized")
 
     async def create_child(
-        self, 
-        name: str, 
-        age: int, 
-        device_id: str, 
+        self,
+        name: str,
+        age: int,
+        device_id: str,
         language: str = "Arabic",
-        preferences: Dict[str, Any] = None
+        preferences: Dict[str, Any] = None,
     ) -> ChildProfile:
         """
         Create a new child profile
-        
+
         Args:
             name: Child's name
-            age: Child's age  
+            age: Child's age
             device_id: Associated ESP32 device ID
             language: Preferred language
             preferences: Child preferences
-            
+
         Returns:
             Created child profile
         """
@@ -109,21 +112,25 @@ class CloudChildService:
             if device_id in self.device_to_child:
                 existing_child_id = self.device_to_child[device_id]
                 existing_child = self.children[existing_child_id]
-                logger.warning(f"Device {device_id} already linked to child {existing_child.name}")
+                logger.warning(
+                    f"Device {device_id} already linked to child {existing_child.name}"
+                )
                 return existing_child
-            
+
             # Create new child
             child = ChildProfile(name, age, device_id, language)
             if preferences:
                 child.preferences.update(preferences)
-            
+
             # Store child
             self.children[child.id] = child
             self.device_to_child[device_id] = child.id
-            
-            logger.info(f"Child profile created: {name} (age {age}) for device {device_id}")
+
+            logger.info(
+                f"Child profile created: {name} (age {age}) for device {device_id}"
+            )
             return child
-            
+
         except Exception as e:
             logger.error(f"Child creation failed: {str(e)}")
             raise
@@ -135,9 +142,10 @@ class CloudChildService:
             if child_id:
                 return self.children.get(child_id)
             return None
-            
+
         except Exception as e:
-            logger.error(f"Failed to get child for device {device_id}: {str(e)}")
+            logger.error(
+                f"Failed to get child for device {device_id}: {str(e)}")
             return None
 
     async def get_child(self, child_id: str) -> Optional[ChildProfile]:
@@ -145,28 +153,26 @@ class CloudChildService:
         return self.children.get(child_id)
 
     async def update_child_preferences(
-        self, 
-        child_id: str, 
-        preferences: Dict[str, Any]
+        self, child_id: str, preferences: Dict[str, Any]
     ) -> bool:
         """Update child preferences"""
         try:
             child = self.children.get(child_id)
             if not child:
                 return False
-                
+
             child.preferences.update(preferences)
             logger.info(f"Updated preferences for child {child.name}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to update preferences: {str(e)}")
             return False
 
     async def start_session(
-        self, 
-        device_id: str, 
-        interaction_type: InteractionType = InteractionType.CONVERSATION
+        self,
+        device_id: str,
+        interaction_type: InteractionType = InteractionType.CONVERSATION,
     ) -> Optional[str]:
         """Start a new conversation session"""
         try:
@@ -174,73 +180,74 @@ class CloudChildService:
             if not child:
                 logger.warning(f"No child found for device {device_id}")
                 return None
-            
+
             session = SessionData(child.id, device_id)
             session.interaction_type = interaction_type
-            
+
             self.active_sessions[session.session_id] = session
-            
-            logger.info(f"Started session {session.session_id} for child {child.name}")
+
+            logger.info(
+                f"Started session {session.session_id} for child {child.name}")
             return session.session_id
-            
+
         except Exception as e:
             logger.error(f"Failed to start session: {str(e)}")
             return None
 
     async def save_conversation(
-        self, 
-        device_id: str, 
-        message: str, 
-        response: str, 
+        self,
+        device_id: str,
+        message: str,
+        response: str,
         session_id: str = None,
-        metadata: Dict[str, Any] = None
+        metadata: Dict[str, Any] = None,
     ) -> bool:
         """Save conversation exchange"""
         try:
             child = await self.get_by_device_id(device_id)
             if not child:
                 return False
-            
+
             # Add to child's history
             conversation_entry = {
                 "timestamp": datetime.utcnow().isoformat(),
                 "message": message,
                 "response": response,
                 "session_id": session_id,
-                "metadata": metadata or {}
+                "metadata": metadata or {},
             }
-            
+
             child.conversation_history.append(conversation_entry)
-            
+
             # Update active session if exists
             if session_id and session_id in self.active_sessions:
                 session = self.active_sessions[session_id]
                 session.add_message(message, response, metadata)
-            
+
             logger.info(f"Saved conversation for child {child.name}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to save conversation: {str(e)}")
             return False
 
     async def register_device(
-        self, 
-        device_id: str, 
-        firmware_version: str, 
-        hardware_info: Dict[str, Any] = None
+        self,
+        device_id: str,
+        firmware_version: str,
+        hardware_info: Dict[str, Any] = None,
     ) -> Dict[str, Any]:
         """Register device and prepare for child linking"""
         try:
             # This is a placeholder for device registration
             # In a real system, this would integrate with device registry
-            
+
             logger.info(f"Device registration prepared: {device_id}")
             return {
                 "registration_id": f"REG_{device_id}_{datetime.utcnow().timestamp()}",
-                "status": "ready_for_child_profile"
+                "status": "ready_for_child_profile",
             }
-            
+
         except Exception as e:
             logger.error(f"Device registration failed: {str(e)}")
             raise
@@ -251,23 +258,27 @@ class CloudChildService:
             child = self.children.get(child_id)
             if not child:
                 return {}
-            
+
             total_conversations = len(child.conversation_history)
-            
+
             # Analyze conversation types
             interaction_types = {}
-            for conv in child.conversation_history[-50:]:  # Last 50 conversations
+            # Last 50 conversations
+            for conv in child.conversation_history[-50:]:
                 conv_type = conv.get("metadata", {}).get("category", "general")
-                interaction_types[conv_type] = interaction_types.get(conv_type, 0) + 1
-            
+                interaction_types[conv_type] = interaction_types.get(
+                    conv_type, 0) + 1
+
             return {
                 "total_conversations": total_conversations,
                 "interaction_types": interaction_types,
-                "account_age_days": (datetime.utcnow() - child.created_at).days,
+                "account_age_days": (
+                    datetime.utcnow() -
+                    child.created_at).days,
                 "preferred_language": child.language,
-                "learning_progress": child.learning_progress
+                "learning_progress": child.learning_progress,
             }
-            
+
         except Exception as e:
             logger.error(f"Failed to get child stats: {str(e)}")
             return {}
@@ -278,11 +289,13 @@ class CloudChildService:
             if session_id in self.active_sessions:
                 session = self.active_sessions[session_id]
                 del self.active_sessions[session_id]
-                
-                logger.info(f"Ended session {session_id} with {len(session.messages)} messages")
+
+                logger.info(
+                    f"Ended session {session_id} with {len(session.messages)} messages"
+                )
                 return True
             return False
-            
+
         except Exception as e:
             logger.error(f"Failed to end session: {str(e)}")
             return False
@@ -298,5 +311,5 @@ class CloudChildService:
             "active_sessions": len(self.active_sessions),
             "total_conversations": sum(
                 len(child.conversation_history) for child in self.children.values()
-            )
+            ),
         }

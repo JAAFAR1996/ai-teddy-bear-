@@ -149,7 +149,9 @@ class PerformanceOptimizer:
             "performance_score": self._calculate_performance_score(stats),
         }
 
-    def _analyze_hit_rate(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+    def _analyze_hit_rate(
+        self, latest_metrics, current_config
+    ) -> Optional[OptimizationRecommendation]:
         """Analyzes hit rate and suggests increasing cache size if it's too low."""
         if latest_metrics.hit_rate < 0.4:
             return OptimizationRecommendation(
@@ -164,7 +166,9 @@ class PerformanceOptimizer:
             )
         return None
 
-    def _analyze_latency(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+    def _analyze_latency(
+        self, latest_metrics, current_config
+    ) -> Optional[OptimizationRecommendation]:
         """Analyzes latency and suggests enabling compression if it's too high."""
         if latest_metrics.average_latency_ms > 100:
             return OptimizationRecommendation(
@@ -179,7 +183,9 @@ class PerformanceOptimizer:
             )
         return None
 
-    def _analyze_memory_usage(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+    def _analyze_memory_usage(
+        self, latest_metrics, current_config
+    ) -> Optional[OptimizationRecommendation]:
         """Analyzes memory usage and suggests optimizing TTL settings if it's too high."""
         memory_threshold = current_config.l1_max_size_mb * 0.8
         if latest_metrics.memory_usage_mb > memory_threshold:
@@ -195,7 +201,9 @@ class PerformanceOptimizer:
             )
         return None
 
-    def _analyze_eviction_rate(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+    def _analyze_eviction_rate(
+        self, latest_metrics, current_config
+    ) -> Optional[OptimizationRecommendation]:
         """Analyzes eviction rate and suggests implementing a smart eviction policy if it's too high."""
         if latest_metrics.evictions_per_hour > 100:
             return OptimizationRecommendation(
@@ -210,7 +218,9 @@ class PerformanceOptimizer:
             )
         return None
 
-    def _analyze_error_rate(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+    def _analyze_error_rate(
+        self, latest_metrics, current_config
+    ) -> Optional[OptimizationRecommendation]:
         """Analyzes error rate and suggests improving error handling if it's too high."""
         if latest_metrics.error_rate > 0.05:
             return OptimizationRecommendation(
@@ -225,7 +235,8 @@ class PerformanceOptimizer:
             )
         return None
 
-    def _analyze_hit_rate_trend(self, trends) -> Optional[OptimizationRecommendation]:
+    def _analyze_hit_rate_trend(
+            self, trends) -> Optional[OptimizationRecommendation]:
         """Analyzes hit rate trend and suggests an investigation if it's declining."""
         hit_rate_trend = trends.get("trends", {}).get("hit_rate", 0)
         if hit_rate_trend < -0.1:  # Declining hit rate
@@ -370,10 +381,12 @@ class PerformanceOptimizer:
             "summary": summary,
             "current_metrics": asdict(current_metrics) if current_metrics else None,
             "trends_analysis": trends_analysis,
-            "recommendations": [asdict(r) for r in recommendations],
+            "recommendations": [
+                asdict(r) for r in recommendations],
             "next_analysis_suggested": (
-                datetime.now() + timedelta(hours=1)
-            ).isoformat(),
+                datetime.now() +
+                timedelta(
+                    hours=1)).isoformat(),
         }
 
     def export_metrics_csv(self, filepath: str) -> bool:
@@ -416,10 +429,16 @@ class CacheHealthMonitor:
         self.logger = logging.getLogger(
             f"{__name__}.{self.__class__.__name__}")
 
-    def _check_metric(self, metric_name: str, current_value: float, threshold: float, is_max: bool) -> Optional[Dict]:
+    def _check_metric(
+            self,
+            metric_name: str,
+            current_value: float,
+            threshold: float,
+            is_max: bool) -> Optional[Dict]:
         """Checks a single metric against its threshold and returns an alert if triggered."""
-        triggered = (current_value > threshold) if is_max else (
-            current_value < threshold)
+        triggered = (
+            (current_value > threshold) if is_max else (
+                current_value < threshold))
         if triggered:
             level = "CRITICAL" if metric_name == "error_rate" else "WARNING"
             comparison_text = "above" if is_max else "below"
@@ -431,7 +450,8 @@ class CacheHealthMonitor:
             }
         return None
 
-    async def check_health(self, cache_system, current_config) -> Dict[str, Any]:
+    async def check_health(
+            self, cache_system, current_config) -> Dict[str, Any]:
         """Check cache health and generate alerts if needed."""
         if not self.optimizer.metrics_history:
             return {"status": "no_data"}
@@ -441,23 +461,52 @@ class CacheHealthMonitor:
         alerts = []
 
         # Check all metrics
-        alerts.append(self._check_metric(
-            "hit_rate", latest_metrics.hit_rate, self.alert_thresholds["hit_rate_min"], False))
-        alerts.append(self._check_metric(
-            "latency", latest_metrics.average_latency_ms, self.alert_thresholds["latency_max_ms"], True))
-        alerts.append(self._check_metric(
-            "error_rate", latest_metrics.error_rate, self.alert_thresholds["error_rate_max"], True))
+        alerts.append(
+            self._check_metric(
+                "hit_rate",
+                latest_metrics.hit_rate,
+                self.alert_thresholds["hit_rate_min"],
+                False,
+            )
+        )
+        alerts.append(
+            self._check_metric(
+                "latency",
+                latest_metrics.average_latency_ms,
+                self.alert_thresholds["latency_max_ms"],
+                True,
+            )
+        )
+        alerts.append(
+            self._check_metric(
+                "error_rate",
+                latest_metrics.error_rate,
+                self.alert_thresholds["error_rate_max"],
+                True,
+            )
+        )
 
-        memory_pct = (latest_metrics.memory_usage_mb /
-                      current_config.l1_max_size_mb) * 100
-        alerts.append(self._check_metric("memory_usage", memory_pct,
-                      self.alert_thresholds["memory_usage_max_pct"], True))
+        memory_pct = (
+            latest_metrics.memory_usage_mb / current_config.l1_max_size_mb
+        ) * 100
+        alerts.append(
+            self._check_metric(
+                "memory_usage",
+                memory_pct,
+                self.alert_thresholds["memory_usage_max_pct"],
+                True,
+            )
+        )
 
         valid_alerts = [alert for alert in alerts if alert]
 
         return {
             "health_check_timestamp": datetime.now().isoformat(),
-            "overall_status": ("CRITICAL" if any(a["level"] == "CRITICAL" for a in valid_alerts) else "WARNING" if valid_alerts else "HEALTHY"),
+            "overall_status": (
+                "CRITICAL"
+                if any(a["level"] == "CRITICAL" for a in valid_alerts)
+                else "WARNING" if valid_alerts else "HEALTHY"
+            ),
             "alerts": valid_alerts,
             "metrics_summary": {
                 "hit_rate": latest_metrics.hit_rate,
@@ -484,6 +533,7 @@ def create_performance_optimizer() -> PerformanceOptimizer:
     return PerformanceOptimizer()
 
 
-def create_health_monitor(optimizer: PerformanceOptimizer) -> CacheHealthMonitor:
+def create_health_monitor(
+        optimizer: PerformanceOptimizer) -> CacheHealthMonitor:
     """Create cache health monitor instance."""
     return CacheHealthMonitor(optimizer)

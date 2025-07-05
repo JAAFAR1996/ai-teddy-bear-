@@ -6,8 +6,9 @@ Modern WebSocket and Audio Streaming with FastAPI
 import logging
 from datetime import datetime
 from typing import Any, Dict
+from pathlib import Path
 
-from fastapi import (Depends, FastAPI, WebSocket)
+from fastapi import Depends, FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
@@ -33,6 +34,7 @@ class StreamingStats(BaseModel):
 
 
 # ================== DEPENDENCY INJECTION ==================
+
 
 def get_websocket_manager() -> ModernWebSocketManager:
     """Provide a *singleton* WebSocket manager via the DI container."""
@@ -75,153 +77,13 @@ def create_streaming_app() -> FastAPI:
 
     @app.get("/", response_class=HTMLResponse)
     async def get_test_client():
-        """Serve a simple test client for WebSocket testing"""
-        return """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>🎵 Modern Streaming Test Client - 2025</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f0f8ff; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .section { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
-        button:hover { background: #0056b3; }
-        .log { background: #f8f9fa; padding: 10px; border-radius: 4px; max-height: 300px; overflow-y: auto; font-family: monospace; }
-        .connected { color: green; }
-        .error { color: red; }
-        input[type="text"] { width: 300px; padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🎵 Modern Streaming Test Client - 2025 Edition</h1>
-        
-        <div class="section">
-            <h2>📡 WebSocket Connection</h2>
-            <button id="connect">Connect WebSocket</button>
-            <button id="disconnect">Disconnect</button>
-            <button id="ping">Send Ping</button>
-            <div>Status: <span id="status">Disconnected</span></div>
-        </div>
-        
-        <div class="section">
-            <h2>🎤 Audio Streaming</h2>
-            <input type="text" id="textInput" placeholder="Type a message to send...">
-            <button id="sendText">Send Text</button>
-        </div>
-        
-        <div class="section">
-            <h2>📊 Statistics</h2>
-            <button id="getStats">Get Stats</button>
-            <div id="stats"></div>
-        </div>
-        
-        <div class="section">
-            <h2>📜 Message Log</h2>
-            <div id="log" class="log"></div>
-            <button onclick="clearLog()">Clear Log</button>
-        </div>
-    </div>
-
-    <script>
-        let ws = null;
-        let sessionId = null;
-        
-        function log(message, className = '') {
-            const logDiv = document.getElementById('log');
-            const time = new Date().toLocaleTimeString();
-            logDiv.innerHTML += `<div class="${className}">[${time}] ${message}</div>`;
-            logDiv.scrollTop = logDiv.scrollHeight;
-        }
-        
-        function clearLog() {
-            document.getElementById('log').innerHTML = '';
-        }
-        
-        function updateStatus(status) {
-            document.getElementById('status').textContent = status;
-            document.getElementById('status').className = status.toLowerCase().includes('connected') ? 'connected' : 'error';
-        }
-        
-        // WebSocket connection
-        document.getElementById('connect').onclick = function() {
-            if (ws) {
-                log('⚠️ Already connected', 'error');
-                return;
-            }
-            
-            sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
-            ws = new WebSocket(`ws://localhost:8000/ws/audio/${sessionId}`);
-            
-            ws.onopen = function() {
-                log('✅ WebSocket connected', 'connected');
-                updateStatus('Connected');
-            };
-            
-            ws.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                log(`📥 Received: ${JSON.stringify(data, null, 2)}`);
-            };
-            
-            ws.onclose = function() {
-                log('❌ WebSocket disconnected', 'error');
-                updateStatus('Disconnected');
-                ws = null;
-                sessionId = null;
-            };
-            
-            ws.onerror = function(error) {
-                log(`❌ WebSocket error: ${error}`, 'error');
-            };
-        };
-        
-        document.getElementById('disconnect').onclick = function() {
-            if (ws) {
-                ws.close();
-            }
-        };
-        
-        document.getElementById('ping').onclick = function() {
-            if (!ws) {
-                log('⚠️ Not connected', 'error');
-                return;
-            }
-            
-            ws.send(JSON.stringify({type: 'ping', timestamp: new Date().toISOString()}));
-            log('📤 Ping sent');
-        };
-        
-        document.getElementById('sendText').onclick = function() {
-            const text = document.getElementById('textInput').value;
-            if (!text || !ws) {
-                log('⚠️ No text or not connected', 'error');
-                return;
-            }
-            
-            ws.send(JSON.stringify({
-                type: 'text_input',
-                text: text,
-                timestamp: new Date().toISOString()
-            }));
-            log(`📤 Text sent: ${text}`);
-            document.getElementById('textInput').value = '';
-        };
-        
-        document.getElementById('getStats').onclick = async function() {
-            try {
-                const response = await fetch('/api/streaming/stats');
-                const stats = await response.json();
-                document.getElementById('stats').innerHTML = `<pre>${JSON.stringify(stats, null, 2)}</pre>`;
-                log('📊 Stats retrieved');
-            } catch (error) {
-                log(`❌ Failed to get stats: ${error}`, 'error');
-            }
-        };
-    </script>
-</body>
-</html>
-        """
+        """Serve a simple test client for WebSocket testing."""
+        html_path = Path(__file__).parent / "test_client.html"
+        try:
+            with open(html_path, "r", encoding="utf-8") as f:
+                return f.read()
+        except FileNotFoundError:
+            return "<h1>Test client HTML file not found.</h1>"
 
     # ================== WEBSOCKET ENDPOINTS ==================
 
@@ -322,6 +184,7 @@ if __name__ == "__main__":
 
     logger.info("🚀 Starting development server...")
     logger.info("📱 Test client available at: http://localhost:8000")
-    logger.info("🌊 WebSocket endpoint: ws://localhost:8000/ws/audio/{session_id}")
+    logger.info(
+        "🌊 WebSocket endpoint: ws://localhost:8000/ws/audio/{session_id}")
 
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info", reload=True)

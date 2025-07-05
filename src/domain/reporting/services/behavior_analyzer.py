@@ -16,7 +16,9 @@ class BehaviorAnalyzer:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def _check_interaction_volume(self, interactions: List[InteractionAnalysis]) -> List[str]:
+    def _check_interaction_volume(
+        self, interactions: List[InteractionAnalysis]
+    ) -> List[str]:
         """Check for low interaction count and short conversation duration."""
         areas = []
         if len(interactions) < 3:
@@ -28,45 +30,72 @@ class BehaviorAnalyzer:
             areas.append("تطوير مدة التفاعل والتركيز")
         return areas
 
-    def _check_topic_diversity(self, interactions: List[InteractionAnalysis]) -> List[str]:
+    def _check_topic_diversity(
+        self, interactions: List[InteractionAnalysis]
+    ) -> List[str]:
         """Check for limited topic diversity."""
         all_topics = [
-            topic for interaction in interactions for topic in interaction.topics_discussed]
+            topic
+            for interaction in interactions
+            for topic in interaction.topics_discussed
+        ]
         if len(set(all_topics)) < 5:
             return ["توسيع المواضيع المناقشة"]
         return []
 
-    def _check_interaction_quality(self, interactions: List[InteractionAnalysis]) -> List[str]:
+    def _check_interaction_quality(
+        self, interactions: List[InteractionAnalysis]
+    ) -> List[str]:
         """Check for low quality interactions."""
         high_quality_count = sum(
-            1 for interaction in interactions if interaction.is_high_quality())
+            1 for interaction in interactions if interaction.is_high_quality()
+        )
         if high_quality_count < len(interactions) * 0.5:
             return ["تحسين جودة التفاعل والمشاركة"]
         return []
 
-    def _check_concerning_patterns(self, interactions: List[InteractionAnalysis]) -> List[str]:
+    def _check_concerning_patterns(
+        self, interactions: List[InteractionAnalysis]
+    ) -> List[str]:
         """Check for concerning behavioral patterns."""
         negative_indicators = [
-            "withdrawal", "aggression", "defiance", "inattention",
-            "انسحاب", "عدوانية", "تمرد", "عدم انتباه",
+            "withdrawal",
+            "aggression",
+            "defiance",
+            "inattention",
+            "انسحاب",
+            "عدوانية",
+            "تمرد",
+            "عدم انتباه",
         ]
         all_indicators = [
-            indicator for interaction in interactions for indicator in interaction.behavioral_indicators]
-        concerning_count = sum(1 for indicator in all_indicators if any(
-            neg in indicator.lower() for neg in negative_indicators))
+            indicator
+            for interaction in interactions
+            for indicator in interaction.behavioral_indicators
+        ]
+        concerning_count = sum(
+            1
+            for indicator in all_indicators
+            if any(neg in indicator.lower() for neg in negative_indicators)
+        )
 
         if concerning_count > len(interactions) * 0.3:
             return ["تطوير مهارات التنظيم الذاتي"]
         return []
 
-    def _check_skill_development(self, interactions: List[InteractionAnalysis]) -> List[str]:
+    def _check_skill_development(
+        self, interactions: List[InteractionAnalysis]
+    ) -> List[str]:
         """Check attention span and social skills development."""
         areas = []
         if self._calculate_attention_span(interactions) < 3:
             areas.append("تحسين فترة التركيز والانتباه")
 
         social_skills_used = sum(
-            1 for interaction in interactions if "social_skills" in interaction.skills_used)
+            1
+            for interaction in interactions
+            if "social_skills" in interaction.skills_used
+        )
         if social_skills_used < len(interactions) * 0.2:
             areas.append("تطوير المهارات الاجتماعية")
         return areas
@@ -114,7 +143,8 @@ class BehaviorAnalyzer:
             self.logger.error(f"Attention span calculation error: {e}")
             return 0.0
 
-    def _analyze_engagement_level(self, interactions: List[InteractionAnalysis]) -> str:
+    def _analyze_engagement_level(
+            self, interactions: List[InteractionAnalysis]) -> str:
         """Analyzes the engagement level from interactions."""
         avg_quality = mean(
             interaction.quality_score for interaction in interactions)
@@ -124,7 +154,9 @@ class BehaviorAnalyzer:
             return "medium"
         return "low"
 
-    def _analyze_attention_consistency(self, interactions: List[InteractionAnalysis]) -> str:
+    def _analyze_attention_consistency(
+        self, interactions: List[InteractionAnalysis]
+    ) -> str:
         """Analyzes the attention consistency from interactions."""
         durations = [interaction.duration_minutes()
                      for interaction in interactions]
@@ -138,13 +170,16 @@ class BehaviorAnalyzer:
             return "moderate"
         return "variable"
 
-    def _analyze_social_responsiveness(self, interactions: List[InteractionAnalysis]) -> str:
+    def _analyze_social_responsiveness(
+        self, interactions: List[InteractionAnalysis]
+    ) -> str:
         """Analyzes the social responsiveness from interactions."""
         social_indicators = 0
         for interaction in interactions:
             if "social_skills" in interaction.skills_used:
                 social_indicators += 1
-            if any("social" in topic.lower() for topic in interaction.topics_discussed):
+            if any("social" in topic.lower()
+                   for topic in interaction.topics_discussed):
                 social_indicators += 1
 
         social_rate = social_indicators / len(interactions)
@@ -156,13 +191,18 @@ class BehaviorAnalyzer:
             return "developing"
         return "needs_attention"
 
-    def _analyze_emotional_regulation(self, interactions: List[InteractionAnalysis]) -> str:
+    def _analyze_emotional_regulation(
+        self, interactions: List[InteractionAnalysis]
+    ) -> str:
         """Analyzes emotional regulation from interactions."""
         if len(interactions) <= 1:
             return "stable"
 
-        emotion_changes = sum(1 for i in range(1, len(
-            interactions)) if interactions[i].primary_emotion != interactions[i-1].primary_emotion)
+        emotion_changes = sum(
+            1
+            for i in range(1, len(interactions))
+            if interactions[i].primary_emotion != interactions[i - 1].primary_emotion
+        )
         change_rate = emotion_changes / (len(interactions) - 1)
 
         if change_rate < 0.3:
@@ -171,7 +211,9 @@ class BehaviorAnalyzer:
             return "stable"
         return "needs_support"
 
-    def _analyze_cooperation_level(self, interactions: List[InteractionAnalysis]) -> str:
+    def _analyze_cooperation_level(
+        self, interactions: List[InteractionAnalysis]
+    ) -> str:
         """Analyzes the cooperation level from interactions."""
         cooperation_score = self._calculate_cooperation_score(interactions)
         if cooperation_score >= 0.8:
@@ -189,9 +231,12 @@ class BehaviorAnalyzer:
         try:
             if not interactions:
                 return {
-                    "engagement_level": "low", "attention_consistency": "variable",
-                    "social_responsiveness": "developing", "emotional_regulation": "stable",
-                    "cooperation_level": "medium", "behavioral_concerns": [],
+                    "engagement_level": "low",
+                    "attention_consistency": "variable",
+                    "social_responsiveness": "developing",
+                    "emotional_regulation": "stable",
+                    "cooperation_level": "medium",
+                    "behavioral_concerns": [],
                 }
 
             patterns = {
@@ -246,25 +291,36 @@ class BehaviorAnalyzer:
             self.logger.error(f"Cooperation score calculation error: {e}")
             return 0.5
 
-    def _check_negative_sentiment(self, interactions: List[InteractionAnalysis]) -> bool:
+    def _check_negative_sentiment(
+        self, interactions: List[InteractionAnalysis]
+    ) -> bool:
         """Check for persistent negative sentiment."""
-        negative_emotions = [interaction.emotions.get(
-            "sad", 0) + interaction.emotions.get("angry", 0) for interaction in interactions]
+        negative_emotions = [
+            interaction.emotions.get("sad", 0) + interaction.emotions.get("angry", 0)
+            for interaction in interactions
+        ]
         return mean(negative_emotions) > 0.4
 
-    def _check_low_engagement(self, interactions: List[InteractionAnalysis]) -> bool:
+    def _check_low_engagement(
+            self,
+            interactions: List[InteractionAnalysis]) -> bool:
         """Check for low engagement levels."""
         engagement_scores = [
             interaction.quality_score for interaction in interactions]
         return mean(engagement_scores) < 0.3
 
-    def _check_social_withdrawal(self, interactions: List[InteractionAnalysis]) -> bool:
+    def _check_social_withdrawal(
+            self, interactions: List[InteractionAnalysis]) -> bool:
         """Check for signs of social withdrawal."""
         social_skills_used = sum(
-            1 for interaction in interactions if "social_skills" in interaction.skills_used)
+            1
+            for interaction in interactions
+            if "social_skills" in interaction.skills_used
+        )
         return (social_skills_used / len(interactions)) < 0.1
 
-    def _check_attention_deficit(self, interactions: List[InteractionAnalysis]) -> bool:
+    def _check_attention_deficit(
+            self, interactions: List[InteractionAnalysis]) -> bool:
         """Check for attention deficit signs."""
         return self._calculate_attention_span(interactions) < 1.5
 

@@ -26,7 +26,9 @@ class EncryptionService:
         nonce = os.urandom(12)  # 96-bit nonce for GCM
         ciphertext = self.aesgcm.encrypt(nonce, data.encode(), None)
 
-        return (base64.b64encode(ciphertext).decode(), base64.b64encode(nonce).decode())
+        return (
+            base64.b64encode(ciphertext).decode(),
+            base64.b64encode(nonce).decode())
 
     def decrypt(self, ciphertext: str, nonce: str) -> str:
         """Decrypt data"""

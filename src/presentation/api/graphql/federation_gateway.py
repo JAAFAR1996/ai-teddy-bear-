@@ -78,7 +78,7 @@ CHILD_SERVICE_SCHEMA = """
     directive @external on FIELD_DEFINITION
     directive @requires(fields: String!) on FIELD_DEFINITION
     directive @provides(fields: String!) on FIELD_DEFINITION
-    
+
     type Child @key(fields: "id") {
         id: ID!
         name: String!
@@ -93,7 +93,7 @@ CHILD_SERVICE_SCHEMA = """
         profilePicture: String
         isActive: Boolean!
     }
-    
+
     type SafetySettings {
         maxDailyUsage: Int!
         allowedTimeRanges: [TimeRange!]!
@@ -101,14 +101,14 @@ CHILD_SERVICE_SCHEMA = """
         parentalControls: ParentalControls!
         emergencyContacts: [EmergencyContact!]!
     }
-    
+
     type ChildPreferences {
         favoriteTopics: [String!]!
         learningGoals: [String!]!
         difficultyLevel: DifficultyLevel!
         voiceSettings: VoiceSettings!
     }
-    
+
     type Conversation @key(fields: "id") {
         id: ID!
         childId: ID!
@@ -120,28 +120,28 @@ CHILD_SERVICE_SCHEMA = """
         emotionalJourney: [EmotionSnapshot!]!
         isActive: Boolean!
     }
-    
+
     enum ContentFilterLevel {
         STRICT
         MODERATE
         RELAXED
     }
-    
+
     enum DifficultyLevel {
         BEGINNER
         INTERMEDIATE
         ADVANCED
     }
-    
+
     scalar DateTime
-    
+
     extend type Query {
         child(id: ID!): Child
         children(parentId: ID!): [Child!]!
         conversation(id: ID!): Conversation
         childConversations(childId: ID!, limit: Int = 10): [Conversation!]!
     }
-    
+
     extend type Mutation {
         createChild(input: CreateChildInput!): Child!
         updateChild(id: ID!, input: UpdateChildInput!): Child!
@@ -158,7 +158,7 @@ AI_SERVICE_SCHEMA = """
         learningProgress: LearningProgress!
         personalityInsights: PersonalityInsights!
     }
-    
+
     extend type Conversation @key(fields: "id") {
         id: ID! @external
         childId: ID! @external
@@ -166,7 +166,7 @@ AI_SERVICE_SCHEMA = """
         emotionalTrends: [EmotionTrend!]!
         learningOutcomes: [LearningOutcome!]!
     }
-    
+
     type AIProfile {
         personalityTraits: [PersonalityTrait!]!
         learningStyle: LearningStyle!
@@ -176,14 +176,14 @@ AI_SERVICE_SCHEMA = """
         createdAt: DateTime!
         lastUpdated: DateTime!
     }
-    
+
     type PersonalityTrait {
         name: String!
         score: Float!
         confidence: Float!
         description: String!
     }
-    
+
     type LearningProgress {
         currentLevel: Int!
         totalXP: Int!
@@ -192,7 +192,7 @@ AI_SERVICE_SCHEMA = """
         weeklyGoals: [Goal!]!
         monthlyStats: LearningStats!
     }
-    
+
     type EmotionSnapshot {
         timestamp: DateTime!
         emotion: EmotionType!
@@ -202,7 +202,7 @@ AI_SERVICE_SCHEMA = """
         valence: Float!
         arousal: Float!
     }
-    
+
     type ConversationAnalysis {
         sentiment: Float!
         engagement: Float!
@@ -211,7 +211,7 @@ AI_SERVICE_SCHEMA = """
         suggestions: [Suggestion!]!
         concerns: [Concern!]!
     }
-    
+
     enum EmotionType {
         HAPPY
         SAD
@@ -224,20 +224,20 @@ AI_SERVICE_SCHEMA = """
         CALM
         FRUSTRATED
     }
-    
+
     enum LearningStyle {
         VISUAL
         AUDITORY
         KINESTHETIC
         READING_WRITING
     }
-    
+
     extend type Query {
         aiProfile(childId: ID!): AIProfile
         emotionAnalysis(conversationId: ID!): ConversationAnalysis
         learningRecommendations(childId: ID!): [Recommendation!]!
     }
-    
+
     extend type Mutation {
         analyzeEmotion(input: EmotionAnalysisInput!): EmotionSnapshot!
         updateAIProfile(childId: ID!, input: AIProfileInput!): AIProfile!
@@ -252,14 +252,14 @@ MONITORING_SERVICE_SCHEMA = """
         healthMetrics: HealthMetrics!
         parentalReports: [ParentalReport!]!
     }
-    
+
     extend type Conversation @key(fields: "id") {
         id: ID! @external
         performance: PerformanceMetrics!
         qualityScore: Float!
         systemHealth: SystemHealth!
     }
-    
+
     type UsageStatistics {
         totalSessionTime: Int!
         dailyUsage: [DailyUsage!]!
@@ -268,7 +268,7 @@ MONITORING_SERVICE_SCHEMA = """
         screenTime: ScreenTimeStats!
         interactionPatterns: [InteractionPattern!]!
     }
-    
+
     type HealthMetrics {
         overallScore: Float!
         emotionalWellbeing: Float!
@@ -278,7 +278,7 @@ MONITORING_SERVICE_SCHEMA = """
         sleepQuality: Float!
         lastAssessment: DateTime!
     }
-    
+
     type PerformanceMetrics {
         latency: Float!
         throughput: Float!
@@ -288,7 +288,7 @@ MONITORING_SERVICE_SCHEMA = """
         memoryUsage: Float!
         timestamp: DateTime!
     }
-    
+
     type ParentalReport {
         id: ID!
         reportType: ReportType!
@@ -299,7 +299,7 @@ MONITORING_SERVICE_SCHEMA = """
         concerns: [String!]!
         downloadUrl: String
     }
-    
+
     enum ReportType {
         DAILY
         WEEKLY
@@ -308,14 +308,14 @@ MONITORING_SERVICE_SCHEMA = """
         EDUCATIONAL
         SAFETY
     }
-    
+
     extend type Query {
         usageStatistics(childId: ID!, period: String!): UsageStatistics
         healthReport(childId: ID!): HealthMetrics
         systemMetrics: SystemHealth!
         parentalReports(childId: ID!): [ParentalReport!]!
     }
-    
+
     extend type Mutation {
         generateReport(childId: ID!, reportType: ReportType!): ParentalReport!
         recordUsage(childId: ID!, session: UsageSessionInput!): Boolean!
@@ -330,7 +330,7 @@ SAFETY_SERVICE_SCHEMA = """
         riskAssessment: RiskAssessment!
         incidentHistory: [SafetyIncident!]!
     }
-    
+
     extend type Conversation @key(fields: "id") {
         id: ID! @external
         childId: ID! @external
@@ -338,7 +338,7 @@ SAFETY_SERVICE_SCHEMA = """
         contentModeration: ContentModeration!
         riskFlags: [RiskFlag!]!
     }
-    
+
     type SafetyProfile {
         riskLevel: RiskLevel!
         safetyScore: Float!
@@ -347,7 +347,7 @@ SAFETY_SERVICE_SCHEMA = """
         emergencyProtocols: [EmergencyProtocol!]!
         lastSafetyCheck: DateTime!
     }
-    
+
     type RiskAssessment {
         overallRisk: Float!
         categories: [RiskCategory!]!
@@ -355,7 +355,7 @@ SAFETY_SERVICE_SCHEMA = """
         lastAssessed: DateTime!
         assessmentHistory: [RiskScore!]!
     }
-    
+
     type SafetyCheck {
         passed: Boolean!
         score: Float!
@@ -364,7 +364,7 @@ SAFETY_SERVICE_SCHEMA = """
         timestamp: DateTime!
         reviewRequired: Boolean!
     }
-    
+
     type ContentModeration {
         approved: Boolean!
         confidence: Float!
@@ -372,33 +372,33 @@ SAFETY_SERVICE_SCHEMA = """
         suggestions: [String!]!
         moderationType: ModerationType!
     }
-    
+
     enum RiskLevel {
         LOW
         MEDIUM
         HIGH
         CRITICAL
     }
-    
+
     enum ProtectionLevel {
         BASIC
         ENHANCED
         MAXIMUM
     }
-    
+
     enum ModerationType {
         AUTOMATED
         HUMAN_REVIEW
         HYBRID
     }
-    
+
     extend type Query {
         safetyProfile(childId: ID!): SafetyProfile
         riskAssessment(childId: ID!): RiskAssessment
         safetyIncidents(childId: ID!): [SafetyIncident!]!
         contentModerationStatus(conversationId: ID!): ContentModeration
     }
-    
+
     extend type Mutation {
         performSafetyCheck(input: SafetyCheckInput!): SafetyCheck!
         reportIncident(input: IncidentReportInput!): SafetyIncident!
@@ -410,7 +410,7 @@ SAFETY_SERVICE_SCHEMA = """
 
 class GraphQLFederationGateway:
     """GraphQL Federation Gateway for microservices architecture."""
-    
+
     def __init__(self, config: FederationConfig):
         self.config = config
         self.services: Dict[str, ServiceConfig] = {
@@ -419,10 +419,10 @@ class GraphQLFederationGateway:
         self.app: Optional[FastAPI] = None
         self.cache: Optional[MultiLayerCache] = None
         self.http_client: Optional[httpx.AsyncClient] = None
-        
+
         # Security
         self.security = HTTPBearer() if config.enable_authentication else None
-        
+
         # Performance metrics
         self.metrics = {
             "requests_total": 0,
@@ -432,9 +432,10 @@ class GraphQLFederationGateway:
             "cache_hits": 0,
             "cache_misses": 0
         }
-        
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
-    
+
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
+
     async def initialize(self):
         """Initialize the federation gateway."""
         try:
@@ -445,26 +446,29 @@ class GraphQLFederationGateway:
                 self.cache = MultiLayerCache(cache_config)
                 await self.cache.initialize()
                 self.logger.info("Cache system initialized")
-            
+
             # Initialize HTTP client
             self.http_client = httpx.AsyncClient(
                 timeout=httpx.Timeout(30.0),
-                limits=httpx.Limits(max_connections=100, max_keepalive_connections=20)
+                limits=httpx.Limits(
+    max_connections=100,
+     max_keepalive_connections=20)
             )
-            
+
             # Health check all services
             await self._check_service_health()
-            
+
             # Create FastAPI app
             self.app = await self._create_app()
-            
-            self.logger.info("GraphQL Federation Gateway initialized successfully")
+
+            self.logger.info(
+                "GraphQL Federation Gateway initialized successfully")
             return True
-            
+
         except Exception as e:
             self.logger.error(f"Gateway initialization failed: {e}")
             return False
-    
+
     async def _create_app(self) -> FastAPI:
         """Create FastAPI application with federated GraphQL."""
         app = FastAPI(
@@ -474,7 +478,7 @@ class GraphQLFederationGateway:
             docs_url="/docs" if self.config.enable_introspection else None,
             redoc_url="/redoc" if self.config.enable_introspection else None
         )
-        
+
         # CORS middleware
         if self.config.cors_origins:
             app.add_middleware(
@@ -484,51 +488,52 @@ class GraphQLFederationGateway:
                 allow_methods=["GET", "POST", "OPTIONS"],
                 allow_headers=["*"],
             )
-        
+
         # Rate limiting middleware
         if self.config.enable_rate_limiting:
             @app.middleware("http")
             async def rate_limit_middleware(request: Request, call_next):
                 # Simple rate limiting implementation
                 client_ip = request.client.host
-                
+
                 # Get current request count for IP
                 cache_key = f"rate_limit:{client_ip}"
                 if self.cache:
                     current_requests = await self.cache.get_with_fallback(
                         cache_key, ContentType.CONFIGURATION
                     ) or 0
-                    
+
                     if current_requests >= self.config.rate_limit_requests:
                         raise HTTPException(
                             status_code=429,
                             detail="Rate limit exceeded"
                         )
-                    
+
                     # Increment counter
                     await self.cache.set_multi_layer(
                         cache_key,
                         current_requests + 1,
                         ContentType.CONFIGURATION
                     )
-                
+
                 return await call_next(request)
-        
+
         # GraphQL endpoint
         @app.post("/graphql")
         @app.get("/graphql")
         async def graphql_endpoint(
             request: Request,
-            credentials: Optional[HTTPAuthorizationCredentials] = Depends(self.security) if self.config.enable_authentication else None
+            credentials: Optional[HTTPAuthorizationCredentials] = Depends(
+                self.security) if self.config.enable_authentication else None
         ):
             """Handle GraphQL queries with federation."""
             start_time = datetime.now()
-            
+
             try:
                 # Authentication
                 if self.config.enable_authentication and credentials:
                     await self._authenticate_request(credentials.credentials)
-                
+
                 # Parse GraphQL query
                 if request.method == "POST":
                     body = await request.json()
@@ -539,38 +544,39 @@ class GraphQLFederationGateway:
                     query = request.query_params.get("query")
                     variables = {}
                     operation_name = None
-                
+
                 if not query:
-                    raise HTTPException(status_code=400, detail="No query provided")
-                
+                    raise HTTPException(
+    status_code=400, detail="No query provided")
+
                 # Execute federated query
                 result = await self._execute_federated_query(
                     query, variables, operation_name
                 )
-                
+
                 # Update metrics
                 self.metrics["requests_total"] += 1
                 self.metrics["requests_success"] += 1
-                
+
                 latency = (datetime.now() - start_time).total_seconds() * 1000
                 self.metrics["average_latency"] = (
                     (self.metrics["average_latency"] * (self.metrics["requests_total"] - 1) + latency) /
                     self.metrics["requests_total"]
                 )
-                
+
                 return {"data": result}
-                
+
             except Exception as e:
                 self.metrics["requests_error"] += 1
                 self.logger.error(f"GraphQL execution error: {e}")
                 return {"errors": [{"message": str(e)}]}
-        
+
         # Health check endpoint
         @app.get("/health")
         async def health_check():
             """Health check for the federation gateway."""
             service_health = {}
-            
+
             for service_name, service_config in self.services.items():
                 try:
                     async with self.http_client.get(
@@ -580,9 +586,9 @@ class GraphQLFederationGateway:
                 except ConnectionError as e:
     logger.error(f"Error in operation: {e}", exc_info=True)ConnectionError as e:
     logger.error(f"Error in operation: {e}", exc_info=True)                    service_health[service_name] = False
-            
+
             overall_health = all(service_health.values())
-            
+
             return {
                 "status": "healthy" if overall_health else "degraded",
                 "gateway": "operational",
@@ -590,7 +596,7 @@ class GraphQLFederationGateway:
                 "metrics": self.metrics,
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         # Metrics endpoint
         @app.get("/metrics")
         async def get_metrics():

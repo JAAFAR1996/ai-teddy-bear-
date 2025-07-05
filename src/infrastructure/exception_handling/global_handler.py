@@ -13,13 +13,15 @@ from typing import Any, Callable, Dict, List, Optional, Type
 
 import structlog
 
-from src.domain.exceptions.base import (AITeddyBearException,
-                                        CircuitBreakerOpenException,
-                                        ErrorCategory, ErrorContext,
-                                        ErrorSeverity)
+from src.domain.exceptions.base import (
+    AITeddyBearException,
+    CircuitBreakerOpenException,
+    ErrorCategory,
+    ErrorContext,
+    ErrorSeverity,
+)
 from src.infrastructure.monitoring.alert_manager import AlertManager
-from src.infrastructure.monitoring.metrics import (circuit_breaker_state,
-                                                   error_counter)
+from src.infrastructure.monitoring.metrics import circuit_breaker_state, error_counter
 
 logger = structlog.get_logger(__name__)
 
@@ -84,8 +86,8 @@ class CircuitBreaker:
                     self.stats.last_state_change = datetime.utcnow()
                     self._half_open_counter = 0
                     logger.info(
-                        "Circuit breaker moving to HALF_OPEN", service=self.service_name
-                    )
+                        "Circuit breaker moving to HALF_OPEN",
+                        service=self.service_name)
                 else:
                     raise CircuitBreakerOpenException(
                         service_name=self.service_name,
@@ -160,7 +162,9 @@ class CircuitBreaker:
                     self.stats.failure_count = 0
                     self.stats.consecutive_successes = 0
                     self.stats.last_state_change = datetime.utcnow()
-                    logger.info("Circuit breaker CLOSED", service=self.service_name)
+                    logger.info(
+                        "Circuit breaker CLOSED",
+                        service=self.service_name)
 
             self._update_metrics()
 
@@ -192,7 +196,8 @@ class CircuitBreaker:
             # Calculate error percentage
             total_requests = self.stats.success_count + self.stats.failure_count
             if total_requests > 0:
-                error_percentage = (self.stats.failure_count / total_requests) * 100
+                error_percentage = (
+                    self.stats.failure_count / total_requests) * 100
                 self.stats.error_percentages[error_type] = error_percentage
 
                 # Check if we should open the circuit
@@ -252,9 +257,8 @@ class CircuitBreaker:
 
     def _is_expected_exception(self, exception: Exception) -> bool:
         """التحقق من أن الاستثناء متوقع"""
-        return any(
-            isinstance(exception, exc_type) for exc_type in self.expected_exceptions
-        )
+        return any(isinstance(exception, exc_type)
+                   for exc_type in self.expected_exceptions)
 
     def _update_metrics(self) -> None:
         """تحديث metrics"""
@@ -320,17 +324,80 @@ class GlobalExceptionHandler:
         self._error_history = defaultdict(list)
         self._max_history_size = 1000
 
-    def register_error_handler(
-        self, exception_type: Type[Exception], handler: Callable[[Exception], Any]
-    ) -> None:
+    def register_error_handler(self,
+                               exception_type: Type[Exception],
+                               handler: Callable[[Exception],
+                                                 Any]) -> None:
         """تسجيل معالج خاص لنوع معين من الأخطاء"""
         self.error_handlers[exception_type] = handler
 
-    def register_recovery_strategy(
-        self, error_code: str, strategy: Callable[[Exception, ErrorContext], Any]
-    ) -> None:
+    def register_recovery_strategy(self, error_code: str, strategy: Callable[[
+            Exception, ErrorContext], Any]) -> None:
         """تسجيل استراتيجية استرداد لكود خطأ معين"""
         self.recovery_strategies[error_code] = strategy
+
+    def _extract_error_data(self, exception: Exception) -> Dict[str, Any]:
+        """Extracts structured data from an exception."""
+        if isinstance(exception, AITeddyBearException):
+            return {
+                **exception.to_dict(),
+                "severity": exception.severity,
+                "category": exception.category,
+                "error_code": exception.error_code,
+                "recoverable": exception.recoverable,
+            }
+        else:
+            return {
+                "error_code": "UNEXPECTED_ERROR",
+                "message": str(exception),
+                "severity": ErrorSeverity.HIGH,
+                "category": ErrorCategory.INFRASTRUCTURE,
+                "exception_type": type(exception).__name__,
+                "stack_trace": traceback.format_exc(),
+                "recoverable": False,
+            }
+
+    async def _process_error(
+        self, error_data: Dict[str, Any], context: ErrorContext
+    ) -> Dict[str, Any]:
+        """Processes the extracted error data."""
+        self._add_to_history(error_data["error_code"], error_data)
+
+        log_method = self._get_log_method(error_data["severity"])
+        log_method("Exception occurred", **error_data, exc_info=True)
+
+        self._update_metrics(
+            error_data["error_code"],
+            error_data["category"],
+            error_data["severity"])
+
+        if error_data["severity"] == ErrorSeverity.CRITICAL:
+            await self.alert_manager.send_critical_alert(error_data)
+
+        self._check_circuit_breaker(
+            error_data["error_code"],
+            error_data["category"])
+        return error_data
+
+    async def _attempt_recovery(
+        self, exception: Exception, context: ErrorContext, error_data: Dict
+    ) -> Any:
+        """Attempts to apply a recovery strategy."""
+        if (
+            error_data["recoverable"]
+            and error_data["error_code"] in self.recovery_strategies
+        ):
+            try:
+                return await self._apply_recovery_strategy(
+                    exception, context, error_data["error_code"]
+                )
+            except Exception as recovery_error:
+                logger.error(
+                    "Recovery strategy failed",
+                    error_code=error_data["error_code"],
+                    recovery_error=str(recovery_error),
+                )
+        return None
 
     async def handle_exception(
         self,
@@ -339,83 +406,34 @@ class GlobalExceptionHandler:
         apply_recovery: bool = True,
     ) -> Dict[str, Any]:
         """معالجة exception مع logging و monitoring و alerting"""
+        context = context or ErrorContext()
+        error_data = self._extract_error_data(exception)
 
-        # Create context if not provided
-        if not context:
-            context = ErrorContext()
+        processed_data = await self._process_error(error_data, context)
 
-        # Extract exception details
-        if isinstance(exception, AITeddyBearException):
-            error_data = exception.to_dict()
-            severity = exception.severity
-            category = exception.category
-            error_code = exception.error_code
-            recoverable = exception.recoverable
-        else:
-            # Handle unexpected exceptions
-            error_data = {
-                "error_code": "UNEXPECTED_ERROR",
-                "message": str(exception),
-                "severity": ErrorSeverity.HIGH.value,
-                "category": ErrorCategory.INFRASTRUCTURE.value,
-                "exception_type": type(exception).__name__,
-                "stack_trace": traceback.format_exc(),
-            }
-            severity = ErrorSeverity.HIGH
-            category = ErrorCategory.INFRASTRUCTURE
-            error_code = "UNEXPECTED_ERROR"
-            recoverable = False
-
-        # Add to error history
-        self._add_to_history(error_code, error_data)
-
-        # Log with appropriate level
-        log_method = self._get_log_method(severity)
-        log_method("Exception occurred", **error_data, exc_info=True)
-
-        # Update metrics
-        self._update_metrics(error_code, category, severity)
-
-        # Check for custom handler
         custom_result = await self._apply_custom_handler(exception)
         if custom_result is not None:
             return custom_result
 
-        # Send alerts for critical errors
-        if severity == ErrorSeverity.CRITICAL:
-            await self.alert_manager.send_critical_alert(error_data)
-
-        # Check circuit breaker
-        self._check_circuit_breaker(error_code, category)
-
-        # Apply recovery strategy if available and requested
         recovery_result = None
-        if apply_recovery and recoverable and error_code in self.recovery_strategies:
-            try:
-                recovery_result = await self._apply_recovery_strategy(
-                    exception, context, error_code
-                )
-            except Exception as recovery_error:
-                logger.error(
-                    "Recovery strategy failed",
-                    error_code=error_code,
-                    recovery_error=str(recovery_error),
-                )
+        if apply_recovery:
+            recovery_result = await self._attempt_recovery(
+                exception, context, processed_data
+            )
 
-        # Build response
-        response = {
-            **error_data,
+        return {
+            **processed_data,
             "handled": True,
             "recovery_attempted": recovery_result is not None,
             "recovery_result": recovery_result,
             "user_message": self._get_user_friendly_message(
-                exception if isinstance(exception, AITeddyBearException) else None,
-                category,
-                severity,
+                exception if isinstance(
+                    exception,
+                    AITeddyBearException) else None,
+                processed_data["category"],
+                processed_data["severity"],
             ),
         }
-
-        return response
 
     def handle_exception_sync(
         self, exception: Exception, context: Optional[ErrorContext] = None
@@ -463,18 +481,23 @@ class GlobalExceptionHandler:
 
         # Prometheus metrics
         error_counter.labels(
-            error_code=error_code, category=category.value, severity=severity.value
-        ).inc()
+            error_code=error_code,
+            category=category.value,
+            severity=severity.value).inc()
 
-    def _check_circuit_breaker(self, error_code: str, category: ErrorCategory) -> None:
+    def _check_circuit_breaker(
+            self,
+            error_code: str,
+            category: ErrorCategory) -> None:
         """التحقق من circuit breaker"""
         # Circuit breakers للخدمات الحرجة فقط
-        if category in [ErrorCategory.EXTERNAL_SERVICE, ErrorCategory.INFRASTRUCTURE]:
+        if category in [
+                ErrorCategory.EXTERNAL_SERVICE,
+                ErrorCategory.INFRASTRUCTURE]:
             breaker_key = f"{category.value}_{error_code}"
             if breaker_key not in self.circuit_breakers:
                 self.circuit_breakers[breaker_key] = CircuitBreaker(
-                    service_name=breaker_key, failure_threshold=5, timeout_seconds=60
-                )
+                    service_name=breaker_key, failure_threshold=5, timeout_seconds=60)
 
     async def _apply_custom_handler(
         self, exception: Exception
@@ -489,8 +512,9 @@ class GlobalExceptionHandler:
                         return handler(exception)
                 except Exception as e:
                     logger.error(
-                        "Custom handler failed", handler=handler.__name__, error=str(e)
-                    )
+                        "Custom handler failed",
+                        handler=handler.__name__,
+                        error=str(e))
         return None
 
     async def _apply_recovery_strategy(
@@ -505,14 +529,16 @@ class GlobalExceptionHandler:
                 return strategy(exception, context)
         return None
 
-    def _add_to_history(self, error_code: str, error_data: Dict[str, Any]) -> None:
+    def _add_to_history(self, error_code: str,
+                        error_data: Dict[str, Any]) -> None:
         """إضافة خطأ للتاريخ"""
         history = self._error_history[error_code]
-        history.append({"timestamp": datetime.utcnow().isoformat(), **error_data})
+        history.append(
+            {"timestamp": datetime.utcnow().isoformat(), **error_data})
 
         # Keep only recent errors
         if len(history) > self._max_history_size:
-            self._error_history[error_code] = history[-self._max_history_size :]
+            self._error_history[error_code] = history[-self._max_history_size:]
 
     def _get_user_friendly_message(
         self,
@@ -533,11 +559,14 @@ class GlobalExceptionHandler:
         else:
             return "عذراً، حدث خطأ. يرجى المحاولة مرة أخرى"
 
-    def get_circuit_breaker(self, service_name: str) -> Optional[CircuitBreaker]:
+    def get_circuit_breaker(
+            self,
+            service_name: str) -> Optional[CircuitBreaker]:
         """الحصول على circuit breaker لخدمة معينة"""
         return self.circuit_breakers.get(service_name)
 
-    def get_error_statistics(self, time_window_minutes: int = 60) -> Dict[str, Any]:
+    def get_error_statistics(
+            self, time_window_minutes: int = 60) -> Dict[str, Any]:
         """الحصول على إحصائيات الأخطاء"""
         cutoff_time = datetime.utcnow() - timedelta(minutes=time_window_minutes)
 

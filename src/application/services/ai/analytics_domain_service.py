@@ -9,9 +9,13 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
-from ..models.analytics_models import (AnalyticsData, AnalyticsFilter,
-                                       ConversationLog, LearningProgress,
-                                       UsageMetrics)
+from ..models.analytics_models import (
+    AnalyticsData,
+    AnalyticsFilter,
+    ConversationLog,
+    LearningProgress,
+    UsageMetrics,
+)
 from ..models.user_models import ConversationLogEntry
 
 
@@ -67,7 +71,12 @@ class AnalyticsDomainService:
     ) -> LearningProgress:
         """Calculate learning progress metrics"""
 
-        educational_topics = {"education", "science", "math", "learning", "study"}
+        educational_topics = {
+            "education",
+            "science",
+            "math",
+            "learning",
+            "study"}
         educational_conversations = sum(
             1 for log in logs if set(log.topics or []) & educational_topics
         )
@@ -77,9 +86,11 @@ class AnalyticsDomainService:
             all_topics.update(log.topics or [])
 
         return LearningProgress(
-            educational_engagement=educational_conversations / len(logs) if logs else 0,
+            educational_engagement=educational_conversations /
+            len(logs) if logs else 0,
             topic_diversity=len(all_topics),
-            consistency_score=min(len(logs) / 30, 1.0),  # Based on 30-day period
+            consistency_score=min(
+                len(logs) / 30, 1.0),  # Based on 30-day period
             vocabulary_growth=self._calculate_vocabulary_growth(logs),
         )
 
@@ -101,7 +112,8 @@ class AnalyticsDomainService:
         return UsageMetrics(
             total_conversations=len(logs),
             total_duration_minutes=total_duration / 60,
-            average_session_minutes=(total_duration / len(logs) / 60) if logs else 0,
+            average_session_minutes=(
+                total_duration / len(logs) / 60) if logs else 0,
             daily_usage_trend=daily_trend,
             peak_usage_hours=peak_hours,
             session_frequency=frequency,
@@ -138,7 +150,9 @@ class AnalyticsDomainService:
 
         return {k: v / count for k, v in sentiment_totals.items()}
 
-    def _calculate_peak_hours(self, logs: List[ConversationLogEntry]) -> List[int]:
+    def _calculate_peak_hours(
+            self,
+            logs: List[ConversationLogEntry]) -> List[int]:
         """Calculate peak usage hours"""
         hour_counts = defaultdict(int)
         for log in logs:
@@ -147,10 +161,14 @@ class AnalyticsDomainService:
                 hour_counts[hour] += 1
 
         # Get top 3 hours
-        sorted_hours = sorted(hour_counts.items(), key=lambda x: x[1], reverse=True)
+        sorted_hours = sorted(
+            hour_counts.items(),
+            key=lambda x: x[1],
+            reverse=True)
         return [hour for hour, count in sorted_hours[:3]]
 
-    def _calculate_vocabulary_growth(self, logs: List[ConversationLogEntry]) -> int:
+    def _calculate_vocabulary_growth(
+            self, logs: List[ConversationLogEntry]) -> int:
         """Calculate vocabulary growth (unique words used)"""
         all_words = set()
         for log in logs:
@@ -161,7 +179,8 @@ class AnalyticsDomainService:
                         all_words.update(words)
         return len(all_words)
 
-    def _calculate_quality_score(self, logs: List[ConversationLogEntry]) -> float:
+    def _calculate_quality_score(
+            self, logs: List[ConversationLogEntry]) -> float:
         """Calculate overall interaction quality score"""
         if not logs:
             return 0.0
@@ -170,24 +189,40 @@ class AnalyticsDomainService:
         topic_frequency = self._calculate_topic_frequency(logs)
 
         factors = {
-            "positive_sentiment": sentiment_breakdown.get("positive", 0) * 0.3,
-            "topic_diversity": min(len(topic_frequency) / 10, 1.0) * 0.2,
-            "appropriate_duration": self._calculate_duration_score(logs) * 0.3,
-            "educational_content": self._calculate_educational_score(logs) * 0.2,
+            "positive_sentiment": sentiment_breakdown.get(
+                "positive",
+                0) *
+            0.3,
+            "topic_diversity": min(
+                len(topic_frequency) /
+                10,
+                1.0) *
+            0.2,
+            "appropriate_duration": self._calculate_duration_score(logs) *
+            0.3,
+            "educational_content": self._calculate_educational_score(logs) *
+            0.2,
         }
 
         return sum(factors.values())
 
-    def _calculate_duration_score(self, logs: List[ConversationLogEntry]) -> float:
+    def _calculate_duration_score(
+            self, logs: List[ConversationLogEntry]) -> float:
         """Calculate score based on appropriate session durations"""
         appropriate_sessions = sum(
             1 for log in logs if 5 <= (log.duration_seconds / 60) <= 30
         )
         return appropriate_sessions / len(logs) if logs else 0
 
-    def _calculate_educational_score(self, logs: List[ConversationLogEntry]) -> float:
+    def _calculate_educational_score(
+            self, logs: List[ConversationLogEntry]) -> float:
         """Calculate educational content engagement score"""
-        educational_topics = {"education", "science", "math", "learning", "study"}
+        educational_topics = {
+            "education",
+            "science",
+            "math",
+            "learning",
+            "study"}
         educational_sessions = sum(
             1 for log in logs if set(log.topics or []) & educational_topics
         )

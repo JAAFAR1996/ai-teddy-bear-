@@ -1,3 +1,25 @@
+from sqlalchemy.orm import relationship, validates
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.event import listens_for
+from sqlalchemy.dialects.sqlite import JSON
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Table,
+    Text,
+    UniqueConstraint,
+)
+from datetime import date, datetime
+import uuid
 import logging
 from typing import Any, Dict
 
@@ -9,18 +31,6 @@ SQLAlchemy Models for AI Teddy Bear Project
 Includes Child, Conversation, Message, and related entities with optimized relationships and indexes
 """
 
-import uuid
-from datetime import date, datetime
-from typing import Any, Dict
-
-from sqlalchemy import (Boolean, CheckConstraint, Column, Date, DateTime,
-                        Float, ForeignKey, Index, Integer, String, Table, Text,
-                        UniqueConstraint)
-from sqlalchemy.dialects.sqlite import JSON
-from sqlalchemy.event import listens_for
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, validates
 
 Base = declarative_base()
 
@@ -30,22 +40,36 @@ class TimestampMixin:
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
-    )
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False)
 
 
 class UUIDMixin:
     """Mixin to add UUID primary key"""
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = Column(
+        String(36),
+        primary_key=True,
+        default=lambda: str(
+            uuid.uuid4()))
 
 
 # Association table for child interests (many-to-many)
 child_interests_table = Table(
     "child_interests",
     Base.metadata,
-    Column("child_id", String(36), ForeignKey("children.id"), primary_key=True),
-    Column("interest_id", String(36), ForeignKey("interests.id"), primary_key=True),
+    Column(
+        "child_id",
+        String(36),
+        ForeignKey("children.id"),
+        primary_key=True),
+    Column(
+        "interest_id",
+        String(36),
+        ForeignKey("interests.id"),
+        primary_key=True),
 )
 
 
@@ -80,7 +104,8 @@ class Child(Base, UUIDMixin, TimestampMixin):
     gender = Column(String(20))
 
     # Profile & Preferences
-    personality_traits = Column(JSON, default=list)  # ['curious', 'shy', 'energetic']
+    # ['curious', 'shy', 'energetic']
+    personality_traits = Column(JSON, default=list)
     learning_preferences = Column(
         JSON, default=dict
     )  # {'visual': 0.8, 'auditory': 0.6}
@@ -157,7 +182,10 @@ class Child(Base, UUIDMixin, TimestampMixin):
         """Calculate remaining interaction time for today"""
         if self.daily_interaction_reset != date.today():
             return self.max_daily_interaction_time
-        return max(0, self.max_daily_interaction_time - self.total_interaction_time)
+        return max(
+            0,
+            self.max_daily_interaction_time -
+            self.total_interaction_time)
 
     @hybrid_property
     def interaction_streak_days(self) -> Any:
@@ -297,8 +325,9 @@ class Conversation(Base, UUIDMixin, TimestampMixin):
         "Message", back_populates="conversation", cascade="all, delete-orphan"
     )
     emotional_states = relationship(
-        "EmotionalState", back_populates="conversation", cascade="all, delete-orphan"
-    )
+        "EmotionalState",
+        back_populates="conversation",
+        cascade="all, delete-orphan")
 
     # Hybrid properties
     @hybrid_property
@@ -318,7 +347,9 @@ class Conversation(Base, UUIDMixin, TimestampMixin):
         if not self.emotional_states:
             return "neutral"
         emotions = [state.primary_emotion for state in self.emotional_states]
-        return max(set(emotions), key=emotions.count) if emotions else "neutral"
+        return max(
+            set(emotions),
+            key=emotions.count) if emotions else "neutral"
 
     # Indexes and constraints
     __table_args__ = (
@@ -343,12 +374,16 @@ class Message(Base, UUIDMixin, TimestampMixin):
 
     __tablename__ = "messages"
 
-    conversation_id = Column(String(36), ForeignKey("conversations.id"), nullable=False)
+    conversation_id = Column(
+        String(36),
+        ForeignKey("conversations.id"),
+        nullable=False)
 
     # Content
     role = Column(String(20), nullable=False)  # 'user', 'assistant', 'system'
     content = Column(Text, nullable=False)
-    content_type = Column(String(20), default="text")  # 'text', 'audio', 'image'
+    # 'text', 'audio', 'image'
+    content_type = Column(String(20), default="text")
 
     # Ordering
     sequence_number = Column(Integer, nullable=False)
@@ -391,7 +426,10 @@ class EmotionalState(Base, UUIDMixin, TimestampMixin):
 
     __tablename__ = "emotional_states"
 
-    conversation_id = Column(String(36), ForeignKey("conversations.id"), nullable=False)
+    conversation_id = Column(
+        String(36),
+        ForeignKey("conversations.id"),
+        nullable=False)
 
     # Primary emotion detection
     primary_emotion = Column(String(50), nullable=False)
@@ -404,8 +442,10 @@ class EmotionalState(Base, UUIDMixin, TimestampMixin):
 
     # Emotion dimensions
     arousal_level = Column(Float, default=0.0)  # -1.0 (calm) to 1.0 (excited)
-    valence_level = Column(Float, default=0.0)  # -1.0 (negative) to 1.0 (positive)
-    dominance_level = Column(Float, default=0.0)  # -1.0 (submissive) to 1.0 (dominant)
+    # -1.0 (negative) to 1.0 (positive)
+    valence_level = Column(Float, default=0.0)
+    # -1.0 (submissive) to 1.0 (dominant)
+    dominance_level = Column(Float, default=0.0)
 
     # Context
     emotional_context = Column(Text)
@@ -416,7 +456,9 @@ class EmotionalState(Base, UUIDMixin, TimestampMixin):
     raw_analysis_data = Column(JSON, default=dict)
 
     # Relationships
-    conversation = relationship("Conversation", back_populates="emotional_states")
+    conversation = relationship(
+        "Conversation",
+        back_populates="emotional_states")
 
     # Indexes
     __table_args__ = (
@@ -439,7 +481,8 @@ class LearningSession(Base, UUIDMixin, TimestampMixin):
     # Session details
     subject = Column(String(100), nullable=False)
     topic = Column(String(200))
-    difficulty_level = Column(String(20))  # 'beginner', 'intermediate', 'advanced'
+    # 'beginner', 'intermediate', 'advanced'
+    difficulty_level = Column(String(20))
 
     # Duration and progress
     duration_minutes = Column(Integer, default=0)
@@ -476,7 +519,8 @@ class EmotionProfile(Base, UUIDMixin, TimestampMixin):
 
     # Profile period
     profile_date = Column(Date, default=date.today)
-    profile_type = Column(String(20), default="daily")  # 'daily', 'weekly', 'monthly'
+    # 'daily', 'weekly', 'monthly'
+    profile_type = Column(String(20), default="daily")
 
     # Dominant emotions
     dominant_emotions = Column(
@@ -568,7 +612,10 @@ if __name__ == "__main__":
     session = SessionFactory()
 
     # Example data creation
-    parent = Parent(email="parent@example.com", first_name="John", last_name="Doe")
+    parent = Parent(
+        email="parent@example.com",
+        first_name="John",
+        last_name="Doe")
     session.add(parent)
     session.flush()  # Get parent ID
 

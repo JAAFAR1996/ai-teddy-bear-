@@ -1,16 +1,14 @@
+from src.infrastructure.persistence.base_sqlite_repository import \
+    BaseSQLiteRepository
+from src.core.domain.entities.transcription import Transcription
+from datetime import datetime
+import wave
+import contextlib
 from typing import Any
 
 import structlog
 
 logger = structlog.get_logger(__name__)
-
-import contextlib
-import wave
-from datetime import datetime
-
-from src.core.domain.entities.transcription import Transcription
-from src.infrastructure.persistence.base_sqlite_repository import \
-    BaseSQLiteRepository
 
 
 class TranscriptionSQLiteRepository(BaseSQLiteRepository):
@@ -44,10 +42,12 @@ class TranscriptionSQLiteRepository(BaseSQLiteRepository):
                 rate = f.getframerate()
                 duration = frames / float(rate)
                 return duration
-        # FIXME: replace with specific exception
-except Exception as exc:return None
 
-    def add(self, transcription: Transcription) -> Transcription:
+        # FIXME: replace with specific exception
+except Exception as exc:
+    return None
+
+   def add(self, transcription: Transcription) -> Transcription:
         """Override add method to handle audio duration and defaults."""
         # Set creation time
         transcription.created_at = datetime.now()
@@ -95,7 +95,8 @@ except Exception as exc:return None
         cursor.execute(query, (entity_id,))
         row = cursor.fetchone()
         if row:
-            # تحويل الصف (row) إلى كائن Transcription باستخدام الدالة الجاهزة غالباً في الأب
+            # تحويل الصف (row) إلى كائن Transcription باستخدام الدالة الجاهزة
+            # غالباً في الأب
             return self._map_row_to_entity(row)
         return None
 

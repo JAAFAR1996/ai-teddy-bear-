@@ -21,12 +21,11 @@ class ProfileManagementService:
         self.logger = logging.getLogger(__name__)
 
     async def create_parent_account(
-        self,
-        email: str,
-        name: str,
-        phone: Optional[str] = None,
-        timezone: str = "UTC"
-    ):
+            self,
+            email: str,
+            name: str,
+            phone: Optional[str] = None,
+            timezone: str = "UTC"):
         """
         Create a new parent account with validation.
         Delegates to orchestrator for business logic.
@@ -56,7 +55,7 @@ class ProfileManagementService:
                 profile_data.name,
                 profile_data.age,
                 profile_data.interests,
-                profile_data.language
+                profile_data.language,
             )
 
             self.logger.info(
@@ -86,11 +85,7 @@ class ProfileManagementService:
             self.logger.error(f"Failed to get child profile {child_id}: {e}")
             raise
 
-    async def update_child_profile(
-        self,
-        child_id: str,
-        updates: dict
-    ) -> bool:
+    async def update_child_profile(self, child_id: str, updates: dict) -> bool:
         """Update child profile information"""
         try:
             # Get existing profile
@@ -119,8 +114,7 @@ class ProfileManagementService:
         try:
             # Mark as inactive instead of hard delete
             success = await self.child_repository.update(
-                child_id,
-                {"active": False, "deleted_at": "now()"}
+                child_id, {"active": False, "deleted_at": "now()"}
             )
 
             if success:
@@ -144,12 +138,12 @@ class ProfileManagementService:
 
             # Filter out inactive profiles
             active_children = [
-                child for child in children
-                if getattr(child, 'active', True)
+                child for child in children if getattr(child, "active", True)
             ]
 
             self.logger.debug(
-                f"Found {len(active_children)} active children for parent {parent_id}")
+                f"Found {len(active_children)} active children for parent {parent_id}"
+            )
             return active_children
 
         except Exception as e:
@@ -179,26 +173,27 @@ class ProfileManagementService:
             return None
 
     async def update_parent_settings(
-        self,
-        parent_id: str,
-        settings: dict
-    ) -> bool:
+            self, parent_id: str, settings: dict) -> bool:
         """Update parent account settings"""
         try:
             # Validate settings
             allowed_settings = [
-                'name', 'phone', 'timezone', 'email_notifications',
-                'push_notifications', 'language_preference'
+                "name",
+                "phone",
+                "timezone",
+                "email_notifications",
+                "push_notifications",
+                "language_preference",
             ]
 
             filtered_settings = {
-                k: v for k, v in settings.items()
-                if k in allowed_settings
+                k: v for k, v in settings.items() if k in allowed_settings
             }
 
             if not filtered_settings:
                 self.logger.warning(
-                    f"No valid settings to update for parent {parent_id}")
+                    f"No valid settings to update for parent {parent_id}"
+                )
                 return False
 
             # Update through orchestrator
@@ -232,8 +227,8 @@ class ProfileManagementService:
                 "delete_child_profile",
                 "get_children_for_parent",
                 "get_parent_by_id",
-                "update_parent_settings"
+                "update_parent_settings",
             ],
             "high_cohesion": True,
-            "responsibility": "Parent and child profile management"
+            "responsibility": "Parent and child profile management",
         }

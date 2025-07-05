@@ -15,7 +15,10 @@ T = TypeVar("T")
 class BaseService(ABC, Generic[T]):
     """Base service class with common functionality."""
 
-    def __init__(self, repository: BaseRepository[T], logger: logging.Logger = None):
+    def __init__(
+            self,
+            repository: BaseRepository[T],
+            logger: logging.Logger = None):
         """Initialize base service with repository and logger."""
         self._repository = repository
         self._logger = logger or logging.getLogger(self.__class__.__name__)
@@ -127,7 +130,11 @@ class BaseService(ABC, Generic[T]):
             )
             raise
 
-    async def list(self, filters: dict = None, limit: int = 100, offset: int = 0):
+    async def list(
+            self,
+            filters: dict = None,
+            limit: int = 100,
+            offset: int = 0):
         """List entities with filtering and pagination."""
         try:
             entities = await self._repository.list(filters, limit, offset)

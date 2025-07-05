@@ -30,7 +30,8 @@ class SMSService:
     def _load_config(self) -> Any:
         """تحميل إعدادات الرسائل النصية"""
         try:
-            config_path = Path(__file__).parent.parent.parent / "config" / "config.json"
+            config_path = Path(__file__).parent.parent.parent / \
+                "config" / "config.json"
             with open(config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
 
@@ -74,7 +75,10 @@ class SMSService:
             return True
 
         except Exception as e:
-            self.logger.error("SMS sending failed", phone=phone_number, error=str(e))
+            self.logger.error(
+                "SMS sending failed",
+                phone=phone_number,
+                error=str(e))
             return False
 
 

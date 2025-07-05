@@ -31,7 +31,8 @@ class TestProgressMetrics:
         assert True  # Placeholder test
 
     @patch("structlog.get_logger")
-    def test_progressmetrics_with_mocked_logger(self, mock_logger, progressmetrics):
+    def test_progressmetrics_with_mocked_logger(
+            self, mock_logger, progressmetrics):
         """Test ProgressMetrics with mocked logger"""
         # TODO: Add logger-specific tests
         assert True  # Placeholder test

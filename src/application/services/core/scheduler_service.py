@@ -75,8 +75,10 @@ class SchedulerService:
         try:
             if event.exception:
                 self.logger.error(
-                    "Job failed", job_id=event.job_id, exception=str(event.exception)
-                )
+                    "Job failed",
+                    job_id=event.job_id,
+                    exception=str(
+                        event.exception))
             else:
                 self.logger.info(
                     "Job completed successfully",
@@ -120,7 +122,8 @@ class SchedulerService:
             # تحميل أوقات مناسبة للمنطقة الزمنية (السعودية UTC+3)
             # الأوقات محسوبة بتوقيت UTC للتشغيل المحلي
 
-            # 1. تنظيف البيانات اليومي - 2 صباحاً بالتوقيت المحلي (23:00 UTC في الشتاء)
+            # 1. تنظيف البيانات اليومي - 2 صباحاً بالتوقيت المحلي (23:00 UTC في
+            # الشتاء)
             self.scheduler.add_job(
                 self._run_data_cleanup,
                 CronTrigger(hour=23, minute=0),  # 2 صباحاً بتوقيت الرياض
@@ -151,7 +154,8 @@ class SchedulerService:
             # 3. تحسين قاعدة البيانات - أسبوعياً
             self.scheduler.add_job(
                 self._weekly_database_optimization,
-                CronTrigger(day_of_week="sun", hour=2, minute=0),  # الأحد 2 صباحاً
+                CronTrigger(day_of_week="sun", hour=2, minute=0),
+                # الأحد 2 صباحاً
                 id="weekly_db_optimization",
                 name="Weekly Database Optimization",
                 replace_existing=True,
@@ -224,8 +228,8 @@ class SchedulerService:
 
             if total_items > 10000:  # تنبيه إذا كان هناك كمية كبيرة
                 self.logger.warning(
-                    "Large amount of data pending cleanup", total_items=total_items
-                )
+                    "Large amount of data pending cleanup",
+                    total_items=total_items)
 
             self.logger.debug(
                 "Data status monitored", items_pending_cleanup=total_items
@@ -292,7 +296,10 @@ class SchedulerService:
             self.logger.info("Custom job added", job_id=job_id)
 
         except Exception as e:
-            self.logger.error("Failed to add custom job", job_id=job_id, error=str(e))
+            self.logger.error(
+                "Failed to add custom job",
+                job_id=job_id,
+                error=str(e))
             raise
 
     def remove_job(str) -> None:
@@ -302,7 +309,10 @@ class SchedulerService:
             self.logger.info("Job removed", job_id=job_id)
 
         except Exception as e:
-            self.logger.error("Failed to remove job", job_id=job_id, error=str(e))
+            self.logger.error(
+                "Failed to remove job",
+                job_id=job_id,
+                error=str(e))
 
     def get_jobs_status(self) -> dict:
         """الحصول على حالة جميع المهام"""

@@ -95,7 +95,8 @@ async def get_devices_status() -> Dict[str, Any]:
 
 
 @router.get("/system/health")
-async def get_system_health(container=Depends(get_container)) -> Dict[str, Any]:
+async def get_system_health(
+        container=Depends(get_container)) -> Dict[str, Any]:
     """Get system health metrics"""
     try:
         return {

@@ -57,19 +57,23 @@ class RateMonitorService:
             notification_config = config.get("NOTIFICATION_CONFIG", {})
 
             self.rate_limit = RateLimit(
-                per_minute=notification_config.get("rate_limit_per_minute", 30),
+                per_minute=notification_config.get(
+                    "rate_limit_per_minute", 30),
                 per_hour=notification_config.get("rate_limit_per_hour", 100),
                 per_day=notification_config.get("rate_limit_per_day", 1000),
                 per_week_per_parent=notification_config.get(
                     "max_notifications_per_parent_per_week", 3
                 ),
-                cooldown_hours=notification_config.get("cooldown_period_hours", 24),
+                cooldown_hours=notification_config.get(
+                    "cooldown_period_hours", 24),
             )
 
             self.logger.info("Rate limits loaded", **asdict(self.rate_limit))
 
         except Exception as e:
-            self.logger.error("Failed to load rate monitor config", error=str(e))
+            self.logger.error(
+    "Failed to load rate monitor config",
+     error=str(e))
             self.rate_limit = RateLimit()
 
     def _init_counters(self) -> Any:
@@ -117,7 +121,9 @@ class RateMonitorService:
             conn.commit()
             conn.close()
 
-            self.logger.info("Rate monitor database initialized", db_path=self.db_path)
+            self.logger.info(
+    "Rate monitor database initialized",
+     db_path=self.db_path)
 
         except Exception as e:
             self.logger.error(
@@ -163,24 +169,27 @@ class RateMonitorService:
 
             return True, "System limits OK"
 
-        # FIXME: replace with specific exception
-except Exception as exc:return False, "System limits check error"
 
-    async def _check_parent_weekly_limit(
+        # FIXME: replace with specific exception
+except Exception as exc:
+    return False, "System limits check error"
+
+   async def _check_parent_weekly_limit(
         self, parent_email: str, now: datetime
     ) -> Tuple[bool, str]:
         """فحص الحد الأسبوعي لولي الأمر"""
         try:
             week_start = now - timedelta(days=now.weekday())
-            week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+            week_start = week_start.replace(
+    hour=0, minute=0, second=0, microsecond=0)
 
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
 
             cursor.execute(
                 """
-                SELECT notifications_sent 
-                FROM weekly_parent_limits 
+                SELECT notifications_sent
+                FROM weekly_parent_limits
                 WHERE parent_email = ? AND week_start = ?
             """,
                 (parent_email, week_start.date()),
@@ -198,9 +207,10 @@ except Exception as exc:return False, "System limits check error"
             return True, "Parent weekly limit OK"
 
         # FIXME: replace with specific exception
-except Exception as exc:return False, "Parent limit check error"
+except Exception as exc:
+    return False, "Parent limit check error"
 
-    async def record_notification(
+   async def record_notification(
         self,
         parent_email: str,
         child_udid: str,
@@ -219,7 +229,7 @@ except Exception as exc:return False, "Parent limit check error"
 
             cursor.execute(
                 """
-                INSERT INTO notification_stats 
+                INSERT INTO notification_stats
                 (timestamp, parent_email, child_udid, notification_type, channel, success, error_message)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
@@ -243,10 +253,10 @@ except Exception as exc:return False, "Parent limit check error"
 
                 cursor.execute(
                     """
-                    INSERT OR REPLACE INTO weekly_parent_limits 
+                    INSERT OR REPLACE INTO weekly_parent_limits
                     (parent_email, week_start, notifications_sent, last_notification)
-                    VALUES (?, ?, 
-                        COALESCE((SELECT notifications_sent FROM weekly_parent_limits 
+                    VALUES (?, ?,
+                        COALESCE((SELECT notifications_sent FROM weekly_parent_limits
                                  WHERE parent_email = ? AND week_start = ?), 0) + 1,
                         ?)
                 """,
@@ -263,8 +273,9 @@ except Exception as exc:return False, "Parent limit check error"
             conn.close()
 
             self.logger.info(
-                "Notification recorded", parent_email=parent_email, success=success
-            )
+    "Notification recorded",
+    parent_email=parent_email,
+     success=success )
 
         except Exception as e:
             self.logger.error("Failed to record notification", error=str(e))

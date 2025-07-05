@@ -7,12 +7,11 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.application.services.ai.emotion_analyzer_service import \
-    EmotionAnalyzer as DomainEmotionAnalyzer
-from src.application.services.ai.core import \
-    IEmotionAnalyzer
-from src.application.services.ai.models.ai_response_models import \
-    EmotionAnalysis
+from src.application.services.ai.emotion_analyzer_service import (
+    EmotionAnalyzer as DomainEmotionAnalyzer,
+)
+from src.application.services.ai.core import IEmotionAnalyzer
+from src.application.services.ai.models.ai_response_models import EmotionAnalysis
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +25,9 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
     - Conversation trend analysis
     """
 
-    def __init__(self, domain_analyzer: Optional[DomainEmotionAnalyzer] = None):
+    def __init__(
+            self,
+            domain_analyzer: Optional[DomainEmotionAnalyzer] = None):
         self.domain_analyzer = domain_analyzer
         self.emotion_cache: Dict[str, EmotionAnalysis] = {}
         self.cache_ttl = 300  # 5 minutes
@@ -179,7 +180,8 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
                 detected_emotions={"neutral": 1.0},
             )
 
-    def _analyze_with_patterns(self, text: str, language: str) -> tuple[str, float]:
+    def _analyze_with_patterns(
+            self, text: str, language: str) -> tuple[str, float]:
         """Analyze emotion using enhanced pattern matching"""
         text_lower = text.lower()
         emotion_scores = {}
@@ -235,8 +237,13 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             multiplier *= 0.3
 
         # Intensifiers
-        intensifiers = ["جداً", "كثيراً", "very",
-                        "really", "extremely", "super"]
+        intensifiers = [
+            "جداً",
+            "كثيراً",
+            "very",
+            "really",
+            "extremely",
+            "super"]
         if any(intensifier in text for intensifier in intensifiers):
             multiplier *= 1.5
 
@@ -246,7 +253,8 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
 
         return base_score * multiplier
 
-    def _get_emotion_scores(self, text: str, language: str) -> Dict[str, float]:
+    def _get_emotion_scores(
+            self, text: str, language: str) -> Dict[str, float]:
         """Get detailed emotion scores for all emotions"""
         text_lower = text.lower()
         scores = {}
@@ -255,8 +263,7 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             score = 0.0
 
             keywords = data.get(
-                "arabic_keywords" if language == "ar" else "english_keywords", []
-            )
+                "arabic_keywords" if language == "ar" else "english_keywords", [])
             keywords.extend(data.get("emojis", []))
 
             for keyword in keywords:
@@ -277,7 +284,10 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
     ) -> Dict[str, Any]:
         """🔍 Analyze emotion trends in conversation history"""
         if not conversation_history:
-            return {"trend": "neutral", "confidence": 0.5, "pattern": "no_data"}
+            return {
+                "trend": "neutral",
+                "confidence": 0.5,
+                "pattern": "no_data"}
 
         # Extract emotions from recent messages
         recent_emotions = []
@@ -289,7 +299,10 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
                 recent_emotions.append(emotion_analysis.primary_emotion)
 
         if not recent_emotions:
-            return {"trend": "neutral", "confidence": 0.5, "pattern": "no_emotions"}
+            return {
+                "trend": "neutral",
+                "confidence": 0.5,
+                "pattern": "no_emotions"}
 
         # Analyze trend
         trend_analysis = self._analyze_trend_pattern(recent_emotions)
@@ -387,7 +400,8 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
 
         return late_positive < early_positive or late_negative > early_negative
 
-    def _get_emotion_distribution(self, emotions: List[str]) -> Dict[str, float]:
+    def _get_emotion_distribution(
+            self, emotions: List[str]) -> Dict[str, float]:
         """Get distribution of emotions in the list"""
         if not emotions:
             return {}
@@ -398,7 +412,10 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
 
         # Convert to percentages
         total = len(emotions)
-        return {emotion: count / total for emotion, count in distribution.items()}
+        return {
+            emotion: count /
+            total for emotion,
+            count in distribution.items()}
 
     def _is_cache_valid(self, timestamp: datetime) -> bool:
         """Check if cache entry is still valid"""

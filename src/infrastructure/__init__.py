@@ -1,4 +1,4 @@
-﻿"""Infrastructure Layer - External Services and Databases"""
+"""Infrastructure Layer - External Services and Databases"""
 
 # Export emotion infrastructure components
 # Add Parent Dashboard infrastructure services

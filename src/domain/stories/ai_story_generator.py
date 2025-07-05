@@ -131,29 +131,61 @@ class FairyLandAIGenerator:
     def _get_animal_characters(self) -> List[str]:
         """Returns a list of animal characters."""
         return [
-            "أرنب صغير", "قطة لطيفة", "كلب وفي", "طائر مغرد", "فيل حكيم",
-            "دولفين ذكي", "سلحفاة صبورة", "نحلة نشيطة", "فراشة جميلة", "أسد شجاع",
+            "أرنب صغير",
+            "قطة لطيفة",
+            "كلب وفي",
+            "طائر مغرد",
+            "فيل حكيم",
+            "دولفين ذكي",
+            "سلحفاة صبورة",
+            "نحلة نشيطة",
+            "فراشة جميلة",
+            "أسد شجاع",
         ]
 
     def _get_fantasy_characters(self) -> List[str]:
         """Returns a list of fantasy characters."""
         return [
-            "تنين ودود", "جنية طيبة", "ساحر حكيم", "أميرة شجاعة", "فارس نبيل",
-            "عملاق لطيف", "روح الغابة", "ملك الحيوانات", "حورية البحر", "طائر العنقاء",
+            "تنين ودود",
+            "جنية طيبة",
+            "ساحر حكيم",
+            "أميرة شجاعة",
+            "فارس نبيل",
+            "عملاق لطيف",
+            "روح الغابة",
+            "ملك الحيوانات",
+            "حورية البحر",
+            "طائر العنقاء",
         ]
 
     def _get_human_characters(self) -> List[str]:
         """Returns a list of human characters."""
         return [
-            "جد حكيم", "جدة محبة", "معلم صبور", "طبيب طيب", "شرطي مساعد",
-            "خباز ماهر", "فنان موهوب", "موسيقي مبدع", "رياضي قوي", "عالم ذكي",
+            "جد حكيم",
+            "جدة محبة",
+            "معلم صبور",
+            "طبيب طيب",
+            "شرطي مساعد",
+            "خباز ماهر",
+            "فنان موهوب",
+            "موسيقي مبدع",
+            "رياضي قوي",
+            "عالم ذكي",
         ]
 
     def _get_object_characters(self) -> List[str]:
         """Returns a list of object characters."""
         return [
-            "كتاب سحري", "مصباح عجيب", "شجرة متكلمة", "نجمة لامعة", "قلم ملون",
-            "حجر كريم", "مرآة سحرية", "صندوق الكنوز", "بوصلة ذهبية", "خريطة قديمة",
+            "كتاب سحري",
+            "مصباح عجيب",
+            "شجرة متكلمة",
+            "نجمة لامعة",
+            "قلم ملون",
+            "حجر كريم",
+            "مرآة سحرية",
+            "صندوق الكنوز",
+            "بوصلة ذهبية",
+            "خريطة قديمة",
         ]
 
     def _load_character_bank(self) -> Dict[str, List[str]]:
@@ -245,7 +277,7 @@ class FairyLandAIGenerator:
         return {
             "قلق": StoryTheme.FRIENDSHIP,  # Friendship stories can be calming
             "متحمس": StoryTheme.ADVENTURE,  # Adventure for high energy
-            "حزين": StoryTheme.FAMILY,    # Family stories for comfort
+            "حزين": StoryTheme.FAMILY,  # Family stories for comfort
             "فضولي": StoryTheme.LEARNING,  # Learning for a curious mind
         }
 
@@ -269,7 +301,8 @@ class FairyLandAIGenerator:
         # 2. Check interests
         interest_map = self._get_interest_theme_map()
         for interest, theme in interest_map.items():
-            if any(interest in user_interest for user_interest in context.interests):
+            if any(
+                    interest in user_interest for user_interest in context.interests):
                 return theme
 
         # 3. Check learning goals
@@ -295,7 +328,10 @@ class FairyLandAIGenerator:
         else:
             return AgeGroup.TEEN
 
-    def _get_prompt_introduction(self, theme: StoryTheme, length_str: str) -> str:
+    def _get_prompt_introduction(
+            self,
+            theme: StoryTheme,
+            length_str: str) -> str:
         """Generates the introduction for the story prompt."""
         return f"Act as a master storyteller for children. Write a personalized, engaging, and age-appropriate story in Arabic. The theme is '{theme.value}' and the length should be '{length_str}'."
 
@@ -312,15 +348,22 @@ class FairyLandAIGenerator:
 - **Learning Goals:** {', '.join(context.learning_goals)}
 """
 
-    def _get_prompt_story_elements_section(self, theme: StoryTheme, age_group: AgeGroup, context: StoryContext) -> str:
+    def _get_prompt_story_elements_section(
+        self, theme: StoryTheme, age_group: AgeGroup, context: StoryContext
+    ) -> str:
         """Generates the story elements section for the prompt."""
         template = self.story_templates.get(theme.value, {})
-        characters = random.sample(self.character_bank.get(
-            random.choice(list(self.character_bank.keys())), []), 2)
+        characters = random.sample(
+            self.character_bank.get(
+                random.choice(list(self.character_bank.keys())), []
+            ),
+            2,
+        )
         if context.preferred_characters:
             characters.extend(context.preferred_characters)
         moral_lesson = random.choice(
-            self.moral_lessons.get(age_group.value, []))
+            self.moral_lessons.get(
+                age_group.value, []))
 
         return f"""
 ### Story Elements
@@ -353,7 +396,8 @@ class FairyLandAIGenerator:
         intro = self._get_prompt_introduction(theme, length_str)
         context_section = self._get_prompt_context_section(context)
         elements_section = self._get_prompt_story_elements_section(
-            theme, age_group, context)
+            theme, age_group, context
+        )
         style_section = self._get_prompt_style_and_rules_section()
 
         return f"{intro}{context_section}{elements_section}{style_section}"
@@ -367,7 +411,10 @@ class FairyLandAIGenerator:
         }
         return descriptions[length]
 
-    async def _generate_with_gpt4(self, prompt: str, length: StoryLength) -> str:
+    async def _generate_with_gpt4(
+            self,
+            prompt: str,
+            length: StoryLength) -> str:
         """توليد القصة باستخدام GPT-4"""
 
         # تحديد عدد التوكنز حسب الطول
@@ -443,10 +490,8 @@ class FairyLandAIGenerator:
         lines = raw_content.strip().split("\n")
         title_line = next(
             (line for line in lines if line.startswith("عنوان:")), "")
-        title = (
-            title_line.replace("عنوان:", "").strip(
-            ) or f"مغامرة {context.child_name}"
-        )
+        title = (title_line.replace("عنوان:", "").strip()
+                 or f"مغامرة {context.child_name}")
 
         # إزالة سطر العنوان من المحتوى
         content = raw_content.replace(title_line, "").strip()
@@ -500,7 +545,10 @@ class FairyLandAIGenerator:
 
         return content
 
-    def _extract_characters(self, content: str, context: StoryContext) -> List[str]:
+    def _extract_characters(
+            self,
+            content: str,
+            context: StoryContext) -> List[str]:
         """استخراج الشخصيات من القصة"""
         characters = [context.child_name]
 
@@ -560,7 +608,8 @@ class FairyLandAIGenerator:
         keywords_for_theme = theme_keywords.get(theme, [])
 
         found_elements = [
-            keyword for keyword in keywords_for_theme if keyword in content]
+            keyword for keyword in keywords_for_theme if keyword in content
+        ]
 
         # Add a default element if none are found
         if not found_elements and keywords_for_theme:
@@ -626,8 +675,7 @@ class FairyLandAIGenerator:
 
         # نقاط للحالة العاطفية
         emotional_alignment = len(
-            [tag for tag in story["emotional_tags"]
-                if context.emotional_state in tag]
+            [tag for tag in story["emotional_tags"] if context.emotional_state in tag]
         )
         if emotional_alignment > 0:
             score += 1.5
@@ -664,7 +712,8 @@ class FairyLandAIGenerator:
             context, StoryTheme.BEDTIME, StoryLength.SHORT
         )
 
-    def get_story_suggestions(self, context: StoryContext) -> List[Dict[str, Any]]:
+    def get_story_suggestions(
+            self, context: StoryContext) -> List[Dict[str, Any]]:
         """الحصول على اقتراحات قصص مخصصة"""
 
         suggestions = []
@@ -691,7 +740,10 @@ class FairyLandAIGenerator:
         """الحصول على المواضيع المناسبة للعمر"""
 
         if age <= 5:
-            return [StoryTheme.ANIMALS, StoryTheme.FRIENDSHIP, StoryTheme.FAMILY]
+            return [
+                StoryTheme.ANIMALS,
+                StoryTheme.FRIENDSHIP,
+                StoryTheme.FAMILY]
         elif age <= 8:
             return [
                 StoryTheme.ADVENTURE,
@@ -714,7 +766,10 @@ class FairyLandAIGenerator:
                 StoryTheme.FANTASY,
             ]
 
-    def _get_theme_description(self, theme: StoryTheme, context: StoryContext) -> str:
+    def _get_theme_description(
+            self,
+            theme: StoryTheme,
+            context: StoryContext) -> str:
         """وصف الموضوع مخصص للطفل"""
 
         descriptions = {
@@ -740,7 +795,10 @@ class FairyLandAIGenerator:
 
         return values.get(theme, "تطوير الخيال والإبداع")
 
-    def _get_emotional_benefit(self, theme: StoryTheme, emotional_state: str) -> str:
+    def _get_emotional_benefit(
+            self,
+            theme: StoryTheme,
+            emotional_state: str) -> str:
         """الفائدة العاطفية للموضوع"""
 
         benefits = {
@@ -750,4 +808,5 @@ class FairyLandAIGenerator:
             ("ملل", StoryTheme.LEARNING): "إثارة الفضول والاهتمام",
         }
 
-        return benefits.get((emotional_state, theme), "تعزيز المشاعر الإيجابية")
+        return benefits.get((emotional_state, theme),
+                            "تعزيز المشاعر الإيجابية")

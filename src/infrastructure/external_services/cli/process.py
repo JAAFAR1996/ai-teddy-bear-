@@ -5,6 +5,8 @@ import logging
 import sys
 from typing import Optional
 
+import numpy as np
+
 from ..audio_manager import audio_manager
 from ..audio_processing import normalize_volume, process_audio, trim_silence
 
@@ -30,7 +32,10 @@ def parse_args(args: Optional[list] = None) -> argparse.Namespace:
     parser.add_argument(
         "--noise-reduction", action="store_true", help="Apply noise reduction"
     )
-    parser.add_argument("--stats", action="store_true", help="Show audio statistics")
+    parser.add_argument(
+        "--stats",
+        action="store_true",
+        help="Show audio statistics")
     return parser.parse_args(args)
 
 
@@ -47,42 +52,44 @@ def show_audio_stats(audio_data: np.ndarray) -> None:
     logger.info(f"Silent Percentage: {stats['silent_percentage']:.1f}%\n")
 
 
+def _process_audio_data(
+        audio_data: np.ndarray,
+        args: argparse.Namespace) -> np.ndarray:
+    """Applies the requested audio processing steps."""
+    if args.normalize:
+        logger.info("Normalizing volume...")
+        audio_data = normalize_volume(audio_data)
+    if args.trim:
+        logger.info("Trimming silence...")
+        audio_data = trim_silence(audio_data)
+    if args.noise_reduction:
+        logger.info("Applying noise reduction...")
+        audio_data = process_audio(audio_data)
+    return audio_data
+
+
 def main(args: Optional[list] = None) -> int:
     """Main entry point for processing command."""
     try:
         parsed_args = parse_args(args)
 
-        # Load audio file
         logger.info(f"Loading audio file: {parsed_args.input}")
-        audio_data, sample_rate = audio_manager.audio_io.load_audio(parsed_args.input)
+        audio_data, sample_rate = audio_manager.audio_io.load_audio(
+            parsed_args.input)
 
-        # Show initial stats if requested
         if parsed_args.stats:
             logger.info("\nBefore Processing:")
             show_audio_stats(audio_data)
 
-        # Apply processing
-        if parsed_args.normalize:
-            logger.info("Normalizing volume...")
-            audio_data = normalize_volume(audio_data)
+        audio_data = _process_audio_data(audio_data, parsed_args)
 
-        if parsed_args.trim:
-            logger.info("Trimming silence...")
-            audio_data = trim_silence(audio_data)
-
-        if parsed_args.noise_reduction:
-            logger.info("Applying noise reduction...")
-            audio_data = process_audio(audio_data)
-
-        # Show final stats if requested
         if parsed_args.stats:
             logger.info("\nAfter Processing:")
             show_audio_stats(audio_data)
 
-        # Save processed audio
         output_file = (
-            parsed_args.output or parsed_args.input.rsplit(".", 1)[0] + "_processed.wav"
-        )
+            parsed_args.output or parsed_args.input.rsplit(
+                ".", 1)[0] + "_processed.wav")
         logger.info(f"Saving processed audio to: {output_file}")
         audio_manager.audio_io.save_audio(audio_data, output_file, sample_rate)
 

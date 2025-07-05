@@ -57,4 +57,6 @@ class TeddyBearUser(HttpUser):
     @task(1)
     def end_conversation(self):
         """Test ending conversations"""
-        self.client.post("/api/v1/conversations/active/end", headers=self.headers)
+        self.client.post(
+            "/api/v1/conversations/active/end",
+            headers=self.headers)

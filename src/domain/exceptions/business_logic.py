@@ -39,8 +39,11 @@ class DuplicateResourceException(BusinessLogicException):
     """مورد مكرر"""
 
     def __init__(
-        self, resource_type: str, duplicate_field: str, duplicate_value: Any, **kwargs
-    ):
+            self,
+            resource_type: str,
+            duplicate_field: str,
+            duplicate_value: Any,
+            **kwargs):
         super().__init__(
             message=f"{resource_type} with {duplicate_field}='{duplicate_value}' already exists",
             error_code="DUPLICATE_RESOURCE",

@@ -52,7 +52,10 @@ class EnterpriseMessageSender(QObject):
         self.websocket_client.message_received.connect(
             self._handle_server_response)
 
-    async def send_audio_message(self, audio_file: bytes, metadata: dict) -> str:
+    async def send_audio_message(
+            self,
+            audio_file: bytes,
+            metadata: dict) -> str:
         """Send audio message with comprehensive metadata"""
         message_id = self._generate_message_id()
 
@@ -118,8 +121,10 @@ class EnterpriseMessageSender(QObject):
             return message_id
 
         except Exception as e:
-            logger.error("Failed to send message",
-                         message_id=message_id, error=str(e))
+            logger.error(
+                "Failed to send message",
+                message_id=message_id,
+                error=str(e))
             self._queue_for_retry(message_data)
             self.message_failed.emit(message_id, str(e))
             raise
@@ -166,7 +171,8 @@ class EnterpriseMessageSender(QObject):
 
         # Send completion signal
         completion_message = {
-            "type": "chunk_complete", "message_id": message_id}
+            "type": "chunk_complete",
+            "message_id": message_id}
 
         self.websocket_client.send_message(completion_message)
 
@@ -187,9 +193,8 @@ class EnterpriseMessageSender(QObject):
             if "audio_data" in message_data:
                 audio_data = message_data["audio_data"]
                 compressed_data = gzip.compress(audio_data.encode("utf-8"))
-                message_data["audio_data"] = base64.b64encode(compressed_data).decode(
-                    "utf-8"
-                )
+                message_data["audio_data"] = base64.b64encode(
+                    compressed_data).decode("utf-8")
                 message_data["compressed"] = True
                 message_data["compression_ratio"] = len(compressed_data) / len(
                     audio_data.encode("utf-8")
@@ -204,8 +209,8 @@ class EnterpriseMessageSender(QObject):
 
         except Exception as e:
             logger.warning(
-                "Failed to compress message, sending uncompressed", error=str(e)
-            )
+                "Failed to compress message, sending uncompressed",
+                error=str(e))
             return message_data
 
     def _queue_for_retry(self, message_data: dict) -> None:
@@ -223,13 +228,15 @@ class EnterpriseMessageSender(QObject):
                 attempt=message_data["retry_attempts"],
             )
         else:
-            logger.error("Max retry attempts reached",
-                         message_id=message_data["id"])
+            logger.error(
+                "Max retry attempts reached",
+                message_id=message_data["id"])
 
             # Remove from pending messages
             self.pending_messages.pop(message_data["id"], None)
             self.message_failed.emit(
-                message_data["id"], "Max retry attempts reached")
+                message_data["id"],
+                "Max retry attempts reached")
 
     def _process_retry_queue(self) -> Any:
         """Process queued retry messages"""
@@ -246,8 +253,7 @@ class EnterpriseMessageSender(QObject):
             try:
                 asyncio.create_task(
                     self._send_message_with_retry(
-                        message_data["id"], message_data)
-                )
+                        message_data["id"], message_data))
             except Exception as e:
                 logger.error(
                     "Retry failed", message_id=message_data["id"], error=str(e)

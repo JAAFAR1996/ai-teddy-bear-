@@ -16,7 +16,8 @@ def list_children() -> Any:
 
         if orchestrator and hasattr(orchestrator, "child_repository"):
             # استخدم البيانات الحقيقية
-            children = orchestrator.child_repository.find_by_parent(request.parent_id)
+            children = orchestrator.child_repository.find_by_parent(
+                request.parent_id)
             children_data = [child.to_dict() for child in children]
         else:
             # Mock data للتطوير

@@ -1,12 +1,10 @@
+import aiohttp
+from typing import List
+import time
+import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
-
-import asyncio
-import time
-from typing import List
-
-import aiohttp
 
 
 class ConcurrentUserTest:
@@ -16,7 +14,10 @@ class ConcurrentUserTest:
         self.base_url = base_url
         self.results: List[dict] = []
 
-    async def simulate_user_session(self, session: aiohttp.ClientSession, user_id: int):
+    async def simulate_user_session(
+            self,
+            session: aiohttp.ClientSession,
+            user_id: int):
         """Simulate a complete user session"""
         start_time = time.time()
         try:
@@ -34,7 +35,9 @@ class ConcurrentUserTest:
                 headers=headers,
             ) as response:
                 if response.status != 200:
-                    return {"user_id": user_id, "status": "conversation_failed"}
+                    return {
+                        "user_id": user_id,
+                        "status": "conversation_failed"}
             for i in range(3):
                 async with session.post(
                     f"{self.base_url}/api/v1/conversations/active/messages",
@@ -56,7 +59,10 @@ class ConcurrentUserTest:
     async def run_concurrent_test(self, num_users: int = 50):
         """Run concurrent user test"""
         async with aiohttp.ClientSession() as session:
-            tasks = [self.simulate_user_session(session, i) for i in range(num_users)]
+            tasks = [
+                self.simulate_user_session(
+                    session,
+                    i) for i in range(num_users)]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             successful = sum(
                 1

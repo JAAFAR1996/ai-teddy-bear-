@@ -109,7 +109,8 @@ class PersonalityEngine(ServiceBase):
 
     def get_personality(self, personality_id: str) -> Dict:
         """Get personality configuration"""
-        return self.personalities.get(personality_id, self.personalities["teddy_bear"])
+        return self.personalities.get(
+            personality_id, self.personalities["teddy_bear"])
 
     def set_active_personality(self, personality_id: str) -> None:
         """Set the active personality"""
@@ -171,7 +172,9 @@ class PersonalityEngine(ServiceBase):
 
         return response
 
-    def get_personality_traits(self, personality_id: Optional[str] = None) -> List[str]:
+    def get_personality_traits(
+            self,
+            personality_id: Optional[str] = None) -> List[str]:
         """Get personality traits"""
         personality_id = personality_id or self.active_personality
         personality = self.get_personality(personality_id)

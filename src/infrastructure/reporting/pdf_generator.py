@@ -16,8 +16,13 @@ try:
     from reportlab.lib.pagesizes import A4, letter
     from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.pdfgen import canvas
-    from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer,
-                                    Table, TableStyle)
+    from reportlab.platypus import (
+        Paragraph,
+        SimpleDocTemplate,
+        Spacer,
+        Table,
+        TableStyle,
+    )
 
     PDF_AVAILABLE = True
 except ImportError:
@@ -32,7 +37,8 @@ class PDFGenerator:
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def create_pdf_report(self, progress: ChildProgress, charts: Dict[str, str]) -> str:
+    def create_pdf_report(self, progress: ChildProgress,
+                          charts: Dict[str, str]) -> str:
         """Create comprehensive PDF report"""
         try:
             if not PDF_AVAILABLE:
@@ -58,6 +64,105 @@ class PDFGenerator:
             self.logger.error(f"PDF creation error: {e}")
             return self.create_text_report(progress)
 
+    def _add_title_and_period(
+            self,
+            story: list,
+            progress: ChildProgress,
+            styles):
+        """Adds the title and period to the story."""
+        story.append(
+            Paragraph(
+                f"تقرير تقدم الطفل - {progress.child_name}",
+                styles["Title"]))
+        story.append(Spacer(1, 12))
+        period_text = (
+            f"الفترة: {progress.period.start_date.strftime('%Y-%m-%d')} "
+            f"إلى {progress.period.end_date.strftime('%Y-%m-%d')}"
+        )
+        story.append(Paragraph(period_text, styles["Normal"]))
+        story.append(Spacer(1, 12))
+
+    def _add_summary_table(self, story: list, progress: ChildProgress, styles):
+        """Adds the summary table to the story."""
+        story.append(self._create_summary_table(progress, styles))
+        story.append(Spacer(1, 20))
+
+    def _add_emotional_analysis(
+            self,
+            story: list,
+            progress: ChildProgress,
+            styles):
+        """Adds the emotional analysis section to the story."""
+        story.append(Paragraph("التحليل العاطفي", styles["Heading2"]))
+        emotion_text = (
+            f"المشاعر المهيمنة: {progress.emotion_analysis.dominant_emotion}<br/>"
+            f"استقرار المشاعر: {progress.emotion_analysis.stability_score:.1%}")
+        story.append(Paragraph(emotion_text, styles["Normal"]))
+        story.append(Spacer(1, 12))
+
+    def _add_skills_analysis(
+            self,
+            story: list,
+            progress: ChildProgress,
+            styles):
+        """Adds the skills analysis section to the story."""
+        story.append(Paragraph("تحليل المهارات", styles["Heading2"]))
+        skills_text = (
+            f"إجمالي جلسات الممارسة: {progress.skill_analysis.get_total_practice_sessions()}<br/>"
+            f"مهارات جديدة: {len(progress.skill_analysis.new_skills_learned)}")
+        story.append(Paragraph(skills_text, styles["Normal"]))
+        story.append(Spacer(1, 12))
+
+    def _add_list_section(
+        self, story: list, title: str, items: list, styles, prefix: str = "•"
+    ):
+        """Adds a list section to the story."""
+        if items:
+            story.append(Paragraph(title, styles["Heading2"]))
+            for item in items[:5]:
+                story.append(Paragraph(f"{prefix} {item}", styles["Normal"]))
+            story.append(Spacer(1, 12))
+
+    def _add_achievements(self, story: list, progress: ChildProgress, styles):
+        """Adds the achievements section to the story."""
+        if progress.learning_achievements:
+            story.append(Paragraph("الإنجازات", styles["Heading2"]))
+            for achievement in progress.learning_achievements[:5]:
+                story.append(Paragraph(f"• {achievement}", styles["Normal"]))
+            story.append(Spacer(1, 12))
+
+    def _add_recommendations(
+            self,
+            story: list,
+            progress: ChildProgress,
+            styles):
+        """Adds the recommendations section to the story."""
+        if progress.recommended_activities:
+            story.append(Paragraph("التوصيات", styles["Heading2"]))
+            for recommendation in progress.recommended_activities[:5]:
+                story.append(
+                    Paragraph(
+                        f"• {recommendation}",
+                        styles["Normal"]))
+            story.append(Spacer(1, 12))
+
+    def _add_concerns(self, story: list, progress: ChildProgress, styles):
+        """Adds the concerns section to the story."""
+        if progress.concerning_patterns:
+            story.append(Paragraph("نقاط تحتاج انتباه", styles["Heading2"]))
+            for concern in progress.concerning_patterns:
+                story.append(Paragraph(f"⚠️ {concern}", styles["Normal"]))
+            story.append(Spacer(1, 12))
+
+    def _add_charts(self, story: list, charts: Dict[str, str], styles):
+        """Adds placeholders for charts to the story."""
+        for chart_name in charts.keys():
+            story.append(
+                Paragraph(
+                    f"الرسم البياني: {chart_name}",
+                    styles["Heading3"]))
+            story.append(Spacer(1, 100))
+
     def _build_pdf_content(
         self, progress: ChildProgress, charts: Dict[str, str]
     ) -> list:
@@ -66,70 +171,26 @@ class PDFGenerator:
             story = []
             styles = getSampleStyleSheet()
 
-            # Title
-            title = Paragraph(
-                f"تقرير تقدم الطفل - {progress.child_name}", styles["Title"]
+            self._add_title_and_period(story, progress, styles)
+            self._add_summary_table(story, progress, styles)
+            self._add_emotional_analysis(story, progress, styles)
+            self._add_skills_analysis(story, progress, styles)
+
+            self._add_list_section(
+                story, "الإنجازات", progress.learning_achievements, styles
             )
-            story.append(title)
-            story.append(Spacer(1, 12))
-
-            # Period info
-            period_text = (
-                f"الفترة: {progress.period.start_date.strftime('%Y-%m-%d')} "
-                f"إلى {progress.period.end_date.strftime('%Y-%m-%d')}"
+            self._add_list_section(
+                story, "التوصيات", progress.recommended_activities, styles
             )
-            story.append(Paragraph(period_text, styles["Normal"]))
-            story.append(Spacer(1, 12))
-
-            # Summary statistics table
-            story.append(self._create_summary_table(progress, styles))
-            story.append(Spacer(1, 20))
-
-            # Emotional analysis section
-            story.append(Paragraph("التحليل العاطفي", styles["Heading2"]))
-            emotion_text = (
-                f"المشاعر المهيمنة: {progress.emotion_analysis.dominant_emotion}<br/>"
-                f"استقرار المشاعر: {progress.emotion_analysis.stability_score:.1%}"
+            self._add_list_section(
+                story,
+                "نقاط تحتاج انتباه",
+                progress.concerning_patterns,
+                styles,
+                prefix="⚠️",
             )
-            story.append(Paragraph(emotion_text, styles["Normal"]))
-            story.append(Spacer(1, 12))
 
-            # Skills analysis section
-            story.append(Paragraph("تحليل المهارات", styles["Heading2"]))
-            skills_text = (
-                f"إجمالي جلسات الممارسة: {progress.skill_analysis.get_total_practice_sessions()}<br/>"
-                f"مهارات جديدة: {len(progress.skill_analysis.new_skills_learned)}"
-            )
-            story.append(Paragraph(skills_text, styles["Normal"]))
-            story.append(Spacer(1, 12))
-
-            # Achievements section
-            if progress.learning_achievements:
-                story.append(Paragraph("الإنجازات", styles["Heading2"]))
-                for achievement in progress.learning_achievements[:5]:
-                    story.append(Paragraph(f"• {achievement}", styles["Normal"]))
-                story.append(Spacer(1, 12))
-
-            # Recommendations section
-            if progress.recommended_activities:
-                story.append(Paragraph("التوصيات", styles["Heading2"]))
-                for recommendation in progress.recommended_activities[:5]:
-                    story.append(Paragraph(f"• {recommendation}", styles["Normal"]))
-                story.append(Spacer(1, 12))
-
-            # Concerns section (if any)
-            if progress.concerning_patterns:
-                story.append(Paragraph("نقاط تحتاج انتباه", styles["Heading2"]))
-                for concern in progress.concerning_patterns:
-                    story.append(Paragraph(f"⚠️ {concern}", styles["Normal"]))
-                story.append(Spacer(1, 12))
-
-            # Charts placeholders (in real implementation, embed actual charts)
-            for chart_name in charts.keys():
-                story.append(
-                    Paragraph(f"الرسم البياني: {chart_name}", styles["Heading3"])
-                )
-                story.append(Spacer(1, 100))  # Placeholder space for chart
+            self._add_charts(story, charts, styles)
 
             return story
 

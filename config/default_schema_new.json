@@ -9,70 +9,40 @@
       "description": "API keys for external services",
       "properties": {
         "OPENAI_API_KEY": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "pattern": "^(sk-[a-zA-Z0-9-_]{48,}|\\$\\{[A-Z_]+\\})$|^$"
         },
         "ANTHROPIC_API_KEY": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "pattern": "^(sk-[a-zA-Z0-9-_]{48,}|\\$\\{[A-Z_]+\\})$|^$"
         },
         "GOOGLE_GEMINI_API_KEY": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "pattern": "^([a-zA-Z0-9-_]{39}|\\$\\{[A-Z_]+\\})$|^$"
         },
         "ELEVENLABS_API_KEY": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "pattern": "^(sk_[a-zA-Z0-9]{40,}|\\$\\{[A-Z_]+\\})$|^$"
         },
         "AZURE_SPEECH_KEY": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "pattern": "^([a-zA-Z0-9]{32,}|\\$\\{[A-Z_]+\\})$|^$"
         },
         "AZURE_SPEECH_REGION": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "pattern": "^([a-z]+|\\$\\{[A-Z_]+\\})$|^$"
         },
         "HUGGINGFACE_API_KEY": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "COHERE_API_KEY": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "PERSPECTIVE_API_KEY": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "SENTRY_DSN": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "format": "uri"
         }
       },
@@ -93,12 +63,7 @@
         },
         "ENVIRONMENT": {
           "type": "string",
-          "enum": [
-            "development",
-            "staging",
-            "production",
-            "test"
-          ]
+          "enum": ["development", "staging", "production", "test"]
         },
         "DEBUG": {
           "type": "boolean"
@@ -112,12 +77,7 @@
           "pattern": "^[A-Z][a-zA-Z_]+/[A-Z][a-zA-Z_]+$|^UTC$"
         }
       },
-      "required": [
-        "NAME",
-        "VERSION",
-        "ENVIRONMENT",
-        "SECRET_KEY"
-      ],
+      "required": ["NAME", "VERSION", "ENVIRONMENT", "SECRET_KEY"],
       "additionalProperties": false
     },
     "AUDIO_PROCESSING": {
@@ -126,37 +86,19 @@
       "properties": {
         "SAMPLE_RATE": {
           "type": "integer",
-          "enum": [
-            8000,
-            16000,
-            22050,
-            44100,
-            48000
-          ]
+          "enum": [8000, 16000, 22050, 44100, 48000]
         },
         "CHANNELS": {
           "type": "integer",
-          "enum": [
-            1,
-            2
-          ]
+          "enum": [1, 2]
         },
         "BIT_DEPTH": {
           "type": "integer",
-          "enum": [
-            8,
-            16,
-            24,
-            32
-          ]
+          "enum": [8, 16, 24, 32]
         },
         "FRAME_DURATION_MS": {
           "type": "integer",
-          "enum": [
-            10,
-            20,
-            30
-          ]
+          "enum": [10, 20, 30]
         },
         "BUFFER_SIZE": {
           "type": "integer",
@@ -187,13 +129,7 @@
         },
         "AUDIO_CODEC": {
           "type": "string",
-          "enum": [
-            "opus",
-            "pcm",
-            "mp3",
-            "aac",
-            "ogg"
-          ]
+          "enum": ["opus", "pcm", "mp3", "aac", "ogg"]
         },
         "STREAMING_CHUNK_SIZE": {
           "type": "integer",
@@ -201,11 +137,7 @@
           "maximum": 8192
         }
       },
-      "required": [
-        "SAMPLE_RATE",
-        "CHANNELS",
-        "BIT_DEPTH"
-      ],
+      "required": ["SAMPLE_RATE", "CHANNELS", "BIT_DEPTH"],
       "additionalProperties": false
     },
     "BACKUP_RECOVERY": {
@@ -217,12 +149,7 @@
         },
         "BACKUP_FREQUENCY": {
           "type": "string",
-          "enum": [
-            "hourly",
-            "daily",
-            "weekly",
-            "monthly"
-          ]
+          "enum": ["hourly", "daily", "weekly", "monthly"]
         },
         "BACKUP_RETENTION_DAYS": {
           "type": "integer",
@@ -237,17 +164,8 @@
           "type": "boolean"
         },
         "CLOUD_BACKUP_PROVIDER": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "enum": [
-            "aws",
-            "azure",
-            "gcp",
-            "dropbox",
-            null
-          ]
+          "type": ["string", "null"],
+          "enum": ["aws", "azure", "gcp", "dropbox", null]
         },
         "ENABLE_POINT_IN_TIME_RECOVERY": {
           "type": "boolean"
@@ -256,9 +174,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "ENABLE_AUTO_BACKUP"
-      ],
+      "required": ["ENABLE_AUTO_BACKUP"],
       "additionalProperties": false
     },
     "CONTENT_MODERATION": {
@@ -270,21 +186,11 @@
         },
         "MODERATION_PROVIDER": {
           "type": "string",
-          "enum": [
-            "perspective",
-            "azure",
-            "aws",
-            "custom"
-          ]
+          "enum": ["perspective", "azure", "aws", "custom"]
         },
         "SAFETY_LEVEL": {
           "type": "string",
-          "enum": [
-            "LENIENT",
-            "MODERATE",
-            "STRICT",
-            "CUSTOM"
-          ]
+          "enum": ["LENIENT", "MODERATE", "STRICT", "CUSTOM"]
         },
         "BLOCK_THRESHOLD": {
           "type": "number",
@@ -360,10 +266,7 @@
           "maximum": 1
         }
       },
-      "required": [
-        "ENABLE_MODERATION",
-        "SAFETY_LEVEL"
-      ],
+      "required": ["ENABLE_MODERATION", "SAFETY_LEVEL"],
       "additionalProperties": false
     },
     "DATABASE": {
@@ -375,17 +278,11 @@
           "format": "uri"
         },
         "REDIS_URL": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "format": "uri"
         },
         "MONGODB_URL": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "format": "uri"
         },
         "CONNECTION_POOL_SIZE": {
@@ -409,9 +306,7 @@
           "pattern": "^(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|(\\d+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})$"
         }
       },
-      "required": [
-        "DATABASE_URL"
-      ],
+      "required": ["DATABASE_URL"],
       "additionalProperties": false
     },
     "DEVELOPMENT": {
@@ -514,14 +409,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [
-              "ios",
-              "android",
-              "web",
-              "desktop",
-              "alexa",
-              "google_home"
-            ]
+            "enum": ["ios", "android", "web", "desktop", "alexa", "google_home"]
           },
           "uniqueItems": true,
           "minItems": 1
@@ -530,31 +418,19 @@
           "type": "object",
           "properties": {
             "CONVERSATION_START": {
-              "type": [
-                "string",
-                "null"
-              ],
+              "type": ["string", "null"],
               "format": "uri"
             },
             "CONVERSATION_END": {
-              "type": [
-                "string",
-                "null"
-              ],
+              "type": ["string", "null"],
               "format": "uri"
             },
             "SAFETY_ALERT": {
-              "type": [
-                "string",
-                "null"
-              ],
+              "type": ["string", "null"],
               "format": "uri"
             },
             "PARENT_NOTIFICATION": {
-              "type": [
-                "string",
-                "null"
-              ],
+              "type": ["string", "null"],
               "format": "uri"
             }
           },
@@ -614,19 +490,13 @@
                   "maximum": 1440
                 }
               },
-              "required": [
-                "MIN",
-                "MAX",
-                "MAX_DAILY_MINUTES"
-              ],
+              "required": ["MIN", "MAX", "MAX_DAILY_MINUTES"],
               "additionalProperties": false
             }
           }
         }
       },
-      "required": [
-        "MAX_DAILY_INTERACTIONS"
-      ],
+      "required": ["MAX_DAILY_INTERACTIONS"],
       "additionalProperties": false
     },
     "LLM_SETTINGS": {
@@ -635,23 +505,14 @@
       "properties": {
         "DEFAULT_PROVIDER": {
           "type": "string",
-          "enum": [
-            "openai",
-            "anthropic",
-            "google",
-            "cohere",
-            "huggingface"
-          ]
+          "enum": ["openai", "anthropic", "google", "cohere", "huggingface"]
         },
         "DEFAULT_MODEL": {
           "type": "string",
           "minLength": 1
         },
         "FALLBACK_PROVIDER": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "enum": [
             "openai",
             "anthropic",
@@ -662,10 +523,7 @@
           ]
         },
         "FALLBACK_MODEL": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "MAX_TOKENS": {
           "type": "integer",
@@ -723,11 +581,7 @@
           "maximum": 100
         }
       },
-      "required": [
-        "DEFAULT_PROVIDER",
-        "DEFAULT_MODEL",
-        "SYSTEM_PROMPT"
-      ],
+      "required": ["DEFAULT_PROVIDER", "DEFAULT_MODEL", "SYSTEM_PROMPT"],
       "additionalProperties": false
     },
     "LOGGING_CONFIG": {
@@ -736,13 +590,7 @@
       "properties": {
         "LOG_LEVEL": {
           "type": "string",
-          "enum": [
-            "DEBUG",
-            "INFO",
-            "WARNING",
-            "ERROR",
-            "CRITICAL"
-          ]
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         },
         "LOG_DIR": {
           "type": "string",
@@ -764,12 +612,7 @@
         },
         "LOG_ROTATION": {
           "type": "string",
-          "enum": [
-            "daily",
-            "weekly",
-            "size",
-            "time"
-          ]
+          "enum": ["daily", "weekly", "size", "time"]
         },
         "ENABLE_CONSOLE_LOG": {
           "type": "boolean"
@@ -796,10 +639,7 @@
           "minLength": 1
         }
       },
-      "required": [
-        "LOG_LEVEL",
-        "LOG_DIR"
-      ],
+      "required": ["LOG_LEVEL", "LOG_DIR"],
       "additionalProperties": false
     },
     "MONITORING": {
@@ -811,12 +651,7 @@
         },
         "METRICS_PROVIDER": {
           "type": "string",
-          "enum": [
-            "prometheus",
-            "datadog",
-            "newrelic",
-            "cloudwatch"
-          ]
+          "enum": ["prometheus", "datadog", "newrelic", "cloudwatch"]
         },
         "METRICS_PORT": {
           "type": "integer",
@@ -828,12 +663,7 @@
         },
         "TRACING_PROVIDER": {
           "type": "string",
-          "enum": [
-            "jaeger",
-            "zipkin",
-            "datadog",
-            "newrelic"
-          ]
+          "enum": ["jaeger", "zipkin", "datadog", "newrelic"]
         },
         "TRACE_SAMPLE_RATE": {
           "type": "number",
@@ -855,12 +685,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [
-              "email",
-              "slack",
-              "pagerduty",
-              "webhook"
-            ]
+            "enum": ["email", "slack", "pagerduty", "webhook"]
           },
           "uniqueItems": true
         },
@@ -896,10 +721,7 @@
           "additionalProperties": false
         }
       },
-      "required": [
-        "ENABLE_METRICS",
-        "ENABLE_HEALTH_CHECK"
-      ],
+      "required": ["ENABLE_METRICS", "ENABLE_HEALTH_CHECK"],
       "additionalProperties": false
     },
     "PARENTAL_CONTROLS": {
@@ -931,11 +753,7 @@
               "maximum": 60
             }
           },
-          "required": [
-            "DAILY_MINUTES",
-            "SESSION_MINUTES",
-            "BREAK_MINUTES"
-          ],
+          "required": ["DAILY_MINUTES", "SESSION_MINUTES", "BREAK_MINUTES"],
           "additionalProperties": false
         },
         "CONTENT_FILTERS": {
@@ -999,12 +817,7 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "enum": [
-                  "email",
-                  "sms",
-                  "app",
-                  "call"
-                ]
+                "enum": ["email", "sms", "app", "call"]
               },
               "uniqueItems": true
             }
@@ -1012,9 +825,7 @@
           "additionalProperties": false
         }
       },
-      "required": [
-        "ENABLE_DASHBOARD"
-      ],
+      "required": ["ENABLE_DASHBOARD"],
       "additionalProperties": false
     },
     "PERFORMANCE_SETTINGS": {
@@ -1026,11 +837,7 @@
         },
         "CACHE_BACKEND": {
           "type": "string",
-          "enum": [
-            "memory",
-            "redis",
-            "memcached"
-          ]
+          "enum": ["memory", "redis", "memcached"]
         },
         "CACHE_TTL_SECONDS": {
           "type": "integer",
@@ -1080,9 +887,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "CACHE_ENABLED"
-      ],
+      "required": ["CACHE_ENABLED"],
       "additionalProperties": false
     },
     "PRIVACY_COMPLIANCE": {
@@ -1128,10 +933,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "GDPR_ENABLED",
-        "COPPA_ENABLED"
-      ],
+      "required": ["GDPR_ENABLED", "COPPA_ENABLED"],
       "additionalProperties": false
     },
     "SECURITY": {
@@ -1147,18 +949,12 @@
           "minLength": 8
         },
         "token_expiry": {
-          "type": [
-            "integer",
-            "string"
-          ],
+          "type": ["integer", "string"],
           "description": "Seconds or ISO8601 duration",
           "default": 3600
         },
         "refresh_token_expiry": {
-          "type": [
-            "integer",
-            "string"
-          ],
+          "type": ["integer", "string"],
           "description": "Seconds or ISO8601 duration",
           "default": 2592000
         },
@@ -1167,10 +963,7 @@
           "default": 12
         }
       },
-      "required": [
-        "encryption_key",
-        "jwt_secret"
-      ],
+      "required": ["encryption_key", "jwt_secret"],
       "additionalProperties": false
     },
     "SERVER": {
@@ -1216,23 +1009,13 @@
           "type": "boolean"
         },
         "SSL_CERT_PATH": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "SSL_KEY_PATH": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         }
       },
-      "required": [
-        "FLASK_HOST",
-        "FLASK_PORT",
-        "WEBSOCKET_PORT"
-      ],
+      "required": ["FLASK_HOST", "FLASK_PORT", "WEBSOCKET_PORT"],
       "additionalProperties": false
     },
     "STREAMING_SETTINGS": {
@@ -1281,9 +1064,7 @@
           "maximum": 9
         }
       },
-      "required": [
-        "ENABLE_WEBSOCKET"
-      ],
+      "required": ["ENABLE_WEBSOCKET"],
       "additionalProperties": false
     },
     "VOICE_SETTINGS": {
@@ -1292,13 +1073,7 @@
       "properties": {
         "DEFAULT_ENGINE": {
           "type": "string",
-          "enum": [
-            "elevenlabs",
-            "azure",
-            "google",
-            "gtts",
-            "edge-tts"
-          ]
+          "enum": ["elevenlabs", "azure", "google", "gtts", "edge-tts"]
         },
         "DEFAULT_VOICE_ID": {
           "type": "string"
@@ -1327,21 +1102,11 @@
         },
         "VOICE_SAMPLE_RATE": {
           "type": "integer",
-          "enum": [
-            8000,
-            16000,
-            22050,
-            24000,
-            44100,
-            48000
-          ]
+          "enum": [8000, 16000, 22050, 24000, 44100, 48000]
         },
         "VOICE_CHANNELS": {
           "type": "integer",
-          "enum": [
-            1,
-            2
-          ]
+          "enum": [1, 2]
         },
         "ENABLE_EMOTION_SYNTHESIS": {
           "type": "boolean"
@@ -1374,11 +1139,7 @@
           "maximum": 168
         }
       },
-      "required": [
-        "DEFAULT_ENGINE",
-        "DEFAULT_LANGUAGE",
-        "SUPPORTED_LANGUAGES"
-      ],
+      "required": ["DEFAULT_ENGINE", "DEFAULT_LANGUAGE", "SUPPORTED_LANGUAGES"],
       "additionalProperties": false
     }
   },

@@ -66,16 +66,21 @@ class ARVRService:
         """حفظ جميع البيانات"""
         try:
             # حفظ تجارب AR
-            self.data_manager.save_ar_experiences(self.ar_manager.ar_experiences)
+            self.data_manager.save_ar_experiences(
+                self.ar_manager.ar_experiences)
 
             # حفظ بيئات VR
-            self.data_manager.save_vr_environments(self.vr_manager.vr_environments)
+            self.data_manager.save_vr_environments(
+                self.vr_manager.vr_environments)
 
             # حفظ جلسات المستخدمين
-            self.data_manager.save_user_sessions(self.session_manager.session_history)
+            self.data_manager.save_user_sessions(
+                self.session_manager.session_history)
 
             # حفظ تفضيلات الأطفال
-            self.data_manager.save_child_preferences(self.preferences_manager.child_preferences)
+            self.data_manager.save_child_preferences(
+                self.preferences_manager.child_preferences
+            )
 
         except Exception as e:
             logger.error(f"خطأ في حفظ البيانات: {e}")
@@ -120,7 +125,8 @@ class ARVRService:
             return {"error": "التجربة غير موجودة"}
 
         # فحص الأمان
-        safety_check = self.safety_manager.check_ar_safety_requirements(experience)
+        safety_check = self.safety_manager.check_ar_safety_requirements(
+            experience)
         if not safety_check["safe"]:
             return {
                 "error": "متطلبات الأمان غير مستوفاة",
@@ -152,19 +158,21 @@ class ARVRService:
             return {"error": "البيئة غير موجودة"}
 
         # فحص العمر
-        age_check = self.safety_manager.validate_vr_age_appropriateness(child_age)
+        age_check = self.safety_manager.validate_vr_age_appropriateness(
+            child_age)
         if not age_check["appropriate"]:
             return {"error": age_check["reason"]}
 
         # تكييف الإعدادات
-        adapted_settings = self.vr_manager.adapt_for_age(environment, child_age)
+        adapted_settings = self.vr_manager.adapt_for_age(
+            environment, child_age)
 
         # إنشاء الجلسة
         session = self.session_manager.create_vr_session(
-            child_id, 
-            environment_id, 
+            child_id,
+            environment_id,
             adapted_settings["max_duration"],
-            adapted_settings["comfort_settings"]
+            adapted_settings["comfort_settings"],
         )
 
         self._save_all_data()
@@ -173,31 +181,38 @@ class ARVRService:
             "session_id": session["session_id"],
             "environment": asdict(environment),
             "adapted_settings": adapted_settings,
-            "safety_guidelines": self.safety_manager.get_vr_safety_guidelines(child_age),
+            "safety_guidelines": self.safety_manager.get_vr_safety_guidelines(
+                child_age
+            ),
             "comfort_reminders": self.safety_manager.get_vr_comfort_reminders(),
         }
 
     def log_interaction(self, session_id: str, interaction_data: Dict) -> bool:
         """تسجيل تفاعل في الجلسة"""
-        return self.session_manager.log_interaction(session_id, interaction_data)
+        return self.session_manager.log_interaction(
+            session_id, interaction_data)
 
     def end_session(self, session_id: str) -> Dict:
         """إنهاء جلسة AR/VR"""
         result = self.session_manager.end_session(session_id)
-        
+
         if "error" not in result:
             # الحصول على الجلسة للتحليل
             session = self.session_manager.get_session_by_id(session_id)
             if session:
                 # تحليل الأداء
-                performance = self.session_manager.analyze_session_performance(session)
+                performance = self.session_manager.analyze_session_performance(
+                    session)
                 session["performance_summary"] = performance
 
                 # تحديث التفضيلات
-                self._update_child_preferences_from_session(session["child_id"], session)
+                self._update_child_preferences_from_session(
+                    session["child_id"], session
+                )
 
                 # توليد التوصيات
-                recommendations = self.analytics.generate_session_recommendations(session)
+                recommendations = self.analytics.generate_session_recommendations(
+                    session)
                 result["recommendations"] = recommendations
 
                 self._save_all_data()
@@ -215,10 +230,12 @@ class ARVRService:
             return {"message": "لا توجد جلسات مسجلة لهذا الطفل"}
 
         # إنشاء التقرير باستخدام Analytics
-        report = self.analytics.generate_child_report(child_id, sessions, preferences)
-        
+        report = self.analytics.generate_child_report(
+            child_id, sessions, preferences)
+
         # إضافة تقييم الأمان
-        safety_assessment = self.safety_manager.assess_safety_compliance(sessions)
+        safety_assessment = self.safety_manager.assess_safety_compliance(
+            sessions)
         report["safety_compliance"] = safety_assessment
 
         return report
@@ -230,7 +247,8 @@ class ARVRService:
 
     # ==================== Preferences Management ====================
 
-    def update_child_content_filters(self, child_id: str, filters: Dict) -> None:
+    def update_child_content_filters(
+            self, child_id: str, filters: Dict) -> None:
         """تحديث مرشحات المحتوى للطفل"""
         self.preferences_manager.set_content_filters(child_id, filters)
         self._save_all_data()
@@ -242,10 +260,18 @@ class ARVRService:
     def get_personalized_recommendations(self, child_id: str) -> Dict:
         """توصيات مخصصة للطفل"""
         return {
-            "recommended_ar_categories": self.preferences_manager.get_recommended_ar_categories(child_id),
-            "recommended_vr_themes": self.preferences_manager.get_recommended_vr_themes(child_id),
-            "adaptive_settings": self.preferences_manager.get_adaptive_settings(child_id, "ar"),
-            "preferences_summary": self.preferences_manager.get_preferences_summary(child_id),
+            "recommended_ar_categories": self.preferences_manager.get_recommended_ar_categories(
+                child_id
+            ),
+            "recommended_vr_themes": self.preferences_manager.get_recommended_vr_themes(
+                child_id
+            ),
+            "adaptive_settings": self.preferences_manager.get_adaptive_settings(
+                child_id, "ar"
+            ),
+            "preferences_summary": self.preferences_manager.get_preferences_summary(
+                child_id
+            ),
         }
 
     # ==================== Data Management ====================
@@ -257,11 +283,11 @@ class ARVRService:
     def get_data_statistics(self) -> Dict:
         """إحصائيات البيانات"""
         stats = self.data_manager.get_data_statistics()
-        
+
         # إضافة إحصائيات الجلسات النشطة
         active_sessions = len(self.session_manager.active_sessions)
         stats["active_sessions"] = active_sessions
-        
+
         return stats
 
     def cleanup_old_data(self, days_old: int = 30) -> Dict:
@@ -271,7 +297,9 @@ class ARVRService:
 
     # ==================== Private Helper Methods ====================
 
-    def _update_child_preferences_from_session(self, child_id: str, session: Dict) -> None:
+    def _update_child_preferences_from_session(
+        self, child_id: str, session: Dict
+    ) -> None:
         """تحديث تفضيلات الطفل بناءً على الجلسة"""
         if session["type"] == "ar":
             self.preferences_manager.update_ar_preferences(child_id, session)
@@ -285,12 +313,16 @@ class ARVRService:
     # ==================== Legacy Compatibility Methods ====================
     # هذه الدوال للحفاظ على التوافق مع الواجهة القديمة
 
-    def get_available_ar_experiences_legacy(self, child_age: int = None, difficulty: str = None) -> List[Dict]:
+    def get_available_ar_experiences_legacy(
+        self, child_age: int = None, difficulty: str = None
+    ) -> List[Dict]:
         """نسخة متوافقة مع الواجهة القديمة"""
         experiences = self.get_available_ar_experiences(child_age, difficulty)
         return [asdict(exp) for exp in experiences]
 
-    def get_available_vr_environments_legacy(self, child_age: int = None, theme: str = None) -> List[Dict]:
+    def get_available_vr_environments_legacy(
+        self, child_age: int = None, theme: str = None
+    ) -> List[Dict]:
         """نسخة متوافقة مع الواجهة القديمة"""
         environments = self.get_available_vr_environments(child_age, theme)
-        return [asdict(env) for env in environments] 
+        return [asdict(env) for env in environments]

@@ -1,4 +1,4 @@
-﻿"""Domain Layer - Pure Business Logic"""
+"""Domain Layer - Pure Business Logic"""
 
 # Export emotion domain models
 # Add Parent Dashboard domain exports

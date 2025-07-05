@@ -18,7 +18,8 @@ class ModelBenchmark:
         """
         self._logger = logging.getLogger(__name__)
         logging.basicConfig(level=logging.INFO)
-        self._model_providers = model_providers or ["openai", "anthropic", "google"]
+        self._model_providers = model_providers or [
+            "openai", "anthropic", "google"]
         self._test_prompts = [
             "Tell me a short story about a curious child.",
             "Explain quantum computing in simple terms.",
@@ -60,22 +61,25 @@ class ModelBenchmark:
                     results["prompts"].append(
                         {
                             "prompt": prompt,
-                            "response_time": end_time - start_time,
+                            "response_time": end_time -
+                            start_time,
                             "tokens_used": response.usage.total_tokens,
-                            "response_length": len(response.choices[0].message.content),
-                        }
-                    )
+                            "response_length": len(
+                                response.choices[0].message.content),
+                        })
                 return results
             elif provider == "anthropic":
                 import anthropic
 
                 client = anthropic.Anthropic()
-                results = {"provider": "Anthropic", "model": "claude-2", "prompts": []}
+                results = {
+                    "provider": "Anthropic",
+                    "model": "claude-2",
+                    "prompts": []}
                 for prompt in self._test_prompts:
                     start_time = time.time()
                     response = client.completions.create(
-                        model="claude-2", max_tokens_to_sample=300, prompt=prompt
-                    )
+                        model="claude-2", max_tokens_to_sample=300, prompt=prompt)
                     end_time = time.time()
                     results["prompts"].append(
                         {
@@ -90,7 +94,10 @@ class ModelBenchmark:
                 import google.generativeai as genai
 
                 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-                results = {"provider": "Google", "model": "gemini-pro", "prompts": []}
+                results = {
+                    "provider": "Google",
+                    "model": "gemini-pro",
+                    "prompts": []}
                 model = genai.GenerativeModel("gemini-pro")
                 for prompt in self._test_prompts:
                     start_time = time.time()
@@ -133,7 +140,10 @@ class ModelBenchmark:
         :param output_path: Path to export results
         """
         try:
-            os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+            os.makedirs(
+                os.path.dirname(
+                    os.path.abspath(output_path)),
+                exist_ok=True)
             with open(output_path, "w") as f:
                 json.dump(results, f, indent=4)
             self._logger.info(f"Benchmark results exported to {output_path}")
@@ -147,7 +157,8 @@ def main():
     """
     import argparse
 
-    parser = argparse.ArgumentParser(description="AI Model Performance Benchmark")
+    parser = argparse.ArgumentParser(
+        description="AI Model Performance Benchmark")
     parser.add_argument(
         "-p",
         "--providers",
@@ -163,8 +174,9 @@ def main():
         help="Path to export benchmark results",
     )
     parser.add_argument(
-        "--print", action="store_true", help="Print benchmark results to console"
-    )
+        "--print",
+        action="store_true",
+        help="Print benchmark results to console")
     args = parser.parse_args()
     benchmark = ModelBenchmark(args.providers)
     results = benchmark.run_benchmarks()

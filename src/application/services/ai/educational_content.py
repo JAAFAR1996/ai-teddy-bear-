@@ -67,8 +67,7 @@ class EducationalContentProvider(ServiceBase):
             "age_group": age_group,
             "facts": random.sample(facts, min(3, len(facts))) if facts else [],
             "activities": (
-                random.sample(activities, min(2, len(activities))
-                              ) if activities else []
+                random.sample(activities, min(2, len(activities))) if activities else []
             ),
             "learning_objectives": self._get_learning_objectives(topic, age_group),
             "keywords": self._get_topic_keywords(topic, language),
@@ -234,17 +233,26 @@ class EducationalContentProvider(ServiceBase):
     ) -> List[str]:
         """Translate activities to Arabic (simplified)"""
         arabic_activities = {
-            "numbers": ["هيا نعد ألعابك!", "أرني ثلاث قفزات!", "صفق بيديك خمس مرات!"],
+            "numbers": [
+                "هيا نعد ألعابك!",
+                "أرني ثلاث قفزات!",
+                "صفق بيديك خمس مرات!"],
             "animals": [
                 "اصنع أصوات الحيوانات!",
                 "تحرك مثل حيوانك المفضل!",
                 "ارسم حيواناً بسيطاً!",
             ],
-            "colors": ["ابحث عن شيء أحمر!", "أشر إلى الأشياء الزرقاء!", "ما لون هذا؟"],
+            "colors": [
+                "ابحث عن شيء أحمر!",
+                "أشر إلى الأشياء الزرقاء!",
+                "ما لون هذا؟"],
         }
         return arabic_activities.get(topic, activities)
 
-    def _get_learning_objectives(self, topic: str, age_group: str) -> List[str]:
+    def _get_learning_objectives(
+            self,
+            topic: str,
+            age_group: str) -> List[str]:
         """Get learning objectives for topic and age"""
         objectives = {
             "numbers": {

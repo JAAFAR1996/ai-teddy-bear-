@@ -2,16 +2,14 @@
 API Router for AI Teddy Bear System
 Updated to include new voice processing and reporting endpoints
 """
+from .endpoints import (advanced, audio, children, conversations, system,
+                        teddy_hardware)
+from .endpoints import voice  # New voice endpoints
+from fastapi import APIRouter
 import structlog
 
 logger = structlog.get_logger(__name__)
 
-
-from fastapi import APIRouter
-
-from .endpoints import voice  # New voice endpoints
-from .endpoints import (advanced, audio, children, conversations, system,
-                        teddy_hardware)
 
 # Create main API router
 api_router = APIRouter(prefix="/api", tags=["API"])
@@ -31,7 +29,7 @@ except Exception as e:
     logger.error(f"Error: {e}")f"⚠️ Legacy audio router not available: {e}")
 
 # Health check endpoint
-@api_router.get("/health")
+@ api_router.get("/health")
 async def api_health():
     """API health check"""
     return {
@@ -39,7 +37,7 @@ async def api_health():
         "version": "2.0",
         "features": [
             "advanced_emotion_analysis",
-            "voice_processing", 
+            "voice_processing",
             "parent_reports",
             "secure_esp32_communication"
         ]

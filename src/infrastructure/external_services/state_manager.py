@@ -48,7 +48,7 @@ class StateManager:
         with self._lock:
             return self._state
 
-    def set_state(Optional[dict] = None) -> None:
+    def set_state(Optional[dict]=None) -> None:
         """Set system state."""
         with self._lock:
             if state == self._state:

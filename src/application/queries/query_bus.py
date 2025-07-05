@@ -178,7 +178,8 @@ class QueryBus:
         """Register query handler"""
 
         if query_type in self._handlers:
-            logger.warning(f"Handler for {query_type.__name__} already registered")
+            logger.warning(
+                f"Handler for {query_type.__name__} already registered")
 
         self._handlers[query_type] = handler
         logger.info(f"Registered query handler for {query_type.__name__}")
@@ -190,7 +191,8 @@ class QueryBus:
         handler = self._handlers.get(query_type)
 
         if not handler:
-            raise ValueError(f"No handler registered for {query_type.__name__}")
+            raise ValueError(
+                f"No handler registered for {query_type.__name__}")
 
         # Try cache first
         if use_cache:
@@ -221,7 +223,9 @@ class QueryBus:
     ) -> List[Dict]:
         """Execute raw SQL query on read model. Only parameterized queries allowed. Do NOT build SQL from user input."""
         if "'" in sql or '"' in sql or ";" in sql:
-            raise ValueError("Potentially unsafe SQL detected. Only parameterized queries allowed.")
+            raise ValueError(
+                "Potentially unsafe SQL detected. Only parameterized queries allowed."
+            )
         return await self._db.execute_query(sql, params)
 
     async def invalidate_cache(self, pattern: str = None) -> None:

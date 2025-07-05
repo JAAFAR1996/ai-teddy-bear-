@@ -1,4 +1,4 @@
-﻿"""Advanced Emotion Analyzer - Clean Architecture Coordinator.
+"""Advanced Emotion Analyzer - Clean Architecture Coordinator.
 
 This is a refactored version of the original God Class, now following Clean Architecture
 principles with clear separation of concerns.
@@ -14,12 +14,14 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import structlog
 
-from ...application.services.emotion import (EmotionAnalysisService,
-                                             EmotionAnalyticsService,
-                                             EmotionDatabaseService,
-                                             EmotionHistoryService)
-from ...domain.emotion.models import (EmotionContext, EmotionResult)
-from ...infrastructure.emotion import (AudioEmotionAnalyzer, TextEmotionAnalyzer)
+from ...application.services.emotion import (
+    EmotionAnalysisService,
+    EmotionAnalyticsService,
+    EmotionDatabaseService,
+    EmotionHistoryService,
+)
+from ...domain.emotion.models import EmotionContext, EmotionResult
+from ...infrastructure.emotion import AudioEmotionAnalyzer, TextEmotionAnalyzer
 
 logger = structlog.get_logger(__name__)
 
@@ -39,9 +41,8 @@ class AdvancedEmotionAnalyzer:
     ):
         # Initialize core services
         self.analysis_service = EmotionAnalysisService()
-        self.database_service = (
-            EmotionDatabaseService(database_url) if enable_db_integration else None
-        )
+        self.database_service = (EmotionDatabaseService(
+            database_url) if enable_db_integration else None)
         self.analytics_service = EmotionAnalyticsService()
         self.history_service = EmotionHistoryService()
 
@@ -207,8 +208,7 @@ class AdvancedEmotionAnalyzer:
                 "positive_highlights": report.positive_highlights,
                 "areas_of_concern": report.areas_of_concern,
                 "parental_recommendations": (
-                    report.parental_recommendations if include_recommendations else []
-                ),
+                    report.parental_recommendations if include_recommendations else []),
                 "risk_level": report.risk_level,
                 "risk_factors": report.risk_factors,
                 "protective_factors": report.protective_factors,
@@ -270,7 +270,8 @@ class AdvancedEmotionAnalyzer:
             logger.error(f" Cleanup failed: {e}")
             return 0
 
-    def _convert_bytes_to_numpy(self, audio_bytes: bytes) -> Optional[np.ndarray]:
+    def _convert_bytes_to_numpy(self,
+                                audio_bytes: bytes) -> Optional[np.ndarray]:
         """Convert audio bytes to numpy array."""
         try:
             # Mock conversion - would implement actual audio decoding
@@ -337,7 +338,8 @@ async def analyze_and_save_emotion(
     database_url: str = "sqlite:///teddy_emotions.db",
 ) -> Tuple[EmotionResult, str]:
     """Standalone function for backward compatibility."""
-    analyzer = AdvancedEmotionAnalyzer(database_url, enable_db_integration=True)
+    analyzer = AdvancedEmotionAnalyzer(
+        database_url, enable_db_integration=True)
     return await analyzer.analyze_and_save(
         text=text_input,
         audio_data=audio_file,
@@ -352,7 +354,8 @@ async def get_emotion_analytics_report(
     child_id: str, days: int = 7, database_url: str = "sqlite:///teddy_emotions.db"
 ) -> Dict[str, Any]:
     """Standalone function for backward compatibility."""
-    analyzer = AdvancedEmotionAnalyzer(database_url, enable_db_integration=True)
+    analyzer = AdvancedEmotionAnalyzer(
+        database_url, enable_db_integration=True)
     return await analyzer.get_emotion_analytics(child_id, days)
 
 

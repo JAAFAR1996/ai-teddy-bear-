@@ -105,7 +105,10 @@ class MultiVoiceTTS:
 
         return output_path
 
-    def _select_voice(self, character_type: str, child_gender: str) -> VoiceProfile:
+    def _select_voice(
+            self,
+            character_type: str,
+            child_gender: str) -> VoiceProfile:
         """اختيار الصوت المناسب للشخصية"""
         voice_mapping = {
             "narrator": "narrator_female",
@@ -127,8 +130,8 @@ class MultiVoiceTTS:
         audio = generate(
             text=text,
             voice=Voice(
-                voice_id=voice_profile.voice_id, settings=voice_profile.settings
-            ),
+                voice_id=voice_profile.voice_id,
+                settings=voice_profile.settings),
             model="eleven_multilingual_v2",
         )
 
@@ -140,7 +143,9 @@ class MultiVoiceTTS:
 
         return audio_segment + silence
 
-    def _merge_audio_segments(self, segments: List[AudioSegment]) -> AudioSegment:
+    def _merge_audio_segments(
+            self,
+            segments: List[AudioSegment]) -> AudioSegment:
         """دمج المقاطع الصوتية مع تأثيرات انتقالية"""
         if not segments:
             return AudioSegment.silent(duration=1000)
@@ -164,8 +169,14 @@ class MultiVoiceTTS:
 
         # تعديل إعدادات الصوت حسب العاطفة
         emotion_settings = {
-            "happy": {"stability": 0.6, "similarity_boost": 0.8, "style": 0.7},
-            "calm": {"stability": 0.95, "similarity_boost": 0.75, "style": 0.2},
+            "happy": {
+                "stability": 0.6,
+                "similarity_boost": 0.8,
+                "style": 0.7},
+            "calm": {
+                "stability": 0.95,
+                "similarity_boost": 0.75,
+                "style": 0.2},
         }
 
         settings = emotion_settings.get(emotion, emotion_settings["calm"])

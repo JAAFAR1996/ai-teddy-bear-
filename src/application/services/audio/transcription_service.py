@@ -45,9 +45,8 @@ class TranscriptionService:
         self, request: TranscriptionRequest
     ) -> TranscriptionResult:
         # Mock implementation
-        mock_text = (
-            "مرحبا، كيف حالك؟" if request.language == "ar" else "Hello, how are you?"
-        )
+        mock_text = ("مرحبا، كيف حالك؟" if request.language ==
+                     "ar" else "Hello, how are you?")
 
         return TranscriptionResult(
             text=mock_text,
@@ -61,7 +60,10 @@ class TranscriptionService:
         return ["ar", "en", "fr", "es"]
 
     async def check_audio_quality(self, audio_data: bytes) -> Dict[str, Any]:
-        return {"quality_score": 0.8, "noise_level": 0.2, "is_acceptable": True}
+        return {
+            "quality_score": 0.8,
+            "noise_level": 0.2,
+            "is_acceptable": True}
 
 
 class ModernTranscriptionService(TranscriptionService):
@@ -128,7 +130,8 @@ class StreamingAudioBuffer:
 
 
 # Factory for creating transcription services
-def create_transcription_service(provider: str = "openai") -> TranscriptionService:
+def create_transcription_service(
+        provider: str = "openai") -> TranscriptionService:
     config = TranscriptionConfig(provider=provider)
     if provider == "modern":
         return ModernTranscriptionService(config)

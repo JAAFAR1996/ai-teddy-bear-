@@ -3,7 +3,7 @@
   "DEBUG": true,
   "LOG_LEVEL": "DEBUG",
   "DATABASE_URL": "sqlite:///staging_teddy_bear.db",
-  
+
   "EMAIL_CONFIG": {
     "smtp_server": "smtp.gmail.com",
     "smtp_port": 587,
@@ -14,7 +14,7 @@
     "max_daily_emails": 100,
     "max_emails_per_parent": 1
   },
-  
+
   "PUSH_CONFIG": {
     "fcm_server_key": "",
     "fcm_sender_id": "",
@@ -26,7 +26,7 @@
     "max_daily_push": 500,
     "max_push_per_parent": 2
   },
-  
+
   "SMS_CONFIG": {
     "twilio_account_sid": "",
     "twilio_auth_token": "",
@@ -34,7 +34,7 @@
     "max_daily_sms": 50,
     "max_sms_per_parent": 1
   },
-  
+
   "NOTIFICATION_CONFIG": {
     "default_language": "ar",
     "timezone": "Asia/Riyadh",
@@ -51,7 +51,7 @@
     "max_notifications_per_parent_per_week": 3,
     "cooldown_period_hours": 24
   },
-  
+
   "SCHEDULER_CONFIG": {
     "timezone": "Asia/Riyadh",
     "notification_time": "21:00",
@@ -61,7 +61,7 @@
     "optimization_time": "03:00",
     "report_time": "08:00"
   },
-  
+
   "MONITORING_CONFIG": {
     "enable_metrics": true,
     "metrics_port": 9090,
@@ -71,7 +71,7 @@
     "log_retention_days": 30,
     "enable_issue_tracking": true
   },
-  
+
   "STAGING_CONFIG": {
     "simulate_external_services": true,
     "test_parent_emails": [
@@ -83,4 +83,4 @@
     "enable_dry_run": true,
     "staging_prefix": "[STAGING]"
   }
-} 
+}

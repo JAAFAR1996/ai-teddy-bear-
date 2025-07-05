@@ -17,10 +17,23 @@ from typing import Any, Dict, List
 import numpy as np
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QGridLayout, QGroupBox,
-                               QHBoxLayout, QLabel, QListWidget, QProgressBar,
-                               QPushButton, QSlider, QSplitter, QTabWidget,
-                               QTextEdit, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QProgressBar,
+    QPushButton,
+    QSlider,
+    QSplitter,
+    QTabWidget,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 import structlog
 
@@ -64,7 +77,13 @@ class EmotionAnalyticsEngine:
             logger.warning(
                 "Plotly not available - install with: pip install plotly")
 
-    def add_emotion_data(self, emotion_data: dict = None, emotion: str = None, confidence: float = None, metadata: dict = None) -> None:
+    def add_emotion_data(
+        self,
+        emotion_data: dict = None,
+        emotion: str = None,
+        confidence: float = None,
+        metadata: dict = None,
+    ) -> None:
         """Add new emotion data point"""
         entry = {
             "emotion": emotion,
@@ -116,28 +135,41 @@ class EmotionAnalyticsEngine:
         """Filters emotion data for a given time range in hours."""
         cutoff_time = datetime.now() - timedelta(hours=hours)
         return [
-            entry for entry in self.emotion_history if entry["timestamp"] >= cutoff_time
-        ]
+            entry for entry in self.emotion_history if entry["timestamp"] >= cutoff_time]
 
-    def _prepare_timeline_data(self, recent_data: List[Dict]) -> Dict[str, List]:
+    def _prepare_timeline_data(
+            self, recent_data: List[Dict]) -> Dict[str, List]:
         """Prepares data for timeline chart creation."""
         timestamps = [entry["timestamp"] for entry in recent_data]
         emotions = [entry["emotion"] for entry in recent_data]
         confidences = [entry["confidence"] for entry in recent_data]
-        return {"timestamps": timestamps, "emotions": emotions, "confidences": confidences}
+        return {
+            "timestamps": timestamps,
+            "emotions": emotions,
+            "confidences": confidences,
+        }
 
-    def _add_emotion_traces_to_fig(self, fig: Any, timeline_data: Dict[str, List]) -> None:
+    def _add_emotion_traces_to_fig(
+        self, fig: Any, timeline_data: Dict[str, List]
+    ) -> None:
         """Adds emotion traces to the Plotly figure."""
         emotion_colors = {
-            "happy": "#4CAF50", "excited": "#FF9800", "calm": "#2196F3",
-            "curious": "#9C27B0", "frustrated": "#F44336", "sad": "#607D8B",
-            "angry": "#E91E63", "surprised": "#FFEB3B", "neutral": "#9E9E9E",
+            "happy": "#4CAF50",
+            "excited": "#FF9800",
+            "calm": "#2196F3",
+            "curious": "#9C27B0",
+            "frustrated": "#F44336",
+            "sad": "#607D8B",
+            "angry": "#E91E63",
+            "surprised": "#FFEB3B",
+            "neutral": "#9E9E9E",
         }
         unique_emotions = list(set(timeline_data["emotions"]))
 
         for emotion in unique_emotions:
-            emotion_indices = [i for i, e in enumerate(
-                timeline_data["emotions"]) if e == emotion]
+            emotion_indices = [
+                i for i, e in enumerate(
+                    timeline_data["emotions"]) if e == emotion]
             emotion_times = [timeline_data["timestamps"][i]
                              for i in emotion_indices]
             emotion_conf = [timeline_data["confidences"][i]
@@ -149,19 +181,25 @@ class EmotionAnalyticsEngine:
                     y=emotion_conf,
                     mode="lines+markers",
                     name=emotion.title(),
-                    line=dict(color=emotion_colors.get(
-                        emotion, "#666666"), width=3),
-                    marker=dict(size=10, opacity=0.8),
+                    line=dict(
+                        color=emotion_colors.get(
+                            emotion,
+                            "#666666"),
+                        width=3),
+                    marker=dict(
+                        size=10,
+                        opacity=0.8),
                     hovertemplate=f"<b>{emotion.title()}</b><br>Confidence: %{{y:.1%}}<br>Time: %{{x}}<extra></extra>",
-                )
-            )
+                ))
 
     def _configure_timeline_chart_layout(self, fig: Any, hours: int) -> None:
         """Configures the layout for the timeline chart."""
         fig.update_layout(
             title={
                 "text": f"Emotion Timeline - Last {hours} Hours",
-                "x": 0.5, "xanchor": "center", "font": {"size": 18},
+                "x": 0.5,
+                "xanchor": "center",
+                "font": {"size": 18},
             },
             xaxis_title="Time",
             yaxis_title="Confidence Level",
@@ -198,7 +236,8 @@ class EmotionAnalyticsEngine:
             emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
         return emotion_counts
 
-    def _create_distribution_figure(self, emotion_counts: Dict[str, int]) -> Any:
+    def _create_distribution_figure(
+            self, emotion_counts: Dict[str, int]) -> Any:
         """Creates the distribution pie chart figure."""
         return self.go.Figure(
             data=[
@@ -209,8 +248,16 @@ class EmotionAnalyticsEngine:
                     textinfo="label+percent",
                     textfont_size=14,
                     marker=dict(
-                        colors=["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4",
-                                "#FFEAA7", "#DDA0DD", "#98D8C8", "#F7DC6F"],
+                        colors=[
+                            "#FF6B6B",
+                            "#4ECDC4",
+                            "#45B7D1",
+                            "#96CEB4",
+                            "#FFEAA7",
+                            "#DDA0DD",
+                            "#98D8C8",
+                            "#F7DC6F",
+                        ],
                         line=dict(color="#FFFFFF", width=2),
                     ),
                 )
@@ -220,8 +267,12 @@ class EmotionAnalyticsEngine:
     def _configure_distribution_chart_layout(self, fig: Any) -> None:
         """Configures the layout for the distribution chart."""
         fig.update_layout(
-            title={"text": "Emotion Distribution (Recent Activity)", "x": 0.5, "xanchor": "center", "font": {
-                "size": 16}},
+            title={
+                "text": "Emotion Distribution (Recent Activity)",
+                "x": 0.5,
+                "xanchor": "center",
+                "font": {"size": 16},
+            },
             template="plotly_white",
             height=350,
             margin=dict(l=60, r=60, t=80, b=60),
@@ -244,8 +295,14 @@ class EmotionAnalyticsEngine:
     def _prepare_heatmap_data(self, num_entries: int = 200) -> Dict[str, Any]:
         """Prepares data for the emotion intensity heatmap."""
         hours = list(range(24))
-        emotions = ["happy", "excited", "calm",
-                    "curious", "frustrated", "sad", "angry"]
+        emotions = [
+            "happy",
+            "excited",
+            "calm",
+            "curious",
+            "frustrated",
+            "sad",
+            "angry"]
         intensity_matrix = np.zeros((len(emotions), len(hours)))
 
         for entry in self.emotion_history[-num_entries:]:
@@ -261,7 +318,10 @@ class EmotionAnalyticsEngine:
             intensity_matrix) > 0 else 1
         intensity_matrix /= max_val
 
-        return {"matrix": intensity_matrix, "hours": hours, "emotions": emotions}
+        return {
+            "matrix": intensity_matrix,
+            "hours": hours,
+            "emotions": emotions}
 
     def _create_heatmap_figure(self, heatmap_data: Dict[str, Any]) -> Any:
         """Creates the emotion intensity heatmap figure."""
@@ -279,8 +339,12 @@ class EmotionAnalyticsEngine:
     def _configure_heatmap_layout(self, fig: Any) -> None:
         """Configures the layout for the emotion intensity heatmap."""
         fig.update_layout(
-            title={"text": "Emotion Intensity Heatmap by Hour",
-                   "x": 0.5, "xanchor": "center", "font": {"size": 16}},
+            title={
+                "text": "Emotion Intensity Heatmap by Hour",
+                "x": 0.5,
+                "xanchor": "center",
+                "font": {"size": 16},
+            },
             xaxis_title="Hour of Day",
             yaxis_title="Emotion Type",
             template="plotly_white",
@@ -300,45 +364,48 @@ class EmotionAnalyticsEngine:
 
         return fig
 
-    def get_emotion_insights(self) -> Dict[str, Any]:
-        """Get AI-powered emotion insights"""
-        if len(self.emotion_history) < 5:
-            return {"status": "insufficient_data"}
-
-        recent_emotions = self.emotion_history[-20:]
-
-        # Calculate dominant emotion
+    def _calculate_dominant_emotion(self, recent_emotions: List[Dict]) -> str:
+        """Calculate the dominant emotion from a list of recent emotions."""
+        if not recent_emotions:
+            return "unknown"
         emotion_counts = {}
         for entry in recent_emotions:
             emotion = entry["emotion"]
             emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
+        return max(emotion_counts.items(), key=lambda x: x[1])[0]
 
-        dominant_emotion = max(emotion_counts.items(), key=lambda x: x[1])
+    def _detect_emotion_trend(self, recent_emotions: List[Dict]) -> str:
+        """Detect the trend of emotions."""
+        if len(recent_emotions) < 10:
+            return "stable"
 
-        # Calculate average confidence
-        avg_confidence = sum(entry["confidence"] for entry in recent_emotions) / len(
+        first_half = recent_emotions[: len(recent_emotions) // 2]
+        second_half = recent_emotions[len(recent_emotions) // 2:]
+
+        first_avg_positivity = sum(
+            1 for e in first_half if e["emotion"] in [
+                "happy", "excited", "calm"]) / len(first_half)
+        second_avg_positivity = sum(
+            1 for e in second_half if e["emotion"] in [
+                "happy", "excited", "calm"]) / len(second_half)
+
+        if second_avg_positivity > first_avg_positivity + 0.2:
+            return "improving"
+        elif second_avg_positivity < first_avg_positivity - 0.2:
+            return "declining"
+        return "stable"
+
+    def get_emotion_insights(self) -> Dict[str, Any]:
+        """Get AI-powered emotion insights."""
+        if len(self.emotion_history) < 5:
+            return {"status": "insufficient_data"}
+
+        recent_emotions = self.emotion_history[-20:]
+        dominant_emotion = self._calculate_dominant_emotion(recent_emotions)
+        avg_confidence = sum(e["confidence"] for e in recent_emotions) / len(
             recent_emotions
         )
-
-        # Detect trends
-        trend = "stable"
-        if len(recent_emotions) >= 10:
-            first_half = recent_emotions[: len(recent_emotions) // 2]
-            second_half = recent_emotions[len(recent_emotions) // 2:]
-
-            first_avg = sum(
-                1 if e["emotion"] in ["happy", "excited", "calm"] else 0
-                for e in first_half
-            ) / len(first_half)
-            second_avg = sum(
-                1 if e["emotion"] in ["happy", "excited", "calm"] else 0
-                for e in second_half
-            ) / len(second_half)
-
-            if second_avg > first_avg + 0.2:
-                trend = "improving"
-            elif second_avg < first_avg - 0.2:
-                trend = "declining"
+        trend = self._detect_emotion_trend(recent_emotions)
 
         return {
             "status": "ready",
@@ -395,13 +462,18 @@ class SmartAlertSystem:
             },
         }
 
-    def _check_negative_emotion_streak(self, emotion_history: List[Dict], new_alerts: List[Dict]) -> None:
+    def _check_negative_emotion_streak(
+        self, emotion_history: List[Dict], new_alerts: List[Dict]
+    ) -> None:
         """Checks for a streak of negative emotions."""
         negative_emotions = ["sad", "angry", "frustrated", "confused"]
         recent_negative = [e for e in emotion_history[-10:]
                            if e["emotion"] in negative_emotions]
 
-        if len(recent_negative) >= self.alert_rules["negative_emotion_streak"]["threshold"]:
+        if (
+            len(recent_negative)
+            >= self.alert_rules["negative_emotion_streak"]["threshold"]
+        ):
             alert = self.create_alert(
                 "negative_emotion_streak",
                 f"Child has shown {len(recent_negative)} negative emotions recently",
@@ -409,7 +481,9 @@ class SmartAlertSystem:
             )
             new_alerts.append(alert)
 
-    def _check_sudden_mood_drop(self, emotion_history: List[Dict], new_alerts: List[Dict]) -> None:
+    def _check_sudden_mood_drop(
+        self, emotion_history: List[Dict], new_alerts: List[Dict]
+    ) -> None:
         """Checks for a sudden drop in mood."""
         if len(emotion_history) < 2:
             return
@@ -417,7 +491,9 @@ class SmartAlertSystem:
         recent_confidence = emotion_history[-1]["confidence"]
         previous_confidence = emotion_history[-2]["confidence"]
 
-        if (previous_confidence - recent_confidence) > self.alert_rules["sudden_mood_drop"]["threshold"]:
+        if (previous_confidence - recent_confidence) > self.alert_rules[
+            "sudden_mood_drop"
+        ]["threshold"]:
             alert = self.create_alert(
                 "sudden_mood_drop",
                 f"Confidence dropped from {previous_confidence:.1%} to {recent_confidence:.1%}",
@@ -425,11 +501,15 @@ class SmartAlertSystem:
             )
             new_alerts.append(alert)
 
-    def _check_high_frustration(self, emotion_history: List[Dict], new_alerts: List[Dict]) -> None:
+    def _check_high_frustration(
+        self, emotion_history: List[Dict], new_alerts: List[Dict]
+    ) -> None:
         """Checks for high frustration levels."""
         recent_frustration = [
-            e for e in emotion_history[-5:]
-            if e["emotion"] == "frustrated" and e["confidence"] > self.alert_rules["high_frustration"]["threshold"]
+            e
+            for e in emotion_history[-5:]
+            if e["emotion"] == "frustrated"
+            and e["confidence"] > self.alert_rules["high_frustration"]["threshold"]
         ]
 
         if recent_frustration:
@@ -440,16 +520,21 @@ class SmartAlertSystem:
             )
             new_alerts.append(alert)
 
+    ALERT_CHECKERS = {
+        "negative_emotion_streak": _check_negative_emotion_streak,
+        "sudden_mood_drop": _check_sudden_mood_drop,
+        "high_frustration": _check_high_frustration,
+    }
+
     def process_emotion_data(self, emotion_history: List[Dict]) -> List[Dict]:
-        """Process emotion data and generate alerts"""
+        """Process emotion data and generate alerts using a dispatch table."""
         if not self.enabled or not emotion_history:
             return []
 
         new_alerts = []
-
-        self._check_negative_emotion_streak(emotion_history, new_alerts)
-        self._check_sudden_mood_drop(emotion_history, new_alerts)
-        self._check_high_frustration(emotion_history, new_alerts)
+        for alert_type, checker_func in self.ALERT_CHECKERS.items():
+            # The checker function is called with `self` to provide its context
+            checker_func(self, emotion_history, new_alerts)
 
         return new_alerts
 
@@ -475,8 +560,9 @@ class SmartAlertSystem:
             self.alerts_history.pop(0)
 
         logger.info(
-            "Smart alert generated", type=alert_type, priority=alert["priority"]
-        )
+            "Smart alert generated",
+            type=alert_type,
+            priority=alert["priority"])
 
         return alert
 
@@ -485,8 +571,7 @@ class SmartAlertSystem:
         cutoff_time = datetime.now() - timedelta(hours=hours)
 
         return [
-            alert for alert in self.alerts_history if alert["timestamp"] >= cutoff_time
-        ]
+            alert for alert in self.alerts_history if alert["timestamp"] >= cutoff_time]
 
     def set_sensitivity(self, level: float) -> None:
         """Set alert sensitivity (0.1 to 2.0)"""
@@ -495,7 +580,9 @@ class SmartAlertSystem:
         # Adjust thresholds based on sensitivity
         for rule_name, rule in self.alert_rules.items():
             if "threshold" in rule:
-                if rule_name in ["negative_emotion_streak", "learning_difficulty"]:
+                if rule_name in [
+                    "negative_emotion_streak",
+                        "learning_difficulty"]:
                     # For count-based thresholds, adjust inversely
                     rule["threshold"] = max(
                         1, int(rule["threshold"] / self.sensitivity)
@@ -767,8 +854,13 @@ class EnterpriseDashboardWidget(QWidget):
 
             # Simulate emotion updates (30% chance)
             if random.random() > 0.7:
-                emotions = ["happy", "excited", "calm",
-                            "curious", "frustrated", "sad"]
+                emotions = [
+                    "happy",
+                    "excited",
+                    "calm",
+                    "curious",
+                    "frustrated",
+                    "sad"]
                 emotion = random.choice(emotions)
                 confidence = random.uniform(0.6, 0.95)
 
@@ -777,11 +869,14 @@ class EnterpriseDashboardWidget(QWidget):
         except Exception as e:
             logger.error("Failed to update real-time metrics", error=str(e))
 
-    def add_emotion_data(self, emotion: str, confidence: float, metadata: dict = None) -> None:
+    def add_emotion_data(
+        self, emotion: str, confidence: float, metadata: dict = None
+    ) -> None:
         """Add new emotion data and update displays"""
         # Add to analytics engine
         self.emotion_engine.add_emotion_data(
-            emotion=emotion, confidence=confidence, metadata=metadata)
+            emotion=emotion, confidence=confidence, metadata=metadata
+        )
 
         # Update current emotion display
         self.update_current_emotion_display(emotion, confidence)
@@ -791,10 +886,13 @@ class EnterpriseDashboardWidget(QWidget):
             [{"emotion": emotion, "confidence": confidence}], confidence
         )
 
-        logger.info("Emotion data added", emotion=emotion,
-                    confidence=confidence)
+        logger.info(
+            "Emotion data added",
+            emotion=emotion,
+            confidence=confidence)
 
-    def update_current_emotion_display(self, emotion: str, confidence: float) -> None:
+    def update_current_emotion_display(
+            self, emotion: str, confidence: float) -> None:
         """Update current emotion display"""
         emotion_emojis = {
             "happy": "😊",
@@ -916,8 +1014,10 @@ class EnterpriseDashboardWidget(QWidget):
                 os.unlink(temp_file.name)
 
         except Exception as e:
-            logger.error("Failed to display chart",
-                         error=str(e), chart_type=chart_type)
+            logger.error(
+                "Failed to display chart",
+                error=str(e),
+                chart_type=chart_type)
 
             # Show error message
             error_label = QLabel(f"Chart display error: {e}")
@@ -946,8 +1046,10 @@ class EnterpriseDashboardWidget(QWidget):
     def display_alert(self, alert: Dict) -> None:
         """Display alert in the alerts panel"""
         timestamp = alert["timestamp"].strftime("%H:%M:%S")
-        priority_colors = {"high": "#ff4444",
-                           "medium": "#ff8800", "low": "#4488ff"}
+        priority_colors = {
+            "high": "#ff4444",
+            "medium": "#ff8800",
+            "low": "#4488ff"}
 
         color = priority_colors.get(alert["priority"], "#666666")
 
@@ -963,7 +1065,9 @@ class EnterpriseDashboardWidget(QWidget):
 
         # Emit signal for parent handling
         self.alert_triggered.emit(
-            alert["type"], alert["message"], alert["data"])
+            alert["type"],
+            alert["message"],
+            alert["data"])
 
     def toggle_alerts(self, enabled: bool) -> None:
         """Toggle smart alerts system"""
@@ -1002,7 +1106,11 @@ class EnterpriseDashboardWidget(QWidget):
             f"QLabel {{ color: {config['color']}; font-weight: bold; }}"
         )
 
-    def add_child_profile(self, name: str, age: int, metadata: dict = None) -> None:
+    def add_child_profile(
+            self,
+            name: str,
+            age: int,
+            metadata: dict = None) -> None:
         """Add child profile to dashboard"""
         profile_text = f"{name} (Age: {age})"
         self.profiles_list.addItem(profile_text)

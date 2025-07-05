@@ -8,8 +8,12 @@ Domain service for managing access control and parental controls.
 from datetime import datetime, time
 from typing import List, Optional, Tuple
 
-from ..models.control_models import (AccessSchedule, AccessScheduleType,
-                                     ParentalControl, TimeUsageStats)
+from ..models.control_models import (
+    AccessSchedule,
+    AccessScheduleType,
+    ParentalControl,
+    TimeUsageStats,
+)
 
 
 class AccessControlService:
@@ -43,7 +47,8 @@ class AccessControlService:
         next_allowed = self._get_next_allowed_time(schedules, current_time)
         return False, f"Access not allowed. Next available: {next_allowed}"
 
-    def validate_parental_controls(self, controls: ParentalControl) -> List[str]:
+    def validate_parental_controls(
+            self, controls: ParentalControl) -> List[str]:
         """Validate parental control settings and return errors"""
         errors = []
 
@@ -78,7 +83,8 @@ class AccessControlService:
         """Check if time warning should be triggered"""
         return usage_stats.is_approaching_daily_limit()
 
-    def should_block_access_time_limit(self, usage_stats: TimeUsageStats) -> bool:
+    def should_block_access_time_limit(
+            self, usage_stats: TimeUsageStats) -> bool:
         """Check if access should be blocked due to time limits"""
         return (
             usage_stats.is_daily_limit_exceeded()
@@ -89,7 +95,10 @@ class AccessControlService:
         """Check if topic is allowed based on controls"""
         return controls.is_topic_allowed(topic)
 
-    def should_alert_for_topic(self, controls: ParentalControl, topic: str) -> bool:
+    def should_alert_for_topic(
+            self,
+            controls: ParentalControl,
+            topic: str) -> bool:
         """Check if should send alert for this topic"""
         return controls.should_alert_for_topic(topic)
 
@@ -114,8 +123,9 @@ class AccessControlService:
         return schedules
 
     def get_remaining_access_time(
-        self, schedules: List[AccessSchedule], current_time: Optional[datetime] = None
-    ) -> Optional[int]:
+            self,
+            schedules: List[AccessSchedule],
+            current_time: Optional[datetime] = None) -> Optional[int]:
         """Get remaining access time in minutes for current session"""
 
         if current_time is None:
@@ -179,15 +189,18 @@ class AccessControlService:
         return "No scheduled access time found"
 
     def get_access_summary(
-        self, schedules: List[AccessSchedule], current_time: Optional[datetime] = None
-    ) -> dict:
+            self,
+            schedules: List[AccessSchedule],
+            current_time: Optional[datetime] = None) -> dict:
         """Get summary of access schedule and current status"""
 
         if current_time is None:
             current_time = datetime.now()
 
-        is_allowed, next_time = self.check_access_allowed(schedules, current_time)
-        remaining_time = self.get_remaining_access_time(schedules, current_time)
+        is_allowed, next_time = self.check_access_allowed(
+            schedules, current_time)
+        remaining_time = self.get_remaining_access_time(
+            schedules, current_time)
 
         # Count total weekly hours
         total_weekly_minutes = 0

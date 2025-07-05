@@ -1,29 +1,31 @@
+from scipy.io.wavfile import write
+from pydub.playback import play
+from pydub import AudioSegment
+import sounddevice as sd
+from pathlib import Path
+import structlog
 import logging
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-import structlog
 
 logger = structlog.get_logger(__name__)
 
-from pathlib import Path
-
-import sounddevice as sd
-from pydub import AudioSegment
-from pydub.playback import play
-from scipy.io.wavfile import write
 
 # ====== كود تسجيل الصوت وحفظه كملف WAV ======
 
+
 def record_and_save_wav(filename="output.wav", duration=3, fs=16000) -> Any:
     logger.info("🎤 تسجيل... تحدث الآن")
-    recording = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='int16')
+    recording = sd.rec(int(duration * fs), samplerate=fs,
+                       channels=1, dtype='int16')
     sd.wait()  # انتظر انتهاء التسجيل
     write(filename, fs, recording)
     logger.info(f"✅ تم حفظ التسجيل في {filename}")
 
 # ====== كود تشغيل ملف WAV بشكل آمن ======
+
 
 def is_valid_wav(file_path) -> Any:
     """يتحقق إذا كان الملف فعلاً WAV صالح"""
@@ -45,7 +47,8 @@ def safe_play(file_path) -> Any:
     ext = file_path.lower().split('.')[-1]
     if ext == "wav":
         if not is_valid_wav(file_path):
-            logger.error(f"❌ الملف {file_path} ليس ملف WAV صالح (لا يبدأ بـ RIFF)")
+            logger.error(
+                f"❌ الملف {file_path} ليس ملف WAV صالح (لا يبدأ بـ RIFF)")
             return
         try:
             audio = AudioSegment.from_file(file_path, format="wav")
@@ -61,7 +64,11 @@ class TTSPlayback:
         self.stream = None
 
     def play_audio(self, data, samplerate) -> Any:
-        self.stream = sd.OutputStream(samplerate=samplerate, channels=1, callback=self.callback, finished_callback=self.on_playback_complete)
+        self.stream = sd.OutputStream(
+    samplerate=samplerate,
+    channels=1,
+    callback=self.callback,
+     finished_callback=self.on_playback_complete)
         self.stream.start()
 
     def callback(self, outdata, frames, time, status) -> Any:
@@ -84,7 +91,7 @@ if __name__ == "__main__":
     record_and_save_wav(filename, duration=4)    # غيّر مدة التسجيل لو تريد
     safe_play(filename)
 
-def cleanup_tts_cache(max_age_hours: int = 24) -> int:
+def cleanup_tts_cache(max_age_hours: int=24) -> int:
     """Clean up TTS cache files older than max_age_hours"""
     try:
         cache_dir = Path("cache/tts")

@@ -12,15 +12,18 @@ import structlog
 from prometheus_client import Counter, Histogram
 
 from src.infrastructure.config import get_settings
+
 # from src.application.services.core.service_registry import ServiceBase
 from src.infrastructure.observability import trace_async
-from src.infrastructure.security.audit_logger import (AuditEventType)
+from src.infrastructure.security.audit_logger import AuditEventType
 
 # Metrics
 health_alerts = Counter(
     "teddy_health_alerts", "Health alerts sent", ["type", "severity"]
 )
-analysis_time = Histogram("teddy_health_analysis_seconds", "Health analysis duration")
+analysis_time = Histogram(
+    "teddy_health_analysis_seconds",
+    "Health analysis duration")
 
 
 class HealthStatus(Enum):
@@ -235,7 +238,8 @@ class AlertService:
                 body=message,
             )
         # Send SMS for high severity
-        if severity == "high" and self.sms_service and parent_info.get("phone"):
+        if severity == "high" and self.sms_service and parent_info.get(
+                "phone"):
             await self.sms_service.send_sms(
                 to=parent_info["phone"],
                 message=f"Health Alert: {concerns[0]}" if concerns else "Check app",
@@ -250,7 +254,10 @@ class AlertService:
                     data={"type": "health_alert", "child_id": child_id},
                 )
 
-    async def send_weekly_report(self, child_id: str, report: HealthReport) -> None:
+    async def send_weekly_report(
+            self,
+            child_id: str,
+            report: HealthReport) -> None:
         """Send weekly report (fetches parent info from DB)"""
         parent_info = await self._get_parent_info(child_id)
         if not parent_info or not parent_info.get("email"):
@@ -258,15 +265,15 @@ class AlertService:
             return
         message = f"""
         Weekly Health Report for {child_id}
-        
+
         Status: {report.status.value}
-        
+
         Key Metrics:
         {self._format_metrics(report.metrics)}
-        
+
         Recommendations:
         {chr(10).join('- ' + r for r in report.recommendations)}
-        
+
         View full details in your parent dashboard.
         """
         await self.email_service.send_email(
@@ -277,12 +284,12 @@ class AlertService:
         """Format alert message"""
         return f"""
         Health Alert ({severity.upper()})
-        
+
         We've noticed the following concerns:
         {chr(10).join('- ' + c for c in concerns)}
-        
+
         Please monitor your child's interactions and consult the dashboard for details.
-        
+
         If concerns persist, consider consulting a healthcare professional.
         """
 
@@ -313,7 +320,8 @@ class AlertService:
             if parent:
                 parent_info["email"] = getattr(parent, "email", parent_email)
                 parent_info["phone"] = getattr(parent, "phone", None)
-                parent_info["device_tokens"] = getattr(parent, "device_tokens", [])
+                parent_info["device_tokens"] = getattr(
+                    parent, "device_tokens", [])
         else:
             parent_info["email"] = parent_email
         # Input validation for email

@@ -123,7 +123,8 @@ class ResponseGenerator(ServiceBase):
             prompt_parts.append(f"Recent conversation:\n{history_text}")
 
         # Add specific instructions based on mode
-        mode_instructions = self._get_mode_instructions(mode, emotion, child_age)
+        mode_instructions = self._get_mode_instructions(
+            mode, emotion, child_age)
         prompt_parts.append(f"Instructions: {mode_instructions}")
 
         return "\n".join(prompt_parts)
@@ -133,14 +134,14 @@ class ResponseGenerator(ServiceBase):
         language = child_info.get("language", "ar")
 
         if language == "ar":
-            return """أنت دمية دب محبوبة تتحدث مع طفل. 
+            return """أنت دمية دب محبوبة تتحدث مع طفل.
             يجب أن تكون ردودك:
             - مناسبة للأطفال وآمنة
             - تعليمية ومسلية
             - قصيرة وبسيطة
             - مليئة بالحب والتشجيع
             - باللغة العربية الفصحى البسيطة
-            
+
             لا تذكر أبداً مواضيع مخيفة أو غير مناسبة للأطفال."""
         else:
             return """You are a beloved teddy bear talking to a child.
@@ -150,7 +151,7 @@ class ResponseGenerator(ServiceBase):
             - Short and simple
             - Full of love and encouragement
             - In simple, clear language
-            
+
             Never mention scary or inappropriate topics for children."""
 
     def _get_mode_instructions(
@@ -167,8 +168,11 @@ class ResponseGenerator(ServiceBase):
         }
 
         # Adjust based on emotion
-        if emotion.primary_emotion in [EmotionCategory.SAD, EmotionCategory.SCARED]:
-            return instructions.get(mode, "") + " Be extra gentle and comforting."
+        if emotion.primary_emotion in [
+                EmotionCategory.SAD,
+                EmotionCategory.SCARED]:
+            return instructions.get(
+                mode, "") + " Be extra gentle and comforting."
         elif emotion.primary_emotion == EmotionCategory.EXCITED:
             return instructions.get(mode, "") + " Match their enthusiasm!"
 
@@ -209,7 +213,8 @@ class ResponseGenerator(ServiceBase):
 
         return response
 
-    def _ensure_cultural_appropriateness(self, response: str, language: str) -> str:
+    def _ensure_cultural_appropriateness(
+            self, response: str, language: str) -> str:
         """Ensure response is culturally appropriate"""
         # Remove any potentially inappropriate content
         inappropriate_terms = []  # Add terms as needed
@@ -255,8 +260,10 @@ class ResponseGenerator(ServiceBase):
         ]
 
     def suggest_voice_tone(
-        self, emotion: EmotionAnalysis, mode: ResponseMode, response_content: str
-    ) -> EmotionalTone:
+            self,
+            emotion: EmotionAnalysis,
+            mode: ResponseMode,
+            response_content: str) -> EmotionalTone:
         """Suggest appropriate voice tone for the response"""
         # Map emotions to voice tones
         emotion_tone_map = {
@@ -271,7 +278,8 @@ class ResponseGenerator(ServiceBase):
         }
 
         # Get base tone from emotion
-        base_tone = emotion_tone_map.get(emotion.primary_emotion, EmotionalTone.WARM)
+        base_tone = emotion_tone_map.get(
+            emotion.primary_emotion, EmotionalTone.WARM)
 
         # Adjust based on response mode
         if mode == ResponseMode.PLAYFUL:

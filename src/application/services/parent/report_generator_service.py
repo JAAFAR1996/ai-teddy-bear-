@@ -52,7 +52,10 @@ class ReportGeneratorService:
         self.output_directory = Path("reports")
         self.output_directory.mkdir(exist_ok=True)
 
-    def generate_report(self, progress: ChildProgress, format: ReportFormat) -> str:
+    def generate_report(
+            self,
+            progress: ChildProgress,
+            format: ReportFormat) -> str:
         """
         إنشاء تقرير - المسؤولية الوحيدة لهذا الكلاس
 
@@ -287,27 +290,27 @@ class ReportGeneratorService:
             <h2>{progress.child_name}</h2>
             <p>العمر: {progress.age} سنوات | الفترة: {progress.period_start.strftime('%Y-%m-%d')} - {progress.period_end.strftime('%Y-%m-%d')}</p>
         </div>
-        
+
         <div class="metric">
             <strong>📊 إجمالي التفاعلات:</strong> {progress.total_interactions}
         </div>
-        
+
         <div class="metric">
             <strong>📈 متوسط التفاعلات اليومية:</strong> {progress.avg_daily_interactions:.1f}
         </div>
-        
+
         <div class="metric">
             <strong>😊 المشاعر المهيمنة:</strong> {progress.dominant_emotion}
         </div>
-        
+
         <div class="metric">
             <strong>⏱️ مدة التركيز:</strong> {progress.attention_span:.1f} دقيقة
         </div>
-        
+
         <div class="metric">
             <strong>📚 نمو المفردات:</strong> {progress.vocabulary_growth} كلمة جديدة
         </div>
-        
+
         <h3>🎯 المهارات المُمارسة</h3>
         <div class="skills-list">
         """

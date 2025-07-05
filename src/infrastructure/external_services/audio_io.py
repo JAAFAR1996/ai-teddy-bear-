@@ -166,53 +166,53 @@ class AudioIO:
         cleanup_thread = threading.Thread(target=cleanup_worker, daemon=True)
         cleanup_thread.start()
 
+    def _check_file_existence_and_size(
+            self, filename: str, max_size: int) -> Path:
+        """Checks if the file exists and is within the size limit."""
+        if not os.path.exists(filename):
+            raise AudioValidationError(f"Audio file not found: {filename}")
+
+        file_path = Path(filename)
+        if file_path.stat().st_size > max_size:
+            raise AudioValidationError(
+                f"Audio file too large: {file_path.stat().st_size} bytes"
+            )
+
+        return file_path
+
+    def _extract_and_validate_metadata(self, filename: str) -> AudioMetadata:
+        """Extracts and validates metadata from the audio file."""
+        try:
+            with sf.SoundFile(filename) as f:
+                metadata = AudioMetadata(
+                    filename=filename,
+                    format=f.format,
+                    duration=float(
+                        len(f)) / f.samplerate,
+                    sample_rate=f.samplerate,
+                    channels=f.channels,
+                    size_bytes=os.path.getsize(filename),
+                    created_at=datetime.fromtimestamp(
+                        os.path.getctime(filename)),
+                    modified_at=datetime.fromtimestamp(
+                        os.path.getmtime(filename)),
+                )
+                if metadata.duration > 300:
+                    raise AudioValidationError(
+                        "Audio file too long (max 5 minutes)")
+                if metadata.sample_rate < 8000 or metadata.sample_rate > 48000:
+                    raise AudioValidationError(
+                        f"Unsupported sample rate: {metadata.sample_rate}"
+                    )
+                return metadata
+        except Exception as e:
+            raise AudioValidationError(f"Invalid audio file format: {e}")
+
     def validate_audio_file(self, filename: str) -> AudioMetadata:
         """Validate and extract metadata from audio file."""
         try:
-            if not os.path.exists(filename):
-                raise AudioValidationError(f"Audio file not found: {filename}")
-
-            file_path = Path(filename)
-            file_stats = file_path.stat()
-
-            # Check file size (max 100MB for safety)
-            max_size = 100 * 1024 * 1024  # 100MB
-            if file_stats.st_size > max_size:
-                raise AudioValidationError(
-                    f"Audio file too large: {file_stats.st_size} bytes"
-                )
-
-            # Try to read audio file
-            try:
-                with sf.SoundFile(filename) as f:
-                    metadata = AudioMetadata(
-                        filename=filename,
-                        format=f.format,
-                        duration=float(len(f)) / f.samplerate,
-                        sample_rate=f.samplerate,
-                        channels=f.channels,
-                        size_bytes=file_stats.st_size,
-                        created_at=datetime.fromtimestamp(file_stats.st_ctime),
-                        modified_at=datetime.fromtimestamp(
-                            file_stats.st_mtime),
-                    )
-
-                    # Validate audio constraints
-                    if metadata.duration > 300:  # 5 minutes max
-                        raise AudioValidationError(
-                            "Audio file too long (max 5 minutes)"
-                        )
-
-                    if metadata.sample_rate < 8000 or metadata.sample_rate > 48000:
-                        raise AudioValidationError(
-                            f"Unsupported sample rate: {metadata.sample_rate}"
-                        )
-
-                    return metadata
-
-            except Exception as e:
-                raise AudioValidationError(f"Invalid audio file format: {e}")
-
+            self._check_file_existence_and_size(filename, 100 * 1024 * 1024)
+            return self._extract_and_validate_metadata(filename)
         except AudioValidationError:
             raise
         except Exception as e:
@@ -303,7 +303,10 @@ class AudioIO:
             self.logger.error(f"Error processing audio data: {e}")
             return audio_data
 
-    def _remove_silence(self, audio_data: np.ndarray, sample_rate: int) -> np.ndarray:
+    def _remove_silence(
+            self,
+            audio_data: np.ndarray,
+            sample_rate: int) -> np.ndarray:
         """Remove silence from audio data."""
         try:
             # Use librosa to detect non-silent intervals
@@ -388,8 +391,7 @@ class AudioIO:
             # Resample if requested
             if target_sample_rate and target_sample_rate != sample_rate:
                 audio_data = librosa.resample(
-                    audio_data, orig_sr=sample_rate, target_sr=target_sample_rate
-                )
+                    audio_data, orig_sr=sample_rate, target_sr=target_sample_rate)
                 sample_rate = target_sample_rate
 
             # Normalize if requested
@@ -481,56 +483,65 @@ class AudioIO:
         except Exception as e:
             self.logger.warning(f"Error removing temp file {filepath}: {e}")
 
+    def _cleanup_tracked_files(self, cutoff_time: datetime) -> int:
+        """Cleans up tracked temporary files older than the cutoff time."""
+        count = 0
+        for temp_file in list(self._temp_files):
+            try:
+                if os.path.exists(temp_file):
+                    mtime = datetime.fromtimestamp(os.path.getmtime(temp_file))
+                    if mtime < cutoff_time:
+                        self._remove_temp_file(temp_file)
+                        count += 1
+                else:
+                    self._temp_files.discard(temp_file)
+            except Exception as e:
+                self.logger.warning(
+                    f"Error checking temp file {temp_file}: {e}")
+        return count
+
+    def _cleanup_untracked_files(
+            self,
+            temp_path: Path,
+            cutoff_time: datetime) -> int:
+        """Cleans up untracked temporary files older than the cutoff time."""
+        count = 0
+        for pattern in ["audio_*.wav", "audio_*.mp3", "*.tmp"]:
+            for file in temp_path.glob(pattern):
+                try:
+                    mtime = datetime.fromtimestamp(file.stat().st_mtime)
+                    if mtime < cutoff_time:
+                        file.unlink()
+                        count += 1
+                except Exception as e:
+                    self.logger.warning(
+                        f"Error removing untracked file {file}: {e}")
+        return count
+
     def cleanup_temp_files(self, max_age_hours: int = 24) -> None:
         """
         Clean up old temporary files.
-
-        Args:
-            max_age_hours: Maximum age in hours for temp files
         """
         try:
             with self._lock:
                 temp_path = Path(self.temp_dir)
                 cutoff_time = datetime.now() - timedelta(hours=max_age_hours)
 
-                count = 0
+                tracked_cleaned = self._cleanup_tracked_files(cutoff_time)
+                untracked_cleaned = self._cleanup_untracked_files(
+                    temp_path, cutoff_time
+                )
 
-                # Clean up tracked temp files
-                for temp_file in list(self._temp_files):
-                    try:
-                        if os.path.exists(temp_file):
-                            mtime = datetime.fromtimestamp(
-                                os.path.getmtime(temp_file))
-                            if mtime < cutoff_time:
-                                self._remove_temp_file(temp_file)
-                                count += 1
-                        else:
-                            self._temp_files.discard(temp_file)
-                    except Exception as e:
-                        self.logger.warning(
-                            f"Error checking temp file {temp_file}: {e}"
-                        )
-
-                # Clean up any untracked audio files
-                for pattern in ["audio_*.wav", "audio_*.mp3", "*.tmp"]:
-                    for file in temp_path.glob(pattern):
-                        try:
-                            mtime = datetime.fromtimestamp(
-                                file.stat().st_mtime)
-                            if mtime < cutoff_time:
-                                file.unlink()
-                                count += 1
-                        except Exception as e:
-                            self.logger.warning(
-                                f"Error removing untracked file {file}: {e}"
-                            )
-
-                self.logger.info(f"Cleaned up {count} temporary files")
+                total_cleaned = tracked_cleaned + untracked_cleaned
+                self.logger.info(f"Cleaned up {total_cleaned} temporary files")
 
         except Exception as e:
             self.logger.error(f"Error cleaning up temp files: {e}")
 
-    def _save_metadata(self, audio_filename: str, metadata: AudioMetadata) -> None:
+    def _save_metadata(
+            self,
+            audio_filename: str,
+            metadata: AudioMetadata) -> None:
         """Save metadata to companion file."""
         try:
             metadata_filename = audio_filename + ".meta"
@@ -574,10 +585,20 @@ class AudioIO:
                 channels=metadata_dict["channels"],
                 bitrate=metadata_dict.get("bitrate"),
                 size_bytes=metadata_dict["size_bytes"],
-                created_at=datetime.fromisoformat(metadata_dict["created_at"]) if hasattr(
-                    datetime, 'fromisoformat') else datetime.strptime(metadata_dict["created_at"], "%Y-%m-%dT%H:%M:%S.%f"),
-                modified_at=datetime.fromisoformat(metadata_dict["modified_at"]) if hasattr(
-                    datetime, 'fromisoformat') else datetime.strptime(metadata_dict["modified_at"], "%Y-%m-%dT%H:%M:%S.%f"),
+                created_at=(
+                    datetime.fromisoformat(metadata_dict["created_at"])
+                    if hasattr(datetime, "fromisoformat")
+                    else datetime.strptime(
+                        metadata_dict["created_at"], "%Y-%m-%dT%H:%M:%S.%f"
+                    )
+                ),
+                modified_at=(
+                    datetime.fromisoformat(metadata_dict["modified_at"])
+                    if hasattr(datetime, "fromisoformat")
+                    else datetime.strptime(
+                        metadata_dict["modified_at"], "%Y-%m-%dT%H:%M:%S.%f"
+                    )
+                ),
                 checksum=metadata_dict.get("checksum"),
                 tags=metadata_dict.get("tags", {}),
             )
@@ -588,8 +609,9 @@ class AudioIO:
 
     @contextmanager
     def temp_audio_file(
-        self, audio_format: AudioFormat = AudioFormat.WAV, cleanup_on_exit: bool = True
-    ):
+            self,
+            audio_format: AudioFormat = AudioFormat.WAV,
+            cleanup_on_exit: bool = True):
         """
         Context manager for temporary audio files.
 
@@ -710,8 +732,13 @@ def get_audio_files(
     """
     try:
         audio_files = []
-        supported_extensions = [".wav", ".mp3",
-                                ".ogg", ".flac", ".m4a", ".aac"]
+        supported_extensions = [
+            ".wav",
+            ".mp3",
+            ".ogg",
+            ".flac",
+            ".m4a",
+            ".aac"]
 
         directory_path = Path(directory)
         if not directory_path.exists():
@@ -737,15 +764,17 @@ def get_audio_files(
 
         return sorted(
             audio_files, key=lambda x: x if isinstance(
-                x, str) else x["filepath"]
-        )
+                x, str) else x["filepath"])
 
     except Exception as e:
         logging.error(f"Error getting audio files: {e}")
         return []
 
 
-def copy_audio_file(src: str, dst: str, preserve_metadata: bool = True) -> bool:
+def copy_audio_file(
+        src: str,
+        dst: str,
+        preserve_metadata: bool = True) -> bool:
     """
     Copy audio file with optional metadata preservation.
 
@@ -846,8 +875,10 @@ def validate_audio_for_children(filename: str) -> Dict[str, Any]:
         audio_io = AudioIO()
         metadata = audio_io.validate_audio_file(filename)
 
-        validation_results = {"is_valid": True,
-                              "issues": [], "metadata": metadata}
+        validation_results = {
+            "is_valid": True,
+            "issues": [],
+            "metadata": metadata}
 
         # Check duration (max 5 minutes for children)
         if metadata.duration > 300:

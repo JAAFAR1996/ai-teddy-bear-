@@ -100,7 +100,8 @@ class LoggingMiddleware(CommandMiddleware):
 
         except Exception as e:
             duration = (datetime.utcnow() - start_time).total_seconds()
-            logger.error(f"Command {command_name} failed after {duration:.3f}s: {e}")
+            logger.error(
+                f"Command {command_name} failed after {duration:.3f}s: {e}")
             raise
 
 
@@ -112,13 +113,15 @@ class CommandBus:
         self._middleware: List[CommandMiddleware] = []
         self.event_sourcing_service = get_event_sourcing_service()
 
-    def register_handler(
-        self, command_type: Type[TCommand], handler: CommandHandler[TCommand, TResult]
-    ) -> None:
+    def register_handler(self,
+                         command_type: Type[TCommand],
+                         handler: CommandHandler[TCommand,
+                                                 TResult]) -> None:
         """Register command handler"""
 
         if command_type in self._handlers:
-            logger.warning(f"Handler for {command_type.__name__} already registered")
+            logger.warning(
+                f"Handler for {command_type.__name__} already registered")
 
         self._handlers[command_type] = handler
         logger.info(f"Registered handler for {command_type.__name__}")
@@ -135,7 +138,8 @@ class CommandBus:
         handler = self._handlers.get(command_type)
 
         if not handler:
-            raise ValueError(f"No handler registered for {command_type.__name__}")
+            raise ValueError(
+                f"No handler registered for {command_type.__name__}")
 
         # Build middleware pipeline
         final_handler = self._build_pipeline(handler)
@@ -181,11 +185,10 @@ class CommandBus:
         """Health check for command bus"""
 
         return {
-            "status": "healthy",
-            "handlers_count": len(self._handlers),
-            "middleware_count": len(self._middleware),
-            "registered_commands": [cmd.__name__ for cmd in self._handlers.keys()],
-        }
+            "status": "healthy", "handlers_count": len(
+                self._handlers), "middleware_count": len(
+                self._middleware), "registered_commands": [
+                cmd.__name__ for cmd in self._handlers.keys()], }
 
 
 # Global command bus instance

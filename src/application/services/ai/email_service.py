@@ -41,15 +41,18 @@ class EmailService:
     def _load_config(self) -> Any:
         """تحميل إعدادات البريد الإلكتروني"""
         try:
-            config_path = Path(__file__).parent.parent.parent / "config" / "config.json"
+            config_path = Path(__file__).parent.parent.parent / \
+                "config" / "config.json"
             with open(config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
 
             email_config = config.get("EMAIL_CONFIG", {})
 
-            self.smtp_server = email_config.get("smtp_server", "smtp.gmail.com")
+            self.smtp_server = email_config.get(
+                "smtp_server", "smtp.gmail.com")
             self.smtp_port = email_config.get("smtp_port", 587)
-            self.from_email = email_config.get("from_email", "noreply@aiteddybear.com")
+            self.from_email = email_config.get(
+                "from_email", "noreply@aiteddybear.com")
             self.password = email_config.get("password", "")
             self.use_tls = email_config.get("use_tls", True)
             self.timeout = email_config.get("timeout", 30)
@@ -111,8 +114,9 @@ class EmailService:
 
             if success:
                 self.logger.info(
-                    "HTML email sent successfully", to=to_email, subject=subject
-                )
+                    "HTML email sent successfully",
+                    to=to_email,
+                    subject=subject)
             else:
                 self.logger.error(
                     "Failed to send HTML email", to=to_email, subject=subject
@@ -122,8 +126,10 @@ class EmailService:
 
         except Exception as e:
             self.logger.error(
-                "HTML email sending failed", to=to_email, error=str(e), exc_info=True
-            )
+                "HTML email sending failed",
+                to=to_email,
+                error=str(e),
+                exc_info=True)
             return False
 
     async def send_text_email(
@@ -152,8 +158,9 @@ class EmailService:
 
             if success:
                 self.logger.info(
-                    "Text email sent successfully", to=to_email, subject=subject
-                )
+                    "Text email sent successfully",
+                    to=to_email,
+                    subject=subject)
             else:
                 self.logger.error(
                     "Failed to send text email", to=to_email, subject=subject
@@ -163,18 +170,23 @@ class EmailService:
 
         except Exception as e:
             self.logger.error(
-                "Text email sending failed", to=to_email, error=str(e), exc_info=True
-            )
+                "Text email sending failed",
+                to=to_email,
+                error=str(e),
+                exc_info=True)
             return False
 
-    async def _send_message(self, message: MimeMultipart, to_email: str) -> bool:
+    async def _send_message(
+            self,
+            message: MimeMultipart,
+            to_email: str) -> bool:
         """إرسال الرسالة عبر SMTP"""
         try:
             # في بيئة التطوير، نقوم بمحاكاة الإرسال
             if not self.password or self.password == "your_app_password":
                 self.logger.info(
-                    "Email sending simulated (no password configured)", to=to_email
-                )
+                    "Email sending simulated (no password configured)",
+                    to=to_email)
                 return True
 
             # الإرسال الفعلي باستخدام aiosmtplib
@@ -194,7 +206,10 @@ class EmailService:
             self.logger.error("SMTP sending failed", error=str(e))
             return False
 
-    async def _add_attachment(self, message: MimeMultipart, attachment_path: Path):
+    async def _add_attachment(
+            self,
+            message: MimeMultipart,
+            attachment_path: Path):
         """إضافة مرفق للرسالة"""
         try:
             if not attachment_path.exists():
@@ -208,17 +223,19 @@ class EmailService:
                 part.set_payload(attachment.read())
 
             encoders.encode_base64(part)
-            part.add_header(
-                "Content-Disposition", f"attachment; filename= {attachment_path.name}"
-            )
+            part.add_header("Content-Disposition",
+                            f"attachment; filename= {attachment_path.name}")
 
             message.attach(part)
-            self.logger.debug("Attachment added", filename=attachment_path.name)
+            self.logger.debug(
+                "Attachment added",
+                filename=attachment_path.name)
 
         except Exception as e:
             self.logger.error(
-                "Failed to add attachment", path=str(attachment_path), error=str(e)
-            )
+                "Failed to add attachment",
+                path=str(attachment_path),
+                error=str(e))
 
 
 # 🔧 مثيل خدمة البريد العامة
@@ -231,7 +248,10 @@ async def send_email(to_email: str, subject: str, body: str) -> bool:
     return await email_service.send_text_email(to_email, subject, body)
 
 
-async def send_html_email(to_email: str, subject: str, html_content: str) -> bool:
+async def send_html_email(
+        to_email: str,
+        subject: str,
+        html_content: str) -> bool:
     """دالة بسيطة لإرسال بريد HTML"""
     return await email_service.send_html_email(to_email, subject, html_content)
 
@@ -245,11 +265,13 @@ if __name__ == "__main__":
         success = await send_email(
             "test@example.com", "Test Email", "This is a test email from AI Teddy Bear!"
         )
-        logger.error(f"Text email test: {'✅ Success' if success else '❌ Failed'}")
+        logger.error(
+            f"Text email test: {'✅ Success' if success else '❌ Failed'}")
 
         # اختبار بريد HTML
         html = "<h1>Test HTML Email</h1><p>This is a <b>test</b> HTML email!</p>"
         success = await send_html_email("test@example.com", "Test HTML Email", html)
-        logger.error(f"HTML email test: {'✅ Success' if success else '❌ Failed'}")
+        logger.error(
+            f"HTML email test: {'✅ Success' if success else '❌ Failed'}")
 
     asyncio.run(test_email())

@@ -7,8 +7,7 @@ Generated from: accessibility_service.py
 import logging
 from typing import Dict, List
 
-from ...domain.accessibility.entities.accessibility_profile import (
-    AccessibilityProfile)
+from ...domain.accessibility.entities.accessibility_profile import AccessibilityProfile
 
 logger = logging.getLogger(__name__)
 

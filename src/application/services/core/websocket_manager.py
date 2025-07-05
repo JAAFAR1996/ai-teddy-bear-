@@ -102,7 +102,8 @@ class ModernWebSocketManager:
         try:
             # Check connection limits
             if len(self.connections) >= self.config.max_connections:
-                logger.warning(f"🚫 Connection limit reached: {len(self.connections)}")
+                logger.warning(
+                    f"🚫 Connection limit reached: {len(self.connections)}")
                 await websocket.close(code=1013, reason="Service overloaded")
                 return False
 
@@ -111,8 +112,9 @@ class ModernWebSocketManager:
 
             # Create connection info
             connection_info = ConnectionInfo(
-                websocket=websocket, session_id=session_id, metadata=metadata or {}
-            )
+                websocket=websocket,
+                session_id=session_id,
+                metadata=metadata or {})
 
             # Register connection
             self.connections[session_id] = connection_info
@@ -177,7 +179,8 @@ class ModernWebSocketManager:
         except Exception as e:
             logger.error(f"❌ Error disconnecting {session_id}: {e}")
 
-    async def send_message(self, session_id: str, message: Dict[str, Any]) -> bool:
+    async def send_message(self, session_id: str,
+                           message: Dict[str, Any]) -> bool:
         """
         📤 Send message to specific WebSocket client
 
@@ -246,8 +249,9 @@ class ModernWebSocketManager:
 
         # Send to all targets
         send_tasks = [
-            self.send_message(session_id, message) for session_id in target_sessions
-        ]
+            self.send_message(
+                session_id,
+                message) for session_id in target_sessions]
 
         if send_tasks:
             results = await asyncio.gather(*send_tasks, return_exceptions=True)
@@ -258,7 +262,8 @@ class ModernWebSocketManager:
         )
         return success_count
 
-    async def receive_message(self, session_id: str) -> Optional[Dict[str, Any]]:
+    async def receive_message(
+            self, session_id: str) -> Optional[Dict[str, Any]]:
         """
         📥 Receive message from WebSocket client
 
@@ -352,7 +357,8 @@ class ModernWebSocketManager:
 
                 await self.broadcast(ping_message)
 
-                logger.debug(f"💓 Heartbeat sent to {len(self.connections)} clients")
+                logger.debug(
+                    f"💓 Heartbeat sent to {len(self.connections)} clients")
 
                 # Wait for next heartbeat
                 await asyncio.sleep(self.config.heartbeat_interval)
@@ -385,14 +391,16 @@ class ModernWebSocketManager:
 
                     # Check ping timeout
                     if connection.last_ping and not connection.last_pong:
-                        ping_age = (current_time - connection.last_ping).total_seconds()
+                        ping_age = (
+                            current_time - connection.last_ping).total_seconds()
                         if ping_age > self.config.ping_timeout:
                             stale_sessions.append(session_id)
                             self.stats["heartbeat_failures"] += 1
 
                 # Remove stale connections
                 for session_id in stale_sessions:
-                    logger.warning(f"⚠️ Removing stale connection: {session_id}")
+                    logger.warning(
+                        f"⚠️ Removing stale connection: {session_id}")
                     await self.disconnect(
                         session_id, code=1006, reason="Connection timeout"
                     )
@@ -406,12 +414,16 @@ class ModernWebSocketManager:
                 logger.error(f"❌ Cleanup loop error: {e}")
                 await asyncio.sleep(30)  # Short delay before retry
 
-    def register_message_handler(self, message_type: str, handler: Callable) -> None:
+    def register_message_handler(
+            self,
+            message_type: str,
+            handler: Callable) -> None:
         """Register a message handler for specific message types"""
         self.message_handlers[message_type] = handler
         logger.info(f"📝 Registered handler for message type: {message_type}")
 
-    async def handle_message(self, session_id: str, message: Dict[str, Any]) -> None:
+    async def handle_message(self, session_id: str,
+                             message: Dict[str, Any]) -> None:
         """Handle incoming message using registered handlers"""
         message_type = message.get("type")
 
@@ -419,7 +431,8 @@ class ModernWebSocketManager:
             try:
                 await self.message_handlers[message_type](session_id, message)
             except Exception as e:
-                logger.error(f"❌ Message handler error for {message_type}: {e}")
+                logger.error(
+                    f"❌ Message handler error for {message_type}: {e}")
                 error_message = {
                     "type": "error",
                     "error": f"Handler error: {str(e)}",
@@ -439,11 +452,9 @@ class ModernWebSocketManager:
             "session_id": session_id,
             "connected_at": connection.connected_at.isoformat(),
             "last_ping": (
-                connection.last_ping.isoformat() if connection.last_ping else None
-            ),
+                connection.last_ping.isoformat() if connection.last_ping else None),
             "last_pong": (
-                connection.last_pong.isoformat() if connection.last_pong else None
-            ),
+                connection.last_pong.isoformat() if connection.last_pong else None),
             "message_count": connection.message_count,
             "is_alive": connection.is_alive,
             "metadata": connection.metadata,
@@ -453,7 +464,9 @@ class ModernWebSocketManager:
         """Get WebSocket manager statistics"""
         return {
             **self.stats,
-            "uptime_seconds": (datetime.utcnow() - datetime.utcnow()).total_seconds(),
+            "uptime_seconds": (
+                datetime.utcnow() -
+                datetime.utcnow()).total_seconds(),
             "config": {
                 "heartbeat_interval": self.config.heartbeat_interval,
                 "max_connections": self.config.max_connections,

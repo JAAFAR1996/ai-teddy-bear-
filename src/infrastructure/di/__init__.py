@@ -38,4 +38,4 @@ def provide(cls: Type[T], factory: Callable[[], T]) -> T:  # noqa: D401
 def clear() -> None:  # pragma: no cover
     """❎ *Testing only*: clear the container so tests remain isolated."""
     with _lock:
-        _instances.clear() 
+        _instances.clear()

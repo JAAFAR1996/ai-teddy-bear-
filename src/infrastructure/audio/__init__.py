@@ -47,8 +47,7 @@ except ImportError:
 
     logger = logging.getLogger(__name__)
 try:
-    from .audio_manager import (EnhancedAudioManager,
-                                create_child_safe_config)
+    from .audio_manager import EnhancedAudioManager, create_child_safe_config
 
     AudioManager = EnhancedAudioManager
     ENHANCED_AUDIO_AVAILABLE = True
@@ -58,17 +57,28 @@ except Exception as e:
 MODERN_AUDIO_AVAILABLE = False
 try:
     from src.domain.audio.services import AudioProcessor
-    from .cloud_audio_service import (detect_silence,
-                                      get_audio_stats, normalize_volume,
-                                      process_audio, trim_silence)
+    from .cloud_audio_service import (
+        detect_silence,
+        get_audio_stats,
+        normalize_volume,
+        process_audio,
+        trim_silence,
+    )
 
     AUDIO_PROCESSING_AVAILABLE = True
 except ImportError:
     AUDIO_PROCESSING_AVAILABLE = False
 try:
-    from .audio_io import (AudioFormat, AudioIO, AudioMetadata, AudioQuality,
-                           cleanup_temp_files, get_audio_duration,
-                           get_audio_files, get_audio_format)
+    from .audio_io import (
+        AudioFormat,
+        AudioIO,
+        AudioMetadata,
+        AudioQuality,
+        cleanup_temp_files,
+        get_audio_duration,
+        get_audio_files,
+        get_audio_format,
+    )
 
     AUDIO_IO_AVAILABLE = True
 except ImportError:
@@ -80,15 +90,13 @@ try:
 except ImportError:
     TTS_AVAILABLE = False
 try:
-    from .state_manager import (AudioState, StateChangeEvent, StateManager,
-                                state_manager)
+    from .state_manager import AudioState, StateChangeEvent, StateManager, state_manager
 
     STATE_MANAGER_AVAILABLE = True
 except ImportError:
     STATE_MANAGER_AVAILABLE = False
 try:
-    from .hume_emotion_analyzer import (ChildVoiceEmotion,
-                                        HumeSpeechEmotionAnalyzer)
+    from .hume_emotion_analyzer import ChildVoiceEmotion, HumeSpeechEmotionAnalyzer
 
     EMOTION_ANALYSIS_AVAILABLE = True
 except ImportError:
@@ -140,7 +148,8 @@ if AUDIO_IO_AVAILABLE:
 if TTS_AVAILABLE:
     __all__.extend(["TTSPlayback", "cleanup_tts_cache"])
 if STATE_MANAGER_AVAILABLE:
-    __all__.extend(["state_manager", "AudioState", "StateChangeEvent", "StateManager"])
+    __all__.extend(["state_manager", "AudioState",
+                   "StateChangeEvent", "StateManager"])
 if EMOTION_ANALYSIS_AVAILABLE:
     __all__.extend(["HumeSpeechEmotionAnalyzer", "ChildVoiceEmotion"])
 
@@ -184,7 +193,8 @@ if ENHANCED_AUDIO_AVAILABLE:
             _default_audio_manager.cleanup()
             _default_audio_manager = None
 
-    __all__.extend(["get_default_audio_manager", "shutdown_default_audio_manager"])
+    __all__.extend(["get_default_audio_manager",
+                   "shutdown_default_audio_manager"])
 __version__ = "2.0.0"
 __author__ = "AI Teddy Bear Team"
 __license__ = "MIT"

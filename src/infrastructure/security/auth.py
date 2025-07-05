@@ -43,9 +43,12 @@ class AuthService:
     ) -> Dict[str, Any]:
         token = credentials.credentials
         try:
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            payload = jwt.decode(
+                token, self.secret_key, algorithms=[
+                    self.algorithm])
             if payload.get("type") != "access":
-                raise HTTPException(status_code=401, detail="Invalid token type")
+                raise HTTPException(
+                    status_code=401, detail="Invalid token type")
             return payload
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="Token expired")

@@ -93,7 +93,10 @@ class ChildExperienceOptimizer:
 
         return text
 
-    def generate_adaptive_content(self, child_age: int, interests: List[str]) -> str:
+    def generate_adaptive_content(
+            self,
+            child_age: int,
+            interests: List[str]) -> str:
         """توليد محتوى متكيف مع عمر الطفل"""
         if child_age < 5:
             return "هيا نلعب لعبة بسيطة وممتعة!"

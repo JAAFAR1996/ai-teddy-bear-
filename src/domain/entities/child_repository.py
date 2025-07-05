@@ -4,14 +4,20 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from src.core.domain.entities.child import (Child, ChildPreferences,
-                                            DevelopmentMilestone,
-                                            Language,
-                                            LearningLevel)
-from src.infrastructure.persistence.base import (BaseRepository,
-                                                 BulkOperationResult,
-                                                 QueryOptions, SearchCriteria,
-                                                 SortOrder)
+from src.core.domain.entities.child import (
+    Child,
+    ChildPreferences,
+    DevelopmentMilestone,
+    Language,
+    LearningLevel,
+)
+from src.infrastructure.persistence.base import (
+    BaseRepository,
+    BulkOperationResult,
+    QueryOptions,
+    SearchCriteria,
+    SortOrder,
+)
 
 
 class ChildRepository(BaseRepository[Child, str]):
@@ -25,7 +31,10 @@ class ChildRepository(BaseRepository[Child, str]):
     # Basic Search Methods
 
     @abstractmethod
-    async def find_by_name(self, name: str, fuzzy: bool = False) -> List[Child]:
+    async def find_by_name(
+            self,
+            name: str,
+            fuzzy: bool = False) -> List[Child]:
         """
         Find children by name with optional fuzzy matching
 
@@ -69,7 +78,8 @@ class ChildRepository(BaseRepository[Child, str]):
         pass
 
     @abstractmethod
-    async def find_by_learning_level(self, level: LearningLevel) -> List[Child]:
+    async def find_by_learning_level(
+            self, level: LearningLevel) -> List[Child]:
         """
         Find children by learning level
 
@@ -200,16 +210,16 @@ class ChildRepository(BaseRepository[Child, str]):
         if min_time is not None:
             criteria.append(
                 SearchCriteria(
-                    field="max_daily_interaction_time", operator="gte", value=min_time
-                )
-            )
+                    field="max_daily_interaction_time",
+                    operator="gte",
+                    value=min_time))
 
         if max_time is not None:
             criteria.append(
                 SearchCriteria(
-                    field="max_daily_interaction_time", operator="lte", value=max_time
-                )
-            )
+                    field="max_daily_interaction_time",
+                    operator="lte",
+                    value=max_time))
 
         return await self.search(criteria) if criteria else []
 
@@ -324,8 +334,10 @@ class ChildRepository(BaseRepository[Child, str]):
         return None
 
     async def update_learning_progress(
-        self, child_id: str, new_concepts: List[str], completed_goals: List[str]
-    ) -> Optional[Child]:
+            self,
+            child_id: str,
+            new_concepts: List[str],
+            completed_goals: List[str]) -> Optional[Child]:
         """
         Update child's learning progress
 
@@ -348,15 +360,16 @@ class ChildRepository(BaseRepository[Child, str]):
 
         # Remove completed goals
         child.learning_goals = [
-            goal for goal in child.learning_goals if goal not in completed_goals
-        ]
+            goal for goal in child.learning_goals if goal not in completed_goals]
 
         child.updated_at = datetime.now()
         return await self.update(child)
 
     async def record_interaction(
-        self, child_id: str, duration_seconds: int, activity_type: Optional[str] = None
-    ) -> Optional[Child]:
+            self,
+            child_id: str,
+            duration_seconds: int,
+            activity_type: Optional[str] = None) -> Optional[Child]:
         """
         Record an interaction session
 
@@ -476,7 +489,8 @@ class ChildRepository(BaseRepository[Child, str]):
             "inactive_children_30d": len(await self.get_inactive_children(30)),
         }
 
-    async def get_trending_interests(self, limit: int = 10) -> List[Tuple[str, int]]:
+    async def get_trending_interests(
+            self, limit: int = 10) -> List[Tuple[str, int]]:
         """
         Get most popular interests
 
@@ -518,8 +532,7 @@ class ChildRepository(BaseRepository[Child, str]):
         """
         search_criteria = self._build_search_criteria(query, filters)
         query_options = self._build_query_options(
-            sort_by, sort_order, page, page_size
-        )
+            sort_by, sort_order, page, page_size)
 
         total_count = await self.count(search_criteria)
         results = await self.search(search_criteria, query_options)
@@ -538,7 +551,8 @@ class ChildRepository(BaseRepository[Child, str]):
         """Builds a list of SearchCriteria objects from query and filters."""
         criteria = []
         if query:
-            # Add criteria for a general text query, searching in multiple fields
+            # Add criteria for a general text query, searching in multiple
+            # fields
             criteria.append(
                 SearchCriteria(
                     field="name",
@@ -559,9 +573,7 @@ class ChildRepository(BaseRepository[Child, str]):
         if filters:
             for field, value in filters.items():
                 if isinstance(value, dict) and "operator" in value:
-                    criteria.append(
-                        SearchCriteria(field=field, **value)
-                    )
+                    criteria.append(SearchCriteria(field=field, **value))
                 else:
                     criteria.append(
                         SearchCriteria(field=field, operator="eq", value=value)

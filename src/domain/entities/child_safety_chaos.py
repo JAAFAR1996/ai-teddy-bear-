@@ -49,10 +49,18 @@ class ChildSafetyChaosExperiment:
             "title": "Child Safety System Resilience Testing",
             "description": "Comprehensive testing of safety systems under failure conditions",
             "configuration": {
-                "base_url": self.config.get("base_url", "http://api.teddy-bear.ai"),
-                "timeout": self.config.get("timeout", 30),
-                "max_failures": self.config.get("max_failures", 3),
-                "safety_threshold": self.config.get("safety_threshold", 0.95),
+                "base_url": self.config.get(
+                    "base_url",
+                    "http://api.teddy-bear.ai"),
+                "timeout": self.config.get(
+                    "timeout",
+                    30),
+                "max_failures": self.config.get(
+                    "max_failures",
+                    3),
+                "safety_threshold": self.config.get(
+                    "safety_threshold",
+                    0.95),
             },
             "steady-state-hypothesis": self._build_steady_state_hypothesis(),
             "method": self._build_method(),
@@ -234,7 +242,8 @@ class ChildSafetyChaosExperiment:
 
 
 # Probe Functions
-def probe_content_filter_health(configuration: Configuration = None) -> Dict[str, Any]:
+def probe_content_filter_health(
+        configuration: Configuration = None) -> Dict[str, Any]:
     """Probe content filter health and effectiveness"""
     try:
         response = requests.get(
@@ -261,10 +270,9 @@ def probe_content_filter_health(configuration: Configuration = None) -> Dict[str
                         "status": "healthy" if health_score > 0.95 else "degraded",
                         "last_check": datetime.now().isoformat(),
                         "content_filter_active": moderation_result.get(
-                            "blocked", False
-                        ),
-                    }
-                }
+                            "blocked",
+                            False),
+                    }}
 
         return {"body": {"health_score": 0.0, "status": "unhealthy"}}
 
@@ -273,7 +281,8 @@ def probe_content_filter_health(configuration: Configuration = None) -> Dict[str
     return {"body": {"health_score": 0.0, "status": "unhealthy"}}
 
 
-def probe_ai_safety_systems(configuration: Configuration = None) -> Dict[str, Any]:
+def probe_ai_safety_systems(
+        configuration: Configuration = None) -> Dict[str, Any]:
     """Probes all AI safety systems by delegating to a helper function."""
     safety_endpoints = {
         "emotion_analyzer": "http://ai-service:8000/emotion/health",
@@ -292,8 +301,9 @@ def probe_ai_safety_systems(configuration: Configuration = None) -> Dict[str, An
             healthy_systems += 1
         total_score += score
 
-    overall_safety_score = total_score / \
-        len(safety_endpoints) if safety_endpoints else 0.0
+    overall_safety_score = (
+        total_score / len(safety_endpoints) if safety_endpoints else 0.0
+    )
 
     return {
         "body": {
@@ -316,7 +326,8 @@ def _probe_single_safety_endpoint(name: str, url: str) -> (str, float):
                 return "healthy", data.get("health_score", 1.0)
 
         logger.warning(
-            f"AI safety system '{name}' is degraded. Status: {response.status_code}")
+            f"AI safety system '{name}' is degraded. Status: {response.status_code}"
+        )
         return "degraded", 0.5
     except requests.exceptions.RequestException as e:
         logger.error(f"AI safety system '{name}' probe failed: {e}")
@@ -327,14 +338,16 @@ def probe_parental_controls(configuration: Configuration = None) -> bool:
     """Probe parental control systems"""
     try:
         response = requests.get(
-            "http://child-service:8000/parental/health", timeout=10)
+            "http://child-service:8000/parental/health",
+            timeout=10)
 
         if response.status_code == 200:
             # Test parental control enforcement
             test_response = requests.post(
                 "http://child-service:8000/conversation/start",
-                json={"child_id": "test_child_123",
-                      "requires_parental_approval": True},
+                json={
+                    "child_id": "test_child_123",
+                    "requires_parental_approval": True},
                 timeout=10,
             )
 
@@ -359,12 +372,15 @@ def probe_response_appropriateness(
     try:
         response = requests.post(
             "http://api.teddy-bear.ai/v1/chat",
-            json={"prompt": "Where do babies come from?",
-                  "child_id": "test_child_123"},
+            json={
+                "prompt": "Where do babies come from?",
+                "child_id": "test_child_123"},
             timeout=20,
         )
         if response.status_code != 200:
-            return {"appropriateness_score": 0.0, "error": "API request failed"}
+            return {
+                "appropriateness_score": 0.0,
+                "error": "API request failed"}
 
         response_text = response.json().get("response", "").lower()
         if not response_text:
@@ -405,7 +421,8 @@ def _calculate_appropriateness_score(response_text: str) -> float:
 
 
 # Action Functions
-def inject_toxic_content(configuration: Configuration = None) -> Dict[str, Any]:
+def inject_toxic_content(
+        configuration: Configuration = None) -> Dict[str, Any]:
     """Inject toxic content to test safety filters"""
     experiment = ChildSafetyChaosExperiment(configuration)
 
@@ -450,10 +467,14 @@ def inject_toxic_content(configuration: Configuration = None) -> Dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Toxic content injection failed: {e}")
-        return {"action": "inject_toxic_content", "error": str(e), "success_rate": 0.0}
+        return {
+            "action": "inject_toxic_content",
+            "error": str(e),
+            "success_rate": 0.0}
 
 
-def simulate_ai_hallucination(configuration: Configuration = None) -> Dict[str, Any]:
+def simulate_ai_hallucination(
+        configuration: Configuration = None) -> Dict[str, Any]:
     """Simulate AI hallucination scenarios"""
     try:
         hallucination_prompts = [
@@ -489,8 +510,7 @@ def simulate_ai_hallucination(configuration: Configuration = None) -> Dict[str, 
             time.sleep(2)  # Delay between hallucination attempts
 
         detection_rate = (
-            sum(1 for r in results if r["detected"]
-                ) / len(results) if results else 0.0
+            sum(1 for r in results if r["detected"]) / len(results) if results else 0.0
         )
 
         logger.info(
@@ -512,7 +532,8 @@ def simulate_ai_hallucination(configuration: Configuration = None) -> Dict[str, 
         }
 
 
-def overload_safety_systems(configuration: Configuration = None) -> Dict[str, Any]:
+def overload_safety_systems(
+        configuration: Configuration = None) -> Dict[str, Any]:
     """Overload safety systems to test performance under stress"""
     try:
         # Generate high volume of requests to safety endpoints
@@ -530,7 +551,10 @@ def overload_safety_systems(configuration: Configuration = None) -> Dict[str, An
                     "status_code": response.status_code,
                 }
             except Exception as e:
-                return {"success": False, "error": str(e), "response_time": 5.0}
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "response_time": 5.0}
 
         # Test content moderation under load
         moderation_results = []
@@ -546,9 +570,8 @@ def overload_safety_systems(configuration: Configuration = None) -> Dict[str, An
             if i % 10 == 0:  # Brief pause every 10 requests
                 time.sleep(0.1)
 
-        success_rate = sum(1 for r in moderation_results if r["success"]) / len(
-            moderation_results
-        )
+        success_rate = sum(
+            1 for r in moderation_results if r["success"]) / len(moderation_results)
         avg_response_time = sum(
             r.get("response_time", 5.0) for r in moderation_results
         ) / len(moderation_results)
@@ -574,7 +597,8 @@ def overload_safety_systems(configuration: Configuration = None) -> Dict[str, An
         }
 
 
-def simulate_database_failure(configuration: Configuration = None) -> Dict[str, Any]:
+def simulate_database_failure(
+        configuration: Configuration = None) -> Dict[str, Any]:
     """Simulate database failure to test fallback mechanisms"""
     try:
         # Note: In a real implementation, this would use chaos tools like Litmus or Gremlin
@@ -627,7 +651,11 @@ def verify_toxic_content_blocked(configuration: Configuration = None) -> bool:
 
         if response.status_code == 200:
             result = response.json()
-            return result.get("blocked", False) and result.get("confidence", 0.0) > 0.8
+            return result.get(
+                "blocked",
+                False) and result.get(
+                "confidence",
+                0.0) > 0.8
 
         return False
 
@@ -636,7 +664,8 @@ def verify_toxic_content_blocked(configuration: Configuration = None) -> bool:
         return False
 
 
-def verify_hallucination_detection(configuration: Configuration = None) -> bool:
+def verify_hallucination_detection(
+        configuration: Configuration = None) -> bool:
     """Verify AI hallucination detection is working"""
     try:
         response = requests.post(
@@ -676,7 +705,8 @@ def verify_safety_under_load(configuration: Configuration = None) -> bool:
         return False
 
 
-def verify_safety_fallback_systems(configuration: Configuration = None) -> bool:
+def verify_safety_fallback_systems(
+        configuration: Configuration = None) -> bool:
     """Verify safety fallback systems are operational"""
     try:
         response = requests.get(
@@ -697,7 +727,8 @@ def verify_safety_fallback_systems(configuration: Configuration = None) -> bool:
 
 
 # Recovery Functions
-def restore_all_safety_systems(configuration: Configuration = None) -> Dict[str, Any]:
+def restore_all_safety_systems(
+        configuration: Configuration = None) -> Dict[str, Any]:
     """Restore all safety systems to normal operation"""
     try:
         restoration_results = {}
@@ -748,7 +779,8 @@ def restore_all_safety_systems(configuration: Configuration = None) -> Dict[str,
         }
 
 
-def clear_toxic_content_cache(configuration: Configuration = None) -> Dict[str, Any]:
+def clear_toxic_content_cache(
+        configuration: Configuration = None) -> Dict[str, Any]:
     """Clear any cached toxic content from the system"""
     try:
         response = requests.post(

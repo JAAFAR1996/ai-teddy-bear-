@@ -18,8 +18,13 @@ try:
     from reportlab.lib.pagesizes import A4, letter
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import inch
-    from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer,
-                                    Table, TableStyle)
+    from reportlab.platypus import (
+        Paragraph,
+        SimpleDocTemplate,
+        Spacer,
+        Table,
+        TableStyle,
+    )
 
     REPORTLAB_AVAILABLE = True
 except ImportError:
@@ -32,7 +37,8 @@ class ExportService:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
         if not REPORTLAB_AVAILABLE:
-            self.logger.warning("ReportLab not available - PDF export will be limited")
+            self.logger.warning(
+                "ReportLab not available - PDF export will be limited")
 
     async def export_conversation_history_as_json(
         self, conversations: List[Dict[str, Any]]
@@ -46,7 +52,10 @@ class ExportService:
                 "conversations": conversations,
             }
 
-            return json.dumps(export_data, indent=2, ensure_ascii=False).encode("utf-8")
+            return json.dumps(
+                export_data,
+                indent=2,
+                ensure_ascii=False).encode("utf-8")
 
         except Exception as e:
             self.logger.error(f"Error exporting as JSON: {e}")
@@ -64,17 +73,16 @@ class ExportService:
             for conv in conversations:
                 excel_data.append(
                     {
-                        "Date": conv.get("started_at", ""),
-                        "Duration (minutes)": conv.get("duration_seconds", 0) / 60,
-                        "Messages": conv.get("message_count", 0),
-                        "Topics": ", ".join(conv.get("topics", [])),
-                        "Sentiment": conv.get("sentiment_scores", {}).get(
-                            "positive", 0
-                        ),
-                        "Quality Score": conv.get("quality_score", 0),
-                        "Summary": conv.get("summary", ""),
-                    }
-                )
+                        "Date": conv.get(
+                            "started_at", ""), "Duration (minutes)": conv.get(
+                            "duration_seconds", 0) / 60, "Messages": conv.get(
+                            "message_count", 0), "Topics": ", ".join(
+                            conv.get(
+                                "topics", [])), "Sentiment": conv.get(
+                                "sentiment_scores", {}).get(
+                                    "positive", 0), "Quality Score": conv.get(
+                                        "quality_score", 0), "Summary": conv.get(
+                                            "summary", ""), })
 
             # Create DataFrame
             df = pd.DataFrame(excel_data)
@@ -82,7 +90,10 @@ class ExportService:
             # Write to Excel
             buffer = BytesIO()
             with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-                df.to_excel(writer, sheet_name="Conversation History", index=False)
+                df.to_excel(
+                    writer,
+                    sheet_name="Conversation History",
+                    index=False)
 
                 # Get workbook and worksheet for formatting
                 workbook = writer.book
@@ -105,7 +116,8 @@ class ExportService:
 
                 # Auto-adjust column widths
                 for i, col in enumerate(df.columns):
-                    max_length = max(df[col].astype(str).map(len).max(), len(col))
+                    max_length = max(
+                        df[col].astype(str).map(len).max(), len(col))
                     worksheet.set_column(i, i, min(max_length + 2, 50))
 
             buffer.seek(0)
@@ -138,7 +150,10 @@ class ExportService:
                 textColor=colors.darkblue,
             )
 
-            story.append(Paragraph(f"Conversation History - {child_name}", title_style))
+            story.append(
+                Paragraph(
+                    f"Conversation History - {child_name}",
+                    title_style))
             story.append(Spacer(1, 20))
 
             # Summary section
@@ -149,9 +164,8 @@ class ExportService:
             ]
 
             if conversations:
-                total_duration = (
-                    sum(c.get("duration_seconds", 0) for c in conversations) / 60
-                )
+                total_duration = (sum(c.get("duration_seconds", 0)
+                                      for c in conversations) / 60)
                 avg_duration = (
                     total_duration / len(conversations) if conversations else 0
                 )
@@ -183,7 +197,10 @@ class ExportService:
 
             # Conversations table
             if conversations:
-                story.append(Paragraph("Detailed Conversations", styles["Heading2"]))
+                story.append(
+                    Paragraph(
+                        "Detailed Conversations",
+                        styles["Heading2"]))
 
                 # Prepare table data
                 table_data = [
@@ -284,9 +301,10 @@ class ExportService:
                     "generated_at": datetime.now().isoformat(),
                     "analytics": analytics_data,
                 }
-                return json.dumps(export_data, indent=2, ensure_ascii=False).encode(
-                    "utf-8"
-                )
+                return json.dumps(
+                    export_data,
+                    indent=2,
+                    ensure_ascii=False).encode("utf-8")
 
             elif format_type.lower() == "excel":
                 return await self._export_analytics_excel(analytics_data, child_name)
@@ -364,7 +382,10 @@ class ExportService:
         story = []
 
         # Title
-        story.append(Paragraph(f"Analytics Report - {child_name}", styles["Title"]))
+        story.append(
+            Paragraph(
+                f"Analytics Report - {child_name}",
+                styles["Title"]))
         story.append(Spacer(1, 20))
 
         # Metrics table

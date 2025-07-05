@@ -6,16 +6,25 @@ import asyncio
 
 import pytest
 
-from src.domain.exceptions.base import (ErrorContext, ErrorSeverity,
-                                        ExternalServiceException,
-                                        InappropriateContentException,
-                                        ValidationException)
-from src.infrastructure.decorators import (RetryConfig, child_safe,
-                                           handle_exceptions, validate_input,
-                                           with_retry)
-from src.infrastructure.exception_handling import (CircuitBreaker,
-                                                   CircuitState,
-                                                   GlobalExceptionHandler)
+from src.domain.exceptions.base import (
+    ErrorContext,
+    ErrorSeverity,
+    ExternalServiceException,
+    InappropriateContentException,
+    ValidationException,
+)
+from src.infrastructure.decorators import (
+    RetryConfig,
+    child_safe,
+    handle_exceptions,
+    validate_input,
+    with_retry,
+)
+from src.infrastructure.exception_handling import (
+    CircuitBreaker,
+    CircuitState,
+    GlobalExceptionHandler,
+)
 
 
 class TestExceptionHandling:
@@ -200,14 +209,15 @@ class TestExceptionHandling:
         """اختبار Exception Hierarchy"""
         # InappropriateContentException
         exc = InappropriateContentException(
-            content_type="text", violation_reason="Contains inappropriate language"
-        )
+            content_type="text",
+            violation_reason="Contains inappropriate language")
         assert exc.severity == ErrorSeverity.CRITICAL
         assert exc.recoverable is False
         assert exc.error_code == "INAPPROPRIATE_CONTENT"
 
         # ValidationException
-        val_exc = ValidationException(message="Invalid email", field_name="email")
+        val_exc = ValidationException(
+            message="Invalid email", field_name="email")
         assert val_exc.severity == ErrorSeverity.LOW
         assert val_exc.recoverable is True
         assert val_exc.field_name == "email"

@@ -40,13 +40,22 @@ class TestContext:
         summary_parts = []
 
         if self.given_descriptions:
-            summary_parts.append("Given:\n  " + "\n  ".join(self.given_descriptions))
+            summary_parts.append(
+                "Given:\n  " +
+                "\n  ".join(
+                    self.given_descriptions))
 
         if self.when_descriptions:
-            summary_parts.append("When:\n  " + "\n  ".join(self.when_descriptions))
+            summary_parts.append(
+                "When:\n  " +
+                "\n  ".join(
+                    self.when_descriptions))
 
         if self.then_descriptions:
-            summary_parts.append("Then:\n  " + "\n  ".join(self.then_descriptions))
+            summary_parts.append(
+                "Then:\n  " +
+                "\n  ".join(
+                    self.then_descriptions))
 
         return "\n\n".join(summary_parts)
 
@@ -77,7 +86,10 @@ class TestContextBuilder:
 class ActionExecutor:
     """Executor for test actions"""
 
-    def __init__(self, action: Callable, context: Optional[TestContext] = None):
+    def __init__(
+            self,
+            action: Callable,
+            context: Optional[TestContext] = None):
         self.action = action
         self.context = context or TestContext()
         self.result = None
@@ -91,11 +103,14 @@ class ActionExecutor:
             else:
                 self.result = self.action(*args, **kwargs)
 
-            logger.debug(f"Action executed successfully: {self.action.__name__}")
+            logger.debug(
+                f"Action executed successfully: {self.action.__name__}")
 
         except Exception as e:
             self.exception = e
-            logger.error(f"Action failed: {self.action.__name__}", error=str(e))
+            logger.error(
+                f"Action failed: {self.action.__name__}",
+                error=str(e))
 
         return self
 
@@ -156,7 +171,10 @@ class BDDTestCase:
         self.steps_executed.append(("when", description))
         return self
 
-    def then(self, description: str, assertion_func: Callable) -> "BDDTestCase":
+    def then(
+            self,
+            description: str,
+            assertion_func: Callable) -> "BDDTestCase":
         """Define a then assertion"""
         self.context.add_then(description)
 
@@ -174,11 +192,17 @@ class BDDTestCase:
         """Add another given condition"""
         return self.given(description, setup_func)
 
-    def and_when(self, description: str, action_func: Callable) -> "BDDTestCase":
+    def and_when(
+            self,
+            description: str,
+            action_func: Callable) -> "BDDTestCase":
         """Add another when action"""
         return self.when(description, action_func)
 
-    def and_then(self, description: str, assertion_func: Callable) -> "BDDTestCase":
+    def and_then(
+            self,
+            description: str,
+            assertion_func: Callable) -> "BDDTestCase":
         """Add another then assertion"""
         return self.then(description, assertion_func)
 

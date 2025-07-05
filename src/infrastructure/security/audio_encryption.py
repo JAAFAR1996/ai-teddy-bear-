@@ -84,7 +84,9 @@ class AudioEncryptionManager:
         """Generate or load master encryption key"""
 
         # In production, this would be loaded from secure storage (Vault)
-        master_key_path = os.getenv("AUDIO_MASTER_KEY_PATH", "/tmp/.audio_master_key")
+        master_key_path = os.getenv(
+            "AUDIO_MASTER_KEY_PATH",
+            "/tmp/.audio_master_key")
 
         try:
             if os.path.exists(master_key_path):
@@ -105,7 +107,8 @@ class AudioEncryptionManager:
             # Fallback to in-memory key (less secure)
             return secrets.token_bytes(32)
 
-    async def create_encryption_session(self, device_id: str, user_id: str) -> str:
+    async def create_encryption_session(
+            self, device_id: str, user_id: str) -> str:
         """Create new encryption session for audio communication"""
 
         session_id = f"audio_sess_{secrets.token_hex(16)}"
@@ -208,7 +211,10 @@ class AudioEncryptionManager:
             return packet
 
         except Exception as e:
-            logger.error("Audio encryption failed", session_id=session_id, error=str(e))
+            logger.error(
+                "Audio encryption failed",
+                session_id=session_id,
+                error=str(e))
             raise
 
     async def decrypt_audio_data(self, packet: EncryptedAudioPacket) -> bytes:
@@ -248,7 +254,10 @@ class AudioEncryptionManager:
             return decrypted_data
 
         except Exception as e:
-            logger.error("Audio decryption failed", session_id=session_id, error=str(e))
+            logger.error(
+                "Audio decryption failed",
+                session_id=session_id,
+                error=str(e))
             raise
 
     def _generate_nonce(self, context: AudioEncryptionContext) -> bytes:
@@ -256,7 +265,9 @@ class AudioEncryptionManager:
 
         # Create nonce from session ID, counter, and timestamp
         # This ensures uniqueness even in high-frequency scenarios
-        timestamp = int(datetime.utcnow().timestamp() * 1000000)  # microseconds
+        timestamp = int(
+            datetime.utcnow().timestamp() *
+            1000000)  # microseconds
 
         # Combine session info, counter, and timestamp
         nonce_data = struct.pack(">Q", timestamp) + struct.pack(
@@ -264,7 +275,8 @@ class AudioEncryptionManager:
         )
 
         # Hash to get exactly 12 bytes for GCM
-        nonce_hash = hashlib.sha256(nonce_data + context.session_id.encode()).digest()
+        nonce_hash = hashlib.sha256(
+            nonce_data + context.session_id.encode()).digest()
 
         return nonce_hash[: self.nonce_size]
 
@@ -286,7 +298,11 @@ class AudioEncryptionManager:
         self.cipher_cache[key] = cipher
         return cipher
 
-    def _calculate_checksum(self, data: bytes, nonce: bytes, tag: bytes) -> str:
+    def _calculate_checksum(
+            self,
+            data: bytes,
+            nonce: bytes,
+            tag: bytes) -> str:
         """Calculate checksum for integrity verification"""
 
         # Combine all components for checksum
@@ -349,7 +365,8 @@ class AudioEncryptionManager:
         logger.info("Encryption session closed", session_id=session_id)
         return True
 
-    async def get_session_info(self, session_id: str) -> Optional[Dict[str, any]]:
+    async def get_session_info(
+            self, session_id: str) -> Optional[Dict[str, any]]:
         """Get information about encryption session"""
 
         if session_id not in self.active_sessions:
@@ -396,12 +413,14 @@ class AudioEncryptionManager:
             encrypted_packets.append(packet)
 
         logger.info(
-            "Audio stream encrypted", session_id=session_id, chunks=len(audio_chunks)
-        )
+            "Audio stream encrypted",
+            session_id=session_id,
+            chunks=len(audio_chunks))
 
         return encrypted_packets
 
-    async def decrypt_audio_stream(self, packets: List[EncryptedAudioPacket]) -> bytes:
+    async def decrypt_audio_stream(
+            self, packets: List[EncryptedAudioPacket]) -> bytes:
         """Decrypt multiple audio packets back to stream"""
 
         # Sort packets by sequence number
@@ -417,8 +436,9 @@ class AudioEncryptionManager:
         full_audio = b"".join(decrypted_chunks)
 
         logger.info(
-            "Audio stream decrypted", packets=len(packets), total_size=len(full_audio)
-        )
+            "Audio stream decrypted",
+            packets=len(packets),
+            total_size=len(full_audio))
 
         return full_audio
 
@@ -472,7 +492,10 @@ def get_audio_encryption_manager() -> AudioEncryptionManager:
 # Convenience functions
 
 
-async def encrypt_child_audio(device_id: str, user_id: str, audio_data: bytes) -> str:
+async def encrypt_child_audio(
+        device_id: str,
+        user_id: str,
+        audio_data: bytes) -> str:
     """Encrypt audio data from child device"""
     manager = get_audio_encryption_manager()
 

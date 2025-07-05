@@ -34,7 +34,8 @@ class SecureApplicationService:
 
     async def initialize(self, environment: str = "development"):
         """Initialize all security components"""
-        logger.info(f"Initializing secure application service for {environment}")
+        logger.info(
+            f"Initializing secure application service for {environment}")
 
         # 1. Initialize secrets manager
         self.secrets_manager = create_secrets_manager(
@@ -64,22 +65,26 @@ class SecureApplicationService:
         """Setup recovery strategies for different exception types"""
         # Retry strategy for external services
         global_exception_handler.register_strategy(
-            ExternalServiceException, RetryStrategy(max_retries=3, base_delay=1.0)
-        )
+            ExternalServiceException, RetryStrategy(
+                max_retries=3, base_delay=1.0))
 
         # Circuit breaker for AI services
         global_exception_handler.register_strategy(
-            ExternalServiceException, CircuitBreakerStrategy(failure_threshold=5, recovery_timeout=60.0)
-        )
+            ExternalServiceException, CircuitBreakerStrategy(
+                failure_threshold=5, recovery_timeout=60.0))
 
         # Fallback for child safety
         async def safety_fallback():
-            return {"response": "I'm sorry, I couldn't understand that. Can you try again?"}
+            return {
+                "response": "I'm sorry, I couldn't understand that. Can you try again?"}
 
-        global_exception_handler.register_strategy(ChildSafetyException, FallbackStrategy(safety_fallback))
+        global_exception_handler.register_strategy(
+            ChildSafetyException, FallbackStrategy(safety_fallback))
 
-    @handle_exceptions(recovery_strategy=RetryStrategy(), fallback_value={"error": "Service temporarily unavailable"})
-    async def process_child_request(self, child_id: str, request_data: Dict[str, Any]) -> Dict[str, Any]:
+    @handle_exceptions(recovery_strategy=RetryStrategy(),
+                       fallback_value={"error": "Service temporarily unavailable"})
+    async def process_child_request(
+            self, child_id: str, request_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process a child's request with full security measures"""
 
         # Set child context for exception handling
@@ -87,13 +92,17 @@ class SecureApplicationService:
 
         # Use correlation context
         with CorrelationContext() as correlation_id:
-            logger.info("Processing child request", child_id=child_id, correlation_id=correlation_id)
+            logger.info(
+                "Processing child request",
+                child_id=child_id,
+                correlation_id=correlation_id)
 
             # 1. Get AI service credentials from secrets manager
             ai_key = await self.secrets_manager.get_secret("openai_api_key", provider=SecretProvider.HASHICORP_VAULT)
 
             if not ai_key:
-                raise ExternalServiceException(service_name="OpenAI", message="API key not found")
+                raise ExternalServiceException(
+                    service_name="OpenAI", message="API key not found")
 
             # 2. Get configuration
             ai_config = await self.config_manager.get("ai_services.openai")
@@ -103,21 +112,25 @@ class SecureApplicationService:
             if "expression" in request_data:
                 try:
                     result = self.expression_parser.parse(
-                        request_data["expression"],
-                        context={"variables": {"age": 10, "score": 85}, "allowed_names": {"age", "score"}},
-                    )
+                        request_data["expression"], context={
+                            "variables": {
+                                "age": 10, "score": 85}, "allowed_names": {
+                                "age", "score"}}, )
 
                     if result.success:
                         request_data["evaluated_expression"] = result.value
                     else:
-                        logger.warning(f"Expression evaluation failed: {result.error}")
+                        logger.warning(
+                            f"Expression evaluation failed: {result.error}")
                 except Exception as e:
                     logger.error(f"Expression parsing error: {e}")
 
             # 4. Template rendering (if needed)
             if "template" in request_data:
                 try:
-                    rendered = self.template_engine.render(request_data["template"], {"child_name": "Alice", "age": 10})
+                    rendered = self.template_engine.render(
+                        request_data["template"], {
+                            "child_name": "Alice", "age": 10})
                     request_data["rendered_template"] = rendered
                 except Exception as e:
                     logger.error(f"Template rendering error: {e}")
@@ -135,7 +148,8 @@ class SecureApplicationService:
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
-    async def _call_ai_service(self, api_key: str, config: Dict[str, Any], request_data: Dict[str, Any]) -> str:
+    async def _call_ai_service(
+            self, api_key: str, config: Dict[str, Any], request_data: Dict[str, Any]) -> str:
         """Call AI service with proper error handling"""
         # Simulated AI call
         await asyncio.sleep(0.1)  # Simulate network delay
@@ -143,7 +157,8 @@ class SecureApplicationService:
         # In real implementation, would use actual AI service
         return "This is a safe response for children."
 
-    async def _apply_safety_filters(self, response: str, safety_config: Dict[str, Any]) -> str:
+    async def _apply_safety_filters(
+            self, response: str, safety_config: Dict[str, Any]) -> str:
         """Apply child safety filters to response"""
         # In real implementation, would use content moderation
 
@@ -152,7 +167,10 @@ class SecureApplicationService:
 
         for word in unsafe_words:
             if word in response.lower():
-                raise ChildSafetyException("Unsafe content detected", content_type="text", content_snippet=word)
+                raise ChildSafetyException(
+                    "Unsafe content detected",
+                    content_type="text",
+                    content_snippet=word)
 
         return response
 
@@ -160,7 +178,11 @@ class SecureApplicationService:
         """Demonstrate secret rotation"""
         logger.info("Starting secret rotation")
 
-        secrets_to_rotate = ["openai_api_key", "anthropic_api_key", "database_password", "jwt_secret_key"]
+        secrets_to_rotate = [
+            "openai_api_key",
+            "anthropic_api_key",
+            "database_password",
+            "jwt_secret_key"]
 
         for secret_name in secrets_to_rotate:
             try:
@@ -213,7 +235,7 @@ async def main():
 
     except Exception as e:
 
-    # Example 2: Rotate secrets
+        # Example 2: Rotate secrets
     await service.rotate_all_secrets()
 
     # Example 3: Get audit report
@@ -228,10 +250,12 @@ async def main():
         result = safe_ast.literal_eval("__import__('os').system('ls')")
     except ValueError as e:
 
-    # Example 5: Configuration access
+        # Example 5: Configuration access
     db_config = await service.config_manager.get("database")
 
 # Security best practices implementation
+
+
 class SecurityBestPractices:
     """Documentation of security best practices"""
 
@@ -303,7 +327,7 @@ class SecurityMigrationGuide:
             """
         # Before (INSECURE):
         api_key = "sk-1234567890abcdef"
-        
+
         # After (SECURE):
         secrets_manager = create_secrets_manager()
         api_key = await secrets_manager.get_secret("openai_api_key")
@@ -317,7 +341,7 @@ class SecurityMigrationGuide:
             """
         # Before (INSECURE):
         result = ast.literal_eval(user_input)
-        
+
         # After (SECURE):
         parser = create_safe_parser()
         result = parser.parse(user_input)

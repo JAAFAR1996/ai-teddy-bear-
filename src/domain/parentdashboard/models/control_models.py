@@ -129,7 +129,8 @@ class ParentalControl:
         if (
             self.max_session_minutes <= 0 or self.max_session_minutes > 120
         ):  # Max 2 hours
-            raise ValueError("Session time limit must be between 1-120 minutes")
+            raise ValueError(
+                "Session time limit must be between 1-120 minutes")
 
         if self.max_session_minutes > self.max_daily_minutes:
             raise ValueError("Session limit cannot exceed daily limit")
@@ -141,7 +142,8 @@ class ParentalControl:
 
         overlap = blocked_set & allowed_set
         if overlap:
-            raise ValueError(f"Topics cannot be both allowed and blocked: {overlap}")
+            raise ValueError(
+                f"Topics cannot be both allowed and blocked: {overlap}")
 
     def is_topic_allowed(self, topic: str) -> bool:
         """Check if topic is allowed based on settings"""
@@ -208,7 +210,8 @@ class AccessSchedule(Base):
 
         next_date = now.date()
         next_datetime = datetime.combine(next_date, self.start_time)
-        next_datetime = next_datetime.replace(day=next_datetime.day + days_ahead)
+        next_datetime = next_datetime.replace(
+            day=next_datetime.day + days_ahead)
 
         return int((next_datetime - now).total_seconds() / 60)
 

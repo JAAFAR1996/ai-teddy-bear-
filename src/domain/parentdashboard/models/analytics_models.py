@@ -45,8 +45,12 @@ class ConversationLog:
 
     def has_educational_content(self) -> bool:
         """Check if conversation had educational content"""
-        educational_topics = {"education",
-                              "science", "math", "learning", "study"}
+        educational_topics = {
+            "education",
+            "science",
+            "math",
+            "learning",
+            "study"}
         return bool(set(self.topics_discussed) & educational_topics)
 
     def get_quality_score(self) -> float:
@@ -190,9 +194,11 @@ class AnalyticsData:
 
     def get_top_topics(self, limit: int = 5) -> List[tuple]:
         """Get top discussed topics"""
-        return sorted(self.topics_frequency.items(), key=lambda x: x[1], reverse=True)[
-            :limit
-        ]
+        return sorted(
+            self.topics_frequency.items(),
+            key=lambda x: x[1],
+            reverse=True)[
+            :limit]
 
     def get_sentiment_summary(self) -> str:
         """Get sentiment summary"""

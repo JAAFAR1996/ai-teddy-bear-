@@ -24,6 +24,7 @@ logger = structlog.get_logger(__name__)
 # VALIDATION SERVICES (EXTRACT FUNCTION REFACTORING)
 # =============================================================================
 
+
 class IssueValidationService:
     """
     Extracted validation logic to reduce cyclomatic complexity.
@@ -104,15 +105,18 @@ class IssueDataValidator:
         """Validate and clean optional fields"""
         # Validate severity
         issue_data.severity = self.validator.validate_severity_level(
-            issue_data.severity)
+            issue_data.severity
+        )
 
         # Clean component
         issue_data.component = self.validator.clean_and_validate_component(
-            issue_data.component)
+            issue_data.component
+        )
 
         # Clean error type
         issue_data.error_type = self.validator.clean_and_validate_error_type(
-            issue_data.error_type)
+            issue_data.error_type
+        )
 
         # Clean stacktrace
         issue_data.stacktrace = self.validator.clean_stacktrace(
@@ -148,12 +152,14 @@ class IssueQueryValidator:
 # PARAMETER OBJECTS (IMPROVED WITH LOW COMPLEXITY VALIDATION)
 # =============================================================================
 
+
 @dataclass
 class IssueData:
     """
     Parameter object for issue creation and reporting.
     Encapsulates all data needed to create or report an issue.
     """
+
     title: str
     description: str
     severity: str = "medium"
@@ -177,6 +183,7 @@ class IssueData:
 @dataclass
 class IssueQueryParams:
     """Parameter object for issue queries to reduce argument count"""
+
     status: Optional[str] = None
     severity: Optional[str] = None
     component: Optional[str] = None
@@ -200,6 +207,7 @@ class IssueQueryParams:
 @dataclass
 class IssueUpdateData:
     """Parameter object for updating issues"""
+
     issue_id: str
     status: Optional[str] = None
     severity: Optional[str] = None
@@ -247,17 +255,20 @@ class IssueTrackerService:
 
             self.config = {
                 "enable_issue_tracking": monitoring_config.get(
-                    "enable_issue_tracking", True
-                ),
+                    "enable_issue_tracking",
+                    True),
                 "alert_email": monitoring_config.get(
-                    "alert_email", "admin@aiteddybear.com"
-                ),
-                "log_retention_days": monitoring_config.get("log_retention_days", 30),
+                    "alert_email",
+                    "admin@aiteddybear.com"),
+                "log_retention_days": monitoring_config.get(
+                    "log_retention_days",
+                    30),
             }
 
         except Exception as e:
             self.logger.error(
-                "Failed to load issue tracker config", error=str(e))
+                "Failed to load issue tracker config",
+                error=str(e))
             self.config = {"enable_issue_tracking": True}
 
     def _init_database(self) -> Any:
@@ -420,7 +431,8 @@ class IssueTrackerService:
 
             if updated:
                 self.logger.info(
-                    "Issue updated", issue_id=update_data.issue_id)
+                    "Issue updated",
+                    issue_id=update_data.issue_id)
 
             return updated
 
@@ -428,7 +440,9 @@ class IssueTrackerService:
             self.logger.error("Failed to update issue", error=str(e))
             return False
 
-    async def search_issues(self, query_params: IssueQueryParams) -> List[Dict]:
+    async def search_issues(
+            self,
+            query_params: IssueQueryParams) -> List[Dict]:
         """
         البحث في المشاكل بناءً على المعايير المحددة.
         Refactored to use parameter object pattern.
@@ -502,7 +516,7 @@ class IssueTrackerService:
 
             cursor.execute(
                 """
-                SELECT 
+                SELECT
                     COUNT(*) as total_issues,
                     SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as open_issues,
                     SUM(CASE WHEN severity = 'critical' THEN 1 ELSE 0 END) as critical_issues
@@ -515,7 +529,7 @@ class IssueTrackerService:
             cursor.execute(
                 """
                 SELECT component, COUNT(*) as count
-                FROM issues 
+                FROM issues
                 WHERE status = 'open'
                 GROUP BY component
                 ORDER BY count DESC
@@ -581,7 +595,7 @@ class IssueTrackerService:
             severity=severity,
             component=component,
             error_type=error_type,
-            stacktrace=stacktrace
+            stacktrace=stacktrace,
         )
         return await self.create_issue(issue_data)
 
@@ -591,7 +605,7 @@ class IssueTrackerService:
         severity: str = None,
         component: str = None,
         limit: int = 10,
-        offset: int = 0
+        offset: int = 0,
     ) -> List[Dict]:
         """
         Legacy method for backward compatibility.
@@ -617,7 +631,7 @@ class IssueTrackerService:
             severity=severity,
             component=component,
             limit=limit,
-            offset=offset
+            offset=offset,
         )
         return await self.search_issues(query_params)
 
@@ -689,7 +703,7 @@ async def report_issue_legacy(
         description=description,
         severity=severity,
         component=component,
-        error_type=error_type
+        error_type=error_type,
     )
     return await report_issue(issue_data)
 
@@ -728,7 +742,10 @@ async def report_exception(
         return None
 
 
-async def update_issue_status(issue_id: str, status: str, notes: str = None) -> bool:
+async def update_issue_status(
+        issue_id: str,
+        status: str,
+        notes: str = None) -> bool:
     """
     تحديث حالة المشكلة.
     Modern function using Parameter Object pattern.
@@ -744,10 +761,7 @@ async def update_issue_status(issue_id: str, status: str, notes: str = None) -> 
     """
     try:
         update_data = IssueUpdateData(
-            issue_id=issue_id,
-            status=status,
-            notes=notes
-        )
+            issue_id=issue_id, status=status, notes=notes)
 
         tracker = get_issue_tracker()
         return await tracker.update_issue(update_data)
@@ -756,7 +770,9 @@ async def update_issue_status(issue_id: str, status: str, notes: str = None) -> 
         return False
 
 
-async def search_issues_by_component(component: str, limit: int = 10) -> List[Dict]:
+async def search_issues_by_component(
+        component: str,
+        limit: int = 10) -> List[Dict]:
     """
     البحث عن المشاكل حسب المكون.
     Modern function using Parameter Object pattern.
@@ -770,10 +786,7 @@ async def search_issues_by_component(component: str, limit: int = 10) -> List[Di
         List[Dict]: List of matching issues
     """
     try:
-        query_params = IssueQueryParams(
-            component=component,
-            limit=limit
-        )
+        query_params = IssueQueryParams(component=component, limit=limit)
 
         tracker = get_issue_tracker()
         return await tracker.search_issues(query_params)
@@ -804,7 +817,7 @@ async def get_system_health() -> Dict:
             "total_issues": stats.get("total_issues", 0),
             "critical_issues": critical_issues,
             "high_issues": high_issues,
-            "last_check": datetime.utcnow().isoformat()
+            "last_check": datetime.utcnow().isoformat(),
         }
 
     except Exception as e:
@@ -812,13 +825,14 @@ async def get_system_health() -> Dict:
         return {
             "status": "unknown",
             "error": str(e),
-            "last_check": datetime.utcnow().isoformat()
+            "last_check": datetime.utcnow().isoformat(),
         }
 
 
 # =============================================================================
 # HELPER FUNCTIONS FOR PARAMETER OBJECTS
 # =============================================================================
+
 
 class IssueDataFactory:
     """Factory helper for creating Parameter Objects"""
@@ -830,7 +844,7 @@ class IssueDataFactory:
         severity: str = "medium",
         component: str = "unknown",
         error_type: str = "runtime_error",
-        stacktrace: Optional[str] = None
+        stacktrace: Optional[str] = None,
     ) -> IssueData:
         """Helper to create IssueData from individual arguments"""
         return IssueData(
@@ -839,7 +853,7 @@ class IssueDataFactory:
             severity=severity,
             component=component,
             error_type=error_type,
-            stacktrace=stacktrace
+            stacktrace=stacktrace,
         )
 
     @staticmethod
@@ -848,7 +862,7 @@ class IssueDataFactory:
         severity: Optional[str] = None,
         component: Optional[str] = None,
         limit: int = 10,
-        offset: int = 0
+        offset: int = 0,
     ) -> IssueQueryParams:
         """Helper to create IssueQueryParams from individual arguments"""
         return IssueQueryParams(
@@ -856,7 +870,7 @@ class IssueDataFactory:
             severity=severity,
             component=component,
             limit=limit,
-            offset=offset
+            offset=offset,
         )
 
     @staticmethod
@@ -864,14 +878,11 @@ class IssueDataFactory:
         issue_id: str,
         status: Optional[str] = None,
         severity: Optional[str] = None,
-        notes: Optional[str] = None
+        notes: Optional[str] = None,
     ) -> IssueUpdateData:
         """Helper to create IssueUpdateData from individual arguments"""
         return IssueUpdateData(
-            issue_id=issue_id,
-            status=status,
-            severity=severity,
-            notes=notes
+            issue_id=issue_id, status=status, severity=severity, notes=notes
         )
 
 
@@ -879,16 +890,10 @@ class IssueDataFactory:
 _issue_factory = IssueDataFactory()
 
 
-def create_issue_data(
-    title: str,
-    description: str,
-    **kwargs
-) -> IssueData:
+def create_issue_data(title: str, description: str, **kwargs) -> IssueData:
     """Convenience function to create IssueData"""
     return _issue_factory.create_issue_data(
-        title=title,
-        description=description,
-        **kwargs
+        title=title, description=description, **kwargs
     )
 
 
@@ -899,10 +904,7 @@ def create_query_params(**kwargs) -> IssueQueryParams:
 
 def create_update_data(issue_id: str, **kwargs) -> IssueUpdateData:
     """Convenience function to create IssueUpdateData"""
-    return _issue_factory.create_update_data(
-        issue_id=issue_id,
-        **kwargs
-    )
+    return _issue_factory.create_update_data(issue_id=issue_id, **kwargs)
 
 
 # =============================================================================
@@ -912,30 +914,25 @@ def create_update_data(issue_id: str, **kwargs) -> IssueUpdateData:
 __all__ = [
     # Main service class
     "IssueTrackerService",
-
     # Parameter objects
     "IssueData",
     "IssueQueryParams",
     "IssueUpdateData",
-
     # Validation services
     "IssueValidationService",
     "IssueDataValidator",
     "IssueQueryValidator",
-
     # Helper factory
     "IssueDataFactory",
-
     # Convenience functions
     "create_issue_data",
     "create_query_params",
     "create_update_data",
-
     # Main functions
     "report_issue",
     "report_issue_legacy",
     "report_exception",
     "update_issue_status",
     "search_issues_by_component",
-    "get_system_health"
+    "get_system_health",
 ]

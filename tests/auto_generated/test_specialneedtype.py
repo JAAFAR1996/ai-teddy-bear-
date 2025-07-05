@@ -31,7 +31,8 @@ class TestSpecialNeedType:
         assert True  # Placeholder test
 
     @patch("structlog.get_logger")
-    def test_specialneedtype_with_mocked_logger(self, mock_logger, specialneedtype):
+    def test_specialneedtype_with_mocked_logger(
+            self, mock_logger, specialneedtype):
         """Test SpecialNeedType with mocked logger"""
         # TODO: Add logger-specific tests
         assert True  # Placeholder test

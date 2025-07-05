@@ -1,6 +1,4 @@
-
-from src.core.domain.services.content_moderator import (ContentModerator,
-                                                        ProfanityRule)
+from src.core.domain.services.content_moderator import ContentModerator, ProfanityRule
 
 
 class TestContentModerator:

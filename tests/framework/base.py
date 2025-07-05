@@ -5,7 +5,7 @@ Base Test Classes - كلاسات الأساس لجميع الاختبارات
 import asyncio
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import (Any, Awaitable, Callable, Dict, Generic, TypeVar)
+from typing import Any, Awaitable, Callable, Dict, Generic, TypeVar
 
 import pytest
 import structlog
@@ -13,8 +13,11 @@ from faker import Faker
 
 from .bdd import ActionExecutor, TestContextBuilder
 from .builders import MockFactory, TestDataBuilder
-from .validators import (AgeAppropriateContentGenerator,
-                         ContentSafetyValidator, COPPAComplianceChecker)
+from .validators import (
+    AgeAppropriateContentGenerator,
+    ContentSafetyValidator,
+    COPPAComplianceChecker,
+)
 
 T = TypeVar("T")
 
@@ -36,8 +39,9 @@ class BaseTestCase(ABC, Generic[T]):
         self.test_context = {
             "test_id": self.faker.uuid4(),
             "test_name": (
-                self._testMethodName if hasattr(self, "_testMethodName") else "unknown"
-            ),
+                self._testMethodName if hasattr(
+                    self,
+                    "_testMethodName") else "unknown"),
             "start_time": self.test_start_time,
         }
 
@@ -48,8 +52,13 @@ class BaseTestCase(ABC, Generic[T]):
         # Cleanup
         await self.cleanup()
 
-        test_duration = (datetime.utcnow() - self.test_start_time).total_seconds()
-        logger.info("Test completed", duration=test_duration, **self.test_context)
+        test_duration = (
+            datetime.utcnow() -
+            self.test_start_time).total_seconds()
+        logger.info(
+            "Test completed",
+            duration=test_duration,
+            **self.test_context)
 
     @abstractmethod
     async def cleanup(self):
@@ -139,15 +148,18 @@ class ChildSafetyTestCase(BaseTestCase):
         }
 
         self.safe_topics = {
-            "educational": ["learn", "count", "alphabet", "colors", "shapes"],
-            "stories": ["once upon a time", "adventure", "friendship", "animals"],
-            "games": ["let's play", "imagine", "pretend", "fun"],
-            "positive": ["happy", "kind", "help", "share", "please"],
-        }
+            "educational": [
+                "learn", "count", "alphabet", "colors", "shapes"], "stories": [
+                "once upon a time", "adventure", "friendship", "animals"], "games": [
+                "let's play", "imagine", "pretend", "fun"], "positive": [
+                    "happy", "kind", "help", "share", "please"], }
 
         yield
 
-    def generate_safe_content(self, age_group: int, topic: str = "general") -> str:
+    def generate_safe_content(
+            self,
+            age_group: int,
+            topic: str = "general") -> str:
         """توليد محتوى آمن للاختبار"""
         return self.age_appropriate_generator.generate(age_group, topic)
 
@@ -164,7 +176,11 @@ class ChildSafetyTestCase(BaseTestCase):
         result = self.content_validator.validate(content, age)
         assert result.is_safe, f"Content deemed unsafe: {result.reason}"
 
-    def assert_content_unsafe(self, content: str, age: int, expected_violation: str):
+    def assert_content_unsafe(
+            self,
+            content: str,
+            age: int,
+            expected_violation: str):
         """التحقق من اكتشاف المحتوى غير الآمن"""
         result = self.content_validator.validate(content, age)
         assert not result.is_safe, "Content should be detected as unsafe"
@@ -208,7 +224,8 @@ class PerformanceTestCase(BaseTestCase):
         self.performance_metrics["start_memory"] = (
             psutil.Process().memory_info().rss / 1024 / 1024
         )
-        self.performance_metrics["start_cpu"] = psutil.cpu_percent(interval=0.1)
+        self.performance_metrics["start_cpu"] = psutil.cpu_percent(
+            interval=0.1)
 
     def stop_performance_tracking(self) -> Dict[str, Any]:
         """إيقاف تتبع الأداء وإرجاع النتائج"""

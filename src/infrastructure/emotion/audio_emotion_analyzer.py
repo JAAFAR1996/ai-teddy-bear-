@@ -1,4 +1,4 @@
-﻿"""Audio-based emotion analysis infrastructure."""
+"""Audio-based emotion analysis infrastructure."""
 
 from typing import Dict, Optional
 
@@ -38,18 +38,17 @@ class AudioEmotionAnalyzer:
             logger.error(f" Audio analysis failed: {e}")
             return None
 
-    def _extract_features(self, audio: np.ndarray, sr: int) -> Dict[str, float]:
+    def _extract_features(self, audio: np.ndarray,
+                          sr: int) -> Dict[str, float]:
         """Extract audio features."""
         features = {}
 
         # Pitch features
         pitches, magnitudes = librosa.piptrack(y=audio, sr=sr)
-        features["pitch_mean"] = (
-            np.mean(pitches[pitches > 0]) if len(pitches[pitches > 0]) > 0 else 0
-        )
-        features["pitch_std"] = (
-            np.std(pitches[pitches > 0]) if len(pitches[pitches > 0]) > 0 else 0
-        )
+        features["pitch_mean"] = (np.mean(pitches[pitches > 0]) if len(
+            pitches[pitches > 0]) > 0 else 0)
+        features["pitch_std"] = (np.std(pitches[pitches > 0]) if len(
+            pitches[pitches > 0]) > 0 else 0)
 
         # Energy features
         features["rms_mean"] = np.mean(librosa.feature.rms(y=audio))
@@ -59,7 +58,8 @@ class AudioEmotionAnalyzer:
         features["spectral_centroid"] = np.mean(
             librosa.feature.spectral_centroid(y=audio, sr=sr)
         )
-        features["zcr_mean"] = np.mean(librosa.feature.zero_crossing_rate(audio))
+        features["zcr_mean"] = np.mean(
+            librosa.feature.zero_crossing_rate(audio))
 
         # Tempo
         tempo, _ = librosa.beat.beat_track(y=audio, sr=sr)
@@ -67,7 +67,8 @@ class AudioEmotionAnalyzer:
 
         return features
 
-    def _map_features_to_emotions(self, features: Dict[str, float]) -> Dict[str, float]:
+    def _map_features_to_emotions(
+            self, features: Dict[str, float]) -> Dict[str, float]:
         """Map audio features to emotion scores."""
         scores = {
             "happy": 0.0,
@@ -78,25 +79,17 @@ class AudioEmotionAnalyzer:
             "curious": 0.0,
         }
 
-        # High pitch + high energy = happy
-        if features["pitch_mean"] > 300 and features["rms_mean"] > 0.1:
-            scores["happy"] += 0.4
+        emotion_rules = [
+            ("happy", lambda f: f["pitch_mean"] > 300 and f["rms_mean"] > 0.1, 0.4),
+            ("sad", lambda f: f["pitch_mean"] < 200 and f["rms_mean"] < 0.05, 0.4),
+            ("angry", lambda f: f["rms_mean"] > 0.15 and f["pitch_std"] > 50, 0.4),
+            ("scared", lambda f: f["rms_mean"] < 0.05 and f["zcr_mean"] > 0.05, 0.3),
+            ("calm", lambda f: f["pitch_std"] < 30 and f["rms_std"] < 0.05, 0.3),
+        ]
 
-        # Low pitch + low energy = sad
-        if features["pitch_mean"] < 200 and features["rms_mean"] < 0.05:
-            scores["sad"] += 0.4
-
-        # High energy + variable pitch = angry
-        if features["rms_mean"] > 0.15 and features["pitch_std"] > 50:
-            scores["angry"] += 0.4
-
-        # Low energy + high ZCR = scared
-        if features["rms_mean"] < 0.05 and features["zcr_mean"] > 0.05:
-            scores["scared"] += 0.3
-
-        # Steady features = calm
-        if features["pitch_std"] < 30 and features["rms_std"] < 0.05:
-            scores["calm"] += 0.3
+        for emotion, rule, weight in emotion_rules:
+            if rule(features):
+                scores[emotion] += weight
 
         # Normalize
         total = sum(scores.values())

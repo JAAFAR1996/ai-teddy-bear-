@@ -9,11 +9,14 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.domain.parentdashboard.models.alert_models import (Alert,
-                                                            AlertSeverity,
-                                                            AlertType)
-from src.domain.parentdashboard.services.content_analysis_service import \
-    ContentAnalysisService
+from src.domain.parentdashboard.models.alert_models import (
+    Alert,
+    AlertSeverity,
+    AlertType,
+)
+from src.domain.parentdashboard.services.content_analysis_service import (
+    ContentAnalysisService,
+)
 
 
 class DashboardAlertService:

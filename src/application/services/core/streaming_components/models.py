@@ -11,6 +11,7 @@ from enum import Enum
 
 class TTSProvider(Enum):
     """Text-to-Speech provider options"""
+
     ELEVENLABS = "elevenlabs"
     GTTS = "gtts"
     AZURE = "azure"
@@ -18,6 +19,7 @@ class TTSProvider(Enum):
 
 class AudioFormat(Enum):
     """Audio format options"""
+
     WAV = "wav"
     MP3 = "mp3"
     OGG = "ogg"
@@ -25,6 +27,7 @@ class AudioFormat(Enum):
 
 class ProcessingStatus(Enum):
     """Processing status options"""
+
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
@@ -34,12 +37,13 @@ class ProcessingStatus(Enum):
 @dataclass
 class AudioProcessingRequest:
     """Parameter object for audio processing requests"""
+
     audio_data: bytes
     session_id: str
     websocket: Optional[Any] = None
     format: AudioFormat = AudioFormat.WAV
     sample_rate: int = 16000
-    
+
     def __post_init__(self):
         """Validate audio processing request"""
         if not self.audio_data:
@@ -53,12 +57,13 @@ class AudioProcessingRequest:
 @dataclass
 class TextToSpeechRequest:
     """Parameter object for text-to-speech requests"""
+
     text: str
     voice: Optional[str] = None
     provider: TTSProvider = TTSProvider.ELEVENLABS
     format: AudioFormat = AudioFormat.MP3
     language: str = "ar"
-    
+
     def __post_init__(self):
         """Validate TTS request"""
         if not self.text or not self.text.strip():
@@ -70,12 +75,13 @@ class TextToSpeechRequest:
 @dataclass
 class LLMRequest:
     """Parameter object for LLM processing requests"""
+
     text: str
     session_id: Optional[str] = None
     max_tokens: int = 150
     temperature: float = 0.7
     retry_count: int = 0
-    
+
     def __post_init__(self):
         """Validate LLM request"""
         if not self.text or not self.text.strip():
@@ -91,13 +97,14 @@ class LLMRequest:
 @dataclass
 class StreamingStatus:
     """Streaming status information"""
+
     session_id: str
     is_active: bool
     status: ProcessingStatus
     timestamp: datetime
     details: Optional[Dict[str, Any]] = None
     error_message: Optional[str] = None
-    
+
     def __post_init__(self):
         """Validate streaming status"""
         if not self.session_id:
@@ -107,32 +114,34 @@ class StreamingStatus:
 @dataclass
 class WebSocketMessage:
     """WebSocket message structure"""
+
     type: str
     data: Dict[str, Any]
     session_id: str
     timestamp: datetime = None
-    
+
     def __post_init__(self):
         """Set default timestamp if not provided"""
         if self.timestamp is None:
             self.timestamp = datetime.now()
-    
+
     def to_json(self) -> Dict[str, Any]:
         """Convert to JSON-serializable dictionary"""
         return {
             "type": self.type,
             "data": self.data,
             "session_id": self.session_id,
-            "timestamp": self.timestamp.isoformat()
+            "timestamp": self.timestamp.isoformat(),
         }
 
 
 @dataclass
 class AudioBuffer:
     """Audio buffer configuration"""
+
     max_size: int = 8192
     chunk_size: int = 1024
-    
+
     def __post_init__(self):
         """Validate buffer configuration"""
         if self.max_size <= 0:
@@ -146,13 +155,14 @@ class AudioBuffer:
 @dataclass
 class ConnectionConfig:
     """Connection configuration for external services"""
+
     host: str
     port: int
     api_key: Optional[str] = None
     timeout: int = 30
     max_reconnect_attempts: int = 5
     reconnect_delay: float = 1.0
-    
+
     def __post_init__(self):
         """Validate connection configuration"""
         if not self.host:
@@ -170,27 +180,32 @@ class ConnectionConfig:
 @dataclass
 class ProcessingResult:
     """Generic processing result"""
+
     success: bool
     data: Optional[Any] = None
     error_message: Optional[str] = None
     processing_time_ms: Optional[float] = None
     metadata: Optional[Dict[str, Any]] = None
-    
+
     @classmethod
-    def success_result(cls, data: Any, processing_time_ms: float = None, metadata: Dict[str, Any] = None):
+    def success_result(
+        cls,
+        data: Any,
+        processing_time_ms: float = None,
+        metadata: Dict[str, Any] = None,
+    ):
         """Create successful result"""
         return cls(
             success=True,
             data=data,
             processing_time_ms=processing_time_ms,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
-    
+
     @classmethod
     def error_result(cls, error_message: str, metadata: Dict[str, Any] = None):
         """Create error result"""
         return cls(
             success=False,
             error_message=error_message,
-            metadata=metadata or {}
-        ) 
+            metadata=metadata or {})

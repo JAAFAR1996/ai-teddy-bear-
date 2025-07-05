@@ -107,6 +107,7 @@ class ChildComparison:
 @dataclass
 class MessageScheduleDetails:
     """Details for scheduling a new message."""
+
     child_name: str
     device_id: str
     message_type: MessageType
@@ -118,6 +119,7 @@ class MessageScheduleDetails:
 @dataclass
 class TimeRestrictionDetails:
     """Details for adding a new time restriction."""
+
     child_name: str
     device_id: str
     restriction_type: TimeRestrictionType
@@ -269,7 +271,8 @@ class AdvancedFamilySystem:
     ):
         """Helper to create and add a single scheduled message."""
         content_template = random.choice(
-            self.message_templates.get(msg_type.value, [""]))
+            self.message_templates.get(msg_type.value, [""])
+        )
         content = content_template.format(child_name=child.name)
 
         message = ScheduledMessage(
@@ -286,11 +289,13 @@ class AdvancedFamilySystem:
         )
         self.scheduled_messages.append(message)
 
-    def _create_default_scheduled_messages(self, family_profile: FamilyProfile) -> None:
+    def _create_default_scheduled_messages(
+            self, family_profile: FamilyProfile) -> None:
         """إنشاء رسائل تشجيعية افتراضية للعائلة"""
         children = [m for m in family_profile.members if m.role == "child"]
         parent = next(
-            (m for m in family_profile.members if m.role == "parent"), None)
+            (m for m in family_profile.members if m.role == "parent"),
+            None)
         parent_name = parent.name if parent else "System"
 
         default_messages_config = [
@@ -329,11 +334,13 @@ class AdvancedFamilySystem:
         )
         self.time_restrictions.append(restriction)
 
-    def _create_default_time_restrictions(self, family_profile: FamilyProfile) -> None:
+    def _create_default_time_restrictions(
+            self, family_profile: FamilyProfile) -> None:
         """إنشاء قيود زمنية افتراضية للعائلة"""
         children = [m for m in family_profile.members if m.role == "child"]
         parent = next(
-            (m for m in family_profile.members if m.role == "parent"), None)
+            (m for m in family_profile.members if m.role == "parent"),
+            None)
         parent_name = parent.name if parent else "System"
 
         default_restrictions_config = [
@@ -396,12 +403,17 @@ class AdvancedFamilySystem:
             raise ValueError(f"Family with ID {family_id} not found.")
 
         # Validation logic
-        if details.restriction_type == TimeRestrictionType.DAILY_LIMIT and not details.daily_limit_minutes:
+        if (
+            details.restriction_type == TimeRestrictionType.DAILY_LIMIT
+            and not details.daily_limit_minutes
+        ):
             raise ValueError(
                 "Daily limit must be set for DAILY_LIMIT restriction.")
-        if details.restriction_type == TimeRestrictionType.TIME_WINDOW and not (details.start_time and details.end_time):
+        if details.restriction_type == TimeRestrictionType.TIME_WINDOW and not (
+                details.start_time and details.end_time):
             raise ValueError(
-                "Start and end times must be set for TIME_WINDOW restriction.")
+                "Start and end times must be set for TIME_WINDOW restriction."
+            )
 
         restriction_id = f"res_{uuid.uuid4()}"
         new_restriction = TimeRestriction(
@@ -483,7 +495,8 @@ class AdvancedFamilySystem:
                 and message.scheduled_time.hour == now_time.hour
                 and message.scheduled_time.minute == now_time.minute
             ):
-                if message.last_sent is None or (now - message.last_sent).days >= 1:
+                if message.last_sent is None or (
+                        now - message.last_sent).days >= 1:
                     messages_to_send.append(
                         {
                             "device_id": message.device_id,
@@ -509,14 +522,15 @@ class AdvancedFamilySystem:
         )
 
         for r in active_restrictions:
-            if (violation := self._check_daily_limit(r, usage_today_minutes)):
+            if violation := self._check_daily_limit(r, usage_today_minutes):
                 return {"allowed": False, "reason": violation}
-            if (violation := self._check_time_window(r, now_time)):
+            if violation := self._check_time_window(r, now_time):
                 return {"allowed": False, "reason": violation}
 
         return {"allowed": True, "reason": "No active restrictions."}
 
-    def _find_extreme_children(self, children_data: Dict[str, Dict]) -> Dict[str, str]:
+    def _find_extreme_children(
+            self, children_data: Dict[str, Dict]) -> Dict[str, str]:
         """Find the most and least active children from data."""
         sorted_children = sorted(
             children_data.items(),
@@ -537,11 +551,13 @@ class AdvancedFamilySystem:
             f"Least active child this period: {extremes['least_active']}.",
         ]
         if len(children_data) > 1:
-            total_minutes = sum(d.get("interaction_minutes", 0)
-                                for d in children_data.values())
+            total_minutes = sum(
+                d.get("interaction_minutes", 0) for d in children_data.values()
+            )
             avg_minutes = total_minutes / len(children_data)
             insights.append(
-                f"Average interaction time: {avg_minutes:.2f} minutes per child.")
+                f"Average interaction time: {avg_minutes:.2f} minutes per child."
+            )
         return insights
 
     def _generate_comparison_recommendations(
@@ -568,7 +584,8 @@ class AdvancedFamilySystem:
         extremes = self._find_extreme_children(children_data)
         insights = self._generate_comparison_insights(children_data, extremes)
         recommendations = self._generate_comparison_recommendations(
-            children_data, extremes)
+            children_data, extremes
+        )
 
         return ChildComparison(
             family_id=family_id,
@@ -578,7 +595,10 @@ class AdvancedFamilySystem:
             recommendations=recommendations,
         )
 
-    def update_family_settings(self, family_id: str, new_settings: Dict) -> bool:
+    def update_family_settings(
+            self,
+            family_id: str,
+            new_settings: Dict) -> bool:
         """Update shared settings for a family."""
 
         if family_id not in self.family_profiles:
@@ -605,7 +625,8 @@ class AdvancedFamilySystem:
 
         return True
 
-    def _get_dashboard_member_summary(self, members: List[FamilyMember]) -> Dict:
+    def _get_dashboard_member_summary(
+            self, members: List[FamilyMember]) -> Dict:
         """Generate a summary of family members for the dashboard."""
         children = [m for m in members if m.role == "child"]
         parents = [m for m in members if m.role == "parent"]
@@ -619,7 +640,9 @@ class AdvancedFamilySystem:
     def _get_dashboard_message_summary(self, family_id: str) -> Dict:
         """Generate a summary of scheduled messages for the dashboard."""
         family_messages = [
-            m for m in self.scheduled_messages if m.device_id in self._get_family_device_ids(family_id)
+            m
+            for m in self.scheduled_messages
+            if m.device_id in self._get_family_device_ids(family_id)
         ]
         return {
             "total_scheduled_messages": len(family_messages),
@@ -629,11 +652,14 @@ class AdvancedFamilySystem:
     def _get_dashboard_restriction_summary(self, family_id: str) -> Dict:
         """Generate a summary of time restrictions for the dashboard."""
         family_restrictions = [
-            r for r in self.time_restrictions if r.device_id in self._get_family_device_ids(family_id)
+            r
+            for r in self.time_restrictions
+            if r.device_id in self._get_family_device_ids(family_id)
         ]
         return {
             "total_time_restrictions": len(family_restrictions),
-            "active_restrictions": sum(1 for r in family_restrictions if r.is_active),
+            "active_restrictions": sum(
+                1 for r in family_restrictions if r.is_active),
         }
 
     def _get_family_device_ids(self, family_id: str) -> List[str]:
@@ -658,7 +684,8 @@ class AdvancedFamilySystem:
             "family_name": family.family_name,
             "last_updated": family.updated_at.isoformat(),
             "subscription_type": family.subscription_type,
-            "member_summary": self._get_dashboard_member_summary(family.members),
+            "member_summary": self._get_dashboard_member_summary(
+                family.members),
             "message_summary": self._get_dashboard_message_summary(family_id),
             "restriction_summary": self._get_dashboard_restriction_summary(family_id),
             "shared_settings": family.shared_settings,
@@ -725,14 +752,18 @@ class AdvancedFamilySystem:
                 "study_time_blocks": 0,
             },
             "content_filtering": {
-                "level": family.shared_settings.get("content_filtering", "moderate"),
+                "level": family.shared_settings.get(
+                    "content_filtering",
+                    "moderate"),
                 "custom_blocks": 0,
             },
             "communication": {
-                "scheduled_messages": len(self.scheduled_messages),
+                "scheduled_messages": len(
+                    self.scheduled_messages),
                 "emergency_contacts": len(
-                    family.shared_settings.get("emergency_contacts", [])
-                ),
+                    family.shared_settings.get(
+                        "emergency_contacts",
+                        [])),
             },
             "monitoring": {
                 "activity_tracking": True,

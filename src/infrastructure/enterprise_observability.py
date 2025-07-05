@@ -31,14 +31,12 @@ from typing import Any, Dict, Optional
 # Enterprise imports with graceful fallbacks
 try:
     from opentelemetry import baggage, context, trace
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import \
-        OTLPSpanExporter
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.instrumentation.asgi import ASGIInstrumentor
     from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import (BatchSpanProcessor,
-                                                SimpleSpanProcessor)
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor, SimpleSpanProcessor
     from opentelemetry.semantic_conventions.resource import ResourceAttributes
 
     OTEL_AVAILABLE = True
@@ -50,8 +48,13 @@ except ImportError:
 
 # Prometheus integration
 try:
-    from prometheus_client import (CollectorRegistry, Counter, Gauge,
-                                   Histogram, generate_latest)
+    from prometheus_client import (
+        CollectorRegistry,
+        Counter,
+        Gauge,
+        Histogram,
+        generate_latest,
+    )
 
     PROMETHEUS_AVAILABLE = True
 except ImportError:
@@ -63,8 +66,7 @@ class EnterpriseMetrics:
     """Enterprise-grade metrics collection and monitoring."""
 
     registry: Optional[Any] = field(
-        default_factory=lambda: CollectorRegistry() if PROMETHEUS_AVAILABLE else None
-    )
+        default_factory=lambda: CollectorRegistry() if PROMETHEUS_AVAILABLE else None)
     request_count: Optional[Any] = None
     request_duration: Optional[Any] = None
     active_connections: Optional[Any] = None
@@ -123,19 +125,24 @@ class EnterpriseMetrics:
                 registry=self.registry,
             )
 
-    def increment_requests(self, method: str, endpoint: str, status_code: int) -> None:
+    def increment_requests(
+            self,
+            method: str,
+            endpoint: str,
+            status_code: int) -> None:
         """Increment request counter."""
         if self.request_count:
             self.request_count.labels(
                 method=method, endpoint=endpoint, status_code=status_code
             ).inc()
 
-    def record_request_duration(self, method: str, endpoint: str, duration: float) -> None:
+    def record_request_duration(
+        self, method: str, endpoint: str, duration: float
+    ) -> None:
         """Record request duration."""
         if self.request_duration:
-            self.request_duration.labels(method=method, endpoint=endpoint).observe(
-                duration
-            )
+            self.request_duration.labels(
+                method=method, endpoint=endpoint).observe(duration)
 
     def set_active_connections(self, count: int) -> None:
         """Set active connections count."""
@@ -146,14 +153,17 @@ class EnterpriseMetrics:
         """Increment error counter."""
         if self.error_count:
             self.error_count.labels(
-                error_type=error_type, component=component).inc()
+                error_type=error_type,
+                component=component).inc()
 
     def set_health_score(self, score: float) -> None:
         """Set system health score."""
         if self.system_health:
             self.system_health.set(score)
 
-    def record_ai_processing(self, model_type: str, operation: str, duration: float) -> None:
+    def record_ai_processing(
+        self, model_type: str, operation: str, duration: float
+    ) -> None:
         """Record AI processing time."""
         if self.ai_processing_time:
             self.ai_processing_time.labels(
@@ -197,13 +207,12 @@ class EnterpriseTracer:
                     ResourceAttributes.SERVICE_VERSION: "2.0.0",
                     ResourceAttributes.SERVICE_NAMESPACE: "ai-teddy-enterprise",
                     ResourceAttributes.DEPLOYMENT_ENVIRONMENT: os.getenv(
-                        "ENVIRONMENT", "development"
-                    ),
+                        "ENVIRONMENT",
+                        "development"),
                     "custom.enterprise.tier": "fortune500",
                     "custom.security.level": "high",
                     "custom.compliance.standards": "SOC2,GDPR,CCPA",
-                }
-            )
+                })
 
             # Initialize tracer provider
             self.provider = TracerProvider(resource=resource)
@@ -213,11 +222,8 @@ class EnterpriseTracer:
             if os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT"):
                 # Production OTLP exporter
                 otlp_exporter = OTLPSpanExporter(
-                    endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT"),
-                    headers={
-                        "Authorization": f"Bearer {os.getenv('OTEL_EXPORTER_OTLP_TOKEN', '')}"
-                    },
-                )
+                    endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), headers={
+                        "Authorization": f"Bearer {os.getenv('OTEL_EXPORTER_OTLP_TOKEN', '')}"}, )
                 span_processor = BatchSpanProcessor(otlp_exporter)
                 self.provider.add_span_processor(span_processor)
 
@@ -246,8 +252,7 @@ class EnterpriseTracer:
                         "enterprise.component", self.service_name)
                     span.set_attribute(
                         "enterprise.timestamp", datetime.now(
-                            timezone.utc).isoformat()
-                    )
+                            timezone.utc).isoformat())
                     span.set_attribute(
                         "enterprise.environment",
                         os.getenv("ENVIRONMENT", "development"),
@@ -255,8 +260,10 @@ class EnterpriseTracer:
                     yield span
                 except Exception as e:
                     span.record_exception(e)
-                    span.set_status(trace.Status(
-                        trace.StatusCode.ERROR, str(e)))
+                    span.set_status(
+                        trace.Status(
+                            trace.StatusCode.ERROR,
+                            str(e)))
                     raise
         else:
             # Fallback context manager
@@ -332,8 +339,11 @@ class EnterpriseObservabilityManager:
                 "metrics_enabled": PROMETHEUS_AVAILABLE,
                 "structured_logging": True,
             },
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "environment": os.getenv("ENVIRONMENT", "development"),
+            "timestamp": datetime.now(
+                timezone.utc).isoformat(),
+            "environment": os.getenv(
+                "ENVIRONMENT",
+                "development"),
             "version": "2.0.0",
         }
 

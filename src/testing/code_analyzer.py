@@ -152,17 +152,18 @@ class CodeAnalyzer:
             )
 
             # Calculate metrics
-            analysis.total_complexity = self._calculate_total_complexity(analysis)
+            analysis.total_complexity = self._calculate_total_complexity(
+                analysis)
             analysis.security_score = self._calculate_security_score(analysis)
-            analysis.child_safety_score = self._calculate_child_safety_score(analysis)
+            analysis.child_safety_score = self._calculate_child_safety_score(
+                analysis)
             analysis.test_coverage_recommendations = (
                 self._generate_coverage_recommendations(analysis)
             )
 
             logger.info(
                 f"Analyzed {file_path}: complexity={analysis.total_complexity}, "
-                f"security={analysis.security_score}, safety={analysis.child_safety_score}"
-            )
+                f"security={analysis.security_score}, safety={analysis.child_safety_score}")
 
             return asdict(analysis)
 
@@ -253,7 +254,10 @@ class CodeAnalyzer:
             child_safety_relevance=child_safety_relevance,
         )
 
-    def _analyze_classes(self, tree: ast.AST, source_code: str) -> List[ClassAnalysis]:
+    def _analyze_classes(
+            self,
+            tree: ast.AST,
+            source_code: str) -> List[ClassAnalysis]:
         """Analyze all classes in the module"""
         classes = []
 
@@ -272,7 +276,8 @@ class CodeAnalyzer:
         methods = []
         for item in node.body:
             if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                method_analysis = self._analyze_single_function(item, source_code)
+                method_analysis = self._analyze_single_function(
+                    item, source_code)
                 methods.append(method_analysis)
 
         # Extract parent classes
@@ -388,7 +393,11 @@ class CodeAnalyzer:
         # Check for dangerous function calls
         dangerous_calls = ["eval", "exec", "compile", "__import__"]
         for child in ast.walk(node):
-            if isinstance(child, ast.Call) and isinstance(child.func, ast.Name):
+            if isinstance(
+                    child,
+                    ast.Call) and isinstance(
+                    child.func,
+                    ast.Name):
                 if child.func.id in dangerous_calls:
                     concerns.append("dangerous_execution")
 
@@ -486,50 +495,65 @@ class CodeAnalyzer:
         score = (total_relevance / max_possible) * 100
         return int(score)
 
-    def _generate_coverage_recommendations(self, analysis: ModuleAnalysis) -> List[str]:
-        """Generate test coverage recommendations"""
-        recommendations = []
-
-        # Check for high complexity functions
+    def _recommend_for_complexity(self, analysis: ModuleAnalysis) -> List[str]:
+        """Generate recommendations for high-complexity functions."""
+        recs = []
         for func in analysis.functions:
             if func.complexity > 5:
-                recommendations.append(
+                recs.append(
                     f"High complexity function '{func.name}' (complexity: {func.complexity}) "
-                    "needs comprehensive testing including edge cases"
-                )
+                    "needs comprehensive testing including edge cases")
+        return recs
 
-        # Check for security-sensitive functions
+    def _recommend_for_security(self, analysis: ModuleAnalysis) -> List[str]:
+        """Generate recommendations for security-sensitive functions."""
+        recs = []
         for func in analysis.functions:
             if func.security_concerns:
-                recommendations.append(
+                recs.append(
                     f"Security-sensitive function '{func.name}' needs penetration testing "
-                    f"for: {', '.join(func.security_concerns)}"
-                )
+                    f"for: {', '.join(func.security_concerns)}")
+        return recs
 
-        # Check for child safety critical functions
+    def _recommend_for_child_safety(
+            self, analysis: ModuleAnalysis) -> List[str]:
+        """Generate recommendations for child safety critical functions."""
+        recs = []
         for func in analysis.functions:
             if func.child_safety_relevance >= 3:
-                recommendations.append(
+                recs.append(
                     f"Child safety critical function '{func.name}' needs extensive "
-                    "age-appropriateness and content filtering tests"
-                )
+                    "age-appropriateness and content filtering tests")
+        return recs
 
-        # Check for async functions
-        async_functions = [f for f in analysis.functions if f.has_async]
+    def _recommend_for_async(self, analysis: ModuleAnalysis) -> List[str]:
+        """Generate recommendations for async functions."""
+        async_functions = [f.name for f in analysis.functions if f.has_async]
         if async_functions:
-            recommendations.append(
+            return [
                 f"Async functions need concurrency and performance testing: "
-                f"{', '.join(f.name for f in async_functions)}"
-            )
+                f"{', '.join(async_functions)}"
+            ]
+        return []
 
-        # Check for exception handling
-        functions_with_exceptions = [
-            f for f in analysis.functions if f.raises_exceptions
-        ]
-        if functions_with_exceptions:
-            recommendations.append(
+    def _recommend_for_exceptions(self, analysis: ModuleAnalysis) -> List[str]:
+        """Generate recommendations for functions that raise exceptions."""
+        exc_functions = [
+            f.name for f in analysis.functions if f.raises_exceptions]
+        if exc_functions:
+            return [
                 "Functions that raise exceptions need error handling tests: "
-                f"{', '.join(f.name for f in functions_with_exceptions)}"
-            )
+                f"{', '.join(exc_functions)}"
+            ]
+        return []
 
+    def _generate_coverage_recommendations(
+            self, analysis: ModuleAnalysis) -> List[str]:
+        """Generate test coverage recommendations by orchestrating helper methods."""
+        recommendations = []
+        recommendations.extend(self._recommend_for_complexity(analysis))
+        recommendations.extend(self._recommend_for_security(analysis))
+        recommendations.extend(self._recommend_for_child_safety(analysis))
+        recommendations.extend(self._recommend_for_async(analysis))
+        recommendations.extend(self._recommend_for_exceptions(analysis))
         return recommendations

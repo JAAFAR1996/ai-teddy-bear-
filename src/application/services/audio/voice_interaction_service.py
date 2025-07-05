@@ -14,14 +14,15 @@ import sounddevice as sd
 
 from src.application.services.streaming_service import StreamingService
 from src.core.application.interfaces.services import IAIService
+
 # Domain imports
-from src.domain.audio.models import (AudioConfig, EmotionalTone, Language,
-                                     VoiceProfile)
+from src.domain.audio.models import AudioConfig, EmotionalTone, Language, VoiceProfile
 from src.domain.audio.services import AudioProcessor, VoiceActivityDetector
 from src.infrastructure.config import get_config
 
 from .voice_profile_service import VoiceProfileService
 from .voice_recognition_service import VoiceRecognitionService
+
 # Application service imports
 from .voice_synthesis_service import VoiceSynthesisService
 
@@ -62,9 +63,8 @@ class VoiceInteractionService:
         self.output_stream = None
         self.audio_buffer = deque(
             maxlen=int(
-                self.audio_config.sample_rate * self.audio_config.max_recording_duration
-            )
-        )
+                self.audio_config.sample_rate *
+                self.audio_config.max_recording_duration))
 
         # Storage paths
         self.recordings_path = Path(
@@ -78,8 +78,9 @@ class VoiceInteractionService:
     def _init_emotion_integration(self):
         """Initialize emotion analysis integration"""
         try:
-            from src.application.services.ai.emotion_analyzer_service import \
-                EmotionAnalyzer
+            from src.application.services.ai.emotion_analyzer_service import (
+                EmotionAnalyzer,
+            )
             from src.domain.emotion_config import EmotionConfig
 
             emotion_config = EmotionConfig(
@@ -105,7 +106,8 @@ class VoiceInteractionService:
             profiles = await self.voice_profile_service.create_default_profiles()
             if profiles:
                 self.current_profile = profiles.get("teddy_bear")
-                self.logger.info(f"Initialized {len(profiles)} default profiles")
+                self.logger.info(
+                    f"Initialized {len(profiles)} default profiles")
             return profiles
         except Exception as e:
             self.logger.error(f"Failed to initialize profiles: {e}")
@@ -125,7 +127,9 @@ class VoiceInteractionService:
             # Load voice profile
             profile = await self.voice_profile_service.load_profile(profile_id)
             if not profile:
-                return {"status": "error", "reason": f"Profile not found: {profile_id}"}
+                return {
+                    "status": "error",
+                    "reason": f"Profile not found: {profile_id}"}
 
             self.current_profile = profile
 
@@ -139,7 +143,10 @@ class VoiceInteractionService:
             self.logger.info(
                 f"Started voice interaction: {profile_id}, session: {session_id}"
             )
-            return {"status": "success", "profile": profile_id, "session": session_id}
+            return {
+                "status": "success",
+                "profile": profile_id,
+                "session": session_id}
 
         except Exception as e:
             self.logger.error(f"Failed to start voice interaction: {e}")
@@ -250,7 +257,8 @@ class VoiceInteractionService:
             peak_level = np.max(np.abs(audio_data))
 
             # Check speech activity
-            speech_ratio = self.vad.calculate_speech_ratio(audio_data.flatten())
+            speech_ratio = self.vad.calculate_speech_ratio(
+                audio_data.flatten())
 
             calibration_result = {
                 "rms_level": float(rms_level),
@@ -272,9 +280,11 @@ class VoiceInteractionService:
             if isinstance(audio_data, bytes):
                 # Convert bytes to numpy array
                 audio_array = (
-                    np.frombuffer(audio_data, dtype=np.int16).astype(np.float32)
-                    / 32768.0
-                )
+                    np.frombuffer(
+                        audio_data,
+                        dtype=np.int16).astype(
+                        np.float32) /
+                    32768.0)
             else:
                 audio_array = audio_data
 
@@ -287,8 +297,10 @@ class VoiceInteractionService:
             self.logger.error(f"Audio playback error: {e}")
 
     async def save_recording(
-        self, audio_data: np.ndarray, session_id: str, metadata: Optional[Dict] = None
-    ) -> str:
+            self,
+            audio_data: np.ndarray,
+            session_id: str,
+            metadata: Optional[Dict] = None) -> str:
         """Save audio recording with metadata"""
         try:
             from datetime import datetime
@@ -334,7 +346,10 @@ class VoiceInteractionService:
         except Exception as e:
             self.logger.error(f"Recording loop error: {e}")
 
-    async def _process_utterance(self, audio_data: np.ndarray, session_id: str):
+    async def _process_utterance(
+            self,
+            audio_data: np.ndarray,
+            session_id: str):
         """Process complete utterance"""
         try:
             # Transcribe audio
@@ -358,8 +373,11 @@ class VoiceInteractionService:
 
             # Convert bytes to numpy array
             audio_array = (
-                np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
-            )
+                np.frombuffer(
+                    audio_data,
+                    dtype=np.int16).astype(
+                    np.float32) /
+                32768.0)
 
             # Apply pitch adjustment
             if self.current_profile.pitch_adjustment != 0:
@@ -494,7 +512,8 @@ class VoiceInteractionService:
             self.logger.error(f"Synthesis test failed: {e}")
             return False
 
-    async def test_speech_recognition(self, duration: float = 5.0) -> Dict[str, Any]:
+    async def test_speech_recognition(
+            self, duration: float = 5.0) -> Dict[str, Any]:
         """Test speech recognition capability"""
         try:
             return await self.voice_recognition.test_recognition(duration)

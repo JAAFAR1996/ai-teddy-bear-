@@ -91,8 +91,11 @@ class MathemythsEngine:
             return {}
 
     def get_appropriate_challenge(
-        self, child_age: int, subject: SubjectType, child_name: str, device_id: str
-    ) -> Optional[EducationalChallenge]:
+            self,
+            child_age: int,
+            subject: SubjectType,
+            child_name: str,
+            device_id: str) -> Optional[EducationalChallenge]:
         """الحصول على تحدي مناسب للطفل"""
 
         # تحديد المستوى بناءً على العمر والتقدم الحالي
@@ -100,8 +103,7 @@ class MathemythsEngine:
 
         if progress_key in self.learning_progress:
             current_level = self.learning_progress[progress_key].current_level.get(
-                subject.value, self._determine_level_by_age(child_age)
-            )
+                subject.value, self._determine_level_by_age(child_age))
         else:
             current_level = self._determine_level_by_age(child_age)
 
@@ -319,7 +321,9 @@ class MathemythsEngine:
         # الانتقال للمستوى التالي عند نجاح 80% ومحاولة 5 على الأقل
         return success_rate >= 0.8 and subject_data["total"] >= 5
 
-    def _get_next_level(self, current_level: DifficultyLevel) -> DifficultyLevel:
+    def _get_next_level(
+            self,
+            current_level: DifficultyLevel) -> DifficultyLevel:
         """الحصول على المستوى التالي"""
         level_progression = {
             DifficultyLevel.BEGINNER: DifficultyLevel.ELEMENTARY,
@@ -329,7 +333,8 @@ class MathemythsEngine:
         }
         return level_progression[current_level]
 
-    async def _update_strengths_and_weaknesses(self, progress: LearningProgress):
+    async def _update_strengths_and_weaknesses(
+            self, progress: LearningProgress):
         """تحديث نقاط القوة ومجالات التحسين"""
 
         strengths = []
@@ -396,12 +401,16 @@ class MathemythsEngine:
 
         return {
             "story_content": enhanced_story,
-            "challenges": [challenge.id for challenge in challenges],
-            "subjects_covered": [challenge.subject.value for challenge in challenges],
-            "total_possible_points": sum(challenge.points for challenge in challenges),
+            "challenges": [
+                challenge.id for challenge in challenges],
+            "subjects_covered": [
+                challenge.subject.value for challenge in challenges],
+            "total_possible_points": sum(
+                challenge.points for challenge in challenges),
         }
 
-    def _select_subjects_by_interests(self, interests: List[str]) -> List[SubjectType]:
+    def _select_subjects_by_interests(
+            self, interests: List[str]) -> List[SubjectType]:
         """اختيار المواد التعليمية بناءً على الاهتمامات"""
 
         interest_mapping = {
@@ -480,8 +489,10 @@ class MathemythsEngine:
         return random.choice(story_templates)
 
     def _integrate_challenges_into_story(
-        self, base_story: str, challenges: List[EducationalChallenge], child_name: str
-    ) -> str:
+            self,
+            base_story: str,
+            challenges: List[EducationalChallenge],
+            child_name: str) -> str:
         """دمج التحديات في القصة الأساسية"""
 
         story = base_story
@@ -516,7 +527,8 @@ class MathemythsEngine:
 
         return story
 
-    def _calculate_overall_progress(self, subject_progress: Dict) -> tuple[int, int]:
+    def _calculate_overall_progress(
+            self, subject_progress: Dict) -> tuple[int, int]:
         total_correct = sum(
             sum(level_data["correct"] for level_data in subject_data.values())
             for subject_data in subject_progress.values()
@@ -540,8 +552,9 @@ class MathemythsEngine:
             subject_correct = sum(data["correct"] for data in levels.values())
             subject_total = sum(data["total"] for data in levels.values())
             subject_rate = (
-                (subject_correct / subject_total * 100) if subject_total > 0 else 0
-            )
+                (subject_correct /
+                 subject_total *
+                 100) if subject_total > 0 else 0)
 
             subject_analysis[subject] = {
                 "success_rate": round(subject_rate, 1),
@@ -551,7 +564,8 @@ class MathemythsEngine:
             }
         return subject_analysis
 
-    def get_learning_report(self, child_name: str, device_id: str) -> Dict[str, Any]:
+    def get_learning_report(self, child_name: str,
+                            device_id: str) -> Dict[str, Any]:
         """الحصول على تقرير التعلم للطفل"""
 
         progress_key = f"{device_id}_{child_name}"

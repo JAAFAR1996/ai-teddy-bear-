@@ -108,7 +108,8 @@ class PerformanceMetrics:
             self.average_processing_time = new_time
         else:
             # Running average
-            old_total = self.average_processing_time * (self.total_recordings - 1)
+            old_total = self.average_processing_time * \
+                (self.total_recordings - 1)
             self.average_processing_time = (
                 old_total + new_time
             ) / self.total_recordings

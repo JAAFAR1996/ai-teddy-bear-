@@ -113,7 +113,8 @@ class TestPhase1SecurityFoundation:
     # ================== SECRETS MANAGEMENT TESTS ==================
 
     @pytest.mark.asyncio
-    async def test_secrets_manager_initialization(self, temp_dir, secrets_config):
+    async def test_secrets_manager_initialization(
+            self, temp_dir, secrets_config):
         """Test secrets manager initialization"""
         secrets_manager = create_secrets_manager(
             environment="testing",
@@ -125,7 +126,8 @@ class TestPhase1SecurityFoundation:
         assert secrets_manager.config.default_provider == SecretProvider.LOCAL_ENCRYPTED
 
     @pytest.mark.asyncio
-    async def test_secrets_manager_set_get_secret(self, temp_dir, secrets_config):
+    async def test_secrets_manager_set_get_secret(
+            self, temp_dir, secrets_config):
         """Test setting and getting secrets"""
         secrets_manager = create_secrets_manager("testing")
 
@@ -160,7 +162,8 @@ class TestPhase1SecurityFoundation:
 
     # ================== SAFE EXPRESSION PARSER TESTS ==================
 
-    def test_safe_expression_parser_initialization(self, safe_expression_config):
+    def test_safe_expression_parser_initialization(
+            self, safe_expression_config):
         """Test safe expression parser initialization"""
         parser = SafeExpressionParser(safe_expression_config)
         assert parser is not None
@@ -287,7 +290,8 @@ class TestPhase1SecurityFoundation:
         assert error_details.additional_data["test_key"] == "test_value"
 
     @pytest.mark.asyncio
-    async def test_circuit_breaker_functionality(self, exception_handler_config):
+    async def test_circuit_breaker_functionality(
+            self, exception_handler_config):
         """Test circuit breaker functionality"""
         handler = EnterpriseExceptionHandler(exception_handler_config)
 
@@ -444,7 +448,9 @@ class TestPhase1SecurityFoundation:
     # ================== INTEGRATION TESTS ==================
 
     @pytest.mark.asyncio
-    async def test_security_integration_workflow(self, temp_dir, exception_handler_config, audit_config):
+    async def test_security_integration_workflow(
+        self, temp_dir, exception_handler_config, audit_config
+    ):
         """Test complete security integration workflow"""
         # Initialize all security components
         secrets_manager = create_secrets_manager("testing")
@@ -477,7 +483,9 @@ class TestPhase1SecurityFoundation:
             assert error_details is not None
 
     @pytest.mark.asyncio
-    async def test_child_safety_workflow(self, temp_dir, exception_handler_config, audit_config):
+    async def test_child_safety_workflow(
+        self, temp_dir, exception_handler_config, audit_config
+    ):
         """Test child safety workflow with all security components"""
         # Initialize components
         audit_logger = AuditLogger(audit_config)
@@ -606,16 +614,31 @@ class TestPhase1SecurityFoundation:
 
         # Test all event types
         event_types = [
-            (AuditEventType.LOGIN_SUCCESS, AuditSeverity.INFO,
-             AuditCategory.AUTHENTICATION),
-            (AuditEventType.CHILD_INTERACTION_START,
-             AuditSeverity.INFO, AuditCategory.CHILD_SAFETY),
-            (AuditEventType.SAFETY_INCIDENT,
-             AuditSeverity.WARNING, AuditCategory.CHILD_SAFETY),
-            (AuditEventType.DATA_ACCESS, AuditSeverity.INFO,
-             AuditCategory.DATA_PROTECTION),
-            (AuditEventType.SECURITY_ALERT, AuditSeverity.CRITICAL,
-             AuditCategory.SYSTEM_SECURITY),
+            (
+                AuditEventType.LOGIN_SUCCESS,
+                AuditSeverity.INFO,
+                AuditCategory.AUTHENTICATION,
+            ),
+            (
+                AuditEventType.CHILD_INTERACTION_START,
+                AuditSeverity.INFO,
+                AuditCategory.CHILD_SAFETY,
+            ),
+            (
+                AuditEventType.SAFETY_INCIDENT,
+                AuditSeverity.WARNING,
+                AuditCategory.CHILD_SAFETY,
+            ),
+            (
+                AuditEventType.DATA_ACCESS,
+                AuditSeverity.INFO,
+                AuditCategory.DATA_PROTECTION,
+            ),
+            (
+                AuditEventType.SECURITY_ALERT,
+                AuditSeverity.CRITICAL,
+                AuditCategory.SYSTEM_SECURITY,
+            ),
         ]
 
         for event_type, severity, category in event_types:

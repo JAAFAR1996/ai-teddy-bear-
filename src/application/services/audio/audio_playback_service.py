@@ -7,8 +7,13 @@ from typing import Any, Callable, Dict, Optional
 
 import numpy as np
 
-from ....domain.audio.models import (AudioFormatType, AudioSession,
-                                     AudioSystemConfig, PerformanceMetrics)
+from ....domain.audio.models import (
+    AudioFormatType,
+    AudioSession,
+    AudioSystemConfig,
+    PerformanceMetrics,
+    PlaybackOptions,
+)
 
 
 class AudioPlaybackService:
@@ -58,7 +63,8 @@ class AudioPlaybackService:
             self.logger.info("Pygame mixer initialized successfully")
         except ImportError:
             self.pygame_available = False
-            self.logger.warning("Pygame not available - using alternative playback")
+            self.logger.warning(
+                "Pygame not available - using alternative playback")
         except Exception as e:
             self.pygame_available = False
             self.logger.error(f"Error initializing pygame mixer: {e}")
@@ -68,7 +74,8 @@ class AudioPlaybackService:
         try:
             from ....infrastructure.audio.tts_playback import TTSPlayback
 
-            self.tts = TTSPlayback(on_playback_complete=self._on_playback_complete)
+            self.tts = TTSPlayback(
+                on_playback_complete=self._on_playback_complete)
             self.tts_available = True
         except ImportError:
             self.tts = MockTTSPlayback()
@@ -79,48 +86,49 @@ class AudioPlaybackService:
         self,
         audio_data: Optional[np.ndarray] = None,
         filename: Optional[str] = None,
-        volume: Optional[float] = None,
         session: Optional[AudioSession] = None,
         format_hint: Optional[AudioFormatType] = None,
-        loop: bool = False,
-        fade_in: float = 0.0,
-        fade_out: float = 0.0,
+        options: Optional[PlaybackOptions] = None,
     ) -> bool:
         """Play audio from data or file."""
-        if self._is_playing and not loop:
+        options = options or PlaybackOptions()
+
+        if self._is_playing and not options.loop:
             self.logger.warning("Playback already in progress")
             return False
 
         try:
-            # Set defaults
-            if volume is None:
-                volume = self.config.volume_level
+            volume = (
+                options.volume
+                if options.volume is not None
+                else self.config.volume_level
+            )
 
-            # Validate inputs
             if audio_data is None and filename is None:
-                self.logger.error("Either audio_data or filename must be provided")
+                self.logger.error(
+                    "Either audio_data or filename must be provided")
                 return False
 
-            # Start playback
             self._start_playback(session)
 
-            # Choose playback method
             success = False
             if filename:
                 success = self._play_audio_file(
-                    filename, volume, loop, fade_in, fade_out, format_hint
+                    filename,
+                    volume,
+                    options.loop,
+                    options.fade_in,
+                    options.fade_out,
+                    format_hint,
                 )
             elif audio_data is not None:
                 success = self._play_audio_array(
-                    audio_data, volume, loop, fade_in, fade_out
-                )
+                    audio_data, volume, options.loop, options.fade_in, options.fade_out)
 
             if success:
-                # Update metrics
                 self.metrics.increment_playbacks()
                 if format_hint:
                     self.metrics.record_format_usage(format_hint.value)
-
                 self.logger.info("Audio playback started successfully")
             else:
                 self._stop_playback()
@@ -292,7 +300,11 @@ class AudioPlaybackService:
             self.logger.error(f"Array playback error: {e}")
             return False
 
-    def _play_with_pygame(self, filename: str, volume: float, loop: bool) -> bool:
+    def _play_with_pygame(
+            self,
+            filename: str,
+            volume: float,
+            loop: bool) -> bool:
         """Play audio file using pygame."""
         try:
             import pygame
@@ -313,7 +325,10 @@ class AudioPlaybackService:
         self.logger.info(f"Mock playback: {filename} at volume {volume}")
         return True
 
-    def _play_array_with_pygame(self, audio_data: np.ndarray, loop: bool) -> bool:
+    def _play_array_with_pygame(
+            self,
+            audio_data: np.ndarray,
+            loop: bool) -> bool:
         """Play numpy array using pygame."""
         self.logger.warning("Pygame array playback not fully implemented")
         return False

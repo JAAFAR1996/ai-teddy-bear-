@@ -1,4 +1,5 @@
 import ast
+
 """
 Mock Transformers library for development
 This prevents import errors when transformers is not installed
@@ -30,7 +31,8 @@ class MockTokenizer:
         return "مرحبا بك"
 
     def __call__(self, text, **kwargs):
-        return {"input_ids": [[1, 2, 3, 4, 5]], "attention_mask": [[1, 1, 1, 1, 1]]}
+        return {"input_ids": [[1, 2, 3, 4, 5]],
+                "attention_mask": [[1, 1, 1, 1, 1]]}
 
 
 class MockModel:

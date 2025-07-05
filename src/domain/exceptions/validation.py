@@ -11,7 +11,11 @@ from .base import AITeddyBearException, ErrorCategory, ErrorSeverity
 class ValidationException(AITeddyBearException):
     """Base validation exception"""
 
-    def __init__(self, message: str, field_name: Optional[str] = None, **kwargs):
+    def __init__(
+            self,
+            message: str,
+            field_name: Optional[str] = None,
+            **kwargs):
         super().__init__(
             message=message,
             error_code=kwargs.get("error_code", "VALIDATION_ERROR"),
@@ -39,8 +43,10 @@ class InvalidInputException(ValidationException):
             message += f", expected {expected_type}"
 
         super().__init__(
-            message=message, field_name=field_name, error_code="INVALID_INPUT", **kwargs
-        )
+            message=message,
+            field_name=field_name,
+            error_code="INVALID_INPUT",
+            **kwargs)
         self.invalid_value = invalid_value
         self.expected_type = expected_type
         self.constraints = constraints

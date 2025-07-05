@@ -106,8 +106,9 @@ class TestDataBuilder:
     ) -> TestParent:
         """Create a test parent"""
         parent = TestParent(
-            name=name or self.faker.name(), email=email or self.faker.email(), **kwargs
-        )
+            name=name or self.faker.name(),
+            email=email or self.faker.email(),
+            **kwargs)
 
         # Create children if requested
         for _ in range(children_count):
@@ -153,23 +154,31 @@ class TestDataBuilder:
         self._created_entities["interactions"].append(interaction)
         return interaction
 
-    def create_device(
-        self, device_id: Optional[str] = None, child_id: Optional[str] = None, **kwargs
-    ) -> Dict[str, Any]:
+    def create_device(self,
+                      device_id: Optional[str] = None,
+                      child_id: Optional[str] = None,
+                      **kwargs) -> Dict[str,
+                                        Any]:
         """Create a test device"""
         device = {
             "id": device_id or f"ESP32_{uuid.uuid4().hex[:8]}",
             "child_id": child_id,
             "firmware_version": f"v{random.randint(1, 5)}.{random.randint(0, 9)}.{random.randint(0, 99)}",
             "last_seen": datetime.utcnow(),
-            "battery_level": random.randint(20, 100),
+            "battery_level": random.randint(
+                20,
+                100),
             "is_online": True,
             **kwargs,
         }
         self._created_entities["devices"].append(device)
         return device
 
-    def create_batch(self, entity_type: str, count: int, **kwargs) -> List[Any]:
+    def create_batch(
+            self,
+            entity_type: str,
+            count: int,
+            **kwargs) -> List[Any]:
         """Create multiple entities of the same type"""
         creators = {
             "child": self.create_child,
@@ -212,7 +221,8 @@ class MockFactory:
         """Create a mock AI service"""
         mock = AsyncMock()
         mock.generate_response.return_value = default_response
-        mock.check_content_safety.return_value = {"is_safe": True, "confidence": 0.95}
+        mock.check_content_safety.return_value = {
+            "is_safe": True, "confidence": 0.95}
         mock.get_model_info.return_value = {
             "model": "gpt-4",
             "version": "2024-01",

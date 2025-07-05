@@ -1,19 +1,18 @@
+from src.infrastructure.external_services.speech_disorder_detector import (
+    SpeechDisorderDetector,
+)
+from src.infrastructure.database import Database
+from src.core.domain.entities.voice_games_engine import GameType, VoiceGameEngine
+from src.application.services.emotion_analyzer import EmotionAnalyzer
+import pytest
+from pathlib import Path
+import sys
 import logging
 
 logger = logging.getLogger(__name__)
 
-import sys
-from pathlib import Path
-
-import pytest
 
 sys.path.append(str(Path(__file__).parent.parent))
-from src.application.services.emotion_analyzer import EmotionAnalyzer
-from src.core.domain.entities.voice_games_engine import (GameType,
-                                                         VoiceGameEngine)
-from src.infrastructure.database import Database
-from src.infrastructure.external_services.speech_disorder_detector import \
-    SpeechDisorderDetector
 
 
 class TestBasicFunctionality:
@@ -51,7 +50,7 @@ class TestBasicFunctionality:
         """اختبار عمليات الأطفال في قاعدة البيانات"""
         db = Database(":memory:")
         result = db.create_child("test_child", "أحمد", 7, {"language": "ar"})
-        assert result == True
+        assert result
         child = db.get_child("test_child")
         assert child is not None
         assert child["name"] == "أحمد"
@@ -61,8 +60,9 @@ class TestBasicFunctionality:
         """اختبار حفظ التفاعلات"""
         db = Database(":memory:")
         db.create_child("test_child", "أحمد", 7)
-        result = db.save_interaction("test_child", "مرحبا", "مرحبا بك أيضاً", "happy")
-        assert result == True
+        result = db.save_interaction(
+            "test_child", "مرحبا", "مرحبا بك أيضاً", "happy")
+        assert result
         interactions = db.get_interactions("test_child")
         assert len(interactions) == 1
         assert interactions[0]["input_text"] == "مرحبا"
@@ -102,7 +102,7 @@ class TestSecurityFeatures:
 
         security = SecurityManager()
         result = security.validate_audio_file("test.wav", b"RIFF" + b"0" * 100)
-        assert result["valid"] == True
+        assert result["valid"]
         large_file = b"0" * (15 * 1024 * 1024)
         result = security.validate_audio_file("test.wav", large_file)
         assert result["valid"] == False

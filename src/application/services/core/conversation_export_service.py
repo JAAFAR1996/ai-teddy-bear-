@@ -94,7 +94,8 @@ class ConversationExportService:
             }
 
             if include_transcripts:
-                conv_data["messages"] = self._get_messages_for_conversation(conv["id"])
+                conv_data["messages"] = self._get_messages_for_conversation(
+                    conv["id"])
 
             data.append(conv_data)
 
@@ -121,7 +122,9 @@ class ConversationExportService:
         writer.writeheader()
 
         for conv in conversations:
-            topics_str = ", ".join(json.loads(conv["topics"])) if conv["topics"] else ""
+            topics_str = ", ".join(
+                json.loads(
+                    conv["topics"])) if conv["topics"] else ""
             duration_minutes = round((conv["duration"] or 0) / 60, 2)
 
             writer.writerow(
@@ -134,18 +137,18 @@ class ConversationExportService:
                     "message_count": conv["total_messages"] or 0,
                     "topics": topics_str,
                     "quality_score": (
-                        round(conv["quality_score"], 2) if conv["quality_score"] else ""
-                    ),
+                        round(
+                            conv["quality_score"],
+                            2) if conv["quality_score"] else ""),
                     "safety_score": (
-                        round(conv["safety_score"], 2) if conv["safety_score"] else ""
-                    ),
+                        round(
+                            conv["safety_score"],
+                            2) if conv["safety_score"] else ""),
                     "engagement_score": (
-                        round(conv["engagement_score"], 2)
-                        if conv["engagement_score"]
-                        else ""
-                    ),
-                }
-            )
+                        round(
+                            conv["engagement_score"],
+                            2) if conv["engagement_score"] else ""),
+                })
 
         return output.getvalue().encode("utf-8")
 
@@ -199,8 +202,8 @@ class ConversationExportService:
         try:
             cursor = self.connection.cursor()
             sql = """
-                SELECT role, content, timestamp FROM messages 
-                WHERE conversation_id = ? 
+                SELECT role, content, timestamp FROM messages
+                WHERE conversation_id = ?
                 ORDER BY sequence_number, timestamp
             """
             cursor.execute(sql, (conversation_id,))

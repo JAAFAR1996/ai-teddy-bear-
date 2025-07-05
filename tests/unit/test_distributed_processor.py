@@ -21,10 +21,12 @@ except ImportError:
 
             async def coro():
                 return sup.__call__(*args, **kwargs)
+
             return coro()
 
         def __await__(self):
             return self().__await__()
+
 
 import numpy as np
 import pytest
@@ -32,9 +34,16 @@ import pytest
 # Import the modules to test
 try:
     from src.infrastructure.ai.distributed_processor import (
-        RAY_AVAILABLE, AIServiceType, ChildContext, ConversationRequest,
-        ConversationResponse, DistributedAIProcessor, MockAIServices,
-        ProcessingMetrics, ProcessingPriority)
+        RAY_AVAILABLE,
+        AIServiceType,
+        ChildContext,
+        ConversationRequest,
+        ConversationResponse,
+        DistributedAIProcessor,
+        MockAIServices,
+        ProcessingMetrics,
+        ProcessingPriority,
+    )
 
     DISTRIBUTED_AI_IMPORTS_AVAILABLE = True
 except ImportError as e:
@@ -97,8 +106,9 @@ class TestConversationRequest:
         audio_data = b"fake_audio_data"
 
         request = ConversationRequest(
-            request_id="req_001", audio_data=audio_data, child_context=child_context
-        )
+            request_id="req_001",
+            audio_data=audio_data,
+            child_context=child_context)
 
         assert request.request_id == "req_001"
         assert request.audio_data == audio_data

@@ -7,8 +7,12 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
 from src.application.services.ai.models.ai_response_models import (
-    AIResponseModel, AIServiceMetrics, ConversationContext, EmotionAnalysis,
-    ResponseGenerationRequest)
+    AIResponseModel,
+    AIServiceMetrics,
+    ConversationContext,
+    EmotionAnalysis,
+    ResponseGenerationRequest,
+)
 from src.core.domain.entities.child import Child
 
 

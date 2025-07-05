@@ -51,7 +51,8 @@ class EmotionService(BaseService):
 
     def _create_emotion_analyses_table(self, cursor):
         """إنشاء جدول المشاعر الأساسي"""
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS emotion_analyses (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 udid TEXT NOT NULL,
@@ -83,11 +84,13 @@ class EmotionService(BaseService):
                 response_text TEXT DEFAULT '',
                 session_context TEXT DEFAULT '{}'
             )
-        """)
+        """
+        )
 
     def _create_parent_feedback_table(self, cursor):
         """إنشاء جدول التغذية الراجعة من الوالدين"""
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS parent_feedback (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 udid TEXT NOT NULL,
@@ -97,11 +100,13 @@ class EmotionService(BaseService):
                 timestamp TEXT NOT NULL,
                 FOREIGN KEY (interaction_id) REFERENCES emotion_analyses (id)
             )
-        """)
+        """
+        )
 
     def _create_child_stats_table(self, cursor):
         """إنشاء جدول إحصائيات الطفل"""
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS child_emotion_stats (
                 udid TEXT PRIMARY KEY,
                 child_name TEXT NOT NULL,
@@ -115,14 +120,17 @@ class EmotionService(BaseService):
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
-        """)
+        """
+        )
 
     def _create_database_indexes(self, cursor):
         """إنشاء indexes للبحث السريع"""
         cursor.execute(
-            "CREATE INDEX IF NOT EXISTS idx_udid_timestamp ON emotion_analyses (udid, timestamp)")
+            "CREATE INDEX IF NOT EXISTS idx_udid_timestamp ON emotion_analyses (udid, timestamp)"
+        )
         cursor.execute(
-            "CREATE INDEX IF NOT EXISTS idx_dominant_emotion ON emotion_analyses (dominant_emotion)")
+            "CREATE INDEX IF NOT EXISTS idx_dominant_emotion ON emotion_analyses (dominant_emotion)"
+        )
 
     async def save_emotion_analysis(
         self,
@@ -131,7 +139,7 @@ class EmotionService(BaseService):
         emotion_data: ChildVoiceEmotion,
         transcription: str = "",
         response_text: str = "",
-        session_context: Dict[str, Any] = None
+        session_context: Dict[str, Any] = None,
     ) -> str:
         """حفظ نتيجة تحليل المشاعر"""
 
@@ -142,30 +150,50 @@ class EmotionService(BaseService):
                 cursor = conn.cursor()
 
                 # حفظ التحليل
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO emotion_analyses (
                         udid, child_name, timestamp, dominant_emotion,
                         joy, sadness, anger, fear, excitement, calmness, surprise,
                         curiosity, frustration, shyness, playfulness, tiredness,
                         energy_level, speech_rate, pitch_variation, voice_quality,
-                        confidence, emotional_intensity, attention_level, 
+                        confidence, emotional_intensity, attention_level,
                         communication_clarity, developmental_indicators,
                         transcription, response_text, session_context
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                              ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    udid, child_name, emotion_data.timestamp, emotion_data.dominant_emotion,
-                    emotion_data.joy, emotion_data.sadness, emotion_data.anger,
-                    emotion_data.fear, emotion_data.excitement, emotion_data.calmness,
-                    emotion_data.surprise, emotion_data.curiosity, emotion_data.frustration,
-                    emotion_data.shyness, emotion_data.playfulness, emotion_data.tiredness,
-                    emotion_data.energy_level, emotion_data.speech_rate,
-                    emotion_data.pitch_variation, emotion_data.voice_quality,
-                    emotion_data.confidence, emotion_data.emotional_intensity,
-                    emotion_data.attention_level, emotion_data.communication_clarity,
-                    json.dumps(emotion_data.developmental_indicators),
-                    transcription, response_text, json.dumps(session_context)
-                ))
+                """,
+                    (
+                        udid,
+                        child_name,
+                        emotion_data.timestamp,
+                        emotion_data.dominant_emotion,
+                        emotion_data.joy,
+                        emotion_data.sadness,
+                        emotion_data.anger,
+                        emotion_data.fear,
+                        emotion_data.excitement,
+                        emotion_data.calmness,
+                        emotion_data.surprise,
+                        emotion_data.curiosity,
+                        emotion_data.frustration,
+                        emotion_data.shyness,
+                        emotion_data.playfulness,
+                        emotion_data.tiredness,
+                        emotion_data.energy_level,
+                        emotion_data.speech_rate,
+                        emotion_data.pitch_variation,
+                        emotion_data.voice_quality,
+                        emotion_data.confidence,
+                        emotion_data.emotional_intensity,
+                        emotion_data.attention_level,
+                        emotion_data.communication_clarity,
+                        json.dumps(emotion_data.developmental_indicators),
+                        transcription,
+                        response_text,
+                        json.dumps(session_context),
+                    ),
+                )
 
                 interaction_id = str(cursor.lastrowid)
                 conn.commit()
@@ -174,7 +202,8 @@ class EmotionService(BaseService):
                 await self._update_child_stats(udid, child_name, emotion_data)
 
                 logger.info(
-                    f"✅ Emotion analysis saved for {child_name} (ID: {interaction_id})")
+                    f"✅ Emotion analysis saved for {child_name} (ID: {interaction_id})"
+                )
                 return interaction_id
 
         except Exception as e:
@@ -182,9 +211,7 @@ class EmotionService(BaseService):
             raise
 
     async def get_emotion_history(
-        self,
-        udid: str,
-        days: int = 7
+        self, udid: str, days: int = 7
     ) -> List[Dict[str, Any]]:
         """استرجاع تاريخ المشاعر للطفل"""
 
@@ -194,11 +221,14 @@ class EmotionService(BaseService):
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
 
-                cursor.execute("""
-                    SELECT * FROM emotion_analyses 
+                cursor.execute(
+                    """
+                    SELECT * FROM emotion_analyses
                     WHERE udid = ? AND timestamp >= ?
                     ORDER BY timestamp DESC
-                """, (udid, since_date))
+                """,
+                    (udid, since_date),
+                )
 
                 columns = [description[0]
                            for description in cursor.description]
@@ -209,14 +239,16 @@ class EmotionService(BaseService):
 
                     # تحويل JSON strings مرة أخرى إلى objects
                     try:
-                        row_dict['developmental_indicators'] = json.loads(
-                            row_dict['developmental_indicators'])
-                        row_dict['session_context'] = json.loads(
-                            row_dict['session_context'])
+                        row_dict["developmental_indicators"] = json.loads(
+                            row_dict["developmental_indicators"]
+                        )
+                        row_dict["session_context"] = json.loads(
+                            row_dict["session_context"]
+                        )
                     except json.JSONDecodeError as e:
                         logger.error(f"Error in operation: {e}", exc_info=True)
-                        row_dict['developmental_indicators'] = []
-                        row_dict['session_context'] = {}
+                        row_dict["developmental_indicators"] = []
+                        row_dict["session_context"] = {}
 
                     results.append(row_dict)
 
@@ -227,8 +259,7 @@ class EmotionService(BaseService):
             return []
 
     async def analyze_emotion_trends(
-        self,
-        history: List[Dict[str, Any]]
+        self, history: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """تحليل اتجاهات المشاعر"""
 
@@ -237,8 +268,16 @@ class EmotionService(BaseService):
 
         try:
             # حساب متوسط المشاعر
-            emotion_fields = ['joy', 'sadness', 'anger', 'fear', 'excitement',
-                              'curiosity', 'playfulness', 'tiredness']
+            emotion_fields = [
+                "joy",
+                "sadness",
+                "anger",
+                "fear",
+                "excitement",
+                "curiosity",
+                "playfulness",
+                "tiredness",
+            ]
 
             avg_emotions = {}
             for field in emotion_fields:
@@ -250,7 +289,7 @@ class EmotionService(BaseService):
                     avg_emotions[field] = 0.0
 
             # المشاعر المهيمنة
-            dominant_emotions = [item['dominant_emotion'] for item in history]
+            dominant_emotions = [item["dominant_emotion"] for item in history]
             emotion_counts = {}
             for emotion in dominant_emotions:
                 emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
@@ -262,8 +301,11 @@ class EmotionService(BaseService):
             stability = self._calculate_emotional_stability(history)
 
             # تحليل الطاقة والنشاط
-            energy_levels = [item['energy_level']
-                             for item in history if item['energy_level'] is not None]
+            energy_levels = [
+                item["energy_level"]
+                for item in history
+                if item["energy_level"] is not None
+            ]
             avg_energy = statistics.mean(
                 energy_levels) if energy_levels else 0.5
 
@@ -271,7 +313,7 @@ class EmotionService(BaseService):
             all_indicators = []
             for item in history:
                 try:
-                    indicators = item['developmental_indicators']
+                    indicators = item["developmental_indicators"]
                     if isinstance(indicators, str):
                         indicators = json.loads(indicators)
                     all_indicators.extend(indicators)
@@ -285,7 +327,8 @@ class EmotionService(BaseService):
                     indicator, 0) + 1
 
             top_indicators = sorted(
-                indicator_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+                indicator_counts.items(), key=lambda x: x[1], reverse=True
+            )[:5]
 
             # توصيات بناء على التحليل
             recommendations = self._generate_trend_recommendations(
@@ -297,7 +340,7 @@ class EmotionService(BaseService):
                 "average_emotions": avg_emotions,
                 "most_common_emotion": {
                     "emotion": most_common_emotion[0],
-                    "percentage": round(most_common_emotion[1] / len(history) * 100, 1)
+                    "percentage": round(most_common_emotion[1] / len(history) * 100, 1),
                 },
                 "emotion_distribution": emotion_counts,
                 "emotional_stability": round(stability, 3),
@@ -307,23 +350,29 @@ class EmotionService(BaseService):
                     for indicator, count in top_indicators
                 ],
                 "recommendations": recommendations,
-                "summary": self._generate_summary(avg_emotions, most_common_emotion[0], stability)
+                "summary": self._generate_summary(
+                    avg_emotions, most_common_emotion[0], stability
+                ),
             }
 
         except Exception as e:
             logger.error(f"Error: {e}", exc_info=True)
             return {"error": f"خطأ في تحليل الاتجاهات: {str(e)}"}
 
-    def _calculate_emotional_stability(self, history: List[Dict[str, Any]]) -> float:
+    def _calculate_emotional_stability(
+            self, history: List[Dict[str, Any]]) -> float:
         """حساب الاستقرار العاطفي"""
 
         if len(history) < 2:
             return 1.0
 
         # حساب التباين في المشاعر المهيمنة
-        dominant_emotions = [item['dominant_emotion'] for item in history]
-        changes = sum(1 for i in range(1, len(dominant_emotions))
-                      if dominant_emotions[i] != dominant_emotions[i-1])
+        dominant_emotions = [item["dominant_emotion"] for item in history]
+        changes = sum(
+            1
+            for i in range(1, len(dominant_emotions))
+            if dominant_emotions[i] != dominant_emotions[i - 1]
+        )
 
         stability = 1.0 - (changes / (len(dominant_emotions) - 1))
         return max(0.0, stability)
@@ -333,29 +382,29 @@ class EmotionService(BaseService):
         avg_emotions: Dict[str, float],
         most_common: str,
         stability: float,
-        avg_energy: float
+        avg_energy: float,
     ) -> List[str]:
         """توليد توصيات بناء على اتجاهات المشاعر"""
 
         recommendations = []
 
         # توصيات للمشاعر السلبية المرتفعة
-        if avg_emotions.get('sadness', 0) > 0.5:
+        if avg_emotions.get("sadness", 0) > 0.5:
             recommendations.append(
                 "مستوى حزن مرتفع - يُنصح بأنشطة ممتعة ومحفزة للمزاج")
             recommendations.append("قد يحتاج الطفل لدعم عاطفي إضافي")
 
-        if avg_emotions.get('fear', 0) > 0.4:
+        if avg_emotions.get("fear", 0) > 0.4:
             recommendations.append(
                 "مستوى قلق ملحوظ - يُنصح ببيئة آمنة ومطمئنة")
             recommendations.append("تجنب المحتوى المخيف أو المثير للقلق")
 
         # توصيات للمشاعر الإيجابية
-        if avg_emotions.get('curiosity', 0) > 0.6:
+        if avg_emotions.get("curiosity", 0) > 0.6:
             recommendations.append("فضول عالي - وقت ممتاز للأنشطة التعليمية")
             recommendations.append("شجع الاستكشاف والتجارب العلمية البسيطة")
 
-        if avg_emotions.get('playfulness', 0) > 0.6:
+        if avg_emotions.get("playfulness", 0) > 0.6:
             recommendations.append("حب اللعب عالي - أضف ألعاب تفاعلية ونشطة")
 
         # توصيات للاستقرار العاطفي
@@ -375,25 +424,24 @@ class EmotionService(BaseService):
 
         return recommendations
 
-    def _generate_summary(
-        self,
-        avg_emotions: Dict[str, float],
-        most_common: str,
-        stability: float
-    ) -> str:
+    def _generate_summary(self,
+                          avg_emotions: Dict[str,
+                                             float],
+                          most_common: str,
+                          stability: float) -> str:
         """توليد ملخص نصي للحالة العاطفية"""
 
         # ترجمة المشاعر للعربية
         emotion_translations = {
-            'joy': 'السعادة',
-            'sadness': 'الحزن',
-            'curiosity': 'الفضول',
-            'playfulness': 'حب اللعب',
-            'fear': 'القلق',
-            'excitement': 'الإثارة',
-            'calmness': 'الهدوء',
-            'tiredness': 'التعب',
-            'anger': 'الغضب'
+            "joy": "السعادة",
+            "sadness": "الحزن",
+            "curiosity": "الفضول",
+            "playfulness": "حب اللعب",
+            "fear": "القلق",
+            "excitement": "الإثارة",
+            "calmness": "الهدوء",
+            "tiredness": "التعب",
+            "anger": "الغضب",
         }
 
         dominant_ar = emotion_translations.get(most_common, most_common)
@@ -410,7 +458,8 @@ class EmotionService(BaseService):
         for emotion, value in avg_emotions.items():
             if value > 0.6:
                 high_emotions.append(
-                    emotion_translations.get(emotion, emotion))
+                    emotion_translations.get(
+                        emotion, emotion))
 
         summary = f"الطفل يظهر غالباً مشاعر {dominant_ar} ويبدو {stability_desc}."
 
@@ -420,40 +469,43 @@ class EmotionService(BaseService):
         return summary
 
     async def save_parent_feedback(
-        self,
-        udid: str,
-        interaction_id: str,
-        feedback: str,
-        accuracy_rating: int
-    ):
+            self,
+            udid: str,
+            interaction_id: str,
+            feedback: str,
+            accuracy_rating: int):
         """حفظ تغذية راجعة من الوالدين"""
 
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
 
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO parent_feedback (
                         udid, interaction_id, feedback, accuracy_rating, timestamp
                     ) VALUES (?, ?, ?, ?, ?)
-                """, (
-                    udid, interaction_id, feedback, accuracy_rating,
-                    datetime.now().isoformat()
-                ))
+                """,
+                    (
+                        udid,
+                        interaction_id,
+                        feedback,
+                        accuracy_rating,
+                        datetime.now().isoformat(),
+                    ),
+                )
 
                 conn.commit()
                 logger.info(
-                    f"✅ Parent feedback saved for interaction {interaction_id}")
+                    f"✅ Parent feedback saved for interaction {interaction_id}"
+                )
 
         except Exception as e:
             logger.error(f"Error: {e}", exc_info=True)
             raise
 
     async def _update_child_stats(
-        self,
-        udid: str,
-        child_name: str,
-        emotion_data: ChildVoiceEmotion
+        self, udid: str, child_name: str, emotion_data: ChildVoiceEmotion
     ):
         """تحديث إحصائيات الطفل"""
 
@@ -463,33 +515,44 @@ class EmotionService(BaseService):
 
                 # التحقق من وجود الطفل في الإحصائيات
                 cursor.execute(
-                    "SELECT * FROM child_emotion_stats WHERE udid = ?", (udid,))
+                    "SELECT * FROM child_emotion_stats WHERE udid = ?", (udid,)
+                )
                 existing = cursor.fetchone()
 
                 current_time = datetime.now().isoformat()
 
                 if existing:
                     # تحديث الإحصائيات الموجودة
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         UPDATE child_emotion_stats SET
                             total_interactions = total_interactions + 1,
                             last_analysis = ?,
                             updated_at = ?
                         WHERE udid = ?
-                    """, (current_time, current_time, udid))
+                    """,
+                        (current_time, current_time, udid),
+                    )
 
                 else:
                     # إنشاء إحصائيات جديدة
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         INSERT INTO child_emotion_stats (
-                            udid, child_name, total_interactions, 
-                            most_common_emotion, last_analysis, 
+                            udid, child_name, total_interactions,
+                            most_common_emotion, last_analysis,
                             created_at, updated_at
                         ) VALUES (?, ?, 1, ?, ?, ?, ?)
-                    """, (
-                        udid, child_name, emotion_data.dominant_emotion,
-                        current_time, current_time, current_time
-                    ))
+                    """,
+                        (
+                            udid,
+                            child_name,
+                            emotion_data.dominant_emotion,
+                            current_time,
+                            current_time,
+                            current_time,
+                        ),
+                    )
 
                 conn.commit()
 
@@ -504,7 +567,8 @@ class EmotionService(BaseService):
                 cursor = conn.cursor()
 
                 cursor.execute(
-                    "SELECT * FROM child_emotion_stats WHERE udid = ?", (udid,))
+                    "SELECT * FROM child_emotion_stats WHERE udid = ?", (udid,)
+                )
                 result = cursor.fetchone()
 
                 if result:

@@ -158,7 +158,8 @@ class AlertManager:
     async def send_critical_alert(self, error_data: Dict[str, Any]) -> None:
         """إرسال تنبيه critical"""
         try:
-            category = error_data.get("category", ErrorCategory.INFRASTRUCTURE.value)
+            category = error_data.get(
+                "category", ErrorCategory.INFRASTRUCTURE.value)
             rule = self.alert_rules.get(
                 category, self.alert_rules[ErrorCategory.INFRASTRUCTURE.value]
             )
@@ -169,7 +170,8 @@ class AlertManager:
                 title=f"Critical Error: {error_data.get('error_code', 'UNKNOWN')}",
                 message=self._format_alert_message(error_data),
                 priority=rule["priority"],
-                channels=[AlertChannel(c) for c in rule["channels"]],
+                channels=[
+                    AlertChannel(c) for c in rule["channels"]],
                 error_data=error_data,
                 deduplication_key=self._generate_dedup_key(error_data),
             )
@@ -314,12 +316,47 @@ Actions Required:
         except Exception as e:
             logger.error("Failed to send email alert", error=str(e))
 
-    def _send_email_sync(self, config: Dict[str, Any], msg: MIMEMultipart) -> None:
+    def _send_email_sync(
+            self, config: Dict[str, Any], msg: MIMEMultipart) -> None:
         """إرسال email بشكل synchronous"""
         with smtplib.SMTP(config["smtp_host"], config["smtp_port"]) as server:
             server.starttls()
             server.login(config["smtp_user"], config["smtp_password"])
             server.send_message(msg)
+
+    def _build_slack_message(
+        self, alert: Alert, config: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Builds the Slack message payload."""
+        return {"channel": config["channel"],
+                "username": config["username"],
+                "icon_emoji": self._get_priority_emoji(alert.priority),
+                "attachments": [{"color": self._get_priority_color(alert.priority),
+                                 "title": alert.title,
+                                 "text": alert.message,
+                                 "fields": [{"title": "Priority",
+                                             "value": alert.priority.value.upper(),
+                                             "short": True,
+                                             },
+                                {"title": "Category",
+                                     "value": alert.error_data.get("category",
+                                                                   "Unknown"),
+                                     "short": True,
+                                 },
+                    {"title": "Error Code",
+                                     "value": alert.error_data.get("error_code",
+                                                                   "Unknown"),
+                                     "short": True,
+                     },
+                    {"title": "Time",
+                                     "value": alert.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC"),
+                                     "short": True,
+                     },
+                ],
+                    "footer": "AI Teddy Bear Alert System",
+                    "ts": int(alert.timestamp.timestamp()),
+                }],
+                }
 
     async def _send_slack(self, alert: Alert) -> None:
         """إرسال Slack notification"""
@@ -330,45 +367,7 @@ Actions Required:
                 logger.warning("Slack webhook not configured")
                 return
 
-            # Format message for Slack
-            slack_message = {
-                "channel": config["channel"],
-                "username": config["username"],
-                "icon_emoji": self._get_priority_emoji(alert.priority),
-                "attachments": [
-                    {
-                        "color": self._get_priority_color(alert.priority),
-                        "title": alert.title,
-                        "text": alert.message,
-                        "fields": [
-                            {
-                                "title": "Priority",
-                                "value": alert.priority.value.upper(),
-                                "short": True,
-                            },
-                            {
-                                "title": "Category",
-                                "value": alert.error_data.get("category", "Unknown"),
-                                "short": True,
-                            },
-                            {
-                                "title": "Error Code",
-                                "value": alert.error_data.get("error_code", "Unknown"),
-                                "short": True,
-                            },
-                            {
-                                "title": "Time",
-                                "value": alert.timestamp.strftime(
-                                    "%Y-%m-%d %H:%M:%S UTC"
-                                ),
-                                "short": True,
-                            },
-                        ],
-                        "footer": "AI Teddy Bear Alert System",
-                        "ts": int(alert.timestamp.timestamp()),
-                    }
-                ],
-            }
+            slack_message = self._build_slack_message(alert, config)
 
             if not self._session:
                 self._session = aiohttp.ClientSession()
@@ -377,10 +376,17 @@ Actions Required:
                 if response.status == 200:
                     logger.info("Slack alert sent", alert_id=alert.id)
                 else:
-                    logger.error("Failed to send Slack alert", status=response.status)
+                    logger.error(
+                        "Failed to send Slack alert",
+                        status=response.status,
+                        body=await response.text(),
+                    )
 
         except Exception as e:
-            logger.error("Failed to send Slack alert", error=str(e))
+            logger.error(
+                "Failed to send Slack alert",
+                error=str(e),
+                exc_info=True)
 
     def _get_priority_emoji(self, priority: AlertPriority) -> str:
         """الحصول على emoji حسب الأولوية"""
@@ -424,10 +430,38 @@ Actions Required:
                 if response.status in (200, 201, 202):
                     logger.info("Webhook alert sent", alert_id=alert.id)
                 else:
-                    logger.error("Failed to send webhook alert", status=response.status)
+                    logger.error(
+                        "Failed to send webhook alert",
+                        status=response.status)
 
         except Exception as e:
             logger.error("Failed to send webhook alert", error=str(e))
+
+    def _build_fcm_payload(
+        self, alert: Alert, parent_tokens: List[str]
+    ) -> Dict[str, Any]:
+        """Builds the FCM payload for push notifications."""
+        context = alert.error_data.get("context", {})
+        return {
+            "registration_ids": parent_tokens,
+            "notification": {
+                "title": f"⚠️ {alert.title}",
+                "body": alert.error_data.get("message", ""),
+                "icon": "notification_icon",
+                "sound": "default",
+            },
+            "data": {
+                "alert_id": alert.id,
+                "priority": alert.priority.value,
+                "category": alert.error_data.get("category"),
+                "child_id": context.get("child_id"),
+            },
+            "priority": (
+                "high"
+                if alert.priority in (AlertPriority.P1, AlertPriority.P2)
+                else "normal"
+            ),
+        }
 
     async def _send_push_notification(self, alert: Alert) -> None:
         """إرسال push notification للوالدين"""
@@ -438,40 +472,22 @@ Actions Required:
                 logger.warning("FCM not configured")
                 return
 
-            # Get parent tokens from context
             context = alert.error_data.get("context", {})
             child_id = context.get("child_id")
             if not child_id:
+                logger.warning(
+                    "child_id not found in alert context for push notification."
+                )
                 return
 
             # TODO: Get parent FCM tokens from database
             parent_tokens = []  # await self._get_parent_tokens(child_id)
 
             if not parent_tokens:
-                logger.warning("No parent tokens found", child_id=child_id)
+                logger.warning("No parent FCM tokens found", child_id=child_id)
                 return
 
-            # Send FCM notification
-            fcm_data = {
-                "registration_ids": parent_tokens,
-                "notification": {
-                    "title": f"⚠️ {alert.title}",
-                    "body": alert.error_data.get("message", ""),
-                    "icon": "notification_icon",
-                    "sound": "default",
-                },
-                "data": {
-                    "alert_id": alert.id,
-                    "priority": alert.priority.value,
-                    "category": alert.error_data.get("category"),
-                    "child_id": child_id,
-                },
-                "priority": (
-                    "high"
-                    if alert.priority in (AlertPriority.P1, AlertPriority.P2)
-                    else "normal"
-                ),
-            }
+            fcm_data = self._build_fcm_payload(alert, parent_tokens)
 
             if not self._session:
                 self._session = aiohttp.ClientSession()
@@ -488,8 +504,8 @@ Actions Required:
                     logger.info("Push notification sent", alert_id=alert.id)
                 else:
                     logger.error(
-                        "Failed to send push notification", status=response.status
-                    )
+                        "Failed to send push notification",
+                        status=response.status)
 
         except Exception as e:
             logger.error("Failed to send push notification", error=str(e))
@@ -540,8 +556,8 @@ Actions Required:
                     logger.info("PagerDuty alert sent", alert_id=alert.id)
                 else:
                     logger.error(
-                        "Failed to send PagerDuty alert", status=response.status
-                    )
+                        "Failed to send PagerDuty alert",
+                        status=response.status)
 
         except Exception as e:
             logger.error("Failed to send PagerDuty alert", error=str(e))
@@ -556,7 +572,9 @@ Actions Required:
             # TODO: Implement acknowledgment checking
 
             # If not acknowledged, escalate
-            logger.warning("Alert not acknowledged, escalating", alert_id=alert.id)
+            logger.warning(
+                "Alert not acknowledged, escalating",
+                alert_id=alert.id)
 
             # Send to additional channels or higher priority
             # TODO: Implement escalation logic

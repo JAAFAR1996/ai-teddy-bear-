@@ -71,15 +71,16 @@ class KafkaEventPublisher:
             try:
                 self._producer = KafkaProducer(
                     **self.config.to_kafka_config(),
-                    value_serializer=lambda v: json.dumps(v, default=str).encode(
-                        "utf-8"
-                    ),
+                    value_serializer=lambda v: json.dumps(
+                        v,
+                        default=str).encode("utf-8"),
                     key_serializer=lambda v: v.encode("utf-8") if v else None,
                 )
                 logger.info("Kafka producer initialized successfully")
             except Exception as e:
                 logger.error(f"Failed to initialize Kafka producer: {e}")
-                raise EventPublishingError(f"Producer initialization failed: {e}")
+                raise EventPublishingError(
+                    f"Producer initialization failed: {e}")
 
         return self._producer
 
@@ -174,7 +175,8 @@ class KafkaEventPublisher:
         # Publish each topic's events in parallel
         tasks = []
         for topic, topic_events in events_by_topic.items():
-            task = self._publish_topic_batch(topic, topic_events, partition_key)
+            task = self._publish_topic_batch(
+                topic, topic_events, partition_key)
             tasks.append(task)
 
         # Wait for all batches to complete
@@ -234,7 +236,8 @@ class KafkaEventPublisher:
             logger.error(f"Kafka error sending event to topic {topic}: {e}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error sending event to topic {topic}: {e}")
+            logger.error(
+                f"Unexpected error sending event to topic {topic}: {e}")
             raise
 
     async def _publish_topic_batch(
@@ -350,7 +353,10 @@ class KafkaEventPublisher:
 
         return headers
 
-    async def _send_to_dlq(self, event: BaseDomainEvent, error_message: str) -> None:
+    async def _send_to_dlq(
+            self,
+            event: BaseDomainEvent,
+            error_message: str) -> None:
         """Send failed event to dead letter queue"""
 
         try:
@@ -424,7 +430,9 @@ class KafkaEventPublisher:
                 "status": "healthy",
             }
 
-            future = producer.send(KafkaTopics.HEALTH_CHECK.name, value=test_event)
+            future = producer.send(
+                KafkaTopics.HEALTH_CHECK.name,
+                value=test_event)
 
             # Wait for completion with short timeout
             future.get(timeout=5)

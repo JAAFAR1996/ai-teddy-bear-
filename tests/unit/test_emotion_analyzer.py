@@ -40,5 +40,6 @@ class TestEmotionAnalyzer:
         result = self.analyzer.analyze_voice(audio_features)
 
         assert isinstance(result, EmotionResult)
-        assert result.primary_emotion in ["happy", "sad", "angry", "excited", "calm"]
+        assert result.primary_emotion in [
+            "happy", "sad", "angry", "excited", "calm"]
         assert 0 <= result.confidence <= 1

@@ -39,7 +39,12 @@ class ChartGenerationService:
             conversations = [item["conversations"] for item in daily_data]
 
             plt.figure(figsize=(12, 6))
-            plt.plot(dates, conversations, marker="o", linewidth=2, markersize=6)
+            plt.plot(
+                dates,
+                conversations,
+                marker="o",
+                linewidth=2,
+                markersize=6)
             plt.title(title, fontsize=16, fontweight="bold")
             plt.xlabel("Date", fontsize=12)
             plt.ylabel("Number of Conversations", fontsize=12)
@@ -70,15 +75,19 @@ class ChartGenerationService:
             colors = plt.cm.Set3(np.linspace(0, 1, len(topics)))
 
             plt.pie(
-                counts, labels=topics, autopct="%1.1f%%", colors=colors, startangle=90
-            )
+                counts,
+                labels=topics,
+                autopct="%1.1f%%",
+                colors=colors,
+                startangle=90)
             plt.title(title, fontsize=16, fontweight="bold")
             plt.axis("equal")
 
             return self._save_chart_to_base64()
 
         except Exception as e:
-            self.logger.error(f"Error generating topic distribution chart: {e}")
+            self.logger.error(
+                f"Error generating topic distribution chart: {e}")
             return ""
 
     def generate_sentiment_chart(
@@ -169,11 +178,17 @@ class ChartGenerationService:
         try:
             weeks = [f"Week {i+1}" for i in range(len(weekly_data))]
             values = [
-                week_data["analytics"].get(metric, 0) for week_data in weekly_data
-            ]
+                week_data["analytics"].get(
+                    metric,
+                    0) for week_data in weekly_data]
 
             plt.figure(figsize=(10, 6))
-            bars = plt.bar(weeks, values, color="skyblue", edgecolor="navy", alpha=0.7)
+            bars = plt.bar(
+                weeks,
+                values,
+                color="skyblue",
+                edgecolor="navy",
+                alpha=0.7)
 
             plt.title(title, fontsize=16, fontweight="bold")
             plt.ylabel(metric.replace("_", " ").title(), fontsize=12)
@@ -269,8 +284,7 @@ class ChartGenerationService:
             # Topic distribution
             if "topics_frequency" in analytics_data:
                 charts["topic_distribution"] = self.generate_topic_distribution_chart(
-                    analytics_data["topics_frequency"]
-                )
+                    analytics_data["topics_frequency"])
 
             # Sentiment breakdown
             if "sentiment_breakdown" in analytics_data:
@@ -283,14 +297,12 @@ class ChartGenerationService:
                 progress_data = analytics_data["learning_progress"]
                 if isinstance(progress_data, dict):
                     charts["learning_progress"] = self.generate_learning_progress_chart(
-                        progress_data
-                    )
+                        progress_data)
 
             # Time distribution
             if "peak_usage_hours" in analytics_data:
                 charts["time_distribution"] = self.generate_time_distribution_chart(
-                    analytics_data["peak_usage_hours"]
-                )
+                    analytics_data["peak_usage_hours"])
 
             self.logger.info(f"Generated {len(charts)} charts successfully")
 

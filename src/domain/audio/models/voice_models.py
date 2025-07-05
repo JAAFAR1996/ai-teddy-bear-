@@ -10,8 +10,7 @@ from typing import Dict
 try:
     from elevenlabs import VoiceSettings
 except ImportError:
-    from src.infrastructure.external_services.mock.elevenlabs import \
-        VoiceSettings
+    from src.infrastructure.external_services.mock.elevenlabs import VoiceSettings
 
 
 class EmotionalTone(Enum):

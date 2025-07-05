@@ -75,7 +75,11 @@ class EventSourcingRepositoryImpl(EventSourcingRepository):
 
         return aggregate
 
-    async def _persist_events(self, aggregate: T, events, stream_id: str) -> None:
+    async def _persist_events(
+            self,
+            aggregate: T,
+            events,
+            stream_id: str) -> None:
         """Persist events to event store"""
 
         await self.event_store.append_events(
@@ -154,12 +158,17 @@ class EventSourcingRepositoryImpl(EventSourcingRepository):
         """Rebuild aggregate from snapshot data"""
         return self.aggregate_type(**snapshot.data)
 
-    def _deserialize_event(self, stored_event: StoredEvent) -> Optional[DomainEvent]:
+    def _deserialize_event(
+            self,
+            stored_event: StoredEvent) -> Optional[DomainEvent]:
         """Deserialize stored event back to domain event"""
         # Simple deserialization - extend with event registry in production
         return stored_event.data
 
-    def _apply_event_to_aggregate(self, aggregate: T, event: DomainEvent) -> None:
+    def _apply_event_to_aggregate(
+            self,
+            aggregate: T,
+            event: DomainEvent) -> None:
         """Apply domain event to aggregate for replay"""
         if hasattr(aggregate, "apply_event"):
             aggregate.apply_event(event)

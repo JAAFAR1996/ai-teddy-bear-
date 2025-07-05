@@ -571,11 +571,9 @@ class PerformanceTester:
                     value=avg_cpu_usage,
                     unit="percent",
                     timestamp=time.time(),
-                    success=avg_cpu_usage
-                    <= self.performance_targets["max_cpu_percent"],
+                    success=avg_cpu_usage <= self.performance_targets["max_cpu_percent"],
                 ),
-            ]
-        )
+            ])
 
         return results
 
@@ -716,21 +714,15 @@ class PerformanceTester:
                     f"test request for {test_context}", context
                 )
             else:
-                return target_function(f"test request for {test_context}", context)
+                return target_function(
+                    f"test request for {test_context}", context)
         except Exception as e:
             raise e
 
-    async def _generate_performance_report(
-        self, test_results: List[PerformanceResult], start_time: float, end_time: float
-    ) -> PerformanceReport:
-        """Generate comprehensive performance report"""
-
-        # Calculate summary metrics
-        total_tests = len(test_results)
-        passed_tests = len([r for r in test_results if r.success])
-        pass_rate = passed_tests / total_tests if total_tests > 0 else 0
-
-        # Group results by metric type
+    def _summarize_metrics(
+        self, test_results: List[PerformanceResult]
+    ) -> Dict[str, Any]:
+        """Summarize performance metrics from a list of test results."""
         metrics_summary = {}
         for metric in PerformanceMetric:
             metric_results = [r for r in test_results if r.metric == metric]
@@ -743,15 +735,24 @@ class PerformanceTester:
                     "max": max(values),
                     "passed": len([r for r in metric_results if r.success]),
                 }
+        return metrics_summary
 
-        # Generate recommendations
+    async def _generate_performance_report(
+            self,
+            test_results: List[PerformanceResult],
+            start_time: float,
+            end_time: float) -> PerformanceReport:
+        """Generate comprehensive performance report by orchestrating helper methods."""
+        total_tests = len(test_results)
+        passed_tests = sum(1 for r in test_results if r.success)
+        pass_rate = passed_tests / total_tests if total_tests > 0 else 0
+
+        metrics_summary = self._summarize_metrics(test_results)
         recommendations = self._generate_performance_recommendations(
             test_results)
+        overall_pass = pass_rate >= 0.8
 
-        # Determine overall pass/fail
-        overall_pass = pass_rate >= 0.8  # 80% of tests must pass
-
-        report = PerformanceReport(
+        return PerformanceReport(
             test_suite_name="AI Teddy Bear Performance Test Suite",
             start_time=start_time,
             end_time=end_time,
@@ -767,8 +768,6 @@ class PerformanceTester:
             pass_fail_status=overall_pass,
         )
 
-        return report
-
     def _generate_performance_recommendations(
         self, test_results: List[PerformanceResult]
     ) -> List[str]:
@@ -777,8 +776,7 @@ class PerformanceTester:
 
         # Check response times
         response_time_results = [
-            r for r in test_results if r.metric == PerformanceMetric.RESPONSE_TIME
-        ]
+            r for r in test_results if r.metric == PerformanceMetric.RESPONSE_TIME]
         if response_time_results:
             avg_response_time = statistics.mean(
                 [r.value for r in response_time_results]
@@ -787,8 +785,7 @@ class PerformanceTester:
                 recommendations.append(
                     f"Average response time ({avg_response_time:.1f}ms) exceeds target "
                     f"({self.performance_targets['average_response_time_ms']}ms). "
-                    "Consider optimizing AI processing or implementing caching."
-                )
+                    "Consider optimizing AI processing or implementing caching.")
 
         # Check error rates
         error_rate_results = [
@@ -800,13 +797,11 @@ class PerformanceTester:
                 recommendations.append(
                     f"Error rate ({max_error_rate:.2%}) exceeds acceptable threshold "
                     f"({self.performance_targets['max_error_rate']:.2%}). "
-                    "Implement better error handling and system resilience."
-                )
+                    "Implement better error handling and system resilience.")
 
         # Check memory usage
         memory_results = [
-            r for r in test_results if r.metric == PerformanceMetric.MEMORY_USAGE
-        ]
+            r for r in test_results if r.metric == PerformanceMetric.MEMORY_USAGE]
         if memory_results:
             max_memory = max([r.value for r in memory_results])
             if max_memory > self.performance_targets["max_memory_mb"]:
@@ -850,8 +845,7 @@ class PerformanceTester:
                 "Implement progressive loading for story content to reduce perceived latency",
                 "Consider edge computing for reduced latency in different geographic regions",
                 "Implement performance monitoring and alerting for production environment",
-            ]
-        )
+            ])
 
         return recommendations
 

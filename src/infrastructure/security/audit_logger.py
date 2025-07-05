@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 class AuditEventType(Enum):
     """Types of audit events"""
+
     # Authentication events
     LOGIN_SUCCESS = "login_success"
     LOGIN_FAILURE = "login_failure"
@@ -70,6 +71,7 @@ class AuditEventType(Enum):
 
 class AuditSeverity(Enum):
     """Audit event severity levels"""
+
     INFO = "info"
     WARNING = "warning"
     ERROR = "error"
@@ -78,6 +80,7 @@ class AuditSeverity(Enum):
 
 class AuditCategory(Enum):
     """Audit event categories"""
+
     AUTHENTICATION = "authentication"
     CHILD_SAFETY = "child_safety"
     DATA_PROTECTION = "data_protection"
@@ -89,6 +92,7 @@ class AuditCategory(Enum):
 @dataclass
 class AuditContext:
     """Context information for audit events"""
+
     user_id: Optional[str] = None
     child_id: Optional[str] = None
     session_id: Optional[str] = None
@@ -99,12 +103,14 @@ class AuditContext:
     device_id: Optional[str] = None
     location: Optional[str] = None
     timestamp: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc))
+        default_factory=lambda: datetime.now(
+            timezone.utc))
 
 
 @dataclass
 class AuditEvent:
     """Audit event structure"""
+
     event_id: str
     event_type: AuditEventType
     severity: AuditSeverity
@@ -124,13 +130,13 @@ class AuditEvent:
     def _generate_hash(self) -> str:
         """Generate SHA-256 hash for tamper detection"""
         data = {
-            'event_id': self.event_id,
-            'event_type': self.event_type.value,
-            'severity': self.severity.value,
-            'category': self.category.value,
-            'timestamp': self.timestamp.isoformat(),
-            'description': self.description,
-            'details': json.dumps(self.details, sort_keys=True),
+            "event_id": self.event_id,
+            "event_type": self.event_type.value,
+            "severity": self.severity.value,
+            "category": self.category.value,
+            "timestamp": self.timestamp.isoformat(),
+            "description": self.description,
+            "details": json.dumps(self.details, sort_keys=True),
         }
 
         data_str = json.dumps(data, sort_keys=True)
@@ -141,39 +147,50 @@ class AuditConfig(BaseModel):
     """Configuration for audit logging"""
 
     # Storage settings
-    log_directory: Path = Field(default=Path(
-        "./audit_logs"), description="Audit log directory")
+    log_directory: Path = Field(
+        default=Path("./audit_logs"), description="Audit log directory"
+    )
     max_file_size_mb: int = Field(
-        default=100, description="Maximum log file size in MB")
+        default=100, description="Maximum log file size in MB"
+    )
     max_files: int = Field(
-        default=100, description="Maximum number of log files")
+        default=100,
+        description="Maximum number of log files")
     retention_days: int = Field(
-        default=2555, description="Log retention period in days")  # 7 years for COPPA
+        default=2555, description="Log retention period in days"
+    )  # 7 years for COPPA
 
     # Security settings
     enable_encryption: bool = Field(
         default=True, description="Encrypt audit logs")
     enable_tamper_detection: bool = Field(
-        default=True, description="Enable tamper detection")
+        default=True, description="Enable tamper detection"
+    )
     enable_compression: bool = Field(
         default=True, description="Compress old logs")
 
     # Performance settings
     batch_size: int = Field(
-        default=100, description="Batch size for log writes")
+        default=100,
+        description="Batch size for log writes")
     flush_interval_seconds: float = Field(
         default=5.0, description="Log flush interval")
     async_writing: bool = Field(
-        default=True, description="Use async log writing")
+        default=True,
+        description="Use async log writing")
 
     # Monitoring settings
     enable_real_time_monitoring: bool = Field(
-        default=True, description="Enable real-time monitoring")
+        default=True, description="Enable real-time monitoring"
+    )
     alert_threshold_events_per_minute: int = Field(
-        default=1000, description="Alert threshold")
-    critical_event_types: List[str] = Field(default_factory=lambda: [
-        "safety_incident", "emergency_alert", "security_alert"
-    ])
+        default=1000, description="Alert threshold"
+    )
+    critical_event_types: List[str] = Field(
+        default_factory=lambda: [
+            "safety_incident",
+            "emergency_alert",
+            "security_alert"])
 
     class Config:
         validate_assignment = True
@@ -210,11 +227,11 @@ class AuditLogWriter:
         key_file = self.log_directory / ".audit_key"
 
         if key_file.exists():
-            with open(key_file, 'rb') as f:
+            with open(key_file, "rb") as f:
                 return f.read()
         else:
             key = Fernet.generate_key()
-            with open(key_file, 'wb') as f:
+            with open(key_file, "wb") as f:
                 f.write(key)
             # Set restrictive permissions
             os.chmod(key_file, 0o600)
@@ -232,8 +249,8 @@ class AuditLogWriter:
             self.event_count += 1
 
             # Check if we need to flush
-            if (len(self.event_buffer) >= self.config.batch_size or
-                    time.time() - self.last_flush >= self.config.flush_interval_seconds):
+            if (len(self.event_buffer) >= self.config.batch_size or time.time(
+            ) - self.last_flush >= self.config.flush_interval_seconds):
                 await self._flush_buffer()
 
     async def _flush_buffer(self):
@@ -246,23 +263,28 @@ class AuditLogWriter:
             log_file = self._get_current_log_file()
 
             # Rotate file if needed
-            if log_file.exists() and log_file.stat().st_size > self.config.max_file_size_mb * 1024 * 1024:
+            if (log_file.exists() and log_file.stat().st_size >
+                    self.config.max_file_size_mb * 1024 * 1024):
                 await self._rotate_log_file(log_file)
 
             # Write events
             events_data = []
             for event in self.event_buffer:
                 event_dict = asdict(event)
-                event_dict['timestamp'] = event.timestamp.isoformat()
+                event_dict["timestamp"] = event.timestamp.isoformat()
                 events_data.append(event_dict)
 
             # Encrypt and write
-            data = json.dumps(events_data, ensure_ascii=False,
-                              separators=(',', ':'))
+            data = json.dumps(
+                events_data,
+                ensure_ascii=False,
+                separators=(
+                    ",",
+                    ":"))
             encrypted_data = self.cipher_suite.encrypt(data.encode())
 
-            async with aiofiles.open(log_file, 'ab') as f:
-                await f.write(encrypted_data + b'\n')
+            async with aiofiles.open(log_file, "ab") as f:
+                await f.write(encrypted_data + b"\n")
 
             # Clear buffer
             self.event_buffer.clear()
@@ -288,8 +310,9 @@ class AuditLogWriter:
 
         for log_file in self.log_directory.glob("audit_*.log.enc"):
             try:
-                file_date_str = log_file.stem.split(
-                    '_')[1]  # Extract date from filename
+                file_date_str = log_file.stem.split("_")[
+                    1
+                ]  # Extract date from filename
                 file_date = datetime.strptime(file_date_str, "%Y-%m-%d").date()
 
                 if file_date < cutoff_date.date():
@@ -342,12 +365,12 @@ class AuditMonitor:
         """Handle critical audit events"""
         alert_message = f"🚨 CRITICAL AUDIT EVENT: {event.event_type.value}"
         alert_data = {
-            'event_id': event.event_id,
-            'event_type': event.event_type.value,
-            'severity': event.severity.value,
-            'timestamp': event.timestamp.isoformat(),
-            'description': event.description,
-            'context': asdict(event.context),
+            "event_id": event.event_id,
+            "event_type": event.event_type.value,
+            "severity": event.severity.value,
+            "timestamp": event.timestamp.isoformat(),
+            "description": event.description,
+            "context": asdict(event.context),
         }
 
         logger.critical(alert_message, **alert_data)
@@ -367,7 +390,7 @@ class AuditMonitor:
 
         for handler in self.alert_handlers:
             try:
-                await handler(alert_message, {'total_events': total_events})
+                await handler(alert_message, {"total_events": total_events})
             except Exception as e:
                 logger.error(f"❌ Rate limit alert handler failed: {e}")
 
@@ -397,7 +420,7 @@ class AuditLogger:
                 structlog.processors.StackInfoRenderer(),
                 structlog.processors.format_exc_info,
                 structlog.processors.UnicodeDecoder(),
-                structlog.processors.JSONRenderer()
+                structlog.processors.JSONRenderer(),
             ],
             context_class=dict,
             logger_factory=structlog.stdlib.LoggerFactory(),
@@ -477,10 +500,10 @@ class AuditLogger:
             context.child_id = child_id
 
         details = {
-            'interaction_type': interaction_type,
-            'content_length': len(content) if content else 0,
-            'response_length': len(response) if response else 0,
-            'safety_score': safety_score,
+            "interaction_type": interaction_type,
+            "content_length": len(content) if content else 0,
+            "response_length": len(response) if response else 0,
+            "safety_score": safety_score,
         }
 
         if safety_score and safety_score < 0.7:
@@ -515,8 +538,8 @@ class AuditLogger:
             context.child_id = child_id
 
         incident_details = {
-            'incident_type': incident_type,
-            'child_id': child_id,
+            "incident_type": incident_type,
+            "child_id": child_id,
             **(details or {}),
         }
 
@@ -544,9 +567,9 @@ class AuditLogger:
             context.user_id = user_id
 
         details = {
-            'data_type': data_type,
-            'operation': operation,
-            'resource_id': resource_id,
+            "data_type": data_type,
+            "operation": operation,
+            "resource_id": resource_id,
         }
 
         return await self.log_event(
@@ -568,17 +591,17 @@ class AuditLogger:
         # TODO: Implement compliance report generation
         # This would read from audit logs and generate structured reports
         return {
-            'report_type': report_type,
-            'start_date': start_date.isoformat(),
-            'end_date': end_date.isoformat(),
-            'generated_at': datetime.now(timezone.utc).isoformat(),
-            'summary': {
-                'total_events': 0,
-                'safety_incidents': 0,
-                'data_access_events': 0,
-                'authentication_events': 0,
+            "report_type": report_type,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "summary": {
+                "total_events": 0,
+                "safety_incidents": 0,
+                "data_access_events": 0,
+                "authentication_events": 0,
             },
-            'details': [],
+            "details": [],
         }
 
 

@@ -191,16 +191,16 @@ class TestSafeExpressionParser:
 
         # Exec attempts
         with pytest.raises(ValueError):
-            safe_ast.literal_eval("# SECURITY FIX: Replaced exec with safe alternative
+            safe_ast.literal_eval("  # SECURITY FIX: Replaced exec with safe alternative
 # Original: exec('x = 1')
 # TODO: Review and implement safe alternative")
 
     def test_string_operations(self):
         """Test safe string operations"""
-        parser = create_safe_parser(SecurityLevel.MODERATE)
+        parser=create_safe_parser(SecurityLevel.MODERATE)
 
         # Basic string operations
-        result = parser.parse("'hello'.upper()", context={})
+        result=parser.parse("'hello'.upper()", context={})
         assert result.success is True
         assert result.value == "HELLO"
 
@@ -230,27 +230,27 @@ class TestSafeExpressionParser:
     def test_security_levels(self):
         """Test different security levels"""
         # Strict mode - only basic math
-        strict_parser = create_safe_parser(SecurityLevel.STRICT)
-        result = strict_parser.parse("2 + 2")
+        strict_parser=create_safe_parser(SecurityLevel.STRICT)
+        result=strict_parser.parse("2 + 2")
         assert result.success is True
 
         # Moderate mode - math + strings
-        moderate_parser = create_safe_parser(SecurityLevel.MODERATE)
-        result = moderate_parser.parse("'hello'.upper()")
+        moderate_parser=create_safe_parser(SecurityLevel.MODERATE)
+        result=moderate_parser.parse("'hello'.upper()")
         assert result.success is True
 
     def test_expression_timeout(self):
         """Test that long-running expressions can timeout"""
         # This would need actual implementation of timeout
         # For now, just test the structure
-        parser = create_safe_parser()
-        result = parser.parse("2 + 2")
+        parser=create_safe_parser()
+        result=parser.parse("2 + 2")
         assert result.execution_time_ms > 0
 
     def test_error_messages(self):
         """Test that error messages are helpful"""
-        parser = create_safe_parser()
-        result = parser.parse("undefined_variable")
+        parser=create_safe_parser()
+        result=parser.parse("undefined_variable")
         assert result.success is False
         assert "not allowed" in result.error or "Unknown" in result.error
 
@@ -263,7 +263,7 @@ class TestSafeExpressionParser:
 class TestExceptionHandling:
     """Test comprehensive exception handling"""
 
-    @pytest.mark.asyncio
+    @ pytest.mark.asyncio
     async def test_child_safety_exception(self):
         """Test child safety exception handling"""
         with pytest.raises(ChildSafetyException) as exc_info:
@@ -273,17 +273,17 @@ class TestExceptionHandling:
                 child_id="child_123",
             )
 
-        exception = exc_info.value
+        exception=exc_info.value
         assert exception.severity.name == "HIGH"
         assert exception.domain.name == "CHILD_SAFETY"
         assert "child_123" in str(exception.details)
 
-    @pytest.mark.asyncio
+    @ pytest.mark.asyncio
     async def test_retry_strategy(self):
         """Test retry strategy for failed operations"""
-        call_count = 0
+        call_count=0
 
-        @handle_exceptions(
+        @ handle_exceptions(
             recovery_strategy=RetryStrategy(max_retries=3, base_delay=0.01)
         )
         async def flaky_operation():
@@ -296,9 +296,10 @@ class TestExceptionHandling:
             return "success"
 
         # Should retry and eventually succeed
-        # Note: This test is simplified - real implementation would need adjustment
+        # Note: This test is simplified - real implementation would need
+        # adjustment
         try:
-            result = await flaky_operation()
+            result=await flaky_operation()
             # In real implementation, retries would happen
         except ExternalServiceException:
             # Expected for this simplified test
@@ -306,12 +307,12 @@ class TestExceptionHandling:
 
         assert call_count >= 1
 
-    @pytest.mark.asyncio
+    @ pytest.mark.asyncio
     async def test_circuit_breaker(self):
         """Test circuit breaker pattern"""
-        failure_count = 0
+        failure_count=0
 
-        circuit_breaker = CircuitBreakerStrategy(
+        circuit_breaker=CircuitBreakerStrategy(
             failure_threshold=3, recovery_timeout=0.1
         )
 
@@ -325,46 +326,47 @@ class TestExceptionHandling:
                 failure_count += 1
 
         # Circuit should be open after threshold
-        assert circuit_breaker.state in ["open", "closed"]  # Depends on implementation
+        assert circuit_breaker.state in [
+    "open", "closed"]  # Depends on implementation
         assert failure_count >= 3
 
-    @pytest.mark.asyncio
+    @ pytest.mark.asyncio
     async def test_correlation_context(self):
         """Test correlation ID tracking"""
-        correlation_id = None
+        correlation_id=None
 
         with CorrelationContext() as ctx_id:
-            correlation_id = ctx_id
+            correlation_id=ctx_id
             assert correlation_id is not None
             assert len(correlation_id) == 36  # UUID format
 
         # Context should be cleared after exit
         # This would need actual implementation check
 
-    @pytest.mark.asyncio
+    @ pytest.mark.asyncio
     async def test_exception_sanitization(self):
         """Test that exceptions are sanitized for child logs"""
-        exception = ChildSafetyException(
+        exception=ChildSafetyException(
             content_type="text",
             content_snippet="bad content with details",
             sensitive_data="should not appear in child logs",
         )
 
-        sanitized = exception.sanitize_for_child_logs()
+        sanitized=exception.sanitize_for_child_logs()
 
         assert sanitized["message"] == "An error occurred. Please try again."
         assert "sensitive_data" not in sanitized
         assert "details" not in sanitized
 
-    @pytest.mark.asyncio
+    @ pytest.mark.asyncio
     async def test_fallback_strategy(self):
         """Test fallback strategy"""
 
-        @handle_exceptions(fallback_value="safe fallback response")
+        @ handle_exceptions(fallback_value="safe fallback response")
         async def risky_operation():
             raise Exception("Something went wrong")
 
-        result = await risky_operation()
+        result=await risky_operation()
         assert result == "safe fallback response"
 
     def test_exception_hierarchy(self):
@@ -375,18 +377,18 @@ class TestExceptionHandling:
         assert issubclass(ExternalServiceException, TeddyBearException)
 
         # Check specific domains
-        child_exception = ChildSafetyException("test", "test")
+        child_exception=ChildSafetyException("test", "test")
         assert child_exception.domain.name == "CHILD_SAFETY"
 
-        security_exception = SecurityException("test")
+        security_exception=SecurityException("test")
         assert security_exception.domain.name == "SECURITY"
 
-    @pytest.mark.asyncio
+    @ pytest.mark.asyncio
     async def test_exception_metrics(self):
         """Test that exceptions update metrics correctly"""
         # This would need mocking of prometheus metrics
         # For now, just test the structure
-        exception = TeddyBearException("Test exception")
+        exception=TeddyBearException("Test exception")
         assert hasattr(exception, "severity")
         assert hasattr(exception, "domain")
         assert hasattr(exception, "to_dict")
@@ -400,13 +402,13 @@ class TestExceptionHandling:
 class TestSecurityIntegration:
     """Test integration of all security components"""
 
-    @pytest.mark.asyncio
+    @ pytest.mark.asyncio
     async def test_secure_api_call_flow(self, tmp_path):
         """Test complete secure API call flow"""
         # Setup secrets manager
-        secrets_manager = create_secrets_manager("testing")
-        local_provider = secrets_manager.providers[SecretProvider.LOCAL_ENCRYPTED]
-        local_provider.secrets_dir = tmp_path / "secrets"
+        secrets_manager=create_secrets_manager("testing")
+        local_provider=secrets_manager.providers[SecretProvider.LOCAL_ENCRYPTED]
+        local_provider.secrets_dir=tmp_path / "secrets"
         local_provider.secrets_dir.mkdir()
 
         # Store API key securely
@@ -415,22 +417,22 @@ class TestSecurityIntegration:
         )
 
         # Retrieve and use
-        @handle_exceptions(recovery_strategy=RetryStrategy())
+        @ handle_exceptions(recovery_strategy=RetryStrategy())
         async def make_api_call():
-            api_key = await secrets_manager.get_secret("test_api_key")
+            api_key=await secrets_manager.get_secret("test_api_key")
             if not api_key:
                 raise ExternalServiceException("API", "Key not found")
             return f"Success with key: {api_key[:5]}..."
 
-        result = await make_api_call()
+        result=await make_api_call()
         assert "Success" in result
         assert "secure_key_123" not in result  # Key is truncated
 
-    @pytest.mark.asyncio
+    @ pytest.mark.asyncio
     async def test_safe_user_expression_evaluation(self):
         """Test safe evaluation of user expressions"""
         # Simulate user input processing
-        user_inputs = [
+        user_inputs=[
             ("2 + 2", 4, True),
             ("10 * 5 - 3", 47, True),
             ("__import__('os')", None, False),
@@ -439,18 +441,18 @@ class TestSecurityIntegration:
 
         for expression, expected, should_succeed in user_inputs:
             if should_succeed:
-                result = safe_ast.literal_eval(expression)
+                result=safe_ast.literal_eval(expression)
                 assert result == expected
             else:
                 with pytest.raises(ValueError):
                     safe_ast.literal_eval(expression)
 
-    @pytest.mark.asyncio
+    @ pytest.mark.asyncio
     async def test_child_safety_flow(self):
         """Test complete child safety flow with exceptions"""
 
         class ChildInteractionService:
-            @handle_exceptions(
+            @ handle_exceptions(
                 fallback_value={"response": "Let's play a game!", "safe": True}
             )
             async def process_message(self, child_id: str, message: str):
@@ -465,15 +467,15 @@ class TestSecurityIntegration:
                 # Safe processing
                 return {"response": f"You said: {message}", "safe": True}
 
-        service = ChildInteractionService()
+        service=ChildInteractionService()
 
         # Test safe message
-        result = await service.process_message("child_123", "Hello teddy!")
+        result=await service.process_message("child_123", "Hello teddy!")
         assert result["safe"] is True
         assert "You said:" in result["response"]
 
         # Test unsafe message - should return fallback
-        result = await service.process_message("child_456", "inappropriate content")
+        result=await service.process_message("child_456", "inappropriate content")
         assert result["safe"] is True
         assert result["response"] == "Let's play a game!"
 
@@ -486,27 +488,27 @@ class TestSecurityIntegration:
 class TestSecurityPerformance:
     """Test performance aspects of security solutions"""
 
-    @pytest.mark.asyncio
+    @ pytest.mark.asyncio
     async def test_secrets_cache_performance(self, tmp_path):
         """Test that secret caching improves performance"""
         import time
 
-        secrets_manager = create_secrets_manager("testing")
-        local_provider = secrets_manager.providers[SecretProvider.LOCAL_ENCRYPTED]
-        local_provider.secrets_dir = tmp_path / "secrets"
+        secrets_manager=create_secrets_manager("testing")
+        local_provider=secrets_manager.providers[SecretProvider.LOCAL_ENCRYPTED]
+        local_provider.secrets_dir=tmp_path / "secrets"
         local_provider.secrets_dir.mkdir()
 
         await secrets_manager.set_secret("perf_test_key", "test_value")
 
         # First access - no cache
-        start = time.time()
-        value1 = await secrets_manager.get_secret("perf_test_key", use_cache=False)
-        time_no_cache = time.time() - start
+        start=time.time()
+        value1=await secrets_manager.get_secret("perf_test_key", use_cache=False)
+        time_no_cache=time.time() - start
 
         # Second access - with cache
-        start = time.time()
-        value2 = await secrets_manager.get_secret("perf_test_key", use_cache=True)
-        time_with_cache = time.time() - start
+        start=time.time()
+        value2=await secrets_manager.get_secret("perf_test_key", use_cache=True)
+        time_with_cache=time.time() - start
 
         assert value1 == value2
         # Cache should be faster (though in tests the difference might be small)
@@ -516,9 +518,9 @@ class TestSecurityPerformance:
         """Test expression parser performance"""
         import time
 
-        parser = create_safe_parser()
+        parser=create_safe_parser()
 
-        expressions = [
+        expressions=[
             "2 + 2",
             "10 * 5 + 3 - 2",
             "sum([1, 2, 3, 4, 5])",
@@ -526,9 +528,9 @@ class TestSecurityPerformance:
         ]
 
         for expr in expressions:
-            start = time.time()
-            result = parser.parse(expr)
-            duration = time.time() - start
+            start=time.time()
+            result=parser.parse(expr)
+            duration=time.time() - start
 
             assert result.success is True
             assert duration < 0.1  # Should be fast (< 100ms)

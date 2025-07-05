@@ -12,10 +12,7 @@
     "FLASK_PORT": 5000,
     "WEBSOCKET_PORT": 8080,
     "ENABLE_CORS": true,
-    "CORS_ORIGINS": [
-      "http://localhost:3000",
-      "http://localhost:5000"
-    ],
+    "CORS_ORIGINS": ["http://localhost:3000", "http://localhost:5000"],
     "MAX_CONTENT_LENGTH_MB": 16,
     "REQUEST_TIMEOUT_SECONDS": 30,
     "ENABLE_HTTPS": false,
@@ -138,16 +135,8 @@
       "SELF_HARM": true,
       "HATE_SPEECH": true
     },
-    "CUSTOM_BLOCK_LIST": [
-      "drugs",
-      "alcohol",
-      "weapons"
-    ],
-    "CUSTOM_ALLOW_LIST": [
-      "medicine",
-      "doctor",
-      "hospital"
-    ],
+    "CUSTOM_BLOCK_LIST": ["drugs", "alcohol", "weapons"],
+    "CUSTOM_ALLOW_LIST": ["medicine", "doctor", "hospital"],
     "LOG_VIOLATIONS": true,
     "NOTIFY_PARENTS": true,
     "AUTO_REPORT_THRESHOLD": 0.9
@@ -163,18 +152,8 @@
     "CONTENT_FILTERS": {
       "EDUCATIONAL_ONLY": false,
       "BLOCK_EXTERNAL_CONTENT": true,
-      "APPROVED_TOPICS": [
-        "science",
-        "math",
-        "reading",
-        "art",
-        "music"
-      ],
-      "BLOCKED_TOPICS": [
-        "politics",
-        "religion",
-        "violence"
-      ]
+      "APPROVED_TOPICS": ["science", "math", "reading", "art", "music"],
+      "BLOCKED_TOPICS": ["politics", "religion", "violence"]
     },
     "ACTIVITY_REPORTS": {
       "ENABLE_DAILY": true,
@@ -185,11 +164,7 @@
     "EMERGENCY_CONTACTS": {
       "ENABLE_PANIC_BUTTON": true,
       "EMERGENCY_PHRASE": "help me teddy",
-      "NOTIFY_METHODS": [
-        "email",
-        "sms",
-        "app"
-      ]
+      "NOTIFY_METHODS": ["email", "sms", "app"]
     }
   },
   "PRIVACY_COMPLIANCE": {
@@ -270,10 +245,7 @@
     "ENABLE_HEALTH_CHECK": true,
     "HEALTH_CHECK_INTERVAL": 30,
     "ENABLE_ALERTS": true,
-    "ALERT_CHANNELS": [
-      "email",
-      "slack"
-    ],
+    "ALERT_CHANNELS": ["email", "slack"],
     "ALERT_THRESHOLDS": {
       "CPU_PERCENT": 80,
       "MEMORY_PERCENT": 85,
@@ -302,11 +274,7 @@
     "ENABLE_SCHOOL_INTEGRATION": false,
     "ENABLE_SMART_HOME": false,
     "ENABLE_WEARABLES": false,
-    "SUPPORTED_PLATFORMS": [
-      "ios",
-      "android",
-      "web"
-    ],
+    "SUPPORTED_PLATFORMS": ["ios", "android", "web"],
     "WEBHOOK_ENDPOINTS": {
       "CONVERSATION_START": null,
       "CONVERSATION_END": null,

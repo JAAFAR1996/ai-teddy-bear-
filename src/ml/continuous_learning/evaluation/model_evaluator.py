@@ -10,7 +10,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 import numpy as np
 
@@ -248,11 +248,13 @@ class ModelEvaluator:
             base_performance["response_time"] = np.random.gamma(3, 0.4)
 
         elif "emotion" in model_id:
-            base_performance["accuracy"] = np.random.beta(12, 4)  # متوسط لتحليل المشاعر
+            base_performance["accuracy"] = np.random.beta(
+                12, 4)  # متوسط لتحليل المشاعر
             base_performance["learning_effectiveness"] = np.random.beta(14, 5)
 
         elif "safety" in model_id:
-            base_performance["safety_score"] = np.random.beta(25, 1)  # عالي جداً للأمان
+            base_performance["safety_score"] = np.random.beta(
+                25, 1)  # عالي جداً للأمان
             base_performance["compliance_score"] = np.random.beta(22, 2)
 
         elif "learning" in model_id:
@@ -260,7 +262,9 @@ class ModelEvaluator:
             base_performance["child_satisfaction"] = np.random.beta(14, 5)
 
         # إضافة تأثير عمر النموذج
-        days_since_deployment = (datetime.utcnow() - model_info["deployment_date"]).days
+        days_since_deployment = (
+            datetime.utcnow() -
+            model_info["deployment_date"]).days
         degradation_factor = max(
             0.9, 1 - (days_since_deployment * 0.001)
         )  # تدهور طفيف مع الوقت
@@ -272,11 +276,13 @@ class ModelEvaluator:
         # إضافة ضوضاء واقعية
         for metric in base_performance:
             noise = np.random.normal(0, 0.02)  # ضوضاء 2%
-            base_performance[metric] = max(0, min(1, base_performance[metric] + noise))
+            base_performance[metric] = max(
+                0, min(1, base_performance[metric] + noise))
 
         return base_performance
 
-    async def _calculate_performance_grade(self, metrics: Dict[str, float]) -> str:
+    async def _calculate_performance_grade(
+            self, metrics: Dict[str, float]) -> str:
         """حساب درجة الأداء الإجمالية"""
 
         # أوزان المقاييس المختلفة
@@ -292,8 +298,10 @@ class ModelEvaluator:
 
         # حساب المتوسط المرجح
         weighted_score = sum(
-            metrics.get(metric, 0) * weight for metric, weight in weights.items()
-        )
+            metrics.get(
+                metric,
+                0) * weight for metric,
+            weight in weights.items())
 
         # تحديد الدرجة
         if weighted_score >= 0.90:
@@ -311,44 +319,80 @@ class ModelEvaluator:
         else:
             return "D"
 
+    STRENGTH_CRITERIA = {
+        "safety_score": {
+            "threshold": 0.95,
+            "condition": "gt",
+            "message": "Excellent safety compliance",
+        },
+        "child_satisfaction": {
+            "threshold": 0.85,
+            "condition": "gt",
+            "message": "High child satisfaction rates",
+        },
+        "accuracy": {
+            "threshold": 0.88,
+            "condition": "gt",
+            "message": "Superior accuracy performance",
+        },
+        "parent_approval": {
+            "threshold": 0.85,
+            "condition": "gt",
+            "message": "Strong parent approval",
+        },
+        "response_time": {
+            "threshold": 1.0,
+            "condition": "lt",
+            "message": "Fast response times",
+        },
+        "learning_effectiveness": {
+            "threshold": 0.80,
+            "condition": "gt",
+            "message": "Effective learning outcomes",
+        },
+        "engagement_rate": {
+            "threshold": 0.80,
+            "condition": "gt",
+            "message": "High user engagement",
+        },
+        "compliance_score": {
+            "threshold": 0.92,
+            "condition": "gt",
+            "message": "Excellent regulatory compliance",
+        },
+    }
+
+    def _check_strength(self, metric_name: str, value: float) -> Optional[str]:
+        """Check a single metric for strength based on predefined criteria."""
+        criteria = self.STRENGTH_CRITERIA.get(metric_name)
+        if not criteria:
+            return None
+
+        is_strong = False
+        if criteria["condition"] == "gt" and value > criteria["threshold"]:
+            is_strong = True
+        elif criteria["condition"] == "lt" and value < criteria["threshold"]:
+            is_strong = True
+
+        return criteria["message"] if is_strong else None
+
     async def _identify_model_strengths(
         self, metrics: Dict[str, float], model_info: Dict[str, Any]
     ) -> List[str]:
-        """تحديد نقاط قوة النموذج"""
-
+        """Identify model strengths using a configuration-driven approach."""
         strengths = []
 
-        # فحص المقاييس العالية
-        if metrics.get("safety_score", 0) > 0.95:
-            strengths.append("Excellent safety compliance")
+        for metric_name, value in metrics.items():
+            strength_message = self._check_strength(metric_name, value)
+            if strength_message:
+                strengths.append(strength_message)
 
-        if metrics.get("child_satisfaction", 0) > 0.85:
-            strengths.append("High child satisfaction rates")
-
-        if metrics.get("accuracy", 0) > 0.88:
-            strengths.append("Superior accuracy performance")
-
-        if metrics.get("parent_approval", 0) > 0.85:
-            strengths.append("Strong parent approval")
-
-        if metrics.get("response_time", 2.0) < 1.0:
-            strengths.append("Fast response times")
-
-        if metrics.get("learning_effectiveness", 0) > 0.80:
-            strengths.append("Effective learning outcomes")
-
-        if metrics.get("engagement_rate", 0) > 0.80:
-            strengths.append("High user engagement")
-
-        if metrics.get("compliance_score", 0) > 0.92:
-            strengths.append("Excellent regulatory compliance")
-
-        # إضافة نقاط قوة خاصة بالنموذج
+        # Add specialization-specific strengths
         if "speech_recognition" in model_info.get("specialization", ""):
             if metrics.get("accuracy", 0) > 0.85:
                 strengths.append("Excellent speech recognition for children")
 
-        return strengths
+        return list(set(strengths))
 
     async def _identify_model_weaknesses(
         self, metrics: Dict[str, float], model_info: Dict[str, Any]
@@ -383,7 +427,9 @@ class ModelEvaluator:
             weaknesses.append("Compliance issues detected")
 
         # فحص عمر النموذج
-        days_since_deployment = (datetime.utcnow() - model_info["deployment_date"]).days
+        days_since_deployment = (
+            datetime.utcnow() -
+            model_info["deployment_date"]).days
         if days_since_deployment > 60:
             weaknesses.append("Model may need updating due to age")
 
@@ -398,13 +444,16 @@ class ModelEvaluator:
 
         # توصيات بناءً على نقاط الضعف
         if metrics.get("safety_score", 1.0) < 0.95:
-            recommendations.append("Immediate safety model retraining required")
+            recommendations.append(
+                "Immediate safety model retraining required")
 
         if metrics.get("child_satisfaction", 1.0) < 0.75:
-            recommendations.append("Enhance conversation flow and personalization")
+            recommendations.append(
+                "Enhance conversation flow and personalization")
 
         if metrics.get("accuracy", 1.0) < 0.80:
-            recommendations.append("Increase training data quality and quantity")
+            recommendations.append(
+                "Increase training data quality and quantity")
 
         if metrics.get("response_time", 0) > 2.0:
             recommendations.append("Optimize model inference speed")
@@ -419,7 +468,8 @@ class ModelEvaluator:
             recommendations.append("Implement targeted improvements")
 
         if len(strengths) > 5:
-            recommendations.append("Model performing well - maintain current approach")
+            recommendations.append(
+                "Model performing well - maintain current approach")
 
         return recommendations
 
@@ -462,7 +512,10 @@ class ModelEvaluator:
             all_metrics.update(eval_result.metrics.keys())
 
         for metric in all_metrics:
-            values = [eval_result.metrics.get(metric, 0) for eval_result in evaluations]
+            values = [
+                eval_result.metrics.get(
+                    metric,
+                    0) for eval_result in evaluations]
             overall_metrics[metric] = np.mean(values)
 
         # إضافة مقاييس إضافية
@@ -509,12 +562,15 @@ class ModelEvaluator:
             "response_time",
         ]:
             historical_values = [
-                np.random.beta(8, 2) + np.random.normal(0, 0.02) for _ in range(30)
-            ]  # آخر 30 يوم
+                np.random.beta(
+                    8,
+                    2) +
+                np.random.normal(
+                    0,
+                    0.02) for _ in range(30)]  # آخر 30 يوم
 
-            current_value = np.mean(
-                [eval_result.metrics.get(metric, 0) for eval_result in evaluations]
-            )
+            current_value = np.mean([eval_result.metrics.get(
+                metric, 0) for eval_result in evaluations])
 
             # تحديد الاتجاه
             recent_trend = np.polyfit(
@@ -567,22 +623,31 @@ class ModelEvaluator:
             issue_counts[issue] = issue_counts.get(issue, 0) + 1
 
         # ترتيب المشاكل حسب الأولوية
-        priority_issues = sorted(issue_counts.items(), key=lambda x: x[1], reverse=True)
+        priority_issues = sorted(
+            issue_counts.items(),
+            key=lambda x: x[1],
+            reverse=True)
 
         # إنشاء توصيات على مستوى النظام
         system_recommendations = []
 
         if any("safety" in issue.lower() for issue, _ in priority_issues[:3]):
-            system_recommendations.append("Implement system-wide safety improvements")
+            system_recommendations.append(
+                "Implement system-wide safety improvements")
 
-        if any("satisfaction" in issue.lower() for issue, _ in priority_issues[:3]):
-            system_recommendations.append("Focus on user experience enhancements")
+        if any("satisfaction" in issue.lower()
+               for issue, _ in priority_issues[:3]):
+            system_recommendations.append(
+                "Focus on user experience enhancements")
 
-        if any("accuracy" in issue.lower() for issue, _ in priority_issues[:3]):
-            system_recommendations.append("Increase overall model training quality")
+        if any("accuracy" in issue.lower()
+               for issue, _ in priority_issues[:3]):
+            system_recommendations.append(
+                "Increase overall model training quality")
 
         return {
-            "issues": [issue for issue, _ in priority_issues[:10]],  # أهم 10 مشاكل
+            # أهم 10 مشاكل
+            "issues": [issue for issue, _ in priority_issues[:10]],
             "recommendations": list(set(all_recommendations + system_recommendations)),
         }
 
@@ -615,51 +680,59 @@ class ModelEvaluator:
 
         logger.info(f"💾 Saved evaluation results for {len(results)} models")
 
-    async def _generate_evaluation_summary(
-        self, overall_metrics: Dict[str, float], trends: List[PerformanceTrend]
-    ) -> Dict[str, Any]:
-        """إنشاء ملخص التقييم"""
-
-        summary = {
-            "overall_health": "good",
-            "critical_issues": 0,
-            "improving_metrics": 0,
-            "declining_metrics": 0,
-            "stable_metrics": 0,
-            "key_insights": [],
-        }
-
-        # تحديد الحالة الإجمالية
+    def _determine_overall_health(
+            self, overall_metrics: Dict[str, float]) -> str:
+        """Determine the overall health status from metrics."""
         safety_score = overall_metrics.get("safety_score", 0)
         avg_satisfaction = overall_metrics.get("child_satisfaction", 0)
 
         if safety_score < 0.95:
-            summary["overall_health"] = "critical"
-            summary["critical_issues"] += 1
+            return "critical"
         elif avg_satisfaction < 0.70:
-            summary["overall_health"] = "poor"
+            return "poor"
         elif avg_satisfaction > 0.85 and safety_score > 0.96:
-            summary["overall_health"] = "excellent"
+            return "excellent"
+        return "good"
 
-        # تحليل الاتجاهات
-        for trend in trends:
-            if trend.trend_direction == "improving":
-                summary["improving_metrics"] += 1
-            elif trend.trend_direction == "declining":
-                summary["declining_metrics"] += 1
-            else:
-                summary["stable_metrics"] += 1
+    def _generate_key_insights(
+        self, overall_metrics: Dict[str, float], trends: List[PerformanceTrend]
+    ) -> List[str]:
+        """Generate key insights from the evaluation results."""
+        insights = []
+        improving_metrics = sum(
+            1 for t in trends if t.trend_direction == "improving")
+        declining_metrics = sum(
+            1 for t in trends if t.trend_direction == "declining")
 
-        # إضافة رؤى رئيسية
-        if summary["improving_metrics"] > summary["declining_metrics"]:
-            summary["key_insights"].append("Overall system performance is improving")
+        if improving_metrics > declining_metrics:
+            insights.append("Overall system performance is improving")
 
-        if safety_score > 0.96:
-            summary["key_insights"].append("Safety systems performing excellently")
+        if overall_metrics.get("safety_score", 0) > 0.96:
+            insights.append("Safety systems performing excellently")
 
         if overall_metrics.get("models_above_threshold", 0) > 0.8:
-            summary["key_insights"].append(
-                "Majority of models meeting performance standards"
-            )
+            insights.append("Majority of models meeting performance standards")
 
-        return summary
+        return insights
+
+    async def _generate_evaluation_summary(
+        self, overall_metrics: Dict[str, float], trends: List[PerformanceTrend]
+    ) -> Dict[str, Any]:
+        """Generate evaluation summary by orchestrating helper methods."""
+        overall_health = self._determine_overall_health(overall_metrics)
+        key_insights = self._generate_key_insights(overall_metrics, trends)
+
+        improving_metrics = sum(
+            1 for t in trends if t.trend_direction == "improving")
+        declining_metrics = sum(
+            1 for t in trends if t.trend_direction == "declining")
+        stable_metrics = len(trends) - improving_metrics - declining_metrics
+
+        return {
+            "overall_health": overall_health,
+            "critical_issues": 1 if overall_health == "critical" else 0,
+            "improving_metrics": improving_metrics,
+            "declining_metrics": declining_metrics,
+            "stable_metrics": stable_metrics,
+            "key_insights": key_insights,
+        }

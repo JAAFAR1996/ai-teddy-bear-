@@ -16,7 +16,10 @@ class ChildInteractionDomainService:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-    def validate_interaction_time(self, child: Child, additional_time: int) -> bool:
+    def validate_interaction_time(
+            self,
+            child: Child,
+            additional_time: int) -> bool:
         """
         Validate if additional interaction time is allowed
 

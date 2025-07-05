@@ -131,7 +131,10 @@ class DeploymentManager:
         except Exception as e:
             logger.error(f"Deployment failed: {str(e)}")
             await self._handle_deployment_failure(deployment_id, str(e))
-            return {"success": False, "deployment_id": deployment_id, "error": str(e)}
+            return {
+                "success": False,
+                "deployment_id": deployment_id,
+                "error": str(e)}
 
     async def run_ab_test(
         self,
@@ -245,7 +248,8 @@ class DeploymentManager:
             metrics = model_data.get("final_metrics", {})
             if metrics.get("safety_score", 0) < 0.95:
                 safety_checks["compliance_check"] = False
-                issues.append(f"Model {model_name} safety score below threshold")
+                issues.append(
+                    f"Model {model_name} safety score below threshold")
 
             # فحص وقت الاستجابة
             if metrics.get("response_time", 0) > 2.0:
@@ -390,7 +394,7 @@ class DeploymentManager:
         nodes_per_batch = max(1, len(nodes_to_update) // 5)  # 5 دفعات
 
         for i in range(0, len(nodes_to_update), nodes_per_batch):
-            batch = nodes_to_update[i : i + nodes_per_batch]
+            batch = nodes_to_update[i: i + nodes_per_batch]
 
             # تحديث دفعة من العقد
             await self._update_nodes_batch(result, batch)
@@ -468,7 +472,8 @@ class DeploymentManager:
     ) -> None:
         """تشغيل التراجع"""
 
-        logger.warning(f"🔄 Triggering rollback for {result.deployment_id}: {issues}")
+        logger.warning(
+            f"🔄 Triggering rollback for {result.deployment_id}: {issues}")
 
         result.rollback_triggered = True
         result.rollback_reason = "; ".join(issues)
@@ -501,7 +506,8 @@ class DeploymentManager:
         )
 
         # تخزين مهمة المراقبة
-        self.monitoring.setdefault("active_tasks", {})[deployment_id] = monitoring_task
+        self.monitoring.setdefault("active_tasks", {})[
+            deployment_id] = monitoring_task
 
     async def _continuous_monitoring(
         self, deployment_id: str, results: Dict[str, DeploymentResult]
@@ -513,7 +519,9 @@ class DeploymentManager:
 
         start_time = datetime.utcnow()
 
-        while (datetime.utcnow() - start_time).total_seconds() < monitoring_duration:
+        while (
+                datetime.utcnow() -
+                start_time).total_seconds() < monitoring_duration:
             try:
                 for model_name, result in results.items():
                     if result.status == DeploymentStatus.COMPLETED:
@@ -553,7 +561,8 @@ class DeploymentManager:
 
         logger.info(f"✅ Monitoring completed for {deployment_id}")
 
-    async def _prepare_ab_test_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    async def _prepare_ab_test_config(
+            self, config: Dict[str, Any]) -> Dict[str, Any]:
         """إعداد تكوين اختبار A/B"""
 
         return {
@@ -656,77 +665,96 @@ class DeploymentManager:
                 "learning_effectiveness": np.random.beta(7, 3),
             }
 
-    async def _analyze_ab_test_results(
-        self, test_results: Dict[str, Any]
+    def _calculate_metric_significance(
+        self, control_value: float, treatment_value: float
     ) -> Dict[str, Any]:
-        """تحليل نتائج اختبار A/B"""
-
-        control_metrics = test_results["control_metrics"]
-        treatment_metrics = test_results["treatment_metrics"]
-
-        # حساب الفروق
-        metric_differences = {}
-        statistical_significance = {}
-
-        for metric in control_metrics:
-            control_value = control_metrics[metric]
-            treatment_value = treatment_metrics[metric]
-
-            difference = treatment_value - control_value
-            percentage_change = (difference / control_value) * 100
-
-            metric_differences[metric] = {
-                "control": control_value,
-                "treatment": treatment_value,
-                "absolute_difference": difference,
-                "percentage_change": percentage_change,
-            }
-
-            # محاكاة الدلالة الإحصائية
-            p_value = (
-                np.random.uniform(0.01, 0.1)
-                if abs(percentage_change) > 2
-                else np.random.uniform(0.1, 0.5)
-            )
-            statistical_significance[metric] = {
-                "p_value": p_value,
-                "significant": p_value < 0.05,
-                "effect_size": abs(difference)
-                / np.sqrt((control_value + treatment_value) / 2),
-            }
-
-        # تحديد التوصية الإجمالية
-        significant_improvements = sum(
-            1
-            for metric, stats in statistical_significance.items()
-            if stats["significant"]
-            and metric_differences[metric]["percentage_change"] > 0
+        """Calculate statistical significance for a single metric."""
+        difference = treatment_value - control_value
+        percentage_change = (
+            (difference / control_value) * 100 if control_value != 0 else 0
         )
 
+        # Simulate p-value calculation
+        p_value = (
+            np.random.uniform(0.01, 0.1)
+            if abs(percentage_change) > 2
+            else np.random.uniform(0.1, 0.5)
+        )
+
+        return {
+            "control": control_value,
+            "treatment": treatment_value,
+            "absolute_difference": difference,
+            "percentage_change": percentage_change,
+            "p_value": p_value,
+            "significant": p_value < 0.05,
+            "effect_size": (
+                abs(difference) /
+                np.sqrt(
+                    (control_value +
+                     treatment_value) /
+                    2) if (
+                    control_value +
+                    treatment_value) > 0 else 0),
+        }
+
+    def _determine_ab_test_recommendation(
+        self, analysis_results: Dict[str, Dict[str, Any]]
+    ) -> str:
+        """Determine the overall recommendation from A/B test results."""
+        significant_improvements = sum(
+            1
+            for stats in analysis_results.values()
+            if stats["significant"] and stats["percentage_change"] > 0
+        )
         significant_degradations = sum(
             1
-            for metric, stats in statistical_significance.items()
-            if stats["significant"]
-            and metric_differences[metric]["percentage_change"] < 0
+            for stats in analysis_results.values()
+            if stats["significant"] and stats["percentage_change"] < 0
         )
 
         if significant_improvements > significant_degradations:
-            recommendation = "deploy_treatment"
+            return "deploy_treatment"
         elif significant_degradations > 0:
-            recommendation = "keep_control"
+            return "keep_control"
         else:
-            recommendation = "inconclusive"
+            return "inconclusive"
+
+    async def _analyze_ab_test_results(
+        self, test_results: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Analyze A/B test results by breaking down calculations."""
+        control_metrics = test_results["control_metrics"]
+        treatment_metrics = test_results["treatment_metrics"]
+
+        analysis = {}
+        for metric in control_metrics:
+            analysis[metric] = self._calculate_metric_significance(
+                control_metrics.get(metric, 0), treatment_metrics.get(metric, 0)
+            )
+
+        recommendation = self._determine_ab_test_recommendation(analysis)
+
+        significant_improvements = sum(
+            1
+            for r in analysis.values()
+            if r["significant"] and r["percentage_change"] > 0
+        )
+        significant_degradations = sum(
+            1
+            for r in analysis.values()
+            if r["significant"] and r["percentage_change"] < 0
+        )
 
         return {
-            "metric_differences": metric_differences,
-            "statistical_significance": statistical_significance,
-            "significant_improvements": significant_improvements,
-            "significant_degradations": significant_degradations,
+            "analysis_details": analysis,
             "recommendation": recommendation,
-            "confidence_level": 0.95,
-            "overall_p_value": np.mean(
-                [stats["p_value"] for stats in statistical_significance.values()]
-            ),
+            "summary": {
+                "significant_improvements": significant_improvements,
+                "significant_degradations": significant_degradations,
+                "confidence_level": 0.95,
+                "overall_p_value": np.mean([r["p_value"] for r in analysis.values()]),
+            },
         }
 
     def _initialize_infrastructure(self) -> Dict[str, Any]:
@@ -763,9 +791,11 @@ class DeploymentManager:
         """تحديث نسبة الترافيك"""
         logger.info(f"📊 Updating traffic to {percentage}% for {deployment_id}")
 
-    async def _deploy_green_environment(self, result: DeploymentResult) -> None:
+    async def _deploy_green_environment(
+            self, result: DeploymentResult) -> None:
         """نشر البيئة الخضراء"""
-        logger.info(f"🟢 Deploying green environment for {result.deployment_id}")
+        logger.info(
+            f"🟢 Deploying green environment for {result.deployment_id}")
 
     async def _switch_traffic_to_green(self, result: DeploymentResult) -> None:
         """تحويل الترافيك للبيئة الخضراء"""
@@ -779,7 +809,8 @@ class DeploymentManager:
         self, result: DeploymentResult, nodes: List[str]
     ) -> None:
         """تحديث دفعة من العقد"""
-        logger.info(f"📦 Updating {len(nodes)} nodes for {result.deployment_id}")
+        logger.info(
+            f"📦 Updating {len(nodes)} nodes for {result.deployment_id}")
 
     async def _revert_traffic_routing(self, deployment_id: str) -> None:
         """إعادة توجيه الترافيك"""
@@ -801,7 +832,8 @@ class DeploymentManager:
             f"⚠️ Monitoring alert for {deployment_id}/{model_name}: {health_check['issues']}"
         )
 
-    async def _handle_deployment_failure(self, deployment_id: str, error: str) -> None:
+    async def _handle_deployment_failure(
+            self, deployment_id: str, error: str) -> None:
         """التعامل مع فشل النشر"""
         logger.error(f"❌ Deployment {deployment_id} failed: {error}")
 

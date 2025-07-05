@@ -30,8 +30,10 @@ class ElevenLabsClient:
         """Generate speech audio"""
         try:
             audio = generate(
-                text=text, voice=voice_id, model=model, voice_settings=voice_settings
-            )
+                text=text,
+                voice=voice_id,
+                model=model,
+                voice_settings=voice_settings)
             return audio
 
         except Exception as e:
@@ -48,8 +50,10 @@ class ElevenLabsClient:
         """Stream speech audio"""
         try:
             audio_stream = stream(
-                text=text, voice=voice_id, model=model, voice_settings=voice_settings
-            )
+                text=text,
+                voice=voice_id,
+                model=model,
+                voice_settings=voice_settings)
             return audio_stream
 
         except Exception as e:
@@ -72,5 +76,8 @@ class ElevenLabsClient:
             # Simple health check
             self.client.voices.get_all()
             return True
+
+
         # FIXME: replace with specific exception
-except Exception as exc:return False
+except Exception as exc:
+    return False

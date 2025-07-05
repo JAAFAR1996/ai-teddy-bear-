@@ -42,18 +42,16 @@ safety_violations_counter = Counter(
 )
 
 websocket_connections_gauge = Gauge(
-    "teddy_bear_websocket_connections", "Number of active WebSocket connections"
-)
+    "teddy_bear_websocket_connections",
+    "Number of active WebSocket connections")
 
 ai_requests_counter = Counter(
     "teddy_bear_ai_requests_total", "Total number of AI requests", [
-        "model", "status"]
-)
+        "model", "status"])
 
 cache_operations_counter = Counter(
     "teddy_bear_cache_operations_total", "Cache operations", [
-        "operation", "status"]
-)
+        "operation", "status"])
 
 
 @dataclass
@@ -121,17 +119,23 @@ class MetricsAggregator:
         if len(self.violations_buffer) > self.max_buffer_size:
             self.violations_buffer = self.violations_buffer[-self.max_buffer_size:]
 
-    async def get_recent_violations(self, minutes: int = 5) -> List[Dict[str, Any]]:
+    async def get_recent_violations(
+            self, minutes: int = 5) -> List[Dict[str, Any]]:
         """Get violations from the last N minutes"""
         cutoff_time = datetime.utcnow() - timedelta(minutes=minutes)
         return [v for v in self.violations_buffer if v["timestamp"] > cutoff_time]
 
-    async def get_violation_stats(self, window_minutes: int = 60) -> Dict[str, Any]:
+    async def get_violation_stats(
+            self, window_minutes: int = 60) -> Dict[str, Any]:
         """Get violation statistics"""
         recent = await self.get_recent_violations(window_minutes)
 
         if not recent:
-            return {"total": 0, "by_type": {}, "by_child": {}, "trend": "stable"}
+            return {
+                "total": 0,
+                "by_type": {},
+                "by_child": {},
+                "trend": "stable"}
 
         # Group by type
         by_type = {}
@@ -186,8 +190,9 @@ class AlertManager:
                 await handler(alert)
             except Exception as e:
                 logger.error(
-                    "Alert handler failed", handler=handler.__name__, error=str(e)
-                )
+                    "Alert handler failed",
+                    handler=handler.__name__,
+                    error=str(e))
 
     async def send_critical_alert(self, details: Dict[str, Any]):
         """Send a critical alert"""
@@ -283,8 +288,7 @@ class ComprehensiveMonitor:
 
             except Exception as e:
                 results[name] = HealthCheckResult(
-                    service=name, status="unhealthy", latency_ms=0, error_message=str(e)
-                )
+                    service=name, status="unhealthy", latency_ms=0, error_message=str(e))
                 check["consecutive_failures"] += 1
 
         return results
@@ -355,6 +359,22 @@ class ComprehensiveMonitor:
         await asyncio.gather(*self.monitoring_tasks, return_exceptions=True)
         logger.info("Monitoring system stopped")
 
+    def _calculate_overall_health(
+        self, health_results: Dict[str, HealthCheckResult]
+    ) -> str:
+        """Calculates the overall system health based on individual checks."""
+        unhealthy_services = [
+            name for name,
+            result in health_results.items() if not result.is_healthy()]
+
+        if not unhealthy_services:
+            return "healthy"
+
+        is_critical = any(
+            self.health_checks[name]["critical"] for name in unhealthy_services
+        )
+        return "critical" if is_critical else "degraded"
+
     async def get_system_status(self) -> Dict[str, Any]:
         """Get comprehensive system status"""
         # Run health checks
@@ -367,28 +387,20 @@ class ComprehensiveMonitor:
         violation_stats = await self.metrics_aggregator.get_violation_stats()
 
         # Calculate overall health
-        unhealthy_services = [
-            name
-            for name, result in health_results.items()
-            if result.status == "unhealthy"
-        ]
+        overall_health = self._calculate_overall_health(health_results)
 
-        overall_health = "healthy"
-        if unhealthy_services:
-            critical_unhealthy = [
-                name
-                for name in unhealthy_services
-                if self.health_checks[name]["critical"]
-            ]
-            overall_health = "critical" if critical_unhealthy else "degraded"
+        unhealthy_services = [
+            name for name,
+            result in health_results.items() if not result.is_healthy()]
 
         return {
             "overall_health": overall_health,
             "timestamp": datetime.utcnow().isoformat(),
             "health_checks": {
-                name: result.to_dict() for name, result in health_results.items()
-            },
-            "recent_alerts": [a.to_dict() for a in recent_alerts],
+                name: result.to_dict() for name,
+                result in health_results.items()},
+            "recent_alerts": [
+                a.to_dict() for a in recent_alerts],
             "safety_violations": violation_stats,
             "unhealthy_services": unhealthy_services,
         }
@@ -421,8 +433,7 @@ class HealthChecks:
             return HealthCheckResult(
                 service="database",
                 status="unhealthy",
-                latency_ms=(datetime.utcnow() -
-                            start_time).total_seconds() * 1000,
+                latency_ms=(datetime.utcnow() - start_time).total_seconds() * 1000,
                 error_message=str(e),
             )
 
@@ -461,8 +472,10 @@ class HealthChecks:
             return HealthCheckResult(
                 service="redis",
                 status="unhealthy",
-                latency_ms=(datetime.utcnow() -
-                            start_time).total_seconds() * 1000,
+                latency_ms=(
+                    datetime.utcnow() -
+                    start_time).total_seconds() *
+                1000,
                 error_message=str(e),
             )
 
@@ -499,7 +512,9 @@ class HealthChecks:
             return HealthCheckResult(
                 service="ai_service",
                 status="unhealthy",
-                latency_ms=(datetime.utcnow() -
-                            start_time).total_seconds() * 1000,
+                latency_ms=(
+                    datetime.utcnow() -
+                    start_time).total_seconds() *
+                1000,
                 error_message=str(e),
             )

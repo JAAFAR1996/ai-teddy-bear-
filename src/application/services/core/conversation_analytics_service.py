@@ -1,4 +1,4 @@
-﻿"""Conversation analytics service."""
+"""Conversation analytics service."""
 
 import logging
 import sqlite3
@@ -32,7 +32,7 @@ class ConversationAnalyticsService:
 
             # Base analytics query
             sql = """
-                SELECT 
+                SELECT
                     COUNT(*) as total_conversations,
                     SUM(duration) as total_duration_seconds,
                     AVG(duration) as avg_duration_seconds,
@@ -93,7 +93,8 @@ class ConversationAnalyticsService:
             cursor = self.connection.cursor()
 
             # Basic counts
-            cursor.execute("SELECT COUNT(*) FROM conversations WHERE archived = 0")
+            cursor.execute(
+                "SELECT COUNT(*) FROM conversations WHERE archived = 0")
             total_conversations = cursor.fetchone()[0]
 
             cursor.execute(

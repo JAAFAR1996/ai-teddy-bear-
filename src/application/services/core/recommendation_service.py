@@ -7,14 +7,19 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.domain.reporting.models import (ActivityRecommendation,
-                                         InteractionAnalysis,
-                                         InterventionRecommendation,
-                                         LLMRecommendation,
-                                         RecommendationBundle, UrgencyLevel)
-from src.domain.reporting.services import (BehaviorAnalyzer,
-                                           EmotionAnalyzerService,
-                                           SkillAnalyzer)
+from src.domain.reporting.models import (
+    ActivityRecommendation,
+    InteractionAnalysis,
+    InterventionRecommendation,
+    LLMRecommendation,
+    RecommendationBundle,
+    UrgencyLevel,
+)
+from src.domain.reporting.services import (
+    BehaviorAnalyzer,
+    EmotionAnalyzerService,
+    SkillAnalyzer,
+)
 
 
 class RecommendationService:
@@ -63,7 +68,8 @@ class RecommendationService:
 
             # Fallback to rule-based recommendations if LLM fails
             if not recommendations:
-                recommendations = self._generate_fallback_recommendations_task7(metrics)
+                recommendations = self._generate_fallback_recommendations_task7(
+                    metrics)
 
             self.logger.info(
                 f"Generated {len(recommendations)} LLM recommendations for child {child_id}"
@@ -82,7 +88,8 @@ class RecommendationService:
         """Generate comprehensive recommendation bundle"""
         try:
             # Generate activity recommendations
-            activity_recs = self._generate_activity_recommendations(interactions)
+            activity_recs = self._generate_activity_recommendations(
+                interactions)
 
             # Generate intervention recommendations
             intervention_recs = self._generate_intervention_recommendations(
@@ -137,11 +144,11 @@ class RecommendationService:
 
             # Get activity suggestions from skill analyzer
             activity_suggestions = (
-                self.skill_analyzer.generate_activity_recommendations(interactions)
-            )
+                self.skill_analyzer.generate_activity_recommendations(interactions))
 
             # Convert to ActivityRecommendation objects
-            for i, suggestion in enumerate(activity_suggestions[:5]):  # Limit to 5
+            for i, suggestion in enumerate(
+                    activity_suggestions[:5]):  # Limit to 5
                 activity = ActivityRecommendation(
                     activity_name=f"نشاط {i+1}",
                     description=suggestion,
@@ -157,7 +164,8 @@ class RecommendationService:
             return recommendations
 
         except Exception as e:
-            self.logger.error(f"Activity recommendations generation error: {e}")
+            self.logger.error(
+                f"Activity recommendations generation error: {e}")
             return []
 
     def _generate_intervention_recommendations(
@@ -169,17 +177,14 @@ class RecommendationService:
 
             # Get concerning patterns
             concerning_patterns = self.emotion_analyzer.identify_concerning_patterns(
-                interactions
-            )
+                interactions)
             urgent_recommendations = (
-                self.emotion_analyzer.generate_urgent_recommendations(interactions)
-            )
+                self.emotion_analyzer.generate_urgent_recommendations(interactions))
 
             # Create intervention recommendations for concerning patterns
             for i, pattern in enumerate(concerning_patterns):
                 urgency = (
-                    UrgencyLevel.HIGH if "شديد" in pattern else UrgencyLevel.MEDIUM
-                )
+                    UrgencyLevel.HIGH if "شديد" in pattern else UrgencyLevel.MEDIUM)
 
                 intervention = InterventionRecommendation(
                     concern_area=pattern,
@@ -193,7 +198,9 @@ class RecommendationService:
                     ],
                     urgency_level=urgency,
                     expected_duration_weeks=4,
-                    success_indicators=["تحسن في السلوك", "زيادة في الاستقرار"],
+                    success_indicators=[
+                        "تحسن في السلوك",
+                        "زيادة في الاستقرار"],
                     professional_help_needed=urgency == UrgencyLevel.HIGH,
                 )
                 recommendations.append(intervention)
@@ -201,7 +208,8 @@ class RecommendationService:
             return recommendations
 
         except Exception as e:
-            self.logger.error(f"Intervention recommendations generation error: {e}")
+            self.logger.error(
+                f"Intervention recommendations generation error: {e}")
             return []
 
     async def _generate_cot_recommendation(
@@ -336,7 +344,8 @@ class RecommendationService:
             return recommendations
 
         except Exception as e:
-            self.logger.error(f"Fallback recommendations generation error: {e}")
+            self.logger.error(
+                f"Fallback recommendations generation error: {e}")
             return []
 
     async def _get_child_info(self, child_id: int) -> Dict[str, Any]:

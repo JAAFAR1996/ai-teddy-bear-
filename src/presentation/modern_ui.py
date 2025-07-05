@@ -14,6 +14,15 @@ Original file was 3864 lines - now split into modular components:
 All imports from this file will work exactly as before!
 """
 
+from src.presentation.ui.widgets.waveform_widget import WaveformWidget
+from src.presentation.ui.widgets.conversation_widget import ConversationWidget
+from src.presentation.ui.widgets.audio_widget import ModernAudioWidget
+from src.presentation.ui.networking.websocket_client import WebSocketClient
+from src.presentation.ui.networking.message_sender import EnterpriseMessageSender
+from src.presentation.ui.main_window import ModernTeddyUI, TeddyMainWindow, main
+from src.presentation.ui.audio.audio_recorder import AudioRecorder
+from src.presentation.ui.audio.audio_engine import AudioProcessingEngine
+from src.presentation.ui.audio.audio_config import AudioConfig
 import os
 import sys
 from typing import Any, Dict
@@ -21,18 +30,7 @@ from typing import Any, Dict
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from src.presentation.ui.audio.audio_config import AudioConfig
 # === CORE UI COMPONENTS (من المكونات الجديدة المفصولة) ===
-from src.presentation.ui.audio.audio_engine import AudioProcessingEngine
-from src.presentation.ui.audio.audio_recorder import AudioRecorder
-from src.presentation.ui.main_window import (ModernTeddyUI, TeddyMainWindow,
-                                             main)
-from src.presentation.ui.networking.message_sender import \
-    EnterpriseMessageSender
-from src.presentation.ui.networking.websocket_client import WebSocketClient
-from src.presentation.ui.widgets.audio_widget import ModernAudioWidget
-from src.presentation.ui.widgets.conversation_widget import ConversationWidget
-from src.presentation.ui.widgets.waveform_widget import WaveformWidget
 
 # === ENTERPRISE DASHBOARD (ملف منفصل موجود) ===
 try:
@@ -46,26 +44,76 @@ except ImportError:
 
 # === ADDITIONAL IMPORTS (PySide6 للاستيرادات المباشرة) ===
 try:
-    from PySide6.QtCore import (QDateTime, QEasingCurve, QObject, QPoint,
-                                QPropertyAnimation, QRect, QRunnable,
-                                QSettings, QSize, Qt, QThread, QThreadPool,
-                                QTimer, QUrl, Signal)
+    from PySide6.QtCore import (
+        QDateTime,
+        QEasingCurve,
+        QObject,
+        QPoint,
+        QPropertyAnimation,
+        QRect,
+        QRunnable,
+        QSettings,
+        QSize,
+        Qt,
+        QThread,
+        QThreadPool,
+        QTimer,
+        QUrl,
+        Signal,
+    )
     from PySide6.QtGui import QAction as QGuiAction
-    from PySide6.QtGui import (QBrush, QColor, QDesktopServices, QFont,
-                               QGradient, QIcon, QLinearGradient, QMovie,
-                               QPainter, QPalette, QPen, QPixmap,
-                               QSyntaxHighlighter, QTextCharFormat,
-                               QTextCursor)
-    from PySide6.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox,
-                                   QDialog, QFrame, QGridLayout, QGroupBox,
-                                   QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-                                   QListWidget, QMainWindow, QMenuBar,
-                                   QMessageBox, QProgressBar, QPushButton,
-                                   QScrollArea, QSizePolicy, QSlider,
-                                   QSpacerItem, QSpinBox, QSplitter,
-                                   QStatusBar, QStyle, QSystemTrayIcon,
-                                   QTableWidget, QTableWidgetItem, QTabWidget,
-                                   QTextEdit, QVBoxLayout, QWidget)
+    from PySide6.QtGui import (
+        QBrush,
+        QColor,
+        QDesktopServices,
+        QFont,
+        QGradient,
+        QIcon,
+        QLinearGradient,
+        QMovie,
+        QPainter,
+        QPalette,
+        QPen,
+        QPixmap,
+        QSyntaxHighlighter,
+        QTextCharFormat,
+        QTextCursor,
+    )
+    from PySide6.QtWidgets import (
+        QAction,
+        QApplication,
+        QCheckBox,
+        QComboBox,
+        QDialog,
+        QFrame,
+        QGridLayout,
+        QGroupBox,
+        QHBoxLayout,
+        QHeaderView,
+        QLabel,
+        QLineEdit,
+        QListWidget,
+        QMainWindow,
+        QMenuBar,
+        QMessageBox,
+        QProgressBar,
+        QPushButton,
+        QScrollArea,
+        QSizePolicy,
+        QSlider,
+        QSpacerItem,
+        QSpinBox,
+        QSplitter,
+        QStatusBar,
+        QStyle,
+        QSystemTrayIcon,
+        QTableWidget,
+        QTableWidgetItem,
+        QTabWidget,
+        QTextEdit,
+        QVBoxLayout,
+        QWidget,
+    )
 
     PYSIDE6_AVAILABLE = True
 except ImportError:
@@ -230,7 +278,7 @@ if __name__ == "__main__":
 
 ✅ OLD CODE STILL WORKS:
     from src.presentation.modern_ui import AudioProcessingEngine  # ✅ يعمل
-    from src.presentation.modern_ui import WebSocketClient        # ✅ يعمل  
+    from src.presentation.modern_ui import WebSocketClient        # ✅ يعمل
     from src.presentation.modern_ui import ModernAudioWidget     # ✅ يعمل
     from src.presentation.modern_ui import EnterpriseDashboardWidget  # ✅ يعمل
 
@@ -252,7 +300,7 @@ if __name__ == "__main__":
 
 📊 MIGRATION BENEFITS:
     ✅ 91% size reduction (3864 → 338 lines max)
-    ✅ 100% backward compatibility  
+    ✅ 100% backward compatibility
     ✅ Better testability and maintainability
     ✅ Cleaner separation of concerns
     ✅ Follows SOLID principles

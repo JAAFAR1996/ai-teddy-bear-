@@ -104,8 +104,7 @@ class ContentAnalysisService:
                     "type": AlertType.CONTENT_MODERATION,
                     "severity": AlertSeverity.HIGH,
                     "message": f'Blocked topics discussed: {", ".join(topic_violations)}',
-                }
-            )
+                })
 
         # Check sentiment concerns
         sentiment_issues = self._analyze_sentiment_concerns(
@@ -141,7 +140,8 @@ class ContentAnalysisService:
 
         return detected_topics
 
-    def calculate_interaction_quality(self, conversation: ConversationLog) -> float:
+    def calculate_interaction_quality(
+            self, conversation: ConversationLog) -> float:
         """Calculate quality score for conversation (0-1)"""
 
         factors = {}
@@ -204,11 +204,11 @@ class ContentAnalysisService:
                     "type": "sentiment_decline",
                     "severity": "medium",
                     "description": "Declining emotional state detected over recent conversations",
-                }
-            )
+                })
 
         # Check for repetitive concerning topics
-        concerning_topics = self._detect_repetitive_concerns(recent_conversations)
+        concerning_topics = self._detect_repetitive_concerns(
+            recent_conversations)
         if concerning_topics:
             patterns.append(
                 {
@@ -216,8 +216,7 @@ class ContentAnalysisService:
                     "severity": "high",
                     "description": f'Repeatedly discussing concerning topics: {", ".join(concerning_topics)}',
                     "topics": concerning_topics,
-                }
-            )
+                })
 
         # Check for social isolation indicators
         if self._detect_isolation_indicators(recent_conversations):
@@ -226,8 +225,7 @@ class ContentAnalysisService:
                     "type": "social_isolation",
                     "severity": "medium",
                     "description": "Indicators of social isolation or loneliness detected",
-                }
-            )
+                })
 
         return patterns
 
@@ -306,7 +304,8 @@ class ContentAnalysisService:
 
         return concerns
 
-    def _detect_sentiment_decline(self, conversations: List[ConversationLog]) -> bool:
+    def _detect_sentiment_decline(
+            self, conversations: List[ConversationLog]) -> bool:
         """Detect declining sentiment trend"""
 
         if len(conversations) < 3:

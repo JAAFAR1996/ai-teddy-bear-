@@ -9,12 +9,14 @@ from datetime import datetime
 from typing import List
 
 from src.domain.entities.child import Child
-from src.domain.child.models.child_analytics import (ActivityStatistics,
-                                                     AgeStatistics,
-                                                     ChildEngagementInsight,
-                                                     ChildStatistics,
-                                                     EngagementLevel,
-                                                     InteractionMetrics)
+from src.domain.child.models.child_analytics import (
+    ActivityStatistics,
+    AgeStatistics,
+    ChildEngagementInsight,
+    ChildStatistics,
+    EngagementLevel,
+    InteractionMetrics,
+)
 
 
 class ChildAnalyticsDomainService:
@@ -125,7 +127,8 @@ class ChildAnalyticsDomainService:
         age_stats = self._calculate_age_statistics(children)
         language_distribution = self._calculate_language_distribution(children)
         activity_stats = self._calculate_activity_statistics(
-            children, active_children_last_7_days)
+            children, active_children_last_7_days
+        )
 
         return ChildStatistics(
             total_children=len(children),
@@ -140,7 +143,9 @@ class ChildAnalyticsDomainService:
         return ChildStatistics(
             total_children=0,
             age_statistics=AgeStatistics(
-                min_age=0, max_age=0, average_age=0.0),
+                min_age=0,
+                max_age=0,
+                average_age=0.0),
             language_distribution={},
             activity_statistics=ActivityStatistics(
                 children_active_last_7_days=0,
@@ -150,7 +155,8 @@ class ChildAnalyticsDomainService:
             generated_at=datetime.now(),
         )
 
-    def _calculate_age_statistics(self, children: List[Child]) -> AgeStatistics:
+    def _calculate_age_statistics(
+            self, children: List[Child]) -> AgeStatistics:
         """Calculate age statistics from children list."""
         ages = [child.age for child in children if child.age is not None]
         return AgeStatistics(
@@ -168,7 +174,9 @@ class ChildAnalyticsDomainService:
                 lang, 0) + 1
         return language_distribution
 
-    def _calculate_activity_statistics(self, children: List[Child], active_children_last_7_days: int) -> ActivityStatistics:
+    def _calculate_activity_statistics(
+        self, children: List[Child], active_children_last_7_days: int
+    ) -> ActivityStatistics:
         """Calculate activity statistics from children list."""
         total_children = len(children)
         activity_percentage = (
@@ -198,8 +206,7 @@ class ChildAnalyticsDomainService:
         for child in children:
             try:
                 total_days = (
-                    (datetime.now() - child.created_at).days if child.created_at else 30
-                )
+                    (datetime.now() - child.created_at).days if child.created_at else 30)
                 insight = self.calculate_engagement_insights(child, total_days)
 
                 if insight.is_at_risk():
@@ -290,11 +297,9 @@ class ChildAnalyticsDomainService:
         """Calculate interaction consistency score (0-1)."""
         if child.total_interaction_time > 0:
             days_since_creation = (
-                (datetime.now() - child.created_at).days if child.created_at else 1
-            )
+                (datetime.now() - child.created_at).days if child.created_at else 1)
             consistency = min(
-                child.total_interaction_time /
-                (days_since_creation * 1800), 1.0
+                child.total_interaction_time / (days_since_creation * 1800), 1.0
             )  # 30 min/day ideal
             return consistency
         return 0.0
@@ -308,8 +313,7 @@ class ChildAnalyticsDomainService:
     def _calculate_engagement_level_score(self, child: Child) -> float:
         """Calculate engagement level score (0-1)."""
         total_days = (
-            (datetime.now() - child.created_at).days if child.created_at else 30
-        )
+            (datetime.now() - child.created_at).days if child.created_at else 30)
         insight = self.calculate_engagement_insights(child, total_days)
 
         engagement_scores = {

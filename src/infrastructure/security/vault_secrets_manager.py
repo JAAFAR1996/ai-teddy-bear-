@@ -65,15 +65,15 @@ class SecretMetadata:
 
 class VaultSecretsManager:
     """Enterprise-grade secrets management with HashiCorp Vault"""
-    
-    def __init__(self, 
+
+    def __init__(self,
                  vault_url: str = "http://localhost:8200",
                  vault_token: Optional[str] = None,
                  namespace: Optional[str] = None):
         """Initialize Vault client"""
         self.vault_url = vault_url
         self.namespace = namespace
-        
+
         if hvac is None:
             logger.warning("hvac library not installed, using fallback mode")
             self.client = None
@@ -81,16 +81,16 @@ class VaultSecretsManager:
         else:
             self.client = hvac.Client(url=vault_url, namespace=namespace)
             self._authenticate(vault_token)
-        
+
         self.redis_client: Optional[redis.Redis] = None
         self.cache_ttl = 300  # 5 minutes
         self.secret_metadata: Dict[str, SecretMetadata] = {}
-    
+
     def _authenticate(Optional[str]) -> None:
         """Authenticate with Vault"""
         if not self.client:
             return
-            
+
         try:
             if vault_token:
                 self.client.token = vault_token
@@ -99,22 +99,24 @@ class VaultSecretsManager:
                 if env_token:
                     self.client.token = env_token
                 else:
-                    logger.warning("No Vault token provided, using fallback mode")
+                    logger.warning(
+                        "No Vault token provided, using fallback mode")
                     self.client = None
                     return
-            
+
             if not self.client.is_authenticated():
-                logger.warning("Vault authentication failed, using fallback mode")
+                logger.warning(
+                    "Vault authentication failed, using fallback mode")
                 self.client = None
-                
+
         except Exception as e:
             logger.error("Vault authentication error", error=str(e))
             self.client = None
-    
-    async def store_secret(self, 
-                          path: str, 
-                          secret_data: Dict[str, Any],
-                          secret_type: SecretType = SecretType.API_KEY) -> bool:
+
+    async def store_secret(self,
+                           path: str,
+                           secret_data: Dict[str, Any],
+                           secret_type: SecretType = SecretType.API_KEY) -> bool:
         """Store secret in Vault or fallback storage"""
         try:
             if self.client:
@@ -127,20 +129,20 @@ class VaultSecretsManager:
             else:
                 # Fallback to memory (for development)
                 self._fallback_secrets[path] = secret_data
-            
+
             self.secret_metadata[path] = SecretMetadata(
                 secret_type=secret_type,
                 path=path,
                 created_at=datetime.utcnow()
             )
-            
+
             logger.info("Secret stored successfully", path=path)
             return True
-            
+
         except Exception as e:
             logger.error("Failed to store secret", path=path, error=str(e))
             return False
-    
+
     async def get_secret(self, path: str) -> Optional[Dict[str, Any]]:
         """Retrieve secret from Vault or fallback storage"""
         try:
@@ -154,16 +156,16 @@ class VaultSecretsManager:
             else:
                 # Fallback
                 return self._fallback_secrets.get(path)
-                
+
         except Exception as e:
             logger.error("Failed to retrieve secret", path=path, error=str(e))
             return self._fallback_secrets.get(path)
-    
+
     async def health_check(self) -> Dict[str, Any]:
         """Check Vault health"""
         if not self.client:
             return {'status': 'fallback_mode', 'vault_available': False}
-        
+
         try:
             health = self.client.sys.read_health_status()
             return {
@@ -202,4 +204,4 @@ async def get_jwt_secret() -> Optional[str]:
     """Get JWT signing secret"""
     vault = get_vault_manager()
     secret = await vault.get_secret("auth/jwt")
-    return secret.get('secret') if secret else None 
+    return secret.get('secret') if secret else None

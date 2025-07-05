@@ -10,9 +10,18 @@ from typing import Any
 import structlog
 from PySide6.QtCore import QTimer, Signal, pyqtSlot, Qt
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QGridLayout, QGroupBox,
-                               QHBoxLayout, QLabel, QProgressBar, QPushButton,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QProgressBar,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from ..audio.audio_config import AudioConfig
 from ..audio.audio_engine import AudioProcessingEngine

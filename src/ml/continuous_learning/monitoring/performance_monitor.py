@@ -112,7 +112,8 @@ class PerformanceMonitor:
             "status": "active",
         }
 
-    async def _deployment_monitoring_loop(self, config: Dict[str, Any]) -> None:
+    async def _deployment_monitoring_loop(
+            self, config: Dict[str, Any]) -> None:
         """حلقة مراقبة النشر"""
 
         deployment_id = config["deployment_id"]
@@ -151,7 +152,8 @@ class PerformanceMonitor:
                 await asyncio.sleep(check_interval)
 
             except Exception as e:
-                logger.error(f"Error in monitoring loop for {deployment_id}: {str(e)}")
+                logger.error(
+                    f"Error in monitoring loop for {deployment_id}: {str(e)}")
                 await asyncio.sleep(check_interval)
 
         # انتهاء المراقبة
@@ -197,13 +199,16 @@ class PerformanceMonitor:
         for metric, base_value in base_metrics.items():
             if metric == "response_time_ms":
                 # وقت الاستجابة - توزيع جاما
-                current_metrics[metric] = max(200, np.random.gamma(2, base_value / 2))
+                current_metrics[metric] = max(
+                    200, np.random.gamma(2, base_value / 2))
             elif metric in ["error_rate"]:
                 # معدل الخطأ - توزيع أسي
-                current_metrics[metric] = max(0.001, np.random.exponential(base_value))
+                current_metrics[metric] = max(
+                    0.001, np.random.exponential(base_value))
             elif metric in ["throughput_rps"]:
                 # الإنتاجية - توزيع بواسون
-                current_metrics[metric] = max(50, np.random.poisson(base_value))
+                current_metrics[metric] = max(
+                    50, np.random.poisson(base_value))
             elif metric in ["memory_usage_mb"]:
                 # استخدام الذاكرة - توزيع طبيعي
                 current_metrics[metric] = max(
@@ -237,11 +242,13 @@ class PerformanceMonitor:
                 "memory_usage_mb",
                 "cpu_usage_percent",
             ]:
-                current_metrics[metric] = max(0, min(1, current_metrics[metric]))
+                current_metrics[metric] = max(
+                    0, min(1, current_metrics[metric]))
 
         return current_metrics
 
-    async def _calculate_health_score(self, metrics: Dict[str, float]) -> float:
+    async def _calculate_health_score(
+            self, metrics: Dict[str, float]) -> float:
         """حساب درجة الصحة الإجمالية"""
 
         # أوزان المقاييس المختلفة
@@ -279,61 +286,67 @@ class PerformanceMonitor:
 
         return weighted_score / total_weight if total_weight > 0 else 0.5
 
+    def _check_z_score_anomaly(
+        self, current_value: float, historical_values: List[float]
+    ) -> bool:
+        """Check for an anomaly using the Z-score."""
+        if len(historical_values) < 10:
+            return False
+
+        mean_value = np.mean(historical_values)
+        std_value = np.std(historical_values)
+
+        if std_value == 0:
+            return False
+
+        z_score = abs(current_value - mean_value) / std_value
+        return z_score > 3
+
+    def _check_trend_change_anomaly(
+            self, historical_values: List[float]) -> bool:
+        """Check for a sudden trend change anomaly."""
+        if len(historical_values) < 20:
+            return False
+
+        recent_values = historical_values[-10:]
+        older_values = historical_values[-20:-10]
+
+        recent_mean = np.mean(recent_values)
+        older_mean = np.mean(older_values)
+
+        if older_mean == 0:
+            return False
+
+        change_percentage = abs(recent_mean - older_mean) / older_mean
+        return change_percentage > 0.2
+
     async def _detect_anomalies(
         self, model_id: str, metrics: Dict[str, float]
     ) -> List[str]:
-        """كشف الشذوذ في المقاييس"""
-
+        """Detect anomalies in metrics using helper methods."""
         anomalies = []
-
-        # الحصول على البيانات التاريخية للنموذج
         historical_data = [
-            snapshot
-            for snapshot in self.metric_history[-100:]
-            if snapshot.model_id == model_id  # آخر 100 قياس
+            s for s in self.metric_history[-100:] if s.model_id == model_id
         ]
 
-        if len(historical_data) < 10:
-            return anomalies  # بيانات غير كافية
+        if not historical_data:
+            return anomalies
 
-        # فحص كل مقياس للشذوذ
         for metric_name, current_value in metrics.items():
             historical_values = [
-                snapshot.metrics.get(metric_name, 0) for snapshot in historical_data
-            ]
+                s.metrics.get(
+                    metric_name,
+                    0) for s in historical_data]
 
-            if len(historical_values) >= 10:
-                mean_value = np.mean(historical_values)
-                std_value = np.std(historical_values)
+            if self._check_z_score_anomaly(current_value, historical_values):
+                anomalies.append(f"{metric_name}_zscore_anomaly")
+                logger.warning(f"Z-score anomaly in {model_id}.{metric_name}")
 
-                # كشف الشذوذ باستخدام قاعدة 3-sigma
-                if std_value > 0:
-                    z_score = abs(current_value - mean_value) / std_value
+            if self._check_trend_change_anomaly(historical_values):
+                anomalies.append(f"{metric_name}_trend_anomaly")
+                logger.warning(f"Trend anomaly in {model_id}.{metric_name}")
 
-                    if z_score > 3:
-                        anomalies.append(f"{metric_name}_anomaly")
-                        logger.warning(
-                            f"🚨 Anomaly detected in {model_id}.{metric_name}: {current_value:.3f} (z-score: {z_score:.2f})"
-                        )
-
-                # فحص الاتجاهات المفاجئة
-                if len(historical_values) >= 20:
-                    recent_values = historical_values[-10:]
-                    older_values = historical_values[-20:-10]
-
-                    recent_mean = np.mean(recent_values)
-                    older_mean = np.mean(older_values)
-
-                    if older_mean > 0:
-                        change_percentage = abs(recent_mean - older_mean) / older_mean
-
-                        if change_percentage > 0.2:  # تغيير أكثر من 20%
-                            anomalies.append(f"{metric_name}_trend_change")
-                            logger.info(
-                                f"📈 Trend change detected in {model_id}.{metric_name}: {change_percentage:.1%}"
-                            )
-
-        return anomalies
+        return list(set(anomalies))
 
     async def _check_alert_conditions(
         self, deployment_id: str, snapshot: MetricSnapshot, config: Dict[str, Any]
@@ -361,7 +374,9 @@ class PerformanceMonitor:
 
         metric_name = rule_config["metric"]
         condition = rule_config["condition"]
-        threshold = thresholds.get(metric_name, rule_config.get("default_threshold", 0))
+        threshold = thresholds.get(
+            metric_name, rule_config.get(
+                "default_threshold", 0))
 
         current_value = snapshot.metrics.get(metric_name, 0)
 
@@ -387,7 +402,8 @@ class PerformanceMonitor:
         """تشغيل التنبيه"""
 
         # فحص ما إذا كان التنبيه مكرر
-        existing_alert = self._find_existing_alert(rule_name, snapshot.model_id)
+        existing_alert = self._find_existing_alert(
+            rule_name, snapshot.model_id)
         if existing_alert and not existing_alert.auto_resolved:
             return  # تجنب التنبيهات المكررة
 
@@ -395,17 +411,29 @@ class PerformanceMonitor:
         alert = PerformanceAlert(
             alert_id=f"alert_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{rule_name}",
             timestamp=datetime.utcnow(),
-            severity=AlertSeverity(rule_config["severity"]),
+            severity=AlertSeverity(
+                rule_config["severity"]),
             metric_name=rule_config["metric"],
-            current_value=snapshot.metrics.get(rule_config["metric"], 0),
-            threshold_value=rule_config.get("default_threshold", 0),
+            current_value=snapshot.metrics.get(
+                rule_config["metric"],
+                0),
+            threshold_value=rule_config.get(
+                "default_threshold",
+                0),
             message=rule_config["message"].format(
                 model_id=snapshot.model_id,
-                current_value=snapshot.metrics.get(rule_config["metric"], 0),
-                threshold=rule_config.get("default_threshold", 0),
+                current_value=snapshot.metrics.get(
+                    rule_config["metric"],
+                    0),
+                threshold=rule_config.get(
+                    "default_threshold",
+                    0),
             ),
-            affected_models=[snapshot.model_id],
-            recommended_actions=rule_config.get("actions", []),
+            affected_models=[
+                snapshot.model_id],
+            recommended_actions=rule_config.get(
+                "actions",
+                []),
         )
 
         self.active_alerts.append(alert)
@@ -432,7 +460,10 @@ class PerformanceMonitor:
 
         return None
 
-    async def _send_alert(self, deployment_id: str, alert: PerformanceAlert) -> None:
+    async def _send_alert(
+            self,
+            deployment_id: str,
+            alert: PerformanceAlert) -> None:
         """إرسال التنبيه"""
 
         severity_emoji = {
@@ -444,8 +475,7 @@ class PerformanceMonitor:
 
         logger.warning(
             f"{severity_emoji[alert.severity]} ALERT [{alert.severity.value.upper()}] "
-            f"Deployment: {deployment_id} | {alert.message}"
-        )
+            f"Deployment: {deployment_id} | {alert.message}")
 
         # في بيئة الإنتاج، سيتم إرسال التنبيهات عبر:
         # - Slack/Teams
@@ -649,7 +679,10 @@ class PerformanceMonitor:
 
     def _initialize_anomaly_detector(self) -> Dict[str, Any]:
         """تهيئة كاشف الشذوذ"""
-        return {"algorithm": "statistical", "sensitivity": 0.95, "min_data_points": 10}
+        return {
+            "algorithm": "statistical",
+            "sensitivity": 0.95,
+            "min_data_points": 10}
 
     def _initialize_alerting_system(self) -> Dict[str, Any]:
         """تهيئة نظام التنبيه"""
@@ -674,7 +707,37 @@ class PerformanceMonitor:
             if alert.timestamp > cutoff_time or not alert.auto_resolved
         ]
 
-    async def _finalize_deployment_monitoring(self, deployment_id: str) -> None:
+    def _aggregate_monitoring_stats(
+        self, deployment_id: str, model_ids: List[str]
+    ) -> Dict[str, int]:
+        """Aggregate monitoring statistics for a given deployment."""
+        total_metrics = sum(
+            1
+            for s in self.metric_history
+            if any(mid in s.model_id for mid in model_ids)
+        )
+        alerts_triggered = sum(
+            1 for a in self.active_alerts if deployment_id in a.alert_id
+        )
+        anomalies_detected = sum(
+            len(s.anomalies_detected)
+            for s in self.metric_history
+            if any(mid in s.model_id for mid in model_ids)
+        )
+        auto_resolutions = sum(
+            1
+            for a in self.active_alerts
+            if deployment_id in a.alert_id and a.auto_resolved
+        )
+        return {
+            "total_metrics_collected": total_metrics,
+            "alerts_triggered": alerts_triggered,
+            "anomalies_detected": anomalies_detected,
+            "auto_resolutions": auto_resolutions,
+        }
+
+    async def _finalize_deployment_monitoring(
+            self, deployment_id: str) -> None:
         """إنهاء مراقبة النشر"""
 
         if deployment_id in self.active_monitors:
@@ -684,53 +747,23 @@ class PerformanceMonitor:
 
             # إنشاء تقرير نهائي
             final_report = await self._generate_monitoring_report(deployment_id)
-            logger.info(f"📊 Generated final monitoring report for {deployment_id}")
+            logger.info(
+                f"📊 Generated final monitoring report for {deployment_id}")
 
             # تنظيف الموارد
             del self.active_monitors[deployment_id]
 
-    async def _generate_monitoring_report(self, deployment_id: str) -> Dict[str, Any]:
-        """إنشاء تقرير المراقبة"""
-
+    async def _generate_monitoring_report(
+            self, deployment_id: str) -> Dict[str, Any]:
+        """Generate a monitoring report by aggregating statistics."""
         monitor_info = self.active_monitors.get(deployment_id, {})
         config = monitor_info.get("config", {})
+        model_ids = list(config.get("models", {}).keys())
 
-        # جمع إحصائيات المراقبة
-        monitoring_stats = {
+        stats = self._aggregate_monitoring_stats(deployment_id, model_ids)
+
+        return {
             "deployment_id": deployment_id,
             "monitoring_duration_hours": config.get("duration_hours", 0),
-            "total_metrics_collected": len(
-                [
-                    snapshot
-                    for snapshot in self.metric_history
-                    if any(
-                        model_id in snapshot.model_id
-                        for model_id in config.get("models", {}).keys()
-                    )
-                ]
-            ),
-            "alerts_triggered": len(
-                [
-                    alert
-                    for alert in self.active_alerts
-                    if deployment_id in alert.alert_id
-                ]
-            ),
-            "anomalies_detected": sum(
-                len(snapshot.anomalies_detected)
-                for snapshot in self.metric_history
-                if any(
-                    model_id in snapshot.model_id
-                    for model_id in config.get("models", {}).keys()
-                )
-            ),
-            "auto_resolutions": len(
-                [
-                    alert
-                    for alert in self.active_alerts
-                    if deployment_id in alert.alert_id and alert.auto_resolved
-                ]
-            ),
+            **stats,
         }
-
-        return monitoring_stats

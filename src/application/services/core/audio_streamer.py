@@ -50,8 +50,11 @@ class StreamingAudioBuffer:
         """Add audio chunk to buffer"""
         async with self._lock:
             audio_array = (
-                np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
-            )
+                np.frombuffer(
+                    audio_data,
+                    dtype=np.int16).astype(
+                    np.float32) /
+                32768.0)
             self.buffer.append(audio_array)
             self.total_samples += len(audio_array)
 
@@ -68,9 +71,8 @@ class StreamingAudioBuffer:
             duration = current_samples / self.config.sample_rate
             silence_duration = time.time() - self.last_activity
 
-            if (
-                duration >= self.config.min_chunk_duration and silence_duration >= 0.5
-            ) or duration >= self.config.max_chunk_duration:
+            if (duration >= self.config.min_chunk_duration and silence_duration >=
+                    0.5) or duration >= self.config.max_chunk_duration:
 
                 combined = np.concatenate(list(self.buffer))
                 self.buffer.clear()
@@ -154,8 +156,10 @@ class ModernAudioStreamer:
         logger.info("✅ Modern Audio Streamer initialized")
 
     async def handle_audio_stream(
-        self, websocket: WebSocket, session_id: str, child: Optional[Any] = None
-    ) -> None:
+            self,
+            websocket: WebSocket,
+            session_id: str,
+            child: Optional[Any] = None) -> None:
         """Main audio streaming handler - replaces mock implementations"""
         try:
             success = await self.ws_manager.connect(

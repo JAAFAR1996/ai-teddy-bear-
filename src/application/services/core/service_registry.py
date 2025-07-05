@@ -88,7 +88,10 @@ class ServiceBase(ABC):
         """Get another service from registry (avoids circular imports)"""
         return self.registry.get_service(service_name)
 
-    async def wait_for_service(self, service_name: str, timeout: float = 30.0) -> Any:
+    async def wait_for_service(
+            self,
+            service_name: str,
+            timeout: float = 30.0) -> Any:
         """Wait for a service to be ready"""
         return await self.registry.wait_for_service(service_name, timeout)
 
@@ -138,8 +141,8 @@ class ServiceRegistry:
             self._initialization_order = self._calculate_init_order()
 
             logger.info(
-                "Starting service initialization", order=self._initialization_order
-            )
+                "Starting service initialization",
+                order=self._initialization_order)
 
             # Initialize services
             for service_name in self._initialization_order:
@@ -187,7 +190,8 @@ class ServiceRegistry:
             info.state = ServiceState.FAILED
             info.error = str(e)
             logger.error(
-                f"Service initialization failed: {name}", error=str(e))
+                f"Service initialization failed: {name}",
+                error=str(e))
             raise
 
     def get_service(self, name: str) -> Any:
@@ -230,8 +234,9 @@ class ServiceRegistry:
             # Calculate shutdown order (reverse of init)
             self._shutdown_order = list(reversed(self._initialization_order))
 
-            logger.info("Starting service shutdown",
-                        order=self._shutdown_order)
+            logger.info(
+                "Starting service shutdown",
+                order=self._shutdown_order)
 
             # Stop health checks
             for info in self._services.values():
@@ -347,8 +352,8 @@ class ServiceRegistry:
                 break
             except Exception as e:
                 logger.error(
-                    f"Health check failed for service: {service_name}", error=str(e)
-                )
+                    f"Health check failed for service: {service_name}",
+                    error=str(e))
 
     def get_status(self) -> Dict[str, Any]:
         """Get status of all services"""

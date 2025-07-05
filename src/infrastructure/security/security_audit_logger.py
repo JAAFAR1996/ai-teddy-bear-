@@ -119,7 +119,8 @@ class SecurityEvent:
             event_data = (
                 f"{timestamp_str}:{self.event_type.value}:{self.user_id or 'anonymous'}"
             )
-            self.event_id = hashlib.sha256(event_data.encode()).hexdigest()[:16]
+            self.event_id = hashlib.sha256(
+                event_data.encode()).hexdigest()[:16]
 
 
 @dataclass
@@ -132,6 +133,24 @@ class AuditLogEntry:
     automated_response: Optional[str] = None
     investigation_status: str = "none"  # none, pending, in_progress, resolved
     created_at: datetime = field(default_factory=datetime.utcnow)
+
+
+@dataclass
+class SecurityEventContext:
+    """Context for a security event, to reduce parameter count."""
+
+    user_id: Optional[str] = None
+    username: Optional[str] = None
+    session_id: Optional[str] = None
+    device_id: Optional[str] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    resource: Optional[str] = None
+    action: Optional[str] = None
+    result: str = "success"
+    details: Optional[Dict[str, Any]] = None
+    correlation_id: Optional[str] = None
+    sensitive_data_involved: bool = False
 
 
 class SecurityAuditLogger:
@@ -254,81 +273,67 @@ class SecurityAuditLogger:
             },
         ]
 
-    async def log_security_event(
-        self,
-        event_type: SecurityEventType,
-        user_id: Optional[str] = None,
-        username: Optional[str] = None,
-        session_id: Optional[str] = None,
-        device_id: Optional[str] = None,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        resource: Optional[str] = None,
-        action: Optional[str] = None,
-        result: str = "success",
-        details: Optional[Dict[str, Any]] = None,
-        correlation_id: Optional[str] = None,
-        sensitive_data_involved: bool = False,
-    ) -> str:
-        """Log a security event"""
-
-        # Create security event
-        event = SecurityEvent(
+    def _create_event_from_context(
+        self, event_type: SecurityEventType, context: SecurityEventContext
+    ) -> SecurityEvent:
+        """Create a SecurityEvent object from the given context."""
+        return SecurityEvent(
             event_id="",  # Will be generated in __post_init__
             event_type=event_type,
             timestamp=datetime.utcnow(),
-            user_id=user_id,
-            username=username,
-            session_id=session_id,
-            device_id=device_id,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            resource=resource,
-            action=action,
-            result=result,
-            details=details or {},
-            correlation_id=correlation_id,
-            sensitive_data_involved=sensitive_data_involved,
+            user_id=context.user_id,
+            username=context.username,
+            session_id=context.session_id,
+            device_id=context.device_id,
+            ip_address=context.ip_address,
+            user_agent=context.user_agent,
+            resource=context.resource,
+            action=context.action,
+            result=context.result,
+            details=context.details or {},
+            correlation_id=context.correlation_id,
+            sensitive_data_involved=context.sensitive_data_involved,
         )
 
-        # Enrich event
+    async def _process_event(self, event: SecurityEvent) -> AuditLogEntry:
+        """Enrich, score, and respond to an event, returning an AuditLogEntry."""
         await self._enrich_event(event)
-
-        # Create audit log entry
         log_entry = AuditLogEntry(event=event)
-
-        # Calculate risk score
         log_entry.risk_score = await self._calculate_risk_score(event)
-
-        # Check for automated response
         log_entry.automated_response = await self._check_automated_response(event)
+        return log_entry
 
-        # Add to buffer
+    async def _finalize_event_logging(
+        self, event: SecurityEvent, log_entry: AuditLogEntry
+    ):
+        """Handle event buffering, threat detection, alerting, and correlations."""
         async with self.buffer_lock:
             self.event_buffer.append(log_entry)
-
-            # Flush buffer if full
             if len(self.event_buffer) >= self.buffer_size:
                 await self._flush_buffer()
 
-        # Real-time threat detection
         await self._detect_threats(event)
-
-        # Real-time alerting
         await self._check_alerting_rules(event)
-
-        # Update correlation maps
         await self._update_correlations(event)
+
+    async def log_security_event(
+        self,
+        event_type: SecurityEventType,
+        context: SecurityEventContext,
+    ) -> str:
+        """Log a security event using a context object."""
+        event = self._create_event_from_context(event_type, context)
+        log_entry = await self._process_event(event)
+        await self._finalize_event_logging(event, log_entry)
 
         logger.info(
             "Security event logged",
             event_id=event.event_id,
             event_type=event_type.value,
-            user_id=user_id,
+            user_id=context.user_id,
             threat_level=event.threat_level.value,
             risk_score=log_entry.risk_score,
         )
-
         return event.event_id
 
     async def _enrich_event(self, event: SecurityEvent):
@@ -408,7 +413,8 @@ class SecurityAuditLogger:
 
         return min(score, 10.0)  # Cap at 10.0
 
-    async def _check_automated_response(self, event: SecurityEvent) -> Optional[str]:
+    async def _check_automated_response(
+            self, event: SecurityEvent) -> Optional[str]:
         """Check if automated response is needed"""
 
         if event.threat_level == ThreatLevel.CRITICAL:
@@ -461,12 +467,15 @@ class SecurityAuditLogger:
                     )
 
                     # Log threat detection event
-                    await self.log_security_event(
-                        event_type=SecurityEventType.SUSPICIOUS_ACTIVITY,
+                    threat_context = SecurityEventContext(
                         user_id=event.user_id,
                         ip_address=event.ip_address,
                         details=threat_event.details,
                         correlation_id=event.correlation_id,
+                    )
+                    await self.log_security_event(
+                        event_type=SecurityEventType.SUSPICIOUS_ACTIVITY,
+                        context=threat_context,
                     )
 
     async def _check_alerting_rules(self, event: SecurityEvent):
@@ -477,7 +486,10 @@ class SecurityAuditLogger:
                 if rule["condition"](event):
                     await self._send_alert(rule, event)
             except Exception as e:
-                logger.error("Alerting rule error", rule=rule["name"], error=str(e))
+                logger.error(
+                    "Alerting rule error",
+                    rule=rule["name"],
+                    error=str(e))
 
     async def _send_alert(self, rule: Dict[str, Any], event: SecurityEvent):
         """Send security alert"""
@@ -498,9 +510,12 @@ class SecurityAuditLogger:
         logger.critical("SECURITY ALERT", **alert_data)
 
         # Store alert for tracking
+        alert_context = SecurityEventContext(
+            details={
+                "alert_rule": rule["name"],
+                "original_event_id": event.event_id})
         await self.log_security_event(
-            event_type=SecurityEventType.INCIDENT_CREATED,
-            details={"alert_rule": rule["name"], "original_event_id": event.event_id},
+            event_type=SecurityEventType.INCIDENT_CREATED, context=alert_context
         )
 
     async def _update_correlations(self, event: SecurityEvent):
@@ -609,41 +624,69 @@ class SecurityAuditLogger:
         self._monitoring_tasks.append(asyncio.create_task(buffer_flush_task()))
         self._monitoring_tasks.append(asyncio.create_task(cleanup_task()))
 
+    def _filter_events_for_report(
+            self,
+            standard: ComplianceStandard,
+            start_date: datetime,
+            end_date: datetime) -> List[AuditLogEntry]:
+        """Filter events based on compliance standard and date range."""
+        return [
+            entry
+            for entry in self.event_buffer
+            if standard in entry.event.compliance_flags
+            and start_date <= entry.event.timestamp <= end_date
+        ]
+
+    def _summarize_event_types(
+        self, relevant_events: List[AuditLogEntry]
+    ) -> Dict[str, int]:
+        """Summarize event types from a list of audit log entries."""
+        summary = {}
+        for event_type in SecurityEventType:
+            count = sum(
+                1 for e in relevant_events if e.event.event_type == event_type)
+            if count > 0:
+                summary[event_type.value] = count
+        return summary
+
+    def _calculate_risk_summary(
+        self, relevant_events: List[AuditLogEntry]
+    ) -> Dict[str, float]:
+        """Calculate the risk summary for a list of audit log entries."""
+        if not relevant_events:
+            return {
+                "total_risk_score": 0.0,
+                "average_risk_score": 0.0,
+                "high_risk_events": 0.0,
+            }
+
+        total_risk_score = sum(e.risk_score for e in relevant_events)
+        high_risk_events = sum(
+            1 for e in relevant_events if e.risk_score >= 7.0)
+
+        return {
+            "total_risk_score": total_risk_score,
+            "average_risk_score": total_risk_score / len(relevant_events),
+            "high_risk_events": float(high_risk_events),
+        }
+
     async def get_compliance_report(
         self, standard: ComplianceStandard, start_date: datetime, end_date: datetime
     ) -> Dict[str, Any]:
-        """Generate compliance report"""
-
-        # Filter events by compliance standard and date range
-        relevant_events = []
-        for entry in self.event_buffer:
-            if (
-                standard in entry.event.compliance_flags
-                and start_date <= entry.event.timestamp <= end_date
-            ):
-                relevant_events.append(entry)
+        """Generate compliance report by orchestrating helper methods."""
+        relevant_events = self._filter_events_for_report(
+            standard, start_date, end_date)
+        event_type_summary = self._summarize_event_types(relevant_events)
+        risk_summary = self._calculate_risk_summary(relevant_events)
 
         return {
             "standard": standard.value,
-            "period": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+            "period": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat()},
             "total_events": len(relevant_events),
-            "event_types": {
-                event_type.value: len(
-                    [e for e in relevant_events if e.event.event_type == event_type]
-                )
-                for event_type in SecurityEventType
-            },
-            "risk_summary": {
-                "total_risk_score": sum(e.risk_score for e in relevant_events),
-                "average_risk_score": (
-                    sum(e.risk_score for e in relevant_events) / len(relevant_events)
-                    if relevant_events
-                    else 0
-                ),
-                "high_risk_events": len(
-                    [e for e in relevant_events if e.risk_score >= 7.0]
-                ),
-            },
+            "event_types": event_type_summary,
+            "risk_summary": risk_summary,
         }
 
 
@@ -680,18 +723,23 @@ async def log_child_interaction(
         **kwargs,
     }
 
-    return await audit_logger.log_security_event(
-        event_type=SecurityEventType.CHILD_INTERACTION,
+    context = SecurityEventContext(
         user_id=user_id,
         device_id=device_id,
         details=details,
         sensitive_data_involved=True,
     )
+    return await audit_logger.log_security_event(
+        event_type=SecurityEventType.CHILD_INTERACTION, context=context
+    )
 
 
 async def log_audio_recording(
-    user_id: str, device_id: str, session_id: str, audio_duration: int, **kwargs
-) -> str:
+        user_id: str,
+        device_id: str,
+        session_id: str,
+        audio_duration: int,
+        **kwargs) -> str:
     """Log audio recording event"""
     audit_logger = get_security_audit_logger()
 
@@ -701,19 +749,25 @@ async def log_audio_recording(
         **kwargs,
     }
 
-    return await audit_logger.log_security_event(
-        event_type=SecurityEventType.AUDIO_RECORDING,
+    context = SecurityEventContext(
         user_id=user_id,
         device_id=device_id,
         session_id=session_id,
         details=details,
         sensitive_data_involved=True,
     )
+    return await audit_logger.log_security_event(
+        event_type=SecurityEventType.AUDIO_RECORDING, context=context
+    )
 
 
 async def log_login_attempt(
-    user_id: str, username: str, result: str, ip_address: str, user_agent: str, **kwargs
-) -> str:
+        user_id: str,
+        username: str,
+        result: str,
+        ip_address: str,
+        user_agent: str,
+        **kwargs) -> str:
     """Log login attempt"""
     audit_logger = get_security_audit_logger()
 
@@ -723,12 +777,12 @@ async def log_login_attempt(
         else SecurityEventType.LOGIN_FAILURE
     )
 
-    return await audit_logger.log_security_event(
-        event_type=event_type,
+    context = SecurityEventContext(
         user_id=user_id,
         username=username,
         ip_address=ip_address,
         user_agent=user_agent,
         result=result,
-        **kwargs,
+        details=kwargs,
     )
+    return await audit_logger.log_security_event(event_type=event_type, context=context)

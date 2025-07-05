@@ -106,7 +106,10 @@ class JWTManager:
         # Store refresh token
         await self._store_refresh_token(refresh_token, claims.user_id)
 
-        logger.info("Token pair created", user_id=claims.user_id, role=claims.role)
+        logger.info(
+            "Token pair created",
+            user_id=claims.user_id,
+            role=claims.role)
 
         return TokenPair(
             access_token=access_token,
@@ -123,7 +126,9 @@ class JWTManager:
                 return None
 
             # Decode token
-            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            payload = jwt.decode(
+                token, self.secret_key, algorithms=[
+                    self.algorithm])
 
             # Verify token type
             if payload.get("token_type") != "access":
@@ -151,7 +156,8 @@ class JWTManager:
             logger.error("Token verification error", error=str(e))
             return None
 
-    async def refresh_access_token(self, refresh_token: str) -> Optional[TokenPair]:
+    async def refresh_access_token(
+            self, refresh_token: str) -> Optional[TokenPair]:
         """Refresh access token"""
 
         try:

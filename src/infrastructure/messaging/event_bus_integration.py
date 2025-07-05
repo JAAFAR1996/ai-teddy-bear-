@@ -60,12 +60,14 @@ class EventBus:
             if result:
                 logger.info(f"Published domain event: {event.event_type}")
             else:
-                logger.error(f"Failed to publish domain event: {event.event_type}")
+                logger.error(
+                    f"Failed to publish domain event: {event.event_type}")
 
             return result
 
         except Exception as e:
-            logger.error(f"Error publishing domain event {event.event_type}: {e}")
+            logger.error(
+                f"Error publishing domain event {event.event_type}: {e}")
             return False
 
     async def publish_domain_events(
@@ -93,7 +95,8 @@ class EventBus:
             )
 
             if result["failure_count"] > 0:
-                logger.warning(f"{result['failure_count']} events failed to publish")
+                logger.warning(
+                    f"{result['failure_count']} events failed to publish")
 
             return result
 
@@ -101,7 +104,8 @@ class EventBus:
             logger.error(f"Error publishing domain events batch: {e}")
             return {"success_count": 0, "failure_count": len(events)}
 
-    async def start_event_processing(self, topics: Optional[List[str]] = None) -> None:
+    async def start_event_processing(
+            self, topics: Optional[List[str]] = None) -> None:
         """Start processing events from Kafka"""
 
         try:
@@ -212,7 +216,9 @@ class EventDrivenApplicationService:
     domain operations complete.
     """
 
-    def __init__(self, event_dispatcher: Optional[DomainEventDispatcher] = None):
+    def __init__(
+            self,
+            event_dispatcher: Optional[DomainEventDispatcher] = None):
         self.event_dispatcher = event_dispatcher or DomainEventDispatcher()
 
     async def execute_with_events(self, operation_func, *args, **kwargs):

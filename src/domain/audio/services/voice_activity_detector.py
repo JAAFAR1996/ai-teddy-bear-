@@ -11,6 +11,7 @@ from ..models.voice_models import AudioConfig
 
 try:
     import webrtcvad
+
     WEBRTCVAD_AVAILABLE = True
 except ImportError:
     WEBRTCVAD_AVAILABLE = False
@@ -24,12 +25,13 @@ class VoiceActivityDetector:
         self.frame_duration = config.vad_frame_duration
         self.sample_rate = config.sample_rate
         self.logger = logging.getLogger(self.__class__.__name__)
-        
+
         if WEBRTCVAD_AVAILABLE:
             self.vad = webrtcvad.Vad(config.vad_mode)
         else:
             self.vad = None
-            self.logger.warning("webrtcvad library not available, using fallback VAD")
+            self.logger.warning(
+                "webrtcvad library not available, using fallback VAD")
 
     def is_speech(self, audio_frame: bytes) -> bool:
         """Check if audio frame contains speech"""
@@ -37,12 +39,12 @@ class VoiceActivityDetector:
             if self.vad is None:
                 # Fallback: simple energy-based detection
                 return self._fallback_speech_detection(audio_frame)
-            
+
             return self.vad.is_speech(audio_frame, self.sample_rate)
         except Exception as e:
             self.logger.error(f"VAD speech detection error: {e}")
             return False
-    
+
     def _fallback_speech_detection(self, audio_frame: bytes) -> bool:
         """Fallback speech detection using energy threshold"""
         try:
@@ -70,7 +72,7 @@ class VoiceActivityDetector:
             speech_start = None
 
             for i in range(0, len(audio_data) - frame_size, frame_size):
-                frame = audio_bytes[i * 2 : (i + frame_size) * 2]
+                frame = audio_bytes[i * 2: (i + frame_size) * 2]
 
                 if self.is_speech(frame):
                     if speech_start is None:

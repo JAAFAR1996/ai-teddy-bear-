@@ -9,10 +9,12 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
-from src.domain.parentdashboard.services.analytics_domain_service import \
-    AnalyticsDomainService
-from src.infrastructure.persistence.conversation_repository import \
-    ConversationRepository
+from src.domain.parentdashboard.services.analytics_domain_service import (
+    AnalyticsDomainService,
+)
+from src.infrastructure.persistence.conversation_repository import (
+    ConversationRepository,
+)
 
 
 class DashboardAnalyticsService:
@@ -63,7 +65,8 @@ class DashboardAnalyticsService:
             return result
 
         except Exception as e:
-            self.logger.error(f"Error getting analytics for child {child_id}: {e}")
+            self.logger.error(
+                f"Error getting analytics for child {child_id}: {e}")
             return {}
 
     async def get_comparative_analytics(
@@ -101,7 +104,8 @@ class DashboardAnalyticsService:
             self.logger.error(f"Error getting comparative analytics: {e}")
             return {}
 
-    async def get_trend_analysis(self, child_id: str, weeks: int = 4) -> Dict[str, Any]:
+    async def get_trend_analysis(
+            self, child_id: str, weeks: int = 4) -> Dict[str, Any]:
         """Get trend analysis over specified weeks"""
 
         try:
@@ -116,7 +120,8 @@ class DashboardAnalyticsService:
                     child_id, start_date=week_start, end_date=week_end
                 )
 
-                weekly_analytics = self.analytics_service.calculate_analytics(logs)
+                weekly_analytics = self.analytics_service.calculate_analytics(
+                    logs)
                 trends["weekly_data"].append(
                     {
                         "week_start": week_start.isoformat(),
@@ -126,15 +131,18 @@ class DashboardAnalyticsService:
                 )
 
             # Calculate overall trends
-            trends["overall_trends"] = self._calculate_trends(trends["weekly_data"])
+            trends["overall_trends"] = self._calculate_trends(
+                trends["weekly_data"])
 
             # Generate insights
-            trends["insights"] = self._generate_trend_insights(trends["overall_trends"])
+            trends["insights"] = self._generate_trend_insights(
+                trends["overall_trends"])
 
             return trends
 
         except Exception as e:
-            self.logger.error(f"Error getting trend analysis for child {child_id}: {e}")
+            self.logger.error(
+                f"Error getting trend analysis for child {child_id}: {e}")
             return {}
 
     async def _generate_charts(self, analytics) -> Dict[str, str]:
@@ -146,22 +154,20 @@ class DashboardAnalyticsService:
             "sentiment_overview": "base64_chart_data",
         }
 
-    def _calculate_comparisons(self, analytics_list: List[Dict]) -> Dict[str, Any]:
+    def _calculate_comparisons(
+            self, analytics_list: List[Dict]) -> Dict[str, Any]:
         """Calculate comparative metrics"""
 
         if not analytics_list:
             return {}
 
         # Calculate averages
-        avg_conversations = sum(a["total_conversations"] for a in analytics_list) / len(
-            analytics_list
-        )
-        avg_duration = sum(a["total_duration_minutes"] for a in analytics_list) / len(
-            analytics_list
-        )
-        avg_quality = sum(a["interaction_quality_score"] for a in analytics_list) / len(
-            analytics_list
-        )
+        avg_conversations = sum(a["total_conversations"]
+                                for a in analytics_list) / len(analytics_list)
+        avg_duration = sum(a["total_duration_minutes"]
+                           for a in analytics_list) / len(analytics_list)
+        avg_quality = sum(a["interaction_quality_score"]
+                          for a in analytics_list) / len(analytics_list)
 
         return {
             "averages": {
@@ -170,14 +176,14 @@ class DashboardAnalyticsService:
                 "quality_score": avg_quality,
             },
             "variations": {
-                "highest_usage": max(a["total_conversations"] for a in analytics_list),
-                "lowest_usage": min(a["total_conversations"] for a in analytics_list),
+                "highest_usage": max(
+                    a["total_conversations"] for a in analytics_list),
+                "lowest_usage": min(
+                    a["total_conversations"] for a in analytics_list),
                 "highest_quality": max(
-                    a["interaction_quality_score"] for a in analytics_list
-                ),
+                    a["interaction_quality_score"] for a in analytics_list),
                 "lowest_quality": min(
-                    a["interaction_quality_score"] for a in analytics_list
-                ),
+                    a["interaction_quality_score"] for a in analytics_list),
             },
         }
 

@@ -35,8 +35,8 @@ class ConversationSearchService:
                 SELECT DISTINCT c.*, m.id as message_id, m.content, m.role, m.timestamp as msg_timestamp
                 FROM conversations c
                 JOIN messages m ON c.id = m.conversation_id
-                WHERE ({' OR '.join(role_conditions)}) 
-                AND m.content LIKE ? 
+                WHERE ({' OR '.join(role_conditions)})
+                AND m.content LIKE ?
                 AND c.archived = 0
             """
 
@@ -103,7 +103,8 @@ class ConversationSearchService:
                 sql += " AND child_id = ?"
                 params.append(child_id)
 
-            # We'll filter topics in Python since SQLite JSON functions are limited
+            # We'll filter topics in Python since SQLite JSON functions are
+            # limited
             cursor.execute(sql, params)
             all_conversations = cursor.fetchall()
 
@@ -142,8 +143,8 @@ class ConversationSearchService:
             sql = """
                 SELECT DISTINCT c.* FROM conversations c
                 JOIN emotional_states e ON c.id = e.conversation_id
-                WHERE e.primary_emotion = ? 
-                AND e.confidence >= ? 
+                WHERE e.primary_emotion = ?
+                AND e.confidence >= ?
                 AND c.archived = 0
             """
             params = [emotion, threshold]
@@ -194,9 +195,9 @@ class ConversationSearchService:
 
             # Conversations with low safety scores or high moderation flags
             sql = """
-                SELECT * FROM conversations 
+                SELECT * FROM conversations
                 WHERE (
-                    safety_score < 0.8 OR 
+                    safety_score < 0.8 OR
                     moderation_flags > 2 OR
                     (total_messages > 50 AND duration < 300)
                 ) AND archived = 0
@@ -207,7 +208,8 @@ class ConversationSearchService:
             return [dict(row) for row in cursor.fetchall()]
 
         except sqlite3.Error as e:
-            self.logger.error(f"Error finding conversations requiring review: {e}")
+            self.logger.error(
+                f"Error finding conversations requiring review: {e}")
             raise
 
     async def get_active_conversations(

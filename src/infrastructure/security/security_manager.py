@@ -19,8 +19,7 @@ import redis.asyncio as redis
 import structlog
 
 from .api_security_gateway import APISecurityGateway, get_security_gateway
-from .audio_security import (AudioEncryptionManager,
-                             get_audio_encryption_manager)
+from .audio_security import AudioEncryptionManager, get_audio_encryption_manager
 from .jwt_auth import JWTManager, TokenPair, UserClaims, get_jwt_manager
 from .rbac_system import Permission, RBACManager, UserRole, get_rbac_manager
 from .vault_secrets_manager import VaultSecretsManager, get_vault_manager
@@ -37,14 +36,17 @@ class SecurityManager:
         # Initialize security components
         self.vault_manager: VaultSecretsManager = get_vault_manager()
         self.rbac_manager: RBACManager = get_rbac_manager()
-        self.api_gateway: APISecurityGateway = get_security_gateway(redis_client)
+        self.api_gateway: APISecurityGateway = get_security_gateway(
+            redis_client)
         self.audio_encryption: AudioEncryptionManager = get_audio_encryption_manager()
-        self.jwt_manager: JWTManager = get_jwt_manager(redis_client=redis_client)
+        self.jwt_manager: JWTManager = get_jwt_manager(
+            redis_client=redis_client)
 
         logger.info("Security Manager initialized with all components")
 
     # Vault Operations
-    async def store_secret(self, path: str, secret_data: Dict[str, Any]) -> bool:
+    async def store_secret(
+            self, path: str, secret_data: Dict[str, Any]) -> bool:
         """Store secret in Vault"""
         return await self.vault_manager.store_secret(path, secret_data)
 
@@ -82,8 +84,10 @@ class SecurityManager:
         )
 
     async def check_permission(
-        self, user_id: str, permission: Permission, resource_id: Optional[str] = None
-    ) -> bool:
+            self,
+            user_id: str,
+            permission: Permission,
+            resource_id: Optional[str] = None) -> bool:
         """Check if user has permission for action"""
         return await self.rbac_manager.check_permission(
             user_id, permission, resource_id
@@ -105,8 +109,12 @@ class SecurityManager:
         return await self.jwt_manager.create_token_pair(claims)
 
     async def authenticate_child(
-        self, user_id: str, username: str, email: str, family_id: str, device_id: str
-    ) -> TokenPair:
+            self,
+            user_id: str,
+            username: str,
+            email: str,
+            family_id: str,
+            device_id: str) -> TokenPair:
         """Authenticate child and create tokens"""
         claims = UserClaims(
             user_id=user_id,
@@ -132,7 +140,8 @@ class SecurityManager:
         """Create encrypted audio session"""
         return await self.audio_encryption.create_session(device_id, user_id)
 
-    async def encrypt_audio(self, session_id: str, audio_data: bytes) -> Dict[str, str]:
+    async def encrypt_audio(self, session_id: str,
+                            audio_data: bytes) -> Dict[str, str]:
         """Encrypt audio data"""
         return await self.audio_encryption.encrypt_audio(session_id, audio_data)
 
@@ -165,7 +174,8 @@ class SecurityManager:
         }
 
     # Security Policies
-    async def enforce_child_safety_policy(self, user_id: str, action: str) -> bool:
+    async def enforce_child_safety_policy(
+            self, user_id: str, action: str) -> bool:
         """Enforce child safety policies"""
 
         user = self.rbac_manager.get_user(user_id)
@@ -187,7 +197,8 @@ class SecurityManager:
 
         return True
 
-    async def apply_zero_trust_policies(self, request_context: Dict[str, Any]) -> bool:
+    async def apply_zero_trust_policies(
+            self, request_context: Dict[str, Any]) -> bool:
         """Apply Zero Trust security policies"""
 
         # Verify every request regardless of source
@@ -219,7 +230,8 @@ class SecurityManager:
 _security_manager: Optional[SecurityManager] = None
 
 
-def get_security_manager(redis_client: Optional[redis.Redis] = None) -> SecurityManager:
+def get_security_manager(
+        redis_client: Optional[redis.Redis] = None) -> SecurityManager:
     """Get global security manager instance"""
     global _security_manager
     if _security_manager is None:
@@ -298,4 +310,8 @@ async def authenticate_family_member(
     else:
         raise ValueError(f"Invalid role: {role}")
 
-    return {"user_id": user_id, "tokens": tokens, "role": role, "family_id": family_id}
+    return {
+        "user_id": user_id,
+        "tokens": tokens,
+        "role": role,
+        "family_id": family_id}

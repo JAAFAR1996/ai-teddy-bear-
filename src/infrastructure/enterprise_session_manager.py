@@ -37,16 +37,21 @@ class EnterpriseSessionManager:
 
                 self.redis_client = redis.from_url(self.redis_url)
                 await self.redis_client.ping()
-                logger.info("Redis session manager initialized", url=self.redis_url)
+                logger.info(
+                    "Redis session manager initialized",
+                    url=self.redis_url)
             else:
                 raise Exception("Redis URL not provided")
         except Exception as e:
-            logger.warning("Redis not available, using memory sessions", error=str(e))
+            logger.warning(
+                "Redis not available, using memory sessions",
+                error=str(e))
             self.redis_client = None
 
         # Start cleanup task for memory sessions
         if not self.redis_client:
-            self._cleanup_task = asyncio.create_task(self._cleanup_expired_sessions())
+            self._cleanup_task = asyncio.create_task(
+                self._cleanup_expired_sessions())
 
         logger.info(
             "Enterprise Session Manager initialized",
@@ -84,7 +89,8 @@ class EnterpriseSessionManager:
                 if data:
                     session_data = json.loads(data)
                     # Update last accessed
-                    session_data["last_accessed"] = datetime.utcnow().isoformat()
+                    session_data["last_accessed"] = datetime.utcnow(
+                    ).isoformat()
                     session_data["access_count"] = (
                         session_data.get("access_count", 0) + 1
                     )
@@ -98,12 +104,14 @@ class EnterpriseSessionManager:
                 if session_id in self.memory_sessions:
                     if time.time() < self.session_expiry[session_id]:
                         session_data = self.memory_sessions[session_id]
-                        session_data["last_accessed"] = datetime.utcnow().isoformat()
+                        session_data["last_accessed"] = datetime.utcnow(
+                        ).isoformat()
                         session_data["access_count"] = (
                             session_data.get("access_count", 0) + 1
                         )
                         # Extend expiry
-                        self.session_expiry[session_id] = time.time() + self.default_ttl
+                        self.session_expiry[session_id] = time.time(
+                        ) + self.default_ttl
                         return session_data
                     else:
                         # Session expired
@@ -111,11 +119,15 @@ class EnterpriseSessionManager:
                         del self.session_expiry[session_id]
 
         except Exception as e:
-            logger.error("Error getting session", session_id=session_id, error=str(e))
+            logger.error(
+                "Error getting session",
+                session_id=session_id,
+                error=str(e))
 
         return None
 
-    async def update_session(self, session_id: str, data: Dict[str, Any]) -> bool:
+    async def update_session(self, session_id: str,
+                             data: Dict[str, Any]) -> bool:
         """Update session data"""
         try:
             session_data = await self.get_session(session_id)
@@ -131,13 +143,17 @@ class EnterpriseSessionManager:
                     )
                 else:
                     self.memory_sessions[session_id] = session_data
-                    self.session_expiry[session_id] = time.time() + self.default_ttl
+                    self.session_expiry[session_id] = time.time(
+                    ) + self.default_ttl
 
                 logger.debug("Session updated", session_id=session_id)
                 return True
 
         except Exception as e:
-            logger.error("Error updating session", session_id=session_id, error=str(e))
+            logger.error(
+                "Error updating session",
+                session_id=session_id,
+                error=str(e))
 
         return False
 
@@ -159,7 +175,10 @@ class EnterpriseSessionManager:
             return success
 
         except Exception as e:
-            logger.error("Error deleting session", session_id=session_id, error=str(e))
+            logger.error(
+                "Error deleting session",
+                session_id=session_id,
+                error=str(e))
             return False
 
     async def get_active_sessions(self) -> Set[str]:
@@ -197,27 +216,32 @@ class EnterpriseSessionManager:
             logger.error("Error getting session stats", error=str(e))
             return {"error": str(e)}
 
+    def _find_and_delete_expired_sessions(self):
+        """Find and delete expired sessions from memory."""
+        current_time = time.time()
+        expired_sessions = [
+            session_id
+            for session_id, expiry_time in self.session_expiry.items()
+            if current_time >= expiry_time
+        ]
+
+        for session_id in expired_sessions:
+            if session_id in self.memory_sessions:
+                del self.memory_sessions[session_id]
+            if session_id in self.session_expiry:
+                del self.session_expiry[session_id]
+
+        if expired_sessions:
+            logger.info(
+                "Cleaned expired sessions",
+                count=len(expired_sessions))
+
     async def _cleanup_expired_sessions(self) -> None:
         """Background task to clean expired memory sessions"""
         while True:
             try:
                 await asyncio.sleep(300)  # Check every 5 minutes
-                current_time = time.time()
-                expired_sessions = [
-                    session_id
-                    for session_id, expiry_time in self.session_expiry.items()
-                    if current_time >= expiry_time
-                ]
-
-                for session_id in expired_sessions:
-                    if session_id in self.memory_sessions:
-                        del self.memory_sessions[session_id]
-                    if session_id in self.session_expiry:
-                        del self.session_expiry[session_id]
-
-                if expired_sessions:
-                    logger.info("Cleaned expired sessions", count=len(expired_sessions))
-
+                self._find_and_delete_expired_sessions()
             except asyncio.CancelledError:
                 break
             except Exception as e:

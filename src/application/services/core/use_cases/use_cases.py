@@ -20,7 +20,8 @@ class VoiceInteractionRequest:
 
 
 class VoiceInteractionUseCase(UseCase):
-    async def execute(self, request: VoiceInteractionRequest) -> Dict[str, Any]:
+    async def execute(
+            self, request: VoiceInteractionRequest) -> Dict[str, Any]:
         await asyncio.sleep(0.1)  # Mock processing
         return {
             "success": True,
@@ -38,7 +39,8 @@ class ChildRegistrationRequest:
 
 
 class ChildRegistrationUseCase(UseCase):
-    async def execute(self, request: ChildRegistrationRequest) -> Dict[str, Any]:
+    async def execute(
+            self, request: ChildRegistrationRequest) -> Dict[str, Any]:
         import uuid
 
         await asyncio.sleep(0.1)  # Mock processing

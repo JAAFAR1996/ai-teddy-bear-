@@ -7,8 +7,7 @@ import logging
 import random
 from typing import Any, Dict, List, Optional
 
-from src.application.services.ai.models.ai_response_models import \
-    AIResponseModel
+from src.application.services.ai.models.ai_response_models import AIResponseModel
 from src.core.domain.entities.child import Child
 
 logger = logging.getLogger(__name__)
@@ -272,7 +271,10 @@ class FallbackResponseService:
             text=response_text,
             emotion="happy",
             category="greeting",
-            learning_points=["social_interaction", "communication", "greeting"],
+            learning_points=[
+                "social_interaction",
+                "communication",
+                "greeting"],
             session_id=session_id,
             confidence=1.0,
             processing_time_ms=3,

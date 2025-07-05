@@ -5,7 +5,7 @@ import logging
 import sqlite3
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from src.core.domain.entities.conversation import Conversation
 
@@ -77,7 +77,8 @@ class ConversationCoreRepository:
                 f"Error retrieving conversation {conversation_id}: {e}")
             raise
 
-    async def get_by_session_id(self, session_id: str) -> Optional[Conversation]:
+    async def get_by_session_id(
+            self, session_id: str) -> Optional[Conversation]:
         """Get conversation by session ID."""
         try:
             cursor = self.connection.cursor()
@@ -97,34 +98,39 @@ class ConversationCoreRepository:
             )
             raise
 
+    def _prepare_update_data(
+            self, data: Dict[str, Any]) -> Tuple[str, List[Any]]:
+        """Prepares the SQL and values for an update operation."""
+        if "id" not in data or not data["id"]:
+            raise ValueError("Conversation must have an ID for update")
+
+        update_data = {
+            k: v for k, v in data.items() if k in self._columns and k != "id"
+        }
+
+        if not update_data:
+            self.logger.warning(
+                f"No valid fields to update for conversation {data.get('id')}"
+            )
+            return "", []
+
+        update_fields = [f"{k} = ?" for k in update_data.keys()]
+        update_values = list(update_data.values())
+        update_values.append(data["id"])
+
+        sql = f"UPDATE {self.table_name} SET {', '.join(update_fields)} WHERE id = ?"
+        return sql, update_values
+
     async def update(self, conversation: Conversation) -> Conversation:
         """Update existing conversation."""
         try:
             cursor = self.connection.cursor()
             data = self._serialize_conversation_for_db(conversation)
 
-            if "id" not in data or not data["id"]:
-                raise ValueError("Conversation must have an ID for update")
+            sql, update_values = self._prepare_update_data(data)
 
-            # Whitelist columns to prevent SQL injection
-            update_data = {
-                k: v for k, v in data.items() if k in self._columns and k != "id"
-            }
-
-            if not update_data:
-                self.logger.warning(
-                    f"No valid fields to update for conversation {data.get('id')}"
-                )
+            if not sql:
                 return conversation
-
-            # Prepare update SQL
-            update_fields = [f"{k} = ?" for k in update_data.keys()]
-            update_values = list(update_data.values())
-            update_values.append(data["id"])
-
-            sql = (
-                f"UPDATE {self.table_name} SET {', '.join(update_fields)} WHERE id = ?"
-            )
 
             cursor.execute(sql, update_values)
             self.connection.commit()
@@ -182,7 +188,9 @@ class ConversationCoreRepository:
             cursor.execute(sql, params)
             rows = cursor.fetchall()
 
-            return [self._deserialize_conversation_from_db(dict(row)) for row in rows]
+            return [
+                self._deserialize_conversation_from_db(
+                    dict(row)) for row in rows]
 
         except sqlite3.Error as e:
             self.logger.error(
@@ -190,42 +198,53 @@ class ConversationCoreRepository:
             )
             raise
 
+    def _serialize_json_fields(self, data: Dict[str, Any]):
+        """Serializes JSON fields in the data dictionary."""
+        json_fields = ["topics", "metadata"]
+        for field in json_fields:
+            if field in data and data[field] is not None:
+                data[field] = json.dumps(data[field])
+
+    def _serialize_datetime_fields(self, data: Dict[str, Any]):
+        """Serializes datetime fields in the data dictionary."""
+        datetime_fields = [
+            "start_time",
+            "end_time",
+            "created_at",
+            "updated_at"]
+        for field in datetime_fields:
+            if field in data and data[field] and isinstance(
+                    data[field], datetime):
+                data[field] = data[field].isoformat()
+
+    def _serialize_duration_field(self, data: Dict[str, Any]):
+        """Serializes the duration field in the data dictionary."""
+        if (
+            "duration" in data
+            and data["duration"]
+            and hasattr(data["duration"], "total_seconds")
+        ):
+            data["duration"] = int(data["duration"].total_seconds())
+
     def _serialize_conversation_for_db(
         self, conversation: Conversation
     ) -> Dict[str, Any]:
         """Serialize conversation entity for database storage."""
         data = conversation.__dict__.copy() if hasattr(conversation, "__dict__") else {}
 
-        # Generate ID if not present
         if not data.get("id"):
             data["id"] = str(uuid.uuid4())
 
-        # Serialize complex fields to JSON
-        json_fields = ["topics", "metadata"]
-        for field in json_fields:
-            if field in data and data[field] is not None:
-                data[field] = json.dumps(data[field])
+        self._serialize_json_fields(data)
+        self._serialize_datetime_fields(data)
+        self._serialize_duration_field(data)
 
-        # Handle datetime fields
-        datetime_fields = ["start_time",
-                           "end_time", "created_at", "updated_at"]
-        for field in datetime_fields:
-            if field in data and data[field] and isinstance(data[field], datetime):
-                data[field] = data[field].isoformat()
-
-        # Handle duration (timedelta to seconds)
-        if "duration" in data and data["duration"]:
-            if hasattr(data["duration"], "total_seconds"):
-                data["duration"] = int(data["duration"].total_seconds())
-
-        # Set updated timestamp
         data["updated_at"] = datetime.now().isoformat()
 
         return data
 
-    def _deserialize_conversation_from_db(self, data: Dict[str, Any]) -> Conversation:
-        """Deserialize conversation data from database."""
-        # Parse JSON fields
+    def _deserialize_json_fields(self, data: Dict[str, Any]):
+        """Deserializes JSON fields in the data dictionary."""
         json_fields = ["topics", "metadata"]
         for field in json_fields:
             if field in data and data[field]:
@@ -236,9 +255,13 @@ class ConversationCoreRepository:
             else:
                 data[field] = [] if field == "topics" else {}
 
-        # Parse datetime fields
-        datetime_fields = ["start_time",
-                           "end_time", "created_at", "updated_at"]
+    def _deserialize_datetime_fields(self, data: Dict[str, Any]):
+        """Deserializes datetime fields in the data dictionary."""
+        datetime_fields = [
+            "start_time",
+            "end_time",
+            "created_at",
+            "updated_at"]
         for field in datetime_fields:
             if field in data and data[field]:
                 try:
@@ -246,20 +269,29 @@ class ConversationCoreRepository:
                 except (ValueError, TypeError):
                     data[field] = None
 
-        # Convert duration from seconds to timedelta
+    def _deserialize_duration_field(self, data: Dict[str, Any]):
+        """Deserializes the duration field in the data dictionary."""
         if "duration" in data and data["duration"]:
             try:
                 data["duration"] = timedelta(seconds=int(data["duration"]))
             except (ValueError, TypeError):
                 data["duration"] = None
 
-        # Convert boolean fields
+    def _deserialize_bool_fields(self, data: Dict[str, Any]):
+        """Deserializes boolean fields in the data dictionary."""
         bool_fields = ["parent_visible", "archived"]
         for field in bool_fields:
             if field in data:
                 data[field] = bool(data[field])
 
-        # Create and return conversation (simplified for this case)
+    def _deserialize_conversation_from_db(
+            self, data: Dict[str, Any]) -> Conversation:
+        """Deserialize conversation data from database."""
+        self._deserialize_json_fields(data)
+        self._deserialize_datetime_fields(data)
+        self._deserialize_duration_field(data)
+        self._deserialize_bool_fields(data)
+
         return Conversation(**data)
 
     def transaction(self):

@@ -151,7 +151,8 @@ class AdvancedBehavioralAnalyzer:
 
         return voice_analysis
 
-    async def _extract_voice_features(self, audio_data: bytes) -> Dict[str, float]:
+    async def _extract_voice_features(
+            self, audio_data: bytes) -> Dict[str, float]:
         """استخراج خصائص الصوت الأساسية"""
         # محاكاة تحليل الصوت - في التطبيق الحقيقي نستخدم مكتبات مثل librosa
 
@@ -196,11 +197,11 @@ class AdvancedBehavioralAnalyzer:
     def _get_word_lists(self) -> Dict[str, List[str]]:
         """Returns a dictionary of word lists for speech pattern analysis."""
         return {
-            "hesitation": ["أمم", "أه", "لست متأكد", "ربما", "لا أعرف", "أعتقد"],
-            "anxiety": ["مخيف", "خائف", "قلق", "لا أستطيع", "صعب"],
-            "confidence": ["نعم", "أكيد", "بالطبع", "أستطيع", "سأفعل"],
-            "happiness": ["سعيد", "رائع", "ممتع", "أحب", "جميل"],
-        }
+            "hesitation": [
+                "أمم", "أه", "لست متأكد", "ربما", "لا أعرف", "أعتقد"], "anxiety": [
+                "مخيف", "خائف", "قلق", "لا أستطيع", "صعب"], "confidence": [
+                "نعم", "أكيد", "بالطبع", "أستطيع", "سأفعل"], "happiness": [
+                    "سعيد", "رائع", "ممتع", "أحب", "جميل"], }
 
     async def _analyze_speech_patterns(self, text: str) -> Dict[str, Any]:
         """تحليل أنماط الكلام"""
@@ -225,7 +226,9 @@ class AdvancedBehavioralAnalyzer:
         scores["text_length"] = word_count
         return scores
 
-    def _determine_emotional_tone(self, voice_features: Dict, text_analysis: Dict) -> str:
+    def _determine_emotional_tone(
+        self, voice_features: Dict, text_analysis: Dict
+    ) -> str:
         """Determines the emotional tone from combined analysis."""
         if text_analysis["anxiety_score"] > 0.3:
             return "قلق"
@@ -237,7 +240,11 @@ class AdvancedBehavioralAnalyzer:
             return "متحمس"
         return "عادي"
 
-    def _detect_voice_patterns(self, combined_confidence: float, text_analysis: Dict, voice_features: Dict) -> List[VoicePattern]:
+    def _detect_voice_patterns(
+            self,
+            combined_confidence: float,
+            text_analysis: Dict,
+            voice_features: Dict) -> List[VoicePattern]:
         """Detects voice patterns from combined analysis."""
         patterns = []
         if combined_confidence < 0.4:
@@ -265,15 +272,16 @@ class AdvancedBehavioralAnalyzer:
         )
         text_confidence = (
             text_analysis["confidence_score"] -
-            text_analysis["hesitation_score"]
-        )
+            text_analysis["hesitation_score"])
         combined_confidence = max(
-            0.0, min(1.0, voice_confidence * 0.6 + text_confidence * 0.4))
+            0.0, min(1.0, voice_confidence * 0.6 + text_confidence * 0.4)
+        )
 
         emotional_tone = self._determine_emotional_tone(
             voice_features, text_analysis)
         detected_patterns = self._detect_voice_patterns(
-            combined_confidence, text_analysis, voice_features)
+            combined_confidence, text_analysis, voice_features
+        )
 
         return {
             "confidence_score": combined_confidence,
@@ -302,7 +310,9 @@ class AdvancedBehavioralAnalyzer:
 
         return analysis
 
-    def _get_or_create_profile(self, child_name: str, device_id: str) -> PsychologicalProfile:
+    def _get_or_create_profile(
+        self, child_name: str, device_id: str
+    ) -> PsychologicalProfile:
         """Gets an existing psychological profile or creates a new one."""
         profile_key = f"{device_id}_{child_name}"
         if profile_key not in self.psychological_profiles:
@@ -320,25 +330,39 @@ class AdvancedBehavioralAnalyzer:
             )
         return self.psychological_profiles[profile_key]
 
-    def _update_profile_trends(self, profile: PsychologicalProfile, voice_analysis: VoiceAnalysis):
+    def _update_profile_trends(
+        self, profile: PsychologicalProfile, voice_analysis: VoiceAnalysis
+    ):
         """Updates the confidence and emotional pattern trends for a profile."""
         profile.confidence_trend.append(voice_analysis.confidence_score)
         if len(profile.confidence_trend) > 20:
             profile.confidence_trend.pop(0)
 
         emotional_tone = voice_analysis.emotional_tone
-        profile.emotional_patterns.setdefault(
-            emotional_tone, []).append(voice_analysis.confidence_score)
+        profile.emotional_patterns.setdefault(emotional_tone, []).append(
+            voice_analysis.confidence_score
+        )
 
-    def _update_profile_indicators(self, profile: PsychologicalProfile, voice_analysis: VoiceAnalysis):
+    def _update_profile_indicators(
+        self, profile: PsychologicalProfile, voice_analysis: VoiceAnalysis
+    ):
         """Updates stress indicators and strengths based on the latest analysis."""
-        if VoicePattern.ANXIOUS in voice_analysis.detected_patterns and "قلق متكرر" not in profile.stress_indicators:
+        if (
+            VoicePattern.ANXIOUS in voice_analysis.detected_patterns
+            and "قلق متكرر" not in profile.stress_indicators
+        ):
             profile.stress_indicators.append("قلق متكرر")
 
-        if voice_analysis.confidence_score < 0.3 and "ثقة منخفضة" not in profile.stress_indicators:
+        if (
+            voice_analysis.confidence_score < 0.3
+            and "ثقة منخفضة" not in profile.stress_indicators
+        ):
             profile.stress_indicators.append("ثقة منخفضة")
 
-        if voice_analysis.confidence_score > 0.7 and "ثقة عالية بالنفس" not in profile.strengths:
+        if (
+            voice_analysis.confidence_score > 0.7
+            and "ثقة عالية بالنفس" not in profile.strengths
+        ):
             profile.strengths.append("ثقة عالية بالنفس")
 
     async def _update_psychological_profile(
@@ -354,7 +378,8 @@ class AdvancedBehavioralAnalyzer:
 
         await self._check_for_behavioral_concerns(child_name, device_id)
 
-    async def check_for_behavioral_concerns(self, child_name: str, device_id: str):
+    async def check_for_behavioral_concerns(
+            self, child_name: str, device_id: str):
         """فحص المخاوف السلوكية وإنشاء تنبيهات"""
 
         # الحصول على تحليلات الطفل الأخيرة
@@ -500,7 +525,9 @@ class AdvancedBehavioralAnalyzer:
 
         return self._build_psychological_report_dict(profile, recommendations)
 
-    def _build_psychological_report_dict(self, profile: PsychologicalProfile, recommendations: List[str]) -> Dict[str, Any]:
+    def _build_psychological_report_dict(
+        self, profile: PsychologicalProfile, recommendations: List[str]
+    ) -> Dict[str, Any]:
         """Builds the psychological report dictionary from a profile and recommendations."""
         main_trait = (
             max(profile.personality_traits, key=profile.personality_traits.get)
@@ -590,30 +617,30 @@ class AdvancedBehavioralAnalyzer:
 
         return recommendations
 
-    def get_parent_alerts(self, device_id: str, unread_only: bool = True) -> List[Dict]:
+    def get_parent_alerts(
+            self,
+            device_id: str,
+            unread_only: bool = True) -> List[Dict]:
         """الحصول على تنبيهات الوالدين"""
 
         alerts = [
-            alert for alert in self.behavioral_alerts if alert.device_id == device_id
-        ]
+            alert for alert in self.behavioral_alerts if alert.device_id == device_id]
 
         if unread_only:
             alerts = [alert for alert in alerts if not alert.parent_notified]
 
-        return [
-            {
-                "id": alert.id,
-                "child_name": alert.child_name,
-                "concern_type": alert.concern_type.value,
-                "severity": alert.severity_level,
-                "description": alert.description,
-                "evidence": alert.evidence,
-                "recommendations": alert.recommendations,
-                "created_at": alert.created_at.isoformat(),
-                "is_urgent": alert.severity_level == "عالي",
-            }
-            for alert in sorted(alerts, key=lambda x: x.created_at, reverse=True)
-        ]
+        return [{"id": alert.id,
+                 "child_name": alert.child_name,
+                 "concern_type": alert.concern_type.value,
+                 "severity": alert.severity_level,
+                 "description": alert.description,
+                 "evidence": alert.evidence,
+                 "recommendations": alert.recommendations,
+                 "created_at": alert.created_at.isoformat(),
+                 "is_urgent": alert.severity_level == "عالي",
+                 } for alert in sorted(alerts,
+                                       key=lambda x: x.created_at,
+                                       reverse=True)]
 
     def mark_alert_as_read(self, alert_id: str) -> None:
         """تأشير التنبيه كمقروء"""

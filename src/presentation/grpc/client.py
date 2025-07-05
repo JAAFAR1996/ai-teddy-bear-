@@ -1,10 +1,8 @@
+import grpc
+import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
-
-import asyncio
-
-import grpc
 
 
 class GRPCClient:

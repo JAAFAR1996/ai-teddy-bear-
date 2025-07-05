@@ -114,7 +114,8 @@ class TestEdgeAIManager:
         await edge_ai_manager.initialize()
 
         # Test with high energy audio (should trigger wake word)
-        high_energy_audio = np.random.uniform(-0.5, 0.5, 16000).astype(np.float32)
+        high_energy_audio = np.random.uniform(-0.5,
+                                              0.5, 16000).astype(np.float32)
         detected, confidence = (
             await edge_ai_manager.wake_word_detector.detect_wake_word(high_energy_audio)
         )
@@ -385,9 +386,10 @@ class TestErrorHandling:
             result = await manager.process_on_edge(invalid_audio)
             # Should either handle gracefully or provide fallback
             assert isinstance(result, EdgeProcessingResult)
+
         # FIXME: replace with specific exception
-except Exception as exc:# Expected for invalid data
-            pass
+except Exception as exc:  # Expected for invalid data
+    pass
 
 
 class TestPerformanceOptimization:
@@ -399,7 +401,8 @@ class TestPerformanceOptimization:
         if not EDGE_AI_IMPORTS_AVAILABLE:
             pytest.skip(f"Edge AI imports not available: {import_error}")
 
-        config = EdgeModelConfig(processing_mode=EdgeProcessingMode.ULTRA_LOW_LATENCY)
+        config = EdgeModelConfig(
+            processing_mode=EdgeProcessingMode.ULTRA_LOW_LATENCY)
         manager = EdgeAIManager(config)
         await manager.initialize()
 

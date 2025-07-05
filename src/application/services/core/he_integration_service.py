@@ -20,16 +20,20 @@ import numpy as np
 
 from .audit_logger import SecurityAuditLogger
 from .data_encryption import DataClassification
+
 # Core imports
-from .homomorphic_encryption import (EncryptedData, HEConfig,
-                                     HEProcessingResult, HomomorphicEncryption,
-                                     ProcessingMode)
+from .homomorphic_encryption import (
+    EncryptedData,
+    HEConfig,
+    HEProcessingResult,
+    HomomorphicEncryption,
+    ProcessingMode,
+)
 
 # Audio processing imports
 try:
     from ...audio.audio_processing import AudioConfig, AudioProcessor
-    from ...domain.services.advanced_emotion_analyzer import \
-        AdvancedEmotionAnalyzer
+    from ...domain.services.advanced_emotion_analyzer import AdvancedEmotionAnalyzer
 
     AUDIO_PROCESSING_AVAILABLE = True
 except ImportError:
@@ -68,7 +72,8 @@ class SecureAudioFeatureExtractor:
         self.he_service = he_service
         self.audio_processor = AudioProcessor() if AUDIO_PROCESSING_AVAILABLE else None
         self.audit_logger = SecurityAuditLogger()
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
     async def extract_and_encrypt_features(
         self,
@@ -114,7 +119,9 @@ class SecureAudioFeatureExtractor:
                 feature_types=feature_types,
                 extraction_timestamp=datetime.now().isoformat(),
                 child_id_hash=self._hash_child_id(child_id),
-                processing_permissions=["emotion_analysis", "behavioral_patterns"],
+                processing_permissions=[
+                    "emotion_analysis",
+                    "behavioral_patterns"],
             )
 
             # Log successful extraction and encryption
@@ -153,7 +160,8 @@ class SecureAudioFeatureExtractor:
                 features_list.extend(np.mean(mfcc, axis=1))
 
             elif feature_type == "spectral_centroid":
-                centroid = librosa.feature.spectral_centroid(y=audio_data, sr=16000)
+                centroid = librosa.feature.spectral_centroid(
+                    y=audio_data, sr=16000)
                 features_list.append(np.mean(centroid))
 
             elif feature_type == "pitch":
@@ -188,7 +196,8 @@ class PrivacyPreservingEmotionAnalyzer:
     def __init__(self, he_service: HomomorphicEncryption):
         self.he_service = he_service
         self.audit_logger = SecurityAuditLogger()
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
     async def analyze_emotions_privately(
         self,
@@ -198,7 +207,8 @@ class PrivacyPreservingEmotionAnalyzer:
         """Analyze emotions while preserving complete privacy."""
         # Verify processing permissions
         if "emotion_analysis" not in secure_features.processing_permissions:
-            raise PermissionError("Emotion analysis not permitted for this data")
+            raise PermissionError(
+                "Emotion analysis not permitted for this data")
 
         # Log analysis start
         await self.audit_logger.log_security_event(
@@ -260,8 +270,9 @@ class PrivacyPreservingEmotionAnalyzer:
             raise
 
     def _generate_secure_recommendations(
-        self, emotion_result: HEProcessingResult, secure_features: SecureAudioFeatures
-    ) -> List[str]:
+            self,
+            emotion_result: HEProcessingResult,
+            secure_features: SecureAudioFeatures) -> List[str]:
         """Generate recommendations based on encrypted emotion analysis."""
         # Generate general recommendations without exposing specific emotions
         recommendations = [
@@ -289,9 +300,11 @@ class HEIntegrationService:
         self.he_config = he_config or HEConfig()
         self.he_service = HomomorphicEncryption(self.he_config)
         self.feature_extractor = SecureAudioFeatureExtractor(self.he_service)
-        self.emotion_analyzer = PrivacyPreservingEmotionAnalyzer(self.he_service)
+        self.emotion_analyzer = PrivacyPreservingEmotionAnalyzer(
+            self.he_service)
         self.audit_logger = SecurityAuditLogger()
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
     async def process_audio_securely(
         self,
@@ -357,7 +370,8 @@ class HEIntegrationService:
         """Process multiple audio samples securely in batch."""
         tasks = []
         for audio_data, child_id in audio_batch:
-            task = self.process_audio_securely(audio_data, child_id, analysis_options)
+            task = self.process_audio_securely(
+                audio_data, child_id, analysis_options)
             tasks.append(task)
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -366,13 +380,16 @@ class HEIntegrationService:
         valid_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
-                self.logger.error(f"Batch processing failed for item {i}: {result}")
+                self.logger.error(
+                    f"Batch processing failed for item {i}: {result}")
             else:
                 valid_results.append(result)
 
         return valid_results
 
-    def _get_processing_mode(self, analysis_options: Dict[str, Any]) -> ProcessingMode:
+    def _get_processing_mode(self,
+                             analysis_options: Dict[str,
+                                                    Any]) -> ProcessingMode:
         """Determine processing mode from analysis options."""
         mode_str = analysis_options.get("mode", "emotion_analysis")
 

@@ -11,12 +11,12 @@ from .personalization_data_manager import PersonalizationDataManager
 from .insights_analyzer import PersonalizationInsightsAnalyzer
 
 __all__ = [
-    'ChildPersonality',
-    'InteractionPattern', 
-    'AdaptiveContent',
-    'PersonalityAnalyzer',
-    'InteractionPatternManager',
-    'ContentRecommendationEngine',
-    'PersonalizationDataManager',
-    'PersonalizationInsightsAnalyzer'
-] 
+    "ChildPersonality",
+    "InteractionPattern",
+    "AdaptiveContent",
+    "PersonalityAnalyzer",
+    "InteractionPatternManager",
+    "ContentRecommendationEngine",
+    "PersonalizationDataManager",
+    "PersonalizationInsightsAnalyzer",
+]

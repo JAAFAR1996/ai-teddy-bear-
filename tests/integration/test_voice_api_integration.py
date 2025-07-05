@@ -13,8 +13,7 @@ from fastapi.testclient import TestClient
 
 # Import the FastAPI app and components
 from src.api.endpoints.voice import router as voice_router
-from src.application.services.voice_service import (TranscriptionResult,
-                                                    VoiceService)
+from src.application.services.voice_service import TranscriptionResult, VoiceService
 
 # ================ TEST SETUP ================
 
@@ -99,7 +98,9 @@ def mock_ai_response():
         "text": "مرحباً بك يا صديقي! أنا بخير، شكراً لسؤالك. كيف يمكنني مساعدتك اليوم؟",
         "emotion": "happy",
         "category": "greeting",
-        "learning_points": ["social_interaction", "politeness"],
+        "learning_points": [
+            "social_interaction",
+            "politeness"],
         "timestamp": "2024-01-15T10:30:00",
     }
 
@@ -111,8 +112,11 @@ class TestESP32AudioEndpoint:
     """Test /api/voice/esp32/audio endpoint"""
 
     def test_esp32_audio_endpoint_with_mp3_file(
-        self, client, sample_mp3_bytes, mock_transcription_result, mock_ai_response
-    ):
+            self,
+            client,
+            sample_mp3_bytes,
+            mock_transcription_result,
+            mock_ai_response):
         """Test ESP32 audio processing with MP3 file upload"""
 
         # Mock the voice service and AI service
@@ -134,8 +138,10 @@ class TestESP32AudioEndpoint:
 
             # Prepare test data
             files = {
-                "file": ("test_audio.mp3", io.BytesIO(sample_mp3_bytes), "audio/mpeg")
-            }
+                "file": (
+                    "test_audio.mp3",
+                    io.BytesIO(sample_mp3_bytes),
+                    "audio/mpeg")}
             data = {
                 "device_id": "ESP32_TEST_001",
                 "session_id": "test_session_123",
@@ -146,7 +152,8 @@ class TestESP32AudioEndpoint:
             }
 
             # Make request
-            response = client.post("/api/voice/esp32/audio", files=files, data=data)
+            response = client.post(
+                "/api/voice/esp32/audio", files=files, data=data)
 
             # Verify response
             assert response.status_code == 200
@@ -175,8 +182,11 @@ class TestESP32AudioEndpoint:
             assert performance["compression_detected"] is True
 
     def test_esp32_audio_endpoint_with_wav_file(
-        self, client, sample_wav_bytes, mock_transcription_result, mock_ai_response
-    ):
+            self,
+            client,
+            sample_wav_bytes,
+            mock_transcription_result,
+            mock_ai_response):
         """Test ESP32 audio processing with WAV file upload"""
 
         with (
@@ -197,8 +207,10 @@ class TestESP32AudioEndpoint:
 
             # Prepare test data
             files = {
-                "file": ("test_audio.wav", io.BytesIO(sample_wav_bytes), "audio/wav")
-            }
+                "file": (
+                    "test_audio.wav",
+                    io.BytesIO(sample_wav_bytes),
+                    "audio/wav")}
             data = {
                 "device_id": "ESP32_TEST_002",
                 "audio_format": "wav",
@@ -206,7 +218,8 @@ class TestESP32AudioEndpoint:
             }
 
             # Make request
-            response = client.post("/api/voice/esp32/audio", files=files, data=data)
+            response = client.post(
+                "/api/voice/esp32/audio", files=files, data=data)
 
             # Verify response
             assert response.status_code == 200
@@ -221,7 +234,10 @@ class TestESP32AudioEndpoint:
         files = {"file": ("empty.mp3", io.BytesIO(b""), "audio/mpeg")}
         data = {"device_id": "ESP32_TEST_003", "audio_format": "mp3"}
 
-        response = client.post("/api/voice/esp32/audio", files=files, data=data)
+        response = client.post(
+            "/api/voice/esp32/audio",
+            files=files,
+            data=data)
 
         assert response.status_code == 400
         assert "Empty audio file" in response.json()["detail"]
@@ -235,7 +251,8 @@ class TestESP32AudioEndpoint:
 
         assert response.status_code == 422  # Validation error
 
-    def test_esp32_audio_endpoint_processing_error(self, client, sample_mp3_bytes):
+    def test_esp32_audio_endpoint_processing_error(
+            self, client, sample_mp3_bytes):
         """Test ESP32 audio endpoint when processing fails"""
 
         with patch("src.api.endpoints.voice.get_voice_service") as mock_voice_service:
@@ -247,11 +264,14 @@ class TestESP32AudioEndpoint:
             mock_voice_service.return_value = mock_voice_instance
 
             files = {
-                "file": ("test_audio.mp3", io.BytesIO(sample_mp3_bytes), "audio/mpeg")
-            }
+                "file": (
+                    "test_audio.mp3",
+                    io.BytesIO(sample_mp3_bytes),
+                    "audio/mpeg")}
             data = {"device_id": "ESP32_TEST_005", "audio_format": "mp3"}
 
-            response = client.post("/api/voice/esp32/audio", files=files, data=data)
+            response = client.post(
+                "/api/voice/esp32/audio", files=files, data=data)
 
             assert response.status_code == 500
             assert "Audio processing failed" in response.json()["detail"]
@@ -261,8 +281,11 @@ class TestESP32AudioJSONEndpoint:
     """Test /api/voice/esp32/audio-json endpoint"""
 
     def test_esp32_audio_json_endpoint(
-        self, client, sample_mp3_bytes, mock_transcription_result, mock_ai_response
-    ):
+            self,
+            client,
+            sample_mp3_bytes,
+            mock_transcription_result,
+            mock_ai_response):
         """Test ESP32 audio processing via JSON payload"""
 
         with (
@@ -318,7 +341,9 @@ class TestESP32AudioJSONEndpoint:
             "device_id": "ESP32_JSON_002",
         }
 
-        response = client.post("/api/voice/esp32/audio-json", json=request_data)
+        response = client.post(
+            "/api/voice/esp32/audio-json",
+            json=request_data)
 
         assert response.status_code == 500
 
@@ -395,20 +420,24 @@ class TestRealServiceIntegration:
             mock_ai_service.return_value = mock_ai_instance
 
             files = {
-                "file": ("real_test.wav", io.BytesIO(sample_wav_bytes), "audio/wav")
-            }
+                "file": (
+                    "real_test.wav",
+                    io.BytesIO(sample_wav_bytes),
+                    "audio/wav")}
             data = {
                 "device_id": "ESP32_REAL_TEST",
                 "audio_format": "wav",
                 "language": "ar",
             }
 
-            response = client.post("/api/voice/esp32/audio", files=files, data=data)
+            response = client.post(
+                "/api/voice/esp32/audio", files=files, data=data)
 
             assert response.status_code == 200
             result = response.json()
             assert result["success"] is True
-            assert result["transcription"]["provider"] in ["whisper", "fallback"]
+            assert result["transcription"]["provider"] in [
+                "whisper", "fallback"]
 
 
 # ================ PERFORMANCE TESTS ================
@@ -418,8 +447,11 @@ class TestAPIPerformance:
     """Test API performance characteristics"""
 
     def test_esp32_audio_processing_performance(
-        self, client, sample_mp3_bytes, mock_transcription_result, mock_ai_response
-    ):
+            self,
+            client,
+            sample_mp3_bytes,
+            mock_transcription_result,
+            mock_ai_response):
         """Test that audio processing completes within reasonable time"""
 
         with (
@@ -439,15 +471,18 @@ class TestAPIPerformance:
             mock_ai_service.return_value = mock_ai_instance
 
             files = {
-                "file": ("perf_test.mp3", io.BytesIO(sample_mp3_bytes), "audio/mpeg")
-            }
+                "file": (
+                    "perf_test.mp3",
+                    io.BytesIO(sample_mp3_bytes),
+                    "audio/mpeg")}
             data = {"device_id": "ESP32_PERF_TEST", "audio_format": "mp3"}
 
             import time
 
             start_time = time.time()
 
-            response = client.post("/api/voice/esp32/audio", files=files, data=data)
+            response = client.post(
+                "/api/voice/esp32/audio", files=files, data=data)
 
             end_time = time.time()
             processing_time = (end_time - start_time) * 1000  # Convert to ms
@@ -470,13 +505,20 @@ class TestAPIErrorHandling:
     def test_invalid_audio_format(self, client, sample_mp3_bytes):
         """Test handling of invalid audio format"""
 
-        files = {"file": ("test.mp3", io.BytesIO(sample_mp3_bytes), "audio/mpeg")}
+        files = {
+            "file": (
+                "test.mp3",
+                io.BytesIO(sample_mp3_bytes),
+                "audio/mpeg")}
         data = {
             "device_id": "ESP32_ERROR_TEST",
             "audio_format": "invalid_format",
         }  # Invalid format
 
-        response = client.post("/api/voice/esp32/audio", files=files, data=data)
+        response = client.post(
+            "/api/voice/esp32/audio",
+            files=files,
+            data=data)
 
         # Should still work but might default to a valid format
         # The exact behavior depends on implementation
@@ -485,13 +527,20 @@ class TestAPIErrorHandling:
     def test_missing_device_id(self, client, sample_mp3_bytes):
         """Test handling of missing device ID"""
 
-        files = {"file": ("test.mp3", io.BytesIO(sample_mp3_bytes), "audio/mpeg")}
+        files = {
+            "file": (
+                "test.mp3",
+                io.BytesIO(sample_mp3_bytes),
+                "audio/mpeg")}
         data = {
             "audio_format": "mp3"
             # Missing device_id
         }
 
-        response = client.post("/api/voice/esp32/audio", files=files, data=data)
+        response = client.post(
+            "/api/voice/esp32/audio",
+            files=files,
+            data=data)
 
         assert response.status_code == 422  # Validation error
 
@@ -520,17 +569,25 @@ class TestAPISecurity:
         # Create a very large "audio" file (10MB of zeros)
         large_audio = b"\x00" * (10 * 1024 * 1024)
 
-        files = {"file": ("large_test.mp3", io.BytesIO(large_audio), "audio/mpeg")}
+        files = {
+            "file": (
+                "large_test.mp3",
+                io.BytesIO(large_audio),
+                "audio/mpeg")}
         data = {"device_id": "ESP32_LARGE_TEST", "audio_format": "mp3"}
 
         # This should either be rejected or handled gracefully
-        response = client.post("/api/voice/esp32/audio", files=files, data=data)
+        response = client.post(
+            "/api/voice/esp32/audio",
+            files=files,
+            data=data)
 
         # Response should not be 200 for such a large file
         # Exact status depends on server configuration
         assert response.status_code in [400, 413, 422, 500]
 
-    def test_sql_injection_attempt_in_device_id(self, client, sample_mp3_bytes):
+    def test_sql_injection_attempt_in_device_id(
+            self, client, sample_mp3_bytes):
         """Test SQL injection attempt in device_id field"""
 
         with (
@@ -544,14 +601,19 @@ class TestAPISecurity:
             mock_ai_instance = Mock()
             mock_ai_service.return_value = mock_ai_instance
 
-            files = {"file": ("test.mp3", io.BytesIO(sample_mp3_bytes), "audio/mpeg")}
+            files = {
+                "file": (
+                    "test.mp3",
+                    io.BytesIO(sample_mp3_bytes),
+                    "audio/mpeg")}
             data = {
                 "device_id": "'; DROP TABLE devices; --",
                 "audio_format": "mp3",
             }  # SQL injection attempt
 
             # Should handle malicious input safely
-            response = client.post("/api/voice/esp32/audio", files=files, data=data)
+            response = client.post(
+                "/api/voice/esp32/audio", files=files, data=data)
 
             # Should not crash and should handle safely
             assert response.status_code in [200, 400, 422]

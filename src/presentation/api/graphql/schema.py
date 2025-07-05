@@ -38,8 +38,11 @@ class Query:
         """Get child by ID"""
         # Mock implementation
         return Child(
-            id=id, name="Test Child", age=6, language="ar", created_at=datetime.now()
-        )
+            id=id,
+            name="Test Child",
+            age=6,
+            language="ar",
+            created_at=datetime.now())
 
     @strawberry.field
     async def children(self, parent_id: str) -> List[Child]:
@@ -91,7 +94,11 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    async def create_child(self, name: str, age: int, language: str = "ar") -> Child:
+    async def create_child(
+            self,
+            name: str,
+            age: int,
+            language: str = "ar") -> Child:
         """Create new child profile"""
         return Child(
             id=str(uuid.uuid4()),
@@ -112,7 +119,10 @@ class Mutation:
         )
 
     @strawberry.mutation
-    async def send_message(self, conversation_id: str, content: str) -> Message:
+    async def send_message(
+            self,
+            conversation_id: str,
+            content: str) -> Message:
         """Send message in conversation"""
         return Message(
             id=str(uuid.uuid4()),

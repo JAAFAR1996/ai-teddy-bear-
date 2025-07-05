@@ -8,10 +8,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ..application.services.memory.memory_storage_service import \
-    MemoryStorageService
+from ..application.services.memory.memory_storage_service import MemoryStorageService
+
 # Import refactored components
-from ..domain.memory.models import (ChildMemoryProfile, Memory, MemoryImportance, MemoryType)
+from ..domain.memory.models import (
+    ChildMemoryProfile,
+    Memory,
+    MemoryImportance,
+    MemoryType,
+)
 from ..infrastructure.memory.memory_repository import MemoryRepository
 from ..infrastructure.memory.vector_memory_store import VectorMemoryStore
 
@@ -78,18 +83,23 @@ class MemoryService:
         """Check if a memory matches the search query"""
         return query.lower() in memory.content.lower()
 
-    def _filter_memories_by_query(self, memories: List[Memory], query: str) -> List[Memory]:
+    def _filter_memories_by_query(
+        self, memories: List[Memory], query: str
+    ) -> List[Memory]:
         """Filter memories that match the query and update access count"""
         relevant_memories = []
-        
+
         for memory in memories:
             if self._memory_matches_query(memory, query):
                 memory.access()  # Update access count
                 relevant_memories.append(memory)
-        
+
         return relevant_memories
 
-    def _apply_memory_limit(self, memories: List[Memory], limit: int) -> List[Memory]:
+    def _apply_memory_limit(
+            self,
+            memories: List[Memory],
+            limit: int) -> List[Memory]:
         """Apply limit to the number of memories returned"""
         return memories[:limit]
 
@@ -103,10 +113,12 @@ class MemoryService:
         """Recall relevant memories for a child"""
         try:
             # Get from working memory first
-            working_memories = self.storage_service.get_working_memory(child_id)
+            working_memories = self.storage_service.get_working_memory(
+                child_id)
 
             # Filter memories by query
-            relevant_memories = self._filter_memories_by_query(working_memories, query)
+            relevant_memories = self._filter_memories_by_query(
+                working_memories, query)
 
             # If we need more memories, search vector store
             if len(relevant_memories) < limit:
@@ -121,25 +133,30 @@ class MemoryService:
             self.logger.error(f"Failed to recall memories: {e}")
             return []
 
-    def _extract_topics_from_memories(self, memories: List[Memory]) -> List[str]:
+    def _extract_topics_from_memories(
+            self, memories: List[Memory]) -> List[str]:
         """Extract unique topics from a list of memories"""
         all_topics = []
         for memory in memories:
             all_topics.extend(memory.topics)
         return list(set(all_topics))[:5]  # Return top 5 unique topics
 
-    def _extract_emotions_from_memories(self, memories: List[Memory]) -> List[str]:
+    def _extract_emotions_from_memories(
+            self, memories: List[Memory]) -> List[str]:
         """Extract recent emotions from a list of memories"""
         all_emotions = []
         for memory in memories:
             all_emotions.extend(memory.emotions)
         return list(set(all_emotions))[-3:]  # Return last 3 unique emotions
 
-    def _has_memories_for_summary(self, short_term: List[Memory], working_mem: List[Memory]) -> bool:
+    def _has_memories_for_summary(
+        self, short_term: List[Memory], working_mem: List[Memory]
+    ) -> bool:
         """Check if there are enough memories to generate a summary"""
         return bool(short_term or working_mem)
 
-    def _create_conversation_summary(self, has_memories: bool) -> Optional[str]:
+    def _create_conversation_summary(
+            self, has_memories: bool) -> Optional[str]:
         """Create a conversation summary if memories exist"""
         if has_memories:
             return "Recent conversation context available"
@@ -159,10 +176,12 @@ class MemoryService:
 
             # Extract topics and emotions using helper methods
             recent_topics = self._extract_topics_from_memories(all_memories)
-            emotional_state = self._extract_emotions_from_memories(all_memories)
+            emotional_state = self._extract_emotions_from_memories(
+                all_memories)
 
             # Check if we have memories for summary
-            has_memories = self._has_memories_for_summary(short_term, working_mem)
+            has_memories = self._has_memories_for_summary(
+                short_term, working_mem)
 
             # Build context
             context = {
@@ -174,7 +193,8 @@ class MemoryService:
 
             # Add summary if requested and available
             if include_summary:
-                context["summary"] = self._create_conversation_summary(has_memories)
+                context["summary"] = self._create_conversation_summary(
+                    has_memories)
 
             return context
 
@@ -182,11 +202,14 @@ class MemoryService:
             self.logger.error(f"Failed to get conversation context: {e}")
             return {}
 
-    async def get_child_profile(self, child_id: str) -> Optional[ChildMemoryProfile]:
+    async def get_child_profile(
+            self, child_id: str) -> Optional[ChildMemoryProfile]:
         """Get child memory profile"""
         return await self.repository.get_child_profile(child_id)
 
-    def _create_new_child_profile(self, child_id: str, interaction_data: Dict[str, Any]) -> ChildMemoryProfile:
+    def _create_new_child_profile(
+        self, child_id: str, interaction_data: Dict[str, Any]
+    ) -> ChildMemoryProfile:
         """Create a new child profile with default values"""
         return ChildMemoryProfile(
             child_id=child_id,
@@ -197,7 +220,9 @@ class MemoryService:
             last_interaction=datetime.now(),
         )
 
-    def _update_topic_preferences(self, profile: ChildMemoryProfile, interaction_data: Dict[str, Any]):
+    def _update_topic_preferences(
+        self, profile: ChildMemoryProfile, interaction_data: Dict[str, Any]
+    ):
         """Update topic preferences in the profile"""
         topics = interaction_data.get("topics", [])
         for topic in topics:
@@ -212,7 +237,8 @@ class MemoryService:
 
             # Create new profile if it doesn't exist
             if not profile:
-                profile = self._create_new_child_profile(child_id, interaction_data)
+                profile = self._create_new_child_profile(
+                    child_id, interaction_data)
 
             # Update interaction count
             profile.add_interaction()
@@ -286,7 +312,8 @@ def calculate_memory_similarity(memory1: Memory, memory2: Memory) -> float:
     shared_topics = set(memory1.topics) & set(memory2.topics)
     shared_emotions = set(memory1.emotions) & set(memory2.emotions)
 
-    topic_sim = len(shared_topics) / max(len(memory1.topics) + len(memory2.topics), 1)
+    topic_sim = len(shared_topics) / \
+        max(len(memory1.topics) + len(memory2.topics), 1)
     emotion_sim = len(shared_emotions) / max(
         len(memory1.emotions) + len(memory2.emotions), 1
     )
@@ -294,7 +321,10 @@ def calculate_memory_similarity(memory1: Memory, memory2: Memory) -> float:
     return (topic_sim + emotion_sim) / 2
 
 
-def _is_memory_pair_similar(memory1: Memory, memory2: Memory, threshold: float) -> bool:
+def _is_memory_pair_similar(
+        memory1: Memory,
+        memory2: Memory,
+        threshold: float) -> bool:
     """Check if two memories are similar enough to be related"""
     similarity = calculate_memory_similarity(memory1, memory2)
     return similarity >= threshold
@@ -305,14 +335,14 @@ def _find_related_memories(
 ) -> List[str]:
     """Find all memories related to a target memory"""
     related_ids = []
-    
+
     for candidate_memory in all_memories:
         if target_memory.id == candidate_memory.id:
             continue
-            
+
         if _is_memory_pair_similar(target_memory, candidate_memory, threshold):
             related_ids.append(candidate_memory.id)
-    
+
     return related_ids
 
 
@@ -323,13 +353,13 @@ def generate_memory_graph(
     # Early return for empty input
     if not memories:
         return {}
-        
+
     # Early return for single memory
     if len(memories) == 1:
         return {memories[0].id: []}
-    
+
     graph = {}
-    
+
     for memory in memories:
         related_ids = _find_related_memories(memory, memories, threshold)
         graph[memory.id] = related_ids

@@ -33,7 +33,8 @@ class AzureSpeechClient:
             )
 
             # Create synthesizer
-            synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.speech_config)
+            synthesizer = speechsdk.SpeechSynthesizer(
+                speech_config=self.speech_config)
 
             # Generate speech
             result = synthesizer.speak_text_async(text).get()
@@ -72,11 +73,9 @@ class AzureSpeechClient:
 
             if result.reason == speechsdk.ResultReason.RecognizedSpeech:
                 return {
-                    "text": result.text,
-                    "confidence": (
-                        result.confidence if hasattr(result, "confidence") else 0.9
-                    ),
-                }
+                    "text": result.text, "confidence": (
+                        result.confidence if hasattr(
+                            result, "confidence") else 0.9), }
             else:
                 self.logger.error(f"Azure recognition failed: {result.reason}")
                 return None
@@ -88,7 +87,8 @@ class AzureSpeechClient:
     async def get_available_voices(self, language: str = "ar") -> list:
         """Get available voices for language"""
         try:
-            synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.speech_config)
+            synthesizer = speechsdk.SpeechSynthesizer(
+                speech_config=self.speech_config)
 
             result = synthesizer.get_voices_async(language).get()
 
@@ -105,8 +105,11 @@ class AzureSpeechClient:
         """Check if service is available"""
         try:
             # Simple health check
-            synthesizer = speechsdk.SpeechSynthesizer(speech_config=self.speech_config)
+            synthesizer = speechsdk.SpeechSynthesizer(
+                speech_config=self.speech_config)
             result = synthesizer.get_voices_async().get()
             return result.reason == speechsdk.ResultReason.VoicesListRetrieved
+
         # FIXME: replace with specific exception
-except Exception as exc:return False
+except Exception as exc:
+    return False

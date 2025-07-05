@@ -10,7 +10,7 @@ from .models import (
     ModerationContext,
     ModerationResult,
     ModerationResultData,
-    ModerationRule
+    ModerationRule,
 )
 
 from .cache_manager import ModerationCache
@@ -19,32 +19,30 @@ from .statistics import ModerationStatistics, ModerationStatsEntry
 from .legacy_adapter import (
     LegacyModerationAdapter,
     LegacyModerationParams,
-    ModerationMetadata
+    ModerationMetadata,
 )
 
 __all__ = [
     # Models
     "ModerationSeverity",
-    "ContentCategory", 
+    "ContentCategory",
     "ModerationRequest",
     "ModerationContext",
     "ModerationResult",
     "ModerationResultData",
     "ModerationRule",
-    
     # Core Components
     "ModerationCache",
     "ContentAnalyzer",
     "ModerationStatistics",
     "ModerationStatsEntry",
-    
     # Legacy Support
     "LegacyModerationAdapter",
-    "LegacyModerationParams", 
-    "ModerationMetadata"
+    "LegacyModerationParams",
+    "ModerationMetadata",
 ]
 
 # Version info
 __version__ = "2.0.0"
 __author__ = "AI Teddy Bear Team"
-__description__ = "High-cohesion moderation service with EXTRACT CLASS refactoring" 
+__description__ = "High-cohesion moderation service with EXTRACT CLASS refactoring"

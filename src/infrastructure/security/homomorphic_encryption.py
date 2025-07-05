@@ -106,12 +106,14 @@ class SecureContextManager:
         self.config = config
         self.contexts: Dict[str, ts.TenSEALContext] = {}
         self.context_metadata: Dict[str, Dict] = {}
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
     def create_context(self, context_id: str) -> ts.TenSEALContext:
         """Create secure homomorphic encryption context."""
         if not TENSEAL_AVAILABLE:
-            raise RuntimeError("TenSEAL not available for homomorphic encryption")
+            raise RuntimeError(
+                "TenSEAL not available for homomorphic encryption")
 
         try:
             if self.config.scheme == HEScheme.CKKS:
@@ -169,7 +171,8 @@ class VoiceFeatureEncryptor:
 
     def __init__(self, context_manager: SecureContextManager):
         self.context_manager = context_manager
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
     def encrypt_voice_features(
         self, features: np.ndarray, child_id: str, context_id: str
@@ -184,7 +187,8 @@ class VoiceFeatureEncryptor:
             normalized_features = self._normalize_features(features)
 
             # Encrypt using CKKS scheme
-            encrypted_vector = ts.ckks_vector(context, normalized_features.tolist())
+            encrypted_vector = ts.ckks_vector(
+                context, normalized_features.tolist())
 
             # Serialize encrypted data
             encrypted_bytes = encrypted_vector.serialize()
@@ -231,7 +235,8 @@ class EmotionProcessor:
     def __init__(self, context_manager: SecureContextManager):
         self.context_manager = context_manager
         self.model_weights = self._load_emotion_model_weights()
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
     async def process_encrypted_emotion(
         self,
@@ -245,7 +250,8 @@ class EmotionProcessor:
         try:
             # Deserialize encrypted data
             context = ts.context_from(encrypted_features.context_data)
-            encrypted_vector = ts.ckks_vector_from(context, encrypted_features.data)
+            encrypted_vector = ts.ckks_vector_from(
+                context, encrypted_features.data)
 
             # Load appropriate model weights
             weights = self._get_processing_weights(processing_mode)
@@ -283,7 +289,9 @@ class EmotionProcessor:
                 operations_performed=operations,
                 confidence_level=0.95,
                 privacy_preserved=True,
-                audit_trail=self._create_audit_trail(operations, processing_time),
+                audit_trail=self._create_audit_trail(
+                    operations,
+                    processing_time),
             )
 
         except Exception as e:
@@ -315,7 +323,8 @@ class EmotionProcessor:
     ) -> ts.CKKSVector:
         """Apply emotion classification transformation."""
         # Apply softmax-like transformation using polynomial approximation
-        # This is a simplified version - real implementation would use more sophisticated methods
+        # This is a simplified version - real implementation would use more
+        # sophisticated methods
         squared = encrypted_result.square()
         return squared
 
@@ -342,7 +351,8 @@ class HomomorphicEncryption:
         self.emotion_processor = EmotionProcessor(self.context_manager)
         self.audit_logger = SecurityAuditLogger()
         self.executor = ThreadPoolExecutor(max_workers=4)
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
         # Initialize default context
         self.default_context_id = "default_he_context"
@@ -358,8 +368,10 @@ class HomomorphicEncryption:
             raise
 
     async def encrypt_voice_features(
-        self, features: np.ndarray, child_id: str, context_id: Optional[str] = None
-    ) -> EncryptedData:
+            self,
+            features: np.ndarray,
+            child_id: str,
+            context_id: Optional[str] = None) -> EncryptedData:
         """Encrypt voice features for secure processing."""
         context_id = context_id or self.default_context_id
 
@@ -464,7 +476,8 @@ class HomomorphicEncryption:
         """Process multiple encrypted features in batch."""
         tasks = []
         for encrypted_features in encrypted_features_list:
-            task = self.process_encrypted_emotion(encrypted_features, processing_mode)
+            task = self.process_encrypted_emotion(
+                encrypted_features, processing_mode)
             tasks.append(task)
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -473,7 +486,8 @@ class HomomorphicEncryption:
         valid_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
-                self.logger.error(f"Batch processing failed for item {i}: {result}")
+                self.logger.error(
+                    f"Batch processing failed for item {i}: {result}")
             else:
                 valid_results.append(result)
 
@@ -525,7 +539,8 @@ class HomomorphicEncryption:
                 raise ValueError(f"Context not found: {context_id}")
 
             # Deserialize and decrypt
-            encrypted_vector = ts.ckks_vector_from(context, encrypted_result.data)
+            encrypted_vector = ts.ckks_vector_from(
+                context, encrypted_result.data)
             decrypted_values = encrypted_vector.decrypt()
 
             # Log successful decryption

@@ -18,15 +18,19 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 # Core imports
-from .edge_ai_manager import (EdgeAIManager, EdgeModelConfig,
-                              EdgeProcessingMode, EdgeProcessingResult,
-                              SafetyLevel, WakeWordModel)
+from .edge_ai_manager import (
+    EdgeAIManager,
+    EdgeModelConfig,
+    EdgeProcessingMode,
+    EdgeProcessingResult,
+    SafetyLevel,
+    WakeWordModel,
+)
 
 # Audio processing integration
 try:
     from ...audio.audio_processing import AudioConfig, AudioProcessor
-    from ...domain.services.advanced_emotion_analyzer import \
-        AdvancedEmotionAnalyzer
+    from ...domain.services.advanced_emotion_analyzer import AdvancedEmotionAnalyzer
 
     AUDIO_PROCESSING_AVAILABLE = True
 except ImportError:
@@ -184,7 +188,9 @@ class EdgeAIIntegrationService:
         # Default to hybrid for balanced scenarios
         return self._get_hybrid_decision(edge_result)
 
-    def _check_safety_requirements(self, edge_result: EdgeProcessingResult) -> Optional[EdgeCloudDecision]:
+    def _check_safety_requirements(
+        self, edge_result: EdgeProcessingResult
+    ) -> Optional[EdgeCloudDecision]:
         """Check safety requirements and return cloud decision if needed"""
         if edge_result.safety_check and not edge_result.safety_check.passed:
             return EdgeCloudDecision(
@@ -197,13 +203,16 @@ class EdgeAIIntegrationService:
             )
         return None
 
-    def _check_edge_only_conditions(self, edge_result: EdgeProcessingResult, edge_time_ms: float) -> Optional[EdgeCloudDecision]:
+    def _check_edge_only_conditions(
+        self, edge_result: EdgeProcessingResult, edge_time_ms: float
+    ) -> Optional[EdgeCloudDecision]:
         """Check if edge-only processing is suitable"""
         if (
             edge_result.wake_word_detected
             and edge_result.confidence > 0.8
             and edge_result.initial_emotion
-            and edge_result.initial_emotion.primary_emotion in ["happy", "calm", "excited"]
+            and edge_result.initial_emotion.primary_emotion
+            in ["happy", "calm", "excited"]
             and edge_time_ms < 50
         ):
             return EdgeCloudDecision(
@@ -216,13 +225,16 @@ class EdgeAIIntegrationService:
             )
         return None
 
-    def _check_cloud_assistance_conditions(self, edge_result: EdgeProcessingResult) -> Optional[EdgeCloudDecision]:
+    def _check_cloud_assistance_conditions(
+        self, edge_result: EdgeProcessingResult
+    ) -> Optional[EdgeCloudDecision]:
         """Check if cloud assistance is needed for complex scenarios"""
         if (
             edge_result.priority > 7
             or (
                 edge_result.initial_emotion
-                and edge_result.initial_emotion.primary_emotion in ["angry", "fear", "sad"]
+                and edge_result.initial_emotion.primary_emotion
+                in ["angry", "fear", "sad"]
             )
             or edge_result.confidence < 0.5
         ):
@@ -236,7 +248,9 @@ class EdgeAIIntegrationService:
             )
         return None
 
-    def _get_hybrid_decision(self, edge_result: EdgeProcessingResult) -> EdgeCloudDecision:
+    def _get_hybrid_decision(
+        self, edge_result: EdgeProcessingResult
+    ) -> EdgeCloudDecision:
         """Return hybrid decision for balanced scenarios"""
         return EdgeCloudDecision(
             use_edge_only=False,
@@ -338,20 +352,24 @@ class EdgeAIIntegrationService:
             # Combine edge and cloud results
             enhanced_response = IntegratedResponse(
                 response_text=cloud_enhancement.get(
-                    "enhanced_text", edge_response.response_text
-                ),
+                    "enhanced_text",
+                    edge_response.response_text),
                 emotion_analysis=cloud_enhancement.get(
-                    "enhanced_emotion", edge_response.emotion_analysis
-                ),
+                    "enhanced_emotion",
+                    edge_response.emotion_analysis),
                 safety_status=edge_response.safety_status,
                 processing_source="hybrid",
-                total_processing_time_ms=edge_time_ms + cloud_time,
+                total_processing_time_ms=edge_time_ms +
+                cloud_time,
                 confidence=max(
-                    edge_response.confidence, cloud_enhancement.get(
-                        "confidence", 0.0)
-                ),
-                recommendations=edge_response.recommendations
-                + cloud_enhancement.get("additional_recommendations", []),
+                    edge_response.confidence,
+                    cloud_enhancement.get(
+                        "confidence",
+                        0.0)),
+                recommendations=edge_response.recommendations +
+                cloud_enhancement.get(
+                    "additional_recommendations",
+                    []),
             )
 
             return enhanced_response
@@ -360,7 +378,8 @@ class EdgeAIIntegrationService:
             self.logger.error(f"Hybrid processing enhancement failed: {e}")
             return edge_response
 
-    def _generate_edge_response(self, edge_result: EdgeProcessingResult) -> str:
+    def _generate_edge_response(
+            self, edge_result: EdgeProcessingResult) -> str:
         """Generate simple response text based on edge analysis."""
         if not edge_result.wake_word_detected:
             return "I'm listening! How can I help you?"
@@ -433,32 +452,42 @@ class EdgeAIIntegrationService:
         await asyncio.sleep(0.1)
 
         return {
-            "enhanced_text": edge_response.response_text
-            + " I've also learned more about how to help you based on our conversation patterns!",
+            "enhanced_text": edge_response.response_text +
+            " I've also learned more about how to help you based on our conversation patterns!",
             "enhanced_emotion": {
                 **edge_response.emotion_analysis,
                 "enhanced_insights": "Cloud-based contextual emotion enhancement",
                 "confidence": min(
-                    1.0, edge_response.emotion_analysis.get(
-                        "confidence", 0.5) + 0.2
-                ),
+                    1.0,
+                    edge_response.emotion_analysis.get(
+                        "confidence",
+                        0.5) +
+                    0.2),
             },
-            "confidence": min(1.0, edge_response.confidence + 0.15),
+            "confidence": min(
+                1.0,
+                edge_response.confidence +
+                0.15),
             "additional_recommendations": [
                 "Cloud enhancement applied",
                 "Contextual patterns analyzed",
             ],
         }
 
-    def _create_fallback_response(self, start_time: float) -> IntegratedResponse:
+    def _create_fallback_response(
+            self, start_time: float) -> IntegratedResponse:
         """Create fallback response when processing fails."""
         processing_time = (time.time() - start_time) * 1000
 
         return IntegratedResponse(
             response_text="Hi there! I'm having some trouble processing right now, but I'm still here to chat with you!",
-            emotion_analysis={"primary_emotion": "neutral", "confidence": 0.5},
-            safety_status={"passed": True,
-                           "risk_level": "low", "safety_score": 1.0},
+            emotion_analysis={
+                "primary_emotion": "neutral",
+                "confidence": 0.5},
+            safety_status={
+                "passed": True,
+                "risk_level": "low",
+                "safety_score": 1.0},
             processing_source="fallback",
             total_processing_time_ms=processing_time,
             confidence=0.5,
@@ -522,9 +551,7 @@ class EdgeAIIntegrationService:
                 ),
                 "edge_processing_efficiency": min(
                     100,
-                    100 /
-                    max(1,
-                        self.integration_stats["average_edge_time_ms"] / 10),
+                    100 / max(1, self.integration_stats["average_edge_time_ms"] / 10),
                 ),
                 "cloud_dependency_ratio": (
                     (

@@ -93,7 +93,8 @@ class ToxicityDetector:
             "personal_info": ["رقم هاتف", "عنوان", "اسم عائلة", "مدرسة"],
         }
 
-    async def analyze_toxicity(self, content: str, child_age: int) -> Dict[str, Any]:
+    async def analyze_toxicity(
+            self, content: str, child_age: int) -> Dict[str, Any]:
         """تحليل السمية في المحتوى"""
 
         content_lower = content.lower()
@@ -113,8 +114,7 @@ class ToxicityDetector:
                     )
                     category_score += (
                         self.severity_weights.get(
-                            category, 0.5) * age_multiplier
-                    )
+                            category, 0.5) * age_multiplier)
 
             if detected_patterns:
                 detected_categories[category] = {
@@ -142,7 +142,8 @@ class ToxicityDetector:
             "is_toxic": total_score > 0.3,
         }
 
-    def _get_age_sensitivity_multiplier(self, age: int, category: str) -> float:
+    def _get_age_sensitivity_multiplier(
+            self, age: int, category: str) -> float:
         """حساب مضاعف الحساسية حسب العمر"""
 
         base_multipliers = {
@@ -191,8 +192,8 @@ class AgeAppropriatenessChecker:
         emotional_score = self._analyze_emotional_complexity(
             content, child_age)
 
-        overall_score = (vocabulary_score +
-                         concept_score + emotional_score) / 3
+        overall_score = (
+            vocabulary_score + concept_score + emotional_score) / 3
 
         return {
             "is_age_appropriate": overall_score > 0.6,
@@ -229,7 +230,8 @@ class AgeAppropriatenessChecker:
         else:
             return 0.3
 
-    def _analyze_concept_appropriateness(self, content: str, age: int) -> float:
+    def _analyze_concept_appropriateness(
+            self, content: str, age: int) -> float:
         """تحليل ملاءمة المفاهيم"""
 
         content_lower = content.lower()
@@ -288,8 +290,11 @@ class AgeAppropriatenessChecker:
             return max(0.2, 1.0 - (complex_emotion_count - tolerance) * 0.3)
 
     def _generate_age_recommendations(
-        self, vocab_score: float, concept_score: float, emotional_score: float, age: int
-    ) -> List[str]:
+            self,
+            vocab_score: float,
+            concept_score: float,
+            emotional_score: float,
+            age: int) -> List[str]:
         """توليد توصيات للتحسين"""
 
         recommendations = []
@@ -652,7 +657,8 @@ class AdvancedContentFilter:
         else:
             self.filter_stats["safe_content"] += 1
 
-    def _generate_safe_fallback_result(self, content: str) -> ContentAnalysisResult:
+    def _generate_safe_fallback_result(
+            self, content: str) -> ContentAnalysisResult:
         """توليد نتيجة احتياطية آمنة"""
 
         return ContentAnalysisResult(

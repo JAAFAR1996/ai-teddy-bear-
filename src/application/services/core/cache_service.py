@@ -126,7 +126,8 @@ class CacheService:
         else:
             self.cache = InMemoryCache()
             self.cache_type = "memory"
-        self.logger.info(f"Cache service initialized with {self.cache_type} backend")
+        self.logger.info(
+            f"Cache service initialized with {self.cache_type} backend")
 
     def get_analytics_cache_key(self, child_id: str, period_days: int) -> str:
         """Generate cache key for analytics data"""
@@ -137,13 +138,19 @@ class CacheService:
         return f"dashboard:{parent_id}"
 
     def cache_analytics(
-        self, child_id: str, period_days: int, analytics_data: dict, ttl: int = 300
-    ) -> None:
+            self,
+            child_id: str,
+            period_days: int,
+            analytics_data: dict,
+            ttl: int = 300) -> None:
         """Cache analytics data for 5 minutes by default"""
         key = self.get_analytics_cache_key(child_id, period_days)
         self.cache.set(key, str(analytics_data), ttl)
 
-    def get_cached_analytics(self, child_id: str, period_days: int) -> Optional[dict]:
+    def get_cached_analytics(
+            self,
+            child_id: str,
+            period_days: int) -> Optional[dict]:
         """Get cached analytics data"""
         key = self.get_analytics_cache_key(child_id, period_days)
         cached = self.cache.get(key)

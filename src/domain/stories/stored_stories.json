@@ -1,190 +1,190 @@
 {
-    "treasure_adventure": {
-        "story_id": "treasure_adventure",
-        "title": "مغامرة الكنز المفقود",
-        "type": "stored_adventure",
-        "age_range": [6, 12],
-        "scenes": {
-            "start": {
-                "scene_id": "start",
-                "title": "بداية المغامرة",
-                "content": "كان {child_name} يتجول في الحديقة مع {friend1} عندما وجدا خريطة قديمة مدفونة تحت شجرة كبيرة. الخريطة تُظهر مكان كنز مخفي!",
-                "audio_effects": ["wind", "rustling_leaves", "mysterious_music"],
-                "choices": [
-                    {
-                        "choice_id": "follow_map_immediately",
-                        "text": "دعنا نتبع الخريطة فوراً!",
-                        "choice_type": "COURAGE_VS_CAUTION",
-                        "behavioral_score": {
-                            "confidence": 0.8,
-                            "impulsiveness": 0.7,
-                            "adventure_seeking": 0.9
-                        },
-                        "leads_to_scene": "forest_entrance"
-                    },
-                    {
-                        "choice_id": "tell_parents_first",
-                        "text": "يجب أن نخبر الوالدين أولاً",
-                        "choice_type": "COURAGE_VS_CAUTION",
-                        "behavioral_score": {
-                            "caution": 0.8,
-                            "responsibility": 0.9,
-                            "rule_following": 0.7
-                        },
-                        "leads_to_scene": "parents_advice"
-                    },
-                    {
-                        "choice_id": "study_map_carefully",
-                        "text": "دعنا نفحص الخريطة بعناية أولاً",
-                        "choice_type": "CREATIVE_VS_LOGICAL",
-                        "behavioral_score": {
-                            "analytical_thinking": 0.8,
-                            "patience": 0.7,
-                            "planning": 0.9
-                        },
-                        "leads_to_scene": "map_analysis"
-                    }
-                ],
-                "is_ending": false
+  "treasure_adventure": {
+    "story_id": "treasure_adventure",
+    "title": "مغامرة الكنز المفقود",
+    "type": "stored_adventure",
+    "age_range": [6, 12],
+    "scenes": {
+      "start": {
+        "scene_id": "start",
+        "title": "بداية المغامرة",
+        "content": "كان {child_name} يتجول في الحديقة مع {friend1} عندما وجدا خريطة قديمة مدفونة تحت شجرة كبيرة. الخريطة تُظهر مكان كنز مخفي!",
+        "audio_effects": ["wind", "rustling_leaves", "mysterious_music"],
+        "choices": [
+          {
+            "choice_id": "follow_map_immediately",
+            "text": "دعنا نتبع الخريطة فوراً!",
+            "choice_type": "COURAGE_VS_CAUTION",
+            "behavioral_score": {
+              "confidence": 0.8,
+              "impulsiveness": 0.7,
+              "adventure_seeking": 0.9
             },
-            "forest_entrance": {
-                "scene_id": "forest_entrance",
-                "title": "مدخل الغابة",
-                "content": "وصل {child_name} و{friend1} إلى مدخل غابة مظلمة. يمكنهما سماع أصوات غريبة من الداخل، لكن الخريطة تشير إلى أن الكنز في عمق الغابة.",
-                "audio_effects": ["forest_sounds", "owl_hooting", "tension_music"],
-                "choices": [
-                    {
-                        "choice_id": "enter_forest_bravely",
-                        "text": "ندخل الغابة بشجاعة!",
-                        "choice_type": "COURAGE_VS_CAUTION",
-                        "behavioral_score": {
-                            "bravery": 0.9,
-                            "leadership": 0.7,
-                            "risk_taking": 0.8
-                        },
-                        "leads_to_scene": "deep_forest"
-                    },
-                    {
-                        "choice_id": "bring_flashlight",
-                        "text": "نعود لنحضر مصباحاً وحبلاً",
-                        "choice_type": "PATIENCE_VS_IMPULSIVENESS",
-                        "behavioral_score": {
-                            "preparation": 0.9,
-                            "patience": 0.8,
-                            "practical_thinking": 0.8
-                        },
-                        "leads_to_scene": "prepared_adventure"
-                    },
-                    {
-                        "choice_id": "invite_more_friends",
-                        "text": "نستدعي المزيد من الأصدقاء للمساعدة",
-                        "choice_type": "COOPERATION_VS_INDEPENDENCE",
-                        "behavioral_score": {
-                            "teamwork": 0.9,
-                            "social_skills": 0.8,
-                            "collaboration": 0.9
-                        },
-                        "leads_to_scene": "team_adventure"
-                    }
-                ],
-                "is_ending": false
+            "leads_to_scene": "forest_entrance"
+          },
+          {
+            "choice_id": "tell_parents_first",
+            "text": "يجب أن نخبر الوالدين أولاً",
+            "choice_type": "COURAGE_VS_CAUTION",
+            "behavioral_score": {
+              "caution": 0.8,
+              "responsibility": 0.9,
+              "rule_following": 0.7
             },
-            "deep_forest": {
-                "scene_id": "deep_forest",
-                "title": "عمق الغابة",
-                "content": "في عمق الغابة، وجد {child_name} صندوقاً قديماً، لكنه محاط بألغاز رياضية! يجب حل اللغز لفتح الصندوق.",
-                "audio_effects": ["magical_chimes", "puzzle_music"],
-                "choices": [
-                    {
-                        "choice_id": "solve_puzzle_alone",
-                        "text": "سأحل اللغز بنفسي!",
-                        "choice_type": "COOPERATION_VS_INDEPENDENCE",
-                        "behavioral_score": {
-                            "independence": 0.8,
-                            "self_confidence": 0.9,
-                            "problem_solving": 0.7
-                        },
-                        "leads_to_scene": "math_challenge",
-                        "educational_content": "math_puzzle"
-                    },
-                    {
-                        "choice_id": "work_together",
-                        "text": "دعنا نحله معاً!",
-                        "choice_type": "COOPERATION_VS_INDEPENDENCE",
-                        "behavioral_score": {
-                            "cooperation": 0.9,
-                            "teamwork": 0.8,
-                            "humility": 0.7
-                        },
-                        "leads_to_scene": "team_puzzle",
-                        "educational_content": "collaborative_math"
-                    }
-                ],
-                "educational_challenge": {
-                    "type": "math_puzzle",
-                    "question": "إذا كان في الصندوق 3 أكياس، وفي كل كيس 4 جواهر، كم جوهرة في المجموع؟",
-                    "answer": 12,
-                    "hint": "اضرب عدد الأكياس في عدد الجواهر في كل كيس"
-                },
-                "is_ending": false
+            "leads_to_scene": "parents_advice"
+          },
+          {
+            "choice_id": "study_map_carefully",
+            "text": "دعنا نفحص الخريطة بعناية أولاً",
+            "choice_type": "CREATIVE_VS_LOGICAL",
+            "behavioral_score": {
+              "analytical_thinking": 0.8,
+              "patience": 0.7,
+              "planning": 0.9
             },
-            "treasure_found": {
-                "scene_id": "treasure_found",
-                "title": "اكتشاف الكنز",
-                "content": "رائع! فتح {child_name} الصندوق ووجد كنزاً حقيقياً - ليس ذهباً، بل كتباً سحرية تحتوي على قصص وألغاز ممتعة! الكنز الحقيقي هو المعرفة والصداقة.",
-                "audio_effects": ["success_fanfare", "magical_sparkles", "happy_music"],
-                "choices": [],
-                "is_ending": true
-            }
-        }
-    },
-    "friendship_sharing": {
-        "story_id": "friendship_sharing",
-        "title": "قصة الصداقة الحقيقية",
-        "type": "behavioral",
-        "age_range": [4, 10],
-        "scenes": {
-            "playground": {
-                "scene_id": "playground",
-                "title": "في الملعب",
-                "content": "كان {child_name} يلعب في الملعب عندما رأى طفلاً جديداً يجلس وحيداً. يبدو حزيناً ولا يعرف أحداً.",
-                "audio_effects": ["playground_sounds", "children_laughing"],
-                "choices": [
-                    {
-                        "choice_id": "approach_new_kid",
-                        "text": "أذهب إليه وأدعوه للعب معي",
-                        "choice_type": "HELPING_VS_SELF_FOCUS",
-                        "behavioral_score": {
-                            "empathy": 0.9,
-                            "social_initiative": 0.8,
-                            "kindness": 0.9
-                        },
-                        "leads_to_scene": "making_friend"
-                    },
-                    {
-                        "choice_id": "continue_playing",
-                        "text": "أستمر في اللعب مع أصدقائي",
-                        "choice_type": "HELPING_VS_SELF_FOCUS",
-                        "behavioral_score": {
-                            "self_focus": 0.7,
-                            "comfort_zone": 0.8
-                        },
-                        "leads_to_scene": "missed_opportunity"
-                    },
-                    {
-                        "choice_id": "tell_friends_to_include",
-                        "text": "أطلب من أصدقائي دعوته للعب معنا",
-                        "choice_type": "COOPERATION_VS_INDEPENDENCE",
-                        "behavioral_score": {
-                            "leadership": 0.8,
-                            "inclusion": 0.9,
-                            "teamwork": 0.8
-                        },
-                        "leads_to_scene": "group_friendship"
-                    }
-                ],
-                "is_ending": false
-            }
-        }
+            "leads_to_scene": "map_analysis"
+          }
+        ],
+        "is_ending": false
+      },
+      "forest_entrance": {
+        "scene_id": "forest_entrance",
+        "title": "مدخل الغابة",
+        "content": "وصل {child_name} و{friend1} إلى مدخل غابة مظلمة. يمكنهما سماع أصوات غريبة من الداخل، لكن الخريطة تشير إلى أن الكنز في عمق الغابة.",
+        "audio_effects": ["forest_sounds", "owl_hooting", "tension_music"],
+        "choices": [
+          {
+            "choice_id": "enter_forest_bravely",
+            "text": "ندخل الغابة بشجاعة!",
+            "choice_type": "COURAGE_VS_CAUTION",
+            "behavioral_score": {
+              "bravery": 0.9,
+              "leadership": 0.7,
+              "risk_taking": 0.8
+            },
+            "leads_to_scene": "deep_forest"
+          },
+          {
+            "choice_id": "bring_flashlight",
+            "text": "نعود لنحضر مصباحاً وحبلاً",
+            "choice_type": "PATIENCE_VS_IMPULSIVENESS",
+            "behavioral_score": {
+              "preparation": 0.9,
+              "patience": 0.8,
+              "practical_thinking": 0.8
+            },
+            "leads_to_scene": "prepared_adventure"
+          },
+          {
+            "choice_id": "invite_more_friends",
+            "text": "نستدعي المزيد من الأصدقاء للمساعدة",
+            "choice_type": "COOPERATION_VS_INDEPENDENCE",
+            "behavioral_score": {
+              "teamwork": 0.9,
+              "social_skills": 0.8,
+              "collaboration": 0.9
+            },
+            "leads_to_scene": "team_adventure"
+          }
+        ],
+        "is_ending": false
+      },
+      "deep_forest": {
+        "scene_id": "deep_forest",
+        "title": "عمق الغابة",
+        "content": "في عمق الغابة، وجد {child_name} صندوقاً قديماً، لكنه محاط بألغاز رياضية! يجب حل اللغز لفتح الصندوق.",
+        "audio_effects": ["magical_chimes", "puzzle_music"],
+        "choices": [
+          {
+            "choice_id": "solve_puzzle_alone",
+            "text": "سأحل اللغز بنفسي!",
+            "choice_type": "COOPERATION_VS_INDEPENDENCE",
+            "behavioral_score": {
+              "independence": 0.8,
+              "self_confidence": 0.9,
+              "problem_solving": 0.7
+            },
+            "leads_to_scene": "math_challenge",
+            "educational_content": "math_puzzle"
+          },
+          {
+            "choice_id": "work_together",
+            "text": "دعنا نحله معاً!",
+            "choice_type": "COOPERATION_VS_INDEPENDENCE",
+            "behavioral_score": {
+              "cooperation": 0.9,
+              "teamwork": 0.8,
+              "humility": 0.7
+            },
+            "leads_to_scene": "team_puzzle",
+            "educational_content": "collaborative_math"
+          }
+        ],
+        "educational_challenge": {
+          "type": "math_puzzle",
+          "question": "إذا كان في الصندوق 3 أكياس، وفي كل كيس 4 جواهر، كم جوهرة في المجموع؟",
+          "answer": 12,
+          "hint": "اضرب عدد الأكياس في عدد الجواهر في كل كيس"
+        },
+        "is_ending": false
+      },
+      "treasure_found": {
+        "scene_id": "treasure_found",
+        "title": "اكتشاف الكنز",
+        "content": "رائع! فتح {child_name} الصندوق ووجد كنزاً حقيقياً - ليس ذهباً، بل كتباً سحرية تحتوي على قصص وألغاز ممتعة! الكنز الحقيقي هو المعرفة والصداقة.",
+        "audio_effects": ["success_fanfare", "magical_sparkles", "happy_music"],
+        "choices": [],
+        "is_ending": true
+      }
     }
-} 
+  },
+  "friendship_sharing": {
+    "story_id": "friendship_sharing",
+    "title": "قصة الصداقة الحقيقية",
+    "type": "behavioral",
+    "age_range": [4, 10],
+    "scenes": {
+      "playground": {
+        "scene_id": "playground",
+        "title": "في الملعب",
+        "content": "كان {child_name} يلعب في الملعب عندما رأى طفلاً جديداً يجلس وحيداً. يبدو حزيناً ولا يعرف أحداً.",
+        "audio_effects": ["playground_sounds", "children_laughing"],
+        "choices": [
+          {
+            "choice_id": "approach_new_kid",
+            "text": "أذهب إليه وأدعوه للعب معي",
+            "choice_type": "HELPING_VS_SELF_FOCUS",
+            "behavioral_score": {
+              "empathy": 0.9,
+              "social_initiative": 0.8,
+              "kindness": 0.9
+            },
+            "leads_to_scene": "making_friend"
+          },
+          {
+            "choice_id": "continue_playing",
+            "text": "أستمر في اللعب مع أصدقائي",
+            "choice_type": "HELPING_VS_SELF_FOCUS",
+            "behavioral_score": {
+              "self_focus": 0.7,
+              "comfort_zone": 0.8
+            },
+            "leads_to_scene": "missed_opportunity"
+          },
+          {
+            "choice_id": "tell_friends_to_include",
+            "text": "أطلب من أصدقائي دعوته للعب معنا",
+            "choice_type": "COOPERATION_VS_INDEPENDENCE",
+            "behavioral_score": {
+              "leadership": 0.8,
+              "inclusion": 0.9,
+              "teamwork": 0.8
+            },
+            "leads_to_scene": "group_friendship"
+          }
+        ],
+        "is_ending": false
+      }
+    }
+  }
+}

@@ -24,22 +24,28 @@ class PersonalizedStoryGenerator:
         openai.api_key = openai_key
         self.story_history = []
 
-    def _build_story_prompt(self, child_name: str, age: int, mood: str, interests: List[str], theme: str) -> str:
+    def _build_story_prompt(
+            self,
+            child_name: str,
+            age: int,
+            mood: str,
+            interests: List[str],
+            theme: str) -> str:
         """Builds the prompt for the story generation API."""
         return f"""
         اكتب قصة {theme} للطفل {child_name} عمره {age} سنوات.
-        
+
         معلومات عن الطفل:
         - المزاج الحالي: {mood}
         - الاهتمامات: {', '.join(interests)}
-        
+
         متطلبات القصة:
         1. {child_name} هو البطل الرئيسي
         2. تناسب مزاجه الحالي ({mood})
         3. تتضمن عناصر من اهتماماته
         4. مناسبة لعمره ({age} سنوات)
         5. لها نهاية سعيدة ودرس مفيد
-        
+
         ابدأ القصة مباشرة.
         """
 
@@ -89,9 +95,13 @@ class PersonalizedStoryGenerator:
         }
         self._record_story(story_record)
 
-        return {"story": story_text, "characters": characters, "id": story_record["id"]}
+        return {
+            "story": story_text,
+            "characters": characters,
+            "id": story_record["id"]}
 
-    def _extract_characters(self, story: str, child_name: str) -> Dict[str, List[str]]:
+    def _extract_characters(
+            self, story: str, child_name: str) -> Dict[str, List[str]]:
         """استخراج الشخصيات من القصة لتعدد الأصوات"""
         characters = {
             "narrator": [],

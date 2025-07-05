@@ -34,7 +34,8 @@ request_duration = Histogram(
 )
 
 response_time = Summary(
-    "ai_teddy_response_time_seconds", "Response time summary", ["service", "operation"]
+    "ai_teddy_response_time_seconds", "Response time summary", [
+        "service", "operation"]
 )
 
 # Business Metrics
@@ -56,7 +57,8 @@ voice_messages_processed = Counter(
 
 # Security Metrics
 auth_attempts = Counter(
-    "ai_teddy_auth_attempts_total", "Authentication attempts", ["method", "result"]
+    "ai_teddy_auth_attempts_total", "Authentication attempts", [
+        "method", "result"]
 )
 
 security_violations = Counter(
@@ -118,8 +120,9 @@ def track_request_duration(endpoint: str):
             try:
                 result = await func(*args, **kwargs)
                 return result
+
             # FIXME: replace with specific exception
-except Exception as exc:status = "error"
+except Exception as exc: status = "error"
                 raise
             finally:
                 duration = time.time() - start_time

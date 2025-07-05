@@ -6,10 +6,8 @@ from typing import List, Optional, Tuple
 from uuid import UUID
 
 from ...domain.entities.child import Child
-from ...domain.entities.conversation import (ContentType,
-                                             Conversation, InteractionType)
-from ...domain.repositories.conversation_repository import \
-    ConversationRepository
+from ...domain.entities.conversation import ContentType, Conversation, InteractionType
+from ...domain.repositories.conversation_repository import ConversationRepository
 from .base_service import BaseService
 
 
@@ -89,8 +87,10 @@ class ConversationService(BaseService[Conversation]):
         return await self.get(conversation_id)
 
     async def add_ai_response(
-        self, conversation_id: UUID, response: str, metadata: Optional[dict] = None
-    ) -> Conversation:
+            self,
+            conversation_id: UUID,
+            response: str,
+            metadata: Optional[dict] = None) -> Conversation:
         """Add AI's response to the conversation."""
         conversation = await self.get(conversation_id)
         if not conversation:
@@ -133,7 +133,10 @@ class ConversationService(BaseService[Conversation]):
             child_id, start_date, end_date, limit
         )
 
-    async def archive_conversation(self, conversation_id: UUID, reason: str) -> bool:
+    async def archive_conversation(
+            self,
+            conversation_id: UUID,
+            reason: str) -> bool:
         """Archive a conversation."""
         result = await self._repository.archive_conversation(conversation_id, reason)
         await self._log_operation(
@@ -142,8 +145,9 @@ class ConversationService(BaseService[Conversation]):
         return result
 
     async def get_flagged_content(
-        self, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None
-    ) -> List[dict]:
+            self,
+            start_date: Optional[datetime] = None,
+            end_date: Optional[datetime] = None) -> List[dict]:
         """Get conversations with flagged content."""
         return await self._repository.get_flagged_content(start_date, end_date)
 

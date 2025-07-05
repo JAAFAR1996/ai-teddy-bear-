@@ -11,6 +11,7 @@ from typing import Dict, List
 @dataclass
 class VREnvironment:
     """بيئة واقع افتراضي"""
+
     environment_id: str
     name: str
     theme: str  # space, underwater, forest, fantasy, educational
@@ -28,7 +29,8 @@ class VREnvironment:
         if self.interactive_elements is None:
             self.interactive_elements = []
         if self.safety_boundaries is None:
-            self.safety_boundaries = {"max_session_time": 15, "break_intervals": 5}
+            self.safety_boundaries = {
+                "max_session_time": 15, "break_intervals": 5}
         if self.comfort_settings is None:
             self.comfort_settings = {
                 "motion_sickness_prevention": True,
@@ -103,15 +105,13 @@ class VREnvironmentManager:
                 return []  # VR غير مناسب للأطفال الصغار
             elif child_age < 10:
                 environments = [
-                    env for env in environments
+                    env
+                    for env in environments
                     if env.immersion_level in ["low", "medium"]
                 ]
 
         if theme:
-            environments = [
-                env for env in environments 
-                if env.theme == theme
-            ]
+            environments = [env for env in environments if env.theme == theme]
 
         return environments
 
@@ -122,7 +122,10 @@ class VREnvironmentManager:
             return True
         return False
 
-    def adapt_for_age(self, environment: VREnvironment, child_age: int) -> Dict:
+    def adapt_for_age(
+            self,
+            environment: VREnvironment,
+            child_age: int) -> Dict:
         """تكييف إعدادات البيئة حسب العمر"""
         adapted = {
             "max_duration": environment.safety_boundaries["max_session_time"],
@@ -139,4 +142,4 @@ class VREnvironmentManager:
             adapted["max_duration"] = min(adapted["max_duration"], 15)
             adapted["break_intervals"] = 5
 
-        return adapted 
+        return adapted

@@ -10,8 +10,7 @@ from typing import Dict, List, Optional
 
 from elevenlabs import VoiceSettings
 
-from src.domain.audio.models.voice_models import (EmotionalTone, Language,
-                                                  VoiceProfile)
+from src.domain.audio.models.voice_models import EmotionalTone, Language, VoiceProfile
 
 
 class VoiceProfileService:
@@ -129,7 +128,10 @@ class VoiceProfileService:
             teddy_profile = VoiceProfile(
                 id="teddy_bear",
                 name="Friendly Teddy",
-                voice_id=getattr(self.config, "DEFAULT_VOICE_ID", "josh"),
+                voice_id=getattr(
+                    self.config,
+                    "DEFAULT_VOICE_ID",
+                    "josh"),
                 language=Language.ENGLISH,
                 emotional_settings=teddy_settings,
                 pitch_adjustment=2.0,

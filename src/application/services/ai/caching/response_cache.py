@@ -31,7 +31,13 @@ class LLMProvider(Enum):
 class ModelConfig:
     """Mock model config for caching"""
 
-    def __init__(self, provider=None, model_name="", max_tokens=150, temperature=0.7, **kwargs):
+    def __init__(
+            self,
+            provider=None,
+            model_name="",
+            max_tokens=150,
+            temperature=0.7,
+            **kwargs):
         self.provider = provider
         self.model_name = model_name
         self.max_tokens = max_tokens
@@ -44,7 +50,7 @@ class ModelConfig:
             "provider": str(self.provider) if self.provider else None,
             "model_name": self.model_name,
             "max_tokens": self.max_tokens,
-            "temperature": self.temperature
+            "temperature": self.temperature,
         }
 
 
@@ -67,7 +73,11 @@ class LLMResponseCache:
     Extracted from main factory to achieve High Cohesion
     """
 
-    def __init__(self, redis_url: Optional[str] = None, ttl: int = 3600, max_size: int = 1000):
+    def __init__(
+            self,
+            redis_url: Optional[str] = None,
+            ttl: int = 3600,
+            max_size: int = 1000):
         self.redis_url = redis_url
         self.redis_client = None
         self.local_cache = {}
@@ -101,7 +111,7 @@ class LLMResponseCache:
 
         try:
             value = await self.redis_client.get(key)
-            return value.decode('utf-8') if value else None
+            return value.decode("utf-8") if value else None
         except Exception as exc:
             self.logger.error(f"Redis GET failed for key {key}: {exc}")
             return None
@@ -148,12 +158,16 @@ class LLMResponseCache:
         expiry = datetime.now() + timedelta(seconds=self.cache_ttl)
         self.local_cache[key] = (value, expiry)
 
-    def generate_key(self, messages: List[Message], model_config: ModelConfig) -> str:
+    def generate_key(
+            self,
+            messages: List[Message],
+            model_config: ModelConfig) -> str:
         """Generate cache key for messages and config"""
         content = json.dumps([msg.__dict__()
                              for msg in messages], sort_keys=True)
-        config_hash = hashlib.sha512(json.dumps(
-            model_config.__dict__(), sort_keys=True).encode()).hexdigest()
+        config_hash = hashlib.sha512(
+            json.dumps(model_config.__dict__(), sort_keys=True).encode()
+        ).hexdigest()
         return f"llm:{hashlib.sha512(content.encode()).hexdigest()}:{config_hash}"
 
     def get_stats(self) -> dict:
@@ -162,5 +176,5 @@ class LLMResponseCache:
             "local_cache_size": len(self.local_cache),
             "redis_connected": self.redis_client is not None,
             "cache_ttl": self.cache_ttl,
-            "max_size": self.max_size
+            "max_size": self.max_size,
         }

@@ -12,25 +12,24 @@ from .models import (
     AudioProcessingRequest,
     TextToSpeechRequest,
     LLMRequest,
-    StreamingStatus
+    StreamingStatus,
 )
 
 __all__ = [
     # Core Components
     "WebSocketManager",
-    "AudioProcessor", 
+    "AudioProcessor",
     "TextToSpeechService",
     "LLMProcessor",
     "ConnectionManager",
-    
     # Data Models
     "AudioProcessingRequest",
     "TextToSpeechRequest",
     "LLMRequest",
-    "StreamingStatus"
+    "StreamingStatus",
 ]
 
 # Version info
 __version__ = "2.0.0"
 __author__ = "AI Teddy Bear Team"
-__description__ = "High-cohesion streaming components with EXTRACT CLASS refactoring" 
+__description__ = "High-cohesion streaming components with EXTRACT CLASS refactoring"

@@ -7,7 +7,6 @@ import numpy as np
 import soundfile as sf
 
 
-
 class AudioRecorder:
     """Handles audio file input and management."""
 
@@ -33,7 +32,8 @@ class AudioRecorder:
             if audio_data.ndim > 1:
                 audio_data = audio_data.mean(axis=1)
 
-            # Resample to 16kHz if needed (optional, depends on your requirements)
+            # Resample to 16kHz if needed (optional, depends on your
+            # requirements)
             if sample_rate != 16000:
                 from scipy import signal
 
@@ -52,7 +52,9 @@ class AudioRecorder:
             self.logger.error(f"Error loading audio file: {e}")
             return np.array([])
 
-    def save_audio_file(self, audio_data: np.ndarray, file_path: str, sample_rate: int = 16000) -> None:
+    def save_audio_file(
+        self, audio_data: np.ndarray, file_path: str, sample_rate: int = 16000
+    ) -> None:
         """
         Save audio data to a file.
 
@@ -78,7 +80,8 @@ class AudioRecorder:
         Returns:
             bool: True if audio is valid, False otherwise.
         """
-        return audio_data is not None and len(audio_data) > 0 and np.any(audio_data)
+        return audio_data is not None and len(
+            audio_data) > 0 and np.any(audio_data)
 
     def get_audio_duration(
         self, audio_data: np.ndarray, sample_rate: int = 16000

@@ -42,7 +42,9 @@ class ParentAuthenticationService:
         self.db = database_service
         self.token_expiry_hours = 24
 
-    async def authenticate(self, credentials: ParentCredentials) -> Optional[AuthToken]:
+    async def authenticate(
+            self,
+            credentials: ParentCredentials) -> Optional[AuthToken]:
         """
         مصادقة الوالدين - المسؤولية الوحيدة لهذا الكلاس
 
@@ -55,7 +57,8 @@ class ParentAuthenticationService:
         try:
             # التحقق من صحة البيانات
             if not self._validate_credentials(credentials):
-                logger.warning(f"Invalid credentials format for {credentials.email}")
+                logger.warning(
+                    f"Invalid credentials format for {credentials.email}")
                 return None
 
             # البحث عن الوالد في قاعدة البيانات
@@ -65,7 +68,9 @@ class ParentAuthenticationService:
                 return None
 
             # التحقق من كلمة المرور
-            if not self._verify_password(credentials.password, parent["password_hash"]):
+            if not self._verify_password(
+                    credentials.password,
+                    parent["password_hash"]):
                 logger.warning(f"Invalid password for {credentials.email}")
                 return None
 
@@ -73,7 +78,8 @@ class ParentAuthenticationService:
             if credentials.child_id and not self._verify_child_access(
                 parent["id"], credentials.child_id
             ):
-                logger.warning(f"Unauthorized child access: {credentials.child_id}")
+                logger.warning(
+                    f"Unauthorized child access: {credentials.child_id}")
                 return None
 
             # إنشاء رمز المصادقة

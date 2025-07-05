@@ -16,14 +16,14 @@ from openai import APIError, APITimeoutError, AsyncOpenAI, RateLimitError
 from openai.types.chat import ChatCompletion
 import secrets
 
-from src.application.services.ai.analyzers.emotion_analyzer_service import \
-    EmotionAnalyzerService
-from src.application.services.ai.fallback_response_service import \
-    FallbackResponseService
-from src.application.services.ai.core import \
-    IAIService
-from src.application.services.ai.models.ai_response_models import \
-    AIResponseModel
+from src.application.services.ai.analyzers.emotion_analyzer_service import (
+    EmotionAnalyzerService,
+)
+from src.application.services.ai.fallback_response_service import (
+    FallbackResponseService,
+)
+from src.application.services.ai.core import IAIService
+from src.application.services.ai.models.ai_response_models import AIResponseModel
 from src.core.domain.entities.child import Child
 from src.infrastructure.caching.simple_cache_service import CacheService
 from src.infrastructure.config import Settings
@@ -49,14 +49,17 @@ class ModernOpenAIService(IAIService):
         fallback_service: FallbackResponseService,
     ):
         self._initialize_services(
-            settings, cache_service, emotion_analyzer, fallback_service)
+            settings, cache_service, emotion_analyzer, fallback_service
+        )
         self._initialize_caching()
         self._initialize_performance_tracking()
         self._initialize_client()
         logger.info(
             "✅ Modern OpenAI Service initialized with enhanced features")
 
-    def _initialize_services(self, settings, cache_service, emotion_analyzer, fallback_service):
+    def _initialize_services(
+        self, settings, cache_service, emotion_analyzer, fallback_service
+    ):
         """Initializes service dependencies."""
         self.settings = settings
         self.cache = cache_service
@@ -93,12 +96,16 @@ class ModernOpenAIService(IAIService):
 
         except Exception as e:
             logger.error(
-                f"❌ Failed to initialize OpenAI client: {str(e)}", exc_info=True
-            )
+                f"❌ Failed to initialize OpenAI client: {str(e)}",
+                exc_info=True)
             raise
 
     @lru_cache(maxsize=1000)
-    def _get_cache_key(self, text: str, context: str, child_profile: str) -> str:
+    def _get_cache_key(
+            self,
+            text: str,
+            context: str,
+            child_profile: str) -> str:
         """Generate optimized cache key with LRU caching"""
         combined = f"{text}:{context}:{child_profile}"
         return hashlib.sha512(combined.encode()).hexdigest()
@@ -124,7 +131,10 @@ class ModernOpenAIService(IAIService):
 
         return None
 
-    def _store_in_memory_cache(self, cache_key: str, response: AIResponseModel) -> None:
+    def _store_in_memory_cache(
+            self,
+            cache_key: str,
+            response: AIResponseModel) -> None:
         """Store response in memory cache with size management"""
         # Clean old entries if cache is full
         if len(self.memory_cache) >= self.max_cache_size:
@@ -156,8 +166,8 @@ class ModernOpenAIService(IAIService):
 
         try:
             # Prepare request context and check cache
-            session_id, cache_key, cached_response = await self._prepare_request_context(
-                message, child, session_id, context
+            session_id, cache_key, cached_response = (
+                await self._prepare_request_context(message, child, session_id, context)
             )
 
             if cached_response:
@@ -172,7 +182,11 @@ class ModernOpenAIService(IAIService):
             return await self._handle_api_errors(e, message, child, session_id)
 
     async def _prepare_request_context(
-        self, message: str, child: Child, session_id: Optional[str], context: Optional[Dict[str, Any]]
+        self,
+        message: str,
+        child: Child,
+        session_id: Optional[str],
+        context: Optional[Dict[str, Any]],
     ) -> tuple[str, str, Optional[AIResponseModel]]:
         """Prepare request context and check for cached responses"""
         # Generate session ID if not provided
@@ -209,8 +223,13 @@ class ModernOpenAIService(IAIService):
         return session_id, cache_key, None
 
     async def _process_with_openai(
-        self, message: str, child: Child, session_id: str,
-        context: Optional[Dict[str, Any]], cache_key: str, start_time: datetime
+        self,
+        message: str,
+        child: Child,
+        session_id: str,
+        context: Optional[Dict[str, Any]],
+        cache_key: str,
+        start_time: datetime,
     ) -> AIResponseModel:
         """Process message with OpenAI API and create response"""
         # Start parallel tasks
@@ -233,13 +252,26 @@ class ModernOpenAIService(IAIService):
 
         # Create and cache response
         return await self._create_response_model(
-            response, message, emotion_task, category_task,
-            session_id, device_id, cache_key, start_time
+            response,
+            message,
+            emotion_task,
+            category_task,
+            session_id,
+            device_id,
+            cache_key,
+            start_time,
         )
 
     async def _create_response_model(
-        self, response, message: str, emotion_task, category_task,
-        session_id: str, device_id: str, cache_key: str, start_time: datetime
+        self,
+        response,
+        message: str,
+        emotion_task,
+        category_task,
+        session_id: str,
+        device_id: str,
+        cache_key: str,
+        start_time: datetime,
     ) -> AIResponseModel:
         """Create the final AI response model with all metadata"""
         # Extract response data
@@ -285,7 +317,8 @@ class ModernOpenAIService(IAIService):
         )
 
         logger.info(
-            f"✅ AI response generated in {processing_time}ms (model: {response.model})")
+            f"✅ AI response generated in {processing_time}ms (model: {response.model})"
+        )
         return ai_response
 
     async def _handle_api_errors(
@@ -314,7 +347,8 @@ class ModernOpenAIService(IAIService):
         else:
             self.error_count += 1
             logger.error(
-                f"💥 Unexpected AI service error: {str(error)}", exc_info=True)
+                f"💥 Unexpected AI service error: {str(error)}",
+                exc_info=True)
             return await self.fallback_service.create_generic_fallback(
                 message, child, session_id, str(error)
             )
@@ -370,7 +404,12 @@ class ModernOpenAIService(IAIService):
         """Basic rule-based emotion detection"""
         message_lower = message.lower()
 
-        if any(word in message_lower for word in ["سعيد", "happy", "فرح", "مبسوط"]):
+        if any(
+            word in message_lower for word in [
+                "سعيد",
+                "happy",
+                "فرح",
+                "مبسوط"]):
             return "joy"
         elif any(word in message_lower for word in ["حزين", "sad", "بكي", "زعلان"]):
             return "sadness"
@@ -393,7 +432,12 @@ class ModernOpenAIService(IAIService):
         """Enhanced message categorization"""
         message_lower = message.lower()
 
-        if any(word in message_lower for word in ["قصة", "story", "حكاية", "احكي"]):
+        if any(
+            word in message_lower for word in [
+                "قصة",
+                "story",
+                "حكاية",
+                "احكي"]):
             return "story_request"
         elif any(word in message_lower for word in ["لعب", "play", "game", "نلعب"]):
             return "play_request"
@@ -486,7 +530,8 @@ class ModernOpenAIService(IAIService):
             processing_time_ms=8,
         )
 
-    async def _extract_learning_points(self, message: str, response: str) -> List[str]:
+    async def _extract_learning_points(
+            self, message: str, response: str) -> List[str]:
         """Enhanced learning points extraction"""
         points = []
         combined_text = f"{message} {response}".lower()
@@ -557,9 +602,11 @@ class ModernOpenAIService(IAIService):
             "total_errors": self.error_count,
             "rate_limit_hits": self.rate_limit_count,
             "error_rate": (
-                self.error_count / self.request_count if self.request_count > 0 else 0
-            ),
+                self.error_count /
+                self.request_count if self.request_count > 0 else 0),
             "average_processing_time_ms": avg_processing_time,
-            "cache_size": len(self.memory_cache),
-            "active_conversations": len(self.conversation_history),
+            "cache_size": len(
+                self.memory_cache),
+            "active_conversations": len(
+                self.conversation_history),
         }

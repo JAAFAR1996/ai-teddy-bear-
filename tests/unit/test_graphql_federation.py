@@ -6,11 +6,13 @@ Author: API Team Lead
 """
 
 import os
+
 try:
     from unittest.mock import AsyncMock, MagicMock
 except ImportError:
     # Python < 3.8 fallback
     import sys
+
     if sys.version_info < (3, 8):
         import asyncio
         from unittest.mock import MagicMock
@@ -18,6 +20,7 @@ except ImportError:
         class AsyncMock(MagicMock):
             async def __call__(self, *args, **kwargs):
                 return super().__call__(*args, **kwargs)
+
     else:
         raise
 
@@ -26,14 +29,25 @@ import pytest
 # Test imports
 try:
     from src.infrastructure.graphql.authentication import (
-        AuthConfig, AuthenticationService, Permission, User, UserRole,
-        create_auth_config)
+        AuthConfig,
+        AuthenticationService,
+        Permission,
+        User,
+        UserRole,
+        create_auth_config,
+    )
     from src.infrastructure.graphql.federation_gateway import (
-        FederationConfig, GraphQLFederationGateway, ServiceConfig,
-        create_default_federation_config)
+        FederationConfig,
+        GraphQLFederationGateway,
+        ServiceConfig,
+        create_default_federation_config,
+    )
     from src.infrastructure.graphql.service_resolvers import (
-        AIServiceResolvers, ChildServiceResolvers, MonitoringServiceResolvers,
-        SafetyServiceResolvers)
+        AIServiceResolvers,
+        ChildServiceResolvers,
+        MonitoringServiceResolvers,
+        SafetyServiceResolvers,
+    )
 
     FEDERATION_AVAILABLE = True
 except ImportError:
@@ -46,11 +60,13 @@ def federation_config():
     return FederationConfig(
         services=[
             ServiceConfig(
-                name="child_service", url="http://localhost:8001", schema_path="/schema"
-            ),
+                name="child_service",
+                url="http://localhost:8001",
+                schema_path="/schema"),
             ServiceConfig(
-                name="ai_service", url="http://localhost:8002", schema_path="/schema"
-            ),
+                name="ai_service",
+                url="http://localhost:8002",
+                schema_path="/schema"),
         ],
         enable_authentication=True,
         enable_caching=True,
@@ -104,12 +120,16 @@ class TestFederationConfig:
 
     def test_custom_config(self):
         """Test custom configuration."""
-        services = [ServiceConfig(
-            "test_service", "http://test:8000", "/schema")]
+        services = [
+            ServiceConfig(
+                "test_service",
+                "http://test:8000",
+                "/schema")]
 
         config = FederationConfig(
-            services=services, enable_authentication=False, rate_limit_requests=200
-        )
+            services=services,
+            enable_authentication=False,
+            rate_limit_requests=200)
 
         pytest.assume(len(config.services) == 1)
         pytest.assume(config.enable_authentication is False)
@@ -135,7 +155,8 @@ class TestServiceConfig:
         pytest.assume(config.retry_attempts == 5)
 
 
-@pytest.mark.skipif(not FEDERATION_AVAILABLE, reason="Federation not available")
+@pytest.mark.skipif(not FEDERATION_AVAILABLE,
+                    reason="Federation not available")
 class TestGraphQLFederationGateway:
     """Test GraphQL Federation Gateway."""
 
@@ -158,8 +179,7 @@ class TestGraphQLFederationGateway:
         """Test service health checking."""
         # Mock successful health check
         federation_gateway.http_client.get.return_value.__aenter__.return_value.status_code = (
-            200
-        )
+            200)
 
         config = federation_gateway.services["child_service"]
         healthy = await federation_gateway._check_single_service_health(config)
@@ -184,11 +204,9 @@ class TestGraphQLFederationGateway:
         """Test federated query execution."""
         # Mock service responses
         federation_gateway.http_client.post.return_value.__aenter__.return_value.status_code = (
-            200
-        )
+            200)
         federation_gateway.http_client.post.return_value.__aenter__.return_value.json = AsyncMock(
-            return_value={"data": {"child": {"name": "Test Child", "age": 7}}}
-        )
+            return_value={"data": {"child": {"name": "Test Child", "age": 7}}})
 
         query = 'query { child(id: "123") { name age } }'
         result = await federation_gateway._execute_federated_query(query, {})
@@ -206,8 +224,7 @@ class TestAuthentication:
         user = await auth_service.create_user(
             username="testuser",
             email="test@example.com",
-            password=os.environ.get(
-                "TEST_PASSWORD", "test_secure_password_2025"),
+            password=os.environ.get("TEST_PASSWORD", "test_secure_password_2025"),
             role=UserRole.PARENT,
         )
 
@@ -294,26 +311,33 @@ class TestAuthentication:
         )
 
         # Test admin permissions
-        pytest.assume(auth_service.check_permission(
-            admin_user, Permission.READ_CHILD) is True)
         pytest.assume(
             auth_service.check_permission(
-                admin_user, Permission.ADMIN_SYSTEM) is False
-        )
+                admin_user,
+                Permission.READ_CHILD) is True)
+        pytest.assume(
+            auth_service.check_permission(
+                admin_user,
+                Permission.ADMIN_SYSTEM) is False)
 
         # Test parent permissions
-        pytest.assume(auth_service.check_permission(
-            parent_user, Permission.READ_CHILD) is True)
         pytest.assume(
             auth_service.check_permission(
-                parent_user, Permission.DELETE_CHILD) is False
-        )
+                parent_user,
+                Permission.READ_CHILD) is True)
+        pytest.assume(
+            auth_service.check_permission(
+                parent_user,
+                Permission.DELETE_CHILD) is False)
 
         # Test child access
-        pytest.assume(auth_service.check_child_access(
-            parent_user, "child-123") is True)
-        pytest.assume(auth_service.check_child_access(
-            parent_user, "child-456") is False)
+        pytest.assume(
+            auth_service.check_child_access(
+                parent_user,
+                "child-123") is True)
+        pytest.assume(
+            auth_service.check_child_access(parent_user, "child-456") is False
+        )
 
 
 class TestServiceResolvers:
@@ -365,8 +389,9 @@ class TestPerformanceMonitoring:
     async def test_query_monitoring(self):
         """Test query performance monitoring."""
         try:
-            from src.infrastructure.graphql.performance_monitor import \
-                create_performance_monitor
+            from src.infrastructure.graphql.performance_monitor import (
+                create_performance_monitor,
+            )
 
             monitor = create_performance_monitor(enable_prometheus=False)
 
@@ -403,8 +428,9 @@ class TestPerformanceMonitoring:
     async def test_service_call_recording(self):
         """Test service call metrics recording."""
         try:
-            from src.infrastructure.graphql.performance_monitor import \
-                create_performance_monitor
+            from src.infrastructure.graphql.performance_monitor import (
+                create_performance_monitor,
+            )
 
             monitor = create_performance_monitor(enable_prometheus=False)
 
@@ -437,7 +463,8 @@ class TestRateLimiting:
             )
 
             # Test rate limiting logic
-            # This would be tested in integration tests with actual HTTP requests
+            # This would be tested in integration tests with actual HTTP
+            # requests
 
 
 class TestErrorHandling:
@@ -448,11 +475,9 @@ class TestErrorHandling:
         """Test handling of service errors."""
         # Mock service error
         federation_gateway.http_client.post.return_value.__aenter__.return_value.status_code = (
-            500
-        )
+            500)
         federation_gateway.http_client.post.return_value.__aenter__.return_value.text = AsyncMock(
-            return_value="Internal Server Error"
-        )
+            return_value="Internal Server Error")
 
         # Test error handling in service query
         config = federation_gateway.services["child_service"]
@@ -528,8 +553,7 @@ class TestFederationIntegration:
         """Test complete query flow through federation."""
         # Mock all service responses
         federation_gateway.http_client.post.return_value.__aenter__.return_value.status_code = (
-            200
-        )
+            200)
         federation_gateway.http_client.post.return_value.__aenter__.return_value.json = AsyncMock(
             return_value={
                 "data": {

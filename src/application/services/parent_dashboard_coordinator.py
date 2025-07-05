@@ -11,9 +11,12 @@ from typing import Dict
 
 from .child_data_analyzer import ChildDataAnalyzer, DateRange
 from .parent_auth_service import ParentAuthenticationService, ParentCredentials
-from .parent_notification_service import (ParentNotificationService)
-from .report_generator_service import (ChildProgress, ReportFormat,
-                                       ReportGeneratorService)
+from .parent_notification_service import ParentNotificationService
+from .report_generator_service import (
+    ChildProgress,
+    ReportFormat,
+    ReportGeneratorService,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -50,17 +53,22 @@ class ParentDashboardCoordinator:
 
             # 2. تحليل بيانات الطفل
             week_period = DateRange(
-                start_date=datetime.now() - timedelta(days=7), end_date=datetime.now()
-            )
+                start_date=datetime.now() -
+                timedelta(
+                    days=7),
+                end_date=datetime.now())
 
             analysis_result = await self.data_analyzer.analyze(child_id, week_period)
 
             # 3. تحويل نتائج التحليل إلى تقدم الطفل
-            progress = self._convert_analysis_to_progress(analysis_result, child_id)
+            progress = self._convert_analysis_to_progress(
+                analysis_result, child_id)
 
             # 4. إنشاء التقرير
-            report_format = ReportFormat(format_type="html", include_charts=True)
-            report_path = self.report_generator.generate_report(progress, report_format)
+            report_format = ReportFormat(
+                format_type="html", include_charts=True)
+            report_path = self.report_generator.generate_report(
+                progress, report_format)
 
             # 5. إرسال إشعار للوالد
             notification_result = (
@@ -95,8 +103,10 @@ class ParentDashboardCoordinator:
         try:
             # 1. تحليل عاجل للبيانات الحديثة
             recent_period = DateRange(
-                start_date=datetime.now() - timedelta(hours=24), end_date=datetime.now()
-            )
+                start_date=datetime.now() -
+                timedelta(
+                    hours=24),
+                end_date=datetime.now())
 
             analysis = await self.data_analyzer.analyze(child_id, recent_period)
 
@@ -138,8 +148,10 @@ class ParentDashboardCoordinator:
 
             # 2. الحصول على التحليل الحديث
             current_week = DateRange(
-                start_date=datetime.now() - timedelta(days=7), end_date=datetime.now()
-            )
+                start_date=datetime.now() -
+                timedelta(
+                    days=7),
+                end_date=datetime.now())
 
             analysis = await self.data_analyzer.analyze(child_id, current_week)
 
@@ -160,7 +172,8 @@ class ParentDashboardCoordinator:
         """تحويل نتائج التحليل إلى كائن تقدم الطفل"""
         return ChildProgress(
             child_id=child_id,
-            child_name=f"Child_{child_id}",  # في التطبيق الحقيقي، نجلب الاسم من DB
+            child_name=f"Child_{child_id}",
+            # في التطبيق الحقيقي، نجلب الاسم من DB
             age=5,  # في التطبيق الحقيقي، نجلب العمر من DB
             period_start=analysis_result.analysis_period.start_date,
             period_end=analysis_result.analysis_period.end_date,
@@ -190,9 +203,11 @@ class ParentDashboardCoordinator:
         """تنظيف البيانات القديمة - تنسيق العملية فقط"""
         try:
             # تنظيف التقارير القديمة
-            reports_cleaned = self.report_generator.cleanup_old_reports(days_old)
+            reports_cleaned = self.report_generator.cleanup_old_reports(
+                days_old)
 
-            logger.info(f"Cleanup completed: {reports_cleaned} reports removed")
+            logger.info(
+                f"Cleanup completed: {reports_cleaned} reports removed")
 
             return {"reports_cleaned": reports_cleaned, "success": True}
 

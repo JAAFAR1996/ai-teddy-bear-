@@ -101,6 +101,26 @@ class SecurityAuditLogger:
         # Start background tasks
         self._start_monitoring()
 
+    async def _log_event_object(self, event: SecurityEvent):
+        """Logs a security event object."""
+        event.threat_level = self._assess_threat_level(event)
+
+        async with self.buffer_lock:
+            self.event_buffer.append(event)
+            if len(self.event_buffer) >= self.buffer_size:
+                await self._flush_buffer()
+
+        await self._detect_threats(event)
+
+        logger.info(
+            "Security event",
+            event_id=event.event_id,
+            event_type=event.event_type.value,
+            user_id=event.user_id,
+            threat_level=event.threat_level.value,
+            result=event.result,
+        )
+
     async def log_event(
         self,
         event_type: SecurityEventType,
@@ -115,9 +135,8 @@ class SecurityAuditLogger:
         sensitive_data: bool = False,
     ) -> str:
         """Log a security event"""
-
         event = SecurityEvent(
-            event_id="",  # Will be generated
+            event_id="",
             event_type=event_type,
             timestamp=datetime.utcnow(),
             user_id=user_id,
@@ -130,30 +149,7 @@ class SecurityAuditLogger:
             details=details or {},
             sensitive_data=sensitive_data,
         )
-
-        # Determine threat level
-        event.threat_level = self._assess_threat_level(event)
-
-        # Add to buffer
-        async with self.buffer_lock:
-            self.event_buffer.append(event)
-
-            if len(self.event_buffer) >= self.buffer_size:
-                await self._flush_buffer()
-
-        # Real-time threat detection
-        await self._detect_threats(event)
-
-        # Log to structured logger
-        logger.info(
-            "Security event",
-            event_id=event.event_id,
-            event_type=event_type.value,
-            user_id=user_id,
-            threat_level=event.threat_level.value,
-            result=result,
-        )
-
+        await self._log_event_object(event)
         return event.event_id
 
     def _assess_threat_level(self, event: SecurityEvent) -> ThreatLevel:
@@ -197,8 +193,10 @@ class SecurityAuditLogger:
 
                 if recent_count >= pattern["threshold"]:
                     # Threat detected
-                    await self.log_event(
+                    threat_event = SecurityEvent(
+                        event_id="",
                         event_type=SecurityEventType.SUSPICIOUS_ACTIVITY,
+                        timestamp=datetime.utcnow(),
                         user_id=event.user_id,
                         ip_address=event.ip_address,
                         details={
@@ -207,6 +205,7 @@ class SecurityAuditLogger:
                             "event_count": recent_count,
                         },
                     )
+                    await self._log_event_object(threat_event)
 
                     logger.warning(
                         "Threat pattern detected",
@@ -217,33 +216,26 @@ class SecurityAuditLogger:
                     )
 
     async def _count_recent_events(
-        self, identifier: str, event_type: SecurityEventType, window_seconds: int
-    ) -> int:
+            self,
+            identifier: str,
+            event_type: SecurityEventType,
+            window_seconds: int) -> int:
         """Count recent events for threat detection"""
-
         if not identifier:
             return 0
 
         cutoff_time = datetime.utcnow() - timedelta(seconds=window_seconds)
-        count = 0
 
-        # Check buffer
-        for event in self.event_buffer:
-            if (
-                event.timestamp >= cutoff_time
-                and event.event_type == event_type
-                and (event.user_id == identifier or event.ip_address == identifier)
-            ):
-                count += 1
+        # Combine buffer and recent events for a single check
+        events_to_check = self.event_buffer + self.events[-1000:]
 
-        # Check stored events
-        for event in self.events[-1000:]:  # Check last 1000 events
-            if (
-                event.timestamp >= cutoff_time
-                and event.event_type == event_type
-                and (event.user_id == identifier or event.ip_address == identifier)
-            ):
-                count += 1
+        count = sum(
+            1
+            for event in events_to_check
+            if event.timestamp >= cutoff_time
+            and event.event_type == event_type
+            and (event.user_id == identifier or event.ip_address == identifier)
+        )
 
         return count
 
@@ -277,6 +269,25 @@ class SecurityAuditLogger:
 
         asyncio.create_task(periodic_flush())
 
+    def _event_matches_filters(
+        self,
+        event: SecurityEvent,
+        user_id: Optional[str],
+        event_type: Optional[SecurityEventType],
+        start_time: Optional[datetime],
+        end_time: Optional[datetime],
+    ) -> bool:
+        """Checks if an event matches the given filters."""
+        if user_id and event.user_id != user_id:
+            return False
+        if event_type and event.event_type != event_type:
+            return False
+        if start_time and event.timestamp < start_time:
+            return False
+        if end_time and event.timestamp > end_time:
+            return False
+        return True
+
     async def get_events(
         self,
         user_id: Optional[str] = None,
@@ -286,27 +297,22 @@ class SecurityAuditLogger:
         limit: int = 1000,
     ) -> List[SecurityEvent]:
         """Get filtered events"""
-
-        filtered_events = []
         all_events = self.events + self.event_buffer
 
-        for event in all_events:
-            # Apply filters
-            if user_id and event.user_id != user_id:
-                continue
-            if event_type and event.event_type != event_type:
-                continue
-            if start_time and event.timestamp < start_time:
-                continue
-            if end_time and event.timestamp > end_time:
-                continue
+        filtered_events = (
+            event
+            for event in all_events
+            if self._event_matches_filters(
+                event, user_id, event_type, start_time, end_time
+            )
+        )
 
-            filtered_events.append(event)
+        # Take the limit after filtering
+        limited_events = [
+            next(filtered_events) for _ in range(limit) if filtered_events
+        ]
 
-            if len(filtered_events) >= limit:
-                break
-
-        return sorted(filtered_events, key=lambda e: e.timestamp, reverse=True)
+        return sorted(limited_events, key=lambda e: e.timestamp, reverse=True)
 
     async def get_security_summary(self, hours: int = 24) -> Dict[str, Any]:
         """Get security summary for specified hours"""
@@ -323,7 +329,8 @@ class SecurityAuditLogger:
             threat_level = event.threat_level.value
 
             event_counts[event_type] = event_counts.get(event_type, 0) + 1
-            threat_counts[threat_level] = threat_counts.get(threat_level, 0) + 1
+            threat_counts[threat_level] = threat_counts.get(
+                threat_level, 0) + 1
 
         return {
             "period_hours": hours,

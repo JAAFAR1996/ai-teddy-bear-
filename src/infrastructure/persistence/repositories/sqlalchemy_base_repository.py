@@ -8,7 +8,7 @@ import logging
 from abc import ABC
 from contextlib import contextmanager
 from datetime import datetime
-from typing import (Any, Dict, List, Optional, Type, TypeVar)
+from typing import Any, Dict, List, Optional, Type, TypeVar, Callable
 import re
 
 from sqlalchemy import and_, asc, desc, func, text
@@ -16,10 +16,13 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.query import Query
 
-from src.infrastructure.persistence.base import (BaseRepository,
-                                                 BulkOperationResult,
-                                                 QueryOptions, SearchCriteria,
-                                                 SortOrder)
+from src.infrastructure.persistence.base import (
+    BaseRepository,
+    BulkOperationResult,
+    QueryOptions,
+    SearchCriteria,
+    SortOrder,
+)
 
 T = TypeVar("T")  # Entity type
 ID = TypeVar("ID")  # ID type
@@ -111,6 +114,55 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         finally:
             session.close()
 
+    def _apply_search_criteria(
+        self, query: Query, criteria: List[SearchCriteria]
+    ) -> Query:
+        """Applies search criteria to the query."""
+        if criteria:
+            conditions = [
+                self._build_condition(c)
+                for c in criteria
+                if self._build_condition(c) is not None
+            ]
+            if conditions:
+                query = query.filter(and_(*conditions))
+        return query
+
+    def _apply_filters(self, query: Query, filters: Dict[str, Any]) -> Query:
+        """Applies simple equality filters to the query."""
+        if filters:
+            for field, value in filters.items():
+                if hasattr(self.model_class, field):
+                    query = query.filter(
+                        getattr(
+                            self.model_class,
+                            field) == value)
+        return query
+
+    def _apply_sorting(
+        self, query: Query, sort_by: str, sort_order: SortOrder
+    ) -> Query:
+        """Applies sorting to the query."""
+        if sort_by:
+            sort_column = getattr(self.model_class, sort_by, None)
+            if sort_column:
+                query = query.order_by(
+                    desc(sort_column)
+                    if sort_order == SortOrder.DESC
+                    else asc(sort_column)
+                )
+        return query
+
+    def _apply_pagination(
+        self, query: Query, offset: Optional[int], limit: Optional[int]
+    ) -> Query:
+        """Applies pagination to the query."""
+        if offset:
+            query = query.offset(offset)
+        if limit:
+            query = query.limit(limit)
+        return query
+
     def _build_query(
         self,
         session: Session,
@@ -119,53 +171,48 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
     ) -> Query:
         """
         Build SQLAlchemy query with filters, sorting, and pagination
-
-        Args:
-            session: Database session
-            criteria: Search criteria list
-            options: Query options (sorting, pagination, etc.)
-
-        Returns:
-            Configured SQLAlchemy query
         """
         query = session.query(self.model_class)
         self._query_count += 1
 
-        # Apply search criteria
         if criteria:
-            conditions = []
-            for criterion in criteria:
-                condition = self._build_condition(criterion)
-                if condition is not None:
-                    conditions.append(condition)
+            query = self._apply_search_criteria(query, criteria)
 
-            if conditions:
-                query = query.filter(and_(*conditions))
-
-        # Apply additional filters from options
-        if options and options.filters:
-            for field, value in options.filters.items():
-                if hasattr(self.model_class, field):
-                    query = query.filter(
-                        getattr(self.model_class, field) == value)
-
-        # Apply sorting
-        if options and options.sort_by:
-            sort_column = getattr(self.model_class, options.sort_by, None)
-            if sort_column is not None:
-                if options.sort_order == SortOrder.DESC:
-                    query = query.order_by(desc(sort_column))
-                else:
-                    query = query.order_by(asc(sort_column))
-
-        # Apply pagination
         if options:
-            if options.offset:
-                query = query.offset(options.offset)
-            if options.limit:
-                query = query.limit(options.limit)
+            query = self._apply_filters(query, options.filters)
+            query = self._apply_sorting(
+                query, options.sort_by, options.sort_order)
+            query = self._apply_pagination(
+                query, options.offset, options.limit)
 
         return query
+
+    def _get_operator_handler(self, operator: str) -> Optional[Callable]:
+        """Returns the handler function for a given operator."""
+        op_map = {
+            "eq": lambda f, v: f == v,
+            "ne": lambda f, v: f != v,
+            "gt": lambda f, v: f > v,
+            "gte": lambda f, v: f >= v,
+            "lt": lambda f, v: f < v,
+            "lte": lambda f, v: f <= v,
+            "like": lambda f, v: f.like(f"%{v}%"),
+            "ilike": lambda f, v: f.ilike(f"%{v}%"),
+            "in": lambda f, v: f.in_(v) if isinstance(v, (list, tuple)) else f == v,
+            "not_in": lambda f, v: (
+                ~f.in_(v) if isinstance(v, (list, tuple)) else f != v
+            ),
+            "is_null": lambda f, v: f.is_(None),
+            "is_not_null": lambda f, v: f.isnot(None),
+            "between": lambda f, v: (
+                f.between(v[0], v[1])
+                if isinstance(v, (list, tuple)) and len(v) == 2
+                else None
+            ),
+            "starts_with": lambda f, v: f.like(f"{v}%"),
+            "ends_with": lambda f, v: f.like(f"%{v}"),
+        }
+        return op_map.get(operator)
 
     def _build_condition(self, criterion) -> None:
         """Build SQLAlchemy condition from search criteria"""
@@ -179,46 +226,13 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         value = criterion.value
         operator = criterion.operator.lower()
 
-        if operator == "eq":
-            return field_attr == value
-        elif operator == "ne":
-            return field_attr != value
-        elif operator == "gt":
-            return field_attr > value
-        elif operator == "gte":
-            return field_attr >= value
-        elif operator == "lt":
-            return field_attr < value
-        elif operator == "lte":
-            return field_attr <= value
-        elif operator == "like":
-            return field_attr.like(f"%{value}%")
-        elif operator == "ilike":
-            return field_attr.ilike(f"%{value}%")
-        elif operator == "in":
-            if isinstance(value, (list, tuple)):
-                return field_attr.in_(value)
-            else:
-                return field_attr == value
-        elif operator == "not_in":
-            if isinstance(value, (list, tuple)):
-                return ~field_attr.in_(value)
-            else:
-                return field_attr != value
-        elif operator == "is_null":
-            return field_attr.is_(None)
-        elif operator == "is_not_null":
-            return field_attr.isnot(None)
-        elif operator == "between":
-            if isinstance(value, (list, tuple)) and len(value) == 2:
-                return field_attr.between(value[0], value[1])
-        elif operator == "starts_with":
-            return field_attr.like(f"{value}%")
-        elif operator == "ends_with":
-            return field_attr.like(f"%{value}")
-        else:
-            logger.warning(f"Unsupported operator: {operator}")
-            return None
+        handler = self._get_operator_handler(operator)
+
+        if handler:
+            return handler(field_attr, value)
+
+        logger.warning(f"Unsupported operator: {operator}")
+        return None
 
     def _validate_entity(self, entity: T) -> None:
         """
@@ -338,6 +352,25 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             logger.error(f"Database error during get_by_id: {e}")
             raise RepositoryError(f"Failed to retrieve entity: {e}") from e
 
+    def _get_existing_entity(
+            self,
+            session: Session,
+            entity_id: ID) -> Optional[T]:
+        """Fetches an existing entity from the database."""
+        return (
+            session.query(self.model_class)
+            .filter(self.model_class.id == entity_id)
+            .first()
+        )
+
+    def _update_entity_fields(self, existing_entity: T, new_entity: T):
+        """Updates the fields of an existing entity with new values."""
+        for key, value in new_entity.__dict__.items():
+            if not key.startswith("_") and hasattr(existing_entity, key):
+                setattr(existing_entity, key, value)
+        if hasattr(existing_entity, "updated_at"):
+            existing_entity.updated_at = datetime.utcnow()
+
     async def update(self, entity: T) -> T:
         """
         Update existing entity
@@ -353,42 +386,25 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             ValidationError: If entity is invalid
         """
         self._validate_entity(entity)
-
         if not hasattr(entity, "id") or not entity.id:
             raise ValidationError("Entity must have an ID for update")
 
         try:
             with self.get_session() as session:
-                # Check if entity exists
-                existing = (
-                    session.query(self.model_class)
-                    .filter(self.model_class.id == entity.id)
-                    .first()
-                )
-
+                existing = self._get_existing_entity(session, entity.id)
                 if not existing:
                     raise EntityNotFoundError(
                         f"Entity with ID {entity.id} not found")
 
-                # Update fields
-                for key, value in entity.__dict__.items():
-                    if not key.startswith("_") and hasattr(existing, key):
-                        setattr(existing, key, value)
-
-                # Update timestamp if available
-                if hasattr(existing, "updated_at"):
-                    existing.updated_at = datetime.utcnow()
+                self._update_entity_fields(existing, entity)
 
                 session.flush()
-
-                # Update cache
                 self._cache_put(str(entity.id), existing)
 
                 logger.info(
                     f"Updated {self.model_class.__name__}",
                     extra={"entity_id": entity.id},
                 )
-
                 return existing
 
         except SQLAlchemyError as e:
@@ -463,8 +479,9 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             raise RepositoryError(f"Failed to list entities: {e}") from e
 
     async def search(
-        self, criteria: List[SearchCriteria], options: Optional[QueryOptions] = None
-    ) -> List[T]:
+            self,
+            criteria: List[SearchCriteria],
+            options: Optional[QueryOptions] = None) -> List[T]:
         """
         Search entities with advanced criteria
 
@@ -487,7 +504,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             logger.error(f"Database error during search: {e}")
             raise RepositoryError(f"Failed to search entities: {e}") from e
 
-    async def count(self, criteria: Optional[List[SearchCriteria]] = None) -> int:
+    async def count(self,
+                    criteria: Optional[List[SearchCriteria]] = None) -> int:
         """
         Count entities matching criteria
 
@@ -553,7 +571,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             Bulk operation result with success/failure counts
         """
         if not entities:
-            return BulkOperationResult(success_count=0, failed_count=0, failed_ids=[])
+            return BulkOperationResult(
+                success_count=0, failed_count=0, failed_ids=[])
 
         success_count = 0
         failed_count = 0
@@ -593,6 +612,19 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             failed_ids=failed_ids,
         )
 
+    def _update_one_in_bulk(self, session: Session, entity: T) -> bool:
+        """Updates a single entity within a bulk operation."""
+        if not hasattr(entity, "id") or not entity.id:
+            raise ValidationError("Entity must have ID for update")
+
+        existing = self._get_existing_entity(session, entity.id)
+        if not existing:
+            return False
+
+        self._update_entity_fields(existing, entity)
+        self._cache_put(str(entity.id), existing)
+        return True
+
     async def bulk_update(self, entities: List[T]) -> BulkOperationResult:
         """
         Update multiple entities
@@ -604,44 +636,25 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             Bulk operation result
         """
         if not entities:
-            return BulkOperationResult(success_count=0, failed_count=0, failed_ids=[])
+            return BulkOperationResult(
+                success_count=0, failed_count=0, failed_ids=[])
 
         success_count = 0
-        failed_count = 0
         failed_ids = []
 
         try:
             with self.get_session() as session:
                 for entity in entities:
                     try:
-                        if not hasattr(entity, "id") or not entity.id:
-                            raise ValidationError(
-                                "Entity must have ID for update")
-
-                        existing = (
-                            session.query(self.model_class)
-                            .filter(self.model_class.id == entity.id)
-                            .first()
-                        )
-
-                        if existing:
-                            # Update fields
-                            for key, value in entity.__dict__.items():
-                                if not key.startswith("_") and hasattr(existing, key):
-                                    setattr(existing, key, value)
-
+                        if self._update_one_in_bulk(session, entity):
                             success_count += 1
-                            self._cache_put(str(entity.id), existing)
                         else:
-                            failed_count += 1
-                            failed_ids.append(str(entity.id))
-
+                            failed_ids.append(
+                                str(getattr(entity, "id", "unknown")))
                     except Exception as e:
-                        failed_count += 1
-                        entity_id = getattr(entity, "id", "unknown")
-                        failed_ids.append(str(entity_id))
-                        logger.warning(
-                            f"Failed to update entity {entity_id}: {e}")
+                        failed_ids.append(
+                            str(getattr(entity, "id", "unknown")))
+                        logger.warning(f"Failed to update entity in bulk: {e}")
 
                 session.flush()
 
@@ -651,7 +664,7 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
 
         return BulkOperationResult(
             success_count=success_count,
-            failed_count=failed_count,
+            failed_count=len(failed_ids),
             failed_ids=failed_ids,
         )
 
@@ -666,7 +679,8 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
             Bulk operation result
         """
         if not entity_ids:
-            return BulkOperationResult(success_count=0, failed_count=0, failed_ids=[])
+            return BulkOperationResult(
+                success_count=0, failed_count=0, failed_ids=[])
 
         success_count = 0
         failed_count = 0
@@ -792,8 +806,10 @@ class SQLAlchemyBaseRepository(BaseRepository[T, ID], ABC):
         # Prevent dangerous patterns
         if "'" in query or '"' in query or ";" in query:
             raise ValueError(
-                "Potentially unsafe SQL detected. Only parameterized queries allowed.")
-        # Optionally: parse and validate table/column names in query if possible
+                "Potentially unsafe SQL detected. Only parameterized queries allowed."
+            )
+        # Optionally: parse and validate table/column names in query if
+        # possible
         try:
             with self.get_session() as session:
                 result = session.execute(text(query), params or {})

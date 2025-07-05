@@ -117,7 +117,7 @@ python-dateutil==2.8.2            # Date utilities
 pytz==2023.3                      # Timezone handling
 requests==2.31.0                  # HTTP library
 pyyaml==6.0.1                     # YAML processing
-jinja2>=3.1.2                     # Template engine
+jinja2>=3.0                       # Template engine
 
 # ================== SYSTEM & MONITORING ==================
 psutil>=5.9.0                     # System monitoring

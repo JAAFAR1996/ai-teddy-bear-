@@ -1,14 +1,14 @@
+import sys
+from typing import Any
 import logging
 
 logger = logging.getLogger(__name__)
 
-from typing import Any
 
 """
 Test Backward Compatibility for modern_ui.py
 هذا الملف يختبر أن كل الاستيرادات القديمة لا تزال تعمل
 """
-import sys
 
 
 def test_import(import_statement, expected_name) -> Any:
@@ -70,11 +70,11 @@ def test_backward_compatibility() -> Any:
             failed_imports.append(import_stmt)
     logger.info("\n⚙️ Testing Functionality:")
     try:
-        from modern_ui import (check_feature_compatibility,
-                               get_available_features)
+        from modern_ui import check_feature_compatibility, get_available_features
 
         features = get_available_features()
-        logger.info(f"✅ get_available_features() returned {len(features)} features")
+        logger.info(
+            f"✅ get_available_features() returned {len(features)} features")
         audio_available = check_feature_compatibility("audio_processing")
         logger.info(
             f"✅ check_feature_compatibility('audio_processing') = {audio_available}"
@@ -86,8 +86,14 @@ def test_backward_compatibility() -> Any:
         total_tests += 2
     logger.info("\n🔄 Testing Aliases Functionality:")
     try:
-        from modern_ui import (AudioEngine, AudioProcessingEngine, AudioWidget,
-                               MainWindow, ModernAudioWidget, TeddyMainWindow)
+        from modern_ui import (
+            AudioEngine,
+            AudioProcessingEngine,
+            AudioWidget,
+            MainWindow,
+            ModernAudioWidget,
+            TeddyMainWindow,
+        )
 
         assert AudioWidget is ModernAudioWidget, "AudioWidget alias incorrect"
         assert AudioEngine is AudioProcessingEngine, "AudioEngine alias incorrect"

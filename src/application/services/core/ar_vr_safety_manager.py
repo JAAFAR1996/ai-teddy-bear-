@@ -34,9 +34,9 @@ class ARVRSafetyManager:
         if child_age < 6:
             return {
                 "appropriate": False,
-                "reason": "الواقع الافتراضي غير مناسب للأطفال تحت 6 سنوات"
+                "reason": "الواقع الافتراضي غير مناسب للأطفال تحت 6 سنوات",
             }
-        
+
         return {"appropriate": True, "reason": "العمر مناسب"}
 
     def get_vr_safety_guidelines(self, child_age: int) -> List[str]:
@@ -50,11 +50,8 @@ class ARVRSafetyManager:
         ]
 
         if child_age < 8:
-            guidelines.extend([
-                "استخدم أقل إعدادات الحركة",
-                "راحة كل 3 دقائق",
-                "مدة قصوى 10 دقائق"
-            ])
+            guidelines.extend(["استخدم أقل إعدادات الحركة",
+                               "راحة كل 3 دقائق", "مدة قصوى 10 دقائق"])
 
         return guidelines
 
@@ -80,11 +77,14 @@ class ARVRSafetyManager:
         if not sessions:
             return safety_assessment
 
-        total_duration = sum(s.get("actual_duration_minutes", 0) for s in sessions)
-        safety_assessment["average_session_duration"] = total_duration / len(sessions)
+        total_duration = sum(s.get("actual_duration_minutes", 0)
+                             for s in sessions)
+        safety_assessment["average_session_duration"] = total_duration / \
+            len(sessions)
 
         comfort_issues = sum(
-            1 for s in sessions
+            1
+            for s in sessions
             if s.get("performance_summary", {}).get("comfort_level") == "low"
         )
         technical_issues = sum(
@@ -96,14 +96,17 @@ class ARVRSafetyManager:
         safety_assessment["technical_issues_count"] = technical_issues
 
         # تقييم النتيجة
-        if comfort_issues > len(sessions) * 0.3 or technical_issues > len(sessions) * 2:
+        if comfort_issues > len(sessions) * \
+                0.3 or technical_issues > len(sessions) * 2:
             safety_assessment["safety_score"] = "needs_improvement"
         elif comfort_issues > 0 or technical_issues > 0:
             safety_assessment["safety_score"] = "good"
 
         return safety_assessment
 
-    def validate_session_duration(self, session_type: str, duration: int, child_age: int) -> Dict:
+    def validate_session_duration(
+        self, session_type: str, duration: int, child_age: int
+    ) -> Dict:
         """التحقق من مدة الجلسة المناسبة"""
         max_duration = 15  # افتراضي
 
@@ -118,22 +121,26 @@ class ARVRSafetyManager:
         return {
             "valid": duration <= max_duration,
             "max_recommended": max_duration,
-            "warning": f"المدة الموصى بها لا تتجاوز {max_duration} دقيقة" if duration > max_duration else None
+            "warning": (
+                f"المدة الموصى بها لا تتجاوز {max_duration} دقيقة"
+                if duration > max_duration
+                else None
+            ),
         }
 
     def generate_safety_alerts(self, session: Dict) -> List[str]:
         """توليد تنبيهات الأمان"""
         alerts = []
-        
+
         performance = session.get("performance_summary", {})
-        
+
         if performance.get("comfort_level") == "low":
             alerts.append("مستوى راحة منخفض - قلل مدة الجلسات القادمة")
-        
+
         if performance.get("technical_issues", 0) > 2:
             alerts.append("مشاكل تقنية متكررة - تحقق من البيئة والمعدات")
-            
+
         if session.get("actual_duration_minutes", 0) > 20:
             alerts.append("جلسة طويلة - احرص على الراحة المنتظمة")
-            
-        return alerts 
+
+        return alerts

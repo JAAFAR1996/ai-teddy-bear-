@@ -16,7 +16,7 @@ import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable
 
 import numpy as np
 
@@ -52,12 +52,13 @@ except ImportError:
 
 # Integration with existing services
 try:
-    from ...application.services.audio.transcription_service import \
-        ModernTranscriptionService
-    from ...application.services.voice_interaction_service import \
-        VoiceInteractionService
-    from ...domain.services.advanced_emotion_analyzer import \
-        AdvancedEmotionAnalyzer
+    from ...application.services.audio.transcription_service import (
+        ModernTranscriptionService,
+    )
+    from ...application.services.voice_interaction_service import (
+        VoiceInteractionService,
+    )
+    from ...domain.services.advanced_emotion_analyzer import AdvancedEmotionAnalyzer
 
     CORE_SERVICES_AVAILABLE = True
 except ImportError:
@@ -325,16 +326,18 @@ if RAY_AVAILABLE:
                     "processing_time_ms": (time.time() - start_time) * 1000,
                 }
 
-        async def _transcribe_with_whisper(self, audio_data: bytes) -> Dict[str, Any]:
+        async def _transcribe_with_whisper(
+                self, audio_data: bytes) -> Dict[str, Any]:
             """Transcribe using Whisper model."""
             try:
                 # Convert bytes to audio array
                 if AUDIO_PROCESSING_AVAILABLE:
                     audio_array = (
-                        np.frombuffer(audio_data, dtype=np.int16).astype(
-                            np.float32)
-                        / 32768.0
-                    )
+                        np.frombuffer(
+                            audio_data,
+                            dtype=np.int16).astype(
+                            np.float32) /
+                        32768.0)
 
                     # Transcribe with Whisper
                     result = self.whisper_model.transcribe(audio_array)
@@ -411,10 +414,11 @@ if RAY_AVAILABLE:
                 audio_array = None
                 if AUDIO_PROCESSING_AVAILABLE and audio_data:
                     audio_array = (
-                        np.frombuffer(audio_data, dtype=np.int16).astype(
-                            np.float32)
-                        / 32768.0
-                    )
+                        np.frombuffer(
+                            audio_data,
+                            dtype=np.int16).astype(
+                            np.float32) /
+                        32768.0)
 
                 # Use advanced emotion analyzer
                 result = await self.emotion_analyzer.analyze_comprehensive(
@@ -436,8 +440,12 @@ if RAY_AVAILABLE:
     @serve.deployment(
         name="safety-service",
         num_replicas=3,
-        ray_actor_options={"num_cpus": 0.5,
-                           "memory": 500 * 1024 * 1024},  # 500MB
+        ray_actor_options={
+            "num_cpus": 0.5,
+            "memory": 500 *
+            1024 *
+            1024},
+        # 500MB
     )
     class SafetyCheckService:
         """Distributed safety checking service."""
@@ -476,15 +484,10 @@ if RAY_AVAILABLE:
                 self.service_stats["total_time"] += processing_time
 
                 return {
-                    "is_safe": is_safe,
-                    "risk_level": risk_level,
-                    "confidence": min(
+                    "is_safe": is_safe, "risk_level": risk_level, "confidence": min(
                         text_result["confidence"], audio_result.get(
-                            "confidence", 1.0)
-                    ),
-                    "detected_issues": text_result.get("issues", []),
-                    "processing_time_ms": processing_time,
-                }
+                            "confidence", 1.0)), "detected_issues": text_result.get(
+                        "issues", []), "processing_time_ms": processing_time, }
 
             except Exception as e:
                 logger.error(f"❌ Safety check failed: {e}")
@@ -612,9 +615,9 @@ if RAY_AVAILABLE:
             age_appropriate = "very simple" if child_context.age < 6 else "simple"
 
             system_prompt = f"""
-            You are Teddy, a friendly AI teddy bear talking to {child_context.name}, 
-            a {child_context.age}-year-old child. Respond in {child_context.language} 
-            with {age_appropriate} language. The child seems {emotion}. 
+            You are Teddy, a friendly AI teddy bear talking to {child_context.name},
+            a {child_context.age}-year-old child. Respond in {child_context.language}
+            with {age_appropriate} language. The child seems {emotion}.
             Be caring, educational, and age-appropriate.
             """
 
@@ -700,7 +703,8 @@ class DistributedAIProcessor:
                 f"❌ Failed to initialize Distributed AI Processor: {e}")
             raise
 
-    async def _initialize_ray_services(self, config: Optional[Dict[str, Any]] = None):
+    async def _initialize_ray_services(
+            self, config: Optional[Dict[str, Any]] = None):
         """Initialize Ray Serve services."""
         try:
             # Initialize Ray if not already done
@@ -726,7 +730,8 @@ class DistributedAIProcessor:
             self.logger.error(f"❌ Ray services initialization failed: {e}")
             await self._initialize_local_services(config)
 
-    async def _initialize_local_services(self, config: Optional[Dict[str, Any]] = None):
+    async def _initialize_local_services(
+            self, config: Optional[Dict[str, Any]] = None):
         """Initialize local mock services for testing."""
         self.services = {
             AIServiceType.TRANSCRIPTION: MockAIServices,
@@ -738,92 +743,94 @@ class DistributedAIProcessor:
 
         self.logger.info("✅ Local mock services initialized")
 
+    async def _handle_safety_check(
+        self, safety_result: Dict, request_id: str, start_time: float
+    ) -> Optional[ConversationResponse]:
+        """Handles the safety check result, returning a response if unsafe."""
+        if not safety_result.get("is_safe", True):
+            return ConversationResponse(
+                request_id=request_id,
+                success=False,
+                error_message="Content flagged as unsafe",
+                safety_status="unsafe",
+                processing_time_ms=(time.time() - start_time) * 1000,
+            )
+        return None
+
+    def _create_final_response(
+        self, request_id: str, results: Dict, start_time: float
+    ) -> ConversationResponse:
+        """Creates the final ConversationResponse object."""
+        total_time = (time.time() - start_time) * 1000
+        response = ConversationResponse(
+            request_id=request_id,
+            success=True,
+            audio=results["tts"].get("audio_data"),
+            transcription=results["transcription"].get("text", ""),
+            ai_text=results["ai_response"].get("response_text", ""),
+            emotion=results["emotion"].get("primary_emotion", "neutral"),
+            safety_status="safe",
+            confidence=min(
+                results["transcription"].get("confidence", 0.0),
+                results["ai_response"].get("confidence", 0.0),
+            ),
+            processing_time_ms=total_time,
+            processing_source="distributed",
+            service_results=results,
+        )
+        self.metrics.successful_requests += 1
+        self._update_metrics(total_time)
+        self.logger.info(
+            f"✅ Conversation processed successfully in {total_time:.2f}ms"
+        )
+        return response
+
     async def process_conversation(
         self, audio_data: bytes, child_context: ChildContext
     ) -> ConversationResponse:
         """Main conversation processing pipeline with parallel execution."""
         request_id = str(uuid.uuid4())
         start_time = time.time()
-
         try:
             self.logger.info(
                 f"🎙️ Processing conversation request {request_id} for {child_context.name}"
             )
+            self.metrics.total_requests += 1
 
-            # Create conversation request
             request = ConversationRequest(
                 request_id=request_id,
                 audio_data=audio_data,
                 child_context=child_context,
             )
 
-            # Update metrics
-            self.metrics.total_requests += 1
+            transcription_result, emotion_result, safety_result = (
+                await self._run_parallel_preprocessing(request)
+            )
 
-            # Step 1: Parallel preprocessing (transcription, emotion analysis, safety check)
-            preprocessing_tasks = await self._run_parallel_preprocessing(request)
+            if safety_response := self._handle_safety_check(
+                safety_result, request_id, start_time
+            ):
+                return safety_response
 
-            transcription_result, emotion_result, safety_result = preprocessing_tasks
-
-            # Step 2: Safety check validation
-            if not safety_result.get("is_safe", True):
-                return ConversationResponse(
-                    request_id=request_id,
-                    success=False,
-                    error_message="Content flagged as unsafe",
-                    safety_status="unsafe",
-                    processing_time_ms=(time.time() - start_time) * 1000,
-                )
-
-            # Step 3: AI response generation (depends on preprocessing results)
             ai_response_result = await self._generate_ai_response(
                 transcription_result, emotion_result, child_context
             )
-
-            # Step 4: Text-to-speech synthesis
             tts_result = await self._synthesize_speech(
                 ai_response_result, emotion_result, child_context
             )
 
-            # Step 5: Create final response
-            total_time = (time.time() - start_time) * 1000
-
-            response = ConversationResponse(
-                request_id=request_id,
-                success=True,
-                audio=tts_result.get("audio_data"),
-                transcription=transcription_result.get("text", ""),
-                ai_text=ai_response_result.get("response_text", ""),
-                emotion=emotion_result.get("primary_emotion", "neutral"),
-                safety_status="safe",
-                confidence=min(
-                    transcription_result.get("confidence", 0.0),
-                    ai_response_result.get("confidence", 0.0),
-                ),
-                processing_time_ms=total_time,
-                processing_source="distributed",
-                service_results={
-                    "transcription": transcription_result,
-                    "emotion": emotion_result,
-                    "safety": safety_result,
-                    "ai_response": ai_response_result,
-                    "tts": tts_result,
-                },
-            )
-
-            # Update metrics
-            self.metrics.successful_requests += 1
-            self._update_metrics(total_time)
-
-            self.logger.info(
-                f"✅ Conversation processed successfully in {total_time:.2f}ms"
-            )
-            return response
+            results = {
+                "transcription": transcription_result,
+                "emotion": emotion_result,
+                "safety": safety_result,
+                "ai_response": ai_response_result,
+                "tts": tts_result,
+            }
+            return self._create_final_response(request_id, results, start_time)
 
         except Exception as e:
             self.logger.error(f"❌ Conversation processing failed: {e}")
             self.metrics.failed_requests += 1
-
             return ConversationResponse(
                 request_id=request_id,
                 success=False,
@@ -831,13 +838,15 @@ class DistributedAIProcessor:
                 processing_time_ms=(time.time() - start_time) * 1000,
             )
 
-    async def _run_parallel_preprocessing(self, request: ConversationRequest) -> tuple:
+    async def _run_parallel_preprocessing(
+            self, request: ConversationRequest) -> tuple:
         """Run preprocessing tasks in parallel."""
         # Create parallel tasks
         tasks = [
             self._call_service(
-                AIServiceType.TRANSCRIPTION, "transcribe", request.audio_data
-            ),
+                AIServiceType.TRANSCRIPTION,
+                "transcribe",
+                request.audio_data),
             self._call_service(
                 AIServiceType.EMOTION_ANALYSIS,
                 "analyze_emotion",
@@ -845,8 +854,10 @@ class DistributedAIProcessor:
                 "",
             ),
             self._call_service(
-                AIServiceType.SAFETY_CHECK, "check_safety", "", request.audio_data
-            ),
+                AIServiceType.SAFETY_CHECK,
+                "check_safety",
+                "",
+                request.audio_data),
         ]
 
         # Execute in parallel
@@ -892,37 +903,38 @@ class DistributedAIProcessor:
             AIServiceType.TTS_SYNTHESIS, "synthesize", text, emotion, voice_profile
         )
 
+    def _get_service_callables(
+        self, service: Any, ray_initialized: bool
+    ) -> Dict[str, Callable]:
+        """Returns a dictionary of callable methods for a given service."""
+        if ray_initialized:
+            return {
+                AIServiceType.TRANSCRIPTION: service.transcribe.remote,
+                AIServiceType.EMOTION_ANALYSIS: service.analyze_emotion.remote,
+                AIServiceType.SAFETY_CHECK: service.check_safety.remote,
+                AIServiceType.AI_RESPONSE: service.generate_response.remote,
+                AIServiceType.TTS_SYNTHESIS: service.synthesize.remote,
+            }
+        else:
+            return {
+                AIServiceType.TRANSCRIPTION: service.transcribe_audio,
+                AIServiceType.EMOTION_ANALYSIS: service.analyze_emotion,
+                AIServiceType.SAFETY_CHECK: service.check_safety,
+                AIServiceType.AI_RESPONSE: service.generate_ai_response,
+                AIServiceType.TTS_SYNTHESIS: service.synthesize_speech,
+            }
+
     async def _call_service(
         self, service_type: AIServiceType, method: str, *args
     ) -> Dict[str, Any]:
         """Call a distributed service with error handling."""
         try:
             service = self.services[service_type]
+            service_map = self._get_service_callables(
+                service, self.ray_initialized)
 
-            if self.ray_initialized:
-                # Call Ray Serve service
-                if service_type == AIServiceType.TRANSCRIPTION:
-                    return await service.transcribe.remote(*args)
-                elif service_type == AIServiceType.EMOTION_ANALYSIS:
-                    return await service.analyze_emotion.remote(*args)
-                elif service_type == AIServiceType.SAFETY_CHECK:
-                    return await service.check_safety.remote(*args)
-                elif service_type == AIServiceType.AI_RESPONSE:
-                    return await service.generate_response.remote(*args)
-                elif service_type == AIServiceType.TTS_SYNTHESIS:
-                    return await service.synthesize.remote(*args)
-            else:
-                # Call local mock service
-                if service_type == AIServiceType.TRANSCRIPTION:
-                    return await service.transcribe_audio(*args)
-                elif service_type == AIServiceType.EMOTION_ANALYSIS:
-                    return await service.analyze_emotion(*args)
-                elif service_type == AIServiceType.SAFETY_CHECK:
-                    return await service.check_safety(*args)
-                elif service_type == AIServiceType.AI_RESPONSE:
-                    return await service.generate_ai_response(*args)
-                elif service_type == AIServiceType.TTS_SYNTHESIS:
-                    return await service.synthesize_speech(*args)
+            if service_callable := service_map.get(service_type):
+                return await service_callable(*args)
 
             return {}
 
@@ -942,8 +954,8 @@ class DistributedAIProcessor:
             self.metrics.average_processing_time_ms = new_avg
 
         # Update throughput
-        time_since_start = (
-            datetime.now() - self.metrics.last_updated).total_seconds()
+        time_since_start = (datetime.now() -
+                            self.metrics.last_updated).total_seconds()
         if time_since_start > 0:
             self.metrics.throughput_per_second = (
                 self.metrics.total_requests / time_since_start
@@ -980,7 +992,8 @@ class DistributedAIProcessor:
 
     async def process_batch_conversations(
         # List of (audio_data, child_context) tuples
-        self, requests: List[tuple]
+        self,
+        requests: List[tuple],
     ) -> List[ConversationResponse]:
         """Process multiple conversations in parallel."""
         self.logger.info(

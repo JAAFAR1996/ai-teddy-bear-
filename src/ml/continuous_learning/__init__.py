@@ -39,25 +39,48 @@ Usage:
     await learning_system.start_continuous_learning()
 """
 
-from .continuous_learning import (ContinuousLearningSystem, LearningInsight,
-                                  LearningMetrics, LearningStrategy,
-                                  ModelPerformanceThreshold, ModelVersion)
+from .continuous_learning import (
+    ContinuousLearningSystem,
+    LearningInsight,
+    LearningMetrics,
+    LearningStrategy,
+    ModelPerformanceThreshold,
+    ModelVersion,
+)
 from .continuous_learning_demo import ContinuousLearningDemo
-from .deployment.deployment_manager import (DeploymentConfig,
-                                            DeploymentManager,
-                                            DeploymentResult, DeploymentStatus,
-                                            DeploymentStrategy)
-from .evaluation.model_evaluator import (EvaluationMetric,
-                                         ModelEvaluationResult, ModelEvaluator,
-                                         PerformanceTrend)
-from .feedback.feedback_collector import (FeedbackCollector, FeedbackData,
-                                          FeedbackType, InteractionFeedback)
-from .monitoring.performance_monitor import (AlertSeverity, MetricSnapshot,
-                                             MetricType, PerformanceAlert,
-                                             PerformanceMonitor)
-from .training.training_pipeline import (ModelType, TrainingConfig,
-                                         TrainingPipeline, TrainingResult,
-                                         TrainingStrategy)
+from .deployment.deployment_manager import (
+    DeploymentConfig,
+    DeploymentManager,
+    DeploymentResult,
+    DeploymentStatus,
+    DeploymentStrategy,
+)
+from .evaluation.model_evaluator import (
+    EvaluationMetric,
+    ModelEvaluationResult,
+    ModelEvaluator,
+    PerformanceTrend,
+)
+from .feedback.feedback_collector import (
+    FeedbackCollector,
+    FeedbackData,
+    FeedbackType,
+    InteractionFeedback,
+)
+from .monitoring.performance_monitor import (
+    AlertSeverity,
+    MetricSnapshot,
+    MetricType,
+    PerformanceAlert,
+    PerformanceMonitor,
+)
+from .training.training_pipeline import (
+    ModelType,
+    TrainingConfig,
+    TrainingPipeline,
+    TrainingResult,
+    TrainingStrategy,
+)
 
 __version__ = "1.0.0"
 __author__ = "AI Teddy Bear ML Team"
@@ -113,9 +136,18 @@ __module_info__ = {
     "coppa_compliant": True,
     "enterprise_ready": True,
     "scalability": "Fortune 500+",
-    "supported_age_groups": ["3-6", "7-9", "10-12"],
-    "supported_languages": ["english", "arabic"],
-    "deployment_strategies": ["canary", "blue_green", "rolling", "a_b_test"],
+    "supported_age_groups": [
+        "3-6",
+        "7-9",
+        "10-12"],
+    "supported_languages": [
+        "english",
+        "arabic"],
+    "deployment_strategies": [
+        "canary",
+        "blue_green",
+        "rolling",
+        "a_b_test"],
     "monitoring_capabilities": [
         "real_time_metrics",
         "anomaly_detection",

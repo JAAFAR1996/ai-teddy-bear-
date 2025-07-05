@@ -9,8 +9,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
-                        String)
+from sqlalchemy import JSON, Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -99,7 +98,9 @@ class ChildProfile(Base):
 
     # Relationships
     parent = relationship("ParentUser", back_populates="children")
-    conversation_logs = relationship("ConversationLogEntry", back_populates="child")
+    conversation_logs = relationship(
+        "ConversationLogEntry",
+        back_populates="child")
 
     def get_age_group(self) -> str:
         """Get age group classification"""
@@ -240,8 +241,8 @@ class ConversationLogEntry(Base):
         """Generate summary if not already present"""
         if not self.summary and self.transcript:
             # Simple summary generation
-            topics_str = ", ".join(self.topics) if self.topics else "various topics"
+            topics_str = ", ".join(
+                self.topics) if self.topics else "various topics"
             self.summary = (
                 f"Conversation lasting {self.get_duration_minutes():.1f} minutes "
-                f"with {self.message_count} messages about {topics_str}"
-            )
+                f"with {self.message_count} messages about {topics_str}")

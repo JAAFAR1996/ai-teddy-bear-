@@ -52,7 +52,8 @@ class ChildRegisteredHandler(EventHandler):
         # Setup safety monitoring
         logger.info(f"Setting up environment for child {name} (age {age})")
 
-    async def _send_welcome_notification(self, child_id: str, name: str) -> None:
+    async def _send_welcome_notification(
+            self, child_id: str, name: str) -> None:
         """Send welcome notification to parents"""
 
         # Send email/SMS to parents
@@ -113,7 +114,8 @@ class SafetyViolationHandler(EventHandler):
         # Block child account temporarily
         # Notify human moderators
         # Alert parents immediately
-        logger.critical(f"IMMEDIATE ESCALATION for child {child_id}: {violation_type}")
+        logger.critical(
+            f"IMMEDIATE ESCALATION for child {child_id}: {violation_type}")
 
     async def _log_safety_incident(
         self, child_id: str, violation_type: str, details: str, severity: str
@@ -123,7 +125,8 @@ class SafetyViolationHandler(EventHandler):
         # Store in audit log
         # Update safety metrics
         # Create incident report
-        logger.info(f"Logged safety incident: {violation_type} (severity: {severity})")
+        logger.info(
+            f"Logged safety incident: {violation_type} (severity: {severity})")
 
     async def _notify_parents(
         self, child_id: str, violation_type: str, details: str, severity: str
@@ -133,9 +136,13 @@ class SafetyViolationHandler(EventHandler):
         # Send immediate notification
         # Update parent dashboard
         # Provide guidance
-        logger.info(f"Notifying parents about safety violation for child {child_id}")
+        logger.info(
+            f"Notifying parents about safety violation for child {child_id}")
 
-    async def _update_safety_profile(self, child_id: str, violation_type: str) -> None:
+    async def _update_safety_profile(
+            self,
+            child_id: str,
+            violation_type: str) -> None:
         """Update child's safety profile"""
 
         # Adjust safety settings
@@ -242,7 +249,8 @@ class EmotionAnalyticsHandler(EventHandler):
             await self._track_emotional_patterns(child_id, emotion, confidence, context)
 
             # Alert if concerning patterns detected
-            if emotion in ["sad", "frustrated", "anxious"] and confidence > 0.7:
+            if emotion in ["sad", "frustrated",
+                           "anxious"] and confidence > 0.7:
                 await self._check_emotional_wellbeing(child_id, emotion, confidence)
 
             logger.info(
@@ -262,7 +270,8 @@ class EmotionAnalyticsHandler(EventHandler):
         # Store emotion data
         # Update emotional baseline
         # Calculate emotional stability metrics
-        logger.info(f"Updating emotional profile for child {child_id}: {emotion}")
+        logger.info(
+            f"Updating emotional profile for child {child_id}: {emotion}")
 
     async def _adapt_voice_settings(
         self, child_id: str, emotion: str, confidence: float
@@ -282,7 +291,8 @@ class EmotionAnalyticsHandler(EventHandler):
         # Store pattern data
         # Update trend analysis
         # Generate insights
-        logger.debug(f"Tracking emotional pattern: {emotion} in context: {context}")
+        logger.debug(
+            f"Tracking emotional pattern: {emotion} in context: {context}")
 
     async def _check_emotional_wellbeing(
         self, child_id: str, emotion: str, confidence: float
@@ -292,7 +302,8 @@ class EmotionAnalyticsHandler(EventHandler):
         # Analyze emotional trends
         # Check if parent notification needed
         # Consider content adjustments
-        logger.info(f"Checking emotional wellbeing for child {child_id}: {emotion}")
+        logger.info(
+            f"Checking emotional wellbeing for child {child_id}: {emotion}")
 
 
 class ParentNotificationHandler(EventHandler):
@@ -321,7 +332,8 @@ class ParentNotificationHandler(EventHandler):
             logger.error(f"Failed to process parent notification: {e}")
             return False
 
-    def _determine_urgency(self, event_type: str, event_data: Dict[str, Any]) -> str:
+    def _determine_urgency(self, event_type: str,
+                           event_data: Dict[str, Any]) -> str:
         """Determine notification urgency"""
 
         if event_type == "child.safety_violation":
@@ -334,7 +346,8 @@ class ParentNotificationHandler(EventHandler):
 
         return "normal"
 
-    async def _send_immediate_notification(self, event_data: Dict[str, Any]) -> None:
+    async def _send_immediate_notification(
+            self, event_data: Dict[str, Any]) -> None:
         """Send immediate notification (SMS, push, call)"""
 
         # Send SMS
@@ -351,7 +364,8 @@ class ParentNotificationHandler(EventHandler):
         # Priority email
         logger.info(f"Sending high priority parent notification: {event_data}")
 
-    async def _queue_normal_notification(self, event_data: Dict[str, Any]) -> None:
+    async def _queue_normal_notification(
+            self, event_data: Dict[str, Any]) -> None:
         """Queue normal notification for digest"""
 
         # Add to daily/weekly digest

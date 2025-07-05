@@ -8,8 +8,14 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from ..shared.base import (AggregateRoot, DomainEvent, DomainException, Entity,
-                           EntityId, ValueObject)
+from ..shared.base import (
+    AggregateRoot,
+    DomainEvent,
+    DomainException,
+    Entity,
+    EntityId,
+    ValueObject,
+)
 
 
 # Entity IDs
@@ -56,8 +62,8 @@ class ChildAgeGroup(Enum):
             return cls.MIDDLE_CHILDHOOD
         else:
             raise DomainException(
-                f"Age {age} is not within supported range (3-12)", "INVALID_AGE_RANGE"
-            )
+                f"Age {age} is not within supported range (3-12)",
+                "INVALID_AGE_RANGE")
 
 
 class InteractionMode(Enum):
@@ -97,7 +103,8 @@ class ChildName(ValueObject):
 
         # Check for inappropriate content in name
         inappropriate_words = ["admin", "system", "test", "null"]
-        if any(word in self.first_name.lower() for word in inappropriate_words):
+        if any(word in self.first_name.lower()
+               for word in inappropriate_words):
             raise DomainException("Invalid name", "INAPPROPRIATE_NAME")
 
     @property
@@ -124,7 +131,9 @@ class ChildPreferences(ValueObject):
             )
 
         if len(self.favorite_topics) > 10:
-            raise DomainException("Too many favorite topics", "TOO_MANY_TOPICS")
+            raise DomainException(
+                "Too many favorite topics",
+                "TOO_MANY_TOPICS")
 
 
 @dataclass(frozen=True)
@@ -157,8 +166,8 @@ class SafetySettings(ValueObject):
 
         if self.max_conversation_minutes < 5 or self.max_conversation_minutes > 120:
             raise DomainException(
-                "Conversation limit must be between 5-120 minutes", "INVALID_TIME_LIMIT"
-            )
+                "Conversation limit must be between 5-120 minutes",
+                "INVALID_TIME_LIMIT")
 
 
 @dataclass(frozen=True)
@@ -172,7 +181,9 @@ class VoiceData(ValueObject):
 
     def validate(self):
         if not self.audio_bytes:
-            raise DomainException("Voice data cannot be empty", "EMPTY_VOICE_DATA")
+            raise DomainException(
+                "Voice data cannot be empty",
+                "EMPTY_VOICE_DATA")
 
         if self.duration_seconds <= 0 or self.duration_seconds > 300:
             raise DomainException("Invalid voice duration", "INVALID_DURATION")
@@ -216,9 +227,9 @@ class VoiceInteraction(Entity[VoiceInteractionId]):
 
         self.add_domain_event(
             ResponseGeneratedEvent(
-                interaction_id=self.id, response=response, safety_score=safety_score
-            )
-        )
+                interaction_id=self.id,
+                response=response,
+                safety_score=safety_score))
 
     def mark_as_inappropriate(self, reason: str):
         """Mark interaction as inappropriate"""
@@ -347,9 +358,10 @@ class Child(AggregateRoot[ChildId]):
         # Raise creation event
         self.raise_event(
             ChildRegisteredEvent(
-                child_id=id, parent_id=parent_id, name=name.display_name, age=age
-            )
-        )
+                child_id=id,
+                parent_id=parent_id,
+                name=name.display_name,
+                age=age))
 
     @property
     def age(self) -> int:
@@ -362,7 +374,9 @@ class Child(AggregateRoot[ChildId]):
             return
 
         if new_age < 3 or new_age > 12:
-            raise DomainException("Age must be between 3 and 12", "INVALID_AGE")
+            raise DomainException(
+                "Age must be between 3 and 12",
+                "INVALID_AGE")
 
         old_age = self._age
         old_group = self.age_group
@@ -410,16 +424,18 @@ class Child(AggregateRoot[ChildId]):
 
         self.raise_event(
             ConversationStartedEvent(
-                child_id=self.id, conversation_id=conversation.id, mode=mode.value
-            )
-        )
+                child_id=self.id,
+                conversation_id=conversation.id,
+                mode=mode.value))
 
         return conversation
 
     def end_active_conversation(self):
         """End the active conversation"""
         if not self.active_conversation:
-            raise DomainException("No active conversation", "NO_ACTIVE_CONVERSATION")
+            raise DomainException(
+                "No active conversation",
+                "NO_ACTIVE_CONVERSATION")
 
         self.active_conversation = None
         self.total_interaction_count += 1
@@ -442,14 +458,18 @@ class Child(AggregateRoot[ChildId]):
         self.safety_settings = new_settings
 
         self.raise_event(
-            SafetySettingsUpdatedEvent(child_id=self.id, new_settings=new_settings)
-        )
+            SafetySettingsUpdatedEvent(
+                child_id=self.id,
+                new_settings=new_settings))
 
     def register_device(self, device_id: str):
         """Register a device for this child"""
         self.device_id = device_id
 
-        self.raise_event(DeviceRegisteredEvent(child_id=self.id, device_id=device_id))
+        self.raise_event(
+            DeviceRegisteredEvent(
+                child_id=self.id,
+                device_id=device_id))
 
 
 # Domain Events
@@ -619,7 +639,8 @@ class SafetySettingsUpdatedEvent(DomainEvent):
 
     def get_event_data(self) -> Dict[str, Any]:
         return {
-            "child_id": str(self.child_id),
+            "child_id": str(
+                self.child_id),
             "content_filter_level": self.new_settings.content_filter_level,
             "max_conversation_minutes": self.new_settings.max_conversation_minutes,
             "blocked_topics": self.new_settings.blocked_topics,

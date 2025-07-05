@@ -10,6 +10,7 @@ from typing import Optional, Dict, Any, List
 
 class ProviderType(Enum):
     """Voice provider types"""
+
     WHISPER = "whisper"
     AZURE = "azure"
     ELEVENLABS = "elevenlabs"
@@ -19,6 +20,7 @@ class ProviderType(Enum):
 
 class ProviderOperation(Enum):
     """Provider operation types"""
+
     TRANSCRIPTION = "transcription"
     SYNTHESIS = "synthesis"
 
@@ -26,6 +28,7 @@ class ProviderOperation(Enum):
 @dataclass
 class ProviderConfig:
     """Configuration for a voice provider"""
+
     provider_type: ProviderType
     is_available: bool
     priority: int
@@ -36,6 +39,7 @@ class ProviderConfig:
 @dataclass
 class TranscriptionRequest:
     """Request data for transcription"""
+
     audio_path: str
     language: str
     cache_key: Optional[str] = None
@@ -44,6 +48,7 @@ class TranscriptionRequest:
 @dataclass
 class SynthesisRequest:
     """Request data for synthesis"""
+
     text: str
     emotion: str
     language: str
@@ -53,6 +58,7 @@ class SynthesisRequest:
 @dataclass
 class ProviderResult:
     """Result from provider operation"""
+
     success: bool
     data: Optional[str]
     provider_name: str
@@ -63,6 +69,7 @@ class ProviderResult:
 @dataclass
 class AudioProcessingConfig:
     """Configuration for audio processing"""
+
     sample_rate: int = 16000
     channels: int = 1
     format: str = "wav"
@@ -72,5 +79,6 @@ class AudioProcessingConfig:
 @dataclass
 class EmotionMapping:
     """Emotion settings for voice synthesis"""
+
     emotion_name: str
-    provider_settings: Dict[ProviderType, Dict[str, Any]] 
+    provider_settings: Dict[ProviderType, Dict[str, Any]]

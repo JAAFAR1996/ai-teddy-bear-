@@ -75,7 +75,7 @@ class Child:
     updated_at: datetime
     profile_picture: Optional[str] = None
     is_active: bool = True
-    
+
     @strawberry.field
     async def safety_settings(self) -> SafetySettings:
         """Get child's safety settings."""
@@ -84,7 +84,7 @@ class Child:
             content_filtering=ContentFilterLevel.MODERATE,
             is_active=True
         )
-    
+
     @strawberry.field
     async def preferences(self) -> ChildPreferences:
         """Get child's preferences."""
@@ -93,7 +93,7 @@ class Child:
             learning_goals=["reading", "math", "creativity"],
             difficulty_level=DifficultyLevel.BEGINNER
         )
-    
+
     @classmethod
     def resolve_reference(strawberry.ID) -> None:
         """Resolve child entity reference."""
@@ -118,7 +118,7 @@ class Conversation:
     message_count: int = 0
     topics: List[str] = strawberry.field(default_factory=list)
     is_active: bool = True
-    
+
     @classmethod
     def resolve_reference(strawberry.ID) -> None:
         """Resolve conversation entity reference."""
@@ -134,7 +134,7 @@ class Conversation:
 
 class ChildServiceResolvers:
     """Resolvers for Child Service."""
-    
+
     @staticmethod
     async def get_child(id: strawberry.ID) -> Optional[Child]:
         """Get child by ID."""
@@ -148,7 +148,7 @@ class ChildServiceResolvers:
             created_at=datetime.now(),
             updated_at=datetime.now()
         )
-    
+
     @staticmethod
     async def get_children(parent_id: strawberry.ID) -> List[Child]:
         """Get all children for a parent."""
@@ -213,7 +213,7 @@ class AIProfile:
     learning_style: LearningStyle
     created_at: datetime
     last_updated: datetime
-    
+
     @strawberry.field
     async def cognitive_level(self) -> int:
         """Get cognitive development level."""
@@ -235,7 +235,7 @@ class LearningProgress:
     current_level: int
     total_xp: int
     achievements_count: int
-    
+
     @strawberry.field
     async def weekly_goals_completed(self) -> int:
         """Get completed weekly goals."""
@@ -247,7 +247,7 @@ class ConversationAnalysis:
     sentiment: float
     engagement: float
     comprehension: float
-    
+
     @strawberry.field
     async def topics_covered(self) -> List[str]:
         """Get topics covered in conversation."""
@@ -258,7 +258,7 @@ class ConversationAnalysis:
 @strawberry.federation.type(extend=True)
 class Child:
     id: strawberry.ID = strawberry.federation.field(external=True)
-    
+
     @strawberry.field
     async def ai_profile(self) -> AIProfile:
         """Get AI profile for child."""
@@ -281,7 +281,7 @@ class Child:
             created_at=datetime.now() - timedelta(days=30),
             last_updated=datetime.now()
         )
-    
+
     @strawberry.field
     async def emotion_history(self) -> List[EmotionSnapshot]:
         """Get recent emotion history."""
@@ -303,7 +303,7 @@ class Child:
                 arousal=0.9
             )
         ]
-    
+
     @strawberry.field
     async def learning_progress(self) -> LearningProgress:
         """Get learning progress."""
@@ -318,7 +318,7 @@ class Child:
 class Conversation:
     id: strawberry.ID = strawberry.federation.field(external=True)
     child_id: strawberry.ID = strawberry.federation.field(external=True)
-    
+
     @strawberry.field
     async def ai_analysis(self) -> ConversationAnalysis:
         """Get AI analysis of conversation."""
@@ -331,7 +331,7 @@ class Conversation:
 
 class AIServiceResolvers:
     """Resolvers for AI Service."""
-    
+
     @staticmethod
     async def get_ai_profile(child_id: strawberry.ID) -> Optional[AIProfile]:
         """Get AI profile for child."""
@@ -359,7 +359,7 @@ class UsageStatistics:
     total_session_time: int  # minutes
     daily_usage: int  # minutes today
     weekly_usage: int  # minutes this week
-    
+
     @strawberry.field
     async def screen_time_health_score(self) -> float:
         """Calculate screen time health score."""
@@ -387,7 +387,7 @@ class PerformanceMetrics:
 @strawberry.federation.type(extend=True)
 class Child:
     id: strawberry.ID = strawberry.federation.field(external=True)
-    
+
     @strawberry.field
     async def usage(self) -> UsageStatistics:
         """Get usage statistics."""
@@ -396,7 +396,7 @@ class Child:
             daily_usage=25,
             weekly_usage=180
         )
-    
+
     @strawberry.field
     async def health_metrics(self) -> HealthMetrics:
         """Get health metrics."""
@@ -412,7 +412,7 @@ class Child:
 @strawberry.federation.type(extend=True)
 class Conversation:
     id: strawberry.ID = strawberry.federation.field(external=True)
-    
+
     @strawberry.field
     async def performance(self) -> PerformanceMetrics:
         """Get conversation performance metrics."""
@@ -427,9 +427,11 @@ class Conversation:
 
 class MonitoringServiceResolvers:
     """Resolvers for Monitoring Service."""
-    
+
     @staticmethod
-    async def get_usage_statistics(child_id: strawberry.ID, period: str) -> UsageStatistics:
+    async def get_usage_statistics(
+            child_id: strawberry.ID,
+            period: str) -> UsageStatistics:
         """Get usage statistics for period."""
         return UsageStatistics(
             total_session_time=120,
@@ -461,7 +463,7 @@ class SafetyProfile:
 class RiskAssessment:
     overall_risk: float
     last_assessed: datetime
-    
+
     @strawberry.field
     async def risk_categories(self) -> List[str]:
         """Get risk categories."""
@@ -479,7 +481,7 @@ class SafetyCheck:
 @strawberry.federation.type(extend=True)
 class Child:
     id: strawberry.ID = strawberry.federation.field(external=True)
-    
+
     @strawberry.field
     async def safety_profile(self) -> SafetyProfile:
         """Get safety profile."""
@@ -488,7 +490,7 @@ class Child:
             safety_score=0.92,
             last_safety_check=datetime.now() - timedelta(hours=1)
         )
-    
+
     @strawberry.field
     async def risk_assessment(self) -> RiskAssessment:
         """Get risk assessment."""
@@ -501,7 +503,7 @@ class Child:
 @strawberry.federation.type(extend=True)
 class Conversation:
     id: strawberry.ID = strawberry.federation.field(external=True)
-    
+
     @strawberry.field
     async def safety_check(self) -> SafetyCheck:
         """Get safety check results."""
@@ -515,7 +517,7 @@ class Conversation:
 
 class SafetyServiceResolvers:
     """Resolvers for Safety Service."""
-    
+
     @staticmethod
     async def get_safety_profile(child_id: strawberry.ID) -> SafetyProfile:
         """Get safety profile for child."""
@@ -532,23 +534,23 @@ class SafetyServiceResolvers:
 
 class EntityResolver:
     """Entity resolver for GraphQL Federation."""
-    
+
     @staticmethod
     def resolve_entities(representations: List[Dict[str, Any]]) -> List[Any]:
         """Resolve entity references in federated queries."""
         entities = []
-        
+
         for representation in representations:
             typename = representation.get("__typename")
             entity_id = representation.get("id")
-            
+
             if typename == "Child":
                 entities.append(Child.resolve_reference(entity_id))
             elif typename == "Conversation":
                 entities.append(Conversation.resolve_reference(entity_id))
             else:
                 entities.append(None)
-        
+
         return entities
 
 
@@ -559,34 +561,34 @@ class EntityResolver:
 @strawberry.type
 class Query:
     """Federated GraphQL Query type."""
-    
+
     # Child Service queries
     @strawberry.field
     async def child(self, id: strawberry.ID) -> Optional[Child]:
         """Get child by ID."""
         return await ChildServiceResolvers.get_child(id)
-    
+
     @strawberry.field
     async def children(self, parent_id: strawberry.ID) -> List[Child]:
         """Get children for parent."""
         return await ChildServiceResolvers.get_children(parent_id)
-    
+
     # AI Service queries
     @strawberry.field
     async def ai_profile(self, child_id: strawberry.ID) -> Optional[AIProfile]:
         """Get AI profile."""
         return await AIServiceResolvers.get_ai_profile(child_id)
-    
+
     # Monitoring Service queries
     @strawberry.field
     async def usage_statistics(
-        self, 
-        child_id: strawberry.ID, 
+        self,
+        child_id: strawberry.ID,
         period: str
     ) -> UsageStatistics:
         """Get usage statistics."""
         return await MonitoringServiceResolvers.get_usage_statistics(child_id, period)
-    
+
     # Safety Service queries
     @strawberry.field
     async def safety_profile(self, child_id: strawberry.ID) -> SafetyProfile:
@@ -597,7 +599,7 @@ class Query:
 @strawberry.type
 class Mutation:
     """Federated GraphQL Mutation type."""
-    
+
     @strawberry.field
     async def update_child_preferences(
         self,
@@ -606,9 +608,10 @@ class Mutation:
     ) -> bool:
         """Update child preferences."""
         # Mock implementation
-        logger.info(f"Updating preferences for child {child_id}: {preferences}")
+        logger.info(
+            f"Updating preferences for child {child_id}: {preferences}")
         return True
-    
+
     @strawberry.field
     async def record_emotion(
         self,
@@ -623,7 +626,7 @@ class Mutation:
             intensity=intensity,
             context="Manual recording"
         )
-    
+
     @strawberry.field
     async def perform_safety_check(
         self,
@@ -644,4 +647,4 @@ if STRAWBERRY_AVAILABLE:
         query=Query,
         mutation=Mutation,
         enable_federation_2=True
-    ) 
+    )

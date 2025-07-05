@@ -10,7 +10,7 @@ from enum import Enum
 
 class ModerationSeverity(Enum):
     SAFE = "safe"
-    LOW = "low" 
+    LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
@@ -30,6 +30,7 @@ class ContentCategory(Enum):
 @dataclass
 class ModerationRequest:
     """Request object for content moderation"""
+
     content: str
     user_id: Optional[str] = None
     session_id: Optional[str] = None
@@ -38,9 +39,10 @@ class ModerationRequest:
     context: Optional[List] = None
 
 
-@dataclass  
+@dataclass
 class ModerationContext:
     """Context settings for moderation request"""
+
     use_cache: bool = True
     enable_openai: bool = True
     enable_azure: bool = False
@@ -51,29 +53,31 @@ class ModerationContext:
 @dataclass
 class ModerationResultData:
     """Parameter object for ModerationResult construction"""
+
     is_safe: bool = True
     severity: ModerationSeverity = ModerationSeverity.SAFE
     flagged_categories: Optional[List] = None
     confidence_scores: Optional[Dict] = None
     matched_rules: Optional[List] = None
-    
+
     def get_flagged_categories(self) -> List:
         return self.flagged_categories or []
-    
+
     def get_confidence_scores(self) -> Dict:
         return self.confidence_scores or {}
-    
+
     def get_matched_rules(self) -> List:
         return self.matched_rules or []
 
 
 class ModerationResult:
     """Result object for moderation analysis"""
+
     def __init__(self, data: Optional[ModerationResultData] = None):
         """Initialize with parameter object"""
         if data is None:
             data = ModerationResultData()
-        
+
         self.is_safe = data.is_safe
         self.severity = data.severity
         self.flagged_categories = data.get_flagged_categories()
@@ -84,13 +88,14 @@ class ModerationResult:
 @dataclass
 class ModerationRule:
     """Rule definition for content moderation"""
+
     name: str
     pattern: str
     severity: ModerationSeverity
     category: ContentCategory
     enabled: bool = True
     description: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "name": self.name,
@@ -98,5 +103,5 @@ class ModerationRule:
             "severity": self.severity.value,
             "category": self.category.value,
             "enabled": self.enabled,
-            "description": self.description
-        } 
+            "description": self.description,
+        }

@@ -13,12 +13,16 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from ...domain.events.child_events import (ChildProfileUpdated,
-                                           ChildRegistered,
-                                           SafetyViolationDetected)
-from ...domain.events.conversation_events import (ConversationEnded,
-                                                  ConversationStarted,
-                                                  MessageReceived)
+from ...domain.events.child_events import (
+    ChildProfileUpdated,
+    ChildRegistered,
+    SafetyViolationDetected,
+)
+from ...domain.events.conversation_events import (
+    ConversationEnded,
+    ConversationStarted,
+    MessageReceived,
+)
 from ...shared.kernel import DomainEvent
 
 logger = logging.getLogger(__name__)
@@ -139,7 +143,8 @@ class ChildProjectionManager:
 
         logger.info(f"Child read model created for {child_id}")
 
-    async def _handle_child_profile_updated(self, event: ChildProfileUpdated) -> None:
+    async def _handle_child_profile_updated(
+            self, event: ChildProfileUpdated) -> None:
         """Handle profile update event"""
 
         child_id = str(event.child_id)
@@ -161,7 +166,8 @@ class ChildProjectionManager:
 
         logger.info(f"Child read model updated for {child_id}")
 
-    async def _handle_safety_violation(self, event: SafetyViolationDetected) -> None:
+    async def _handle_safety_violation(
+            self, event: SafetyViolationDetected) -> None:
         """Handle safety violation event"""
 
         child_id = str(event.child_id)
@@ -196,7 +202,8 @@ class ChildProjectionManager:
 
         logger.warning(f"Safety violation recorded for child {child_id}")
 
-    async def _handle_conversation_started(self, event: ConversationStarted) -> None:
+    async def _handle_conversation_started(
+            self, event: ConversationStarted) -> None:
         """Handle conversation started event"""
 
         conversation_id = str(event.conversation_id)
@@ -253,7 +260,8 @@ class ChildProjectionManager:
             child_model.total_messages += 1
             child_model.last_interaction_at = event.received_at
 
-    def _calculate_profile_completeness(self, read_model: ChildReadModel) -> float:
+    def _calculate_profile_completeness(
+            self, read_model: ChildReadModel) -> float:
         """Calculate profile completeness percentage"""
 
         required_fields = ["name", "age", "parent_id", "device_id"]
@@ -309,7 +317,9 @@ class ChildProjectionManager:
         """Get conversation summary by ID"""
         return self.conversation_summaries.get(conversation_id)
 
-    def get_safety_metrics(self, child_id: str) -> Optional[SafetyMetricsReadModel]:
+    def get_safety_metrics(
+            self,
+            child_id: str) -> Optional[SafetyMetricsReadModel]:
         """Get safety metrics for child"""
         return self.safety_metrics.get(child_id)
 

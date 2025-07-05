@@ -43,7 +43,8 @@ class AgeRange:
 
     def overlaps_with(self, other: "AgeRange") -> bool:
         """Check if this range overlaps with another"""
-        return not (self.max_age < other.min_age or self.min_age > other.max_age)
+        return not (
+            self.max_age < other.min_age or self.min_age > other.max_age)
 
     def get_age_group(self) -> AgeGroup:
         """Get corresponding age group"""
@@ -167,7 +168,9 @@ class ChildSearchCriteria:
 
     def requires_full_text_search(self) -> bool:
         """Check if full-text search is needed"""
-        return bool(self.filters.name_query and len(self.filters.name_query) > 2)
+        return bool(
+            self.filters.name_query and len(
+                self.filters.name_query) > 2)
 
     def get_search_complexity_score(self) -> int:
         """Get search complexity score for optimization"""
@@ -202,10 +205,19 @@ class ChildSearchCriteria:
         def _validate_columns(self):
             """Validate all column names that will be used in conditions."""
             for name in [
-                "parent_id", "cultural_background", "max_daily_interaction_time",
-                "last_interaction", "interests", "name", "age",
-                "language_preference", "special_needs", "communication_style",
-                "educational_level", "family_code", "is_active",
+                "parent_id",
+                "cultural_background",
+                "max_daily_interaction_time",
+                "last_interaction",
+                "interests",
+                "name",
+                "age",
+                "language_preference",
+                "special_needs",
+                "communication_style",
+                "educational_level",
+                "family_code",
+                "is_active",
             ]:
                 if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
                     raise ValueError(f"Unsafe column name: {name}")
@@ -249,13 +261,15 @@ class ChildSearchCriteria:
             if self.filters.age_range:
                 self.conditions.append("age BETWEEN ? AND ?")
                 self.params.extend(
-                    [self.filters.age_range.min_age, self.filters.age_range.max_age])
+                    [self.filters.age_range.min_age, self.filters.age_range.max_age]
+                )
 
         def _add_language_condition(self):
             """Adds the condition for language preferences."""
             if self.filters.languages:
                 lang_conditions = " OR ".join(
-                    ["language_preference = ?" for _ in self.filters.languages])
+                    ["language_preference = ?" for _ in self.filters.languages]
+                )
                 self.conditions.append(f"({lang_conditions})")
                 self.params.extend(self.filters.languages)
 
@@ -264,10 +278,12 @@ class ChildSearchCriteria:
             if self.filters.has_special_needs is not None:
                 if self.filters.has_special_needs:
                     self.conditions.append(
-                        "special_needs != '[]' AND special_needs IS NOT NULL")
+                        "special_needs != '[]' AND special_needs IS NOT NULL"
+                    )
                 else:
                     self.conditions.append(
-                        "(special_needs = '[]' OR special_needs IS NULL)")
+                        "(special_needs = '[]' OR special_needs IS NULL)"
+                    )
 
         def _add_interaction_time_conditions(self):
             """Adds conditions for interaction time filters."""
@@ -287,7 +303,8 @@ class ChildSearchCriteria:
             if time_filter.inactive_days is not None:
                 cutoff = time_filter.get_cutoff_date_for_inactive()
                 self.conditions.append(
-                    "(last_interaction IS NULL OR last_interaction < ?)")
+                    "(last_interaction IS NULL OR last_interaction < ?)"
+                )
                 self.params.append(cutoff.isoformat())
 
         def _get_interests_condition(self) -> str:

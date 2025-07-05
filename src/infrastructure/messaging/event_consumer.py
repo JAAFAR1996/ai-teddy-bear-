@@ -101,14 +101,16 @@ class KafkaEventConsumer:
         self._event_handlers[event_type].append(handler)
         logger.info(f"Registered handler for event type: {event_type}")
 
-    def register_handlers(self, handlers: Dict[str, List[EventHandler]]) -> None:
+    def register_handlers(
+            self, handlers: Dict[str, List[EventHandler]]) -> None:
         """Register multiple event handlers"""
 
         for event_type, handler_list in handlers.items():
             for handler in handler_list:
                 self.register_handler(event_type, handler)
 
-    async def start_consuming(self, topics: Optional[List[str]] = None) -> None:
+    async def start_consuming(self,
+                              topics: Optional[List[str]] = None) -> None:
         """Start consuming events from Kafka topics"""
 
         if self._running:
@@ -184,52 +186,51 @@ class KafkaEventConsumer:
             logger.error(f"Failed to create Kafka consumer: {e}")
             raise EventConsumptionError(f"Consumer creation failed: {e}")
 
+    async def _poll_and_process_batch(self, active_tasks: Set[asyncio.Task]):
+        """Polls for a batch of messages and processes them."""
+        loop = asyncio.get_event_loop()
+        message_batch = await loop.run_in_executor(
+            None,
+            lambda: self._consumer.poll(timeout_ms=1000, max_records=100),
+        )
+
+        if not message_batch:
+            return
+
+        for topic_partition, messages in message_batch.items():
+            for message in messages:
+                task = asyncio.create_task(
+                    self._process_message_with_semaphore(message)
+                )
+                active_tasks.add(task)
+
+    async def _cleanup_completed_tasks(self, active_tasks: Set[asyncio.Task]):
+        """Removes completed tasks from the active set and logs any exceptions."""
+        completed_tasks = {t for t in active_tasks if t.done()}
+        for task in completed_tasks:
+            active_tasks.remove(task)
+            try:
+                await task
+            except Exception as e:
+                logger.error(f"Task failed: {e}")
+
     async def _consumption_loop(self) -> None:
         """Main consumption loop"""
-
         active_tasks: Set[asyncio.Task] = set()
-
         try:
             while self._running:
                 try:
-                    # Poll for messages with timeout
-                    loop = asyncio.get_event_loop()
-                    message_batch = await loop.run_in_executor(
-                        None,
-                        lambda: self._consumer.poll(timeout_ms=1000, max_records=100),
-                    )
+                    await self._poll_and_process_batch(active_tasks)
+                    await self._cleanup_completed_tasks(active_tasks)
 
-                    if not message_batch:
-                        continue
-
-                    # Process messages
-                    for topic_partition, messages in message_batch.items():
-                        for message in messages:
-                            # Create processing task
-                            task = asyncio.create_task(
-                                self._process_message_with_semaphore(message)
-                            )
-                            active_tasks.add(task)
-
-                            # Clean up completed tasks
-                            completed_tasks = {t for t in active_tasks if t.done()}
-                            for task in completed_tasks:
-                                active_tasks.remove(task)
-                                try:
-                                    await task  # Get any exceptions
-                                except Exception as e:
-                                    logger.error(f"Task failed: {e}")
-
-                    # Commit offsets periodically
                     if self._should_commit_offsets():
                         await self._commit_offsets()
 
                 except Exception as e:
                     logger.error(f"Error in consumption loop: {e}")
-                    await asyncio.sleep(1)  # Brief pause before retrying
+                    await asyncio.sleep(1)
 
         finally:
-            # Wait for remaining tasks to complete
             if active_tasks:
                 logger.info(
                     f"Waiting for {len(active_tasks)} active tasks to complete..."
@@ -242,80 +243,93 @@ class KafkaEventConsumer:
         async with self._semaphore:
             await self._process_message(message)
 
+    def _create_consumed_event(self, message) -> ConsumedEvent:
+        """Creates a ConsumedEvent object from a Kafka message."""
+        return ConsumedEvent(
+            topic=message.topic,
+            partition=message.partition,
+            offset=message.offset,
+            timestamp=datetime.fromtimestamp(
+                message.timestamp / 1000),
+            key=message.key,
+            headers={
+                k: v for k,
+                v in message.headers} if message.headers else {},
+            value=message.value,
+            event_type=(
+                message.value.get(
+                    "event_type",
+                    "unknown") if message.value else "unknown"),
+        )
+
+    async def _handle_event_processing(
+            self, consumed_event: ConsumedEvent) -> bool:
+        """Handles the processing of an event by its registered handlers."""
+        handlers = self._event_handlers.get(consumed_event.event_type, [])
+        if not handlers:
+            logger.warning(
+                f"No handlers registered for event type: {consumed_event.event_type}"
+            )
+            return False
+
+        success_count = 0
+        for handler in handlers:
+            try:
+                if await handler.handle(consumed_event):
+                    success_count += 1
+                else:
+                    logger.warning(
+                        f"Handler {handler.__class__.__name__} failed for event {consumed_event.event_type}"
+                    )
+            except Exception as e:
+                logger.error(
+                    f"Handler {handler.__class__.__name__} error: {e}")
+
+        return success_count > 0
+
+    def _update_processing_metrics(
+            self,
+            success: bool,
+            start_time: datetime,
+            message):
+        """Updates performance metrics after processing a message."""
+        if success:
+            self._metrics["events_processed"] += 1
+        else:
+            self._metrics["events_failed"] += 1
+
+        processing_time = (datetime.utcnow() - start_time).total_seconds()
+        self._metrics["total_processing_time"] += processing_time
+        self._metrics["last_processed_offset"][
+            f"{message.topic}-{message.partition}"
+        ] = message.offset
+
     async def _process_message(self, message) -> None:
         """Process a single Kafka message"""
-
         start_time = datetime.utcnow()
-
         try:
-            # Create consumed event
-            consumed_event = ConsumedEvent(
-                topic=message.topic,
-                partition=message.partition,
-                offset=message.offset,
-                timestamp=datetime.fromtimestamp(message.timestamp / 1000),
-                key=message.key,
-                headers={k: v for k, v in message.headers} if message.headers else {},
-                value=message.value,
-                event_type=(
-                    message.value.get("event_type", "unknown")
-                    if message.value
-                    else "unknown"
-                ),
-            )
-
+            consumed_event = self._create_consumed_event(message)
             self._metrics["events_consumed"] += 1
 
-            # Find handlers for event type
-            handlers = self._event_handlers.get(consumed_event.event_type, [])
+            success = await self._handle_event_processing(consumed_event)
 
-            if not handlers:
-                logger.warning(
-                    f"No handlers registered for event type: {consumed_event.event_type}"
-                )
-                return
+            self._update_processing_metrics(success, start_time, message)
 
-            # Process with all handlers
-            success_count = 0
-            for handler in handlers:
-                try:
-                    success = await handler.handle(consumed_event)
-                    if success:
-                        success_count += 1
-                    else:
-                        logger.warning(
-                            f"Handler {handler.__class__.__name__} failed for event {consumed_event.event_type}"
-                        )
-                except Exception as e:
-                    logger.error(f"Handler {handler.__class__.__name__} error: {e}")
-
-            # Update metrics
-            if success_count > 0:
-                self._metrics["events_processed"] += 1
-            else:
-                self._metrics["events_failed"] += 1
-                # Send to DLQ
+            if not success:
                 await self._send_to_dlq(consumed_event, "All handlers failed")
 
-            # Track processing time
-            processing_time = (datetime.utcnow() - start_time).total_seconds()
-            self._metrics["total_processing_time"] += processing_time
-
-            # Update offset tracking
-            self._metrics["last_processed_offset"][
-                f"{message.topic}-{message.partition}"
-            ] = message.offset
-
             logger.debug(
-                f"Processed event {consumed_event.event_type} "
-                f"from {message.topic}:{message.partition}:{message.offset}"
+                f"Processed event {consumed_event.event_type} from {message.topic}:{message.partition}:{message.offset}"
             )
 
         except Exception as e:
             logger.error(f"Error processing message: {e}")
             self._metrics["events_failed"] += 1
 
-    async def _send_to_dlq(self, event: ConsumedEvent, error_message: str) -> None:
+    async def _send_to_dlq(
+            self,
+            event: ConsumedEvent,
+            error_message: str) -> None:
         """Send failed event to dead letter queue"""
 
         try:
@@ -343,7 +357,8 @@ class KafkaEventConsumer:
 
             # This is a bit of a hack - we'll improve this in a real implementation
             # For now, we'll log the DLQ event
-            logger.error(f"Would send to DLQ: {json.dumps(dlq_data, indent=2)}")
+            logger.error(
+                f"Would send to DLQ: {json.dumps(dlq_data, indent=2)}")
 
         except Exception as e:
             logger.error(f"Failed to send event to DLQ: {e}")

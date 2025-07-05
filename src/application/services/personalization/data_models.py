@@ -59,7 +59,8 @@ class InteractionPattern:
                 "questions": 0.5,
             }
         if self.attention_patterns is None:
-            self.attention_patterns = {"morning": 0, "afternoon": 0, "evening": 0}
+            self.attention_patterns = {
+                "morning": 0, "afternoon": 0, "evening": 0}
 
 
 @dataclass
@@ -74,4 +75,4 @@ class AdaptiveContent:
     success_rate: float  # معدل النجاح (0-1)
     child_feedback: str  # positive, neutral, negative
     usage_count: int = 0
-    last_used: str = "" 
+    last_used: str = ""

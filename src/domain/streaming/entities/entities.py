@@ -24,7 +24,8 @@ class SessionManager:
         self.sessions: Dict[str, Dict[str, Any]] = {}
         self.session_history: Dict[str, list] = {}
 
-    def create_session(self, session_id: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+    def create_session(self, session_id: str,
+                       user_id: Optional[str] = None) -> Dict[str, Any]:
         """Create new session"""
         session = {
             'id': session_id,
@@ -40,7 +41,7 @@ class SessionManager:
         """Get session by ID"""
         return self.sessions.get(session_id)
 
-    def add_message(Optional[Dict] = None) -> None:
+    def add_message(Optional[Dict]=None) -> None:
         """Add message to session history"""
         if session_id not in self.session_history:
             self.session_history[session_id] = []

@@ -11,10 +11,12 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from src.domain.parentdashboard.models.analytics_models import ConversationLog
-from src.domain.parentdashboard.services.access_control_service import \
-    AccessControlService
-from src.domain.parentdashboard.services.content_analysis_service import \
-    ContentAnalysisService
+from src.domain.parentdashboard.services.access_control_service import (
+    AccessControlService,
+)
+from src.domain.parentdashboard.services.content_analysis_service import (
+    ContentAnalysisService,
+)
 
 
 class DashboardSessionService:
@@ -53,7 +55,8 @@ class DashboardSessionService:
 
             self.active_sessions[session_id] = session_data
 
-            self.logger.info(f"Started session {session_id} for child {child_id}")
+            self.logger.info(
+                f"Started session {session_id} for child {child_id}")
 
             return {
                 "session_id": session_id,
@@ -95,7 +98,8 @@ class DashboardSessionService:
 
             # Extract topics from conversation
             combined_text = f"{child_message} {assistant_message}"
-            topics = self.content_service.extract_topics_from_text(combined_text)
+            topics = self.content_service.extract_topics_from_text(
+                combined_text)
             session["topics"].update(topics)
 
             # Update usage tracker
@@ -125,11 +129,15 @@ class DashboardSessionService:
             ended_at = datetime.now()
 
             # Calculate session metrics
-            duration_seconds = int((ended_at - session["started_at"]).total_seconds())
+            duration_seconds = int(
+                (ended_at - session["started_at"]).total_seconds())
             message_count = len(session["messages"])
 
             # Analyze sentiment (simplified)
-            sentiment_scores = {"positive": 0.7, "neutral": 0.2, "negative": 0.1}
+            sentiment_scores = {
+                "positive": 0.7,
+                "neutral": 0.2,
+                "negative": 0.1}
 
             # Create conversation log
             conversation_log = ConversationLog(
@@ -172,7 +180,8 @@ class DashboardSessionService:
 
         for session_id, session in self.active_sessions.items():
             if child_id is None or session["child_id"] == child_id:
-                duration = int((datetime.now() - session["started_at"]).total_seconds())
+                duration = int(
+                    (datetime.now() - session["started_at"]).total_seconds())
 
                 active.append(
                     {
@@ -188,14 +197,16 @@ class DashboardSessionService:
 
         return active
 
-    async def get_session_status(self, session_id: str) -> Optional[Dict[str, Any]]:
+    async def get_session_status(
+            self, session_id: str) -> Optional[Dict[str, Any]]:
         """Get status of a specific session"""
 
         if session_id not in self.active_sessions:
             return None
 
         session = self.active_sessions[session_id]
-        duration = int((datetime.now() - session["started_at"]).total_seconds())
+        duration = int(
+            (datetime.now() - session["started_at"]).total_seconds())
 
         return {
             "session_id": session_id,
@@ -231,14 +242,14 @@ class DashboardSessionService:
             }
 
         total_duration = sum(entry["duration"] for entry in recent_usage)
-        unique_sessions = len(set(entry["session_id"] for entry in recent_usage))
+        unique_sessions = len(set(entry["session_id"]
+                              for entry in recent_usage))
 
         return {
             "total_sessions": unique_sessions,
             "total_minutes": total_duration / 60,
             "average_session_minutes": (
-                (total_duration / unique_sessions / 60) if unique_sessions > 0 else 0
-            ),
+                (total_duration / unique_sessions / 60) if unique_sessions > 0 else 0),
             "period_hours": period_hours,
             "sessions": recent_usage,
         }

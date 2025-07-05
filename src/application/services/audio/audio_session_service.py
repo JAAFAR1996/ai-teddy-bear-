@@ -6,9 +6,13 @@ import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from ....domain.audio.models import (AudioQualityMode, AudioSession,
-                                     AudioSessionType, AudioSystemConfig,
-                                     PerformanceMetrics)
+from ....domain.audio.models import (
+    AudioQualityMode,
+    AudioSession,
+    AudioSessionType,
+    AudioSystemConfig,
+    PerformanceMetrics,
+)
 
 
 class AudioSessionService:
@@ -52,7 +56,8 @@ class AudioSessionService:
         try:
             with self._session_lock:
                 # Check concurrent session limit
-                if len(self.active_sessions) >= self.config.max_concurrent_sessions:
+                if len(
+                        self.active_sessions) >= self.config.max_concurrent_sessions:
                     # End oldest session
                     self._end_oldest_session()
 
@@ -192,7 +197,8 @@ class AudioSessionService:
             List of timed out session IDs
         """
         timed_out_sessions = []
-        timeout_duration = timedelta(minutes=self.config.session_timeout_minutes)
+        timeout_duration = timedelta(
+            minutes=self.config.session_timeout_minutes)
         current_time = datetime.now()
 
         with self._session_lock:
@@ -231,7 +237,11 @@ class AudioSessionService:
         )
         return True
 
-    def add_session_metadata(self, session_id: str, key: str, value: Any) -> bool:
+    def add_session_metadata(
+            self,
+            session_id: str,
+            key: str,
+            value: Any) -> bool:
         """Add metadata to session."""
         session = self.active_sessions.get(session_id)
         if not session:
@@ -249,7 +259,8 @@ class AudioSessionService:
 
         for session in self.active_sessions.values():
             session_type = session.session_type.value
-            session_types[session_type] = session_types.get(session_type, 0) + 1
+            session_types[session_type] = session_types.get(
+                session_type, 0) + 1
             total_duration += session.duration_seconds
             total_recordings += session.total_recordings
 
@@ -261,8 +272,7 @@ class AudioSessionService:
             "total_recordings": total_recordings,
             "timeout_minutes": self.config.session_timeout_minutes,
             "current_session_id": (
-                self.current_session.session_id if self.current_session else None
-            ),
+                self.current_session.session_id if self.current_session else None),
         }
 
     def cleanup_old_sessions(self) -> int:
@@ -282,7 +292,8 @@ class AudioSessionService:
             key=lambda sid: self.active_sessions[sid].start_time,
         )
 
-        self.logger.info(f"Ending oldest session {oldest_session_id} due to limit")
+        self.logger.info(
+            f"Ending oldest session {oldest_session_id} due to limit")
         self.end_session(oldest_session_id)
 
     def _save_session_data(self, session: AudioSession) -> None:
@@ -298,7 +309,8 @@ class AudioSessionService:
         except Exception as e:
             self.logger.error(f"Error saving session data: {e}")
 
-    def _trigger_callback(self, event_type: str, event_data: Dict[str, Any]) -> None:
+    def _trigger_callback(self, event_type: str,
+                          event_data: Dict[str, Any]) -> None:
         """Trigger session event callbacks."""
         for callback in self.session_callbacks.get(event_type, []):
             try:
@@ -306,12 +318,18 @@ class AudioSessionService:
             except Exception as e:
                 self.logger.error(f"Session callback error: {e}")
 
-    def add_session_callback(self, event_type: str, callback: callable) -> None:
+    def add_session_callback(
+            self,
+            event_type: str,
+            callback: callable) -> None:
         """Add session event callback."""
         if event_type in self.session_callbacks:
             self.session_callbacks[event_type].append(callback)
 
-    def remove_session_callback(self, event_type: str, callback: callable) -> None:
+    def remove_session_callback(
+            self,
+            event_type: str,
+            callback: callable) -> None:
         """Remove session event callback."""
         if (
             event_type in self.session_callbacks

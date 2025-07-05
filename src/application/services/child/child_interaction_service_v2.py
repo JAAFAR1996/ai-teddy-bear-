@@ -1,19 +1,31 @@
 from src.domain.exceptions.authorization import AuthorizationException
-from src.infrastructure.monitoring.metrics import (MetricsCollector,
-                                                   track_request_duration)
-from src.infrastructure.exception_handling.global_handler import \
-    get_global_exception_handler
+from src.infrastructure.monitoring.metrics import (
+    MetricsCollector,
+    track_request_duration,
+)
+from src.infrastructure.exception_handling.global_handler import (
+    get_global_exception_handler,
+)
 from src.infrastructure.decorators.exception_handler import (
-    RetryConfig, authenticated, child_safe, handle_exceptions, validate_input,
-    with_circuit_breaker, with_retry)
-from src.domain.exceptions.base import (AgeInappropriateException,
-                                        AuthenticationException, ErrorContext,
-                                        ExternalServiceException,
-                                        InappropriateContentException,
-                                        ParentalConsentRequiredException,
-                                        QuotaExceededException,
-                                        ValidationException,
-                                        AITeddyBearException)
+    RetryConfig,
+    authenticated,
+    child_safe,
+    handle_exceptions,
+    validate_input,
+    with_circuit_breaker,
+    with_retry,
+)
+from src.domain.exceptions.base import (
+    AgeInappropriateException,
+    AuthenticationException,
+    ErrorContext,
+    ExternalServiceException,
+    InappropriateContentException,
+    ParentalConsentRequiredException,
+    QuotaExceededException,
+    ValidationException,
+    AITeddyBearException,
+)
 import structlog
 from typing import Any, Dict, Optional
 from datetime import datetime
@@ -90,7 +102,8 @@ class AIService:
             exceptions_to_retry=[ExternalServiceException],
         )
     )
-    async def generate_response(self, message: str, context: Dict[str, Any]) -> str:
+    async def generate_response(
+            self, message: str, context: Dict[str, Any]) -> str:
         """توليد رد من AI"""
         try:
             await asyncio.sleep(0.5)
@@ -107,8 +120,7 @@ class AIService:
         except Exception as e:
             if not isinstance(e, ExternalServiceException):
                 raise ExternalServiceException(
-                    service_name="OpenAI", status_code=500, response_body=str(e)
-                )
+                    service_name="OpenAI", status_code=500, response_body=str(e))
             raise
 
 
@@ -121,7 +133,8 @@ class QuotaService:
     async def check_quota(self, child_id: str) -> Dict[str, Any]:
         """فحص حصة الاستخدام"""
         usage = self.usage.get(
-            child_id, {"count": 0, "last_reset": datetime.utcnow()})
+            child_id, {
+                "count": 0, "last_reset": datetime.utcnow()})
         if (datetime.utcnow() - usage["last_reset"]).days >= 1:
             usage = {"count": 0, "last_reset": datetime.utcnow()}
         return {
@@ -133,8 +146,8 @@ class QuotaService:
     async def increment_usage(self, child_id: str) -> None:
         """زيادة عداد الاستخدام"""
         if child_id not in self.usage:
-            self.usage[child_id] = {"count": 0,
-                                    "last_reset": datetime.utcnow()}
+            self.usage[child_id] = {
+                "count": 0, "last_reset": datetime.utcnow()}
         self.usage[child_id]["count"] += 1
 
 
@@ -152,7 +165,8 @@ class ChildInteractionServiceV2:
         handler = get_global_exception_handler()
         handler.register_recovery_strategy(
             "INAPPROPRIATE_CONTENT",
-            lambda e, ctx: {
+            lambda e,
+            ctx: {
                 "response": "عذراً، لا أستطيع الإجابة على هذا السؤال. هل لديك سؤال آخر؟",
                 "filtered": True,
             },
@@ -166,38 +180,38 @@ class ChildInteractionServiceV2:
         )
 
     @handle_exceptions(
-        (
-            InappropriateContentException,
-            lambda e: {
-                "error": "Content filtered",
-                "safe": True,
-                "message": "تم تصفية المحتوى لحماية الطفل",
-            },
-        ),
-        (
-            ParentalConsentRequiredException,
-            lambda e: {
-                "error": "Parent approval needed",
-                "action": "notify_parent",
-                "details": {"action": e.action, "reason": e.reason},
-            },
-        ),
-        (
-            ValidationException,
-            lambda e: {
-                "error": f"Invalid input: {str(e)}",
-                "retry": True,
-                "field": e.field_name,
-            },
-        ),
-        (
-            QuotaExceededException,
-            lambda e: {
-                "error": "Daily limit reached",
-                "retry_after": e.retry_after,
-                "quota_info": {"current": e.current_usage, "limit": e.quota_limit},
-            },
-        ),
+        (InappropriateContentException,
+         lambda e: {
+             "error": "Content filtered",
+             "safe": True,
+             "message": "تم تصفية المحتوى لحماية الطفل",
+         },
+         ),
+        (ParentalConsentRequiredException,
+         lambda e: {
+             "error": "Parent approval needed",
+             "action": "notify_parent",
+             "details": {
+                 "action": e.action,
+                 "reason": e.reason},
+         },
+         ),
+        (ValidationException,
+         lambda e: {
+             "error": f"Invalid input: {str(e)}",
+             "retry": True,
+             "field": e.field_name,
+         },
+         ),
+        (QuotaExceededException,
+         lambda e: {
+             "error": "Daily limit reached",
+             "retry_after": e.retry_after,
+             "quota_info": {
+                 "current": e.current_usage,
+                 "limit": e.quota_limit},
+         },
+         ),
     )
     @validate_input(
         validators={
@@ -213,9 +227,13 @@ class ChildInteractionServiceV2:
     )
     @child_safe(notify_parent=True)
     @track_request_duration(endpoint="/api/v2/child/interact")
-    async def process_interaction(
-        self, child_id: str, child_age: int, message: str, auth_context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def process_interaction(self,
+                                  child_id: str,
+                                  child_age: int,
+                                  message: str,
+                                  auth_context: Dict[str,
+                                                     Any]) -> Dict[str,
+                                                                   Any]:
         """
         معالجة تفاعل الطفل مع جميع الحمايات
 
@@ -232,8 +250,9 @@ class ChildInteractionServiceV2:
             child_id=child_id,
             user_id=auth_context.get("parent_id"),
             session_id=auth_context.get("session_id"),
-            additional_data={"child_age": child_age,
-                             "message_length": len(message)},
+            additional_data={
+                "child_age": child_age,
+                "message_length": len(message)},
         )
         try:
             quota_info = await self.quota_service.check_quota(child_id)
@@ -242,7 +261,10 @@ class ChildInteractionServiceV2:
                     quota_type="daily_interactions",
                     current_usage=quota_info["current_usage"],
                     quota_limit=quota_info["daily_limit"],
-                    reset_time=datetime.utcnow().replace(hour=0, minute=0, second=0),
+                    reset_time=datetime.utcnow().replace(
+                        hour=0,
+                        minute=0,
+                        second=0),
                     context=error_context,
                 )
             safety_result = await self.content_filter.check(message)
@@ -303,8 +325,9 @@ class ChildInteractionServiceV2:
             raise
         except Exception as e:
             logger.error(
-                "Unexpected error in process_interaction", error=str(e), exc_info=True
-            )
+                "Unexpected error in process_interaction",
+                error=str(e),
+                exc_info=True)
             raise
 
     def _get_safe_fallback_response(self, child_age: int) -> str:

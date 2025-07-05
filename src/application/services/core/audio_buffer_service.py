@@ -64,5 +64,5 @@ class AudioBufferService:
             "dropped_bytes": self.dropped_bytes,
             "current_buffer_length": len(self.buffer),
             "max_buffer_size": self.buffer.maxlen,
-            "chunk_size": self.chunk_size
-        } 
+            "chunk_size": self.chunk_size,
+        }

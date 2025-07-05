@@ -25,7 +25,11 @@ class SecurityException(AITeddyBearException):
 class AuthenticationException(SecurityException):
     """فشل المصادقة"""
 
-    def __init__(self, reason: str, auth_method: Optional[str] = None, **kwargs):
+    def __init__(
+            self,
+            reason: str,
+            auth_method: Optional[str] = None,
+            **kwargs):
         super().__init__(
             message=f"Authentication failed: {reason}",
             error_code="AUTHENTICATION_FAILED",

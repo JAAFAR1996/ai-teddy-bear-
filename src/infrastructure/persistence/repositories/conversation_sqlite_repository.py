@@ -7,19 +7,22 @@ from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.core.domain.entities.conversation import Conversation, Message
-from src.infrastructure.persistence.base_sqlite_repository import \
-    BaseSQLiteRepository
-from src.infrastructure.persistence.conversation_repository import \
-    ConversationRepository
+from src.infrastructure.persistence.base_sqlite_repository import BaseSQLiteRepository
+from src.infrastructure.persistence.conversation_repository import (
+    ConversationRepository,
+)
 
-from ...application.services.conversation.conversation_analytics_service import \
-    ConversationAnalyticsService
-from ...application.services.conversation.conversation_export_service import \
-    ConversationExportService
-from ...application.services.conversation.conversation_maintenance_service import \
-    ConversationMaintenanceService
-from ...application.services.conversation.conversation_search_service import \
-    ConversationSearchService
+from ...application.services.conversation.conversation_analytics_service import (
+    ConversationAnalyticsService, )
+from ...application.services.conversation.conversation_export_service import (
+    ConversationExportService,
+)
+from ...application.services.conversation.conversation_maintenance_service import (
+    ConversationMaintenanceService, )
+from ...application.services.conversation.conversation_search_service import (
+    ConversationSearchService,
+)
+
 # Import specialized services
 from .conversation_core_repository import ConversationCoreRepository
 from .conversation_schema_manager import ConversationSchemaManager
@@ -53,8 +56,9 @@ class ConversationSQLiteRepository(
         connection = sqlite3.connect(db_path, check_same_thread=False)
 
         super().__init__(
-            connection=connection, table_name="conversations", entity_class=Conversation
-        )
+            connection=connection,
+            table_name="conversations",
+            entity_class=Conversation)
 
         # Initialize specialized services
         self.schema_manager = ConversationSchemaManager(connection)
@@ -79,7 +83,8 @@ class ConversationSQLiteRepository(
         """Retrieve conversation by ID."""
         return await self.core_repository.get_by_id(conversation_id)
 
-    async def get_by_session_id(self, session_id: str) -> Optional[Conversation]:
+    async def get_by_session_id(
+            self, session_id: str) -> Optional[Conversation]:
         """Get conversation by session ID."""
         return await self.core_repository.get_by_session_id(session_id)
 
@@ -127,7 +132,8 @@ class ConversationSQLiteRepository(
         """Generate daily conversation summary."""
         return await self.analytics_service.generate_daily_summary(date, child_id)
 
-    async def get_conversation_health_metrics(self, child_id: str) -> Dict[str, Any]:
+    async def get_conversation_health_metrics(
+            self, child_id: str) -> Dict[str, Any]:
         """Generate comprehensive health metrics for a child's conversations."""
         # Use analytics service for basic statistics
         stats = await self.analytics_service.get_conversation_statistics()
@@ -169,7 +175,8 @@ class ConversationSQLiteRepository(
         # Convert raw results to proper entities
         results = []
         for conv_data, messages_data in raw_results:
-            conv = self.core_repository._deserialize_conversation_from_db(conv_data)
+            conv = self.core_repository._deserialize_conversation_from_db(
+                conv_data)
             # Create simplified message objects
             messages = [
                 type(
@@ -252,7 +259,8 @@ class ConversationSQLiteRepository(
             end = now
         elif time_range == "CUSTOM":
             if not custom_start or not custom_end:
-                raise ValueError("Custom time range requires start and end dates")
+                raise ValueError(
+                    "Custom time range requires start and end dates")
             start = custom_start
             end = custom_end
         else:

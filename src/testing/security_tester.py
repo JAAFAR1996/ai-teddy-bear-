@@ -660,8 +660,10 @@ class SecurityTester:
         validation_payloads = [
             "A" * 10000,  # Buffer overflow attempt
             "\x00\x01\x02",  # Null bytes
-            "<?xml version='1.0'?><!DOCTYPE test [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]>",  # XXE
-            "%{#context['xwork.MethodAccessor.denyMethodExecution']=false}",  # OGNL injection
+            # XXE
+            "<?xml version='1.0'?><!DOCTYPE test [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]>",
+            # OGNL injection
+            "%{#context['xwork.MethodAccessor.denyMethodExecution']=false}",
         ]
 
         for payload in validation_payloads:
@@ -736,7 +738,8 @@ class SecurityTester:
             "real name",
         ]
 
-        return any(indicator in response_text for indicator in personal_indicators)
+        return any(
+            indicator in response_text for indicator in personal_indicators)
 
     def _indicates_bypass_success(self, response, payload) -> bool:
         """Check if response indicates successful bypass"""
@@ -753,7 +756,8 @@ class SecurityTester:
             "admin mode",
         ]
 
-        return any(indicator in response_text for indicator in bypass_indicators)
+        return any(
+            indicator in response_text for indicator in bypass_indicators)
 
     def _contains_inappropriate_content(self, response) -> bool:
         """Check if response contains inappropriate content"""
@@ -772,7 +776,8 @@ class SecurityTester:
             "disturbing",
         ]
 
-        return any(keyword in response_text for keyword in inappropriate_keywords)
+        return any(
+            keyword in response_text for keyword in inappropriate_keywords)
 
     def _indicates_sql_injection(self, response) -> bool:
         """Check for SQL injection indicators"""
@@ -825,7 +830,8 @@ class SecurityTester:
             "directory listing",
         ]
 
-        return any(indicator in response_text for indicator in command_indicators)
+        return any(
+            indicator in response_text for indicator in command_indicators)
 
     def _indicates_file_access(self, response) -> bool:
         """Check for file system access indicators"""
@@ -894,12 +900,8 @@ class SecurityTester:
 
         return False
 
-    async def generate_security_report(self) -> Dict[str, Any]:
-        """Generate comprehensive security report"""
-        if not self.test_results:
-            return {"error": "No test results available"}
-
-        # Aggregate results
+    def _aggregate_vulnerabilities(self) -> Dict[str, Any]:
+        """Aggregate found vulnerabilities."""
         total_vulnerabilities = len(self.vulnerabilities_found)
         critical_vulns = len(
             [v for v in self.vulnerabilities_found if v.severity == Severity.CRITICAL]
@@ -911,26 +913,31 @@ class SecurityTester:
             [v for v in self.vulnerabilities_found if v.child_safety_impact]
         )
 
-        # Group by type
         vuln_types = {}
         for vuln in self.vulnerabilities_found:
             vuln_type = vuln.vulnerability_type.value
-            if vuln_type not in vuln_types:
-                vuln_types[vuln_type] = 0
-            vuln_types[vuln_type] += 1
+            vuln_types[vuln_type] = vuln_types.get(vuln_type, 0) + 1
 
-        report = {
-            "timestamp": time.time(),
-            "summary": {
-                "total_vulnerabilities": total_vulnerabilities,
-                "critical_vulnerabilities": critical_vulns,
-                "high_vulnerabilities": high_vulns,
-                "child_safety_impact": child_safety_vulns,
-                "security_score": max(
-                    0, 100 - (critical_vulns * 20) - (high_vulns * 10)
-                ),
-            },
+        return {
+            "total_vulnerabilities": total_vulnerabilities,
+            "critical_vulnerabilities": critical_vulns,
+            "high_vulnerabilities": high_vulns,
+            "child_safety_impact": child_safety_vulns,
             "vulnerability_breakdown": vuln_types,
+            "security_score": max(0, 100 - (critical_vulns * 20) - (high_vulns * 10)),
+        }
+
+    async def generate_security_report(self) -> Dict[str, Any]:
+        """Generate comprehensive security report by orchestrating helper methods."""
+        if not self.test_results:
+            return {"error": "No test results available"}
+
+        summary_data = self._aggregate_vulnerabilities()
+        recommendations = self._generate_security_recommendations()
+
+        return {
+            "timestamp": time.time(),
+            "summary": summary_data,
             "detailed_vulnerabilities": [
                 {
                     "type": v.vulnerability_type.value,
@@ -943,17 +950,16 @@ class SecurityTester:
                 }
                 for v in self.vulnerabilities_found
             ],
-            "recommendations": self._generate_security_recommendations(),
+            "recommendations": recommendations,
             "test_coverage": [result.coverage_areas for result in self.test_results],
         }
-
-        return report
 
     def _generate_security_recommendations(self) -> List[str]:
         """Generate security recommendations based on findings"""
         recommendations = []
 
-        vuln_types = set(v.vulnerability_type for v in self.vulnerabilities_found)
+        vuln_types = set(
+            v.vulnerability_type for v in self.vulnerabilities_found)
 
         if VulnerabilityType.CHILD_PRIVACY in vuln_types:
             recommendations.append(
@@ -988,7 +994,6 @@ class SecurityTester:
                 "Establish incident response procedures for child safety violations",
                 "Regular security training for development team",
                 "Third-party security audit of child safety systems",
-            ]
-        )
+            ])
 
         return recommendations

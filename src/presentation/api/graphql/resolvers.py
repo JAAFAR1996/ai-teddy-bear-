@@ -32,7 +32,12 @@ class ChildResolver:
 
         return await self.child_repository.get_by_parent(parent_id)
 
-    async def create_child(self, name: str, age: int, language: str, info) -> "Child":
+    async def create_child(
+            self,
+            name: str,
+            age: int,
+            language: str,
+            info) -> "Child":
         """Create new child profile"""
         user = await self.auth_service.get_current_user(info.context)
         if not user:
@@ -67,7 +72,11 @@ class ConversationResolver:
             child_id=child_id, parent_id=user.id
         )
 
-    async def send_message(self, conversation_id: str, content: str, info) -> "Message":
+    async def send_message(
+            self,
+            conversation_id: str,
+            content: str,
+            info) -> "Message":
         """Send message in conversation"""
         user = await self.auth_service.get_current_user(info.context)
         if not user:

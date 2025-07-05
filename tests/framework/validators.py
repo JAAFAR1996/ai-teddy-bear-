@@ -99,8 +99,8 @@ class ContentSafetyValidator:
                         violation_type=violation_type,
                         reason=f"Content contains {violation_type} related terms",
                         suggested_alternative=self._generate_safe_alternative(
-                            violation_type, age
-                        ),
+                            violation_type,
+                            age),
                     )
 
         # Check age appropriateness
@@ -231,7 +231,10 @@ class AgeAppropriateContentGenerator:
     def generate(self, age: int, topic: str = "general") -> str:
         """Generate age-appropriate content"""
         # Find closest age group
-        age_key = min(self.content_templates.keys(), key=lambda x: abs(x - age))
+        age_key = min(
+            self.content_templates.keys(),
+            key=lambda x: abs(
+                x - age))
 
         # Get templates for age and topic
         templates = self.content_templates[age_key].get(
@@ -289,14 +292,11 @@ class COPPAComplianceChecker:
         # Check for exact age storage (should be age groups)
         if "age" in data and isinstance(data["age"], int):
             if data["age"] < 13:
-                violations.append(
-                    {
-                        "field": "age",
-                        "type": "exact_age_storage",
-                        "severity": "medium",
-                        "recommendation": "Store age groups instead of exact age",
-                    }
-                )
+                violations.append({"field": "age",
+                                   "type": "exact_age_storage",
+                                   "severity": "medium",
+                                   "recommendation": "Store age groups instead of exact age",
+                                   })
 
         return {
             "compliant": len(violations) == 0,
@@ -327,7 +327,11 @@ class COPPAComplianceChecker:
                 return False
 
         # Check verification method is strong enough
-        valid_methods = ["credit_card", "government_id", "signed_form", "video_call"]
+        valid_methods = [
+            "credit_card",
+            "government_id",
+            "signed_form",
+            "video_call"]
         if consent_data.get("verification_method") not in valid_methods:
             return False
 

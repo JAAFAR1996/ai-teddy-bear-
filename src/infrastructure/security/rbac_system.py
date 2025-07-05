@@ -88,36 +88,52 @@ class RBACManager:
             UserRole.ADMIN: set(Permission),  # All permissions
         }
 
-    async def check_permission(
-        self, user_id: str, permission: Permission, resource_id: Optional[str] = None
+    def _check_child_resource_permission(
+        self, user: UserProfile, child_id: str
     ) -> bool:
+        """Check permissions for child-specific resources."""
+        # Admins have full access
+        if user.role == UserRole.ADMIN:
+            return True
+
+        # Parents can access their own children
+        if user.role == UserRole.PARENT and child_id in user.children_ids:
+            return True
+
+        # Children can only access their own data
+        if user.role == UserRole.CHILD and child_id == user.user_id:
+            return True
+
+        return False
+
+    async def check_permission(
+            self,
+            user_id: str,
+            permission: Permission,
+            resource_id: Optional[str] = None) -> bool:
         """Check if user has specific permission"""
         user = self.users.get(user_id)
         if not user or not user.is_active:
+            logger.warning(
+                "Permission check failed: User not found or inactive",
+                user_id=user_id)
             return False
 
-        # Check basic permission
+        # Check basic role-based permission
         if permission not in user.permissions:
+            logger.warning(
+                "Permission check failed: Missing basic permission",
+                user_id=user_id,
+                permission=permission.value,
+            )
             return False
 
         # Resource-specific checks
         if resource_id and resource_id.startswith("child:"):
-            child_id = resource_id.split(":")[1]
+            child_id = resource_id.split(":", 1)[1]
+            return self._check_child_resource_permission(user, child_id)
 
-            # Parents can access their own children
-            if user.role == UserRole.PARENT and child_id in user.children_ids:
-                return True
-
-            # Children can only access their own data
-            if user.role == UserRole.CHILD and child_id == user.user_id:
-                return True
-
-            # Admins have full access
-            if user.role == UserRole.ADMIN:
-                return True
-
-            return False
-
+        # If no specific resource check is needed, permission is granted
         return True
 
     async def create_user(

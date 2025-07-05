@@ -124,7 +124,9 @@ class DomainEvent(ABC):
     """Base class for domain events"""
 
     event_id: UUID = field(default_factory=uuid4)
-    occurred_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    occurred_at: datetime = field(
+        default_factory=lambda: datetime.now(
+            timezone.utc))
     aggregate_id: UUID = None
     aggregate_type: str = None
     event_type: str = None
@@ -136,9 +138,11 @@ class DomainEvent(ABC):
     def to_dict(self) -> Dict[str, Any]:
         """Convert event to dictionary for serialization"""
         return {
-            "event_id": str(self.event_id),
+            "event_id": str(
+                self.event_id),
             "occurred_at": self.occurred_at.isoformat(),
-            "aggregate_id": str(self.aggregate_id) if self.aggregate_id else None,
+            "aggregate_id": str(
+                self.aggregate_id) if self.aggregate_id else None,
             "aggregate_type": self.aggregate_type,
             "event_type": self.event_type,
             "data": self.get_event_data(),
@@ -210,9 +214,8 @@ class AndSpecification(Specification[T]):
         self.right = right
 
     def is_satisfied_by(self, candidate: T) -> bool:
-        return self.left.is_satisfied_by(candidate) and self.right.is_satisfied_by(
-            candidate
-        )
+        return self.left.is_satisfied_by(
+            candidate) and self.right.is_satisfied_by(candidate)
 
 
 class OrSpecification(Specification[T]):
@@ -223,9 +226,8 @@ class OrSpecification(Specification[T]):
         self.right = right
 
     def is_satisfied_by(self, candidate: T) -> bool:
-        return self.left.is_satisfied_by(candidate) or self.right.is_satisfied_by(
-            candidate
-        )
+        return self.left.is_satisfied_by(
+            candidate) or self.right.is_satisfied_by(candidate)
 
 
 class NotSpecification(Specification[T]):
@@ -283,8 +285,10 @@ class EventStore(ABC):
 
     @abstractmethod
     async def save_events(
-        self, aggregate_id: UUID, events: List[DomainEvent], expected_version: int
-    ) -> None:
+            self,
+            aggregate_id: UUID,
+            events: List[DomainEvent],
+            expected_version: int) -> None:
         """Save events for an aggregate"""
         pass
 
@@ -374,7 +378,9 @@ class Money(ValueObject):
 
     def validate(self):
         if self.amount < 0:
-            raise DomainException("Money amount cannot be negative", "NEGATIVE_MONEY")
+            raise DomainException(
+                "Money amount cannot be negative",
+                "NEGATIVE_MONEY")
         if not self.currency or len(self.currency) != 3:
             raise DomainException("Invalid currency code", "INVALID_CURRENCY")
 
@@ -415,5 +421,4 @@ class DateRange(ValueObject):
     def overlaps_with(self, other: "DateRange") -> bool:
         """Check if this range overlaps with another"""
         return not (
-            self.end_date < other.start_date or self.start_date > other.end_date
-        )
+            self.end_date < other.start_date or self.start_date > other.end_date)

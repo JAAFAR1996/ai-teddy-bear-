@@ -11,8 +11,14 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import uvicorn
-from fastapi import (Depends, FastAPI, HTTPException, WebSocket,
-                     WebSocketDisconnect, status)
+from fastapi import (
+    Depends,
+    FastAPI,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
@@ -20,11 +26,14 @@ from pydantic import BaseModel, Field, field_validator
 from src.application.services.ai_service import AIService
 from src.application.services.child_service import ChildService
 from src.application.services.voice_service import VoiceService
-from src.infrastructure.modern_container import (container,
-                                                 get_ai_service,
-                                                 get_child_service,
-                                                 get_voice_service,
-                                                 initialize_container, shutdown_container)
+from src.infrastructure.modern_container import (
+    container,
+    get_ai_service,
+    get_child_service,
+    get_voice_service,
+    initialize_container,
+    shutdown_container,
+)
 from src.infrastructure.monitoring.metrics import metrics_collector
 from src.infrastructure.security.rate_limiter import RateLimiterMiddleware
 from src.infrastructure.security.request_id import RequestIdMiddleware
@@ -84,7 +93,8 @@ class ConversationRecord(BaseModel):
     emotion: str = Field(..., description="Detected emotion")
     category: str = Field(..., description="Conversation category")
     learning_points: List[str] = Field(
-        default_factory=list, description="Learning points")
+        default_factory=list, description="Learning points"
+    )
 
     def to_metadata(self) -> Dict[str, Any]:
         """Convert analysis data to metadata dictionary"""
@@ -219,6 +229,7 @@ async def register_device(
 
 # ================== AUDIO PROCESSING ENDPOINTS ==================
 
+
 async def _validate_and_get_child(device_id: str, child_service: ChildService):
     """
     Validate device and get child profile.
@@ -233,7 +244,9 @@ async def _validate_and_get_child(device_id: str, child_service: ChildService):
     return child
 
 
-async def _transcribe_audio_data(audio_data: str, language: str, voice_service: VoiceService):
+async def _transcribe_audio_data(
+    audio_data: str, language: str, voice_service: VoiceService
+):
     """
     Transcribe audio data to text with validation.
     Extracted from process_audio to reduce complexity.
@@ -244,12 +257,15 @@ async def _transcribe_audio_data(audio_data: str, language: str, voice_service: 
 
     if not transcribed_text:
         raise HTTPException(
-            status_code=422, detail="Could not transcribe audio")
+            status_code=422,
+            detail="Could not transcribe audio")
 
     return transcribed_text
 
 
-async def _generate_ai_response(message: str, child, session_id: Optional[str], ai_service: AIService):
+async def _generate_ai_response(
+    message: str, child, session_id: Optional[str], ai_service: AIService
+):
     """
     Generate AI response for the transcribed message.
     Extracted from process_audio to reduce complexity.
@@ -259,7 +275,9 @@ async def _generate_ai_response(message: str, child, session_id: Optional[str], 
     )
 
 
-async def _synthesize_response_audio(text: str, emotion: str, language: str, voice_service: VoiceService):
+async def _synthesize_response_audio(
+    text: str, emotion: str, language: str, voice_service: VoiceService
+):
     """
     Convert AI response text to audio.
     Extracted from process_audio to reduce complexity.
@@ -270,8 +288,7 @@ async def _synthesize_response_audio(text: str, emotion: str, language: str, voi
 
 
 async def _save_conversation_data(
-    conversation: ConversationRecord,
-    child_service: ChildService
+    conversation: ConversationRecord, child_service: ChildService
 ):
     """
     Save conversation data to database.
@@ -285,7 +302,9 @@ async def _save_conversation_data(
     )
 
 
-def _build_ai_response(ai_response, response_audio: str, transcribed_text: str) -> AIResponse:
+def _build_ai_response(
+    ai_response, response_audio: str, transcribed_text: str
+) -> AIResponse:
     """
     Build the final AI response object.
     Extracted from process_audio to reduce complexity.
@@ -346,7 +365,10 @@ async def process_audio(
         await _save_conversation_data(conversation_record, child_service)
 
         # Step 6: Build and return response
-        return _build_ai_response(ai_response, response_audio, transcribed_text)
+        return _build_ai_response(
+            ai_response,
+            response_audio,
+            transcribed_text)
 
     except HTTPException:
         raise
@@ -358,7 +380,9 @@ async def process_audio(
 # ================== CHILD PROFILE ENDPOINTS ==================
 
 
-@app.post("/api/v1/children", status_code=status.HTTP_201_CREATED, tags=["children"])
+@app.post("/api/v1/children",
+          status_code=status.HTTP_201_CREATED,
+          tags=["children"])
 async def create_child_profile(
     request: ChildProfileRequest,
     child_service: ChildService = Depends(get_child_service),
@@ -395,8 +419,8 @@ async def get_child_profile(
     child = await child_service.get_by_device_id(device_id)
     if not child:
         raise HTTPException(
-            status_code=404, detail=f"No child profile found for device {device_id}"
-        )
+            status_code=404,
+            detail=f"No child profile found for device {device_id}")
 
     return child.to_dict()
 
@@ -476,7 +500,9 @@ async def value_error_handler(request, exc):
 @app.exception_handler(Exception)
 async def general_exception_handler(request, exc):
     logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
-    return JSONResponse(status_code=500, content={"error": "Internal server error"})
+    return JSONResponse(
+        status_code=500, content={
+            "error": "Internal server error"})
 
 
 def create_app() -> FastAPI:

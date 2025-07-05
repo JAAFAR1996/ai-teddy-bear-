@@ -1,9 +1,7 @@
 {
   "autism_child": {
     "child_id": "autism_child",
-    "special_needs": [
-      "autism"
-    ],
+    "special_needs": ["autism"],
     "communication_level": "limited_verbal",
     "attention_span": 10,
     "sensory_preferences": {
@@ -23,9 +21,7 @@
   },
   "adhd_child": {
     "child_id": "adhd_child",
-    "special_needs": [
-      "adhd"
-    ],
+    "special_needs": ["adhd"],
     "communication_level": "verbal",
     "attention_span": 8,
     "sensory_preferences": {
@@ -45,9 +41,7 @@
   },
   "hearing_child": {
     "child_id": "hearing_child",
-    "special_needs": [
-      "hearing_impaired"
-    ],
+    "special_needs": ["hearing_impaired"],
     "communication_level": "non_verbal",
     "attention_span": 15,
     "sensory_preferences": {
@@ -67,9 +61,7 @@
   },
   "learning_child": {
     "child_id": "learning_child",
-    "special_needs": [
-      "learning_disability"
-    ],
+    "special_needs": ["learning_disability"],
     "communication_level": "verbal",
     "attention_span": 15,
     "sensory_preferences": {
@@ -89,9 +81,7 @@
   },
   "autism_demo": {
     "child_id": "autism_demo",
-    "special_needs": [
-      "autism"
-    ],
+    "special_needs": ["autism"],
     "communication_level": "limited_verbal",
     "attention_span": 10,
     "sensory_preferences": {
@@ -111,9 +101,7 @@
   },
   "adhd_demo": {
     "child_id": "adhd_demo",
-    "special_needs": [
-      "adhd"
-    ],
+    "special_needs": ["adhd"],
     "communication_level": "verbal",
     "attention_span": 8,
     "sensory_preferences": {

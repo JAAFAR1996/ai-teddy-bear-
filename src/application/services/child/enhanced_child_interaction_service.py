@@ -17,12 +17,20 @@ import numpy as np
 import structlog
 
 from src.infrastructure.external_services.advanced_ai_orchestrator import (
-    AdvancedAIOrchestrator, ChildRequest, ModelComplexity)
+    AdvancedAIOrchestrator,
+    ChildRequest,
+    ModelComplexity,
+)
+
 # Import enhanced components
 from src.infrastructure.external_services.enhanced_audio_processor import (
-    AudioProcessingResult, EnhancedAudioProcessor)
+    AudioProcessingResult,
+    EnhancedAudioProcessor,
+)
 from src.infrastructure.security.advanced_content_filter import (
-    AdvancedContentFilter, ContentAnalysisResult)
+    AdvancedContentFilter,
+    ContentAnalysisResult,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -120,7 +128,8 @@ class EnhancedChildInteractionService:
                 child_context={
                     "child_id": child_id,
                     "age": child_profile.get("age", 7),
-                    "mood_history": session.mood_history[-5:],  # آخر 5 حالات مزاجية
+                    # آخر 5 حالات مزاجية
+                    "mood_history": session.mood_history[-5:],
                     "session_context": session_context,
                 },
             )
@@ -197,7 +206,8 @@ class EnhancedChildInteractionService:
                     "content": "عذراً، لم أفهم جيداً. هل يمكنك المحاولة مرة أخرى؟",
                     "model_used": "safety_fallback",
                     "quality_score": 0.5,
-                    "response_metadata": {"is_fallback": True},
+                    "response_metadata": {
+                        "is_fallback": True},
                 }
 
             # 7. فحص أمان الاستجابة أيضاً
@@ -208,8 +218,7 @@ class EnhancedChildInteractionService:
 
             if not response_safety.is_safe:
                 ai_response["content"] = (
-                    response_safety.safe_alternative or "دعنا نتحدث عن شيء آخر جميل!"
-                )
+                    response_safety.safe_alternative or "دعنا نتحدث عن شيء آخر جميل!")
                 self.logger.warning(
                     "⚠️ AI response was filtered for safety", child_id=child_id
                 )
@@ -292,7 +301,8 @@ class EnhancedChildInteractionService:
 
         return self.active_sessions[child_id]
 
-    async def _transcribe_audio(self, audio_result: AudioProcessingResult) -> str:
+    async def _transcribe_audio(
+            self, audio_result: AudioProcessingResult) -> str:
         """تحويل الصوت إلى نص (محاكاة)"""
 
         # في التطبيق الحقيقي، هنا سيتم استخدام Whisper أو خدمة STT
@@ -308,7 +318,8 @@ class EnhancedChildInteractionService:
         else:
             return "أريد أن أتعلم شيئاً جديداً"
 
-    def _extract_emotion_from_audio(self, audio_result: AudioProcessingResult) -> str:
+    def _extract_emotion_from_audio(
+            self, audio_result: AudioProcessingResult) -> str:
         """استخراج الحالة العاطفية من نتيجة الصوت"""
 
         features = audio_result.emotion_features
@@ -413,7 +424,8 @@ class EnhancedChildInteractionService:
                     "child_id": child_id,
                     "child_name": session.child_name,
                     "risk_level": content_analysis.risk_level.value,
-                    "violations": [v.description for v in content_analysis.violations],
+                    "violations": [
+                        v.description for v in content_analysis.violations],
                     "timestamp": time.time(),
                     "recommendations": content_analysis.safety_recommendations,
                 }
@@ -447,7 +459,8 @@ class EnhancedChildInteractionService:
 
         # توصيات بناءً على جودة الصوت
         if audio_result.quality_score < 0.5:
-            recommendations.append("تحسين جودة الصوت - قرّب المايك أو قلّل الضوضاء")
+            recommendations.append(
+                "تحسين جودة الصوت - قرّب المايك أو قلّل الضوضاء")
 
         # توصيات بناءً على النشاط الصوتي
         if audio_result.voice_activity_score < 0.3:
@@ -492,7 +505,8 @@ class EnhancedChildInteractionService:
             self.service_stats["blocked_interactions"] += 1
 
         if content_analysis.violations:
-            self.service_stats["safety_violations"] += len(content_analysis.violations)
+            self.service_stats["safety_violations"] += len(
+                content_analysis.violations)
 
         if content_analysis.content_category.value == "educational":
             self.service_stats["educational_interactions"] += 1
@@ -523,7 +537,11 @@ class EnhancedChildInteractionService:
         )
 
         from src.infrastructure.security.advanced_content_filter import (
-            ContentAnalysisResult, ContentCategory, RiskLevel, SafetyViolation)
+            ContentAnalysisResult,
+            ContentCategory,
+            RiskLevel,
+            SafetyViolation,
+        )
 
         emergency_content_analysis = ContentAnalysisResult(
             is_safe=False,
@@ -536,11 +554,12 @@ class EnhancedChildInteractionService:
                     severity=RiskLevel.CRITICAL,
                     description="خطأ في النظام - تفعيل الوضع الآمن",
                     content_excerpt="emergency",
-                )
-            ],
+                )],
             modifications=["تفعيل وضع الطوارئ"],
             safe_alternative="عذراً، أواجه مشكلة تقنية. هل يمكنك المحاولة مرة أخرى؟",
-            safety_recommendations=["إعادة تشغيل النظام", "فحص الاتصال"],
+            safety_recommendations=[
+                "إعادة تشغيل النظام",
+                "فحص الاتصال"],
             parent_notification_required=True,
             processing_time_ms=1.0,
         )
@@ -549,7 +568,9 @@ class EnhancedChildInteractionService:
             "content": "عذراً، أواجه مشكلة تقنية صغيرة. دعني أعيد المحاولة!",
             "model_used": "emergency_fallback",
             "quality_score": 0.7,
-            "response_metadata": {"is_emergency": True, "timestamp": time.time()},
+            "response_metadata": {
+                "is_emergency": True,
+                "timestamp": time.time()},
         }
 
         return InteractionResponse(
@@ -623,7 +644,8 @@ class EnhancedChildInteractionService:
 
         # إحصائيات من المكونات الفرعية
         audio_stats = self.audio_processor.get_performance_stats()
-        ai_stats = asyncio.create_task(self.ai_orchestrator.get_performance_report())
+        ai_stats = asyncio.create_task(
+            self.ai_orchestrator.get_performance_report())
         filter_stats = self.content_filter.get_filter_statistics()
 
         return {
@@ -664,13 +686,17 @@ class EnhancedChildInteractionService:
                     "💾 Saving session data",
                     child_id=child_id,
                     interaction_count=session.interaction_count,
-                    duration_minutes=(time.time() - session.session_start) / 60,
+                    duration_minutes=(
+                        time.time() -
+                        session.session_start) /
+                    60,
                 )
 
             # مسح الجلسات النشطة
             self.active_sessions.clear()
 
-            self.logger.info("✅ Enhanced Child Interaction Service cleanup completed")
+            self.logger.info(
+                "✅ Enhanced Child Interaction Service cleanup completed")
 
         except Exception as e:
             self.logger.error(f"❌ Service cleanup failed: {e}")

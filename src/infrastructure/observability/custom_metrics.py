@@ -84,7 +84,10 @@ class ChildSafetyMetrics:
         # Initialize metrics
         self.meter = metrics.get_meter("ai.teddy.safety", "1.0.0")
         self.tracer = trace.get_tracer("ai.teddy.safety", "1.0.0")
+        self._initialize_metrics()
 
+    def _initialize_metrics(self):
+        """Initializes all the Prometheus metrics for child safety."""
         # Safety violation tracking
         self.safety_violations = self.meter.create_counter(
             name="child_safety_violations_total",
@@ -156,7 +159,17 @@ class ChildSafetyMetrics:
             name="content_filter_effectiveness",
             description="Effectiveness of content filtering",
             unit="1",
-            boundaries=[0.7, 0.8, 0.85, 0.9, 0.95, 0.97, 0.98, 0.99, 0.995, 1.0],
+            boundaries=[
+                0.7,
+                0.8,
+                0.85,
+                0.9,
+                0.95,
+                0.97,
+                0.98,
+                0.99,
+                0.995,
+                1.0],
         )
 
     def _setup_telemetry(self) -> Any:
@@ -195,12 +208,15 @@ class ChildSafetyMetrics:
                 {
                     "violation.type": violation_type.value,
                     "violation.severity": severity.value,
-                    "child.age_group": child_context.get("age_group", "unknown"),
-                    "child.id": child_context.get("child_id", "anonymous"),
+                    "child.age_group": child_context.get(
+                        "age_group",
+                        "unknown"),
+                    "child.id": child_context.get(
+                        "child_id",
+                        "anonymous"),
                     "violation.details": details or "No details provided",
                     "timestamp": datetime.utcnow().isoformat(),
-                }
-            )
+                })
 
             self.safety_violations.add(
                 1,
@@ -216,21 +232,23 @@ class ChildSafetyMetrics:
             if severity in [SeverityLevel.CRITICAL, SeverityLevel.HIGH]:
                 logger.critical(
                     f"Child safety violation: {violation_type.value} "
-                    f"(severity: {severity.value}) for child {child_context.get('child_id', 'unknown')}"
-                )
+                    f"(severity: {severity.value}) for child {child_context.get('child_id', 'unknown')}")
 
-    def record_content_toxicity(
-        self, toxicity_score: float, content_type: str, child_context: Dict[str, Any]
-    ):
+    def record_content_toxicity(self,
+                                toxicity_score: float,
+                                content_type: str,
+                                child_context: Dict[str,
+                                                    Any]):
         """Record content toxicity score"""
         with self.tracer.start_as_current_span("content_toxicity_check") as span:
             span.set_attributes(
                 {
                     "toxicity.score": toxicity_score,
                     "content.type": content_type,
-                    "child.age_group": child_context.get("age_group", "unknown"),
-                }
-            )
+                    "child.age_group": child_context.get(
+                        "age_group",
+                        "unknown"),
+                })
 
             self.content_toxicity.record(
                 toxicity_score,
@@ -281,24 +299,27 @@ class ChildSafetyMetrics:
             # Record safety violations if any
             for violation in metrics.violations:
                 self.record_safety_violation(
-                    violation,
-                    SeverityLevel.MEDIUM,
-                    {"child_id": metrics.child_id, "age_group": metrics.age_group},
-                )
+                    violation, SeverityLevel.MEDIUM, {
+                        "child_id": metrics.child_id, "age_group": metrics.age_group}, )
 
-    def record_emergency_activation(
-        self, trigger_type: str, response_time_ms: float, child_context: Dict[str, Any]
-    ):
+    def record_emergency_activation(self,
+                                    trigger_type: str,
+                                    response_time_ms: float,
+                                    child_context: Dict[str,
+                                                        Any]):
         """Record emergency protocol activation"""
         with self.tracer.start_as_current_span("emergency_activation") as span:
             span.set_attributes(
                 {
                     "emergency.trigger_type": trigger_type,
                     "emergency.response_time_ms": response_time_ms,
-                    "child.id": child_context.get("child_id", "unknown"),
-                    "child.age_group": child_context.get("age_group", "unknown"),
-                }
-            )
+                    "child.id": child_context.get(
+                        "child_id",
+                        "unknown"),
+                    "child.age_group": child_context.get(
+                        "age_group",
+                        "unknown"),
+                })
 
             self.emergency_activations.add(
                 1,
@@ -355,8 +376,8 @@ class ChildSafetyMetrics:
         )
 
         self.coppa_compliance.set(
-            coppa_compliance, attributes={"regulation": "COPPA", "region": "US"}
-        )
+            coppa_compliance, attributes={
+                "regulation": "COPPA", "region": "US"})
 
         self.content_filter_effectiveness.record(
             filter_effectiveness,
@@ -392,7 +413,18 @@ class AIPerformanceMetrics:
             name="ai_response_time_ms",
             description="AI model response time in milliseconds",
             unit="ms",
-            boundaries=[50, 100, 200, 300, 500, 750, 1000, 1500, 2000, 3000, 5000],
+            boundaries=[
+                50,
+                100,
+                200,
+                300,
+                500,
+                750,
+                1000,
+                1500,
+                2000,
+                3000,
+                5000],
         )
 
         # AI model accuracy
@@ -400,7 +432,17 @@ class AIPerformanceMetrics:
             name="ai_accuracy_score",
             description="AI model accuracy score",
             unit="1",
-            boundaries=[0.7, 0.8, 0.85, 0.9, 0.92, 0.95, 0.97, 0.98, 0.99, 1.0],
+            boundaries=[
+                0.7,
+                0.8,
+                0.85,
+                0.9,
+                0.92,
+                0.95,
+                0.97,
+                0.98,
+                0.99,
+                1.0],
         )
 
         # Token usage tracking
@@ -437,7 +479,18 @@ class AIPerformanceMetrics:
             name="ai_response_quality_score",
             description="Quality score of AI responses",
             unit="1",
-            boundaries=[0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.93, 0.95, 0.97, 1.0],
+            boundaries=[
+                0.5,
+                0.6,
+                0.7,
+                0.75,
+                0.8,
+                0.85,
+                0.9,
+                0.93,
+                0.95,
+                0.97,
+                1.0],
         )
 
         # Model temperature effectiveness
@@ -446,6 +499,87 @@ class AIPerformanceMetrics:
             description="Effectiveness of different temperature settings",
             unit="1",
             boundaries=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        )
+
+    def _create_ai_interaction_span_attributes(
+        self,
+        response_time_ms: float,
+        tokens_used: int,
+        model_name: str,
+        temperature: float,
+        accuracy_score: float,
+        quality_score: float,
+        context_utilization: float,
+        cost_usd: float,
+        child_context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Creates a dictionary of span attributes for AI interaction tracing."""
+        return {
+            "ai.model": model_name,
+            "ai.temperature": temperature,
+            "ai.tokens_used": tokens_used,
+            "ai.response_time_ms": response_time_ms,
+            "ai.accuracy": accuracy_score,
+            "ai.quality": quality_score,
+            "ai.context_utilization": context_utilization,
+            "ai.cost_usd": cost_usd,
+            "child.age_group": child_context.get("age_group", "unknown"),
+        }
+
+    def _record_all_ai_metrics(
+        self,
+        response_time_ms: float,
+        tokens_used: int,
+        model_name: str,
+        temperature: float,
+        accuracy_score: float,
+        quality_score: float,
+        context_utilization: float,
+        cost_usd: float,
+        child_context: Dict[str, Any],
+    ):
+        """Records all AI performance metrics."""
+        self.ai_response_time.record(
+            response_time_ms,
+            attributes={
+                "model": model_name,
+                "age_group": child_context.get("age_group", "unknown"),
+                "temperature_range": self._categorize_temperature(temperature),
+            },
+        )
+        self.ai_accuracy.record(
+            accuracy_score,
+            attributes={
+                "model": model_name,
+                "age_group": child_context.get("age_group", "unknown"),
+            },
+        )
+        self.token_usage.add(
+            tokens_used, attributes={
+                "model": model_name, "interaction_type": child_context.get(
+                    "interaction_type", "chat"), "age_group": child_context.get(
+                    "age_group", "unknown"), }, )
+        self.inference_cost.add(
+            cost_usd,
+            attributes={
+                "model": model_name,
+                "cost_tier": self._categorize_cost(cost_usd),
+            },
+        )
+        self.context_utilization.record(
+            context_utilization,
+            attributes={
+                "model": model_name,
+                "utilization_level": self._categorize_utilization(context_utilization),
+            },
+        )
+        self.response_quality.record(
+            quality_score,
+            attributes={
+                "model": model_name,
+                "age_group": child_context.get("age_group", "unknown"),
+                "quality_tier": self._categorize_quality(quality_score),
+            },
         )
 
     def record_ai_interaction(
@@ -462,72 +596,29 @@ class AIPerformanceMetrics:
     ):
         """Record comprehensive AI interaction metrics"""
         with self.tracer.start_as_current_span("ai_interaction") as span:
-            span.set_attributes(
-                {
-                    "ai.model": model_name,
-                    "ai.temperature": temperature,
-                    "ai.tokens_used": tokens_used,
-                    "ai.response_time_ms": response_time_ms,
-                    "ai.accuracy": accuracy_score,
-                    "ai.quality": quality_score,
-                    "ai.context_utilization": context_utilization,
-                    "ai.cost_usd": cost_usd,
-                    "child.age_group": child_context.get("age_group", "unknown"),
-                }
-            )
-
-            # Record all metrics
-            self.ai_response_time.record(
+            attributes = self._create_ai_interaction_span_attributes(
                 response_time_ms,
-                attributes={
-                    "model": model_name,
-                    "age_group": child_context.get("age_group", "unknown"),
-                    "temperature_range": self._categorize_temperature(temperature),
-                },
-            )
-
-            self.ai_accuracy.record(
-                accuracy_score,
-                attributes={
-                    "model": model_name,
-                    "age_group": child_context.get("age_group", "unknown"),
-                },
-            )
-
-            self.token_usage.add(
                 tokens_used,
-                attributes={
-                    "model": model_name,
-                    "interaction_type": child_context.get("interaction_type", "chat"),
-                    "age_group": child_context.get("age_group", "unknown"),
-                },
-            )
-
-            self.inference_cost.add(
-                cost_usd,
-                attributes={
-                    "model": model_name,
-                    "cost_tier": self._categorize_cost(cost_usd),
-                },
-            )
-
-            self.context_utilization.record(
-                context_utilization,
-                attributes={
-                    "model": model_name,
-                    "utilization_level": self._categorize_utilization(
-                        context_utilization
-                    ),
-                },
-            )
-
-            self.response_quality.record(
+                model_name,
+                temperature,
+                accuracy_score,
                 quality_score,
-                attributes={
-                    "model": model_name,
-                    "age_group": child_context.get("age_group", "unknown"),
-                    "quality_tier": self._categorize_quality(quality_score),
-                },
+                context_utilization,
+                cost_usd,
+                child_context,
+            )
+            span.set_attributes(attributes)
+
+            self._record_all_ai_metrics(
+                response_time_ms,
+                tokens_used,
+                model_name,
+                temperature,
+                accuracy_score,
+                quality_score,
+                context_utilization,
+                cost_usd,
+                child_context,
             )
 
     def _categorize_temperature(self, temperature: float) -> str:
@@ -588,8 +679,7 @@ class SystemHealthMetrics:
 
         # Error rate tracking
         self.error_rate = self.meter.create_gauge(
-            name="service_error_rate", description="Service error rate", unit="1"
-        )
+            name="service_error_rate", description="Service error rate", unit="1")
 
         # Request latency
         self.request_latency = self.meter.create_histogram(
@@ -601,8 +691,7 @@ class SystemHealthMetrics:
 
         # Throughput tracking
         self.request_throughput = self.meter.create_counter(
-            name="requests_total", description="Total number of requests", unit="1"
-        )
+            name="requests_total", description="Total number of requests", unit="1")
 
         # Error budget consumption
         self.error_budget_consumption = self.meter.create_gauge(
@@ -613,8 +702,7 @@ class SystemHealthMetrics:
 
         # SLO compliance
         self.slo_compliance = self.meter.create_gauge(
-            name="slo_compliance", description="SLO compliance percentage", unit="1"
-        )
+            name="slo_compliance", description="SLO compliance percentage", unit="1")
 
         # Database connection health
         self.db_connection_health = self.meter.create_gauge(
@@ -625,18 +713,17 @@ class SystemHealthMetrics:
 
         # Cache hit rate
         self.cache_hit_rate = self.meter.create_gauge(
-            name="cache_hit_rate", description="Cache hit rate percentage", unit="1"
-        )
+            name="cache_hit_rate", description="Cache hit rate percentage", unit="1")
 
         # Memory usage
         self.memory_usage = self.meter.create_gauge(
-            name="memory_usage_bytes", description="Memory usage in bytes", unit="bytes"
-        )
+            name="memory_usage_bytes",
+            description="Memory usage in bytes",
+            unit="bytes")
 
         # CPU utilization
         self.cpu_utilization = self.meter.create_gauge(
-            name="cpu_utilization", description="CPU utilization percentage", unit="1"
-        )
+            name="cpu_utilization", description="CPU utilization percentage", unit="1")
 
     def record_request(
         self,
@@ -702,7 +789,9 @@ class SystemHealthMetrics:
             attributes={"service": service_name, "slo_type": "availability"},
         )
 
-        self.slo_compliance.set(slo_compliance, attributes={"service": service_name})
+        self.slo_compliance.set(
+            slo_compliance, attributes={
+                "service": service_name})
 
 
 class ObservabilityAggregator:

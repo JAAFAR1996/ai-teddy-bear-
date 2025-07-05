@@ -179,7 +179,9 @@ class RolePermissions:
             Permission.WRITE_SAFETY,
             Permission.READ_MONITORING,
         },
-        UserRole.CHILD: {Permission.READ_CONVERSATION, Permission.WRITE_CONVERSATION},
+        UserRole.CHILD: {
+            Permission.READ_CONVERSATION,
+            Permission.WRITE_CONVERSATION},
         UserRole.GUEST: set(),
         UserRole.SERVICE: {
             Permission.READ_CHILD,
@@ -202,13 +204,17 @@ class RolePermissions:
 class AuthenticationService:
     """Authentication service for GraphQL Federation."""
 
-    def __init__(self, config: AuthConfig, cache: Optional[MultiLayerCache] = None):
+    def __init__(
+            self,
+            config: AuthConfig,
+            cache: Optional[MultiLayerCache] = None):
         self.config = config
         self.cache = cache
 
         # Password hashing
         if JWT_AVAILABLE:
-            self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            self.pwd_context = CryptContext(
+                schemes=["bcrypt"], deprecated="auto")
 
         # In-memory stores (replace with database in production)
         self.users: Dict[str, User] = {}
@@ -216,7 +222,8 @@ class AuthenticationService:
         self.refresh_tokens: Dict[str, str] = {}  # token -> user_id
         self.login_attempts: Dict[str, List[datetime]] = {}
 
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
         # Initialize default users
         self._initialize_default_users()
@@ -267,7 +274,9 @@ class AuthenticationService:
     ) -> User:
         """Create new user."""
         if not JWT_AVAILABLE:
-            raise HTTPException(status_code=500, detail="JWT library not available")
+            raise HTTPException(
+                status_code=500,
+                detail="JWT library not available")
 
         # Validate password
         if len(password) < self.config.password_min_length:
@@ -281,7 +290,9 @@ class AuthenticationService:
             (u for u in self.users.values() if u.username == username), None
         )
         if existing_user:
-            raise HTTPException(status_code=400, detail="Username already exists")
+            raise HTTPException(
+                status_code=400,
+                detail="Username already exists")
 
         # Create user
         user_id = f"user-{secrets.token_urlsafe(8)}"
@@ -305,7 +316,10 @@ class AuthenticationService:
         self.logger.info(f"Created user: {username} with role: {role.value}")
         return user
 
-    async def authenticate_user(self, username: str, password: str) -> Optional[User]:
+    async def authenticate_user(
+            self,
+            username: str,
+            password: str) -> Optional[User]:
         """Authenticate user with username/password."""
         if not JWT_AVAILABLE:
             return None
@@ -318,7 +332,8 @@ class AuthenticationService:
             )
 
         # Find user
-        user = next((u for u in self.users.values() if u.username == username), None)
+        user = next((u for u in self.users.values()
+                    if u.username == username), None)
 
         if not user or not user.is_active:
             await self._record_login_attempt(username, False)
@@ -342,7 +357,9 @@ class AuthenticationService:
     async def create_access_token(self, user: User) -> str:
         """Create JWT access token."""
         if not JWT_AVAILABLE:
-            raise HTTPException(status_code=500, detail="JWT library not available")
+            raise HTTPException(
+                status_code=500,
+                detail="JWT library not available")
 
         payload = {
             "sub": user.id,
@@ -356,8 +373,9 @@ class AuthenticationService:
         }
 
         token = jwt.encode(
-            payload, self.config.jwt_secret_key, algorithm=self.config.jwt_algorithm
-        )
+            payload,
+            self.config.jwt_secret_key,
+            algorithm=self.config.jwt_algorithm)
 
         # Cache token for quick validation
         if self.cache:
@@ -531,7 +549,8 @@ class GraphQLAuthenticator:
         self.api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
         self.api_key_query = APIKeyQuery(name="api_key", auto_error=False)
 
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
     async def authenticate_request(
         self,
@@ -567,7 +586,8 @@ class GraphQLAuthenticator:
 
         def decorator(func) -> Any:
             async def wrapper(*args, **kwargs):
-                # Get user from context (implementation depends on GraphQL library)
+                # Get user from context (implementation depends on GraphQL
+                # library)
                 user = getattr(wrapper, "_current_user", None)
 
                 if not user:
@@ -602,8 +622,8 @@ class GraphQLAuthenticator:
 
                 if not self.auth_service.check_child_access(user, child_id):
                     raise HTTPException(
-                        status_code=403, detail="Access denied to child resource"
-                    )
+                        status_code=403,
+                        detail="Access denied to child resource")
 
                 return await func(*args, **kwargs)
 
@@ -627,8 +647,8 @@ def create_auth_config(jwt_secret_key: Optional[str] = None) -> AuthConfig:
 
 
 async def create_auth_service(
-    config: Optional[AuthConfig] = None, cache: Optional[MultiLayerCache] = None
-) -> AuthenticationService:
+        config: Optional[AuthConfig] = None,
+        cache: Optional[MultiLayerCache] = None) -> AuthenticationService:
     """Create authentication service."""
     if config is None:
         config = create_auth_config()

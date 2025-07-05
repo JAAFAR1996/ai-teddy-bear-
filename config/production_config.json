@@ -31,8 +31,14 @@
       "enabled": true,
       "strictMode": true,
       "emergencyKeywords": [
-        "يؤلم", "خائف", "مساعدة", "طوارئ",
-        "hurts", "scared", "help", "emergency"
+        "يؤلم",
+        "خائف",
+        "مساعدة",
+        "طوارئ",
+        "hurts",
+        "scared",
+        "help",
+        "emergency"
       ]
     }
   },
@@ -112,11 +118,7 @@
       "enabled": true,
       "interval": 30,
       "timeout": 5000,
-      "endpoints": [
-        "/health",
-        "/api/v1/health",
-        "/ws/health"
-      ]
+      "endpoints": ["/health", "/api/v1/health", "/ws/health"]
     }
   },
   "database": {
@@ -290,4 +292,4 @@
       "channels": ["email", "in-app"]
     }
   }
-} 
+}

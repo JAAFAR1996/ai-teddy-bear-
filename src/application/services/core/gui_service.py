@@ -1,4 +1,4 @@
-﻿"""GUI management service for ESP32 teddy bear simulator."""
+"""GUI management service for ESP32 teddy bear simulator."""
 
 import tkinter as tk
 from tkinter import messagebox, ttk
@@ -22,7 +22,10 @@ class GUIManagementService:
 
         logger.info(" GUI management service initialized")
 
-    def register_update_callback(self, component: str, callback: Callable) -> None:
+    def register_update_callback(
+            self,
+            component: str,
+            callback: Callable) -> None:
         """Register callback for GUI component updates."""
         self.update_callbacks[component] = callback
 
@@ -70,14 +73,19 @@ class GUIManagementService:
                 "led_canvas" in self.gui_components
                 and "led_circle" in self.gui_components
             ):
-                led_color = status_data.get("hardware", {}).get("led_status", "red")
+                led_color = status_data.get(
+                    "hardware", {}).get(
+                    "led_status", "red")
                 self.gui_components["led_canvas"].itemconfig(
                     self.gui_components["led_circle"], fill=led_color
                 )
 
             if "volume_label" in self.gui_components:
-                volume = status_data.get("hardware", {}).get("volume_level", 50)
-                self.gui_components["volume_label"].config(text=f" Volume: {volume}%")
+                volume = status_data.get(
+                    "hardware", {}).get(
+                    "volume_level", 50)
+                self.gui_components["volume_label"].config(
+                    text=f" Volume: {volume}%")
 
         except Exception as e:
             logger.error(f" Device status update failed: {e}")
@@ -102,7 +110,8 @@ class GUIManagementService:
                 else:
                     text = " Server: Disconnected"
                     color = "red"
-                self.gui_components["server_status_label"].config(text=text, fg=color)
+                self.gui_components["server_status_label"].config(
+                    text=text, fg=color)
 
         except Exception as e:
             logger.error(f" Network status update failed: {e}")
@@ -162,7 +171,8 @@ class GUIManagementService:
         except Exception as e:
             logger.error(f" Log conversation failed: {e}")
 
-    def show_message(self, title: str, message: str, msg_type: str = "info") -> None:
+    def show_message(self, title: str, message: str,
+                     msg_type: str = "info") -> None:
         """Show message dialog."""
         try:
             if msg_type == "error":
@@ -209,8 +219,13 @@ class GUIManagementService:
     def _create_status_panel(self) -> None:
         """Create device status panel."""
         status_frame = tk.LabelFrame(
-            self.root, text="Device Status", bg="#ecf0f1", font=("Arial", 12, "bold")
-        )
+            self.root,
+            text="Device Status",
+            bg="#ecf0f1",
+            font=(
+                "Arial",
+                12,
+                "bold"))
         status_frame.pack(fill="x", padx=15, pady=10)
 
         # LED Status with Audio Visualizer
@@ -273,8 +288,12 @@ class GUIManagementService:
         status_label.pack(anchor="w", pady=5)
 
         wifi_label = tk.Label(
-            info_frame, text=" WiFi: Disconnected", bg="#ecf0f1", font=("Arial", 10)
-        )
+            info_frame,
+            text=" WiFi: Disconnected",
+            bg="#ecf0f1",
+            font=(
+                "Arial",
+                10))
         wifi_label.pack(anchor="w")
 
         server_status_label = tk.Label(
@@ -299,8 +318,13 @@ class GUIManagementService:
     def _create_control_panel(self) -> None:
         """Create control panel."""
         control_frame = tk.LabelFrame(
-            self.root, text="Main Controls", bg="#ecf0f1", font=("Arial", 12, "bold")
-        )
+            self.root,
+            text="Main Controls",
+            bg="#ecf0f1",
+            font=(
+                "Arial",
+                12,
+                "bold"))
         control_frame.pack(fill="x", padx=15, pady=10)
 
         buttons_frame = tk.Frame(control_frame, bg="#ecf0f1")
@@ -324,8 +348,13 @@ class GUIManagementService:
     def _create_child_panel(self) -> None:
         """Create child profile panel."""
         child_frame = tk.LabelFrame(
-            self.root, text="Child Profile", bg="#ecf0f1", font=("Arial", 12, "bold")
-        )
+            self.root,
+            text="Child Profile",
+            bg="#ecf0f1",
+            font=(
+                "Arial",
+                12,
+                "bold"))
         child_frame.pack(fill="x", padx=15, pady=10)
 
         profile_frame = tk.Frame(child_frame, bg="#ecf0f1")
@@ -359,8 +388,13 @@ class GUIManagementService:
     def _create_activity_panel(self) -> None:
         """Create activity monitoring panel."""
         activity_frame = tk.LabelFrame(
-            self.root, text="Activity Monitor", bg="#ecf0f1", font=("Arial", 12, "bold")
-        )
+            self.root,
+            text="Activity Monitor",
+            bg="#ecf0f1",
+            font=(
+                "Arial",
+                12,
+                "bold"))
         activity_frame.pack(fill="both", expand=True, padx=15, pady=10)
 
         # Tabs

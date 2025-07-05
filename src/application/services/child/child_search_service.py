@@ -8,8 +8,11 @@ import logging
 from typing import List, Optional
 
 from src.core.domain.entities.child import Child
-from src.domain.child.models.child_search_criteria import (AgeGroup, AgeRange,
-                                                           ChildSearchCriteria)
+from src.domain.child.models.child_search_criteria import (
+    AgeGroup,
+    AgeRange,
+    ChildSearchCriteria,
+)
 from src.infrastructure.persistence.child_repository import ChildRepository
 
 
@@ -20,7 +23,9 @@ class ChildSearchService:
         self.child_repository = child_repository
         self.logger = logging.getLogger(__name__)
 
-    async def search_children(self, criteria: ChildSearchCriteria) -> List[Child]:
+    async def search_children(
+            self,
+            criteria: ChildSearchCriteria) -> List[Child]:
         """Search children based on criteria"""
         try:
             if not criteria.filters.has_filters():

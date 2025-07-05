@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable
 
 """
 Enhanced Security Module - Enterprise Grade 2025
@@ -198,7 +198,8 @@ class AdvancedEncryption:
             algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend()
         )
         decryptor = cipher.decryptor()
-        padded_data = decryptor.update(encrypted_content) + decryptor.finalize()
+        padded_data = decryptor.update(
+            encrypted_content) + decryptor.finalize()
 
         # Remove padding
         padding_length = padded_data[-1]
@@ -253,7 +254,8 @@ class PasswordSecurity:
         self.forbidden_patterns = [
             r"(.)\1{3,}",  # Repeated characters
             r"(012|123|234|345|456|567|678|789|890)",  # Sequential numbers
-            r"(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)",  # Sequential letters
+            # Sequential letters
+            r"(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)",
             r"(qwerty|asdfgh|zxcvbn)",  # Keyboard patterns
         ]
 
@@ -267,52 +269,77 @@ class PasswordSecurity:
         """Verify password against hash"""
         return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
+    def _get_password_validators(
+        self, user_info: Optional[Dict[str, str]] = None
+    ) -> List[Callable]:
+        """Returns a list of password validation functions."""
+        validators = [
+            lambda p: (
+                f"Password must be at least {self.min_length} characters long"
+                if len(p) < self.min_length
+                else None
+            ),
+            lambda p: (
+                f"Password must be no more than {self.max_length} characters long"
+                if len(p) > self.max_length
+                else None
+            ),
+            lambda p: (
+                "Password must contain at least one uppercase letter"
+                if self.require_uppercase and not re.search(r"[A-Z]", p)
+                else None
+            ),
+            lambda p: (
+                "Password must contain at least one lowercase letter"
+                if self.require_lowercase and not re.search(r"[a-z]", p)
+                else None
+            ),
+            lambda p: (
+                "Password must contain at least one digit"
+                if self.require_digits and not re.search(r"\d", p)
+                else None
+            ),
+            lambda p: (
+                "Password must contain at least one special character"
+                if self.require_symbols and not re.search(r'[!@#$%^&*(),.?":{}|<>]', p)
+                else None
+            ),
+            lambda p: (
+                "Password contains forbidden patterns"
+                if any(
+                    re.search(pattern, p.lower()) for pattern in self.forbidden_patterns
+                )
+                else None
+            ),
+            lambda p: (
+                f"Password is too predictable (entropy: {self._calculate_entropy(p):.1f} bits, minimum: {self.min_entropy})"
+                if self._calculate_entropy(p) < self.min_entropy
+                else None
+            ),
+        ]
+        if user_info:
+            for key, value in user_info.items():
+                if value and len(value) > 3:
+                    validators.append(
+                        lambda p, k=key, v=value: (
+                            f"Password cannot contain {k}"
+                            if v.lower() in p.lower()
+                            else None
+                        )
+                    )
+        return validators
+
     def validate_password(
         self, password: str, user_info: Optional[Dict[str, str]] = None
     ) -> Tuple[bool, List[str]]:
         """Comprehensive password validation"""
-        errors = []
-
-        # Length check
-        if len(password) < self.min_length:
-            errors.append(
-                f"Password must be at least {self.min_length} characters long"
-            )
-        if len(password) > self.max_length:
-            errors.append(
-                f"Password must be no more than {self.max_length} characters long"
-            )
-
-        # Character requirements
-        if self.require_uppercase and not re.search(r"[A-Z]", password):
-            errors.append("Password must contain at least one uppercase letter")
-        if self.require_lowercase and not re.search(r"[a-z]", password):
-            errors.append("Password must contain at least one lowercase letter")
-        if self.require_digits and not re.search(r"\d", password):
-            errors.append("Password must contain at least one digit")
-        if self.require_symbols and not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-            errors.append("Password must contain at least one special character")
-
-        # Pattern checks
-        for pattern in self.forbidden_patterns:
-            if re.search(pattern, password.lower()):
-                errors.append("Password contains forbidden patterns")
-                break
-
-        # Entropy check
-        entropy = self._calculate_entropy(password)
-        if entropy < self.min_entropy:
-            errors.append(
-                f"Password is too predictable (entropy: {entropy:.1f} bits, minimum: {self.min_entropy})"
-            )
-
-        # User info check
-        if user_info:
-            for key, value in user_info.items():
-                if value and len(value) > 3 and value.lower() in password.lower():
-                    errors.append(f"Password cannot contain {key}")
-
-        return len(errors) == 0, errors
+        validators = self._get_password_validators(user_info)
+        errors = [
+            error
+            for validator in validators
+            if (error := validator(password)) is not None
+        ]
+        return not errors, errors
 
     def _calculate_entropy(self, password: str) -> float:
         """Calculate password entropy in bits"""
@@ -369,10 +396,14 @@ class RateLimitingService:
 
         # Rate limit configurations
         self.limits = {
-            "api_general": {"requests": 100, "window": 60},  # 100 requests per minute
-            "api_auth": {"requests": 5, "window": 60},  # 5 auth attempts per minute
-            "websocket": {"connections": 10, "window": 60},  # 10 connections per minute
-            "audio_upload": {"requests": 20, "window": 60},  # 20 uploads per minute
+            # 100 requests per minute
+            "api_general": {"requests": 100, "window": 60},
+            # 5 auth attempts per minute
+            "api_auth": {"requests": 5, "window": 60},
+            # 10 connections per minute
+            "websocket": {"connections": 10, "window": 60},
+            # 20 uploads per minute
+            "audio_upload": {"requests": 20, "window": 60},
         }
 
     async def check_rate_limit(
@@ -454,8 +485,7 @@ class RateLimitingService:
 
         # Clean expired requests
         bucket["requests"] = [
-            req_time for req_time in bucket["requests"] if req_time > window_start
-        ]
+            req_time for req_time in bucket["requests"] if req_time > window_start]
 
         # Check limit
         if len(bucket["requests"]) >= config["requests"]:
@@ -498,7 +528,8 @@ class SecurityAuditLogger:
         if not event.correlation_id:
             import contextvars
 
-            correlation_id_var = contextvars.ContextVar("correlation_id", default=None)
+            correlation_id_var = contextvars.ContextVar(
+                "correlation_id", default=None)
             event.correlation_id = correlation_id_var.get()
 
         async with self._buffer_lock:
@@ -588,7 +619,8 @@ class ThreatDetectionEngine:
             "burp",
         ]
 
-    async def analyze_request(self, request: Request) -> Tuple[ThreatLevel, List[str]]:
+    async def analyze_request(
+            self, request: Request) -> Tuple[ThreatLevel, List[str]]:
         """Analyze request for potential threats"""
         threats = []
         max_threat_level = ThreatLevel.LOW
@@ -694,112 +726,109 @@ class EnterpriseSecurityManager:
         self.rate_limiter = RateLimitingService(redis_client)
 
         # JWT settings
-        self.jwt_secret = getattr(settings, "jwt_secret", secrets.token_urlsafe(32))
+        self.jwt_secret = getattr(
+            settings,
+            "jwt_secret",
+            secrets.token_urlsafe(32))
         self.jwt_algorithm = "HS256"
         self.jwt_expire_minutes = 30
+
+    async def _perform_threat_detection(self, request: Request) -> None:
+        """Performs threat detection on the incoming request."""
+        threat_level, threats = await self.threat_detector.analyze_request(request)
+        if threat_level == ThreatLevel.CRITICAL:
+            await self.audit_logger.log_event(
+                SecurityEvent(
+                    event_type=SecurityEventType.SUSPICIOUS_ACTIVITY,
+                    timestamp=datetime.utcnow(),
+                    ip_address=request.client.host if request.client else None,
+                    user_agent=request.headers.get("user-agent"),
+                    threat_level=threat_level,
+                    details={"threats": threats},
+                )
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Request blocked due to security policy",
+            )
+
+    async def _check_request_rate_limit(self, request: Request) -> None:
+        """Checks the rate limit for the incoming request."""
+        client_ip = request.client.host if request.client else "unknown"
+        is_allowed, rate_info = await self.rate_limiter.check_rate_limit(
+            client_ip, "api_general"
+        )
+        if not is_allowed:
+            await self.audit_logger.log_event(
+                SecurityEvent(
+                    event_type=SecurityEventType.RATE_LIMIT_EXCEEDED,
+                    timestamp=datetime.utcnow(),
+                    ip_address=client_ip,
+                    threat_level=ThreatLevel.MEDIUM,
+                    details=rate_info,
+                )
+            )
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded",
+                headers={
+                    "Retry-After": str(int(rate_info.get("retry_after", 60))),
+                    "X-RateLimit-Limit": str(rate_info.get("limit", 0)),
+                    "X-RateLimit-Remaining": str(rate_info.get("remaining", 0)),
+                },
+            )
+
+    async def _validate_jwt_token(
+            self, request: Request) -> Optional[Dict[str, Any]]:
+        """Validates the JWT token from the request."""
+        token = await self._extract_token(request)
+        if not token:
+            return None
+
+        try:
+            user_info = jwt.decode(
+                token, self.jwt_secret, algorithms=[self.jwt_algorithm]
+            )
+            await self.audit_logger.log_event(
+                SecurityEvent(
+                    event_type=SecurityEventType.LOGIN_SUCCESS,
+                    timestamp=datetime.utcnow(),
+                    user_id=user_info.get("user_id"),
+                    ip_address=request.client.host if request.client else "unknown",
+                    threat_level=ThreatLevel.LOW,
+                )
+            )
+            return user_info
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired")
+        except jwt.InvalidTokenError:
+            await self.audit_logger.log_event(
+                SecurityEvent(
+                    event_type=SecurityEventType.LOGIN_FAILURE,
+                    timestamp=datetime.utcnow(),
+                    ip_address=request.client.host if request.client else "unknown",
+                    threat_level=ThreatLevel.MEDIUM,
+                    details={"reason": "invalid_token"},
+                )
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token")
 
     async def authenticate_request(self, request: Request) -> Dict[str, Any]:
         """Comprehensive request authentication and authorization"""
         start_time = time.time()
-
         try:
-            # Threat detection
-            threat_level, threats = await self.threat_detector.analyze_request(request)
-
-            if threat_level == ThreatLevel.CRITICAL:
-                await self.audit_logger.log_event(
-                    SecurityEvent(
-                        event_type=SecurityEventType.SUSPICIOUS_ACTIVITY,
-                        timestamp=datetime.utcnow(),
-                        ip_address=request.client.host if request.client else None,
-                        user_agent=request.headers.get("user-agent"),
-                        threat_level=threat_level,
-                        details={"threats": threats},
-                    )
-                )
-
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Request blocked due to security policy",
-                )
-
-            # Rate limiting
-            client_ip = request.client.host if request.client else "unknown"
-            is_allowed, rate_info = await self.rate_limiter.check_rate_limit(
-                client_ip, "api_general"
-            )
-
-            if not is_allowed:
-                await self.audit_logger.log_event(
-                    SecurityEvent(
-                        event_type=SecurityEventType.RATE_LIMIT_EXCEEDED,
-                        timestamp=datetime.utcnow(),
-                        ip_address=client_ip,
-                        threat_level=ThreatLevel.MEDIUM,
-                        details=rate_info,
-                    )
-                )
-
-                raise HTTPException(
-                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                    detail="Rate limit exceeded",
-                    headers={
-                        "Retry-After": str(int(rate_info.get("retry_after", 60))),
-                        "X-RateLimit-Limit": str(rate_info.get("limit", 0)),
-                        "X-RateLimit-Remaining": str(rate_info.get("remaining", 0)),
-                    },
-                )
-
-            # JWT token validation (if present)
-            token = await self._extract_token(request)
-            user_info = None
-
-            if token:
-                try:
-                    user_info = jwt.decode(
-                        token, self.jwt_secret, algorithms=[self.jwt_algorithm]
-                    )
-
-                    await self.audit_logger.log_event(
-                        SecurityEvent(
-                            event_type=SecurityEventType.LOGIN_SUCCESS,
-                            timestamp=datetime.utcnow(),
-                            user_id=user_info.get("user_id"),
-                            ip_address=client_ip,
-                            threat_level=ThreatLevel.LOW,
-                        )
-                    )
-
-                except jwt.ExpiredSignatureError:
-                    raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Token has expired",
-                    )
-                except jwt.InvalidTokenError:
-                    await self.audit_logger.log_event(
-                        SecurityEvent(
-                            event_type=SecurityEventType.LOGIN_FAILURE,
-                            timestamp=datetime.utcnow(),
-                            ip_address=client_ip,
-                            threat_level=ThreatLevel.MEDIUM,
-                            details={"reason": "invalid_token"},
-                        )
-                    )
-
-                    raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
-                    )
-
-            processing_time = time.time() - start_time
+            await self._perform_threat_detection(request)
+            await self._check_request_rate_limit(request)
+            user_info = await self._validate_jwt_token(request)
 
             return {
                 "user_info": user_info,
-                "threat_level": threat_level,
-                "threats": threats,
-                "rate_info": rate_info,
-                "processing_time": processing_time,
+                "processing_time": time.time() - start_time,
             }
-
         except HTTPException:
             raise
         except Exception as e:
@@ -838,7 +867,10 @@ class EnterpriseSecurityManager:
         if additional_claims:
             payload.update(additional_claims)
 
-        return jwt.encode(payload, self.jwt_secret, algorithm=self.jwt_algorithm)
+        return jwt.encode(
+            payload,
+            self.jwt_secret,
+            algorithm=self.jwt_algorithm)
 
     async def encrypt_sensitive_data(
         self, data: Union[str, bytes], context: Optional[str] = None
@@ -888,7 +920,7 @@ def get_security_manager() -> EnterpriseSecurityManager:
     return _security_manager
 
 
-def set_security_manager(EnterpriseSecurityManager) -> None:
+def set_security_manager(manager: EnterpriseSecurityManager) -> None:
     """Set global security manager instance"""
     global _security_manager
     _security_manager = manager

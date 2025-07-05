@@ -1,11 +1,10 @@
+import pytest
+from pathlib import Path
+import sys
 import logging
 
 logger = logging.getLogger(__name__)
 
-import sys
-from pathlib import Path
-
-import pytest
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -49,15 +48,14 @@ class TestIntegration:
 
     def test_security_integration(self):
         """اختبار تكامل الأمان"""
-        from src.infrastructure.security import (APISecurityManager,
-                                                 SecurityManager)
+        from src.infrastructure.security import APISecurityManager, SecurityManager
 
         security = SecurityManager()
         api_security = APISecurityManager()
         test_audio = b"RIFF" + b"0" * 1000
         result = security.validate_audio_file("test.wav", test_audio)
-        assert result["valid"] == True
-        assert api_security.check_rate_limit("127.0.0.1") == True
+        assert result["valid"]
+        assert api_security.check_rate_limit("127.0.0.1")
         dirty_input = "<script>alert('xss')</script>مرحبا"
         clean_input = api_security.sanitize_input(dirty_input)
         assert "<script>" not in clean_input
@@ -75,7 +73,10 @@ class TestEndToEnd:
 
         db = Database(":memory:")
         child_id = "journey_test"
-        db.create_child(child_id, "محمد", 6, {"interests": ["الألعاب", "القصص"]})
+        db.create_child(
+            child_id, "محمد", 6, {
+                "interests": [
+                    "الألعاب", "القصص"]})
         interactions = [
             ("مرحبا", "مرحبا بك محمد", "happy"),
             ("أريد لعبة", "هيا نلعب لعبة ممتعة", "excited"),

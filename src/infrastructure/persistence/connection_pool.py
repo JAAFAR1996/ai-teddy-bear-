@@ -12,9 +12,14 @@ from typing import Any, AsyncGenerator, Dict, Optional
 
 import structlog
 from sqlalchemy import event, pool
-from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
-                                    async_sessionmaker, create_async_engine)
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.pool import AsyncAdaptedQueuePool, NullPool
+
 # Database drivers will be imported dynamically as needed
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -26,29 +31,20 @@ logger = structlog.get_logger()
 class DatabaseConfig:
     """Database configuration"""
 
-    def __init__(
-        self,
-        url: str,
-        pool_size: int = 20,
-        max_overflow: int = 40,
-        pool_timeout: float = 30.0,
-        pool_recycle: int = 3600,
-        pool_pre_ping: bool = True,
-        echo: bool = False,
-        echo_pool: bool = False,
-        use_native_pool: bool = True,
-        **kwargs
-    ):
-        self.url = url
-        self.pool_size = pool_size
-        self.max_overflow = max_overflow
-        self.pool_timeout = pool_timeout
-        self.pool_recycle = pool_recycle
-        self.pool_pre_ping = pool_pre_ping
-        self.echo = echo
-        self.echo_pool = echo_pool
-        self.use_native_pool = use_native_pool
-        self.extra_options = kwargs
+    def __init__(self, config: Dict[str, Any]):
+        self.url = config.get("url")
+        if not self.url:
+            raise ValueError("Database URL must be provided.")
+
+        self.pool_size = config.get("pool_size", 20)
+        self.max_overflow = config.get("max_overflow", 40)
+        self.pool_timeout = config.get("pool_timeout", 30.0)
+        self.pool_recycle = config.get("pool_recycle", 3600)
+        self.pool_pre_ping = config.get("pool_pre_ping", True)
+        self.echo = config.get("echo", False)
+        self.echo_pool = config.get("echo_pool", False)
+        self.use_native_pool = config.get("use_native_pool", True)
+        self.extra_options = config.get("extra_options", {})
 
 
 class ConnectionPool:
@@ -70,8 +66,9 @@ class ConnectionPool:
             if self._engine is not None:
                 return
 
-            logger.info("Initializing database connection pool",
-                        url=self.config.url)
+            logger.info(
+                "Initializing database connection pool",
+                url=self.config.url)
 
             try:
                 # Create engine with appropriate settings
@@ -79,9 +76,7 @@ class ConnectionPool:
 
                 # Create session factory
                 self._session_factory = async_sessionmaker(
-                    self._engine,
-                    class_=AsyncSession,
-                    expire_on_commit=False
+                    self._engine, class_=AsyncSession, expire_on_commit=False
                 )
 
                 # Test connection
@@ -99,7 +94,8 @@ class ConnectionPool:
 
             except Exception as e:
                 logger.error(
-                    "Failed to initialize database connection pool", error=str(e))
+                    "Failed to initialize database connection pool",
+                    error=str(e))
                 raise
 
     async def _create_engine(self) -> AsyncEngine:
@@ -122,12 +118,14 @@ class ConnectionPool:
 
         # Add pooling arguments for non-SQLite databases
         if pool_class != NullPool:
-            engine_args.update({
-                "pool_size": self.config.pool_size,
-                "max_overflow": self.config.max_overflow,
-                "pool_timeout": self.config.pool_timeout,
-                "poolclass": pool_class,
-            })
+            engine_args.update(
+                {
+                    "pool_size": self.config.pool_size,
+                    "max_overflow": self.config.max_overflow,
+                    "pool_timeout": self.config.pool_timeout,
+                    "poolclass": pool_class,
+                }
+            )
 
         # PostgreSQL specific optimizations
         if "postgresql" in self.config.url:
@@ -136,7 +134,7 @@ class ConnectionPool:
                 engine_args["connect_args"] = {
                     "server_settings": {
                         "application_name": "ai_teddy_bear",
-                        "jit": "off"
+                        "jit": "off",
                     },
                     "command_timeout": 60,
                     "min_size": 10,
@@ -155,30 +153,37 @@ class ConnectionPool:
 
     def _setup_event_listeners(self) -> None:
         """Setup SQLAlchemy event listeners for monitoring"""
+
         @event.listens_for(self._engine.sync_engine, "connect")
         def receive_connect(dbapi_connection, connection_record) -> Any:
-            connection_record.info['connect_time'] = datetime.utcnow()
+            connection_record.info["connect_time"] = datetime.utcnow()
             logger.debug("New database connection established")
 
         @event.listens_for(self._engine.sync_engine, "checkout")
-        def receive_checkout(dbapi_connection, connection_record, connection_proxy) -> Any:
+        def receive_checkout(
+            dbapi_connection, connection_record, connection_proxy
+        ) -> Any:
             # Track checkout time
             connection_proxy._checkout_time = datetime.utcnow()
 
         @event.listens_for(self._engine.sync_engine, "checkin")
         def receive_checkin(dbapi_connection, connection_record) -> Any:
             # Calculate connection usage time
-            if hasattr(dbapi_connection, '_checkout_time'):
-                duration = (datetime.utcnow() -
-                            dbapi_connection._checkout_time).total_seconds()
+            if hasattr(dbapi_connection, "_checkout_time"):
+                duration = (
+                    datetime.utcnow() - dbapi_connection._checkout_time
+                ).total_seconds()
                 if duration > 5:  # Log slow queries
                     logger.warning(
-                        "Long database connection usage", duration=duration)
+                        "Long database connection usage",
+                        duration=duration)
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+    @retry(stop=stop_after_attempt(3),
+           wait=wait_exponential(multiplier=1, min=2, max=10))
     async def _test_connection(self) -> None:
         """Test database connection"""
         from sqlalchemy import text
+
         async with self._engine.begin() as conn:
             await conn.execute(text("SELECT 1"))
 
@@ -201,16 +206,22 @@ class ConnectionPool:
     def _validate_table_and_column(self, name: str) -> None:
         """Ensure table/column name is safe (alphanumeric/underscore only)"""
         import re
+
         if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
             raise ValueError(f"Unsafe table/column name: {name}")
 
-    async def execute_query(self, query: str, params: Optional[Dict] = None) -> Any:
+    async def execute_query(
+            self,
+            query: str,
+            params: Optional[Dict] = None) -> Any:
         """Execute a raw SQL query (only parameterized queries allowed, table/column names must be validated)"""
         # Prevent dangerous patterns
         if "'" in query or '"' in query or ";" in query:
             raise ValueError(
-                "Potentially unsafe SQL detected. Only parameterized queries allowed.")
-        # Optionally: parse and validate table/column names in query if possible
+                "Potentially unsafe SQL detected. Only parameterized queries allowed."
+            )
+        # Optionally: parse and validate table/column names in query if
+        # possible
         async with self.get_session() as session:
             result = await session.execute(query, params or {})
             return result.fetchall()
@@ -224,11 +235,21 @@ class ConnectionPool:
 
         return {
             "status": "active",
-            "size": pool.size() if hasattr(pool, 'size') else "N/A",
-            "checked_in": pool.checkedin() if hasattr(pool, 'checkedin') else "N/A",
-            "checked_out": pool.checkedout() if hasattr(pool, 'checkedout') else "N/A",
-            "overflow": pool.overflow() if hasattr(pool, 'overflow') else "N/A",
-            "total": pool.total() if hasattr(pool, 'total') else "N/A",
+            "size": pool.size() if hasattr(
+                pool,
+                "size") else "N/A",
+            "checked_in": pool.checkedin() if hasattr(
+                pool,
+                "checkedin") else "N/A",
+            "checked_out": pool.checkedout() if hasattr(
+                pool,
+                "checkedout") else "N/A",
+            "overflow": pool.overflow() if hasattr(
+                pool,
+                "overflow") else "N/A",
+            "total": pool.total() if hasattr(
+                pool,
+                "total") else "N/A",
         }
 
     async def _health_check_loop(self) -> None:
@@ -244,14 +265,17 @@ class ConnectionPool:
                 pool_status = await self.get_pool_status()
 
                 # Log if pool is exhausted
-                if isinstance(pool_status.get("checked_out"), int) and \
-                   isinstance(pool_status.get("size"), int):
+                if isinstance(
+                        pool_status.get("checked_out"),
+                        int) and isinstance(
+                        pool_status.get("size"),
+                        int):
                     usage = pool_status["checked_out"] / pool_status["size"]
                     if usage > 0.8:
                         logger.warning(
                             "Database connection pool usage high",
                             usage_percent=usage * 100,
-                            pool_status=pool_status
+                            pool_status=pool_status,
                         )
 
             except asyncio.CancelledError:
@@ -263,7 +287,9 @@ class ConnectionPool:
                     await self._recover_connection()
                 except Exception as recover_error:
                     logger.error(
-                        "Failed to recover database connection", error=str(recover_error))
+                        "Failed to recover database connection",
+                        error=str(recover_error),
+                    )
 
     async def _recover_connection(self) -> None:
         """Attempt to recover database connection"""
@@ -277,9 +303,7 @@ class ConnectionPool:
             # Recreate engine
             self._engine = await self._create_engine()
             self._session_factory = async_sessionmaker(
-                self._engine,
-                class_=AsyncSession,
-                expire_on_commit=False
+                self._engine, class_=AsyncSession, expire_on_commit=False
             )
 
             # Test new connection
@@ -324,10 +348,7 @@ class DatabaseManager:
         self._default_pool: Optional[str] = None
 
     def add_connection(
-        self,
-        name: str,
-        config: DatabaseConfig,
-        is_default: bool = False
+        self, name: str, config: DatabaseConfig, is_default: bool = False
     ) -> None:
         """Add a database connection"""
         self._pools[name] = ConnectionPool(config)
@@ -347,7 +368,9 @@ class DatabaseManager:
         return self._pools[pool_name]
 
     @asynccontextmanager
-    async def get_session(self, name: Optional[str] = None) -> AsyncGenerator[AsyncSession, None]:
+    async def get_session(
+        self, name: Optional[str] = None
+    ) -> AsyncGenerator[AsyncSession, None]:
         """Get a session from a specific pool"""
         pool = self.get_pool(name)
         async with pool.get_session() as session:
@@ -373,22 +396,31 @@ db_manager = DatabaseManager()
 async def setup_database(config: Dict[str, Any]) -> DatabaseManager:
     """Setup database connections from configuration"""
     # Primary database
-    primary_config = DatabaseConfig(
-        url=config.get(
-            "DATABASE_URL", "sqlite+aiosqlite:///./data/teddy_bear.db"),
-        pool_size=config.get("DB_POOL_SIZE", 20),
-        max_overflow=config.get("DB_MAX_OVERFLOW", 40),
-        echo=config.get("DB_ECHO", False),
-    )
+    primary_db_config_dict = {
+        "url": config.get(
+            "DATABASE_URL",
+            "sqlite+aiosqlite:///./data/teddy_bear.db"),
+        "pool_size": config.get(
+            "DB_POOL_SIZE",
+            20),
+        "max_overflow": config.get(
+            "DB_MAX_OVERFLOW",
+            40),
+        "echo": config.get(
+            "DB_ECHO",
+            False),
+    }
+    primary_config = DatabaseConfig(primary_db_config_dict)
     db_manager.add_connection("primary", primary_config, is_default=True)
 
     # Analytics database (if configured)
     if "ANALYTICS_DATABASE_URL" in config:
-        analytics_config = DatabaseConfig(
-            url=config["ANALYTICS_DATABASE_URL"],
-            pool_size=10,
-            max_overflow=20,
-        )
+        analytics_db_config_dict = {
+            "url": config["ANALYTICS_DATABASE_URL"],
+            "pool_size": 10,
+            "max_overflow": 20,
+        }
+        analytics_config = DatabaseConfig(analytics_db_config_dict)
         db_manager.add_connection("analytics", analytics_config)
 
     # Initialize all pools

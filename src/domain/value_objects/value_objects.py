@@ -178,7 +178,9 @@ class Age:
     value: int
 
     def __post_init__(self):
-        if not isinstance(self.value, int) or self.value < 1 or self.value > 18:
+        if not isinstance(
+                self.value,
+                int) or self.value < 1 or self.value > 18:
             raise ValueError("Age must be between 1 and 18 years")
 
     @property

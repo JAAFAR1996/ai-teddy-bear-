@@ -10,9 +10,9 @@ from .azure_provider import AzureProvider
 from .fallback_provider import FallbackProvider
 
 __all__ = [
-    'BaseSynthesisProvider',
-    'ElevenLabsProvider',
-    'OpenAIProvider',
-    'AzureProvider',
-    'FallbackProvider'
-] 
+    "BaseSynthesisProvider",
+    "ElevenLabsProvider",
+    "OpenAIProvider",
+    "AzureProvider",
+    "FallbackProvider",
+]

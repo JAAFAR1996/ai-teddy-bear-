@@ -28,6 +28,7 @@ except ImportError:
 # إعداد logger مهيكل
 logger = structlog.get_logger(__name__)
 
+
 class NotificationChannel(Enum):
     """قنوات الإشعارات المدعومة"""
     EMAIL = "email"
@@ -35,12 +36,14 @@ class NotificationChannel(Enum):
     SMS = "sms"
     IN_APP = "in_app"
 
+
 class NotificationPriority(Enum):
     """مستويات أولوية الإشعارات"""
     LOW = "low"
     NORMAL = "normal"
     HIGH = "high"
     URGENT = "urgent"
+
 
 @dataclass
 class NotificationData:
@@ -55,6 +58,7 @@ class NotificationData:
     newest_date: Optional[datetime] = None
     days_until_deletion: int = 2
 
+
 @dataclass
 class NotificationStats:
     """إحصائيات الإشعارات"""
@@ -66,10 +70,11 @@ class NotificationStats:
     children_notified: int = 0
     execution_time_seconds: float = 0.0
 
+
 class NotificationService:
     """
     🛎️ خدمة الإشعارات الشاملة
-    
+
     الميزات:
     - إشعارات متعددة القنوات (Email, Push, SMS, In-App)
     - قوالب HTML جميلة ومخصصة
@@ -78,34 +83,37 @@ class NotificationService:
     - معالجة شاملة للأخطاء
     - دعم اللغات المتعددة
     """
-    
+
     def __init__(self):
         self.logger = logger.bind(service="notifications")
         self._load_config()
         self._load_templates()
-        
+
         # استيراد خدمات الإرسال
         try:
             from .email_service import EmailService
             from .push_service import PushService
             from .sms_service import SMSService
-            
+
             self.email_service = EmailService()
             self.push_service = PushService()
             self.sms_service = SMSService()
         except ImportError as e:
-            self.logger.warning("Some notification services not available", error=str(e))
+            self.logger.warning(
+    "Some notification services not available",
+     error=str(e))
             self.email_service = None
             self.push_service = None
             self.sms_service = None
-    
+
     def _load_config(self) -> Any:
         """تحميل إعدادات الإشعارات"""
         try:
-            config_path = Path(__file__).parent.parent.parent / "config" / "config.json"
+            config_path = Path(__file__).parent.parent.parent / \
+                               "config" / "config.json"
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
-                
+
             self.config = config.get("NOTIFICATION_CONFIG", {
                 "default_language": "ar",
                 "retry_attempts": 3,
@@ -118,15 +126,18 @@ class NotificationService:
                 "enable_in_app": True
             })
         except Exception as e:
-            self.logger.warning("Failed to load notification config", error=str(e))
+            self.logger.warning(
+    "Failed to load notification config",
+     error=str(e))
             self.config = {"default_language": "ar", "enable_email": True}
-    
+
     def _load_templates(self) -> Any:
         """تحميل قوالب الإشعارات"""
         try:
-            templates_dir = Path(__file__).parent.parent.parent / "templates" / "notifications"
+            templates_dir = Path(__file__).parent.parent.parent / \
+                                 "templates" / "notifications"
             templates_dir.mkdir(parents=True, exist_ok=True)
-            
+
             # قالب HTML للبريد الإلكتروني
             self.email_template_html = """
             <!DOCTYPE html>
@@ -155,19 +166,19 @@ class NotificationService:
                         <h1>AI Teddy Bear</h1>
                         <h2>تنبيه مهم حول بيانات طفلك</h2>
                     </div>
-                    
+
                     <div class="content">
                         <p>عزيزي ولي الأمر،</p>
-                        
+
                         <div class="alert-box">
                             <h3>⚠️ تنبيه: سيتم حذف البيانات قريباً</h3>
                             <p>نود إعلامكم أن بيانات طفلكم <strong>{{ child_name }}</strong> القديمة ستحذف تلقائياً.</p>
                         </div>
-                        
+
                         <div class="countdown">
                             ⏰ {{ days_until_deletion }} أيام متبقية
                         </div>
-                        
+
                         <div class="data-summary">
                             <h3>📊 ملخص البيانات المتأثرة:</h3>
                             <ul>
@@ -176,22 +187,22 @@ class NotificationService:
                                 <li><strong>أحدث تسجيل:</strong> {{ newest_date.strftime('%Y-%m-%d') if newest_date }}</li>
                             </ul>
                         </div>
-                        
+
                         <h3>💾 للاحتفاظ بالبيانات:</h3>
                         <ol>
                             <li>سجلوا دخولكم إلى تطبيق AI Teddy</li>
                             <li>اذهبوا إلى قسم "إعدادات البيانات"</li>
                             <li>اختاروا "تصدير البيانات" لحفظها محلياً</li>
                         </ol>
-                        
+
                         <div style="text-align: center;">
                             <a href="https://app.aiteddybear.com/data-export" class="button">تصدير البيانات الآن</a>
                         </div>
-                        
+
                         <p><strong>لماذا نحذف البيانات؟</strong></p>
                         <p>نحن ملتزمون بحماية خصوصية طفلكم وفقاً للقوانين الدولية (GDPR, COPPA). يساعد الحذف الدوري في الحفاظ على أمان البيانات وأداء النظام.</p>
                     </div>
-                    
+
                     <div class="footer">
                         <p>مع أطيب التحيات،<br><strong>فريق AI Teddy Bear</strong></p>
                         <p>📧 support@aiteddybear.com | 📱 تطبيق AI Teddy</p>
@@ -201,10 +212,10 @@ class NotificationService:
             </body>
             </html>
             """
-            
+
             # قالب نصي للرسائل القصيرة
             self.sms_template = "🧸 تنبيه AI Teddy: بيانات {{ child_name }} ستحذف خلال {{ days_until_deletion }} أيام. صدّر البيانات من التطبيق للاحتفاظ بها."
-            
+
             # قالب الإشعار المحمول
             self.push_template = {
                 "title": "🧸 تنبيه AI Teddy Bear",
@@ -215,58 +226,64 @@ class NotificationService:
                     "days_until_deletion": "{{ days_until_deletion }}"
                 }
             }
-            
+
         except Exception as e:
-            self.logger.error("Failed to load notification templates", error=str(e))
-    
+            self.logger.error(
+    "Failed to load notification templates",
+     error=str(e))
+
     async def notify_upcoming_cleanup(self) -> NotificationStats:
         """
         🚨 تنبيه الوالدين قبل حذف البيانات بيومين
-        
+
         Returns:
             NotificationStats: إحصائيات عملية الإرسال
         """
         start_time = datetime.utcnow()
         stats = NotificationStats()
-        
+
         self.logger.info("Starting cleanup notification process")
-        
+
         try:
             # 1. جمع البيانات المتأثرة
             notifications_data = await self._collect_notifications_data()
-            
+
             # 2. إرسال الإشعارات
             for notification in notifications_data:
                 await self._send_multi_channel_notification(notification, stats)
-            
+
             stats.children_notified = len(notifications_data)
-            stats.execution_time_seconds = (datetime.utcnow() - start_time).total_seconds()
-            
-            self.logger.info("Cleanup notifications completed", 
+            stats.execution_time_seconds = (
+    datetime.utcnow() - start_time).total_seconds()
+
+            self.logger.info("Cleanup notifications completed",
                            children_notified=stats.children_notified,
                            emails_sent=stats.emails_sent,
                            execution_time=stats.execution_time_seconds)
-            
+
         except Exception as e:
             stats.errors_count += 1
-            self.logger.error("Cleanup notification failed", error=str(e), exc_info=True)
+            self.logger.error(
+    "Cleanup notification failed",
+    error=str(e),
+     exc_info=True)
             raise
-        
+
         return stats
-    
+
     async def _collect_notifications_data(self) -> List[NotificationData]:
         """جمع بيانات الإشعارات المطلوبة"""
         try:
             # تاريخ التحذير: البيانات التي عمرها 28 يوم (ستحذف خلال يومين)
             warn_date = datetime.utcnow() - timedelta(days=28)
-            
+
             session = db_manager.Session()
-            
+
             # البحث عن الجلسات التي ستحذف قريباً
             sessions_to_warn = session.query(SessionRecord).filter(
                 SessionRecord.timestamp <= warn_date
             ).all()
-            
+
             # تجميع البيانات حسب UDID
             children_data = {}
             for session_record in sessions_to_warn:
@@ -278,60 +295,68 @@ class NotificationService:
                         'oldest_date': session_record.timestamp,
                         'newest_date': session_record.timestamp
                     }
-                
+
                 children_data[udid]['sessions'].append(session_record)
-                
+
                 # تحديث نطاق التواريخ
                 if session_record.timestamp < children_data[udid]['oldest_date']:
                     children_data[udid]['oldest_date'] = session_record.timestamp
                 if session_record.timestamp > children_data[udid]['newest_date']:
                     children_data[udid]['newest_date'] = session_record.timestamp
-            
+
             # إنشاء قائمة الإشعارات
             notifications = []
             for udid, data in children_data.items():
                 # البحث عن معلومات الوالدين من ChildProfile
-                child_profile = session.query(ChildProfile).filter_by(udid=udid).first()
-                
+                child_profile = session.query(
+                    ChildProfile).filter_by(udid=udid).first()
+
                 notification = NotificationData(
                     child_udid=udid,
                     child_name=data['child_name'],
-                    parent_email=f"parent_{udid}@example.com",  # في الإنتاج: child_profile.parent_email
-                    parent_device_id=f"device_{udid}",  # في الإنتاج: child_profile.parent_device_id
+                    # في الإنتاج: child_profile.parent_email
+                    parent_email=f"parent_{udid}@example.com",
+                    # في الإنتاج: child_profile.parent_device_id
+                    parent_device_id=f"device_{udid}",
                     sessions_count=len(data['sessions']),
                     oldest_date=data['oldest_date'],
                     newest_date=data['newest_date'],
                     days_until_deletion=2
                 )
                 notifications.append(notification)
-            
+
             session.close()
-            
-            self.logger.info("Collected notification data", 
+
+            self.logger.info("Collected notification data",
                            children_count=len(notifications),
                            total_sessions=sum(n.sessions_count for n in notifications))
-            
+
             return notifications
-            
+
         except Exception as e:
-            self.logger.error("Failed to collect notifications data", error=str(e))
+            self.logger.error(
+    "Failed to collect notifications data",
+     error=str(e))
             raise
-    
-    async def _send_multi_channel_notification(self, notification: NotificationData, stats: NotificationStats):
+
+    async def _send_multi_channel_notification(
+    self,
+    notification: NotificationData,
+     stats: NotificationStats):
         """إرسال إشعار متعدد القنوات مع مراقبة المعدلات"""
         try:
             # فحص حدود معدل الإرسال
             try:
                 from .rate_monitor_service import (
                     check_notification_rate_limit, record_notification_sent)
-                
+
                 can_send, reason = await check_notification_rate_limit(
-                    notification.parent_email, 
+                    notification.parent_email,
                     notification.child_udid
                 )
-                
+
                 if not can_send:
-                    self.logger.warning("Rate limit exceeded", 
+                    self.logger.warning("Rate limit exceeded",
                                       parent_email=notification.parent_email,
                                       reason=reason)
                     # تسجيل في نظام تتبع الأخطاء

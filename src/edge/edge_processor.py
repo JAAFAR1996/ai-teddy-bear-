@@ -36,7 +36,8 @@ class EdgeProcessor:
             # Fallback to mock models
             self._models = {"vad": "mock", "emotion": "mock"}
 
-    async def process_audio_edge(self, audio_data: np.ndarray) -> Dict[str, Any]:
+    async def process_audio_edge(
+            self, audio_data: np.ndarray) -> Dict[str, Any]:
         """Process audio at edge before sending to cloud"""
         results = {}
 

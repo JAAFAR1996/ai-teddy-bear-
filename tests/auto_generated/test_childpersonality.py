@@ -9,8 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
-from application.services.advanced_personalization_service import \
-    ChildPersonality
+from application.services.advanced_personalization_service import ChildPersonality
 
 
 class TestChildPersonality:
@@ -32,7 +31,8 @@ class TestChildPersonality:
         assert True  # Placeholder test
 
     @patch("structlog.get_logger")
-    def test_childpersonality_with_mocked_logger(self, mock_logger, childpersonality):
+    def test_childpersonality_with_mocked_logger(
+            self, mock_logger, childpersonality):
         """Test ChildPersonality with mocked logger"""
         # TODO: Add logger-specific tests
         assert True  # Placeholder test

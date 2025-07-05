@@ -23,8 +23,10 @@ class CleanupExecutionService:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     async def execute_cleanup(
-        self, targets: List[CleanupTarget], report: CleanupReport, session_manager
-    ):
+            self,
+            targets: List[CleanupTarget],
+            report: CleanupReport,
+            session_manager):
         """تنفيذ عملية الحذف الفعلية"""
 
         try:
@@ -32,7 +34,11 @@ class CleanupExecutionService:
             targets_by_table = self._group_targets_by_table(targets)
 
             # Delete in proper order (respecting foreign keys)
-            deletion_order = ["emotional_states", "messages", "conversations", "files"]
+            deletion_order = [
+                "emotional_states",
+                "messages",
+                "conversations",
+                "files"]
 
             for table_name in deletion_order:
                 if table_name in targets_by_table:
@@ -44,7 +50,8 @@ class CleanupExecutionService:
                     )
 
                     # Update report counts
-                    self._update_report_counts(table_name, deleted_count, report)
+                    self._update_report_counts(
+                        table_name, deleted_count, report)
                     report.total_records_deleted += deleted_count
 
             # Clean up orphaned files
@@ -96,7 +103,8 @@ class CleanupExecutionService:
                 # Delete records based on table
                 query = self._get_deletion_query(table_name)
                 if query:
-                    result = session.execute(query, {"record_ids": tuple(record_ids)})
+                    result = session.execute(
+                        query, {"record_ids": tuple(record_ids)})
                     deleted_count = result.rowcount
                     report.database_operations_count += 1
 
@@ -148,7 +156,8 @@ class CleanupExecutionService:
                     self.logger.debug(f"Deleted file: {file_path}")
 
             except Exception as e:
-                report.add_error(f"Error deleting file {target.record_id}: {str(e)}")
+                report.add_error(
+                    f"Error deleting file {target.record_id}: {str(e)}")
                 self.logger.error(f"Error deleting file: {e}")
 
         return deleted_count
@@ -167,7 +176,8 @@ class CleanupExecutionService:
                 if cache_dir.exists():
                     for file_path in cache_dir.rglob("*"):
                         if file_path.is_file():
-                            # Check if file is older than 24 hours and small (likely temp)
+                            # Check if file is older than 24 hours and small
+                            # (likely temp)
                             file_age = datetime.now() - datetime.fromtimestamp(
                                 file_path.stat().st_mtime
                             )
@@ -191,7 +201,8 @@ class CleanupExecutionService:
                     )
 
             if orphaned_files:
-                self.logger.info(f"Cleaned up {len(orphaned_files)} orphaned files")
+                self.logger.info(
+                    f"Cleaned up {len(orphaned_files)} orphaned files")
 
         except Exception as e:
             report.add_error(f"Error cleaning up related files: {str(e)}")

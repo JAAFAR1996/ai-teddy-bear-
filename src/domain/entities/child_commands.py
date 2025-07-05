@@ -17,8 +17,7 @@ from uuid import uuid4
 from ...domain.events.event_sourcing_examples import ChildAggregateExample
 from ...domain.events.event_sourcing_service import get_event_sourcing_service
 from ...domain.value_objects import ChildId, DeviceId, ParentId
-from .command_bus import (Command, CommandHandler, CommandResult,
-                          get_command_bus)
+from .command_bus import Command, CommandHandler, CommandResult, get_command_bus
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +120,11 @@ class RegisterChildCommandHandler(CommandHandler):
             return CommandResult(
                 success=True,
                 message=f"Child {command.name} registered successfully",
-                data={"child_id": str(child.id), "name": child.name, "age": child.age},
+                data={
+                    "child_id": str(
+                        child.id),
+                    "name": child.name,
+                    "age": child.age},
             )
 
         except Exception as e:
@@ -157,7 +160,9 @@ class UpdateChildProfileCommandHandler(CommandHandler):
 
         return True
 
-    async def handle(self, command: UpdateChildProfileCommand) -> CommandResult:
+    async def handle(
+            self,
+            command: UpdateChildProfileCommand) -> CommandResult:
         """Handle profile update"""
 
         try:
@@ -180,7 +185,9 @@ class UpdateChildProfileCommandHandler(CommandHandler):
             return CommandResult(
                 success=True,
                 message="Child profile updated successfully",
-                data={"child_id": command.child_id, "changes": command.changes},
+                data={
+                    "child_id": command.child_id,
+                    "changes": command.changes},
             )
 
         except Exception as e:
@@ -214,7 +221,9 @@ class ReportSafetyViolationCommandHandler(CommandHandler):
 
         return True
 
-    async def handle(self, command: ReportSafetyViolationCommand) -> CommandResult:
+    async def handle(
+            self,
+            command: ReportSafetyViolationCommand) -> CommandResult:
         """Handle safety violation reporting"""
 
         try:
@@ -227,7 +236,8 @@ class ReportSafetyViolationCommandHandler(CommandHandler):
                 return CommandResult(success=False, message="Child not found")
 
             # Report violation (generates domain events)
-            child.detect_safety_violation(command.violation_type, command.details)
+            child.detect_safety_violation(
+                command.violation_type, command.details)
 
             # Save violation
             await self.event_sourcing_service.save_aggregate(child)
@@ -249,8 +259,8 @@ class ReportSafetyViolationCommandHandler(CommandHandler):
         except Exception as e:
             logger.error(f"Failed to report safety violation: {e}")
             return CommandResult(
-                success=False, message=f"Safety violation reporting failed: {str(e)}"
-            )
+                success=False,
+                message=f"Safety violation reporting failed: {str(e)}")
 
 
 def register_child_command_handlers() -> Any:
@@ -259,7 +269,9 @@ def register_child_command_handlers() -> Any:
     command_bus = get_command_bus()
 
     # Register handlers
-    command_bus.register_handler(RegisterChildCommand, RegisterChildCommandHandler())
+    command_bus.register_handler(
+        RegisterChildCommand,
+        RegisterChildCommandHandler())
 
     command_bus.register_handler(
         UpdateChildProfileCommand, UpdateChildProfileCommandHandler()

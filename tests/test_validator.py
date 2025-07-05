@@ -86,7 +86,8 @@ class TestValidator:
             logger.debug(f"Error parsing test code: {e}")
             return False
 
-    async def comprehensive_validation(self, test_code: str) -> ValidationResult:
+    async def comprehensive_validation(
+            self, test_code: str) -> ValidationResult:
         """
         Perform comprehensive validation of test code
 
@@ -212,14 +213,16 @@ class TestValidator:
 
         # Check for empty test methods
         if "pass" in test_code and "assert" not in test_code:
-            errors.append("Test method appears to be empty (only contains 'pass')")
+            errors.append(
+                "Test method appears to be empty (only contains 'pass')")
 
         # Check for proper indentation
         lines = test_code.split("\n")
         for i, line in enumerate(lines, 1):
             if line.strip().startswith("def test_") and not line.startswith("    "):
                 if i > 1:  # Not the first line
-                    errors.append(f"Line {i}: Test method not properly indented")
+                    errors.append(
+                        f"Line {i}: Test method not properly indented")
 
         return errors
 
@@ -235,11 +238,13 @@ class TestValidator:
 
         # Suggest better assertions
         if "assert True" in test_code:
-            suggestions.append("Replace 'assert True' with meaningful assertions")
+            suggestions.append(
+                "Replace 'assert True' with meaningful assertions")
 
         # Suggest setup/teardown if needed
         if "Mock" in test_code and "setUp" not in test_code:
-            suggestions.append("Consider using setUp/tearDown for mock initialization")
+            suggestions.append(
+                "Consider using setUp/tearDown for mock initialization")
 
         # Suggest async/await usage
         if "async def" in test_code and "await" not in test_code:
@@ -259,11 +264,16 @@ class TestValidator:
 
         # Fix missing colons in function definitions
         fixed_code = re.sub(
-            r"def\s+(\w+)\s*\([^)]*\)\s*$", r"def \1():", fixed_code, flags=re.MULTILINE
-        )
+            r"def\s+(\w+)\s*\([^)]*\)\s*$",
+            r"def \1():",
+            fixed_code,
+            flags=re.MULTILINE)
 
         # Fix missing 'self' parameter in test methods
-        fixed_code = re.sub(r"def\s+(test_\w+)\s*\(\s*\)", r"def \1(self)", fixed_code)
+        fixed_code = re.sub(
+            r"def\s+(test_\w+)\s*\(\s*\)",
+            r"def \1(self)",
+            fixed_code)
 
         # Fix basic indentation issues
         lines = fixed_code.split("\n")
@@ -292,40 +302,35 @@ class TestValidator:
 
         return "\n".join(fixed_lines)
 
-    async def _fix_imports(self, test_code: str) -> str:
-        """Fix missing imports"""
-        lines = test_code.split("\n")
+    def _determine_needed_imports(self, test_code: str) -> List[str]:
+        """Determine which standard imports are needed in the test code."""
+        needed_imports = []
+        import_map = {
+            "Mock": "from unittest.mock import Mock, patch, MagicMock",
+            "@given": "from hypothesis import given, strategies as st, settings",
+            "pytest": "import pytest",
+            "asyncio": "import asyncio",
+        }
+        for keyword, import_statement in import_map.items():
+            if keyword in test_code and import_statement not in test_code:
+                needed_imports.append(import_statement)
+        return needed_imports
 
-        # Find where to insert imports (after docstring, before class)
+    async def _fix_imports(self, test_code: str) -> str:
+        """Fix missing imports by adding them at the top of the file."""
+        lines = test_code.split("\n")
         insert_index = 0
         for i, line in enumerate(lines):
             if line.strip().startswith("class ") or line.strip().startswith("def "):
                 insert_index = i
                 break
 
-        # Determine which imports are needed
-        needed_imports = []
-
-        if "Mock" in test_code and "from unittest.mock import" not in test_code:
-            needed_imports.append("from unittest.mock import Mock, patch, MagicMock")
-
-        if "@given" in test_code and "from hypothesis import" not in test_code:
-            needed_imports.append(
-                "from hypothesis import given, strategies as st, settings"
-            )
-
-        if "pytest" in test_code and "import pytest" not in test_code:
-            needed_imports.append("import pytest")
-
-        if "asyncio" in test_code and "import asyncio" not in test_code:
-            needed_imports.append("import asyncio")
-
-        # Insert needed imports
+        needed_imports = self._determine_needed_imports(test_code)
         if needed_imports:
+            # Insert needed imports in reverse to maintain order
             for import_stmt in reversed(needed_imports):
                 lines.insert(insert_index, import_stmt)
-
-            # Add blank line after imports
+            # Add a blank line for readability
             lines.insert(insert_index + len(needed_imports), "")
 
         return "\n".join(lines)
@@ -413,7 +418,8 @@ class TestValidator:
                 )
 
                 # Check if pytest ran successfully (even if tests failed)
-                return result.returncode in [0, 1]  # 0=passed, 1=failed but ran
+                # 0=passed, 1=failed but ran
+                return result.returncode in [0, 1]
 
             finally:
                 # Clean up temporary file

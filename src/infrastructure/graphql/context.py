@@ -135,15 +135,14 @@ class GraphQLContextManager:
             # Get DataLoaders from registry
             if self._dataloader_registry:
                 # Core entity loaders
-                dataloaders["child"] = self._dataloader_registry.get_loader("child")
+                dataloaders["child"] = self._dataloader_registry.get_loader(
+                    "child")
                 dataloaders["conversation"] = self._dataloader_registry.get_loader(
-                    "conversation"
-                )
+                    "conversation")
 
                 # Relationship loaders
                 dataloaders["conversation_by_child"] = (
-                    self._dataloader_registry.get_loader("conversation_by_child")
-                )
+                    self._dataloader_registry.get_loader("conversation_by_child"))
 
                 # Aggregate loaders (for counts, stats)
                 dataloaders["conversation_count"] = (
@@ -167,8 +166,7 @@ class GraphQLContextManager:
             # Child paginator
             if "child" in self._repositories:
                 paginators["child"] = CursorPaginator(
-                    repository=self._repositories["child"], cache_client=cache_client
-                )
+                    repository=self._repositories["child"], cache_client=cache_client)
 
             # Conversation paginator
             if "conversation" in self._repositories:
@@ -180,8 +178,7 @@ class GraphQLContextManager:
             # Message paginator
             if "message" in self._repositories:
                 paginators["message"] = CursorPaginator(
-                    repository=self._repositories["message"], cache_client=cache_client
-                )
+                    repository=self._repositories["message"], cache_client=cache_client)
 
             return paginators
 
@@ -210,11 +207,14 @@ class GraphQLContextManager:
                         counts.append(count)
                     return counts
                 except Exception as e:
-                    logger.error("Failed to fetch conversation counts", error=str(e))
+                    logger.error(
+                        "Failed to fetch conversation counts",
+                        error=str(e))
                     return [0] * len(child_ids)
 
         cache_client = self.container.redis_client()
-        return ConversationCountLoader(self._repositories["conversation"], cache_client)
+        return ConversationCountLoader(
+            self._repositories["conversation"], cache_client)
 
     async def _create_message_count_loader(self):
         """Create DataLoader for message counts by conversation"""
@@ -228,7 +228,8 @@ class GraphQLContextManager:
                     name="message_count_loader",
                 )
 
-            async def _fetch_from_repository(self, conversation_ids: list) -> list:
+            async def _fetch_from_repository(
+                    self, conversation_ids: list) -> list:
                 """Fetch message counts for conversation IDs"""
                 try:
                     counts = []
@@ -239,12 +240,15 @@ class GraphQLContextManager:
                         counts.append(count)
                     return counts
                 except Exception as e:
-                    logger.error("Failed to fetch message counts", error=str(e))
+                    logger.error(
+                        "Failed to fetch message counts",
+                        error=str(e))
                     return [0] * len(conversation_ids)
 
         if "message" in self._repositories and self._repositories["message"]:
             cache_client = self.container.redis_client()
-            return MessageCountLoader(self._repositories["message"], cache_client)
+            return MessageCountLoader(
+                self._repositories["message"], cache_client)
         return None
 
     async def warm_cache(self, warmup_data: Dict[str, list] = None):

@@ -43,8 +43,7 @@ class TestSystemPerformance(PerformanceTestCase):
         tasks = []
         start_time = time.time()
         users = [
-            self.test_data_builder.create_child(
-                age=random.randint(3, 12))
+            self.test_data_builder.create_child(age=random.randint(3, 12))
             for _ in range(num_users)
         ]
         self.start_performance_tracking()
@@ -72,7 +71,8 @@ class TestSystemPerformance(PerformanceTestCase):
         metrics = self.stop_performance_tracking()
         duration = time.time() - start_time
         successful_users = sum(
-            1 for r in results if not isinstance(r, Exception))
+            1 for r in results if not isinstance(
+                r, Exception))
         total_operations = sum(len(r)
                                for r in results if not isinstance(r, Exception))
         error_rate = (len(results) - successful_users) / len(results)
@@ -218,8 +218,7 @@ class TestSystemPerformance(PerformanceTestCase):
                 avg_latency < test["expected_ms"]
             ), f"{test['name']} avg latency {avg_latency:.2f}ms exceeds {test['expected_ms']}ms"
             results.append(
-                {"query": test["name"], "avg_ms": avg_latency,
-                    "p95_ms": p95_latency}
+                {"query": test["name"], "avg_ms": avg_latency, "p95_ms": p95_latency}
             )
         logger.info("\nDatabase Query Performance:")
         for result in results:

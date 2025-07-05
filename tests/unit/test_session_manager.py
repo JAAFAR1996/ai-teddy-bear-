@@ -8,11 +8,9 @@ from datetime import datetime, timedelta
 
 import pytest
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
-                                    create_async_engine)
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from src.infrastructure.session_manager import (Session, SessionManager,
-                                                SessionStatus)
+from src.infrastructure.session_manager import Session, SessionManager, SessionStatus
 
 
 @pytest.fixture

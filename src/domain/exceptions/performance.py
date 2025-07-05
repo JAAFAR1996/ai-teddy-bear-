@@ -27,7 +27,9 @@ class TimeoutException(PerformanceException):
         super().__init__(
             message=f"Operation '{operation}' timed out after {timeout_seconds} seconds",
             error_code="OPERATION_TIMEOUT",
-            suggested_actions=["Retry with longer timeout", "Check system performance"],
+            suggested_actions=[
+                "Retry with longer timeout",
+                "Check system performance"],
             **kwargs,
         )
         self.operation = operation
@@ -50,7 +52,9 @@ class RateLimitException(PerformanceException):
             message=f"Rate limit exceeded for {limit_type}: {current_rate}/{max_rate} per {window_seconds}s",
             error_code="RATE_LIMIT_EXCEEDED",
             retry_after=retry_after,
-            suggested_actions=["Wait before retrying", "Reduce request rate"],
+            suggested_actions=[
+                "Wait before retrying",
+                "Reduce request rate"],
             **kwargs,
         )
         self.limit_type = limit_type

@@ -125,7 +125,8 @@ class TrainingPipeline:
                 logger.info(f"✅ Successfully trained {model_type}")
             else:
                 failed_trainings.append((model_type, training_results[i]))
-                logger.error(f"❌ Failed to train {model_type}: {training_results[i]}")
+                logger.error(
+                    f"❌ Failed to train {model_type}: {training_results[i]}")
 
         # تقييم النماذج الجديدة
         model_evaluations = await self._evaluate_trained_models(successful_models)
@@ -229,7 +230,8 @@ class TrainingPipeline:
             )
 
             # إضافة قيود الأمان والخصوصية
-            config.safety_constraints = self._get_safety_constraints(model_type)
+            config.safety_constraints = self._get_safety_constraints(
+                model_type)
             config.privacy_settings = self._get_privacy_settings()
 
             # تحسين موارد الحوسبة
@@ -241,7 +243,8 @@ class TrainingPipeline:
 
         return configs
 
-    def _get_base_training_config(self, model_type: ModelType) -> TrainingConfig:
+    def _get_base_training_config(
+            self, model_type: ModelType) -> TrainingConfig:
         """الحصول على التكوين الأساسي للتدريب"""
 
         base_configs = {
@@ -307,7 +310,8 @@ class TrainingPipeline:
             ),
         }
 
-        return base_configs.get(model_type, base_configs[ModelType.CONVERSATION_MODEL])
+        return base_configs.get(model_type,
+                                base_configs[ModelType.CONVERSATION_MODEL])
 
     def _adapt_config_for_strategy(
         self,
@@ -402,10 +406,12 @@ class TrainingPipeline:
 
         # تعديل الموارد حسب نوع النموذج
         if model_type == ModelType.SPEECH_RECOGNITION:
-            base_resources.update({"gpu_count": 2, "memory_gb": 32, "storage_gb": 200})
+            base_resources.update(
+                {"gpu_count": 2, "memory_gb": 32, "storage_gb": 200})
 
         elif model_type == ModelType.CONVERSATION_MODEL:
-            base_resources.update({"gpu_count": 4, "memory_gb": 64, "storage_gb": 300})
+            base_resources.update(
+                {"gpu_count": 4, "memory_gb": 64, "storage_gb": 300})
 
         # تعديل الموارد حسب الاستراتيجية
         if strategy == TrainingStrategy.FULL_RETRAIN:
@@ -413,8 +419,10 @@ class TrainingPipeline:
             base_resources["memory_gb"] *= 1.5
 
         elif strategy == TrainingStrategy.FEDERATED_LEARNING:
-            base_resources["gpu_count"] = max(1, base_resources["gpu_count"] // 2)
-            base_resources["memory_gb"] = int(base_resources["memory_gb"] * 0.7)
+            base_resources["gpu_count"] = max(
+                1, base_resources["gpu_count"] // 2)
+            base_resources["memory_gb"] = int(
+                base_resources["memory_gb"] * 0.7)
 
         return base_resources
 
@@ -593,9 +601,8 @@ class TrainingPipeline:
             )
 
             # مقاييس خاصة بالأطفال
-            safety_score = min(
-                0.99, 0.85 + (epoch / epochs) * 0.14 + np.random.normal(0, 0.01)
-            )
+            safety_score = min(0.99, 0.85 + (epoch / epochs)
+                               * 0.14 + np.random.normal(0, 0.01))
             child_satisfaction = min(
                 0.95, 0.7 + (epoch / epochs) * 0.25 + np.random.normal(0, 0.02)
             )
@@ -603,14 +610,16 @@ class TrainingPipeline:
             history["loss"].append(epoch_loss)
             history["accuracy"].append(epoch_accuracy)
             history["val_loss"].append(epoch_loss + np.random.normal(0, 0.05))
-            history["val_accuracy"].append(epoch_accuracy + np.random.normal(0, 0.03))
+            history["val_accuracy"].append(
+                epoch_accuracy + np.random.normal(0, 0.03))
             history["safety_score"].append(safety_score)
             history["child_satisfaction"].append(child_satisfaction)
 
             # محاكاة التوقف المبكر
             if epoch > 10 and len(history["val_loss"]) > 5:
                 recent_losses = history["val_loss"][-5:]
-                if all(loss > min(recent_losses) for loss in recent_losses[-3:]):
+                if all(loss > min(recent_losses)
+                       for loss in recent_losses[-3:]):
                     logger.info(f"Early stopping triggered at epoch {epoch}")
                     break
 
@@ -653,7 +662,8 @@ class TrainingPipeline:
             "robustness_score": np.random.beta(7, 3),  # المقاومة للضوضاء
             "fairness_score": np.random.beta(9, 2),  # العدالة
             "interpretability_score": np.random.beta(6, 4),  # القابلية للتفسير
-            "edge_case_performance": np.random.beta(5, 4),  # أداء الحالات الحدية
+            # أداء الحالات الحدية
+            "edge_case_performance": np.random.beta(5, 4),
             "child_age_group_performance": {
                 "3-6": np.random.beta(7, 3),
                 "7-9": np.random.beta(8, 2),
@@ -697,7 +707,9 @@ class TrainingPipeline:
             "privacy_preservation": True,
             "age_appropriateness": True,
             "harmful_content_detection": True,
-            "overall_safety_score": validation_results.get("validation_accuracy", 0.8),
+            "overall_safety_score": validation_results.get(
+                "validation_accuracy",
+                0.8),
         }
 
         # فحوصات خاصة بنوع النموذج
@@ -743,12 +755,17 @@ class TrainingPipeline:
         return {
             "compliant": compliant,
             "checks": privacy_checks,
-            "compliance_score": sum(privacy_checks.values()) / len(privacy_checks),
+            "compliance_score": sum(
+                privacy_checks.values()) /
+            len(privacy_checks),
         }
 
-    async def _save_model_artifacts(
-        self, model_type: ModelType, training_id: str, training_metrics: Dict[str, Any]
-    ) -> Dict[str, str]:
+    async def _save_model_artifacts(self,
+                                    model_type: ModelType,
+                                    training_id: str,
+                                    training_metrics: Dict[str,
+                                                           Any]) -> Dict[str,
+                                                                         str]:
         """حفظ تحف النموذج"""
 
         # محاكاة حفظ النماذج والتحف

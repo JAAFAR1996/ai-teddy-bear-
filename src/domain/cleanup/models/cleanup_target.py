@@ -28,7 +28,8 @@ class CleanupTarget:
 
     def is_file_target(self) -> bool:
         """Check if target is a file"""
-        return self.table_name in ["files", "cache"] or self.data_type.endswith("_file")
+        return self.table_name in [
+            "files", "cache"] or self.data_type.endswith("_file")
 
     def get_size_mb(self) -> float:
         """Get size in megabytes"""

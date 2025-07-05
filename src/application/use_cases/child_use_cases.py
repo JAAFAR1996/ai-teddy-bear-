@@ -11,8 +11,12 @@ from typing import Optional
 
 from ...domain.entities import Child
 from ...domain.value_objects import ChildId
-from ..dto import (ChildProfileResponse, RegisterChildRequest,
-                   RegisterChildResponse, UpdateChildProfileRequest)
+from ..dto import (
+    ChildProfileResponse,
+    RegisterChildRequest,
+    RegisterChildResponse,
+    UpdateChildProfileRequest,
+)
 from ..ports.outbound import ChildRepositoryPort, EventPublisherPort
 
 
@@ -23,7 +27,9 @@ class RegisterChildUseCase:
     child_repository: ChildRepositoryPort
     event_publisher: EventPublisherPort
 
-    async def execute(self, request: RegisterChildRequest) -> RegisterChildResponse:
+    async def execute(
+            self,
+            request: RegisterChildRequest) -> RegisterChildResponse:
         """
         Register a new child in the system.
 
@@ -66,7 +72,9 @@ class UpdateChildProfileUseCase:
     child_repository: ChildRepositoryPort
     event_publisher: EventPublisherPort
 
-    async def execute(self, request: UpdateChildProfileRequest) -> ChildProfileResponse:
+    async def execute(
+            self,
+            request: UpdateChildProfileRequest) -> ChildProfileResponse:
         """Update child profile information"""
 
         # Get existing child
@@ -104,7 +112,9 @@ class GetChildProfileUseCase:
 
     child_repository: ChildRepositoryPort
 
-    async def execute(self, child_id: ChildId) -> Optional[ChildProfileResponse]:
+    async def execute(
+            self,
+            child_id: ChildId) -> Optional[ChildProfileResponse]:
         """Get child profile by ID"""
 
         child = await self.child_repository.get_by_id(child_id)

@@ -29,7 +29,7 @@ class ReportRepository:
             if self.db:
                 query = """
                 INSERT INTO parent_reports (
-                    report_id, child_id, analysis_date, 
+                    report_id, child_id, analysis_date,
                     vocabulary_score, emotional_score, cognitive_score,
                     developmental_concerns, recommendations, urgency_level
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -52,7 +52,8 @@ class ReportRepository:
 
                 self.logger.info(f"Stored report {report_id} in database")
             else:
-                self.logger.warning("No database service available, report not stored")
+                self.logger.warning(
+                    "No database service available, report not stored")
 
             return report_id
 
@@ -66,19 +67,17 @@ class ReportRepository:
             if self.db:
                 query = """
                 SELECT name, age, preferences, special_needs, learning_style
-                FROM children 
+                FROM children
                 WHERE child_id = %s
                 """
                 result = await self.db.fetch_one(query, (child_id,))
 
                 if result:
                     return {
-                        "name": result["name"],
-                        "age": result["age"],
-                        "preferences": result.get("preferences", []),
-                        "special_needs": result.get("special_needs", []),
-                        "learning_style": result.get("learning_style", "visual"),
-                    }
+                        "name": result["name"], "age": result["age"], "preferences": result.get(
+                            "preferences", []), "special_needs": result.get(
+                            "special_needs", []), "learning_style": result.get(
+                            "learning_style", "visual"), }
 
             # Fallback data
             return {
@@ -93,42 +92,42 @@ class ReportRepository:
             self.logger.error(f"Get child info error for {child_id}: {e}")
             return {"name": "Unknown", "age": 5}
 
+    def _process_interaction_rows(
+            self, rows: List[Dict]) -> List[InteractionAnalysis]:
+        """Processes database rows into a list of InteractionAnalysis objects."""
+        interactions = []
+        for row in rows:
+            interaction = InteractionAnalysis(
+                timestamp=row["timestamp"],
+                duration=row["duration"],
+                primary_emotion=row["primary_emotion"],
+                emotions=row["emotions"] or {},
+                topics_discussed=row["topics_discussed"] or [],
+                skills_used=row["skills_used"] or [],
+                behavioral_indicators=row["behavioral_indicators"] or [],
+                quality_score=row["quality_score"] or 0.5,
+            )
+            interactions.append(interaction)
+        return interactions
+
     async def get_interactions(
         self, child_id: str, start_date: datetime, end_date: datetime
     ) -> List[InteractionAnalysis]:
         """Get interaction data from database"""
         try:
-            if self.db:
-                query = """
-                SELECT timestamp, duration, primary_emotion, emotions, 
-                       topics_discussed, skills_used, behavioral_indicators, quality_score
-                FROM interactions 
-                WHERE child_id = %s AND timestamp BETWEEN %s AND %s
-                ORDER BY timestamp
-                """
+            if not self.db:
+                return self._generate_mock_interactions(start_date, end_date)
 
-                results = await self.db.fetch_all(
-                    query, (child_id, start_date, end_date)
-                )
+            query = """
+            SELECT timestamp, duration, primary_emotion, emotions,
+                   topics_discussed, skills_used, behavioral_indicators, quality_score
+            FROM interactions
+            WHERE child_id = %s AND timestamp BETWEEN %s AND %s
+            ORDER BY timestamp
+            """
 
-                interactions = []
-                for row in results:
-                    interaction = InteractionAnalysis(
-                        timestamp=row["timestamp"],
-                        duration=row["duration"],
-                        primary_emotion=row["primary_emotion"],
-                        emotions=row["emotions"] or {},
-                        topics_discussed=row["topics_discussed"] or [],
-                        skills_used=row["skills_used"] or [],
-                        behavioral_indicators=row["behavioral_indicators"] or [],
-                        quality_score=row["quality_score"] or 0.5,
-                    )
-                    interactions.append(interaction)
-
-                return interactions
-
-            # Fallback mock data
-            return self._generate_mock_interactions(start_date, end_date)
+            results = await self.db.fetch_all(query, (child_id, start_date, end_date))
+            return self._process_interaction_rows(results)
 
         except Exception as e:
             self.logger.error(f"Get interactions error for {child_id}: {e}")
@@ -139,39 +138,83 @@ class ReportRepository:
     ) -> List[InteractionAnalysis]:
         """Get recent interactions for analysis"""
         try:
-            if self.db:
-                query = """
-                SELECT timestamp, duration, primary_emotion, emotions, 
-                       topics_discussed, skills_used, behavioral_indicators, quality_score
-                FROM interactions 
-                WHERE child_id = %s 
-                ORDER BY timestamp DESC 
-                LIMIT %s
-                """
+            if not self.db:
+                return []
 
-                results = await self.db.fetch_all(query, (child_id, limit))
+            query = """
+            SELECT timestamp, duration, primary_emotion, emotions,
+                   topics_discussed, skills_used, behavioral_indicators, quality_score
+            FROM interactions
+            WHERE child_id = %s
+            ORDER BY timestamp DESC
+            LIMIT %s
+            """
 
-                interactions = []
-                for row in results:
-                    interaction = InteractionAnalysis(
-                        timestamp=row["timestamp"],
-                        duration=row["duration"],
-                        primary_emotion=row["primary_emotion"],
-                        emotions=row["emotions"] or {},
-                        topics_discussed=row["topics_discussed"] or [],
-                        skills_used=row["skills_used"] or [],
-                        behavioral_indicators=row["behavioral_indicators"] or [],
-                        quality_score=row["quality_score"] or 0.5,
-                    )
-                    interactions.append(interaction)
-
-                return interactions
-
-            return []
+            results = await self.db.fetch_all(query, (child_id, limit))
+            return self._process_interaction_rows(results)
 
         except Exception as e:
-            self.logger.error(f"Get recent interactions error for {child_id}: {e}")
+            self.logger.error(
+                f"Get recent interactions error for {child_id}: {e}")
             return []
+
+    def _create_mock_interaction(
+            self, current_date: datetime) -> InteractionAnalysis:
+        """Creates a single mock interaction for a given date."""
+        import random
+        from datetime import timedelta
+
+        return InteractionAnalysis(
+            timestamp=current_date + timedelta(hours=random.randint(9, 20)),
+            duration=random.randint(60, 300),  # 1-5 minutes
+            primary_emotion=random.choice(
+                ["happy", "curious", "calm", "excited"]),
+            emotions={
+                "happy": random.uniform(0.3, 0.8),
+                "curious": random.uniform(0.2, 0.7),
+                "calm": random.uniform(0.1, 0.5),
+            },
+            topics_discussed=random.sample(
+                [
+                    "stories",
+                    "games",
+                    "animals",
+                    "colors",
+                    "numbers",
+                    "family",
+                    "friends",
+                    "school",
+                    "food",
+                    "toys",
+                ],
+                random.randint(1, 3),
+            ),
+            skills_used=random.sample(
+                [
+                    "listening",
+                    "speaking",
+                    "counting",
+                    "reading",
+                    "problem_solving",
+                    "creativity",
+                    "social_skills",
+                ],
+                random.randint(1, 4),
+            ),
+            behavioral_indicators=random.sample(
+                [
+                    "engaged",
+                    "attentive",
+                    "cooperative",
+                    "responsive",
+                    "creative",
+                    "patient",
+                    "curious",
+                ],
+                random.randint(1, 3),
+            ),
+            quality_score=random.uniform(0.5, 1.0),
+        )
 
     def _generate_mock_interactions(
         self, start_date: datetime, end_date: datetime
@@ -185,64 +228,10 @@ class ReportRepository:
             current_date = start_date
 
             while current_date <= end_date:
-                # Generate 1-3 interactions per day
                 daily_interactions = random.randint(1, 3)
-
-                for i in range(daily_interactions):
-                    interaction = InteractionAnalysis(
-                        timestamp=current_date + timedelta(hours=random.randint(9, 20)),
-                        duration=random.randint(60, 300),  # 1-5 minutes
-                        primary_emotion=random.choice(
-                            ["happy", "curious", "calm", "excited"]
-                        ),
-                        emotions={
-                            "happy": random.uniform(0.3, 0.8),
-                            "curious": random.uniform(0.2, 0.7),
-                            "calm": random.uniform(0.1, 0.5),
-                        },
-                        topics_discussed=random.sample(
-                            [
-                                "stories",
-                                "games",
-                                "animals",
-                                "colors",
-                                "numbers",
-                                "family",
-                                "friends",
-                                "school",
-                                "food",
-                                "toys",
-                            ],
-                            random.randint(1, 3),
-                        ),
-                        skills_used=random.sample(
-                            [
-                                "listening",
-                                "speaking",
-                                "counting",
-                                "reading",
-                                "problem_solving",
-                                "creativity",
-                                "social_skills",
-                            ],
-                            random.randint(1, 4),
-                        ),
-                        behavioral_indicators=random.sample(
-                            [
-                                "engaged",
-                                "attentive",
-                                "cooperative",
-                                "responsive",
-                                "creative",
-                                "patient",
-                                "curious",
-                            ],
-                            random.randint(1, 3),
-                        ),
-                        quality_score=random.uniform(0.5, 1.0),
-                    )
-                    interactions.append(interaction)
-
+                for _ in range(daily_interactions):
+                    interactions.append(
+                        self._create_mock_interaction(current_date))
                 current_date += timedelta(days=1)
 
             return interactions
@@ -295,9 +284,9 @@ class ReportRepository:
             if self.db:
                 query = """
                 SELECT report_id, report_type, generated_at, format, status
-                FROM report_metadata 
-                WHERE child_id = %s 
-                ORDER BY generated_at DESC 
+                FROM report_metadata
+                WHERE child_id = %s
+                ORDER BY generated_at DESC
                 LIMIT %s
                 """
 

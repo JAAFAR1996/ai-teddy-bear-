@@ -238,7 +238,9 @@ Generate at least 10 test methods.
         """Generate performance tests"""
         return []  # Simplified for now
 
-    async def _validate_tests(self, tests: List[GeneratedTest]) -> List[GeneratedTest]:
+    async def _validate_tests(
+            self,
+            tests: List[GeneratedTest]) -> List[GeneratedTest]:
         """Validate generated tests"""
         return tests  # Simplified for now
 

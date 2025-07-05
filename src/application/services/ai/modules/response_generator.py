@@ -39,17 +39,18 @@ class ResponseContext:
 class ResponseGenerator:
     """Generates contextual responses for AI Teddy Bear"""
 
-    def __init__(self, ai_service=None, story_generator=None, game_engine=None):
+    def __init__(
+            self,
+            ai_service=None,
+            story_generator=None,
+            game_engine=None):
         self.logger = structlog.get_logger()
         self.ai_service = ai_service
         self.story_generator = story_generator
         self.game_engine = game_engine
 
     async def generate_contextual_response(
-        self,
-        text: str,
-        emotion: EmotionResult,
-        session: SessionContext
+        self, text: str, emotion: EmotionResult, session: SessionContext
     ) -> ResponseContext:
         """Generate response based on context and emotion"""
 
@@ -89,15 +90,18 @@ class ResponseGenerator:
             return explicit_activity
 
         # Check emotion and session context
-        return self._determine_activity_from_emotion_and_session(emotion, session)
+        return self._determine_activity_from_emotion_and_session(
+            emotion, session)
 
-    def _check_explicit_activity_requests(self, text_lower: str) -> Optional[ActivityType]:
+    def _check_explicit_activity_requests(
+        self, text_lower: str
+    ) -> Optional[ActivityType]:
         """Check for explicit activity requests in text"""
         activity_keywords = {
             ActivityType.STORY: ["story", "tell me a story", "tale"],
             ActivityType.GAME: ["game", "play", "let's play"],
             ActivityType.LEARNING: ["learn", "teach", "what is", "how does"],
-            ActivityType.SLEEP_ROUTINE: ["sleep", "tired", "bedtime", "night"]
+            ActivityType.SLEEP_ROUTINE: ["sleep", "tired", "bedtime", "night"],
         }
 
         for activity_type, keywords in activity_keywords.items():
@@ -155,7 +159,8 @@ class ResponseGenerator:
         else:  # CONVERSATION
             return await self._handle_conversation(text, context)
 
-    async def generate_welcome_message(self, child_id: str, preferences: Dict) -> str:
+    async def generate_welcome_message(
+            self, child_id: str, preferences: Dict) -> str:
         """Generate personalized welcome message"""
 
         if self.ai_service:
@@ -196,7 +201,9 @@ class ResponseGenerator:
                     "dominant_emotion": dominant_emotion,
                     "duration_minutes": summary["duration_minutes"],
                     "language": session.language_preference,
-                    "activities": [i.get("activity_type") for i in session.interactions[-5:]],
+                    "activities": [
+                        i.get("activity_type") for i in session.interactions[-5:]
+                    ],
                 },
             )
 
@@ -233,31 +240,35 @@ class ResponseGenerator:
             return await self.story_generator.generate_story(
                 prompt=text,
                 emotion=emotion.primary_emotion,
-                age=session.metadata.get("age", 5)
+                age=session.metadata.get("age", 5),
             )
 
         # Simple fallback story
-        return ("Once upon a time, there was a magical teddy bear who loved to make "
-                "children smile. This teddy bear had a special power - it could understand "
-                "exactly how children felt and always knew the right thing to say...")
+        return (
+            "Once upon a time, there was a magical teddy bear who loved to make "
+            "children smile. This teddy bear had a special power - it could understand "
+            "exactly how children felt and always knew the right thing to say...")
 
-    async def _handle_game_interaction(self, text: str, session: SessionContext) -> str:
+    async def _handle_game_interaction(
+            self, text: str, session: SessionContext) -> str:
         """Handle game interactions"""
 
         if self.game_engine:
             return await self.game_engine.process_game_input(text, session.session_id)
 
         # Simple guessing game fallback
-        return ("Let's play a guessing game! I'm thinking of an animal that's "
-                "big and gray with a long trunk. Can you guess what it is?")
+        return (
+            "Let's play a guessing game! I'm thinking of an animal that's "
+            "big and gray with a long trunk. Can you guess what it is?"
+        )
 
-    async def _handle_learning_interaction(self, text: str, context: Dict) -> str:
+    async def _handle_learning_interaction(
+            self, text: str, context: Dict) -> str:
         """Handle educational content requests"""
 
         if self.ai_service:
             return await self.ai_service.generate_response(
-                text,
-                context={**context, "mode": "educational", "child_safe": True}
+                text, context={**context, "mode": "educational", "child_safe": True}
             )
 
         return "That's a great question! Learning new things is so much fun. Let me explain..."
@@ -274,21 +285,24 @@ class ResponseGenerator:
                     **context,
                     "mode": "comfort",
                     "emotion": emotion.primary_emotion,
-                    "child_safe": True
-                }
+                    "child_safe": True,
+                },
             )
 
         # Empathetic fallback responses
         if emotion.primary_emotion == "sad":
-            return ("I understand you're feeling sad. It's okay to feel that way sometimes. "
-                    "Would you like to talk about it, or shall we do something fun together?")
+            return (
+                "I understand you're feeling sad. It's okay to feel that way sometimes. "
+                "Would you like to talk about it, or shall we do something fun together?")
         elif emotion.primary_emotion == "scared":
-            return ("It's okay to feel scared sometimes. I'm here with you, and you're safe. "
-                    "Would you like me to tell you a happy story or sing a song?")
+            return (
+                "It's okay to feel scared sometimes. I'm here with you, and you're safe. "
+                "Would you like me to tell you a happy story or sing a song?")
         else:
             return "I'm here for you. Everything will be okay. What would make you feel better?"
 
-    async def _handle_sleep_routine(self, text: str, session: SessionContext) -> str:
+    async def _handle_sleep_routine(
+            self, text: str, session: SessionContext) -> str:
         """Handle bedtime routine interactions"""
 
         if self.ai_service:
@@ -297,20 +311,21 @@ class ResponseGenerator:
                 context={
                     "mode": "bedtime",
                     "child_age": session.metadata.get("age", 5),
-                    "soothing": True
-                }
+                    "soothing": True,
+                },
             )
 
-        return ("It's time to rest now. Close your eyes and imagine floating on a "
-                "soft, fluffy cloud. The stars are twinkling gently above you...")
+        return (
+            "It's time to rest now. Close your eyes and imagine floating on a "
+            "soft, fluffy cloud. The stars are twinkling gently above you..."
+        )
 
     async def _handle_conversation(self, text: str, context: Dict) -> str:
         """Handle general conversation"""
 
         if self.ai_service:
             return await self.ai_service.generate_response(
-                text,
-                context={**context, "mode": "conversation", "child_safe": True}
+                text, context={**context, "mode": "conversation", "child_safe": True}
             )
 
         return "That sounds interesting! Tell me more about that."
@@ -324,7 +339,7 @@ class ResponseGenerator:
             "scared": "comforting",
             "angry": "calm",
             "excited": "enthusiastic",
-            "neutral": "friendly"
+            "neutral": "friendly",
         }
 
         return emotion_voice_map.get(emotion.primary_emotion, "warm")

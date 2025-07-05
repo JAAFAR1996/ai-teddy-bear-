@@ -16,7 +16,8 @@ class WhisperClient:
 
     def __init__(self, model_size: str = "base", device: Optional[str] = None):
         self.model_size = model_size
-        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device or (
+    "cuda" if torch.cuda.is_available() else "cpu")
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = None
 
@@ -26,7 +27,8 @@ class WhisperClient:
     def _load_model(self):
         """Load Whisper model"""
         try:
-            self.model = whisper.load_model(self.model_size, device=self.device)
+            self.model = whisper.load_model(
+    self.model_size, device=self.device)
             self.logger.info(
                 f"Loaded Whisper model: {self.model_size} on {self.device}"
             )
@@ -70,7 +72,8 @@ class WhisperClient:
                 return 0.5
 
             # Average log probability from segments
-            total_prob = sum(segment.get("avg_logprob", -1.0) for segment in segments)
+            total_prob = sum(segment.get("avg_logprob", -1.0)
+                             for segment in segments)
             avg_logprob = total_prob / len(segments)
 
             # Convert to confidence (rough approximation)
@@ -78,9 +81,10 @@ class WhisperClient:
             return confidence
 
         # FIXME: replace with specific exception
-except Exception as exc:return 0.5
+except Exception as exc:
+    return 0.5
 
-    async def detect_language(self, audio_data: np.ndarray) -> Optional[str]:
+   async def detect_language(self, audio_data: np.ndarray) -> Optional[str]:
         """Detect language from audio"""
         try:
             if self.model is None:
@@ -88,7 +92,8 @@ except Exception as exc:return 0.5
 
             # Detect language
             audio_segment = whisper.pad_or_trim(audio_data)
-            mel = whisper.log_mel_spectrogram(audio_segment).to(self.model.device)
+            mel = whisper.log_mel_spectrogram(
+                audio_segment).to(self.model.device)
             _, probs = self.model.detect_language(mel)
 
             # Get most likely language

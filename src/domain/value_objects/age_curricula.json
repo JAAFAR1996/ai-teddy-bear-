@@ -1,26 +1,35 @@
 {
-    "3": {
-        "core_skills": ["colors", "shapes", "numbers_1_10", "letters", "animals"],
-        "social_skills": ["sharing", "taking_turns", "please_thank_you"],
-        "motor_skills": ["walking", "running", "jumping", "holding_objects"],
-        "language": ["simple_words", "basic_sentences", "following_instructions"]
-    },
-    "4": {
-        "core_skills": ["counting_to_20", "alphabet", "rhyming", "basic_addition"],
-        "social_skills": ["friendship", "cooperation", "empathy", "manners"],
-        "motor_skills": ["drawing", "cutting", "building", "balance"],
-        "language": ["storytelling", "questions", "expressing_feelings"]
-    },
-    "5": {
-        "core_skills": ["reading_readiness", "writing_letters", "counting_to_50", "patterns"],
-        "social_skills": ["problem_solving", "conflict_resolution", "leadership"],
-        "motor_skills": ["fine_motor", "sports_basics", "coordination"],
-        "language": ["complex_sentences", "vocabulary_expansion", "listening_skills"]
-    },
-    "6": {
-        "core_skills": ["reading", "writing", "math_basics", "science_concepts"],
-        "social_skills": ["teamwork", "responsibility", "respect", "diversity"],
-        "motor_skills": ["sports", "arts_crafts", "technology_basics"],
-        "language": ["reading_comprehension", "creative_writing", "presentations"]
-    }
-} 
+  "3": {
+    "core_skills": ["colors", "shapes", "numbers_1_10", "letters", "animals"],
+    "social_skills": ["sharing", "taking_turns", "please_thank_you"],
+    "motor_skills": ["walking", "running", "jumping", "holding_objects"],
+    "language": ["simple_words", "basic_sentences", "following_instructions"]
+  },
+  "4": {
+    "core_skills": ["counting_to_20", "alphabet", "rhyming", "basic_addition"],
+    "social_skills": ["friendship", "cooperation", "empathy", "manners"],
+    "motor_skills": ["drawing", "cutting", "building", "balance"],
+    "language": ["storytelling", "questions", "expressing_feelings"]
+  },
+  "5": {
+    "core_skills": [
+      "reading_readiness",
+      "writing_letters",
+      "counting_to_50",
+      "patterns"
+    ],
+    "social_skills": ["problem_solving", "conflict_resolution", "leadership"],
+    "motor_skills": ["fine_motor", "sports_basics", "coordination"],
+    "language": [
+      "complex_sentences",
+      "vocabulary_expansion",
+      "listening_skills"
+    ]
+  },
+  "6": {
+    "core_skills": ["reading", "writing", "math_basics", "science_concepts"],
+    "social_skills": ["teamwork", "responsibility", "respect", "diversity"],
+    "motor_skills": ["sports", "arts_crafts", "technology_basics"],
+    "language": ["reading_comprehension", "creative_writing", "presentations"]
+  }
+}

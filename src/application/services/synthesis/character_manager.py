@@ -41,7 +41,7 @@ class VoiceCharacterManager:
                 emotional_settings=teddy_emotional_settings,
                 pitch_adjustment=2.0,  # Higher pitch for child-friendly voice
                 speed_adjustment=0.95,  # Slightly slower for clarity
-                volume_adjustment=1.0
+                volume_adjustment=1.0,
             )
 
             # Arabic Teddy Character
@@ -55,7 +55,7 @@ class VoiceCharacterManager:
                 emotional_settings=teddy_emotional_settings,
                 pitch_adjustment=1.5,
                 speed_adjustment=0.9,
-                volume_adjustment=1.0
+                volume_adjustment=1.0,
             )
 
             # Set default character
@@ -68,50 +68,35 @@ class VoiceCharacterManager:
             logger.error(f"❌ Failed to load default characters: {e}")
             raise
 
-    def _create_teddy_emotional_settings(self) -> Dict[EmotionalTone, VoiceSettings]:
+    def _create_teddy_emotional_settings(
+            self) -> Dict[EmotionalTone, VoiceSettings]:
         """Create emotional voice settings for teddy bear characters"""
         return {
             EmotionalTone.HAPPY: VoiceSettings(
-                stability=0.3,
-                similarity_boost=0.7,
-                style=0.4
+                stability=0.3, similarity_boost=0.7, style=0.4
             ),
             EmotionalTone.CALM: VoiceSettings(
-                stability=0.6,
-                similarity_boost=0.5,
-                style=0.2
+                stability=0.6, similarity_boost=0.5, style=0.2
             ),
             EmotionalTone.EXCITED: VoiceSettings(
-                stability=0.2,
-                similarity_boost=0.8,
-                style=0.7
+                stability=0.2, similarity_boost=0.8, style=0.7
             ),
             EmotionalTone.CURIOUS: VoiceSettings(
-                stability=0.4,
-                similarity_boost=0.6,
-                style=0.5
+                stability=0.4, similarity_boost=0.6, style=0.5
             ),
             EmotionalTone.LOVE: VoiceSettings(
-                stability=0.7,
-                similarity_boost=0.4,
-                style=0.3
+                stability=0.7, similarity_boost=0.4, style=0.3
             ),
             EmotionalTone.ENCOURAGING: VoiceSettings(
-                stability=0.5,
-                similarity_boost=0.6,
-                style=0.4
+                stability=0.5, similarity_boost=0.6, style=0.4
             ),
             EmotionalTone.FRIENDLY: VoiceSettings(
-                stability=0.4,
-                similarity_boost=0.7,
-                style=0.5
-            )
+                stability=0.4, similarity_boost=0.7, style=0.5
+            ),
         }
 
     async def select_character(
-        self,
-        character_id: Optional[str],
-        language: Optional[str]
+        self, character_id: Optional[str], language: Optional[str]
     ) -> VoiceCharacter:
         """Select appropriate voice character"""
         if character_id and character_id in self.voice_characters:
@@ -140,7 +125,8 @@ class VoiceCharacterManager:
         """Create a basic fallback character"""
         basic_settings = {
             EmotionalTone.FRIENDLY: VoiceSettings(
-                stability=0.5, similarity_boost=0.5, style=0.5)
+                stability=0.5, similarity_boost=0.5, style=0.5
+            )
         }
 
         return VoiceCharacter(
@@ -150,7 +136,7 @@ class VoiceCharacterManager:
             voice_id="default",
             language="en",
             description="Basic fallback voice",
-            emotional_settings=basic_settings
+            emotional_settings=basic_settings,
         )
 
     def set_current_character(self, character_id: str) -> bool:
@@ -176,7 +162,7 @@ class VoiceCharacterManager:
                 "name": char.name,
                 "language": char.language,
                 "provider": char.provider.value,
-                "description": char.description
+                "description": char.description,
             }
             for char in self.voice_characters.values()
         ]
@@ -206,18 +192,20 @@ class VoiceCharacterManager:
                 f"Character ID not found for removal: {character_id}")
             return False
 
-    def get_character_by_language(self, language: str) -> Optional[VoiceCharacter]:
+    def get_character_by_language(
+            self, language: str) -> Optional[VoiceCharacter]:
         """Get first character matching the language"""
         for character in self.voice_characters.values():
             if character.language == language:
                 return character
         return None
 
-    def get_characters_by_provider(self, provider: VoiceProvider) -> List[VoiceCharacter]:
+    def get_characters_by_provider(
+        self, provider: VoiceProvider
+    ) -> List[VoiceCharacter]:
         """Get all characters for a specific provider"""
         return [
-            char for char in self.voice_characters.values()
-            if char.provider == provider
+            char for char in self.voice_characters.values() if char.provider == provider
         ]
 
     def get_character_stats(self) -> Dict[str, Any]:
@@ -236,8 +224,10 @@ class VoiceCharacterManager:
 
         return {
             "total_characters": len(self.voice_characters),
-            "current_character": self.current_character.id if self.current_character else None,
+            "current_character": (
+                self.current_character.id if self.current_character else None
+            ),
             "provider_distribution": provider_counts,
             "language_distribution": language_counts,
-            "available_character_ids": list(self.voice_characters.keys())
+            "available_character_ids": list(self.voice_characters.keys()),
         }

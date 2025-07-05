@@ -69,7 +69,7 @@ class AITeddyBearService(ServiceBase):
         self.game_engine = None
         self.story_generator = None
         self.health_service = None
-        
+
         # Initialize modular components
         self.session_manager = SessionManager()
         self.emotion_analyzer = EmotionAnalyzer()
@@ -97,7 +97,8 @@ class AITeddyBearService(ServiceBase):
             except asyncio.TimeoutError:
                 if required:
                     raise
-                self.logger.warning(f"Optional service {service_name} not available")
+                self.logger.warning(
+                    f"Optional service {service_name} not available")
 
         # Inject dependencies into modules
         self.emotion_analyzer.ai_service = self.ai_service
@@ -119,7 +120,10 @@ class AITeddyBearService(ServiceBase):
             session_ids = list(self.session_manager.active_sessions.keys())
             shutdown_tasks = []
             for session_id in session_ids:
-                shutdown_tasks.append(self.end_session(session_id, reason="shutdown"))
+                shutdown_tasks.append(
+    self.end_session(
+        session_id,
+         reason="shutdown"))
 
             if shutdown_tasks:
                 await asyncio.gather(*shutdown_tasks, return_exceptions=True)
@@ -146,8 +150,9 @@ class AITeddyBearService(ServiceBase):
                     checks[f"{service_name}_healthy"] = service_health.get(
                         "healthy", False
                     )
+
                 # FIXME: replace with specific exception
-except Exception as exc:checks[f"{service_name}_healthy"] = False
+except Exception as exc: checks[f"{service_name}_healthy"] = False
 
         healthy = all(
             [

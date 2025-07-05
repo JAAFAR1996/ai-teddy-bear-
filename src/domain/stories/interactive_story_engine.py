@@ -129,7 +129,9 @@ class InteractiveStoryEngine:
             story_data["scenes"] = deserialized_scenes
             self.stories[story_id] = story_data
 
-    def _find_suitable_story(self, age: int, story_type: Optional[StoryType] = None) -> Optional[Dict]:
+    def _find_suitable_story(
+        self, age: int, story_type: Optional[StoryType] = None
+    ) -> Optional[Dict]:
         """Finds a story suitable for the child's age and requested type."""
         if story_type:
             suitable_stories = [
@@ -147,10 +149,13 @@ class InteractiveStoryEngine:
 
         return random.choice(suitable_stories) if suitable_stories else None
 
-    def _prepare_story_state(self, story: Dict, child_name: str, friends: List[str], device_id: str) -> Dict:
+    def _prepare_story_state(
+        self, story: Dict, child_name: str, friends: List[str], device_id: str
+    ) -> Dict:
         """Initializes the state for the story session."""
-        first_scene_id = "start" if "start" in story["scenes"] else list(
-            story["scenes"].keys())[0]
+        first_scene_id = (
+            "start" if "start" in story["scenes"] else list(
+                story["scenes"].keys())[0])
 
         return {
             "story_id": story["story_id"],
@@ -164,13 +169,17 @@ class InteractiveStoryEngine:
             "behavioral_data": {},
         }
 
-    def _format_scene_for_display(self, scene: StoryScene, story_state: Dict) -> Dict:
+    def _format_scene_for_display(
+            self,
+            scene: StoryScene,
+            story_state: Dict) -> Dict:
         """Formats a scene's content for the user."""
         personalized_content = scene.content.format(
             child_name=story_state["child_name"],
             friend1=story_state["friends"][0] if story_state["friends"] else "صديقك",
-            friend2=story_state["friends"][1] if len(
-                story_state["friends"]) > 1 else "صديق آخر",
+            friend2=(
+                story_state["friends"][1] if len(
+                    story_state["friends"]) > 1 else "صديق آخر"),
         )
 
         return {
@@ -178,8 +187,11 @@ class InteractiveStoryEngine:
             "content": personalized_content,
             "audio_effects": scene.audio_effects,
             "choices": [
-                {"choice_id": choice.choice_id, "text": choice.text,
-                    "educational_content": choice.educational_content}
+                {
+                    "choice_id": choice.choice_id,
+                    "text": choice.text,
+                    "educational_content": choice.educational_content,
+                }
                 for choice in scene.choices
             ],
             "educational_challenge": scene.educational_challenge,
@@ -201,7 +213,8 @@ class InteractiveStoryEngine:
             return {"error": "لا توجد قصص مناسبة لهذا العمر"}
 
         story_state = self._prepare_story_state(
-            selected_story, child_name, friends, device_id)
+            selected_story, child_name, friends, device_id
+        )
 
         first_scene_id = story_state["current_scene"]
         current_scene = selected_story["scenes"][first_scene_id]
@@ -214,14 +227,22 @@ class InteractiveStoryEngine:
             "scene": scene_for_display,
         }
 
-    def _find_selected_choice(self, scene: StoryScene, choice_id: str) -> Optional[StoryChoice]:
+    def _find_selected_choice(
+        self, scene: StoryScene, choice_id: str
+    ) -> Optional[StoryChoice]:
         """Finds the selected choice object from a scene."""
         for choice in scene.choices:
             if choice.choice_id == choice_id:
                 return choice
         return None
 
-    def _log_choice(self, story_state: Dict, choice: StoryChoice, voice_analysis: Optional[Dict], response_time: Optional[float]) -> None:
+    def _log_choice(
+        self,
+        story_state: Dict,
+        choice: StoryChoice,
+        voice_analysis: Optional[Dict],
+        response_time: Optional[float],
+    ) -> None:
         """Logs the child's choice."""
         choice_log = StoryChoiceLog(
             id=str(uuid.uuid4()),
@@ -238,7 +259,10 @@ class InteractiveStoryEngine:
         )
         self.choice_logs.append(choice_log)
 
-    def _update_story_state(self, story_state: Dict, choice: StoryChoice) -> None:
+    def _update_story_state(
+            self,
+            story_state: Dict,
+            choice: StoryChoice) -> None:
         """Updates the story state after a choice is made."""
         story_state["current_scene"] = choice.leads_to_scene
         story_state["choices_made"].append(
@@ -272,8 +296,11 @@ class InteractiveStoryEngine:
         if not selected_choice:
             return {"error": "الاختيار غير صحيح"}
 
-        self._log_choice(story_state, selected_choice,
-                         voice_analysis, response_time)
+        self._log_choice(
+            story_state,
+            selected_choice,
+            voice_analysis,
+            response_time)
         self._update_story_state(story_state, selected_choice)
 
         next_scene_id = selected_choice.leads_to_scene
@@ -291,7 +318,10 @@ class InteractiveStoryEngine:
             "choice_recorded": True,
         }
 
-    def _update_behavioral_data(self, story_state: Dict, choice: StoryChoice) -> None:
+    def _update_behavioral_data(
+            self,
+            story_state: Dict,
+            choice: StoryChoice) -> None:
         """تحديث البيانات السلوكية"""
         if "behavioral_data" not in story_state:
             story_state["behavioral_data"] = {}
@@ -301,7 +331,8 @@ class InteractiveStoryEngine:
                 story_state["behavioral_data"][trait] = []
             story_state["behavioral_data"][trait].append(score)
 
-    def _generate_behavioral_feedback(self, choice: StoryChoice) -> Dict[str, Any]:
+    def _generate_behavioral_feedback(
+            self, choice: StoryChoice) -> Dict[str, Any]:
         """توليد تعليقات سلوكية للاختيار"""
         feedback_map = {
             ChoiceType.COURAGE_VS_CAUTION: {
@@ -332,7 +363,9 @@ class InteractiveStoryEngine:
             "encouragement": encouragement,
         }
 
-    def _filter_logs(self, child_name: str, device_id: str, days_back: int) -> List[StoryChoiceLog]:
+    def _filter_logs(
+        self, child_name: str, device_id: str, days_back: int
+    ) -> List[StoryChoiceLog]:
         """Filters choice logs for a specific child and timeframe."""
         cutoff_date = datetime.now() - timedelta(days=days_back)
         return [
@@ -353,11 +386,13 @@ class InteractiveStoryEngine:
                 behavioral_scores.setdefault(trait, []).append(score)
 
             choice_type = log.choice_type.value
-            choice_type_distribution[choice_type] = choice_type_distribution.get(
-                choice_type, 0) + 1
+            choice_type_distribution[choice_type] = (
+                choice_type_distribution.get(choice_type, 0) + 1
+            )
 
         behavioral_averages = {
-            trait: sum(scores) / len(scores) for trait, scores in behavioral_scores.items()
+            trait: sum(scores) / len(scores)
+            for trait, scores in behavioral_scores.items()
         }
         return behavioral_averages, choice_type_distribution
 
@@ -375,7 +410,8 @@ class InteractiveStoryEngine:
         patterns = self._identify_patterns(
             behavioral_averages, choice_distribution)
         recommendations = self._generate_parent_recommendations(
-            patterns, behavioral_averages)
+            patterns, behavioral_averages
+        )
 
         return {
             "child_name": child_name,
@@ -403,9 +439,9 @@ class InteractiveStoryEngine:
                         confidence_level=0.8,
                         description="الطفل يُظهر مستوى عالي من الشجاعة والاستعداد للمغامرة",
                         recommendations=[
-                            "شجع المغامرات الآمنة", "علم إدارة المخاطر"],
-                    )
-                )
+                            "شجع المغامرات الآمنة",
+                            "علم إدارة المخاطر"],
+                    ))
             elif behavioral_averages["caution"] > 0.7:
                 patterns.append(
                     BehavioralPattern(
@@ -428,9 +464,9 @@ class InteractiveStoryEngine:
                         confidence_level=0.9,
                         description="الطفل يُظهر مستوى عالي من التعاطف ومساعدة الآخرين",
                         recommendations=[
-                            "شجع الأنشطة التطوعية", "علم الحدود الصحية"],
-                    )
-                )
+                            "شجع الأنشطة التطوعية",
+                            "علم الحدود الصحية"],
+                    ))
 
         # نمط القلق أو التردد
         if "response_time" in behavioral_averages:  # إذا كان وقت الاستجابة طويل جداً
@@ -463,7 +499,10 @@ class InteractiveStoryEngine:
 
         return recommendations
 
-    def get_story_choice_history(self, child_name: str, device_id: str) -> List[Dict]:
+    def get_story_choice_history(
+            self,
+            child_name: str,
+            device_id: str) -> List[Dict]:
         """الحصول على تاريخ اختيارات الطفل"""
         relevant_logs = [
             {
@@ -478,9 +517,13 @@ class InteractiveStoryEngine:
             if log.child_name == child_name and log.device_id == device_id
         ]
 
-        return sorted(relevant_logs, key=lambda x: x["timestamp"], reverse=True)
+        return sorted(
+            relevant_logs,
+            key=lambda x: x["timestamp"],
+            reverse=True)
 
-    def generate_story_report(self, child_name: str, device_id: str) -> Dict[str, Any]:
+    def generate_story_report(self, child_name: str,
+                              device_id: str) -> Dict[str, Any]:
         """توليد تقرير شامل عن القصص والسلوك"""
         choice_history = self.get_story_choice_history(child_name, device_id)
         behavioral_analysis = self.analyze_behavioral_patterns(
@@ -497,10 +540,8 @@ class InteractiveStoryEngine:
             choice_type = choice["choice_type"]
             choice_types[choice_type] = choice_types.get(choice_type, 0) + 1
 
-        most_common_choice = (
-            max(choice_types.items(),
-                key=lambda x: x[1]) if choice_types else None
-        )
+        most_common_choice = (max(choice_types.items(),
+                                  key=lambda x: x[1]) if choice_types else None)
 
         return {
             "child_name": child_name,

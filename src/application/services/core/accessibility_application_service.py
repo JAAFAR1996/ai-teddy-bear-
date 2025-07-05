@@ -9,8 +9,7 @@ from typing import Dict, List, Optional
 
 from .dto.accessibility_dto import AccessibilityProfileDTO
 from .use_cases.adapt_content_use_case import AdaptContentUseCase
-from .use_cases.create_profile_use_case import \
-    CreateAccessibilityProfileUseCase
+from .use_cases.create_profile_use_case import CreateAccessibilityProfileUseCase
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,8 @@ class AccessibilityApplicationService:
     def __init__(self, repository, adaptation_service):
         self.repository = repository
         self.adaptation_service = adaptation_service
-        self.create_profile_use_case = CreateAccessibilityProfileUseCase(repository)
+        self.create_profile_use_case = CreateAccessibilityProfileUseCase(
+            repository)
         self.adapt_content_use_case = AdaptContentUseCase(
             repository, adaptation_service
         )
@@ -31,7 +31,8 @@ class AccessibilityApplicationService:
     ) -> AccessibilityProfileDTO:
         """إنشاء ملف وصولية جديد"""
         try:
-            profile = self.create_profile_use_case.execute(child_id, special_needs)
+            profile = self.create_profile_use_case.execute(
+                child_id, special_needs)
             return self._profile_to_dto(profile)
         except Exception as e:
             logger.error(f"خطأ في إنشاء ملف الوصولية: {e}")

@@ -7,11 +7,17 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List
 
-from src.domain.reporting.models import (InteractionAnalysis, ProgressMetrics,
-                                         UrgencyLevel)
-from src.domain.reporting.services import (BehaviorAnalyzer,
-                                           EmotionAnalyzerService,
-                                           ProgressAnalyzer, SkillAnalyzer)
+from src.domain.reporting.models import (
+    InteractionAnalysis,
+    ProgressMetrics,
+    UrgencyLevel,
+)
+from src.domain.reporting.services import (
+    BehaviorAnalyzer,
+    EmotionAnalyzerService,
+    ProgressAnalyzer,
+    SkillAnalyzer,
+)
 
 
 class AnalysisOrchestratorService:
@@ -63,16 +69,21 @@ class AnalysisOrchestratorService:
             metrics = ProgressMetrics(
                 child_id=child_id,
                 analysis_date=datetime.now(),
-                total_unique_words=vocab_analysis.get("total_unique_words", 0),
-                new_words_this_period=vocab_analysis.get("new_words", []),
+                total_unique_words=vocab_analysis.get(
+                    "total_unique_words",
+                    0),
+                new_words_this_period=vocab_analysis.get(
+                    "new_words",
+                    []),
                 vocabulary_complexity_score=vocab_analysis.get(
-                    "complexity_score", 0.5),
+                    "complexity_score",
+                    0.5),
                 emotional_intelligence_score=emotional_analysis.get(
-                    "intelligence_score", 0.5
-                ),
+                    "intelligence_score",
+                    0.5),
                 cognitive_development_score=cognitive_analysis.get(
-                    "development_score", 0.5
-                ),
+                    "development_score",
+                    0.5),
                 developmental_concerns=developmental_concerns,
                 intervention_recommendations=intervention_recommendations,
                 urgency_level=urgency_level,
@@ -114,9 +125,8 @@ class AnalysisOrchestratorService:
 
             # Calculate complexity based on word length and diversity
             if unique_words:
-                avg_word_length = sum(len(word) for word in unique_words) / len(
-                    unique_words
-                )
+                avg_word_length = sum(
+                    len(word) for word in unique_words) / len(unique_words)
                 complexity_score = min(
                     avg_word_length / 8.0, 1.0)  # Normalize to 0-1
             else:
@@ -154,8 +164,7 @@ class AnalysisOrchestratorService:
 
             # Analyze emotional patterns
             emotion_distribution = self.emotion_analyzer.analyze_emotion_distribution(
-                interactions
-            )
+                interactions)
             empathy_count = self.emotion_analyzer.count_empathy_indicators(
                 interactions)
 
@@ -167,8 +176,7 @@ class AnalysisOrchestratorService:
             )
 
             intelligence_score = (
-                stability_factor + positive_emotion_ratio +
-                (empathy_count / 10)
+                stability_factor + positive_emotion_ratio + (empathy_count / 10)
             ) / 3
             intelligence_score = min(max(intelligence_score, 0.0), 1.0)
 
@@ -218,7 +226,8 @@ class AnalysisOrchestratorService:
 
             # Calculate cognitive development score
             development_score = self._calculate_cognitive_development_score(
-                skill_analysis)
+                skill_analysis
+            )
 
             # Analyze reasoning ability
             reasoning_ability = self._analyze_reasoning_ability(interactions)
@@ -230,12 +239,10 @@ class AnalysisOrchestratorService:
                 "development_score": development_score,
                 "reasoning_ability": reasoning_ability,
                 "problem_solving_skills": advanced_usage,
-                "cognitive_flexibility": self._assess_cognitive_flexibility(
-                    interactions
-                ),
+                "cognitive_flexibility": self._assess_cognitive_flexibility(interactions),
                 "attention_regulation": behavioral_patterns.get(
-                    "attention_consistency", "variable"
-                ),
+                    "attention_consistency",
+                    "variable"),
                 "learning_progression": skill_analysis.get_total_practice_sessions(),
             }
 
@@ -243,13 +250,14 @@ class AnalysisOrchestratorService:
             self.logger.error(f"Cognitive NLP analysis error: {e}")
             return {"development_score": 0.0}
 
-    def _get_cognitive_indicators(self, interactions: List[InteractionAnalysis]) -> tuple:
+    def _get_cognitive_indicators(
+        self, interactions: List[InteractionAnalysis]
+    ) -> tuple:
         """Extract basic cognitive indicators from interactions"""
         skill_analysis = self.skill_analyzer.analyze_skills_practiced(
             interactions)
         behavioral_patterns = self.behavior_analyzer.analyze_behavioral_patterns(
-            interactions
-        )
+            interactions)
         return skill_analysis, behavioral_patterns
 
     def _calculate_cognitive_development_score(self, skill_analysis) -> float:
@@ -274,12 +282,12 @@ class AnalysisOrchestratorService:
             "creative_thinking",
         ]
         return sum(
-            1
-            for skill in advanced_skills
-            if skill in skill_analysis.skills_practiced
+            1 for skill in advanced_skills if skill in skill_analysis.skills_practiced
         ) / len(advanced_skills)
 
-    def _analyze_reasoning_ability(self, interactions: List[InteractionAnalysis]) -> float:
+    def _analyze_reasoning_ability(
+        self, interactions: List[InteractionAnalysis]
+    ) -> float:
         """Analyze reasoning ability based on interaction patterns"""
         reasoning_indicators = sum(
             1
@@ -414,8 +422,12 @@ class AnalysisOrchestratorService:
 
     def _check_advanced_vocabulary(self, words: set) -> bool:
         """Check for advanced vocabulary usage"""
-        advanced_words = {"complex", "understand",
-                          "because", "therefore", "however"}
+        advanced_words = {
+            "complex",
+            "understand",
+            "because",
+            "therefore",
+            "however"}
         return len(advanced_words.intersection(words)) > 0
 
     def _extract_social_emotional_markers(
@@ -439,14 +451,10 @@ class AnalysisOrchestratorService:
         if not interactions:
             return 0.0
 
-        topic_diversity = len(
-            set().union(
-                *[interaction.topics_discussed for interaction in interactions])
-        )
-        skill_diversity = len(
-            set().union(
-                *[interaction.skills_used for interaction in interactions])
-        )
+        topic_diversity = len(set().union(
+            *[interaction.topics_discussed for interaction in interactions]))
+        skill_diversity = len(set().union(
+            *[interaction.skills_used for interaction in interactions]))
 
         flexibility_score = (topic_diversity + skill_diversity) / (
             len(interactions) * 2

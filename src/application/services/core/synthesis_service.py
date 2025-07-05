@@ -3,7 +3,7 @@
 🔊 Synthesis Service - Refactored for High Cohesion
 خدمة تركيب الصوت - مُعاد هيكلتها لتحسين التماسك
 
-⚠️ REFACTORING NOTICE: 
+⚠️ REFACTORING NOTICE:
 This file has been refactored to resolve low cohesion issues.
 The monolithic 943-line service has been split into specialized services.
 
@@ -12,7 +12,7 @@ New Architecture:
 - StreamingAudioBuffer: Audio buffer management
 - VoiceCharacterManager: Character management
 - AudioProcessor: Audio processing
-- PerformanceMonitor: Performance tracking  
+- PerformanceMonitor: Performance tracking
 - Providers: ElevenLabs, OpenAI, Azure, Fallback implementations
 
 Benefits:
@@ -28,30 +28,26 @@ import warnings
 from ..synthesis import (
     # Main Service
     ModernSynthesisService,
-    
     # Models
     VoiceProvider,
-    SynthesisConfig, 
+    SynthesisConfig,
     VoiceCharacter,
     SynthesisContext,
     SynthesisServiceCredentials,
-    
     # Specialized Services
     StreamingAudioBuffer,
     VoiceCharacterManager,
     AudioProcessor,
     PerformanceMonitor,
-    
     # Providers
     ElevenLabsProvider,
     OpenAIProvider,
     AzureProvider,
     FallbackProvider,
-    
     # Factory Functions
     create_synthesis_service,
     create_synthesis_service_legacy,
-    create_synthesis_service_old
+    create_synthesis_service_old,
 )
 
 # Legacy compatibility aliases
@@ -60,32 +56,28 @@ SynthesisService = ModernSynthesisService
 # Re-export all components for backward compatibility
 __all__ = [
     # Main Service (New Architecture)
-    'ModernSynthesisService',
-    'SynthesisService',  # Legacy alias
-    
+    "ModernSynthesisService",
+    "SynthesisService",  # Legacy alias
     # Models
-    'VoiceProvider',
-    'SynthesisConfig',
-    'VoiceCharacter', 
-    'SynthesisContext',
-    'SynthesisServiceCredentials',
-    
+    "VoiceProvider",
+    "SynthesisConfig",
+    "VoiceCharacter",
+    "SynthesisContext",
+    "SynthesisServiceCredentials",
     # Specialized Services (High Cohesion)
-    'StreamingAudioBuffer',
-    'VoiceCharacterManager', 
-    'AudioProcessor',
-    'PerformanceMonitor',
-    
+    "StreamingAudioBuffer",
+    "VoiceCharacterManager",
+    "AudioProcessor",
+    "PerformanceMonitor",
     # Provider Implementations
-    'ElevenLabsProvider',
-    'OpenAIProvider', 
-    'AzureProvider',
-    'FallbackProvider',
-    
+    "ElevenLabsProvider",
+    "OpenAIProvider",
+    "AzureProvider",
+    "FallbackProvider",
     # Factory Functions
-    'create_synthesis_service',
-    'create_synthesis_service_legacy', 
-    'create_synthesis_service_old'
+    "create_synthesis_service",
+    "create_synthesis_service_legacy",
+    "create_synthesis_service_old",
 ]
 
-warnings.warn("Service refactored for better cohesion", FutureWarning) 
+warnings.warn("Service refactored for better cohesion", FutureWarning)

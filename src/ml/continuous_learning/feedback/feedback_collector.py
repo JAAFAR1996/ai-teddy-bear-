@@ -14,6 +14,17 @@ from typing import Any, Dict, List
 
 import numpy as np
 
+from .analysis_strategies import (
+    EffectiveLearningStrategy,
+    ExcellentSafetyStrategy,
+    HighQualityStrategy,
+    HighSatisfactionStrategy,
+    LowQualityStrategy,
+    LowSatisfactionStrategy,
+    ParentExperienceStrategy,
+    SafetyIssueStrategy,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -72,6 +83,19 @@ class FeedbackCollector:
             "safety_incidents": 0,
             "high_engagement_sessions": 0,
         }
+
+        self._improvement_strategies = [
+            LowQualityStrategy(),
+            SafetyIssueStrategy(),
+            LowSatisfactionStrategy(),
+            ParentExperienceStrategy(),
+        ]
+        self._positive_trend_strategies = [
+            HighQualityStrategy(),
+            ExcellentSafetyStrategy(),
+            HighSatisfactionStrategy(),
+            EffectiveLearningStrategy(),
+        ]
 
         logger.info("📊 Feedback Collector initialized")
 
@@ -137,11 +161,14 @@ class FeedbackCollector:
             interaction = InteractionFeedback(
                 conversation_id=f"conv_{datetime.now().strftime('%Y%m%d')}_{i:03d}",
                 child_age=np.random.choice([3, 4, 5, 6, 7, 8, 9, 10, 11, 12]),
-                interaction_duration=np.random.normal(5.0, 2.0),  # 5 دقائق متوسط
-                response_quality=np.random.beta(8, 2),  # منحاز نحو الجودة العالية
+                interaction_duration=np.random.normal(
+                    5.0, 2.0),  # 5 دقائق متوسط
+                response_quality=np.random.beta(
+                    8, 2),  # منحاز نحو الجودة العالية
                 child_satisfaction=np.random.beta(7, 2),
                 educational_value=np.random.beta(6, 3),
-                safety_compliance=np.random.choice([True, False], p=[0.98, 0.02]),
+                safety_compliance=np.random.choice(
+                    [True, False], p=[0.98, 0.02]),
                 topics_discussed=np.random.choice(
                     [
                         ["animals", "nature"],
@@ -208,7 +235,8 @@ class FeedbackCollector:
             }
             parent_feedback.append(feedback)
 
-        logger.info(f"👨‍👩‍👧‍👦 Collected {len(parent_feedback)} parent feedback items")
+        logger.info(
+            f"👨‍👩‍👧‍👦 Collected {len(parent_feedback)} parent feedback items")
         return parent_feedback
 
     async def _collect_learning_outcomes(self) -> List[Dict[str, Any]]:
@@ -294,7 +322,8 @@ class FeedbackCollector:
                 "session_id": f"session_{i}",
                 "child_age": np.random.choice([3, 4, 5, 6, 7, 8, 9, 10, 11, 12]),
                 "session_duration": np.random.exponential(4.0),  # دقائق
-                "interaction_frequency": np.random.poisson(15),  # تفاعلات في الجلسة
+                # تفاعلات في الجلسة
+                "interaction_frequency": np.random.poisson(15),
                 "attention_span": np.random.beta(5, 3),
                 "response_enthusiasm": np.random.beta(6, 3),
                 "question_asking_rate": np.random.poisson(3),
@@ -333,7 +362,8 @@ class FeedbackCollector:
                 "safety_feeling": np.random.beta(9, 1),
                 "would_use_again": np.random.choice([True, False], p=[0.9, 0.1]),
                 "favorite_features": np.random.choice(
-                    [["stories"], ["games"], ["learning"], ["music"], ["conversations"]]
+                    [["stories"], ["games"], ["learning"],
+                        ["music"], ["conversations"]]
                 ),
                 "improvement_suggestions": np.random.choice(
                     [
@@ -350,8 +380,74 @@ class FeedbackCollector:
             }
             satisfaction_ratings.append(rating)
 
-        logger.info(f"⭐ Collected {len(satisfaction_ratings)} satisfaction ratings")
+        logger.info(
+            f"⭐ Collected {len(satisfaction_ratings)} satisfaction ratings")
         return satisfaction_ratings
+
+    def _process_individual_feedback(self, feedback_type: str, feedback_list: List[Any]) -> List[Dict[str, Any]]:
+        """Processes a list of feedback items of a specific type."""
+        processed_items = []
+        if feedback_type == "child_interactions":
+            for interaction in feedback_list:
+                if hasattr(interaction, "safety_compliance") and interaction.safety_compliance:
+                    processed_items.append({
+                        "type": "child_interaction",
+                        "data": interaction,
+                        "quality_score": interaction.response_quality,
+                        "safety_score": 1.0 if interaction.safety_compliance else 0.0,
+                        "satisfaction": interaction.child_satisfaction,
+                    })
+        elif feedback_type == "parent_feedback":
+            for feedback in feedback_list:
+                processed_items.append({
+                    "type": "parent_feedback",
+                    "data": feedback,
+                    "quality_score": feedback["overall_satisfaction"],
+                    "safety_score": feedback["safety_confidence"],
+                    "satisfaction": feedback["overall_satisfaction"],
+                })
+        elif feedback_type == "learning_outcomes":
+            for outcome in feedback_list:
+                processed_items.append({
+                    "type": "learning_outcome",
+                    "data": outcome,
+                    "quality_score": outcome["achievement_level"],
+                    "safety_score": 1.0,
+                    "satisfaction": outcome["engagement_during_learning"],
+                })
+        return processed_items
+
+    async def _calculate_aggregate_metrics(self, all_items: List[Dict[str, Any]], processed: Dict[str, Any]):
+        """Calculates and populates aggregate metrics from all processed feedback items."""
+        if not all_items:
+            return
+
+        processed["total_items"] = len(all_items)
+        processed["quality_score"] = np.mean(
+            [item["quality_score"] for item in all_items])
+        processed["safety_incidents"] = sum(
+            1 for item in all_items if item["safety_score"] < 0.95)
+        processed["high_satisfaction_rate"] = sum(
+            1 for item in all_items if item["satisfaction"] > 0.8
+        ) / len(all_items)
+
+        learning_items = [
+            item for item in all_items if item["type"] == "learning_outcome"]
+        if learning_items:
+            processed["learning_effectiveness"] = np.mean(
+                [item["quality_score"] for item in learning_items])
+
+        engagement_items = [
+            item for item in all_items if item["type"] == "child_interaction"]
+        if engagement_items:
+            processed["engagement_score"] = np.mean(
+                [item["satisfaction"] for item in engagement_items])
+
+        parent_items = [
+            item for item in all_items if item["type"] == "parent_feedback"]
+        if parent_items:
+            processed["parent_satisfaction"] = np.mean(
+                [item["satisfaction"] for item in parent_items])
 
     async def _process_and_filter_feedback(
         self, raw_feedback: Dict[str, Any]
@@ -372,91 +468,19 @@ class FeedbackCollector:
             "all_items": [],
         }
 
-        # معالجة كل نوع من التغذية الراجعة
+        feedback_map = {
+            "child_interactions": raw_feedback.get("child_interactions", []),
+            "parent_feedback": raw_feedback.get("parent_feedback", []),
+            "learning_outcomes": raw_feedback.get("learning_outcomes", []),
+        }
+
         all_items = []
+        for feedback_type, feedback_list in feedback_map.items():
+            all_items.extend(self._process_individual_feedback(
+                feedback_type, feedback_list))
 
-        # تفاعلات الأطفال
-        child_interactions = raw_feedback.get("child_interactions", [])
-        for interaction in child_interactions:
-            if (
-                hasattr(interaction, "safety_compliance")
-                and interaction.safety_compliance
-            ):
-                all_items.append(
-                    {
-                        "type": "child_interaction",
-                        "data": interaction,
-                        "quality_score": interaction.response_quality,
-                        "safety_score": 1.0 if interaction.safety_compliance else 0.0,
-                        "satisfaction": interaction.child_satisfaction,
-                    }
-                )
+        await self._calculate_aggregate_metrics(all_items, processed)
 
-        # تغذية راجعة من الآباء
-        parent_feedback = raw_feedback.get("parent_feedback", [])
-        for feedback in parent_feedback:
-            all_items.append(
-                {
-                    "type": "parent_feedback",
-                    "data": feedback,
-                    "quality_score": feedback["overall_satisfaction"],
-                    "safety_score": feedback["safety_confidence"],
-                    "satisfaction": feedback["overall_satisfaction"],
-                }
-            )
-
-        # نتائج التعلم
-        learning_outcomes = raw_feedback.get("learning_outcomes", [])
-        for outcome in learning_outcomes:
-            all_items.append(
-                {
-                    "type": "learning_outcome",
-                    "data": outcome,
-                    "quality_score": outcome["achievement_level"],
-                    "safety_score": 1.0,  # Learning outcomes are inherently safe
-                    "satisfaction": outcome["engagement_during_learning"],
-                }
-            )
-
-        # حساب المقاييس الإجمالية
-        if all_items:
-            processed["total_items"] = len(all_items)
-            processed["quality_score"] = np.mean(
-                [item["quality_score"] for item in all_items]
-            )
-            processed["safety_incidents"] = sum(
-                1 for item in all_items if item["safety_score"] < 0.95
-            )
-            processed["high_satisfaction_rate"] = sum(
-                1 for item in all_items if item["satisfaction"] > 0.8
-            ) / len(all_items)
-
-            # حساب مقاييس محددة
-            learning_items = [
-                item for item in all_items if item["type"] == "learning_outcome"
-            ]
-            if learning_items:
-                processed["learning_effectiveness"] = np.mean(
-                    [item["quality_score"] for item in learning_items]
-                )
-
-            engagement_items = [
-                item for item in all_items if item["type"] == "child_interaction"
-            ]
-            if engagement_items:
-                processed["engagement_score"] = np.mean(
-                    [item["satisfaction"] for item in engagement_items]
-                )
-
-            parent_items = [
-                item for item in all_items if item["type"] == "parent_feedback"
-            ]
-            if parent_items:
-                processed["parent_satisfaction"] = np.mean(
-                    [item["satisfaction"] for item in parent_items]
-                )
-
-        # تحديد مجالات التحسين والاتجاهات الإيجابية
         processed["areas_for_improvement"] = await self._identify_improvement_areas(
             all_items
         )
@@ -470,75 +494,22 @@ class FeedbackCollector:
         self, feedback_items: List[Dict]
     ) -> List[str]:
         """تحديد مجالات التحسين"""
-
         improvement_areas = []
+        for strategy in self._improvement_strategies:
+            result = strategy.analyze(feedback_items)
+            if result:
+                improvement_areas.append(result)
+        return list(set(improvement_areas))
 
-        # تحليل النقاط الضعيفة
-        low_quality_items = [
-            item for item in feedback_items if item["quality_score"] < 0.7
-        ]
-        if len(low_quality_items) > len(feedback_items) * 0.1:  # أكثر من 10%
-            improvement_areas.append("response_quality")
-
-        safety_issues = [item for item in feedback_items if item["safety_score"] < 0.95]
-        if safety_issues:
-            improvement_areas.append("safety_enhancement")
-
-        low_satisfaction = [
-            item for item in feedback_items if item["satisfaction"] < 0.7
-        ]
-        if len(low_satisfaction) > len(feedback_items) * 0.15:  # أكثر من 15%
-            improvement_areas.append("user_satisfaction")
-
-        # تحليل تغذية راجعة من الآباء
-        parent_items = [
-            item for item in feedback_items if item["type"] == "parent_feedback"
-        ]
-        if parent_items:
-            avg_parent_satisfaction = np.mean(
-                [item["satisfaction"] for item in parent_items]
-            )
-            if avg_parent_satisfaction < 0.8:
-                improvement_areas.append("parent_experience")
-
-        return improvement_areas
-
-    async def _identify_positive_trends(self, feedback_items: List[Dict]) -> List[str]:
+    async def _identify_positive_trends(
+            self, feedback_items: List[Dict]) -> List[str]:
         """تحديد الاتجاهات الإيجابية"""
-
         positive_trends = []
-
-        # تحليل النقاط القوية
-        high_quality_rate = sum(
-            1 for item in feedback_items if item["quality_score"] > 0.8
-        ) / len(feedback_items)
-        if high_quality_rate > 0.8:
-            positive_trends.append("high_response_quality")
-
-        high_safety_rate = sum(
-            1 for item in feedback_items if item["safety_score"] > 0.95
-        ) / len(feedback_items)
-        if high_safety_rate > 0.98:
-            positive_trends.append("excellent_safety_compliance")
-
-        high_satisfaction_rate = sum(
-            1 for item in feedback_items if item["satisfaction"] > 0.8
-        ) / len(feedback_items)
-        if high_satisfaction_rate > 0.85:
-            positive_trends.append("high_user_satisfaction")
-
-        # تحليل التعلم
-        learning_items = [
-            item for item in feedback_items if item["type"] == "learning_outcome"
-        ]
-        if learning_items:
-            avg_learning_effectiveness = np.mean(
-                [item["quality_score"] for item in learning_items]
-            )
-            if avg_learning_effectiveness > 0.75:
-                positive_trends.append("effective_learning_outcomes")
-
-        return positive_trends
+        for strategy in self._positive_trend_strategies:
+            result = strategy.analyze(feedback_items)
+            if result:
+                positive_trends.append(result)
+        return list(set(positive_trends))
 
     async def _update_collection_stats(
         self, processed_feedback: Dict[str, Any]
@@ -560,8 +531,7 @@ class FeedbackCollector:
 
         # حساب الجلسات عالية المشاركة
         high_engagement = sum(
-            1 for item in processed_feedback["all_items"] if item["satisfaction"] > 0.8
-        )
+            1 for item in processed_feedback["all_items"] if item["satisfaction"] > 0.8)
         self.collection_stats["high_engagement_sessions"] += high_engagement
 
         logger.info(

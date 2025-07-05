@@ -58,7 +58,8 @@ exception_histogram = Histogram(
 )
 
 active_circuit_breakers = Gauge(
-    "app_circuit_breakers_active", "Number of active circuit breakers", ["service"]
+    "app_circuit_breakers_active", "Number of active circuit breakers", [
+        "service"]
 )
 
 
@@ -98,7 +99,9 @@ class ExceptionContext:
     service_name: str = "ai-teddy-bear"
     environment: str = "production"
     additional_data: Dict[str, Any] = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(
+    default_factory=lambda: datetime.now(
+        timezone.utc))
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for logging"""
@@ -376,8 +379,9 @@ class RetryStrategy(RecoveryStrategy):
                 await asyncio.sleep(delay)
                 # Retry operation here
                 return None
+
             # FIXME: replace with specific exception
-except Exception as exc:if attempt == self.max_retries - 1:
+except Exception as exc: if attempt == self.max_retries - 1:
                     raise
                 continue
 

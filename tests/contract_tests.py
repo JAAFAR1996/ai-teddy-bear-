@@ -23,8 +23,10 @@ from pydantic import BaseModel, Field, ValidationError
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class ContractDefinition(BaseModel):
     """تعريف عقد API"""
+
     name: str
     version: str
     provider: str
@@ -36,8 +38,10 @@ class ContractDefinition(BaseModel):
     headers: Dict[str, str] = Field(default_factory=dict)
     timeout_seconds: int = 30
 
+
 class ContractTest(BaseModel):
     """اختبار عقد واحد"""
+
     name: str
     description: str
     contract: ContractDefinition
@@ -46,8 +50,10 @@ class ContractTest(BaseModel):
     expected_response_keys: List[str] = Field(default_factory=list)
     validation_rules: Dict[str, Any] = Field(default_factory=dict)
 
+
 class ContractResult(BaseModel):
     """نتيجة اختبار عقد"""
+
     test_name: str
     contract_name: str
     status: str  # passed, failed, error
@@ -59,8 +65,10 @@ class ContractResult(BaseModel):
     error_message: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.now)
 
+
 class ContractTestSuite(BaseModel):
     """مجموعة اختبارات العقد"""
+
     name: str
     description: str
     provider: str
@@ -73,58 +81,68 @@ class ContractTestSuite(BaseModel):
     error_tests: int = 0
     execution_time: float = 0.0
 
+
 class ContractTestingFramework:
     """إطار اختبارات العقد الشامل"""
-    
+
     def __init__(self, base_url: str = "http://localhost:8000"):
         self.base_url = base_url
         self.test_suites: Dict[str, ContractTestSuite] = {}
         self.session: Optional[aiohttp.ClientSession] = None
-        
+
+        self._validation_functions = {
+            "string": self._validate_string,
+            "integer": self._validate_integer,
+            "number": self._validate_number,
+            "boolean": self._validate_boolean,
+            "array": self._validate_array,
+            "object": self._validate_object,
+        }
+
     async def __aenter__(self):
         """Context manager entry"""
         self.session = aiohttp.ClientSession()
         return self
-        
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit"""
         if self.session:
             await self.session.close()
-    
+
     async def run_contract_testing(self) -> Dict[str, Any]:
         """تشغيل جميع اختبارات العقد"""
         logger.info("📋 بدء اختبارات العقد...")
-        
+
         start_time = asyncio.get_event_loop().time()
-        
+
         # Define contracts for different services
         await self._test_child_service_contracts()
         await self._test_audio_service_contracts()
         await self._test_ai_service_contracts()
         await self._test_security_service_contracts()
         await self._test_parent_service_contracts()
-        
+
         execution_time = asyncio.get_event_loop().time() - start_time
-        
+
         # Calculate overall results
         overall_results = self._calculate_overall_results()
-        
+
         return {
             "test_suites": self.test_suites,
             "overall_results": overall_results,
             "execution_time": execution_time,
-            "recommendations": self._generate_recommendations()
+            "recommendations": self._generate_recommendations(),
         }
-    
+
     async def _test_child_service_contracts(self):
         """اختبار عقود خدمة الطفل"""
         suite = ContractTestSuite(
             name="Child Service Contracts",
             description="عقود API لخدمة الطفل",
             provider="child-service",
-            consumer="ai-teddy-bear"
+            consumer="ai-teddy-bear",
         )
-        
+
         # Contract 1: Get Child Profile
         child_profile_contract = ContractDefinition(
             name="Get Child Profile",
@@ -135,10 +153,8 @@ class ContractTestingFramework:
             method="GET",
             request_schema={
                 "type": "object",
-                "properties": {
-                    "child_id": {"type": "string", "format": "uuid"}
-                },
-                "required": ["child_id"]
+                "properties": {"child_id": {"type": "string", "format": "uuid"}},
+                "required": ["child_id"],
             },
             response_schema={
                 "type": "object",
@@ -149,14 +165,14 @@ class ContractTestingFramework:
                     "preferences": {"type": "object"},
                     "safety_settings": {"type": "object"},
                     "created_at": {"type": "string", "format": "date-time"},
-                    "updated_at": {"type": "string", "format": "date-time"}
+                    "updated_at": {"type": "string", "format": "date-time"},
                 },
-                "required": ["id", "name", "age", "preferences", "safety_settings"]
-            }
+                "required": ["id", "name", "age", "preferences", "safety_settings"],
+            },
         )
-        
+
         suite.contracts.append(child_profile_contract)
-        
+
         # Test the contract
         test = ContractTest(
             name="test_get_child_profile_contract",
@@ -164,31 +180,37 @@ class ContractTestingFramework:
             contract=child_profile_contract,
             test_data={"child_id": "test-child-123"},
             expected_status=200,
-            expected_response_keys=["id", "name", "age", "preferences", "safety_settings"]
+            expected_response_keys=[
+                "id",
+                "name",
+                "age",
+                "preferences",
+                "safety_settings",
+            ],
         )
-        
+
         result = await self._execute_contract_test(test)
         suite.test_results.append(result)
         suite.total_tests += 1
-        
+
         if result.status == "passed":
             suite.passed_tests += 1
         elif result.status == "failed":
             suite.failed_tests += 1
         else:
             suite.error_tests += 1
-        
+
         self.test_suites["child-service"] = suite
-    
+
     async def _test_audio_service_contracts(self):
         """اختبار عقود خدمة الصوت"""
         suite = ContractTestSuite(
             name="Audio Service Contracts",
             description="عقود API لخدمة معالجة الصوت",
             provider="audio-service",
-            consumer="ai-teddy-bear"
+            consumer="ai-teddy-bear",
         )
-        
+
         # Contract 1: Process Audio
         audio_process_contract = ContractDefinition(
             name="Process Audio",
@@ -202,10 +224,14 @@ class ContractTestingFramework:
                 "properties": {
                     "audio_data": {"type": "string", "format": "base64"},
                     "format": {"type": "string", "enum": ["wav", "mp3", "flac"]},
-                    "sample_rate": {"type": "integer", "minimum": 8000, "maximum": 48000},
-                    "language": {"type": "string", "default": "en"}
+                    "sample_rate": {
+                        "type": "integer",
+                        "minimum": 8000,
+                        "maximum": 48000,
+                    },
+                    "language": {"type": "string", "default": "en"},
                 },
-                "required": ["audio_data", "format"]
+                "required": ["audio_data", "format"],
             },
             response_schema={
                 "type": "object",
@@ -214,14 +240,14 @@ class ContractTestingFramework:
                     "confidence": {"type": "number", "minimum": 0, "maximum": 1},
                     "language_detected": {"type": "string"},
                     "processing_time_ms": {"type": "number"},
-                    "status": {"type": "string", "enum": ["success", "error"]}
+                    "status": {"type": "string", "enum": ["success", "error"]},
                 },
-                "required": ["transcription", "confidence", "status"]
-            }
+                "required": ["transcription", "confidence", "status"],
+            },
         )
-        
+
         suite.contracts.append(audio_process_contract)
-        
+
         # Test the contract
         test = ContractTest(
             name="test_audio_process_contract",
@@ -231,34 +257,34 @@ class ContractTestingFramework:
                 "audio_data": "base64_encoded_audio_data",
                 "format": "wav",
                 "sample_rate": 16000,
-                "language": "en"
+                "language": "en",
             },
             expected_status=200,
-            expected_response_keys=["transcription", "confidence", "status"]
+            expected_response_keys=["transcription", "confidence", "status"],
         )
-        
+
         result = await self._execute_contract_test(test)
         suite.test_results.append(result)
         suite.total_tests += 1
-        
+
         if result.status == "passed":
             suite.passed_tests += 1
         elif result.status == "failed":
             suite.failed_tests += 1
         else:
             suite.error_tests += 1
-        
+
         self.test_suites["audio-service"] = suite
-    
+
     async def _test_ai_service_contracts(self):
         """اختبار عقود خدمة الذكاء الاصطناعي"""
         suite = ContractTestSuite(
             name="AI Service Contracts",
             description="عقود API لخدمة الذكاء الاصطناعي",
             provider="ai-service",
-            consumer="ai-teddy-bear"
+            consumer="ai-teddy-bear",
         )
-        
+
         # Contract 1: Generate Response
         ai_response_contract = ContractDefinition(
             name="Generate AI Response",
@@ -273,10 +299,16 @@ class ContractTestingFramework:
                     "child_id": {"type": "string", "format": "uuid"},
                     "message": {"type": "string"},
                     "context": {"type": "object"},
-                    "safety_level": {"type": "string", "enum": ["strict", "moderate", "relaxed"]},
-                    "response_type": {"type": "string", "enum": ["text", "audio", "both"]}
+                    "safety_level": {
+                        "type": "string",
+                        "enum": ["strict", "moderate", "relaxed"],
+                    },
+                    "response_type": {
+                        "type": "string",
+                        "enum": ["text", "audio", "both"],
+                    },
                 },
-                "required": ["child_id", "message"]
+                "required": ["child_id", "message"],
             },
             response_schema={
                 "type": "object",
@@ -286,14 +318,14 @@ class ContractTestingFramework:
                     "safety_score": {"type": "number", "minimum": 0, "maximum": 1},
                     "emotion_detected": {"type": "string"},
                     "confidence": {"type": "number", "minimum": 0, "maximum": 1},
-                    "processing_time_ms": {"type": "number"}
+                    "processing_time_ms": {"type": "number"},
                 },
-                "required": ["response", "safety_score"]
-            }
+                "required": ["response", "safety_score"],
+            },
         )
-        
+
         suite.contracts.append(ai_response_contract)
-        
+
         # Test the contract
         test = ContractTest(
             name="test_ai_response_contract",
@@ -304,34 +336,34 @@ class ContractTestingFramework:
                 "message": "Hello Teddy!",
                 "context": {"previous_messages": []},
                 "safety_level": "strict",
-                "response_type": "text"
+                "response_type": "text",
             },
             expected_status=200,
-            expected_response_keys=["response", "safety_score"]
+            expected_response_keys=["response", "safety_score"],
         )
-        
+
         result = await self._execute_contract_test(test)
         suite.test_results.append(result)
         suite.total_tests += 1
-        
+
         if result.status == "passed":
             suite.passed_tests += 1
         elif result.status == "failed":
             suite.failed_tests += 1
         else:
             suite.error_tests += 1
-        
+
         self.test_suites["ai-service"] = suite
-    
+
     async def _test_security_service_contracts(self):
         """اختبار عقود خدمة الأمان"""
         suite = ContractTestSuite(
             name="Security Service Contracts",
             description="عقود API لخدمة الأمان",
             provider="security-service",
-            consumer="ai-teddy-bear"
+            consumer="ai-teddy-bear",
         )
-        
+
         # Contract 1: Validate Token
         token_validation_contract = ContractDefinition(
             name="Validate Security Token",
@@ -345,9 +377,9 @@ class ContractTestingFramework:
                 "properties": {
                     "token": {"type": "string"},
                     "device_id": {"type": "string"},
-                    "permissions": {"type": "array", "items": {"type": "string"}}
+                    "permissions": {"type": "array", "items": {"type": "string"}},
                 },
-                "required": ["token", "device_id"]
+                "required": ["token", "device_id"],
             },
             response_schema={
                 "type": "object",
@@ -356,14 +388,14 @@ class ContractTestingFramework:
                     "user_id": {"type": "string", "format": "uuid"},
                     "permissions": {"type": "array", "items": {"type": "string"}},
                     "expires_at": {"type": "string", "format": "date-time"},
-                    "device_verified": {"type": "boolean"}
+                    "device_verified": {"type": "boolean"},
                 },
-                "required": ["valid", "user_id", "permissions"]
-            }
+                "required": ["valid", "user_id", "permissions"],
+            },
         )
-        
+
         suite.contracts.append(token_validation_contract)
-        
+
         # Test the contract
         test = ContractTest(
             name="test_token_validation_contract",
@@ -372,34 +404,34 @@ class ContractTestingFramework:
             test_data={
                 "token": "test-jwt-token",
                 "device_id": "test-device-123",
-                "permissions": ["read:child", "write:conversation"]
+                "permissions": ["read:child", "write:conversation"],
             },
             expected_status=200,
-            expected_response_keys=["valid", "user_id", "permissions"]
+            expected_response_keys=["valid", "user_id", "permissions"],
         )
-        
+
         result = await self._execute_contract_test(test)
         suite.test_results.append(result)
         suite.total_tests += 1
-        
+
         if result.status == "passed":
             suite.passed_tests += 1
         elif result.status == "failed":
             suite.failed_tests += 1
         else:
             suite.error_tests += 1
-        
+
         self.test_suites["security-service"] = suite
-    
+
     async def _test_parent_service_contracts(self):
         """اختبار عقود خدمة الوالدين"""
         suite = ContractTestSuite(
             name="Parent Service Contracts",
             description="عقود API لخدمة الوالدين",
             provider="parent-service",
-            consumer="ai-teddy-bear"
+            consumer="ai-teddy-bear",
         )
-        
+
         # Contract 1: Get Parent Dashboard
         parent_dashboard_contract = ContractDefinition(
             name="Get Parent Dashboard",
@@ -412,9 +444,12 @@ class ContractTestingFramework:
                 "type": "object",
                 "properties": {
                     "parent_id": {"type": "string", "format": "uuid"},
-                    "date_range": {"type": "string", "enum": ["today", "week", "month", "year"]}
+                    "date_range": {
+                        "type": "string",
+                        "enum": ["today", "week", "month", "year"],
+                    },
                 },
-                "required": ["parent_id"]
+                "required": ["parent_id"],
             },
             response_schema={
                 "type": "object",
@@ -424,14 +459,14 @@ class ContractTestingFramework:
                     "conversation_summary": {"type": "object"},
                     "safety_alerts": {"type": "array", "items": {"type": "object"}},
                     "learning_progress": {"type": "object"},
-                    "last_updated": {"type": "string", "format": "date-time"}
+                    "last_updated": {"type": "string", "format": "date-time"},
                 },
-                "required": ["parent_id", "children", "conversation_summary"]
-            }
+                "required": ["parent_id", "children", "conversation_summary"],
+            },
         )
-        
+
         suite.contracts.append(parent_dashboard_contract)
-        
+
         # Test the contract
         test = ContractTest(
             name="test_parent_dashboard_contract",
@@ -439,85 +474,53 @@ class ContractTestingFramework:
             contract=parent_dashboard_contract,
             test_data={
                 "parent_id": "test-parent-123",
-                "date_range": "week"
-            },
+                "date_range": "week"},
             expected_status=200,
-            expected_response_keys=["parent_id", "children", "conversation_summary"]
+            expected_response_keys=[
+                "parent_id",
+                "children",
+                "conversation_summary"],
         )
-        
+
         result = await self._execute_contract_test(test)
         suite.test_results.append(result)
         suite.total_tests += 1
-        
+
         if result.status == "passed":
             suite.passed_tests += 1
         elif result.status == "failed":
             suite.failed_tests += 1
         else:
             suite.error_tests += 1
-        
+
         self.test_suites["parent-service"] = suite
-    
-    async def _execute_contract_test(self, test: ContractTest) -> ContractResult:
+
+    async def _execute_contract_test(
+            self, test: ContractTest) -> ContractResult:
         """تنفيذ اختبار عقد واحد"""
         start_time = asyncio.get_event_loop().time()
-        
+
         try:
-            # Validate request against schema
-            self._validate_against_schema(test.test_data, test.contract.request_schema)
-            
-            # Prepare request
-            url = f"{self.base_url}{test.contract.endpoint}"
-            if test.contract.method == "GET" and "{child_id}" in url:
-                url = url.replace("{child_id}", test.test_data.get("child_id", "test"))
-            elif test.contract.method == "GET" and "{parent_id}" in url:
-                url = url.replace("{parent_id}", test.test_data.get("parent_id", "test"))
-            
-            headers = {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                **test.contract.headers
-            }
-            
-            # Make request
-            if test.contract.method == "GET":
-                async with self.session.get(url, headers=headers) as response:
-                    response_data = await response.json() if response.status == 200 else None
-                    response_status = response.status
-            elif test.contract.method == "POST":
-                async with self.session.post(url, json=test.test_data, headers=headers) as response:
-                    response_data = await response.json() if response.status == 200 else None
-                    response_status = response.status
-            else:
-                raise ValueError(f"Unsupported method: {test.contract.method}")
-            
+            self._validate_against_schema(
+                test.test_data, test.contract.request_schema)
+
+            url = self._prepare_url(test.contract.endpoint, test.test_data)
+            headers = self._prepare_headers(test.contract.headers)
+
+            response_data, response_status = await self._make_request(
+                test.contract.method, url, test.test_data, headers
+            )
+
             execution_time = asyncio.get_event_loop().time() - start_time
-            
-            # Validate response
-            validation_errors = []
-            if response_status == test.expected_status and response_data:
-                try:
-                    self._validate_against_schema(response_data, test.contract.response_schema)
-                    
-                    # Check required response keys
-                    for key in test.expected_response_keys:
-                        if key not in response_data:
-                            validation_errors.append(f"Missing required key: {key}")
-                    
-                except ValidationError as e:
-                    validation_errors.append(f"Response schema validation failed: {e}")
-            
-            # Determine test status
-            if response_status != test.expected_status:
-                status = "failed"
-                error_message = f"Expected status {test.expected_status}, got {response_status}"
-            elif validation_errors:
-                status = "failed"
-                error_message = "; ".join(validation_errors)
-            else:
-                status = "passed"
-                error_message = None
-            
+
+            validation_errors = self._validate_response(
+                response_data, response_status, test
+            )
+
+            status, error_message = self._determine_test_status(
+                response_status, test.expected_status, validation_errors
+            )
+
             return ContractResult(
                 test_name=test.name,
                 contract_name=test.contract.name,
@@ -527,9 +530,9 @@ class ContractTestingFramework:
                 response_status=response_status,
                 validation_errors=validation_errors,
                 execution_time=execution_time,
-                error_message=error_message
+                error_message=error_message,
             )
-            
+
         except Exception as e:
             execution_time = asyncio.get_event_loop().time() - start_time
             return ContractResult(
@@ -538,116 +541,215 @@ class ContractTestingFramework:
                 status="error",
                 request_sent=test.test_data,
                 execution_time=execution_time,
-                error_message=str(e)
+                error_message=str(e),
             )
-    
-    def _validate_against_schema(self, data: Any, schema: Dict[str, Any]) -> None:
+
+    def _prepare_url(self, endpoint: str, test_data: Dict) -> str:
+        """Prepares the request URL by substituting path parameters."""
+        url = f"{self.base_url}{endpoint}"
+        for key, value in test_data.items():
+            if f"{{{key}}}" in url:
+                url = url.replace(f"{{{key}}}", str(value))
+        return url
+
+    def _prepare_headers(self, contract_headers: Dict) -> Dict:
+        """Prepares the request headers."""
+        return {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            **contract_headers,
+        }
+
+    async def _make_request(
+        self, method: str, url: str, data: Dict, headers: Dict
+    ) -> tuple[Optional[Dict], int]:
+        """Makes an HTTP request using the specified method."""
+        request_functions = {
+            "GET": self.session.get,
+            "POST": self.session.post,
+        }
+        request_function = request_functions.get(method.upper())
+
+        if not request_function:
+            raise ValueError(f"Unsupported method: {method}")
+
+        request_kwargs = {"headers": headers}
+        if method.upper() == "POST":
+            request_kwargs["json"] = data
+
+        async with request_function(url, **request_kwargs) as response:
+            response_data = (
+                await response.json() if response.status // 100 == 2 else None
+            )
+            return response_data, response.status
+
+    def _validate_response(
+            self,
+            response_data: Optional[Dict],
+            response_status: int,
+            test: ContractTest) -> List[str]:
+        """Validates the HTTP response against the contract."""
+        validation_errors = []
+        if response_status == test.expected_status and response_data:
+            try:
+                self._validate_against_schema(
+                    response_data, test.contract.response_schema
+                )
+                for key in test.expected_response_keys:
+                    if key not in response_data:
+                        validation_errors.append(
+                            f"Missing required key: {key}")
+            except ValidationError as e:
+                validation_errors.append(
+                    f"Response schema validation failed: {e}")
+        return validation_errors
+
+    def _determine_test_status(
+        self, response_status: int, expected_status: int, validation_errors: List[str]
+    ) -> tuple[str, Optional[str]]:
+        """Determines the final status of the test."""
+        if response_status != expected_status:
+            return "failed", f"Expected status {expected_status}, got {response_status}"
+        elif validation_errors:
+            return "failed", "; ".join(validation_errors)
+        else:
+            return "passed", None
+
+    def _validate_against_schema(
+            self, data: Any, schema: Dict[str, Any]) -> None:
         """التحقق من صحة البيانات ضد المخطط"""
-        # This is a simplified validation - in production, use a proper JSON schema validator
+        # This is a simplified validation - in production, use a proper JSON
+        # schema validator
         if not isinstance(data, dict):
             raise ValidationError("Data must be an object")
-        
+
         required_fields = schema.get("required", [])
         for field in required_fields:
             if field not in data:
                 raise ValidationError(f"Missing required field: {field}")
-        
+
         properties = schema.get("properties", {})
         for field, value in data.items():
             if field in properties:
                 field_schema = properties[field]
                 self._validate_field(value, field_schema, field)
-    
-    def _validate_field(self, value: Any, schema: Dict[str, Any], field_name: str) -> None:
-        """التحقق من صحة حقل واحد"""
+
+    def _validate_field(
+        self, value: Any, schema: Dict[str, Any], field_name: str
+    ) -> None:
+        """Dispatches validation to the correct function based on field type."""
         field_type = schema.get("type")
-        
-        if field_type == "string":
-            if not isinstance(value, str):
-                raise ValidationError(f"Field {field_name} must be a string")
-            
-            if "enum" in schema and value not in schema["enum"]:
-                raise ValidationError(f"Field {field_name} must be one of {schema['enum']}")
-                
-        elif field_type == "integer":
-            if not isinstance(value, int):
-                raise ValidationError(f"Field {field_name} must be an integer")
-            
-            if "minimum" in schema and value < schema["minimum"]:
-                raise ValidationError(f"Field {field_name} must be >= {schema['minimum']}")
-            
-            if "maximum" in schema and value > schema["maximum"]:
-                raise ValidationError(f"Field {field_name} must be <= {schema['maximum']}")
-                
-        elif field_type == "number":
-            if not isinstance(value, (int, float)):
-                raise ValidationError(f"Field {field_name} must be a number")
-                
-        elif field_type == "boolean":
-            if not isinstance(value, bool):
-                raise ValidationError(f"Field {field_name} must be a boolean")
-                
-        elif field_type == "array":
-            if not isinstance(value, list):
-                raise ValidationError(f"Field {field_name} must be an array")
-                
-        elif field_type == "object":
-            if not isinstance(value, dict):
-                raise ValidationError(f"Field {field_name} must be an object")
-    
+        validation_function = self._validation_functions.get(field_type)
+
+        if validation_function:
+            validation_function(value, schema, field_name)
+        else:
+            logger.warning(f"No validation function for type: {field_type}")
+
+    def _validate_string(self, value: Any, schema: Dict, field_name: str):
+        if not isinstance(value, str):
+            raise ValidationError(f"Field {field_name} must be a string")
+        if "enum" in schema and value not in schema["enum"]:
+            raise ValidationError(
+                f"Field {field_name} must be one of {schema['enum']}")
+
+    def _validate_integer(self, value: Any, schema: Dict, field_name: str):
+        if not isinstance(value, int):
+            raise ValidationError(f"Field {field_name} must be an integer")
+        if "minimum" in schema and value < schema["minimum"]:
+            raise ValidationError(
+                f"Field {field_name} must be >= {schema['minimum']}")
+        if "maximum" in schema and value > schema["maximum"]:
+            raise ValidationError(
+                f"Field {field_name} must be <= {schema['maximum']}")
+
+    def _validate_number(self, value: Any, schema: Dict, field_name: str):
+        if not isinstance(value, (int, float)):
+            raise ValidationError(f"Field {field_name} must be a number")
+
+    def _validate_boolean(self, value: Any, schema: Dict, field_name: str):
+        if not isinstance(value, bool):
+            raise ValidationError(f"Field {field_name} must be a boolean")
+
+    def _validate_array(self, value: Any, schema: Dict, field_name: str):
+        if not isinstance(value, list):
+            raise ValidationError(f"Field {field_name} must be an array")
+
+    def _validate_object(self, value: Any, schema: Dict, field_name: str):
+        if not isinstance(value, dict):
+            raise ValidationError(f"Field {field_name} must be an object")
+
     def _calculate_overall_results(self) -> Dict[str, Any]:
         """حساب النتائج الإجمالية"""
-        total_tests = sum(suite.total_tests for suite in self.test_suites.values())
-        passed_tests = sum(suite.passed_tests for suite in self.test_suites.values())
-        failed_tests = sum(suite.failed_tests for suite in self.test_suites.values())
-        error_tests = sum(suite.error_tests for suite in self.test_suites.values())
-        
-        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
-        
+        total_tests = sum(
+            suite.total_tests for suite in self.test_suites.values())
+        passed_tests = sum(
+            suite.passed_tests for suite in self.test_suites.values())
+        failed_tests = sum(
+            suite.failed_tests for suite in self.test_suites.values())
+        error_tests = sum(
+            suite.error_tests for suite in self.test_suites.values())
+
+        success_rate = (
+            passed_tests /
+            total_tests *
+            100) if total_tests > 0 else 0
+
         return {
             "total_tests": total_tests,
             "passed_tests": passed_tests,
             "failed_tests": failed_tests,
             "error_tests": error_tests,
             "success_rate": success_rate,
-            "services_tested": len(self.test_suites)
+            "services_tested": len(self.test_suites),
         }
-    
+
     def _generate_recommendations(self) -> List[str]:
         """توليد توصيات لتحسين العقود"""
         recommendations = []
-        
+
         overall_results = self._calculate_overall_results()
-        
+
         if overall_results["success_rate"] < 90:
-            recommendations.append("🔴 معدل نجاح العقود منخفض - راجع تعريفات APIs")
-        
+            recommendations.append(
+                "🔴 معدل نجاح العقود منخفض - راجع تعريفات APIs")
+
         if overall_results["error_tests"] > 0:
-            recommendations.append("🟡 بعض الاختبارات فشلت - تحقق من توفر الخدمات")
-        
+            recommendations.append(
+                "🟡 بعض الاختبارات فشلت - تحقق من توفر الخدمات")
+
         for service_name, suite in self.test_suites.items():
             if suite.failed_tests > 0:
-                recommendations.append(f"🔴 {service_name}: {suite.failed_tests} اختبارات فشلت")
-        
+                recommendations.append(
+                    f"🔴 {service_name}: {suite.failed_tests} اختبارات فشلت"
+                )
+
         if not recommendations:
             recommendations.append("✅ جميع العقود تعمل بشكل صحيح")
-        
+
         return recommendations
 
+
 # Test the contract testing framework
+
+
 async def test_contract_framework():
     """اختبار إطار اختبارات العقد"""
     async with ContractTestingFramework() as framework:
         results = await framework.run_contract_testing()
-        
+
         print("📋 نتائج اختبارات العقد:")
-        print(f"إجمالي الاختبارات: {results['overall_results']['total_tests']}")
-        print(f"الاختبارات الناجحة: {results['overall_results']['passed_tests']}")
-        print(f"معدل النجاح: {results['overall_results']['success_rate']:.1f}%")
-        
+        print(
+            f"إجمالي الاختبارات: {results['overall_results']['total_tests']}")
+        print(
+            f"الاختبارات الناجحة: {results['overall_results']['passed_tests']}")
+        print(
+            f"معدل النجاح: {results['overall_results']['success_rate']:.1f}%")
+
         print("\n📋 التوصيات:")
-        for rec in results['recommendations']:
+        for rec in results["recommendations"]:
             print(f"  {rec}")
 
+
 if __name__ == "__main__":
-    asyncio.run(test_contract_framework()) 
+    asyncio.run(test_contract_framework())

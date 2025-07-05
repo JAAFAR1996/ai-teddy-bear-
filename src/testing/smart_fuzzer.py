@@ -137,26 +137,11 @@ class SmartFuzzer:
             "learning_session",
         ]
 
-    async def run_comprehensive_fuzz_test(
-        self, target_function, max_iterations: int = 10000, timeout_seconds: int = 300
-    ) -> FuzzingSession:
-        """
-        Run comprehensive fuzzing session with multiple strategies
-
-        Args:
-            target_function: Function to test
-            max_iterations: Maximum number of test iterations
-            timeout_seconds: Maximum time to run
-
-        Returns:
-            Complete fuzzing session results
-        """
-        start_time = asyncio.get_event_loop().time()
-
+    async def _run_fuzzing_strategies(
+        self, target_function, max_iterations: int, timeout_seconds: int
+    ) -> List[FuzzResult]:
+        """Run all fuzzing strategies and aggregate the results."""
         all_results = []
-        critical_findings = []
-
-        # Run different fuzzing strategies
         strategies = [
             FuzzingStrategy.CHILD_SAFETY,
             FuzzingStrategy.SECURITY,
@@ -166,48 +151,66 @@ class SmartFuzzer:
 
         for strategy in strategies:
             logger.info(f"Starting {strategy.value} fuzzing")
-
             strategy_results = await self._run_strategy_specific_fuzzing(
                 target_function,
                 strategy,
                 max_iterations // len(strategies),
                 timeout_seconds // len(strategies),
             )
-
             all_results.extend(strategy_results)
+        return all_results
 
-            # Check for critical findings
-            for result in strategy_results:
-                if result.vulnerability_found or result.safety_violation:
-                    critical_findings.append(
-                        f"{strategy.value}: {result.test_input[:100]}..."
-                    )
+    def _calculate_session_metrics(
+        self, all_results: List[FuzzResult]
+    ) -> Dict[str, Any]:
+        """Calculate and return key metrics from the fuzzing session."""
+        critical_findings = [
+            f"{res.strategy.value}: {res.test_input[:100]}..."
+            for res in all_results
+            if res.vulnerability_found or res.safety_violation
+        ]
+        return {
+            "total_tests": len(all_results),
+            "vulnerabilities": sum(
+                1 for r in all_results if r.vulnerability_found),
+            "safety_violations": sum(
+                1 for r in all_results if r.safety_violation),
+            "crashes": sum(
+                1 for r in all_results if r.error_message is not None),
+            "critical_findings": critical_findings,
+        }
 
-        # Calculate session metrics
-        total_tests = len(all_results)
-        vulnerabilities = sum(1 for r in all_results if r.vulnerability_found)
-        safety_violations = sum(1 for r in all_results if r.safety_violation)
-        crashes = sum(1 for r in all_results if r.error_message is not None)
+    async def run_comprehensive_fuzz_test(
+            self,
+            target_function,
+            max_iterations: int = 10000,
+            timeout_seconds: int = 300) -> FuzzingSession:
+        """Run a comprehensive fuzzing session and generate a report."""
+        start_time = asyncio.get_event_loop().time()
+
+        all_results = await self._run_fuzzing_strategies(
+            target_function, max_iterations, timeout_seconds
+        )
+        metrics = self._calculate_session_metrics(all_results)
 
         coverage_percentage = await self.coverage_tracker.get_coverage_percentage()
         execution_time = asyncio.get_event_loop().time() - start_time
 
         session = FuzzingSession(
-            strategy=FuzzingStrategy.AI_POWERED,  # Combined strategy
-            total_tests=total_tests,
-            vulnerabilities_found=vulnerabilities,
-            safety_violations=safety_violations,
-            unique_crashes=crashes,
+            strategy=FuzzingStrategy.AI_POWERED,
+            total_tests=metrics["total_tests"],
+            vulnerabilities_found=metrics["vulnerabilities"],
+            safety_violations=metrics["safety_violations"],
+            unique_crashes=metrics["crashes"],
             coverage_percentage=coverage_percentage,
             execution_time_seconds=execution_time,
-            critical_findings=critical_findings,
+            critical_findings=metrics["critical_findings"],
         )
 
         logger.info(
-            f"Fuzzing complete: {vulnerabilities} vulnerabilities, "
-            f"{safety_violations} safety violations found"
+            f"Fuzzing complete: {metrics['vulnerabilities']} vulnerabilities, "
+            f"{metrics['safety_violations']} safety violations found"
         )
-
         return session
 
     async def _run_strategy_specific_fuzzing(
@@ -320,8 +323,9 @@ class SmartFuzzer:
         mutated_input = await self.mutation_engine.ai_guided_mutation(base_input)
 
         context = ChildContext(
-            age=secrets.randbelow(10) + 3, emotion=secrets.choice(self.emotion_states)
-        )
+            age=secrets.randbelow(10) + 3,
+            emotion=secrets.choice(
+                self.emotion_states))
 
         return mutated_input, context
 
@@ -352,8 +356,9 @@ class SmartFuzzer:
         base_input = "".join(secrets.choice(chars) for _ in range(length))
 
         context = ChildContext(
-            age=secrets.randbelow(10) + 3, emotion=secrets.choice(self.emotion_states)
-        )
+            age=secrets.randbelow(10) + 3,
+            emotion=secrets.choice(
+                self.emotion_states))
 
         return base_input, context
 
@@ -515,7 +520,8 @@ class SmartFuzzer:
         # Age 6-8: Elementary level
         elif age <= 8:
             inappropriate_words = ["violence", "death", "scary"]
-            return not any(word in content_lower for word in inappropriate_words)
+            return not any(
+                word in content_lower for word in inappropriate_words)
 
         # Age 9-12: More advanced but still child-appropriate
         else:
@@ -551,8 +557,11 @@ class SmartFuzzer:
     )
     @settings(max_examples=1000, deadline=None)
     async def test_conversation_safety_property(
-        self, child_age: int, input_text: str, emotion_state: str, target_function
-    ):
+            self,
+            child_age: int,
+            input_text: str,
+            emotion_state: str,
+            target_function):
         """
         Property-based test for conversation safety.
         This test ensures that regardless of input, the system

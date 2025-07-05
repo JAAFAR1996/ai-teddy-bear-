@@ -20,7 +20,10 @@ import torch
 try:
     from transformers import AutoModelForCausalLM, AutoTokenizer
 except ImportError:
-    from src.infrastructure.external_services.mock.transformers import AutoModelForCausalLM, AutoTokenizer
+    from src.infrastructure.external_services.mock.transformers import (
+        AutoModelForCausalLM,
+        AutoTokenizer,
+    )
 
 import redis.asyncio as aioredis
 
@@ -34,7 +37,10 @@ from .llm_base import BaseLLMAdapter, LLMResponse, ModelConfig, LLMProvider, Mes
 class OpenAIAdapter(BaseLLMAdapter):
     """Adapter for OpenAI models"""
 
-    def __init__(self, api_key: Optional[str] = None, config: Optional[Dict] = None):
+    def __init__(
+            self,
+            api_key: Optional[str] = None,
+            config: Optional[Dict] = None):
         super().__init__(api_key, config)
         if self.api_key:
             self.client = openai.AsyncOpenAI(api_key=self.api_key)
@@ -42,9 +48,7 @@ class OpenAIAdapter(BaseLLMAdapter):
             self.client = openai.AsyncOpenAI()
 
     async def generate(
-        self,
-        messages: List[Message],
-        model_config: ModelConfig
+        self, messages: List[Message], model_config: ModelConfig
     ) -> LLMResponse:
         """Generate response using OpenAI API"""
         start_time = asyncio.get_event_loop().time()
@@ -52,14 +56,17 @@ class OpenAIAdapter(BaseLLMAdapter):
         try:
             response = await self.client.chat.completions.create(
                 model=model_config.model_name,
-                messages=[{"role": msg.role, "content": msg.content}
-                          for msg in messages],
+                messages=[
+                    {"role": msg.role, "content": msg.content} for msg in messages
+                ],
                 max_tokens=model_config.max_tokens,
                 temperature=model_config.temperature,
                 top_p=model_config.top_p,
                 frequency_penalty=model_config.frequency_penalty,
                 presence_penalty=model_config.presence_penalty,
-                stop=model_config.stop_sequences if model_config.stop_sequences else None
+                stop=(
+                    model_config.stop_sequences if model_config.stop_sequences else None
+                ),
             )
             usage = response.usage.model_dump()
             content = response.choices[0].message.content
@@ -74,26 +81,25 @@ class OpenAIAdapter(BaseLLMAdapter):
                 usage=usage,
                 cost=cost,
                 latency_ms=latency_ms,
-                metadata={'finish_reason': response.choices[0].finish_reason}
+                metadata={"finish_reason": response.choices[0].finish_reason},
             )
         except Exception as e:
             self.logger.error(f"OpenAI generation error: {e}")
             raise
 
     async def generate_stream(
-        self,
-        messages: List[Message],
-        model_config: ModelConfig
+        self, messages: List[Message], model_config: ModelConfig
     ) -> AsyncIterator[str]:
         """Generate streaming response using OpenAI API"""
         try:
             stream = await self.client.chat.completions.create(
                 model=model_config.model_name,
-                messages=[{"role": msg.role, "content": msg.content}
-                          for msg in messages],
+                messages=[
+                    {"role": msg.role, "content": msg.content} for msg in messages
+                ],
                 max_tokens=model_config.max_tokens,
                 temperature=model_config.temperature,
-                stream=True
+                stream=True,
             )
             async for chunk in stream:
                 delta = chunk.choices[0].delta
@@ -106,7 +112,10 @@ class OpenAIAdapter(BaseLLMAdapter):
     def validate_config(self, model_config: ModelConfig) -> bool:
         """Validate OpenAI model configuration"""
         valid_models = [
-            'gpt-4', 'gpt-4-turbo', 'gpt-4-32k',
-            'gpt-3.5-turbo', 'gpt-3.5-turbo-16k'
+            "gpt-4",
+            "gpt-4-turbo",
+            "gpt-4-32k",
+            "gpt-3.5-turbo",
+            "gpt-3.5-turbo-16k",
         ]
         return model_config.model_name in valid_models

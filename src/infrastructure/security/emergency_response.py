@@ -86,7 +86,8 @@ class EmergencyResponseSystem:
                 self.notification_webhooks = config.get("webhooks", [])
                 self.blocked_ips = config.get("blocked_ips", [])
         except FileNotFoundError:
-            self.logger.warning("ملف تكوين الطوارئ غير موجود، سيتم إنشاء تكوين افتراضي")
+            self.logger.warning(
+                "ملف تكوين الطوارئ غير موجود، سيتم إنشاء تكوين افتراضي")
             self._create_default_config()
 
     def _create_default_config(self) -> None:
@@ -128,7 +129,8 @@ class EmergencyResponseSystem:
         self.logger.critical(f"🚨 تسريب مفاتيح API - ID: {incident_id}")
         return incident_id
 
-    async def _trigger_immediate_response(self, incident: SecurityIncident) -> None:
+    async def _trigger_immediate_response(
+            self, incident: SecurityIncident) -> None:
         """تفعيل الاستجابة الفورية"""
         if incident.type == IncidentType.API_KEY_EXPOSURE:
             await self._handle_api_key_exposure(incident)
@@ -137,7 +139,8 @@ class EmergencyResponseSystem:
         elif incident.type == IncidentType.DATA_BREACH:
             await self._handle_data_breach(incident)
 
-    async def _handle_api_key_exposure(self, incident: SecurityIncident) -> None:
+    async def _handle_api_key_exposure(
+            self, incident: SecurityIncident) -> None:
         """التعامل مع تسريب مفاتيح API"""
         self.logger.info(f"🔧 بدء التعامل مع تسريب المفاتيح - {incident.id}")
 
@@ -200,7 +203,8 @@ class EmergencyResponseSystem:
 
     async def _revoke_anthropic_key(self, key: str) -> None:
         """إلغاء مفتاح Anthropic"""
-        self.logger.warning(f"⚠️ يجب إلغاء مفتاح Anthropic يدوياً: {key[:20]}...")
+        self.logger.warning(
+            f"⚠️ يجب إلغاء مفتاح Anthropic يدوياً: {key[:20]}...")
 
     async def _generate_replacement_keys(self, old_keys: List[str]) -> None:
         """إنشاء مفاتيح بديلة"""
@@ -212,7 +216,8 @@ class EmergencyResponseSystem:
         replacement_instructions = {
             "timestamp": datetime.now().isoformat(),
             "compromised_keys_count": len(old_keys),
-            "services_affected": [self._identify_key_service(key) for key in old_keys],
+            "services_affected": [
+                self._identify_key_service(key) for key in old_keys],
             "next_steps": [
                 "1. إنشاء مفاتيح جديدة في كل خدمة",
                 "2. تحديث Vault بالمفاتيح الجديدة",
@@ -252,7 +257,8 @@ class EmergencyResponseSystem:
                     await session.post(webhook_url, json=notification)
                 self.logger.info(f"📧 تم إرسال إشعار إلى {webhook_url}")
             except Exception as e:
-                self.logger.error(f"❌ فشل في إرسال إشعار إلى {webhook_url}: {e}")
+                self.logger.error(
+                    f"❌ فشل في إرسال إشعار إلى {webhook_url}: {e}")
 
     async def _update_firewall_rules(self) -> None:
         """تحديث قواعد جدار الحماية"""
@@ -282,7 +288,8 @@ class EmergencyResponseSystem:
         hash_output = hashlib.md5(hash_input.encode()).hexdigest()[:8]
         return f"INC_{timestamp}_{hash_output.upper()}"
 
-    async def _handle_unauthorized_access(self, incident: SecurityIncident) -> None:
+    async def _handle_unauthorized_access(
+            self, incident: SecurityIncident) -> None:
         """التعامل مع الوصول غير المصرح به"""
         if incident.source_ip:
             self.blocked_ips.append(incident.source_ip)
@@ -302,7 +309,8 @@ class EmergencyResponseSystem:
         # تشفير إضافي، نسخ احتياطية، إلخ
         self.logger.info("🛡️ تفعيل بروتوكولات حماية البيانات الطارئة")
 
-    def get_incident_report(self, incident_id: str) -> Optional[Dict[str, Any]]:
+    def get_incident_report(
+            self, incident_id: str) -> Optional[Dict[str, Any]]:
         """الحصول على تقرير الحادث"""
         if incident_id in self.incidents:
             incident = self.incidents[incident_id]
@@ -327,7 +335,10 @@ class EmergencyResponseSystem:
 
         return incidents
 
-    async def resolve_incident(self, incident_id: str, resolution_notes: str) -> bool:
+    async def resolve_incident(
+            self,
+            incident_id: str,
+            resolution_notes: str) -> bool:
         """حل الحادث"""
         if incident_id in self.incidents:
             self.incidents[incident_id].resolved = True

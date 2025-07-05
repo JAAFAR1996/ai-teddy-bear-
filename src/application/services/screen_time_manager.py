@@ -129,7 +129,9 @@ class ScreenTimeManager:
             self._save_data()
         return self.settings[child_id]
 
-    async def _can_start_session(self, child_id: str, settings: ScreenTimeSettings) -> bool:
+    async def _can_start_session(
+        self, child_id: str, settings: ScreenTimeSettings
+    ) -> bool:
         """Checks if a new session can be started for the child."""
         if child_id in self.active_sessions:
             logger.warning(f"Session already active for child: {child_id}")
@@ -150,15 +152,20 @@ class ScreenTimeManager:
 
         return True
 
-    def _create_and_register_session(self, child_id: str, activity_type: str) -> UsageSession:
+    def _create_and_register_session(
+        self, child_id: str, activity_type: str
+    ) -> UsageSession:
         """Creates and registers a new usage session."""
         session = UsageSession(
-            child_id=child_id, start_time=datetime.now(), activity_type=activity_type
-        )
+            child_id=child_id,
+            start_time=datetime.now(),
+            activity_type=activity_type)
         self.active_sessions[child_id] = session
         return session
 
-    async def _setup_session_monitoring_tasks(self, child_id: str, settings: ScreenTimeSettings) -> None:
+    async def _setup_session_monitoring_tasks(
+        self, child_id: str, settings: ScreenTimeSettings
+    ) -> None:
         """Sets up background tasks for session warnings and break reminders."""
         await self._setup_session_warnings(child_id, settings)
         await self._setup_break_reminders(child_id, settings)
@@ -235,7 +242,10 @@ class ScreenTimeManager:
                 f"🕐 {child_id}: باقي {minutes_remaining} دقائق على انتهاء وقت اللعب!"
             )
 
-    async def _setup_break_reminders(self, child_id: str, settings: ScreenTimeSettings):
+    async def _setup_break_reminders(
+            self,
+            child_id: str,
+            settings: ScreenTimeSettings):
         """إعداد تذكيرات الراحة"""
         break_seconds = settings.break_reminder_minutes * 60
 
@@ -244,7 +254,8 @@ class ScreenTimeManager:
         )
         self.break_reminder_tasks[child_id] = task
 
-    async def _send_break_reminder_loop(self, child_id: str, interval_seconds: int):
+    async def _send_break_reminder_loop(
+            self, child_id: str, interval_seconds: int):
         """حلقة إرسال تذكيرات الراحة"""
         while child_id in self.active_sessions:
             await asyncio.sleep(interval_seconds)

@@ -14,13 +14,17 @@ def parse_args(args: Optional[list] = None) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Record audio")
     parser.add_argument(
-        "-d", "--duration", type=int, default=5, help="Recording duration in seconds"
-    )
+        "-d",
+        "--duration",
+        type=int,
+        default=5,
+        help="Recording duration in seconds")
     parser.add_argument("-o", "--output", type=str, help="Output file path")
     parser.add_argument("--device", type=int, help="Audio input device ID")
     parser.add_argument(
-        "--list-devices", action="store_true", help="List available audio input devices"
-    )
+        "--list-devices",
+        action="store_true",
+        help="List available audio input devices")
     return parser.parse_args(args)
 
 

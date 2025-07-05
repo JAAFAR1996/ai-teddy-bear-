@@ -20,7 +20,10 @@ import torch
 try:
     from transformers import AutoModelForCausalLM, AutoTokenizer
 except ImportError:
-    from src.infrastructure.external_services.mock.transformers import AutoModelForCausalLM, AutoTokenizer
+    from src.infrastructure.external_services.mock.transformers import (
+        AutoModelForCausalLM,
+        AutoTokenizer,
+    )
 
 import redis.asyncio as aioredis
 
@@ -34,15 +37,16 @@ from .llm_base import BaseLLMAdapter, LLMResponse, ModelConfig, LLMProvider, Mes
 class AnthropicAdapter(BaseLLMAdapter):
     """Adapter for Anthropic Claude models"""
 
-    def __init__(self, api_key: Optional[str] = None, config: Optional[Dict] = None):
+    def __init__(
+            self,
+            api_key: Optional[str] = None,
+            config: Optional[Dict] = None):
         super().__init__(api_key, config)
         if self.api_key:
             self.client = anthropic.AsyncAnthropic(api_key=self.api_key)
 
     async def generate(
-        self,
-        messages: List[Message],
-        model_config: ModelConfig
+        self, messages: List[Message], model_config: ModelConfig
     ) -> LLMResponse:
         """Generate response using Anthropic API"""
         start_time = asyncio.get_event_loop().time()
@@ -50,22 +54,27 @@ class AnthropicAdapter(BaseLLMAdapter):
         try:
             # Convert messages format
             system_message = next(
-                (msg.content for msg in messages if msg.role == "system"), None)
-            user_messages = [{"role": msg.role, "content": msg.content}
-                             for msg in messages if msg.role != "system"]
+                (msg.content for msg in messages if msg.role == "system"), None
+            )
+            user_messages = [
+                {"role": msg.role, "content": msg.content}
+                for msg in messages
+                if msg.role != "system"
+            ]
 
             response = await self.client.messages.create(
                 model=model_config.model_name,
                 max_tokens=model_config.max_tokens,
                 messages=user_messages,
                 system=system_message,
-                temperature=model_config.temperature
+                temperature=model_config.temperature,
             )
 
             usage = {
-                'prompt_tokens': response.usage.input_tokens,
-                'completion_tokens': response.usage.output_tokens,
-                'total_tokens': response.usage.input_tokens + response.usage.output_tokens
+                "prompt_tokens": response.usage.input_tokens,
+                "completion_tokens": response.usage.output_tokens,
+                "total_tokens": response.usage.input_tokens
+                + response.usage.output_tokens,
             }
 
             latency_ms = int(
@@ -78,7 +87,7 @@ class AnthropicAdapter(BaseLLMAdapter):
                 model=model_config.model_name,
                 usage=usage,
                 cost=cost,
-                latency_ms=latency_ms
+                latency_ms=latency_ms,
             )
 
         except Exception as e:
@@ -86,23 +95,25 @@ class AnthropicAdapter(BaseLLMAdapter):
             raise
 
     async def generate_stream(
-        self,
-        messages: List[Message],
-        model_config: ModelConfig
+        self, messages: List[Message], model_config: ModelConfig
     ) -> AsyncIterator[str]:
         """Generate streaming response using Anthropic API"""
         try:
             system_message = next(
-                (msg.content for msg in messages if msg.role == "system"), None)
-            user_messages = [{"role": msg.role, "content": msg.content}
-                             for msg in messages if msg.role != "system"]
+                (msg.content for msg in messages if msg.role == "system"), None
+            )
+            user_messages = [
+                {"role": msg.role, "content": msg.content}
+                for msg in messages
+                if msg.role != "system"
+            ]
 
             async with self.client.messages.stream(
                 model=model_config.model_name,
                 max_tokens=model_config.max_tokens,
                 messages=user_messages,
                 system=system_message,
-                temperature=model_config.temperature
+                temperature=model_config.temperature,
             ) as stream:
                 async for text in stream.text_stream:
                     yield text
@@ -114,7 +125,11 @@ class AnthropicAdapter(BaseLLMAdapter):
     def validate_config(self, model_config: ModelConfig) -> bool:
         """Validate Anthropic model configuration"""
         valid_models = [
-            'claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku',
-            'claude-2.1', 'claude-2.0', 'claude-instant-1.2'
+            "claude-3-opus",
+            "claude-3-sonnet",
+            "claude-3-haiku",
+            "claude-2.1",
+            "claude-2.0",
+            "claude-instant-1.2",
         ]
         return model_config.model_name in valid_models

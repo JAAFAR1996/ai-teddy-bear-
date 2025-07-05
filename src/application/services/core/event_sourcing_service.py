@@ -11,8 +11,10 @@ from typing import Any, AsyncIterator, Dict, List, Optional, Type, TypeVar
 
 from ...infrastructure.messaging.event_bus_integration import EventBus
 from ...shared.kernel import AggregateRoot, DomainEvent
-from .event_sourcing_repository import (EventSourcingRepository,
-                                        EventSourcingRepositoryImpl)
+from .event_sourcing_repository import (
+    EventSourcingRepository,
+    EventSourcingRepositoryImpl,
+)
 from .event_store import EventStore, StoredEvent, get_event_store
 from .snapshot_store import SnapshotStore, get_snapshot_store
 
@@ -34,7 +36,9 @@ class EventSourcingService:
         self.event_bus = event_bus or EventBus()
         self._repositories: Dict[Type, EventSourcingRepository] = {}
 
-    def get_repository(self, aggregate_type: Type[T]) -> EventSourcingRepository:
+    def get_repository(
+            self,
+            aggregate_type: Type[T]) -> EventSourcingRepository:
         """Get or create repository for aggregate type"""
 
         if aggregate_type not in self._repositories:
@@ -98,7 +102,8 @@ class EventSourcingService:
 
         projection_data = {}
 
-        # Simple projection - in production use proper projection infrastructure
+        # Simple projection - in production use proper projection
+        # infrastructure
         events = await self.event_store.load_events(stream_pattern)
 
         for stored_event in events:
@@ -150,8 +155,7 @@ class EventSourcingService:
                         "timestamp": stored_event.metadata.timestamp.isoformat(),
                     },
                     "data": stored_event.data,
-                }
-            )
+                })
 
         logger.info(f"Backed up {len(backup_data)} events from {stream_id}")
 
@@ -175,14 +179,16 @@ class EventSourcingService:
 
         logger.info(f"Restored {len(events)} events to {stream_id}")
 
-    async def create_snapshot_for_stream(self, stream_id: str, aggregate: T) -> bool:
+    async def create_snapshot_for_stream(
+            self, stream_id: str, aggregate: T) -> bool:
         """Create snapshot for aggregate"""
 
         try:
             version = await self.event_store.get_stream_version(stream_id)
             await self.snapshot_store.save_snapshot(stream_id, aggregate, version)
 
-            logger.info(f"Created snapshot for {stream_id} at version {version}")
+            logger.info(
+                f"Created snapshot for {stream_id} at version {version}")
             return True
 
         except Exception as e:
@@ -196,7 +202,8 @@ class EventSourcingService:
             try:
                 await self.event_bus.publish_domain_event(event)
             except Exception as e:
-                logger.error(f"Failed to publish event {event.event_type}: {e}")
+                logger.error(
+                    f"Failed to publish event {event.event_type}: {e}")
 
 
 # Singleton instance

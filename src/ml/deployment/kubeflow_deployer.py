@@ -75,8 +75,9 @@ class KubeflowPipelineDeployer:
 
     def _get_child_interaction_pipeline(self) -> Any:
         """استيراد pipeline من الملف الرئيسي"""
-        from src.ml.pipelines.child_interaction_pipeline import \
-            child_interaction_pipeline
+        from src.ml.pipelines.child_interaction_pipeline import (
+            child_interaction_pipeline,
+        )
 
         return child_interaction_pipeline
 
@@ -139,4 +140,5 @@ def deploy_production_pipeline() -> Any:
 
 if __name__ == "__main__":
     deployment_info = deploy_production_pipeline()
-    logger.info(f"✅ Pipeline deployed with ID: {deployment_info['pipeline_id']}")
+    logger.info(
+        f"✅ Pipeline deployed with ID: {deployment_info['pipeline_id']}")

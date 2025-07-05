@@ -11,29 +11,39 @@ import requests
 
 class EmailService:
     """خدمة البريد الإلكتروني"""
-    
-    def __init__(self, smtp_server: str, smtp_port: int, username: str, password: str):
+
+    def __init__(
+    self,
+    smtp_server: str,
+    smtp_port: int,
+    username: str,
+     password: str):
         self.smtp_server = smtp_server
         self.smtp_port = smtp_port
         self.username = username
         self.password = password
-    
-    async def send_email(self, to: str, subject: str, body: str, is_html: bool = True) -> bool:
+
+    async def send_email(
+    self,
+    to: str,
+    subject: str,
+    body: str,
+     is_html: bool = True) -> bool:
         """إرسال بريد إلكتروني"""
         try:
             msg = MIMEMultipart()
             msg['From'] = self.username
             msg['To'] = to
             msg['Subject'] = subject
-            
+
             msg.attach(MIMEText(body, 'html' if is_html else 'plain', 'utf-8'))
-            
+
             server = smtplib.SMTP(self.smtp_server, self.smtp_port)
             server.starttls()
             server.login(self.username, self.password)
             server.send_message(msg)
             server.quit()
-            
+
             return True
         except Exception as e:
     logger.error(f"Error: {e}")f"Email sending failed: {e}")
@@ -41,11 +51,11 @@ class EmailService:
 
 class SMSService:
     """خدمة الرسائل النصية"""
-    
+
     def __init__(self, api_key: str, api_url: str):
         self.api_key = api_key
         self.api_url = api_url
-    
+
     async def send_sms(self, to: str, message: str) -> bool:
         """إرسال رسالة نصية"""
         try:

@@ -1,3 +1,6 @@
+from typing import Any, Dict
+from datetime import datetime
+import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
@@ -7,10 +10,6 @@ logger = logging.getLogger(__name__)
 🎭 Memory Orchestrator - DDD Implementation
 Orchestrator pattern for coordinating memory operations
 """
-
-import asyncio
-from datetime import datetime
-from typing import Any, Dict
 
 
 class MemoryContext:
@@ -34,7 +33,8 @@ class MemoryOrchestrator:
     def __init__(self):
         self.strategies = {}
 
-    async def execute_operation(self, operation_type: str, parameters: Dict[str, Any]):
+    async def execute_operation(
+            self, operation_type: str, parameters: Dict[str, Any]):
         """تنفيذ عملية معقدة"""
         context = MemoryContext(
             operation_id=f"{operation_type}_{datetime.utcnow().timestamp()}",
@@ -73,9 +73,15 @@ class MemoryOrchestrator:
         # Add validation logic here
         pass
 
-    async def _execute_steps(self, context: MemoryContext, operation_type: str):
+    async def _execute_steps(
+            self,
+            context: MemoryContext,
+            operation_type: str):
         """تنفيذ خطوات العملية"""
-        steps = [self._step_1_prepare, self._step_2_process, self._step_3_finalize]
+        steps = [
+            self._step_1_prepare,
+            self._step_2_process,
+            self._step_3_finalize]
 
         results = []
         for step in steps:

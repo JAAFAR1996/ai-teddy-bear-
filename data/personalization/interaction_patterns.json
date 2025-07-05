@@ -1,20 +1,14 @@
 {
   "test_child": {
     "child_id": "test_child",
-    "preferred_activities": [
-      "games"
-    ],
-    "favorite_topics": [
-      "learning"
-    ],
+    "preferred_activities": ["games"],
+    "favorite_topics": ["learning"],
     "engagement_times": [],
     "response_patterns": {
       "cooperative": 1
     },
     "mood_triggers": {
-      "positive": [
-        "music"
-      ],
+      "positive": ["music"],
       "negative": []
     },
     "learning_preferences": {

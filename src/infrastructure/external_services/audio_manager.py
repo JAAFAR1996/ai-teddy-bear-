@@ -9,13 +9,22 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 # Import specialized services
-from ...application.services.audio import (AudioPlaybackService,
-                                           AudioRecordingService,
-                                           AudioSessionService)
+from ...application.services.audio import (
+    AudioPlaybackService,
+    AudioRecordingService,
+    AudioSessionService,
+)
+
 # Import domain models
-from ...domain.audio.models import (AudioFormatType, AudioQualityMode,
-                                    AudioSession, AudioSessionType,
-                                    AudioSystemConfig, PerformanceMetrics)
+from ...domain.audio.models import (
+    AudioFormatType,
+    AudioQualityMode,
+    AudioSession,
+    AudioSessionType,
+    AudioSystemConfig,
+    PerformanceMetrics,
+    PlaybackOptions,
+)
 
 
 class AudioSystemError(Exception):
@@ -53,9 +62,12 @@ class EnhancedAudioManager:
         """Initialize specialized audio services."""
         try:
             # Initialize core services
-            self.recording_service = AudioRecordingService(self.config, self.metrics)
-            self.playback_service = AudioPlaybackService(self.config, self.metrics)
-            self.session_service = AudioSessionService(self.config, self.metrics)
+            self.recording_service = AudioRecordingService(
+                self.config, self.metrics)
+            self.playback_service = AudioPlaybackService(
+                self.config, self.metrics)
+            self.session_service = AudioSessionService(
+                self.config, self.metrics)
 
             self.logger.info("All audio services initialized successfully")
 
@@ -88,7 +100,8 @@ class EnhancedAudioManager:
                     self.logger.error(f"Monitoring worker error: {e}")
 
         # Start daemon thread
-        self._monitoring_task = threading.Thread(target=monitoring_worker, daemon=True)
+        self._monitoring_task = threading.Thread(
+            target=monitoring_worker, daemon=True)
         self._monitoring_task.start()
 
     # === Session Management ===
@@ -100,7 +113,8 @@ class EnhancedAudioManager:
         quality_mode: AudioQualityMode = AudioQualityMode.BALANCED,
     ) -> str:
         """Start a new audio session."""
-        return self.session_service.start_session(child_id, session_type, quality_mode)
+        return self.session_service.start_session(
+            child_id, session_type, quality_mode)
 
     def end_session(self, session_id: str) -> bool:
         """End an audio session."""
@@ -151,30 +165,25 @@ class EnhancedAudioManager:
         self,
         audio_data: Optional[np.ndarray] = None,
         filename: Optional[str] = None,
-        volume: Optional[float] = None,
         session_id: Optional[str] = None,
         format_hint: Optional[AudioFormatType] = None,
-        loop: bool = False,
-        fade_in: float = 0.0,
-        fade_out: float = 0.0,
+        options: Optional[PlaybackOptions] = None,
     ) -> bool:
         """Play audio from data or file."""
-        # Get current session if none specified
         if session_id is None:
-            current_session = self.session_service.get_current_session()
-            session = current_session
+            session = self.session_service.get_current_session()
         else:
             session = self.session_service.get_session(session_id)
+
+        if options is None:
+            options = PlaybackOptions()
 
         return self.playback_service.play_audio(
             audio_data=audio_data,
             filename=filename,
-            volume=volume,
             session=session,
             format_hint=format_hint,
-            loop=loop,
-            fade_in=fade_in,
-            fade_out=fade_out,
+            options=options,
         )
 
     def speak(
@@ -319,7 +328,8 @@ class EnhancedAudioManager:
 
             # Test TTS
             try:
-                tts_result = self.speak("Test message", session_id=test_session_id)
+                tts_result = self.speak(
+                    "Test message", session_id=test_session_id)
                 test_results["tests"]["text_to_speech"] = tts_result
             except Exception as e:
                 test_results["tests"]["text_to_speech"] = False
@@ -330,7 +340,8 @@ class EnhancedAudioManager:
             test_results["tests"]["session_cleanup"] = session_ended
 
             # Calculate overall status
-            passed_tests = sum(1 for result in test_results["tests"].values() if result)
+            passed_tests = sum(
+                1 for result in test_results["tests"].values() if result)
             total_tests = len(test_results["tests"])
 
             if passed_tests == total_tests:
@@ -356,7 +367,8 @@ class EnhancedAudioManager:
 
         # Update services with new config
         self.recording_service.update_config(new_config)
-        # playback_service and session_service would also be updated if they had update methods
+        # playback_service and session_service would also be updated if they
+        # had update methods
 
         self.logger.info("Audio system configuration updated")
 

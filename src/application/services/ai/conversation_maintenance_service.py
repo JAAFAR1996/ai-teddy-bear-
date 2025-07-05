@@ -52,7 +52,7 @@ class ConversationMaintenanceService:
 
             # Mark conversations as archived
             sql = """
-                UPDATE conversations 
+                UPDATE conversations
                 SET archived = 1, updated_at = ?
                 WHERE start_time < ? AND archived = 0 AND parent_visible = 1
             """
@@ -75,7 +75,7 @@ class ConversationMaintenanceService:
             cursor = self.connection.cursor()
 
             sql = """
-                DELETE FROM messages 
+                DELETE FROM messages
                 WHERE conversation_id NOT IN (SELECT id FROM conversations)
             """
             cursor.execute(sql)
@@ -96,7 +96,7 @@ class ConversationMaintenanceService:
             cursor = self.connection.cursor()
 
             sql = """
-                DELETE FROM emotional_states 
+                DELETE FROM emotional_states
                 WHERE conversation_id NOT IN (SELECT id FROM conversations)
             """
             cursor.execute(sql)
@@ -142,7 +142,10 @@ class ConversationMaintenanceService:
             return {
                 "status": "success",
                 "db_size_bytes": db_size_bytes,
-                "operations_performed": ["ANALYZE", "VACUUM", "PRAGMA optimize"],
+                "operations_performed": [
+                    "ANALYZE",
+                    "VACUUM",
+                    "PRAGMA optimize"],
                 "timestamp": datetime.now().isoformat(),
             }
 
@@ -161,7 +164,9 @@ class ConversationMaintenanceService:
                 stats)
 
             # Calculate performance metrics
-            return self._calculate_performance_metrics(stats, optimizations, performance_score)
+            return self._calculate_performance_metrics(
+                stats, optimizations, performance_score
+            )
 
         except Exception as e:
             self.logger.error(f"Error in performance analysis: {e}")
@@ -172,65 +177,72 @@ class ConversationMaintenanceService:
         cursor = self.connection.cursor()
         cursor.execute(
             """
-            SELECT 
-                AVG(CASE WHEN end_time IS NOT NULL THEN 
-                    (julianday(end_time) - julianday(start_time)) * 24 * 60 
+            SELECT
+                AVG(CASE WHEN end_time IS NOT NULL THEN
+                    (julianday(end_time) - julianday(start_time)) * 24 * 60
                     ELSE NULL END) as avg_duration_minutes,
                 AVG(total_messages) as avg_messages,
                 COUNT(*) as total_conversations,
                 COUNT(CASE WHEN safety_score < 1.0 THEN 1 END) as flagged_conversations,
                 AVG(quality_score) as avg_quality
-            FROM conversations 
+            FROM conversations
             WHERE archived = 0 AND start_time >= datetime('now', '-30 days')
         """
         )
         return cursor.fetchone()
 
-    def _analyze_performance_bottlenecks(self, stats: tuple) -> tuple[list, int]:
+    def _analyze_performance_bottlenecks(
+            self, stats: tuple) -> tuple[list, int]:
         """Analyze performance bottlenecks and generate optimizations"""
         optimizations = []
         performance_score = 100
 
         # Analyze performance bottlenecks
         if stats[0] and stats[0] > 15:  # Average duration > 15 minutes
-            optimizations.append({
-                "area": "Duration Management",
-                "issue": "Conversations are running longer than optimal",
-                "suggestion": "Consider implementing time limits or conversation breaks",
-                "impact": "medium",
-            })
+            optimizations.append(
+                {
+                    "area": "Duration Management",
+                    "issue": "Conversations are running longer than optimal",
+                    "suggestion": "Consider implementing time limits or conversation breaks",
+                    "impact": "medium",
+                })
             performance_score -= 10
 
         if stats[1] and stats[1] > 20:  # Too many messages per conversation
-            optimizations.append({
-                "area": "Message Efficiency",
-                "issue": "High message count per conversation",
-                "suggestion": "Optimize AI responses to be more concise and effective",
-                "impact": "low",
-            })
+            optimizations.append(
+                {
+                    "area": "Message Efficiency",
+                    "issue": "High message count per conversation",
+                    "suggestion": "Optimize AI responses to be more concise and effective",
+                    "impact": "low",
+                })
             performance_score -= 5
 
         if stats[3] and (stats[3] / stats[2]) > 0.05:  # More than 5% flagged
-            optimizations.append({
-                "area": "Content Safety",
-                "issue": "High rate of flagged conversations",
-                "suggestion": "Review and improve content moderation rules",
-                "impact": "high",
-            })
+            optimizations.append(
+                {
+                    "area": "Content Safety",
+                    "issue": "High rate of flagged conversations",
+                    "suggestion": "Review and improve content moderation rules",
+                    "impact": "high",
+                })
             performance_score -= 25
 
         if stats[4] and stats[4] < 0.7:  # Low quality score
-            optimizations.append({
-                "area": "Conversation Quality",
-                "issue": "Below-average conversation quality scores",
-                "suggestion": "Review AI model performance and fine-tune responses",
-                "impact": "high",
-            })
+            optimizations.append(
+                {
+                    "area": "Conversation Quality",
+                    "issue": "Below-average conversation quality scores",
+                    "suggestion": "Review AI model performance and fine-tune responses",
+                    "impact": "high",
+                })
             performance_score -= 20
 
         return optimizations, performance_score
 
-    def _calculate_performance_metrics(self, stats: tuple, optimizations: list, performance_score: int) -> Dict[str, Any]:
+    def _calculate_performance_metrics(
+        self, stats: tuple, optimizations: list, performance_score: int
+    ) -> Dict[str, Any]:
         """Calculate final performance metrics and return analysis result"""
         return {
             "performance_score": max(0, performance_score),

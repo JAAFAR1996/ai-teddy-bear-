@@ -126,7 +126,8 @@ class EnhancedParentReportService:
             return
 
         try:
-            # Load spaCy model for English (Arabic model needs separate installation)
+            # Load spaCy model for English (Arabic model needs separate
+            # installation)
             self.nlp = spacy.load("en_core_web_sm")
 
             # Initialize NLTK sentiment analyzer
@@ -164,7 +165,7 @@ class EnhancedParentReportService:
         """Load Chain-of-Thought prompting templates"""
         self.cot_templates = {
             "progress_analysis": """
-أنت خبير في تطوير الطفل وتحليل التقدم التعليمي والعاطفي. 
+أنت خبير في تطوير الطفل وتحليل التقدم التعليمي والعاطفي.
 استخدم منهجية التفكير خطوة بخطوة (Chain-of-Thought) لتحليل تقدم الطفل.
 
 بيانات الطفل:
@@ -198,7 +199,7 @@ class EnhancedParentReportService:
 
 الخطوة 4: تحديد نقاط القوة والتحديات
 بناءً على التحليل أعلاه:
-- نقاط القوة الرئيسية: 
+- نقاط القوة الرئيسية:
 - المجالات التي تحتاج تطوير:
 - مستوى الأولوية للتدخل: {urgency_level}
 
@@ -399,11 +400,12 @@ class EnhancedParentReportService:
             self.logger.error(f"فشل في توليد LLM للفئة {category}: {e}")
             return None
 
-    def _create_cot_prompt(self, category: str, context: Dict[str, Any]) -> str:
+    def _create_cot_prompt(self, category: str,
+                           context: Dict[str, Any]) -> str:
         """إنشاء Chain-of-Thought prompt لفئة محددة"""
 
         prompt = f"""
-أنت خبير في تطوير الطفل وتحليل التقدم التعليمي والعاطفي. 
+أنت خبير في تطوير الطفل وتحليل التقدم التعليمي والعاطفي.
 مهمتك تحليل بيانات الطفل وتقديم توصية مخصصة في مجال "{category}".
 
 استخدم منهجية التفكير خطوة بخطوة (Chain-of-Thought) للوصول لأفضل توصية.
@@ -467,8 +469,9 @@ class EnhancedParentReportService:
         return response.choices[0].message.content
 
     async def store_analysis_results(
-        self, metrics: ProgressMetrics, recommendations: List[LLMRecommendation]
-    ) -> str:
+            self,
+            metrics: ProgressMetrics,
+            recommendations: List[LLMRecommendation]) -> str:
         """حفظ نتائج التحليل في جدول parent_reports"""
         if not self.db:
             raise Exception("خدمة قاعدة البيانات غير متوفرة")
@@ -486,7 +489,7 @@ class EnhancedParentReportService:
             # حفظ في قاعدة البيانات
             report_id = await self.db.execute(
                 """
-                INSERT INTO parent_reports 
+                INSERT INTO parent_reports
                 (child_id, generated_at, metrics, recommendations, analysis_version)
                 VALUES (?, ?, ?, ?, ?)
                 """,
@@ -508,7 +511,8 @@ class EnhancedParentReportService:
 
     # Helper methods implementation
 
-    async def _analyze_vocabulary_development(self, texts: List[str]) -> Dict[str, Any]:
+    async def _analyze_vocabulary_development(
+            self, texts: List[str]) -> Dict[str, Any]:
         """تحليل تطوير المفردات باستخدام NLP"""
         if not self.nlp or not texts:
             return self._empty_vocabulary_analysis()
@@ -536,7 +540,7 @@ class EnhancedParentReportService:
         return {
             "unique_words": len(unique_words),
             "new_words": unique_words[
-                -min(5, len(unique_words)) :
+                -min(5, len(unique_words)):
             ],  # آخر 5 كلمات كـ "جديدة"
             "complexity_score": complexity_score,
             "reading_level": self._estimate_reading_level(complexity_score),
@@ -547,7 +551,8 @@ class EnhancedParentReportService:
             "learning_velocity": len(unique_words) / 7,  # كلمات في اليوم
         }
 
-    async def _analyze_emotional_intelligence(self, texts: List[str]) -> Dict[str, Any]:
+    async def _analyze_emotional_intelligence(
+            self, texts: List[str]) -> Dict[str, Any]:
         """تحليل الذكاء العاطفي"""
         emotion_words = self._extract_emotion_words(texts)
         empathy_indicators = self._detect_empathy_expressions(texts)
@@ -559,7 +564,8 @@ class EnhancedParentReportService:
             "social_awareness": {"cooperation": 0.7, "sharing": 0.8},
         }
 
-    async def _analyze_cognitive_development(self, texts: List[str]) -> Dict[str, Any]:
+    async def _analyze_cognitive_development(
+            self, texts: List[str]) -> Dict[str, Any]:
         """تحليل التطوير المعرفي"""
         return {
             "abstract_thinking": len([t for t in texts if "لماذا" in t or "كيف" in t]),
@@ -628,7 +634,11 @@ class EnhancedParentReportService:
 
     def _detect_empathy_expressions(self, texts: List[str]) -> List[str]:
         """اكتشاف تعبيرات التعاطف"""
-        empathy_patterns = ["I feel", "I understand", "I know how", "That must be"]
+        empathy_patterns = [
+            "I feel",
+            "I understand",
+            "I know how",
+            "That must be"]
         expressions = []
         for text in texts:
             for pattern in empathy_patterns:
@@ -693,7 +703,8 @@ class EnhancedParentReportService:
             urgency_level=0,
         )
 
-    def _extract_conversation_texts(self, interactions: List[Dict]) -> List[str]:
+    def _extract_conversation_texts(
+            self, interactions: List[Dict]) -> List[str]:
         """استخراج النصوص من التفاعلات"""
         texts = []
         for interaction in interactions:
@@ -713,7 +724,7 @@ class EnhancedParentReportService:
         try:
             interactions = await self.db.fetch_all(
                 """
-                SELECT * FROM conversations 
+                SELECT * FROM conversations
                 WHERE child_id = ? AND created_at BETWEEN ? AND ?
                 ORDER BY created_at DESC
                 """,

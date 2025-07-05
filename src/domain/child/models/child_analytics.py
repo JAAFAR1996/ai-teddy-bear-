@@ -66,7 +66,8 @@ class ChildEngagementInsight:
             self.metrics.time_utilization_percentage < 0
             or self.metrics.time_utilization_percentage > 100
         ):
-            raise ValueError("Time utilization percentage must be between 0 and 100")
+            raise ValueError(
+                "Time utilization percentage must be between 0 and 100")
 
     def _generate_recommendations(self) -> None:
         """Generate personalized recommendations based on metrics"""
@@ -82,7 +83,8 @@ class ChildEngagementInsight:
                 "Child may benefit from shorter, more frequent interactions"
             )
         elif self.metrics.is_over_utilization_threshold():
-            recommendations.append("Consider increasing daily interaction time limit")
+            recommendations.append(
+                "Consider increasing daily interaction time limit")
 
         if self.engagement_level == EngagementLevel.LOW:
             recommendations.append(
@@ -90,7 +92,8 @@ class ChildEngagementInsight:
             )
 
         if self.metrics.interaction_streak == 0:
-            recommendations.append("Schedule regular interaction times to build habits")
+            recommendations.append(
+                "Schedule regular interaction times to build habits")
 
         self.recommendations.extend(
             [r for r in recommendations if r not in self.recommendations]
@@ -99,9 +102,9 @@ class ChildEngagementInsight:
     def is_at_risk(self) -> bool:
         """Check if child is at risk of disengagement"""
         return (
-            self.engagement_level in [EngagementLevel.LOW, EngagementLevel.INACTIVE]
-            or self.metrics.days_since_last_interaction > 7
-        )
+            self.engagement_level in [
+                EngagementLevel.LOW,
+                EngagementLevel.INACTIVE] or self.metrics.days_since_last_interaction > 7)
 
 
 @dataclass
@@ -166,7 +169,8 @@ class ChildStatistics:
 
     def get_language_diversity_score(self) -> float:
         """Calculate language diversity score (0-1)"""
-        if not self.language_distribution or len(self.language_distribution) <= 1:
+        if not self.language_distribution or len(
+                self.language_distribution) <= 1:
             return 0.0
 
         total = sum(self.language_distribution.values())
@@ -193,9 +197,11 @@ class ChildStatistics:
 
         # Age insights
         if self.age_statistics.average_age < 8:
-            insights.append("Majority of children are in early development stage")
+            insights.append(
+                "Majority of children are in early development stage")
         elif self.age_statistics.average_age > 12:
-            insights.append("Majority of children are in advanced learning stage")
+            insights.append(
+                "Majority of children are in advanced learning stage")
 
         # Language insights
         dominant_lang = self.get_dominant_language()
@@ -204,7 +210,8 @@ class ChildStatistics:
 
         diversity_score = self.get_language_diversity_score()
         if diversity_score > 0.7:
-            insights.append("High language diversity - consider multilingual features")
+            insights.append(
+                "High language diversity - consider multilingual features")
 
         # Activity insights
         activity_status = self.activity_statistics.get_activity_status()

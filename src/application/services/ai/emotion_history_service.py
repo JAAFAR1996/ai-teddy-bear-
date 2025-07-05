@@ -1,4 +1,4 @@
-﻿"""History service for emotion tracking and trends."""
+"""History service for emotion tracking and trends."""
 
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
@@ -6,8 +6,7 @@ from typing import Any, Dict, List, Optional
 
 import structlog
 
-from ....domain.emotion.models import (ChildEmotionProfile, EmotionResult,
-                                       EmotionTrend)
+from ....domain.emotion.models import ChildEmotionProfile, EmotionResult, EmotionTrend
 
 logger = structlog.get_logger(__name__)
 
@@ -17,7 +16,8 @@ class EmotionHistoryService:
 
     def __init__(self, max_history_size: int = 1000):
         self.max_history_size = max_history_size
-        self.emotion_cache = defaultdict(lambda: deque(maxlen=max_history_size))
+        self.emotion_cache = defaultdict(
+            lambda: deque(maxlen=max_history_size))
 
     async def add_emotion_to_history(
         self, child_id: str, emotion_result: EmotionResult
@@ -42,8 +42,8 @@ class EmotionHistoryService:
 
             # Filter by time
             recent_emotions = [
-                e for e in emotions if datetime.fromisoformat(e.timestamp) > cutoff_time
-            ]
+                e for e in emotions if datetime.fromisoformat(
+                    e.timestamp) > cutoff_time]
 
             # Sort by timestamp (most recent first)
             recent_emotions.sort(
@@ -72,7 +72,13 @@ class EmotionHistoryService:
             time_groups = self._group_emotions_by_time(emotions, granularity)
 
             # Calculate trends for each emotion type
-            emotion_types = ["happy", "sad", "angry", "scared", "calm", "curious"]
+            emotion_types = [
+                "happy",
+                "sad",
+                "angry",
+                "scared",
+                "calm",
+                "curious"]
             trends = []
 
             for emotion_type in emotion_types:
@@ -158,7 +164,8 @@ class EmotionHistoryService:
             total = len(emotions)
 
             # Calculate stability metrics
-            positive_ratio = (emotion_counts["happy"] + emotion_counts["calm"]) / total
+            positive_ratio = (
+                emotion_counts["happy"] + emotion_counts["calm"]) / total
 
             negative_ratio = (
                 emotion_counts["sad"]
@@ -200,7 +207,8 @@ class EmotionHistoryService:
             for emotion in emotions:
                 if emotion.primary_emotion in ["sad", "angry", "scared"]:
                     consecutive_negative += 1
-                    max_consecutive = max(max_consecutive, consecutive_negative)
+                    max_consecutive = max(
+                        max_consecutive, consecutive_negative)
                 else:
                     consecutive_negative = 0
 
@@ -211,8 +219,7 @@ class EmotionHistoryService:
                         "description": f"Consecutive negative emotions detected ({max_consecutive} in a row)",
                         "severity": "high" if max_consecutive >= 5 else "medium",
                         "recommendation": "Provide immediate emotional support",
-                    }
-                )
+                    })
 
             # Check for sudden emotional changes
             emotion_changes = self._detect_sudden_changes(emotions)
@@ -220,7 +227,8 @@ class EmotionHistoryService:
                 patterns.append(change)
 
             # Check for declining interaction quality
-            quality_decline = self._detect_interaction_quality_decline(emotions)
+            quality_decline = self._detect_interaction_quality_decline(
+                emotions)
             if quality_decline:
                 patterns.append(quality_decline)
 
@@ -270,13 +278,15 @@ class EmotionHistoryService:
         for time_key in sorted(time_groups.keys()):
             emotions_in_period = time_groups[time_key]
             emotion_count = sum(
-                1 for e in emotions_in_period if e.primary_emotion == emotion_type
-            )
+                1 for e in emotions_in_period if e.primary_emotion == emotion_type)
             total_count = len(emotions_in_period)
 
             ratio = emotion_count / total_count if total_count > 0 else 0
 
-            dates.append(datetime.strptime(time_key.split()[0], "%Y-%m-%d").date())
+            dates.append(
+                datetime.strptime(
+                    time_key.split()[0],
+                    "%Y-%m-%d").date())
             values.append(ratio)
 
         if len(values) < 2:
@@ -287,9 +297,8 @@ class EmotionHistoryService:
         earlier_values = values[:-3] if len(values) > 3 else values[:-2]
 
         recent_avg = sum(recent_values) / len(recent_values)
-        earlier_avg = (
-            sum(earlier_values) / len(earlier_values) if earlier_values else recent_avg
-        )
+        earlier_avg = (sum(earlier_values) / len(earlier_values)
+                       if earlier_values else recent_avg)
 
         change = (recent_avg - earlier_avg) / max(earlier_avg, 0.01)
 
@@ -300,9 +309,8 @@ class EmotionHistoryService:
         else:
             direction = "stable"
 
-        significance = (
-            "high" if abs(change) > 0.3 else "medium" if abs(change) > 0.1 else "low"
-        )
+        significance = ("high" if abs(change) >
+                        0.3 else "medium" if abs(change) > 0.1 else "low")
 
         return EmotionTrend(
             emotion=emotion_type,
@@ -313,7 +321,8 @@ class EmotionHistoryService:
             significance=significance,
         )
 
-    def _calculate_emotion_variance(self, emotions: List[EmotionResult]) -> float:
+    def _calculate_emotion_variance(
+            self, emotions: List[EmotionResult]) -> float:
         """Calculate variance in emotion confidence scores."""
         if len(emotions) < 2:
             return 0
@@ -326,7 +335,8 @@ class EmotionHistoryService:
 
         return variance
 
-    def _identify_behavioral_patterns(self, emotions: List[EmotionResult]) -> List[str]:
+    def _identify_behavioral_patterns(
+            self, emotions: List[EmotionResult]) -> List[str]:
         """Identify behavioral patterns from emotion history."""
         patterns = []
 
@@ -348,14 +358,15 @@ class EmotionHistoryService:
 
         return patterns
 
-    def _identify_emotional_triggers(self, emotions: List[EmotionResult]) -> List[str]:
+    def _identify_emotional_triggers(
+            self, emotions: List[EmotionResult]) -> List[str]:
         """Identify potential emotional triggers."""
         triggers = []
 
         # Look for patterns in negative emotions
         negative_emotions = [
-            e for e in emotions if e.primary_emotion in ["sad", "angry", "scared"]
-        ]
+            e for e in emotions if e.primary_emotion in [
+                "sad", "angry", "scared"]]
 
         if len(negative_emotions) > len(emotions) * 0.3:
             triggers.append("High frequency of negative emotions")
@@ -377,14 +388,15 @@ class EmotionHistoryService:
 
         return triggers
 
-    def _identify_positive_indicators(self, emotions: List[EmotionResult]) -> List[str]:
+    def _identify_positive_indicators(
+            self, emotions: List[EmotionResult]) -> List[str]:
         """Identify positive emotional indicators."""
         indicators = []
 
         # Count positive emotions
         positive_count = sum(
-            1 for e in emotions if e.primary_emotion in ["happy", "calm", "curious"]
-        )
+            1 for e in emotions if e.primary_emotion in [
+                "happy", "calm", "curious"])
 
         positive_ratio = positive_count / len(emotions) if emotions else 0
 
@@ -395,13 +407,15 @@ class EmotionHistoryService:
             indicators.append("Exceptional emotional positivity")
 
         # Check for consistent curiosity
-        curious_count = sum(1 for e in emotions if e.primary_emotion == "curious")
+        curious_count = sum(
+            1 for e in emotions if e.primary_emotion == "curious")
         if curious_count / len(emotions) > 0.25:
             indicators.append("Strong curiosity and engagement")
 
         return indicators
 
-    def _identify_risk_factors(self, emotions: List[EmotionResult]) -> List[str]:
+    def _identify_risk_factors(
+            self, emotions: List[EmotionResult]) -> List[str]:
         """Identify emotional risk factors."""
         risk_factors = []
 
@@ -410,8 +424,8 @@ class EmotionHistoryService:
 
         # High negative emotion ratio
         negative_count = sum(
-            1 for e in emotions if e.primary_emotion in ["sad", "angry", "scared"]
-        )
+            1 for e in emotions if e.primary_emotion in [
+                "sad", "angry", "scared"])
         negative_ratio = negative_count / len(emotions)
 
         if negative_ratio > 0.4:
@@ -432,9 +446,8 @@ class EmotionHistoryService:
 
         for emotion in emotions:
             for indicator in emotion.behavioral_indicators:
-                if any(
-                    concern in indicator.lower() for concern in concerning_indicators
-                ):
+                if any(concern in indicator.lower()
+                        for concern in concerning_indicators):
                     risk_factors.append(f"Behavioral concern: {indicator}")
                     break
 

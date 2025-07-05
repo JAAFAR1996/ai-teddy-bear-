@@ -24,7 +24,9 @@ def create_age_appropriate_rule() -> Any:
     def _rule(message: str, child_age: int) -> bool:  # noqa: D401
         # Simple keyword-based check – will evolve later.
         content = message.lower()
-        if child_age < 13 and any(bad_word in content for bad_word in forbidden_under_13):
+        if child_age < 13 and any(
+            bad_word in content for bad_word in forbidden_under_13
+        ):
             return False
         return True
 

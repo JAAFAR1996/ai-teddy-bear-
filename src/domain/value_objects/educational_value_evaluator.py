@@ -51,7 +51,8 @@ class EducationalValueEvaluator:
         curricula_path = Path(__file__).parent / "age_curricula.json"
         try:
             with curricula_path.open("r", encoding="utf-8") as f:
-                # JSON keys are strings, so we need to convert them back to integers
+                # JSON keys are strings, so we need to convert them back to
+                # integers
                 return {int(k): v for k, v in json.load(f).items()}
         except (FileNotFoundError, json.JSONDecodeError) as e:
             print(f"Error loading age curricula: {e}")
@@ -168,8 +169,13 @@ class EducationalValueEvaluator:
         base_score += curriculum_score * 0.3
 
         # Bonus for interactive elements
-        interactive_keywords = ["what", "how",
-                                "why", "can you", "try to", "let's"]
+        interactive_keywords = [
+            "what",
+            "how",
+            "why",
+            "can you",
+            "try to",
+            "let's"]
         interactive_content = sum(
             1 for keyword in interactive_keywords if keyword in content_lower
         )
@@ -177,7 +183,8 @@ class EducationalValueEvaluator:
 
         return min(1.0, base_score)
 
-    def _assess_cognitive_complexity(self, content: str, child_age: int) -> float:
+    def _assess_cognitive_complexity(
+            self, content: str, child_age: int) -> float:
         """Assess cognitive complexity of content"""
         content_lower = content.lower()
         complexity_indicators = {
@@ -242,7 +249,8 @@ class EducationalValueEvaluator:
 
         return alignment_score / total_categories if total_categories > 0 else 0.0
 
-    def _assess_curriculum_alignment(self, content: str, child_age: int) -> float:
+    def _assess_curriculum_alignment(
+            self, content: str, child_age: int) -> float:
         """Assess alignment with educational curriculum"""
         age_curriculum = self.age_curricula.get(
             child_age, self.age_curricula[6])
@@ -259,16 +267,21 @@ class EducationalValueEvaluator:
 
         return matched_skills / total_skills if total_skills > 0 else 0.0
 
-    def _check_category_presence(self, content: str, skills: List[str]) -> bool:
+    def _check_category_presence(
+            self,
+            content: str,
+            skills: List[str]) -> bool:
         """Checks if any skill from a category is present in the content."""
         return any(skill.replace("_", " ") in content for skill in skills)
 
-    def _suggest_engagement_improvements(self, content: str, suggestions: List[str]):
+    def _suggest_engagement_improvements(
+            self, content: str, suggestions: List[str]):
         """Suggests improvements for cognitive engagement."""
         if "what" not in content and "how" not in content:
             suggestions.append("Add questions to increase engagement")
 
-    def _suggest_interactive_elements(self, content: str, suggestions: List[str]):
+    def _suggest_interactive_elements(
+            self, content: str, suggestions: List[str]):
         """Suggests adding interactive elements."""
         interactive_keywords = ["try", "practice", "do", "make", "create"]
         if not any(keyword in content for keyword in interactive_keywords):
@@ -281,7 +294,8 @@ class EducationalValueEvaluator:
         suggestions = []
         content_lower = content.lower()
         age_curriculum = self.age_curricula.get(
-            child_age, self.age_curricula.get(6, {}))
+            child_age, self.age_curricula.get(6, {})
+        )
 
         for category, skills in age_curriculum.items():
             if not self._check_category_presence(content_lower, skills):
@@ -306,7 +320,8 @@ class EducationalValueEvaluator:
 
         for i, content in enumerate(conversation_history):
             result = asyncio.run(
-                self.evaluate_educational_value(content, child_age))
+                self.evaluate_educational_value(
+                    content, child_age))
 
             learning_timeline.append(
                 {
@@ -369,13 +384,17 @@ class EducationalValueEvaluator:
 
         return mastery_levels
 
-    def _add_progression_recommendations(self, trend: str, recommendations: List[str]):
+    def _add_progression_recommendations(
+            self, trend: str, recommendations: List[str]):
         """Adds recommendations based on the learning progression trend."""
         if trend == "declining":
             recommendations.append(
-                "Educational content decreasing - add more learning activities")
+                "Educational content decreasing - add more learning activities"
+            )
 
-    def _add_skill_gap_recommendations(self, mastery: Dict[str, str], age: int, recommendations: List[str]):
+    def _add_skill_gap_recommendations(
+        self, mastery: Dict[str, str], age: int, recommendations: List[str]
+    ):
         """Adds recommendations based on identified skill gaps."""
         expected_skills = self.age_curricula.get(age, {})
         for category, skills in expected_skills.items():
@@ -384,13 +403,17 @@ class EducationalValueEvaluator:
             if len(covered_skills) < len(skills) * 0.5:
                 recommendations.append(f"Focus more on {category} development")
 
-    def _add_skill_advancement_recommendations(self, mastery: Dict[str, str], recommendations: List[str]):
+    def _add_skill_advancement_recommendations(
+        self, mastery: Dict[str, str], recommendations: List[str]
+    ):
         """Adds recommendations for advancing mastered skills."""
-        mastered_skills = [skill for skill,
-                           level in mastery.items() if level == "mastered"]
+        mastered_skills = [
+            skill for skill, level in mastery.items() if level == "mastered"
+        ]
         if len(mastered_skills) > 3:
             recommendations.append(
-                "Child showing mastery - consider advancing to more complex topics")
+                "Child showing mastery - consider advancing to more complex topics"
+            )
 
     def _generate_learning_recommendations(
         self, progression_trend: str, skill_mastery: Dict[str, str], child_age: int

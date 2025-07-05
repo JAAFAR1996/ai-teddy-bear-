@@ -20,7 +20,10 @@ import torch
 try:
     from transformers import AutoModelForCausalLM, AutoTokenizer
 except ImportError:
-    from src.infrastructure.external_services.mock.transformers import AutoModelForCausalLM, AutoTokenizer
+    from src.infrastructure.external_services.mock.transformers import (
+        AutoModelForCausalLM,
+        AutoTokenizer,
+    )
 
 import redis.asyncio as aioredis
 
@@ -34,15 +37,16 @@ from .llm_base import BaseLLMAdapter, LLMResponse, ModelConfig, LLMProvider, Mes
 class GoogleAdapter(BaseLLMAdapter):
     """Adapter for Google Generative AI models"""
 
-    def __init__(self, api_key: Optional[str] = None, config: Optional[Dict] = None):
+    def __init__(
+            self,
+            api_key: Optional[str] = None,
+            config: Optional[Dict] = None):
         super().__init__(api_key, config)
         if self.api_key:
             genai.configure(api_key=self.api_key)
 
     async def generate(
-        self,
-        messages: List[Message],
-        model_config: ModelConfig
+        self, messages: List[Message], model_config: ModelConfig
     ) -> LLMResponse:
         """Generate response using Google Generative AI"""
         start_time = asyncio.get_event_loop().time()
@@ -53,7 +57,7 @@ class GoogleAdapter(BaseLLMAdapter):
             # Convert messages to Google format
             chat = model.start_chat(history=[])
             for msg in messages[:-1]:
-                if msg.role == 'user':
+                if msg.role == "user":
                     chat.send_message(msg.content)
 
             response = await model.generate_content_async(
@@ -62,19 +66,21 @@ class GoogleAdapter(BaseLLMAdapter):
                     max_output_tokens=model_config.max_tokens,
                     temperature=model_config.temperature,
                     top_p=model_config.top_p,
-                    stop_sequences=model_config.stop_sequences
-                )
+                    stop_sequences=model_config.stop_sequences,
+                ),
             )
 
             # Estimate token usage
             usage = {
-                'prompt_tokens': len(messages[-1].content.split()) * 1.3,
-                'completion_tokens': len(response.text.split()) * 1.3,
-                'total_tokens': 0
+                "prompt_tokens": len(messages[-1].content.split()) * 1.3,
+                "completion_tokens": len(response.text.split()) * 1.3,
+                "total_tokens": 0,
             }
-            usage['total_tokens'] = usage['prompt_tokens'] + usage['completion_tokens']
+            usage["total_tokens"] = usage["prompt_tokens"] + \
+                usage["completion_tokens"]
 
-            latency_ms = int((asyncio.get_event_loop().time() - start_time) * 1000)
+            latency_ms = int(
+                (asyncio.get_event_loop().time() - start_time) * 1000)
             cost = self.calculate_cost(usage, model_config)
 
             return LLMResponse(
@@ -83,7 +89,7 @@ class GoogleAdapter(BaseLLMAdapter):
                 model=model_config.model_name,
                 usage={k: int(v) for k, v in usage.items()},
                 cost=cost,
-                latency_ms=latency_ms
+                latency_ms=latency_ms,
             )
 
         except Exception as e:
@@ -91,9 +97,7 @@ class GoogleAdapter(BaseLLMAdapter):
             raise
 
     async def generate_stream(
-        self,
-        messages: List[Message],
-        model_config: ModelConfig
+        self, messages: List[Message], model_config: ModelConfig
     ) -> AsyncIterator[str]:
         """Generate streaming response using Google API"""
         try:
@@ -102,9 +106,9 @@ class GoogleAdapter(BaseLLMAdapter):
                 messages[-1].content,
                 generation_config=genai.types.GenerationConfig(
                     max_output_tokens=model_config.max_tokens,
-                    temperature=model_config.temperature
+                    temperature=model_config.temperature,
                 ),
-                stream=True
+                stream=True,
             )
 
             async for chunk in response:
@@ -117,5 +121,5 @@ class GoogleAdapter(BaseLLMAdapter):
 
     def validate_config(self, model_config: ModelConfig) -> bool:
         """Validate Google model configuration"""
-        valid_models = ['gemini-pro', 'gemini-pro-vision', 'gemini-ultra']
+        valid_models = ["gemini-pro", "gemini-pro-vision", "gemini-ultra"]
         return model_config.model_name in valid_models

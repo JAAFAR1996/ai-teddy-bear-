@@ -1,54 +1,54 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "API Keys Schema",
-    "description": "API keys for external services schema",
-    "type": "object",
-    "properties": {
-        "API_KEYS": {
-            "type": "object",
-            "description": "API keys for external services",
-            "properties": {
-                "OPENAI_API_KEY": {
-                    "type": ["string", "null"],
-                    "pattern": "^(sk-[a-zA-Z0-9-_]{48,}|\\$\\{[A-Z_]+\\})$|^$"
-                },
-                "ANTHROPIC_API_KEY": {
-                    "type": ["string", "null"],
-                    "pattern": "^(sk-[a-zA-Z0-9-_]{48,}|\\$\\{[A-Z_]+\\})$|^$"
-                },
-                "GOOGLE_GEMINI_API_KEY": {
-                    "type": ["string", "null"],
-                    "pattern": "^([a-zA-Z0-9-_]{39}|\\$\\{[A-Z_]+\\})$|^$"
-                },
-                "ELEVENLABS_API_KEY": {
-                    "type": ["string", "null"],
-                    "pattern": "^(sk_[a-zA-Z0-9]{40,}|\\$\\{[A-Z_]+\\})$|^$"
-                },
-                "AZURE_SPEECH_KEY": {
-                    "type": ["string", "null"],
-                    "pattern": "^([a-zA-Z0-9]{32,}|\\$\\{[A-Z_]+\\})$|^$"
-                },
-                "AZURE_SPEECH_REGION": {
-                    "type": ["string", "null"],
-                    "pattern": "^([a-z]+|\\$\\{[A-Z_]+\\})$|^$"
-                },
-                "HUGGINGFACE_API_KEY": {
-                    "type": ["string", "null"]
-                },
-                "COHERE_API_KEY": {
-                    "type": ["string", "null"]
-                },
-                "PERSPECTIVE_API_KEY": {
-                    "type": ["string", "null"]
-                },
-                "SENTRY_DSN": {
-                    "type": ["string", "null"],
-                    "format": "uri"
-                }
-            },
-            "additionalProperties": false
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "API Keys Schema",
+  "description": "API keys for external services schema",
+  "type": "object",
+  "properties": {
+    "API_KEYS": {
+      "type": "object",
+      "description": "API keys for external services",
+      "properties": {
+        "OPENAI_API_KEY": {
+          "type": ["string", "null"],
+          "pattern": "^(sk-[a-zA-Z0-9-_]{48,}|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "ANTHROPIC_API_KEY": {
+          "type": ["string", "null"],
+          "pattern": "^(sk-[a-zA-Z0-9-_]{48,}|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "GOOGLE_GEMINI_API_KEY": {
+          "type": ["string", "null"],
+          "pattern": "^([a-zA-Z0-9-_]{39}|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "ELEVENLABS_API_KEY": {
+          "type": ["string", "null"],
+          "pattern": "^(sk_[a-zA-Z0-9]{40,}|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "AZURE_SPEECH_KEY": {
+          "type": ["string", "null"],
+          "pattern": "^([a-zA-Z0-9]{32,}|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "AZURE_SPEECH_REGION": {
+          "type": ["string", "null"],
+          "pattern": "^([a-z]+|\\$\\{[A-Z_]+\\})$|^$"
+        },
+        "HUGGINGFACE_API_KEY": {
+          "type": ["string", "null"]
+        },
+        "COHERE_API_KEY": {
+          "type": ["string", "null"]
+        },
+        "PERSPECTIVE_API_KEY": {
+          "type": ["string", "null"]
+        },
+        "SENTRY_DSN": {
+          "type": ["string", "null"],
+          "format": "uri"
         }
-    },
-    "required": ["API_KEYS"],
-    "additionalProperties": false
-} 
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["API_KEYS"],
+  "additionalProperties": false
+}

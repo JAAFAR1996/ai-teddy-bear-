@@ -83,8 +83,10 @@ class APISecurityGateway:
 
         if not is_allowed:
             logger.warning(
-                "Rate limit exceeded", ip=client_ip, rule=rule.name, endpoint=endpoint
-            )
+                "Rate limit exceeded",
+                ip=client_ip,
+                rule=rule.name,
+                endpoint=endpoint)
 
             return {"allowed": False, "retry_after": rule.window_seconds}
 
@@ -122,7 +124,11 @@ class APISecurityGateway:
 
         return {"allowed": True}
 
-    async def _check_rate_limit_key(self, key: str, limit: int, window: int) -> bool:
+    async def _check_rate_limit_key(
+            self,
+            key: str,
+            limit: int,
+            window: int) -> bool:
         """Check rate limit for specific key"""
 
         if self.redis_client:
@@ -130,7 +136,11 @@ class APISecurityGateway:
         else:
             return await self._memory_rate_limit(key, limit, window)
 
-    async def _redis_rate_limit(self, key: str, limit: int, window: int) -> bool:
+    async def _redis_rate_limit(
+            self,
+            key: str,
+            limit: int,
+            window: int) -> bool:
         """Redis-based rate limiting"""
 
         now = time.time()
@@ -151,7 +161,11 @@ class APISecurityGateway:
 
         return True
 
-    async def _memory_rate_limit(self, key: str, limit: int, window: int) -> bool:
+    async def _memory_rate_limit(
+            self,
+            key: str,
+            limit: int,
+            window: int) -> bool:
         """Memory-based rate limiting"""
 
         now = time.time()
@@ -199,7 +213,10 @@ class APISecurityGateway:
 
         for pattern in threat_patterns:
             if pattern in url_str or pattern in user_agent:
-                logger.warning("Threat pattern detected", pattern=pattern, url=url_str)
+                logger.warning(
+                    "Threat pattern detected",
+                    pattern=pattern,
+                    url=url_str)
                 return True
 
         return False
@@ -233,7 +250,10 @@ class APISecurityGateway:
 
         return None
 
-    def _get_rate_limit_rule(self, endpoint: str, user_role: Optional[str]) -> str:
+    def _get_rate_limit_rule(
+            self,
+            endpoint: str,
+            user_role: Optional[str]) -> str:
         """Determine which rate limit rule to use"""
 
         if "/auth/" in endpoint or "/login" in endpoint:
@@ -276,9 +296,10 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         security_result = await self.gateway.security_check(request)
         if not security_result["allowed"]:
             return JSONResponse(
-                status_code=security_result.get("status_code", 403),
-                content={"error": security_result.get("message", "Access denied")},
-            )
+                status_code=security_result.get(
+                    "status_code", 403), content={
+                    "error": security_result.get(
+                        "message", "Access denied")}, )
 
         # Rate limit check
         rate_limit_result = await self.gateway.check_rate_limit(request)

@@ -28,7 +28,8 @@ class MemoryStorageService:
         self.logger = logging.getLogger(self.__class__.__name__)
 
         # Memory buffers
-        self.short_term_buffer: Dict[str, deque] = defaultdict(lambda: deque(maxlen=50))
+        self.short_term_buffer: Dict[str, deque] = defaultdict(
+            lambda: deque(maxlen=50))
         self.working_memory: Dict[str, List[Memory]] = defaultdict(list)
 
         # Background consolidation
@@ -37,7 +38,8 @@ class MemoryStorageService:
     async def initialize(self) -> None:
         """Initialize the storage service"""
         # Start consolidation task
-        self.consolidation_task = asyncio.create_task(self._consolidation_loop())
+        self.consolidation_task = asyncio.create_task(
+            self._consolidation_loop())
         self.logger.info("Memory storage service initialized")
 
     async def store_interaction(
@@ -57,7 +59,8 @@ class MemoryStorageService:
             content = f"User: {user_message}\nAssistant: {ai_response}"
 
             # Determine importance
-            importance = self._calculate_importance(user_message, ai_response, metadata)
+            importance = self._calculate_importance(
+                user_message, ai_response, metadata)
 
             # Extract topics (simplified)
             topics = self._extract_topics(content)
@@ -107,7 +110,8 @@ class MemoryStorageService:
                 ),
             )
 
-    async def _update_working_memory(self, child_id: str, memory: Memory) -> None:
+    async def _update_working_memory(
+            self, child_id: str, memory: Memory) -> None:
         """Update working memory with recent context"""
         working_mem = self.working_memory[child_id]
 
@@ -168,9 +172,8 @@ class MemoryStorageService:
         try:
             # Create a consolidated memory for this topic
             contents = [m.content for m in memories]
-            combined_content = f"Topic: {topic}\nConsolidated memories: " + "; ".join(
-                contents[:3]
-            )
+            combined_content = f"Topic: {topic}\nConsolidated memories: " + \
+                "; ".join(contents[:3])
 
             consolidated_memory = Memory(
                 id=f"consolidated_{topic}_{datetime.now().timestamp()}",
@@ -202,7 +205,8 @@ class MemoryStorageService:
 
         # Learning keywords = high
         learning_keywords = ["learn", "teach", "how", "why", "what"]
-        if any(keyword in user_message.lower() for keyword in learning_keywords):
+        if any(keyword in user_message.lower()
+               for keyword in learning_keywords):
             return MemoryImportance.HIGH
 
         # Emotional content = medium

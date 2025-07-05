@@ -16,7 +16,8 @@ class ChildFamilyDomainService:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-    def group_children_by_family(self, children: List[Child]) -> Dict[str, List[Child]]:
+    def group_children_by_family(
+            self, children: List[Child]) -> Dict[str, List[Child]]:
         """Group children by family code"""
         family_groups = {}
 
@@ -30,7 +31,10 @@ class ChildFamilyDomainService:
 
         return family_groups
 
-    def find_siblings(self, child: Child, all_children: List[Child]) -> List[Child]:
+    def find_siblings(
+            self,
+            child: Child,
+            all_children: List[Child]) -> List[Child]:
         """Find siblings of a child"""
         if not hasattr(child, "family_code") or not child.family_code:
             return []

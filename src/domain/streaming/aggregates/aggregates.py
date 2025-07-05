@@ -35,11 +35,12 @@ from websockets.client import WebSocketClientProtocol
 
 class MockConfig:
     def __init__(self):
-        self.api_keys = type('keys', (), {'ELEVENLABS_API_KEY': 'dummy_key'})()
-        self.speech = type('speech', (), {'voice_name': 'Rachel'})()
+        self.api_keys = type("keys", (), {"ELEVENLABS_API_KEY": "dummy_key"})()
+        self.speech = type("speech", (), {"voice_name": "Rachel"})()
         self.server = type(
-            'server', (), {'FLASK_HOST': 'localhost', 'WEBSOCKET_PORT': 8765})()
-        self.voice_settings = type('vs', (), {'VOICE_SAMPLE_RATE': 44100})()
+            "server", (), {"FLASK_HOST": "localhost", "WEBSOCKET_PORT": 8765}
+        )()
+        self.voice_settings = type("vs", (), {"VOICE_SAMPLE_RATE": 44100})()
 
 
 def get_config():
@@ -51,7 +52,7 @@ class MockService:
         pass
 
     async def check_content(self, text):
-        return {'allowed': True}
+        return {"allowed": True}
 
     async def transcribe(self, audio):
         return "This is a transcribed text."
@@ -76,7 +77,7 @@ class MockSessionManager:
         self.session_history = {}
 
     def get_session(self, sid):
-        return {'user_id': 'mock_user'}
+        return {"user_id": "mock_user"}
 
     def add_message(self, *args):
         pass
@@ -101,7 +102,7 @@ ConversationRepository = MockRepo
 ParentDashboardService = MockDashboard
 SessionManager = MockSessionManager
 state_manager = MockStateManager()
-LLMProvider = type('Provider', (), {'OPENAI': 'openai'})
+LLMProvider = type("Provider", (), {"OPENAI": "openai"})
 Conversation = dict
 Message = dict
 
@@ -214,7 +215,9 @@ class StreamingService:
             await self.elevenlabs_connection.close()
         self.logger.info("Streaming service stopped.")
 
-    async def get_llm_response(self, text: str, session_id: str = None, retry_count: int = 0) -> str:
+    async def get_llm_response(
+        self, text: str, session_id: str = None, retry_count: int = 0
+    ) -> str:
         """Get response from LLM for the given text"""
         try:
             allowed, _ = await self._is_content_allowed(text)
@@ -226,7 +229,7 @@ class StreamingService:
                 conversation,
                 provider=LLMProvider.OPENAI,
                 max_tokens=150,
-                temperature=0.7
+                temperature=0.7,
             )
             allowed, _ = await self._is_content_allowed(llm_response)
             if not allowed:
@@ -247,32 +250,40 @@ class StreamingService:
         """Checks if the content is allowed by the moderation service."""
         if self.moderation_service:
             moderation_result = await self.moderation_service.check_content(text)
-            if not moderation_result['allowed']:
+            if not moderation_result["allowed"]:
                 reason = "Moderation failed"  # Simplified
                 self.logger.warning(
                     f"Content moderation blocked message: {reason}")
                 return False, reason
         return True, ""
 
-    def _build_llm_context(self, text: str, session_id: Optional[str]) -> Conversation:
+    def _build_llm_context(
+            self,
+            text: str,
+            session_id: Optional[str]) -> Conversation:
         """Builds the conversation context for the LLM."""
         history = []
         if session_id:
             # Simplified history retrieval
             pass
-        history.append(Message(role='user', content=text))
-        history.insert(0, Message(
-            role='system', content="أنت مساعد ذكي ودود للأطفال."))
+        history.append(Message(role="user", content=text))
+        history.insert(
+            0,
+            Message(
+                role="system",
+                content="أنت مساعد ذكي ودود للأطفال."))
         return Conversation(messages=history)
 
-    async def _log_llm_interaction(self, session_id: str, user_text: str, assistant_response: str):
+    async def _log_llm_interaction(
+        self, session_id: str, user_text: str, assistant_response: str
+    ):
         """Logs the LLM interaction."""
         self.session_manager.add_message(
             session_id, "assistant", assistant_response)
         if self.parent_dashboard:
             await self.parent_dashboard.log_interaction(
-                user_id='mock_user',
+                user_id="mock_user",
                 child_message=user_text,
                 assistant_message=assistant_response,
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )

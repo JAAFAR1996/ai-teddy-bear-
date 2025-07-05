@@ -25,8 +25,12 @@ class StoryService:
         """إنشاء وسرد قصة مخصصة"""
 
         # جلب ملف الطفل (افتراضي)
-        profile = {"name": "أحمد", "age": 7,
-                   "interests": ["الحيوانات", "المغامرات"]}
+        profile = {
+            "name": "أحمد",
+            "age": 7,
+            "interests": [
+                "الحيوانات",
+                "المغامرات"]}
 
         # تحديد نوع القصة
         if story_type == "auto":
@@ -57,7 +61,9 @@ class StoryService:
             "text": story_data["story"],
         }
 
-    def _save_story_record(self, child_id: str, story_data: Dict, audio_file: str) -> None:
+    def _save_story_record(
+        self, child_id: str, story_data: Dict, audio_file: str
+    ) -> None:
         """حفظ سجل القصة في قاعدة بيانات أو سجل خارجي"""
         # مثال: حفظ في قاعدة بيانات (يجب ربط db فعليًا في التطبيق)
         # db.save_story(child_id, story_data, audio_file)

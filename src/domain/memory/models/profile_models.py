@@ -45,8 +45,10 @@ class ConversationSummary:
 
         # Return emotions sorted by frequency
         return sorted(
-            emotion_counts.keys(), key=lambda e: emotion_counts[e], reverse=True
-        )[:3]
+            emotion_counts.keys(),
+            key=lambda e: emotion_counts[e],
+            reverse=True)[
+            :3]
 
     def was_engaging(self) -> bool:
         """Check if conversation was engaging"""
@@ -110,7 +112,10 @@ class ChildMemoryProfile:
             )
             self.favorite_topics = dict(sorted_topics[:20])
 
-    def learn_concept(self, concept: str, timestamp: Optional[datetime] = None) -> None:
+    def learn_concept(
+            self,
+            concept: str,
+            timestamp: Optional[datetime] = None) -> None:
         """Record learning of a new concept"""
         learn_time = timestamp or datetime.now()
         self.concepts_learned[concept] = learn_time
@@ -141,8 +146,8 @@ class ChildMemoryProfile:
         """Get vocabulary learned in recent days"""
         cutoff = datetime.now() - datetime.timedelta(days=days)
         return [
-            word for word, timestamp in self.vocabulary_growth if timestamp > cutoff
-        ]
+            word for word,
+            timestamp in self.vocabulary_growth if timestamp > cutoff]
 
     def get_learning_velocity(self) -> Dict[str, float]:
         """Calculate learning velocity metrics"""
@@ -164,6 +169,5 @@ class ChildMemoryProfile:
     def is_active_learner(self) -> bool:
         """Check if child is actively learning"""
         velocity = self.get_learning_velocity()
-        return (
-            velocity["concepts_per_week"] > 1.0 or velocity["vocabulary_per_week"] > 5.0
-        )
+        return (velocity["concepts_per_week"] >
+                1.0 or velocity["vocabulary_per_week"] > 5.0)

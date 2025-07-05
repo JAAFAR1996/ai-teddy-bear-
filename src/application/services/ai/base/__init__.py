@@ -8,8 +8,8 @@ from .exceptions import LLMError, ValidationError, ProviderError
 
 __all__ = [
     "LLMProvider",
-    "GenerationConfig", 
+    "GenerationConfig",
     "LLMError",
     "ValidationError",
-    "ProviderError"
-] 
+    "ProviderError",
+]

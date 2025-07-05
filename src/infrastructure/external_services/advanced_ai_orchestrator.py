@@ -80,41 +80,39 @@ class ModelRouter:
 
     def _initialize_models(self) -> Dict[str, ModelConfig]:
         """تهيئة تكوينات المودلات"""
-        return {
-            "gpt-4-child": ModelConfig(
-                model_name="gpt-4",
-                provider="openai",
-                complexity=ModelComplexity.COMPLEX,
-                max_tokens=500,
-                temperature=0.7,
-                specialized_for=[RequestType.EDUCATIONAL],
-                safety_level=5,
-                response_time_target=2.0,
-                cost_per_request=0.03,
-            ),
-            "gpt-3.5-creative": ModelConfig(
-                model_name="gpt-3.5-turbo",
-                provider="openai",
-                complexity=ModelComplexity.MEDIUM,
-                max_tokens=400,
-                temperature=0.9,
-                specialized_for=[RequestType.CREATIVE, RequestType.STORYTELLING],
-                safety_level=4,
-                response_time_target=1.5,
-                cost_per_request=0.002,
-            ),
-            "local-fast": ModelConfig(
-                model_name="llama-7b-child",
-                provider="local",
-                complexity=ModelComplexity.SIMPLE,
-                max_tokens=200,
-                temperature=0.8,
-                specialized_for=[RequestType.GENERAL_CHAT, RequestType.ENTERTAINMENT],
-                safety_level=3,
-                response_time_target=0.8,
-                cost_per_request=0.0,
-            ),
-        }
+        return {"gpt-4-child": ModelConfig(model_name="gpt-4",
+                                           provider="openai",
+                                           complexity=ModelComplexity.COMPLEX,
+                                           max_tokens=500,
+                                           temperature=0.7,
+                                           specialized_for=[RequestType.EDUCATIONAL],
+                                           safety_level=5,
+                                           response_time_target=2.0,
+                                           cost_per_request=0.03,
+                                           ),
+                "gpt-3.5-creative": ModelConfig(model_name="gpt-3.5-turbo",
+                                                provider="openai",
+                                                complexity=ModelComplexity.MEDIUM,
+                                                max_tokens=400,
+                                                temperature=0.9,
+                                                specialized_for=[RequestType.CREATIVE,
+                                                                 RequestType.STORYTELLING],
+                                                safety_level=4,
+                                                response_time_target=1.5,
+                                                cost_per_request=0.002,
+                                                ),
+                "local-fast": ModelConfig(model_name="llama-7b-child",
+                                          provider="local",
+                                          complexity=ModelComplexity.SIMPLE,
+                                          max_tokens=200,
+                                          temperature=0.8,
+                                          specialized_for=[RequestType.GENERAL_CHAT,
+                                                           RequestType.ENTERTAINMENT],
+                                          safety_level=3,
+                                          response_time_target=0.8,
+                                          cost_per_request=0.0,
+                                          ),
+                }
 
     def get_optimal_model(
         self,
@@ -240,7 +238,8 @@ class AdvancedAIOrchestrator:
             )
 
             # 4. فحص الكاش
-            cache_key = self._generate_response_cache_key(request, model_config)
+            cache_key = self._generate_response_cache_key(
+                request, model_config)
             if cached_response := self.response_cache.get(cache_key):
                 self.logger.info("🎯 Cache hit for response generation")
                 return cached_response
@@ -272,23 +271,26 @@ class AdvancedAIOrchestrator:
             self.logger.error(f"❌ Response generation failed: {e}")
             return await self._generate_fallback_response(request)
 
-    async def _classify_request(self, text: str, child_age: int) -> RequestType:
+    async def _classify_request(
+            self,
+            text: str,
+            child_age: int) -> RequestType:
         """تصنيف نوع الطلب"""
-
         text_lower = text.lower()
 
-        if any(word in text_lower for word in ["تعلم", "علم", "شرح", "كيف", "لماذا"]):
-            return RequestType.EDUCATIONAL
-        elif any(word in text_lower for word in ["العب", "قصة", "نكتة", "مرح"]):
-            return RequestType.ENTERTAINMENT
-        elif any(word in text_lower for word in ["حزين", "خائف", "غاضب"]):
-            return RequestType.EMOTIONAL_SUPPORT
-        elif any(word in text_lower for word in ["ارسم", "أنشئ", "اخترع"]):
-            return RequestType.CREATIVE
-        elif any(word in text_lower for word in ["قصة", "حكاية", "كان يا مكان"]):
-            return RequestType.STORYTELLING
-        else:
-            return RequestType.GENERAL_CHAT
+        classification_rules = {
+            RequestType.EDUCATIONAL: ["تعلم", "علم", "شرح", "كيف", "لماذا"],
+            RequestType.ENTERTAINMENT: ["العب", "نكتة", "مرح"],
+            RequestType.EMOTIONAL_SUPPORT: ["حزين", "خائف", "غاضب"],
+            RequestType.CREATIVE: ["ارسم", "أنشئ", "اخترع"],
+            RequestType.STORYTELLING: ["قصة", "حكاية", "كان يا مكان"],
+        }
+
+        for request_type, keywords in classification_rules.items():
+            if any(word in text_lower for word in keywords):
+                return request_type
+
+        return RequestType.GENERAL_CHAT
 
     async def _generate_with_model(
         self,

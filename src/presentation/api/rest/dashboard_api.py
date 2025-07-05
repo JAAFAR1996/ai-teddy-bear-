@@ -45,7 +45,10 @@ async def get_speech_analysis(child_id: str):
 @router.post("/alerts/send")
 async def send_parent_alert(alert_data: dict):
     """إرسال تنبيه للوالدين"""
-    return JSONResponse(content={"status": "sent", "message": "تم إرسال التنبيه بنجاح"})
+    return JSONResponse(
+        content={
+            "status": "sent",
+            "message": "تم إرسال التنبيه بنجاح"})
 
 
 @router.get("/dashboard/{child_id}/alerts")

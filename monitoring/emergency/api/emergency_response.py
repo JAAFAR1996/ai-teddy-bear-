@@ -51,7 +51,8 @@ class AlertPayload(BaseModel):
     externalURL: str = Field(..., description="رابط خارجي")
     version: str = Field(default="4", description="إصدار Alertmanager")
     groupKey: str = Field(..., description="مفتاح المجموعة")
-    truncatedAlerts: int = Field(default=0, description="عدد التنبيهات المقطوعة")
+    truncatedAlerts: int = Field(
+        default=0, description="عدد التنبيهات المقطوعة")
 
 
 class EmergencyAction(BaseModel):
@@ -131,7 +132,8 @@ app.add_middleware(
 security = HTTPBearer()
 
 
-async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def verify_token(
+        credentials: HTTPAuthorizationCredentials = Depends(security)):
     """التحقق من صحة token المرسل"""
     # في بيئة الإنتاج، يجب التحقق من JWT token
     if ENVIRONMENT == "production":
@@ -144,12 +146,15 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
 class EmergencyHandler:
     """معالج الطوارئ الأمنية"""
 
-    def __init__(self, redis_client: redis.Redis, http_client: httpx.AsyncClient):
+    def __init__(self, redis_client: redis.Redis,
+                 http_client: httpx.AsyncClient):
         self.redis = redis_client
         self.http = http_client
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
-    async def process_critical_alert(self, alert: Dict[str, Any]) -> Dict[str, Any]:
+    async def process_critical_alert(
+            self, alert: Dict[str, Any]) -> Dict[str, Any]:
         """معالجة التنبيهات الحرجة"""
         alert_name = alert.get("labels", {}).get("alertname", "Unknown")
         severity = alert.get("labels", {}).get("severity", "warning")
@@ -201,7 +206,9 @@ class EmergencyHandler:
                 action_type="activate_ddos_protection",
                 priority="critical",
                 target="waf",
-                parameters={"block_threshold": 1000, "enable_rate_limiting": True},
+                parameters={
+                    "block_threshold": 1000,
+                    "enable_rate_limiting": True},
             )
 
         elif "ChildDataBreach" in alert_name:
@@ -281,8 +288,11 @@ class EmergencyHandler:
             return {"action_id": action_id, **result}
 
         except Exception as e:
-            self.logger.error(f"❌ خطأ في تنفيذ الإجراء {action.action_type}: {str(e)}")
-            return {"status": "error", "message": f"فشل في تنفيذ الإجراء: {str(e)}"}
+            self.logger.error(
+                f"❌ خطأ في تنفيذ الإجراء {action.action_type}: {str(e)}")
+            return {
+                "status": "error",
+                "message": f"فشل في تنفيذ الإجراء: {str(e)}"}
 
     async def _rotate_api_keys(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """تدوير مفاتيح API"""
@@ -308,7 +318,8 @@ class EmergencyHandler:
             "users_notified": params.get("notify_users", False),
         }
 
-    async def _activate_ddos_protection(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _activate_ddos_protection(
+            self, params: Dict[str, Any]) -> Dict[str, Any]:
         """تفعيل حماية DDoS"""
         self.logger.warning("🛡️ تفعيل حماية DDoS...")
 
@@ -322,7 +333,8 @@ class EmergencyHandler:
             "block_threshold": params.get("block_threshold", 1000),
         }
 
-    async def _emergency_data_lockdown(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _emergency_data_lockdown(
+            self, params: Dict[str, Any]) -> Dict[str, Any]:
         """قفل الطوارئ للبيانات"""
         self.logger.critical("🔒 تفعيل قفل الطوارئ للبيانات...")
 
@@ -348,7 +360,8 @@ class EmergencyHandler:
             "legal_notified": params.get("notify_legal", False),
         }
 
-    async def _system_isolation(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _system_isolation(
+            self, params: Dict[str, Any]) -> Dict[str, Any]:
         """عزل النظام"""
         self.logger.critical("🚨 عزل النظام للطوارئ...")
 
@@ -362,7 +375,8 @@ class EmergencyHandler:
             "backup_created": params.get("backup_data", False),
         }
 
-    async def _send_notification(self, notification_type: str, data: Dict[str, Any]):
+    async def _send_notification(
+            self, notification_type: str, data: Dict[str, Any]):
         """إرسال إشعار"""
         self.logger.info(f"📧 إرسال إشعار: {notification_type}")
 
@@ -399,7 +413,9 @@ async def general_webhook(
     """Webhook عام للتنبيهات"""
     logger.info(f"📨 استلام تنبيه عام: {len(alert_payload.alerts)} تنبيه(ات)")
 
-    handler = EmergencyHandler(request.app.state.redis, request.app.state.http_client)
+    handler = EmergencyHandler(
+        request.app.state.redis,
+        request.app.state.http_client)
 
     # معالجة التنبيهات في الخلفية
     for alert in alert_payload.alerts:
@@ -416,12 +432,16 @@ async def general_webhook(
 
 @app.post("/webhook/critical")
 async def critical_webhook(
-    alert_payload: AlertPayload, request: Request, token: str = Depends(verify_token)
-):
+        alert_payload: AlertPayload,
+        request: Request,
+        token: str = Depends(verify_token)):
     """Webhook للتنبيهات الحرجة - معالجة فورية"""
-    logger.critical(f"🚨 استلام تنبيه حرج: {len(alert_payload.alerts)} تنبيه(ات)")
+    logger.critical(
+        f"🚨 استلام تنبيه حرج: {len(alert_payload.alerts)} تنبيه(ات)")
 
-    handler = EmergencyHandler(request.app.state.redis, request.app.state.http_client)
+    handler = EmergencyHandler(
+        request.app.state.redis,
+        request.app.state.http_client)
 
     results = []
     for alert in alert_payload.alerts:
@@ -437,7 +457,9 @@ async def critical_webhook(
 
 
 @app.get("/alerts/active")
-async def get_active_alerts(request: Request, token: str = Depends(verify_token)):
+async def get_active_alerts(
+        request: Request,
+        token: str = Depends(verify_token)):
     """الحصول على التنبيهات النشطة"""
     redis_client = request.app.state.redis
 
@@ -458,7 +480,9 @@ async def get_active_alerts(request: Request, token: str = Depends(verify_token)
 
 
 @app.get("/actions/history")
-async def get_actions_history(request: Request, token: str = Depends(verify_token)):
+async def get_actions_history(
+        request: Request,
+        token: str = Depends(verify_token)):
     """الحصول على تاريخ الإجراءات"""
     redis_client = request.app.state.redis
 
@@ -482,7 +506,9 @@ async def get_actions_history(request: Request, token: str = Depends(verify_toke
 
 
 @app.post("/test/alert")
-async def test_alert_endpoint(request: Request, token: str = Depends(verify_token)):
+async def test_alert_endpoint(
+        request: Request,
+        token: str = Depends(verify_token)):
     """إرسال تنبيه تجريبي"""
     test_alert = AlertPayload(
         alerts=[
@@ -505,7 +531,9 @@ async def test_alert_endpoint(request: Request, token: str = Depends(verify_toke
         groupKey="test-group",
     )
 
-    handler = EmergencyHandler(request.app.state.redis, request.app.state.http_client)
+    handler = EmergencyHandler(
+        request.app.state.redis,
+        request.app.state.http_client)
     result = await handler.process_critical_alert(test_alert.alerts[0])
 
     return {

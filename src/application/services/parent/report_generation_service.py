@@ -7,10 +7,13 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
-from src.domain.reporting.models import (ChildProgress, InteractionAnalysis, ReportPeriod)
-from src.domain.reporting.services import (BehaviorAnalyzer,
-                                           EmotionAnalyzerService,
-                                           ProgressAnalyzer, SkillAnalyzer)
+from src.domain.reporting.models import ChildProgress, InteractionAnalysis, ReportPeriod
+from src.domain.reporting.services import (
+    BehaviorAnalyzer,
+    EmotionAnalyzerService,
+    ProgressAnalyzer,
+    SkillAnalyzer,
+)
 
 
 class ReportGenerationService:
@@ -54,9 +57,9 @@ class ReportGenerationService:
 
             # Analyze all metrics using domain services
             emotion_analysis = self.emotion_analyzer.analyze_emotion_distribution(
-                interactions
-            )
-            skill_analysis = self.skill_analyzer.analyze_skills_practiced(interactions)
+                interactions)
+            skill_analysis = self.skill_analyzer.analyze_skills_practiced(
+                interactions)
 
             # Build comprehensive progress report
             progress = ChildProgress(
@@ -146,8 +149,7 @@ class ReportGenerationService:
             # Analyze trends across weeks
             monthly_trends = self._analyze_monthly_trends(weekly_reports)
             long_term_recommendations = self._generate_long_term_recommendations(
-                weekly_reports
-            )
+                weekly_reports)
             developmental_milestones = self._check_developmental_milestones(
                 weekly_reports
             )
@@ -217,7 +219,8 @@ class ReportGenerationService:
             return mock_interactions
 
         except Exception as e:
-            self.logger.error(f"Failed to get interactions for {child_id}: {e}")
+            self.logger.error(
+                f"Failed to get interactions for {child_id}: {e}")
             return []
 
     def _analyze_monthly_trends(
@@ -248,8 +251,7 @@ class ReportGenerationService:
 
             # Analyze emotion stability trends
             stability_scores = [
-                report.emotion_analysis.stability_score for report in weekly_reports
-            ]
+                report.emotion_analysis.stability_score for report in weekly_reports]
             if len(stability_scores) >= 2:
                 if stability_scores[-1] > stability_scores[0]:
                     trends["emotion_stability_trend"] = "improving"
@@ -310,7 +312,8 @@ class ReportGenerationService:
             return recommendations
 
         except Exception as e:
-            self.logger.error(f"Long-term recommendations generation error: {e}")
+            self.logger.error(
+                f"Long-term recommendations generation error: {e}")
             return []
 
     def _check_developmental_milestones(
@@ -335,26 +338,31 @@ class ReportGenerationService:
             if age >= 4:
                 # Check social skills
                 if latest_report.empathy_indicators >= 3:
-                    milestones["areas_on_track"].append("التطور الاجتماعي والعاطفي")
+                    milestones["areas_on_track"].append(
+                        "التطور الاجتماعي والعاطفي")
                 else:
-                    milestones["areas_needing_attention"].append("التطور الاجتماعي")
+                    milestones["areas_needing_attention"].append(
+                        "التطور الاجتماعي")
 
                 # Check attention span
                 if latest_report.attention_span >= 5:
                     milestones["areas_on_track"].append("التركيز والانتباه")
                 else:
-                    milestones["areas_needing_attention"].append("تطوير فترة التركيز")
+                    milestones["areas_needing_attention"].append(
+                        "تطوير فترة التركيز")
 
             if age >= 5:
                 # Check vocabulary growth
                 if latest_report.vocabulary_growth >= 10:
                     milestones["areas_on_track"].append("تطوير المفردات")
                 else:
-                    milestones["areas_needing_attention"].append("تطوير المفردات")
+                    milestones["areas_needing_attention"].append(
+                        "تطوير المفردات")
 
             # Suggest next milestones
             if age < 6:
-                milestones["next_milestones"].append("تطوير مهارات القراءة البسيطة")
+                milestones["next_milestones"].append(
+                    "تطوير مهارات القراءة البسيطة")
                 milestones["next_milestones"].append("تحسين مهارات التعبير")
 
             return milestones

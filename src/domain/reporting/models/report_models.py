@@ -183,7 +183,9 @@ class ChildProgress:
 
     def has_red_flags(self) -> bool:
         """Check if there are concerning patterns"""
-        return len(self.concerning_patterns) > 0 or len(self.urgent_recommendations) > 0
+        return len(
+            self.concerning_patterns) > 0 or len(
+            self.urgent_recommendations) > 0
 
     def get_development_summary(self) -> Dict[str, str]:
         """Get development summary by area"""

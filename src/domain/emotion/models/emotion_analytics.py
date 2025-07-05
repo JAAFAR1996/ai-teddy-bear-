@@ -1,4 +1,4 @@
-﻿"""Emotion analytics and reporting models."""
+"""Emotion analytics and reporting models."""
 
 from dataclasses import dataclass
 from datetime import date, datetime

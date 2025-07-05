@@ -3,22 +3,34 @@
 Modern audio processing services for the AI Teddy Bear system
 """
 
-from .transcription_service import (ModernTranscriptionService,
-                                    StreamingAudioBuffer, TranscriptionConfig,
-                                    TranscriptionService,
-                                    create_transcription_service)
+from .transcription_service import (
+    ModernTranscriptionService,
+    StreamingAudioBuffer,
+    TranscriptionConfig,
+    TranscriptionService,
+    create_transcription_service,
+)
 
 try:
-    from .synthesis_service import (ModernSynthesisService, SynthesisConfig,
-                                    SynthesisService, VoiceCharacter,
-                                    VoiceProvider, create_synthesis_service)
+    from .synthesis_service import (
+        ModernSynthesisService,
+        SynthesisConfig,
+        SynthesisService,
+        VoiceCharacter,
+        VoiceProvider,
+        create_synthesis_service,
+    )
 except ImportError:
     # Synthesis service not available
     pass
 
 try:
-    from .voice_service_refactored import (IVoiceService, MultiProviderVoiceService,
-                                          VoiceServiceFactory, Settings)
+    from .voice_service_refactored import (
+        IVoiceService,
+        MultiProviderVoiceService,
+        VoiceServiceFactory,
+        Settings,
+    )
 except ImportError:
     # Voice service not available
     pass
@@ -31,7 +43,7 @@ from .voice_service_refactored import (
     IVoiceService,
     MultiProviderVoiceService,
     VoiceServiceFactory,
-    Settings
+    Settings,
 )
 
 from src.domain.audio.models import (
@@ -40,7 +52,7 @@ from src.domain.audio.models import (
     ProviderConfig,
     TranscriptionRequest,
     SynthesisRequest,
-    ProviderResult
+    ProviderResult,
 )
 
 from .voice_provider_manager import ProviderManager
@@ -68,5 +80,5 @@ __all__ = [
     "ProviderResult",
     "ProviderManager",
     "VoiceCacheManager",
-    "VoiceAudioProcessor"
+    "VoiceAudioProcessor",
 ]

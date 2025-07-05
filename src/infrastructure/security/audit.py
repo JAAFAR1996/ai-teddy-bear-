@@ -67,7 +67,10 @@ class AuditService:
             if audit_log.risk_score == "HIGH":
                 await self._send_security_alert(audit_log)
 
-    def _calculate_risk_score(self, event_type: AuditEventType, details: Dict) -> str:
+    def _calculate_risk_score(
+            self,
+            event_type: AuditEventType,
+            details: Dict) -> str:
         """Calculate risk score based on event type and details"""
         high_risk_events = [
             AuditEventType.PERMISSION_CHANGED,

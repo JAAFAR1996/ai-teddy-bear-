@@ -34,4 +34,4 @@
   },
   "LOG_LEVEL": "INFO",
   "DATABASE_URL": "sqlite:///teddy_bear.db"
-} 
+}

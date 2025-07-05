@@ -53,8 +53,7 @@ class RuleEngine:
                 id="bullying_1",
                 name="Bullying Detection",
                 description="Detects bullying language",
-                keywords=["stupid", "dumb", "loser",
-                          "hate you", "nobody likes"],
+                keywords=["stupid", "dumb", "loser", "hate you", "nobody likes"],
                 category=ContentCategory.BULLYING,
                 severity=ModerationSeverity.MEDIUM,
             ),
@@ -62,8 +61,7 @@ class RuleEngine:
                 id="drugs_1",
                 name="Drug References",
                 description="Detects drug-related content",
-                keywords=["drugs", "cocaine", "marijuana",
-                          "pills", "high", "stoned"],
+                keywords=["drugs", "cocaine", "marijuana", "pills", "high", "stoned"],
                 category=ContentCategory.DRUGS,
                 severity=ModerationSeverity.HIGH,
             ),
@@ -80,8 +78,7 @@ class RuleEngine:
                 id="self_harm_1",
                 name="Self Harm Detection",
                 description="Detects self-harm content",
-                keywords=["suicide", "cut myself",
-                          "kill myself", "end my life"],
+                keywords=["suicide", "cut myself", "kill myself", "end my life"],
                 category=ContentCategory.SELF_HARM,
                 severity=ModerationSeverity.CRITICAL,
             ),
@@ -155,13 +152,19 @@ class RuleEngine:
         """Get all rules"""
         return self.rules.copy()
 
-    def get_rules_by_category(self, category: ContentCategory) -> List[ModerationRule]:
+    def get_rules_by_category(
+            self,
+            category: ContentCategory) -> List[ModerationRule]:
         """Get rules by category"""
-        return [rule for rule in self.rules.values() if rule.category == category]
+        return [rule for rule in self.rules.values() if rule.category ==
+                category]
 
-    def get_rules_by_severity(self, severity: ModerationSeverity) -> List[ModerationRule]:
+    def get_rules_by_severity(
+        self, severity: ModerationSeverity
+    ) -> List[ModerationRule]:
         """Get rules by severity"""
-        return [rule for rule in self.rules.values() if rule.severity == severity]
+        return [rule for rule in self.rules.values() if rule.severity ==
+                severity]
 
     async def evaluate(
         self, text: str, age: int = 10, language: str = "en"
@@ -192,8 +195,7 @@ class RuleEngine:
             if rule.keywords:
                 text_lower = text.lower()
                 matches = sum(
-                    1 for keyword in rule.keywords if keyword.lower() in text_lower
-                )
+                    1 for keyword in rule.keywords if keyword.lower() in text_lower)
                 if matches > 0:
                     confidence = max(confidence, min(matches * 0.3, 0.9))
 
@@ -240,7 +242,8 @@ class RuleEngine:
                 imported_count += 1
             except (KeyError, TypeError, ValueError) as exc:
                 self.logger.warning(
-                    f"Skipping invalid rule data: {rule_data}. Error: {exc}")
+                    f"Skipping invalid rule data: {rule_data}. Error: {exc}"
+                )
                 continue
 
         return imported_count

@@ -144,7 +144,8 @@ class CleanupOrchestrator:
         for step in steps:
             try:
                 step_result = await step.execute(context)
-                saga.add_compensation(step.name, step_result.compensation_action)
+                saga.add_compensation(
+                    step.name, step_result.compensation_action)
                 results.append(step_result)
 
                 # Update context with step results
@@ -164,11 +165,15 @@ class CleanupOrchestrator:
                     error=str(e),
                 )
                 await saga.compensate()  # Rollback all previous steps
-                raise OperationStepFailure(f"Step {step.name} failed: {str(e)}") from e
+                raise OperationStepFailure(
+                    f"Step {step.name} failed: {str(e)}") from e
 
         return results
 
-    async def _finalize_operation(self, context: CleanupContext, results: List):
+    async def _finalize_operation(
+            self,
+            context: CleanupContext,
+            results: List):
         """إنهاء العملية وتحديث المقاييس"""
         # Update metrics
         if self.metrics:
@@ -199,8 +204,9 @@ class CleanupOrchestrator:
             )
 
         logger.error(
-            "Operation failed", operation_id=context.operation_id, error=str(error)
-        )
+            "Operation failed",
+            operation_id=context.operation_id,
+            error=str(error))
 
     async def _create_operation_saga(self, context: CleanupContext):
         """إنشاء Saga pattern للعملية"""
@@ -236,7 +242,10 @@ class OperationSaga:
         if exc_type:
             await self.compensate()
 
-    def add_compensation(self, step_name: str, compensation_action: Any) -> None:
+    def add_compensation(
+            self,
+            step_name: str,
+            compensation_action: Any) -> None:
         """إضافة إجراء تعويضي لخطوة"""
         self.compensation_actions.append((step_name, compensation_action))
 

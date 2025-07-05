@@ -202,7 +202,8 @@ class ContinuousLearningSystem:
                     # نشر النماذج المحسنة إذا كانت أفضل
                     if ab_test_results["new_models_superior"]:
                         await self._deploy_improved_models(new_models, ab_test_results)
-                        self.learning_stats["models_improved"] += len(new_models)
+                        self.learning_stats["models_improved"] += len(
+                            new_models)
                         self.learning_stats["successful_deployments"] += 1
 
                     else:
@@ -224,7 +225,9 @@ class ContinuousLearningSystem:
                 await self._apply_trend_insights(trend_analysis)
 
                 # تحديث الإحصائيات
-                cycle_duration = (datetime.utcnow() - cycle_start).total_seconds()
+                cycle_duration = (
+                    datetime.utcnow() -
+                    cycle_start).total_seconds()
                 self.learning_stats["total_learning_cycles"] += 1
 
                 logger.info(
@@ -257,18 +260,21 @@ class ContinuousLearningSystem:
         if current_metrics.get("child_satisfaction", 1.0) < 0.8:
             should_retrain = True
             focus_areas.append("child_engagement")
-            logger.warning("⚠️ Child satisfaction below threshold - retraining needed")
+            logger.warning(
+                "⚠️ Child satisfaction below threshold - retraining needed")
 
         if current_metrics.get("safety_score", 1.0) < 0.95:
             should_retrain = True
             focus_areas.append("safety_enhancement")
             strategy = LearningStrategy.FULL_RETRAIN  # Safety is critical
-            logger.warning("🚨 Safety score below threshold - full retraining required")
+            logger.warning(
+                "🚨 Safety score below threshold - full retraining required")
 
         if current_metrics.get("accuracy", 1.0) < 0.85:
             should_retrain = True
             focus_areas.append("accuracy_improvement")
-            logger.warning("📉 Model accuracy below threshold - retraining needed")
+            logger.warning(
+                "📉 Model accuracy below threshold - retraining needed")
 
         # تحليل التغذية الراجعة الجديدة
         feedback_analysis = await self._analyze_feedback_patterns(feedback_data)
@@ -285,7 +291,8 @@ class ContinuousLearningSystem:
         if performance_trend["degradation_detected"]:
             should_retrain = True
             focus_areas.append("performance_restoration")
-            logger.info("📉 Performance degradation detected - model refresh needed")
+            logger.info(
+                "📉 Performance degradation detected - model refresh needed")
 
         return {
             "should_retrain": should_retrain,
@@ -397,7 +404,8 @@ class ContinuousLearningSystem:
         )
 
         # تحديد ما إذا كانت النماذج الجديدة أفضل بشكل كبير
-        significance_threshold = self.config.get("significance_threshold", 0.05)
+        significance_threshold = self.config.get(
+            "significance_threshold", 0.05)
         improvement_threshold = self.config.get("improvement_threshold", 0.02)
 
         new_models_superior = (
@@ -455,7 +463,8 @@ class ContinuousLearningSystem:
 
             logger.info("✅ Model deployment completed successfully")
         else:
-            logger.error(f"❌ Model deployment failed: {deployment_result['error']}")
+            logger.error(
+                f"❌ Model deployment failed: {deployment_result['error']}")
 
     async def _extract_learning_insights(
         self, feedback_data: Dict, performance_results: Dict

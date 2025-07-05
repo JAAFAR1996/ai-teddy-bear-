@@ -87,8 +87,7 @@ async def text_to_speech(
             io.BytesIO(audio_stream),
             media_type="audio/mpeg",
             headers={
-                "Content-Disposition": f"attachment; filename=response_{response_id}.mp3"
-            },
+                "Content-Disposition": f"attachment; filename=response_{response_id}.mp3"},
         )
     except Exception as e:
         raise HTTPException(

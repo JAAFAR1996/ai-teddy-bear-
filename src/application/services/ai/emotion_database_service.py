@@ -1,4 +1,4 @@
-﻿"""Database service for emotion management."""
+"""Database service for emotion management."""
 
 from contextlib import contextmanager
 from datetime import datetime, timedelta
@@ -8,7 +8,7 @@ import structlog
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ....domain.emotion.models import (EmotionAnalytics, EmotionResult)
+from ....domain.emotion.models import EmotionAnalytics, EmotionResult
 
 logger = structlog.get_logger(__name__)
 
@@ -161,7 +161,8 @@ class EmotionDatabaseService:
             logger.error(f" Failed to generate analytics: {e}")
             return None
 
-    async def cleanup_old_data(self, days_to_keep: Optional[int] = None) -> int:
+    async def cleanup_old_data(
+            self, days_to_keep: Optional[int] = None) -> int:
         """Clean up old emotion data."""
         try:
             cleanup_days = days_to_keep or self.retention_days
@@ -178,7 +179,8 @@ class EmotionDatabaseService:
             logger.error(f" Cleanup failed: {e}")
             return 0
 
-    async def get_child_profile(self, child_id: str) -> Optional[Dict[str, Any]]:
+    async def get_child_profile(
+            self, child_id: str) -> Optional[Dict[str, Any]]:
         """Get comprehensive child emotion profile."""
         try:
             with self.get_db_session() as session:

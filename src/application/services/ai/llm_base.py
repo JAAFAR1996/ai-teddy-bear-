@@ -19,7 +19,10 @@ import openai
 try:
     from transformers import AutoModelForCausalLM, AutoTokenizer
 except ImportError:
-    from src.infrastructure.external_services.mock.transformers import AutoModelForCausalLM, AutoTokenizer
+    from src.infrastructure.external_services.mock.transformers import (
+        AutoModelForCausalLM,
+        AutoTokenizer,
+    )
 
 import redis.asyncio as aioredis
 
@@ -29,19 +32,21 @@ from src.infrastructure.config import get_config
 
 class LLMProvider(Enum):
     """Enumeration of supported Language Model Providers"""
-    OPENAI = 'openai'
-    ANTHROPIC = 'anthropic'
-    GOOGLE = 'google'
-    HUGGINGFACE = 'huggingface'
-    LOCAL = 'local'
-    AZURE_OPENAI = 'azure_openai'
-    COHERE = 'cohere'
-    REPLICATE = 'replicate'
+
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+    GOOGLE = "google"
+    HUGGINGFACE = "huggingface"
+    LOCAL = "local"
+    AZURE_OPENAI = "azure_openai"
+    COHERE = "cohere"
+    REPLICATE = "replicate"
 
 
 @dataclass
 class ModelConfig:
     """Configuration for a specific model"""
+
     provider: LLMProvider
     model_name: str
     max_tokens: int = 2048
@@ -61,6 +66,7 @@ class ModelConfig:
 @dataclass
 class LLMResponse:
     """Standardized LLM response"""
+
     content: str
     provider: LLMProvider
     model: str
@@ -74,25 +80,24 @@ class LLMResponse:
 class BaseLLMAdapter(ABC):
     """Abstract base class for LLM adapters"""
 
-    def __init__(self, api_key: Optional[str] = None, config: Optional[Dict] = None):
+    def __init__(
+            self,
+            api_key: Optional[str] = None,
+            config: Optional[Dict] = None):
         self.api_key = api_key
         self.config = config or {}
         self.logger = logging.getLogger(self.__class__.__name__)
 
     @abstractmethod
     async def generate(
-        self,
-        messages: List[Message],
-        model_config: ModelConfig
+        self, messages: List[Message], model_config: ModelConfig
     ) -> LLMResponse:
         """Generate response from LLM"""
         pass
 
     @abstractmethod
     async def generate_stream(
-        self,
-        messages: List[Message],
-        model_config: ModelConfig
+        self, messages: List[Message], model_config: ModelConfig
     ) -> AsyncIterator[str]:
         """Generate streaming response from LLM"""
         pass
@@ -102,7 +107,8 @@ class BaseLLMAdapter(ABC):
         """Validate model configuration"""
         pass
 
-    def calculate_cost(self, usage: Dict[str, int], model_config: ModelConfig) -> float:
+    def calculate_cost(
+            self, usage: Dict[str, int], model_config: ModelConfig) -> float:
         """Calculate cost based on usage"""
-        total_tokens = usage.get('total_tokens', 0)
+        total_tokens = usage.get("total_tokens", 0)
         return (total_tokens / 1000) * model_config.cost_per_1k_tokens

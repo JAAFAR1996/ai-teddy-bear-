@@ -99,14 +99,18 @@ class GetChildProfileQueryHandler(QueryHandler):
             child_data = await self.db.get_by_id("children", query.child_id)
 
             if not child_data:
-                return QueryResult(data=None, metadata={"message": "Child not found"})
+                return QueryResult(
+                    data=None, metadata={
+                        "message": "Child not found"})
 
             # Enrich with additional data
             enriched_data = await self._enrich_child_profile(child_data)
 
             return QueryResult(
                 data=enriched_data,
-                metadata={"cached": True, "query_time": datetime.utcnow().isoformat()},
+                metadata={
+                    "cached": True,
+                    "query_time": datetime.utcnow().isoformat()},
             )
 
         except Exception as e:
@@ -153,8 +157,10 @@ class GetChildProfileQueryHandler(QueryHandler):
         required_fields = ["name", "age", "parent_id", "device_id"]
         optional_fields = ["preferences", "learning_style", "interests"]
 
-        required_score = sum(1 for field in required_fields if child_data.get(field))
-        optional_score = sum(1 for field in optional_fields if child_data.get(field))
+        required_score = sum(
+            1 for field in required_fields if child_data.get(field))
+        optional_score = sum(
+            1 for field in optional_fields if child_data.get(field))
 
         total_score = (required_score / len(required_fields)) * 0.7 + (
             optional_score / len(optional_fields)
@@ -236,8 +242,7 @@ class GetChildrenByParentQueryHandler(QueryHandler):
             "recent_conversations_count": len(recent_conversations),
             "safety_status": "warning" if recent_violations else "safe",
             "last_activity": (
-                recent_conversations[0]["created_at"] if recent_conversations else None
-            ),
+                recent_conversations[0]["created_at"] if recent_conversations else None),
         }
 
 
@@ -278,7 +283,8 @@ class GetChildSafetyReportQueryHandler(QueryHandler):
             )
 
             # Generate safety report
-            report = self._generate_safety_report(violations, flagged_conversations)
+            report = self._generate_safety_report(
+                violations, flagged_conversations)
 
             return QueryResult(
                 data=report,
@@ -286,8 +292,7 @@ class GetChildSafetyReportQueryHandler(QueryHandler):
                     "child_id": query.child_id,
                     "report_period": {
                         "from": (
-                            query.from_date.isoformat() if query.from_date else None
-                        ),
+                            query.from_date.isoformat() if query.from_date else None),
                         "to": query.to_date.isoformat() if query.to_date else None,
                     },
                 },
@@ -376,11 +381,11 @@ def register_child_query_handlers() -> Any:
     )
 
     query_bus.register_handler(
-        GetChildrenByParentQuery, GetChildrenByParentQueryHandler(read_model_db)
-    )
+        GetChildrenByParentQuery,
+        GetChildrenByParentQueryHandler(read_model_db))
 
     query_bus.register_handler(
-        GetChildSafetyReportQuery, GetChildSafetyReportQueryHandler(read_model_db)
-    )
+        GetChildSafetyReportQuery,
+        GetChildSafetyReportQueryHandler(read_model_db))
 
     logger.info("Child query handlers registered successfully")

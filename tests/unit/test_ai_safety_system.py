@@ -102,58 +102,100 @@ class SafetyConfig:
     enable_strict_mode: bool = True
 
     def validate(self) -> bool:
-        return all([
-            0 <= self.toxicity_threshold <= 1,
-            0 <= self.high_risk_threshold <= 1,
-            0 <= self.critical_threshold <= 1,
-            self.toxicity_threshold <= self.high_risk_threshold <= self.critical_threshold
-        ])
+        return all(
+            [
+                0 <= self.toxicity_threshold <= 1,
+                0 <= self.high_risk_threshold <= 1,
+                0 <= self.critical_threshold <= 1,
+                self.toxicity_threshold
+                <= self.high_risk_threshold
+                <= self.critical_threshold,
+            ]
+        )
 
 
 class AdvancedContentFilter:
     def __init__(self, config: SafetyConfig = None):
         self.config = config or SafetyConfig()
-        self.metrics = {"total_requests": 0,
-                        "blocked_requests": 0, "avg_processing_time": 0.1}
+        self.metrics = {
+            "total_requests": 0,
+            "blocked_requests": 0,
+            "avg_processing_time": 0.1,
+        }
 
-    async def analyze_content(self, content: str, child_age: int, conversation_history: List[str] = None) -> SafetyAnalysisResult:
-        self.metrics["total_requests"] += 1
-
-        # Mock analysis logic
-        result = SafetyAnalysisResult()
-
-        # Simple keyword-based mock analysis
-        harmful_keywords = ["hate", "stupid", "ugly", "address",
-                            "phone number", "real name", "secret", "don't tell"]
-        educational_keywords = ["learn", "count", "color", "animal", "story"]
-
+    def _analyze_harmful_content(
+            self,
+            content: str,
+            result: SafetyAnalysisResult):
+        """Analyze content for harmful keywords."""
+        harmful_keywords = [
+            "hate",
+            "stupid",
+            "ugly",
+            "address",
+            "phone number",
+            "real name",
+            "secret",
+            "don't tell",
+        ]
         if any(keyword in content.lower() for keyword in harmful_keywords):
             result.is_safe = False
             result.overall_risk_level = RiskLevel.HIGH_RISK
             result.toxicity_result.is_toxic = True
             result.toxicity_result.toxicity_score = 0.8
             self.metrics["blocked_requests"] += 1
-            if any(keyword in content.lower() for keyword in ["address", "phone", "secret", "don't tell"]):
+            if any(
+                keyword in content.lower()
+                for keyword in ["address", "phone", "secret", "don't tell"]
+            ):
                 result.parent_notification_required = True
                 result.overall_risk_level = RiskLevel.CRITICAL
 
+    def _analyze_educational_content(
+            self,
+            content: str,
+            result: SafetyAnalysisResult):
+        """Analyze content for educational keywords."""
+        educational_keywords = ["learn", "count", "color", "animal", "story"]
         if any(keyword in content.lower() for keyword in educational_keywords):
             result.content_category = ContentCategory.EDUCATIONAL
             result.educational_value.educational_score = 0.7
 
+    def _categorize_content(self, content: str, result: SafetyAnalysisResult):
+        """Categorize the content based on keywords."""
         if "story" in content.lower() or "once upon" in content.lower():
             result.content_category = ContentCategory.STORY
 
-        # Age appropriateness
-        if child_age < 5 and any(word in content.lower() for word in ["scary", "monster", "dark"]):
+    def _check_age_appropriateness(
+        self, content: str, child_age: int, result: SafetyAnalysisResult
+    ):
+        """Check if the content is appropriate for the child's age."""
+        if child_age < 5 and any(
+            word in content.lower() for word in ["scary", "monster", "dark"]
+        ):
             result.age_appropriate = False
-
         if child_age < 7 and "romantic" in content.lower():
             result.age_appropriate = False
 
+    async def analyze_content(
+            self,
+            content: str,
+            child_age: int,
+            conversation_history: List[str] = None) -> SafetyAnalysisResult:
+        """Analyze content by orchestrating various checks."""
+        self.metrics["total_requests"] += 1
+        result = SafetyAnalysisResult()
+
+        self._analyze_harmful_content(content, result)
+        self._analyze_educational_content(content, result)
+        self._categorize_content(content, result)
+        self._check_age_appropriateness(content, child_age, result)
+
         return result
 
-    async def batch_analyze(self, texts: List[str], child_age: int) -> List[SafetyAnalysisResult]:
+    async def batch_analyze(
+        self, texts: List[str], child_age: int
+    ) -> List[SafetyAnalysisResult]:
         results = []
         for text in texts:
             result = await self.analyze_content(text, child_age)
@@ -187,7 +229,7 @@ class TestAdvancedContentFilter:
         assert result.overall_risk_level == RiskLevel.SAFE
         assert result.age_appropriate is True
         assert result.toxicity_result.toxicity_score < 0.1
-        assert result.emotional_impact.is_positive == True
+        assert result.emotional_impact.is_positive
 
     @pytest.mark.asyncio
     async def test_toxic_content_blocked(self, safety_filter):
@@ -216,7 +258,7 @@ class TestAdvancedContentFilter:
         assert result.is_safe == False
         assert result.overall_risk_level in [
             RiskLevel.HIGH_RISK, RiskLevel.CRITICAL]
-        assert result.parent_notification_required == True
+        assert result.parent_notification_required
 
     @pytest.mark.asyncio
     async def test_educational_content_boost(self, safety_filter):
@@ -225,7 +267,7 @@ class TestAdvancedContentFilter:
             "Let's learn to count! One, two, three... Can you count to ten?"
         )
         result = await safety_filter.analyze_content(educational_content, child_age=5)
-        assert result.is_safe == True
+        assert result.is_safe
         assert result.educational_value.educational_score > 0.5
         assert result.content_category == ContentCategory.EDUCATIONAL
 
@@ -242,7 +284,7 @@ class TestAdvancedContentFilter:
         )
         assert negative_result.emotional_impact.is_positive == False
         assert negative_result.emotional_impact.overall_sentiment < 0
-        assert positive_result.emotional_impact.is_positive == True
+        assert positive_result.emotional_impact.is_positive
         assert positive_result.emotional_impact.overall_sentiment > 0
 
     @pytest.mark.asyncio
@@ -258,7 +300,7 @@ class TestAdvancedContentFilter:
         result = await safety_filter.analyze_content(
             current_text, child_age=5, conversation_history=conversation_history
         )
-        assert result.context_analysis.context_safe == True
+        assert result.context_analysis.context_safe
         assert result.context_analysis.conversation_flow_score > 0.5
         assert result.context_analysis.conversation_quality > 0.5
 
@@ -319,12 +361,14 @@ class TestAdvancedContentFilter:
     def test_config_validation(self):
         """Test safety configuration validation"""
         valid_config = SafetyConfig(
-            toxicity_threshold=0.1, high_risk_threshold=0.3, critical_threshold=0.7
-        )
-        assert valid_config.validate() == True
+            toxicity_threshold=0.1,
+            high_risk_threshold=0.3,
+            critical_threshold=0.7)
+        assert valid_config.validate()
         invalid_config = SafetyConfig(
-            toxicity_threshold=1.5, high_risk_threshold=0.3, critical_threshold=0.7
-        )
+            toxicity_threshold=1.5,
+            high_risk_threshold=0.3,
+            critical_threshold=0.7)
         assert invalid_config.validate() == False
 
 
@@ -340,7 +384,7 @@ class TestIntegrationScenarios:
         """Test story-telling scenario"""
         story_content = "Once upon a time, there was a brave little rabbit who loved to explore the forest and make new friends."
         result = await safety_filter.analyze_content(story_content, child_age=5)
-        assert result.is_safe == True
+        assert result.is_safe
         assert result.content_category == ContentCategory.STORY
         assert result.educational_value.educational_score > 0.3
 
@@ -359,7 +403,7 @@ class TestIntegrationScenarios:
             result = await safety_filter.analyze_content(
                 content, child_age=4, conversation_history=learning_conversation[:i]
             )
-            assert result.is_safe == True
+            assert result.is_safe
             if i > 2:
                 assert result.educational_value.educational_score > 0.3
 
@@ -379,7 +423,7 @@ class TestIntegrationScenarios:
             )
             if i >= 3:
                 assert result.is_safe == False
-                assert result.parent_notification_required == True
+                assert result.parent_notification_required
             if i >= 4:
                 assert result.overall_risk_level == RiskLevel.CRITICAL
 
@@ -402,10 +446,7 @@ async def test_system_stress():
     assert len(results) == len(test_contents)
     safe_indices = [0, 1, 4, 6]
     for i in safe_indices:
-        assert (
-            results[i].is_safe == True
-            or results[i].overall_risk_level == RiskLevel.LOW_RISK
-        )
+        assert results[i].is_safe or results[i].overall_risk_level == RiskLevel.LOW_RISK
     unsafe_indices = [3, 5, 7]
     for i in unsafe_indices:
         assert results[i].is_safe == False

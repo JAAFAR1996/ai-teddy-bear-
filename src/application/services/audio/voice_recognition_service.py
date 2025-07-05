@@ -74,7 +74,9 @@ class VoiceRecognitionService:
             elif self.whisper_model:
                 result = await self._transcribe_whisper(audio_array, language)
             else:
-                return {"error": "No transcription service available", "text": ""}
+                return {
+    "error": "No transcription service available",
+     "text": ""}
 
             return result
 
@@ -92,15 +94,18 @@ class VoiceRecognitionService:
             elif isinstance(audio_data, bytes):
                 # Convert bytes to numpy array
                 return (
-                    np.frombuffer(audio_data, dtype=np.int16).astype(np.float32)
-                    / 32768.0
-                )
+    np.frombuffer(
+        audio_data,
+        dtype=np.int16).astype(
+            np.float32) /
+             32768.0)
             elif isinstance(audio_data, str):
                 # Load from file
                 data, _ = sf.read(audio_data)
                 return data
             else:
-                self.logger.error(f"Unsupported audio data type: {type(audio_data)}")
+                self.logger.error(
+                    f"Unsupported audio data type: {type(audio_data)}")
                 return None
 
         except Exception as e:
@@ -168,24 +173,28 @@ class VoiceRecognitionService:
                 return 0.5
 
             # Average probability from all segments
-            total_prob = sum(segment.get("avg_logprob", -1.0) for segment in segments)
+            total_prob = sum(segment.get("avg_logprob", -1.0)
+                             for segment in segments)
             avg_logprob = total_prob / len(segments)
 
             # Convert log probability to confidence (rough approximation)
             confidence = max(0.0, min(1.0, (avg_logprob + 1.0) / 1.0))
             return confidence
 
-        # FIXME: replace with specific exception
-except Exception as exc:return 0.5
 
-    async def detect_language(self, audio_array: np.ndarray) -> Optional[Language]:
+        # FIXME: replace with specific exception
+except Exception as exc:
+    return 0.5
+
+   async def detect_language(self, audio_array: np.ndarray) -> Optional[Language]:
         """Detect language from audio"""
         try:
             if not self.whisper_model:
                 return None
 
             # Use Whisper's language detection
-            result = self.whisper_model.transcribe(audio_array, task="transcribe")
+            result = self.whisper_model.transcribe(
+                audio_array, task="transcribe")
             detected_lang = result.get("language")
 
             # Map to our Language enum
@@ -211,7 +220,8 @@ except Exception as exc:return 0.5
         try:
             # Create test audio (silence)
             sample_rate = 16000
-            test_audio = np.zeros(int(sample_rate * duration), dtype=np.float32)
+            test_audio = np.zeros(
+                int(sample_rate * duration), dtype=np.float32)
 
             result = await self.transcribe_audio(test_audio)
 

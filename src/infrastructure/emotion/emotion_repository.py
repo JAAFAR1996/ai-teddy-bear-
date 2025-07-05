@@ -1,4 +1,4 @@
-﻿"""Repository for emotion data persistence."""
+"""Repository for emotion data persistence."""
 
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional

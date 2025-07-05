@@ -25,7 +25,10 @@ memory_usage_gauge = Gauge(
     "system_memory_usage_bytes", "Memory usage in bytes", ["type"]
 )
 cpu_usage_gauge = Gauge("system_cpu_usage_percent", "CPU usage percentage")
-disk_usage_gauge = Gauge("system_disk_usage_percent", "Disk usage percentage", ["path"])
+disk_usage_gauge = Gauge(
+    "system_disk_usage_percent",
+    "Disk usage percentage",
+    ["path"])
 connection_count_gauge = Gauge(
     "system_connections_count", "Number of connections", ["type"]
 )
@@ -131,8 +134,10 @@ class HealthService(ServiceBase):
         return {
             "healthy": True,
             "monitoring_active": self._monitor_task and not self._monitor_task.done(),
-            "snapshots_collected": len(self.memory_snapshots),
-            "services_monitored": len(self.registry._services),
+            "snapshots_collected": len(
+                self.memory_snapshots),
+            "services_monitored": len(
+                self.registry._services),
         }
 
     async def check_all(self) -> Dict[str, Any]:
@@ -194,7 +199,8 @@ class HealthService(ServiceBase):
                 health_status = await self.check_all()
 
                 if not health_status["healthy"]:
-                    self.logger.warning("System unhealthy", details=health_status)
+                    self.logger.warning(
+                        "System unhealthy", details=health_status)
 
             except asyncio.CancelledError:
                 break
@@ -312,7 +318,8 @@ class HealthService(ServiceBase):
 
         top_types = []
         for stat in top_stats:
-            top_types.append((stat.traceback.format()[0], stat.count, stat.size))
+            top_types.append(
+                (stat.traceback.format()[0], stat.count, stat.size))
 
         return MemorySnapshot(
             timestamp=datetime.utcnow(),
@@ -347,9 +354,8 @@ class HealthService(ServiceBase):
         growth_rate = growth / (len(rss_values) - 1)
 
         # Check if consistently growing
-        increasing_count = sum(
-            1 for i in range(1, len(rss_values)) if rss_values[i] > rss_values[i - 1]
-        )
+        increasing_count = sum(1 for i in range(
+            1, len(rss_values)) if rss_values[i] > rss_values[i - 1])
 
         # Leak detected if:
         # 1. Memory grew more than threshold
@@ -417,14 +423,16 @@ class HealthService(ServiceBase):
             "healthy": active_connections < 1000,  # Max connections
             "active_connections": active_connections,
             "zombie_connections": len(zombie_connections),
-            "connection_ids": list(self._websocket_connections)[:10],  # First 10
+            # First 10
+            "connection_ids": list(self._websocket_connections)[:10],
         }
 
     async def _check_websocket_memory_leaks(self) -> None:
         """Check for WebSocket-related memory leaks"""
         current_memory = psutil.Process(os.getpid()).memory_info().rss
 
-        for session_id, initial_memory in list(self._connection_memory.items()):
+        for session_id, initial_memory in list(
+                self._connection_memory.items()):
             if session_id not in self._websocket_connections:
                 # Connection closed but memory not released
                 memory_diff = current_memory - initial_memory
@@ -447,9 +455,8 @@ class HealthService(ServiceBase):
         heap_size_mb = latest.heap_size / (1024 * 1024)
         objects_count = latest.objects_count
 
-        healthy = (
-            memory_percent < 85 and heap_size_mb < 1000 and objects_count < 1000000
-        )  # 1GB heap  # 1M objects
+        healthy = (memory_percent < 85 and heap_size_mb <
+                   1000 and objects_count < 1000000)  # 1GB heap  # 1M objects
 
         return {
             "healthy": healthy,
@@ -477,7 +484,9 @@ class HealthService(ServiceBase):
         for partition in psutil.disk_partitions():
             if partition.mountpoint:
                 usage = psutil.disk_usage(partition.mountpoint)
-                disk_usage_gauge.labels(path=partition.mountpoint).set(usage.percent)
+                disk_usage_gauge.labels(
+                    path=partition.mountpoint).set(
+                    usage.percent)
 
         # Connection metrics
         connection_count_gauge.labels(type="websocket").set(

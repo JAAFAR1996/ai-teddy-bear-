@@ -21,8 +21,11 @@ class Child(AggregateRoot):
     """Child entity - main aggregate root"""
 
     def __init__(
-        self, name: str, age: int, device_id: str, entity_id: Optional[UUID] = None
-    ):
+            self,
+            name: str,
+            age: int,
+            device_id: str,
+            entity_id: Optional[UUID] = None):
         super().__init__(entity_id)
         self.name = name
         self.age = age

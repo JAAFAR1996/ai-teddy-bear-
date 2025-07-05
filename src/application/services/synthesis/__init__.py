@@ -8,7 +8,7 @@ from .models import (
     SynthesisConfig,
     VoiceCharacter,
     SynthesisContext,
-    SynthesisServiceCredentials
+    SynthesisServiceCredentials,
 )
 from .audio_buffer import StreamingAudioBuffer
 from .character_manager import VoiceCharacterManager
@@ -19,13 +19,13 @@ from .providers import (
     ElevenLabsProvider,
     OpenAIProvider,
     AzureProvider,
-    FallbackProvider
+    FallbackProvider,
 )
 from .synthesis_service import ModernSynthesisService
 from .factory import (
     create_synthesis_service,
     create_synthesis_service_legacy,
-    create_synthesis_service_old
+    create_synthesis_service_old,
 )
 
 # Legacy compatibility
@@ -33,31 +33,27 @@ SynthesisService = ModernSynthesisService
 
 __all__ = [
     # Models
-    'VoiceProvider',
-    'SynthesisConfig', 
-    'VoiceCharacter',
-    'SynthesisContext',
-    'SynthesisServiceCredentials',
-    
+    "VoiceProvider",
+    "SynthesisConfig",
+    "VoiceCharacter",
+    "SynthesisContext",
+    "SynthesisServiceCredentials",
     # Core Services
-    'StreamingAudioBuffer',
-    'VoiceCharacterManager',
-    'AudioProcessor', 
-    'PerformanceMonitor',
-    
+    "StreamingAudioBuffer",
+    "VoiceCharacterManager",
+    "AudioProcessor",
+    "PerformanceMonitor",
     # Providers
-    'BaseSynthesisProvider',
-    'ElevenLabsProvider',
-    'OpenAIProvider',
-    'AzureProvider',
-    'FallbackProvider',
-    
+    "BaseSynthesisProvider",
+    "ElevenLabsProvider",
+    "OpenAIProvider",
+    "AzureProvider",
+    "FallbackProvider",
     # Main Service
-    'ModernSynthesisService',
-    'SynthesisService',  # Legacy alias
-    
+    "ModernSynthesisService",
+    "SynthesisService",  # Legacy alias
     # Factory Functions
-    'create_synthesis_service',
-    'create_synthesis_service_legacy',
-    'create_synthesis_service_old'
-] 
+    "create_synthesis_service",
+    "create_synthesis_service_legacy",
+    "create_synthesis_service_old",
+]

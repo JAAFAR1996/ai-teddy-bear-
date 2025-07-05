@@ -35,7 +35,9 @@ class PersonalityAnalyzer:
         personality.last_updated = datetime.now().isoformat()
         return personality
 
-    def _analyze_openness(self, personality: ChildPersonality, interactions: List[Dict]) -> None:
+    def _analyze_openness(
+        self, personality: ChildPersonality, interactions: List[Dict]
+    ) -> None:
         """تحليل الانفتاح على التجارب الجديدة"""
         novelty_seeking = 0
         total_interactions = len(interactions)
@@ -44,15 +46,26 @@ class PersonalityAnalyzer:
             # البحث عن مؤشرات الانفتاح
             if interaction.get("content_type") == "new_experience":
                 novelty_seeking += 1
-            if interaction.get("response_to_new_content", "").lower() in ["positive", "interested"]:
+            if interaction.get("response_to_new_content", "").lower() in [
+                "positive",
+                "interested",
+            ]:
                 novelty_seeking += 1
             if interaction.get("asks_follow_up_questions", False):
                 novelty_seeking += 1
 
-        openness_score = novelty_seeking / (total_interactions * 3) if total_interactions > 0 else 0.5
-        personality.openness = self._weighted_update(personality.openness, openness_score)
+        openness_score = (
+            novelty_seeking / (total_interactions * 3)
+            if total_interactions > 0
+            else 0.5
+        )
+        personality.openness = self._weighted_update(
+            personality.openness, openness_score
+        )
 
-    def _analyze_conscientiousness(self, personality: ChildPersonality, interactions: List[Dict]) -> None:
+    def _analyze_conscientiousness(
+        self, personality: ChildPersonality, interactions: List[Dict]
+    ) -> None:
         """تحليل المثابرة والضميرية"""
         completion_rate = 0
         task_persistence = 0
@@ -69,12 +82,16 @@ class PersonalityAnalyzer:
                     task_persistence += 1
 
         if total_tasks > 0:
-            conscientiousness_score = (completion_rate + task_persistence) / (total_tasks * 2)
+            conscientiousness_score = (completion_rate + task_persistence) / (
+                total_tasks * 2
+            )
             personality.conscientiousness = self._weighted_update(
                 personality.conscientiousness, conscientiousness_score
             )
 
-    def _analyze_extraversion(self, personality: ChildPersonality, interactions: List[Dict]) -> None:
+    def _analyze_extraversion(
+        self, personality: ChildPersonality, interactions: List[Dict]
+    ) -> None:
         """تحليل الانبساطية"""
         social_indicators = 0
         total_interactions = len(interactions)
@@ -88,10 +105,18 @@ class PersonalityAnalyzer:
             if interaction.get("response_length", 0) > 10:  # ردود طويلة
                 social_indicators += 1
 
-        extraversion_score = social_indicators / (total_interactions * 3) if total_interactions > 0 else 0.5
-        personality.extraversion = self._weighted_update(personality.extraversion, extraversion_score)
+        extraversion_score = (
+            social_indicators / (total_interactions * 3)
+            if total_interactions > 0
+            else 0.5
+        )
+        personality.extraversion = self._weighted_update(
+            personality.extraversion, extraversion_score
+        )
 
-    def _analyze_agreeableness(self, personality: ChildPersonality, interactions: List[Dict]) -> None:
+    def _analyze_agreeableness(
+        self, personality: ChildPersonality, interactions: List[Dict]
+    ) -> None:
         """تحليل الوداعة والتعاون"""
         cooperation_score = 0
         total_interactions = len(interactions)
@@ -105,10 +130,18 @@ class PersonalityAnalyzer:
             if interaction.get("shows_empathy", False):
                 cooperation_score += 1
 
-        agreeableness_score = cooperation_score / (total_interactions * 3) if total_interactions > 0 else 0.5
-        personality.agreeableness = self._weighted_update(personality.agreeableness, agreeableness_score)
+        agreeableness_score = (
+            cooperation_score / (total_interactions * 3)
+            if total_interactions > 0
+            else 0.5
+        )
+        personality.agreeableness = self._weighted_update(
+            personality.agreeableness, agreeableness_score
+        )
 
-    def _analyze_neuroticism(self, personality: ChildPersonality, interactions: List[Dict]) -> None:
+    def _analyze_neuroticism(
+        self, personality: ChildPersonality, interactions: List[Dict]
+    ) -> None:
         """تحليل العصابية والقلق"""
         anxiety_indicators = 0
         total_interactions = len(interactions)
@@ -122,10 +155,18 @@ class PersonalityAnalyzer:
             if interaction.get("mood") in ["sad", "worried", "anxious"]:
                 anxiety_indicators += 1
 
-        neuroticism_score = anxiety_indicators / (total_interactions * 3) if total_interactions > 0 else 0.5
-        personality.neuroticism = self._weighted_update(personality.neuroticism, neuroticism_score)
+        neuroticism_score = (
+            anxiety_indicators / (total_interactions * 3)
+            if total_interactions > 0
+            else 0.5
+        )
+        personality.neuroticism = self._weighted_update(
+            personality.neuroticism, neuroticism_score
+        )
 
-    def _analyze_curiosity_and_creativity(self, personality: ChildPersonality, interactions: List[Dict]) -> None:
+    def _analyze_curiosity_and_creativity(
+        self, personality: ChildPersonality, interactions: List[Dict]
+    ) -> None:
         """تحليل الفضول والإبداع"""
         curiosity_score = 0
         creativity_score = 0
@@ -147,11 +188,17 @@ class PersonalityAnalyzer:
         if total_interactions > 0:
             curiosity_level = curiosity_score / (total_interactions * 2)
             creativity_level = creativity_score / (total_interactions * 2)
-            
-            personality.curiosity_level = self._weighted_update(personality.curiosity_level, curiosity_level)
-            personality.creativity_level = self._weighted_update(personality.creativity_level, creativity_level)
 
-    def _update_learning_preferences(self, personality: ChildPersonality, interactions: List[Dict]) -> None:
+            personality.curiosity_level = self._weighted_update(
+                personality.curiosity_level, curiosity_level
+            )
+            personality.creativity_level = self._weighted_update(
+                personality.creativity_level, creativity_level
+            )
+
+    def _update_learning_preferences(
+        self, personality: ChildPersonality, interactions: List[Dict]
+    ) -> None:
         """تحديث تفضيلات التعلم"""
         learning_style_count = {"visual": 0, "auditory": 0, "kinesthetic": 0}
         attention_span_data = []
@@ -172,7 +219,9 @@ class PersonalityAnalyzer:
 
         # تحديث أسلوب التعلم
         if any(learning_style_count.values()):
-            dominant_style = max(learning_style_count.items(), key=lambda x: x[1])
+            dominant_style = max(
+                learning_style_count.items(),
+                key=lambda x: x[1])
             personality.learning_style = dominant_style[0]
 
         # تحديث فترة الانتباه
@@ -180,6 +229,9 @@ class PersonalityAnalyzer:
             avg_attention = sum(attention_span_data) / len(attention_span_data)
             personality.attention_span = int(avg_attention)
 
-    def _weighted_update(self, current_value: float, new_value: float, weight: float = 0.3) -> float:
+    def _weighted_update(
+        self, current_value: float, new_value: float, weight: float = 0.3
+    ) -> float:
         """تحديث مرجح للقيم"""
-        return min(1.0, max(0.0, current_value * (1 - weight) + new_value * weight)) 
+        return min(1.0, max(0.0, current_value *
+                   (1 - weight) + new_value * weight))

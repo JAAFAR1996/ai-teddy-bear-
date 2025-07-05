@@ -22,12 +22,12 @@ import structlog
 
     def get_session_summary(self, child_id: str) -> Optional[Dict[str, Any]]:
         """الحصول على ملخص الجلسة"""
-        
+
         if child_id not in self.active_sessions:
             return None
-        
+
         session = self.active_sessions[child_id]
-        
+
         return {
             'child_info': {
                 'id': session.child_id,
@@ -38,7 +38,8 @@ import structlog
                 'duration_minutes': (time.time() - session.session_start) / 60,
                 'interaction_count': session.interaction_count,
                 'average_processing_time': (
-                    session.total_processing_time / max(1, session.interaction_count)
+                    session.total_processing_time /
+                        max(1, session.interaction_count)
                 ),
                 'topics_discussed': session.topics_discussed,
                 'educational_progress': session.educational_progress
@@ -54,16 +55,17 @@ import structlog
                 'last_violation': session.safety_violations[-1] if session.safety_violations else None
             }
         }
-    
+
 
     def get_service_statistics(self) -> Dict[str, Any]:
         """الحصول على إحصائيات الخدمة الشاملة"""
-        
+
         # إحصائيات من المكونات الفرعية
         audio_stats = self.audio_processor.get_performance_stats()
-        ai_stats = asyncio.create_task(self.ai_orchestrator.get_performance_report())
+        ai_stats = asyncio.create_task(
+    self.ai_orchestrator.get_performance_report())
         filter_stats = self.content_filter.get_filter_statistics()
-        
+
         return {
             'service_stats': self.service_stats,
             'component_stats': {
@@ -73,7 +75,7 @@ import structlog
             },
             'performance_metrics': {
                 'success_rate': (
-                    self.service_stats['successful_interactions'] / 
+                    self.service_stats['successful_interactions'] /
                     max(1, self.service_stats['total_interactions'])
                 ) * 100,
                 'safety_rate': (
@@ -86,4 +88,3 @@ import structlog
                 ) * 100
             }
         }
-    

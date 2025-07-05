@@ -19,8 +19,7 @@ from websockets.server import WebSocketServerProtocol
 
 from src.application.services.ai.llm_service_factory import LLMServiceFactory
 from src.application.services.moderation_service import ModerationService
-from src.application.services.parent_dashboard_service import \
-    ParentDashboardService
+from src.application.services.parent_dashboard_service import ParentDashboardService
 from src.application.services.speech_to_text_service import SpeechToTextService
 from src.audio.state_manager import AudioState, state_manager
 from src.core.domain.entities.audio_stream import AudioStream
@@ -107,22 +106,24 @@ class StreamingService:
 
         # Initialize specialized services - EXTRACT CLASS pattern applied
         self.audio_buffer = AudioBufferService(
-            max_size=self.config.get('buffer_size', 8192),
-            chunk_size=self.config.get('chunk_size', 1024)
+            max_size=self.config.get("buffer_size", 8192),
+            chunk_size=self.config.get("chunk_size", 1024),
         )
 
         self.session_manager = SessionManagementService()
 
         self.websocket_service = WebSocketConnectionService(
             host=self.config.server.FLASK_HOST,
-            port=self.config.server.WEBSOCKET_PORT
-        )
+            port=self.config.server.WEBSOCKET_PORT)
 
         self.llm_processing_service = LLMResponseProcessingService(
             llm_factory=LLMServiceFactory(self.config),
             moderation_service=ModerationService(self.config),
-            parent_dashboard=ParentDashboardService(
-                self.config, conversation_repo) if conversation_repo else None
+            parent_dashboard=(
+                ParentDashboardService(self.config, conversation_repo)
+                if conversation_repo
+                else None
+            ),
         )
 
         # Services that remain in this class (core streaming functionality)
@@ -143,7 +144,7 @@ class StreamingService:
     @property
     def is_streaming(self) -> Any:
         """Check if service is streaming"""
-        return getattr(self, '_is_streaming', False)
+        return getattr(self, "_is_streaming", False)
 
     @is_streaming.setter
     def is_streaming(self, value) -> Any:
@@ -190,8 +191,8 @@ class StreamingService:
                 "audio_buffer": audio_stats,
                 "sessions": session_stats,
                 "connections": connection_stats,
-                "audio_stream_active": self.is_streaming
-            }
+                "audio_stream_active": self.is_streaming,
+            },
         }
 
     async def stop(self):
@@ -216,19 +217,23 @@ class StreamingService:
         except Exception as e:
             self.logger.error(f"Error stopping StreamingService: {e}")
 
-    async def process_client_message(self, websocket, message: str, session_id: str):
+    async def process_client_message(
+            self,
+            websocket,
+            message: str,
+            session_id: str):
         """Process message from client - Delegated from WebSocket service"""
         try:
             data = json.loads(message)
-            message_type = data.get('type')
+            message_type = data.get("type")
             self.logger.info(f"Received message type: {message_type}")
 
             # Message type routing using table lookup pattern
             message_handlers = {
-                'ping': self._handle_ping_message,
-                'audio': self._handle_audio_message,
-                'text': self._handle_text_message,
-                'control': self._handle_control_message
+                "ping": self._handle_ping_message,
+                "audio": self._handle_audio_message,
+                "text": self._handle_text_message,
+                "control": self._handle_control_message,
             }
 
             handler = message_handlers.get(message_type)
@@ -243,30 +248,44 @@ class StreamingService:
             self.logger.error(f"Error processing client message: {e}")
             await self.websocket_service.send_error_message(websocket, str(e))
 
-    async def _handle_ping_message(self, websocket, data: dict, session_id: str):
+    async def _handle_ping_message(
+            self,
+            websocket,
+            data: dict,
+            session_id: str):
         """Handle ping test message"""
-        await self.websocket_service.send_json_message(websocket, {
-            "type": "pong",
-            "message": "WebSocket connection working!"
-        })
+        await self.websocket_service.send_json_message(
+            websocket, {"type": "pong", "message": "WebSocket connection working!"}
+        )
         self.logger.info("Sent pong response")
 
-    async def _handle_audio_message(self, websocket, data: dict, session_id: str):
+    async def _handle_audio_message(
+            self,
+            websocket,
+            data: dict,
+            session_id: str):
         """Handle audio data message"""
-        audio_data = base64.b64decode(data['audio'])
+        audio_data = base64.b64decode(data["audio"])
         await self.process_audio_input(audio_data, session_id, websocket)
 
-    async def _handle_text_message(self, websocket, data: dict, session_id: str):
+    async def _handle_text_message(
+            self,
+            websocket,
+            data: dict,
+            session_id: str):
         """Handle text input message"""
-        text = data.get('text', '')
+        text = data.get("text", "")
         await self.process_text_input(text, session_id, websocket)
 
-    async def _handle_control_message(self, websocket, data: dict, session_id: str):
+    async def _handle_control_message(
+            self, websocket, data: dict, session_id: str):
         """Handle control command message"""
-        command = data.get('command')
+        command = data.get("command")
         await self.handle_control_command(command, session_id, websocket)
 
-    async def process_audio_input(self, audio_data: bytes, session_id: str, websocket=None):
+    async def process_audio_input(
+        self, audio_data: bytes, session_id: str, websocket=None
+    ):
         """Process incoming audio data using specialized audio buffer service"""
         self.logger.debug("Processing audio input")
         try:
@@ -300,7 +319,11 @@ class StreamingService:
         finally:
             state_manager.set_processing(False)
 
-    async def process_text_input(self, text: str, session_id: str, websocket=None):
+    async def process_text_input(
+            self,
+            text: str,
+            session_id: str,
+            websocket=None):
         """Process text input using specialized services"""
         self.logger.info(f"Processing text input: {text}")
 
@@ -310,7 +333,7 @@ class StreamingService:
                 text=text,
                 session_id=session_id,
                 retry_count=0,
-                session_manager=self.session_manager
+                session_manager=self.session_manager,
             )
 
             self.logger.info(f"LLM response: {response_text}")
@@ -318,7 +341,9 @@ class StreamingService:
             # Convert to audio if websocket is available
             if websocket:
                 audio_result = await self._convert_text_to_speech(response_text)
-                await self._send_audio_response(websocket, text, response_text, audio_result)
+                await self._send_audio_response(
+                    websocket, text, response_text, audio_result
+                )
 
         except Exception as e:
             self.logger.error(f"Error processing text input: {e}")
@@ -327,22 +352,24 @@ class StreamingService:
                     websocket, f"Error processing request: {str(e)}"
                 )
 
-    async def handle_control_command(self, command: str, session_id: str, websocket):
+    async def handle_control_command(
+            self,
+            command: str,
+            session_id: str,
+            websocket):
         """Handle control commands"""
         if command == "start_stream":
             self.is_streaming = True
-            await self.websocket_service.send_json_message(websocket, {
-                "type": "control_response",
-                "command": command,
-                "status": "started"
-            })
+            await self.websocket_service.send_json_message(
+                websocket,
+                {"type": "control_response", "command": command, "status": "started"},
+            )
         elif command == "stop_stream":
             self.is_streaming = False
-            await self.websocket_service.send_json_message(websocket, {
-                "type": "control_response",
-                "command": command,
-                "status": "stopped"
-            })
+            await self.websocket_service.send_json_message(
+                websocket,
+                {"type": "control_response", "command": command, "status": "stopped"},
+            )
 
     async def _convert_text_to_speech(self, text: str) -> dict:
         """Convert text to speech using available TTS providers"""
@@ -353,7 +380,7 @@ class StreamingService:
                 generate,
                 text=text,
                 voice=self.default_voice,
-                model="eleven_multilingual_v2"
+                model="eleven_multilingual_v2",
             )
 
             if audio and len(audio) > 0:
@@ -361,7 +388,7 @@ class StreamingService:
                     "success": True,
                     "audio_bytes": audio,
                     "format": "mp3",
-                    "provider": "elevenlabs"
+                    "provider": "elevenlabs",
                 }
             else:
                 raise ValueError("Empty audio generated")
@@ -377,7 +404,7 @@ class StreamingService:
             import io
 
             # Create gTTS object
-            tts = gTTS(text=text, lang='ar', slow=False)
+            tts = gTTS(text=text, lang="ar", slow=False)
 
             # Save to bytes buffer
             audio_buffer = io.BytesIO()
@@ -390,7 +417,7 @@ class StreamingService:
                     "success": True,
                     "audio_bytes": audio_bytes,
                     "format": "mp3",
-                    "provider": "gtts"
+                    "provider": "gtts",
                 }
             else:
                 raise ValueError("Empty audio generated from gTTS")
@@ -400,10 +427,15 @@ class StreamingService:
             return {
                 "success": False,
                 "error": "All TTS providers failed",
-                "provider": "none"
+                "provider": "none",
             }
 
-    async def _send_audio_response(self, websocket, original_text: str, response_text: str, audio_result: dict):
+    async def _send_audio_response(
+            self,
+            websocket,
+            original_text: str,
+            response_text: str,
+            audio_result: dict):
         """Send audio response to client"""
         if not audio_result.get("success", False):
             await self.websocket_service.send_error_message(
@@ -413,17 +445,19 @@ class StreamingService:
 
         response_data = {
             "type": "audio",
-            "audio": base64.b64encode(audio_result["audio_bytes"]).decode("utf-8"),
+            "audio": base64.b64encode(
+                audio_result["audio_bytes"]).decode("utf-8"),
             "format": audio_result["format"],
             "text": original_text,
             "response": response_text,
             "provider": audio_result["provider"],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         await self.websocket_service.send_json_message(websocket, response_data)
         self.logger.info(
-            f"Sent audio response with {len(response_data['audio'])} characters")
+            f"Sent audio response with {len(response_data['audio'])} characters"
+        )
 
     async def get_voice_id(self, voice_name: str) -> str:
         """Get voice ID from voice name"""
@@ -442,7 +476,10 @@ class StreamingService:
             self.logger.error(f"Error getting voice ID: {e}")
             raise
 
-    def _find_voice_by_name(self, voices: list, voice_name: str) -> Optional[str]:
+    def _find_voice_by_name(
+            self,
+            voices: list,
+            voice_name: str) -> Optional[str]:
         """Find voice ID by name in the voices list"""
         if not voices or not voice_name:
             return None
@@ -450,7 +487,7 @@ class StreamingService:
         normalized_target_name = voice_name.lower().strip()
 
         for voice in voices:
-            if hasattr(voice, 'name') and voice.name:
+            if hasattr(voice, "name") and voice.name:
                 if voice.name.lower() == normalized_target_name:
                     return voice.voice_id
 
@@ -464,15 +501,16 @@ class StreamingService:
 
         # Return first available voice as default
         first_voice = voices[0]
-        if hasattr(first_voice, 'voice_id'):
+        if hasattr(first_voice, "voice_id"):
             self.logger.info(
-                f"Using default voice: {getattr(first_voice, 'name', 'Unknown')}")
+                f"Using default voice: {getattr(first_voice, 'name', 'Unknown')}"
+            )
             return first_voice.voice_id
 
         self.logger.error("Default voice does not have voice_id attribute")
         return None
 
-    # ==================== EXTRACTED FUNCTIONS - LARGE METHOD FIX ====================
+    # ==================== EXTRACTED FUNCTIONS - LARGE METHOD FIX ============
 
     def get_code_quality_stats(self) -> dict:
         """
@@ -486,7 +524,7 @@ class StreamingService:
             "large_method_resolution": self._get_large_method_improvement_stats(),
             "code_health_metrics": self._get_code_health_metrics(),
             "extracted_services_details": self._get_extracted_services_details(),
-            "benefits_achieved": self._get_benefits_achieved()
+            "benefits_achieved": self._get_benefits_achieved(),
         }
 
     def _get_modularity_improvement_stats(self) -> dict:
@@ -496,40 +534,44 @@ class StreamingService:
                 "total_functions": 81,
                 "brain_class_risk": "High",
                 "maintainability": "Low",
-                "testability": "Difficult"
+                "testability": "Difficult",
             },
             "after": {
                 "main_service_functions": 15,
                 "brain_class_risk": "None",
                 "maintainability": "High",
-                "testability": "Easy"
+                "testability": "Easy",
             },
             "improvement": {
                 "functions_reduction": "81 → 15 (81% reduction)",
                 "brain_class_prevention": "Successfully prevented",
-                "architecture": "Modular with single responsibilities"
-            }
+                "architecture": "Modular with single responsibilities",
+            },
         }
 
     def _get_large_method_improvement_stats(self) -> dict:
         """Extract function: Get large method improvement statistics"""
         return {
             "before": {
-                "get_code_quality_stats": {"lines": 109, "status": "violation"},
+                "get_code_quality_stats": {
+                    "lines": 109,
+                    "status": "violation"},
                 "threshold_violations": 1,
-                "readability": "Poor"
+                "readability": "Poor",
             },
             "after": {
-                "get_code_quality_stats": {"lines": 15, "status": "compliant"},
+                "get_code_quality_stats": {
+                    "lines": 15,
+                    "status": "compliant"},
                 "extracted_functions": 5,
                 "threshold_violations": 0,
-                "readability": "Excellent"
+                "readability": "Excellent",
             },
             "improvement": {
                 "lines_reduction": "109 → 15 (86% reduction)",
                 "extract_functions_applied": 5,
-                "compliance": "100% (target < 70 lines)"
-            }
+                "compliance": "100% (target < 70 lines)",
+            },
         }
 
     def _get_code_health_metrics(self) -> dict:
@@ -541,7 +583,7 @@ class StreamingService:
             "large_method_resolved": True,
             "complexity_reduced": "91%",
             "maintainability_score": "A+",
-            "overall_improvement": "Excellent"
+            "overall_improvement": "Excellent",
         }
 
     def _get_extracted_services_details(self) -> dict:
@@ -550,23 +592,23 @@ class StreamingService:
             "AudioBufferService": {
                 "responsibility": "Audio buffer management",
                 "functions": 12,
-                "cohesion": "High"
+                "cohesion": "High",
             },
             "SessionManagementService": {
                 "responsibility": "Session lifecycle management",
                 "functions": 9,
-                "cohesion": "High"
+                "cohesion": "High",
             },
             "LLMResponseProcessingService": {
                 "responsibility": "LLM request processing",
                 "functions": 18,
-                "cohesion": "High"
+                "cohesion": "High",
             },
             "WebSocketConnectionService": {
                 "responsibility": "WebSocket connection management",
                 "functions": 16,
-                "cohesion": "High"
-            }
+                "cohesion": "High",
+            },
         }
 
     def _get_benefits_achieved(self) -> list:
@@ -581,5 +623,5 @@ class StreamingService:
             "Clear separation of concerns",
             "Easier to modify individual responsibilities",
             "Deep nesting complexity resolved",
-            "High cohesion achieved across all modules"
+            "High cohesion achieved across all modules",
         ]

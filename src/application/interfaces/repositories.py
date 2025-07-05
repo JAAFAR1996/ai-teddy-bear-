@@ -18,7 +18,8 @@ class IChildRepository(ABC):
 
 class IConversationRepository(ABC):
     @abstractmethod
-    async def save_message(self, session_id: str, message: Dict[str, Any]) -> None:
+    async def save_message(self, session_id: str,
+                           message: Dict[str, Any]) -> None:
         pass
 
     @abstractmethod

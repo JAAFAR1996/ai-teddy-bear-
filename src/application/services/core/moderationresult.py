@@ -17,8 +17,6 @@ except ImportError:
     pass
 
 
-
-
 class ModerationResult:
     """
     ModerationResult - Extracted from ModerationResult

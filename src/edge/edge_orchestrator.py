@@ -94,7 +94,8 @@ class EdgeOrchestrator:
 
         return merged
 
-    def _format_edge_results(self, edge_results: Dict[str, Any]) -> Dict[str, Any]:
+    def _format_edge_results(
+            self, edge_results: Dict[str, Any]) -> Dict[str, Any]:
         """Format edge-only results"""
         return {
             "transcription": "",

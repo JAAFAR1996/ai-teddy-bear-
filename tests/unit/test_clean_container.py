@@ -11,10 +11,12 @@ import pytest
 
 from src.application.services.ai_service import IAIService
 from src.application.services.voice_service import IVoiceService
-from src.infrastructure.modern_container import (ContainerContext,
-                                                 TestContainer,
-                                                 configure_container,
-                                                 container)
+from src.infrastructure.modern_container import (
+    ContainerContext,
+    TestContainer,
+    configure_container,
+    container,
+)
 from src.infrastructure.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
@@ -47,7 +49,8 @@ async def test_container_configuration():
 async def test_singleton_providers():
     """Test that singleton providers return the same instance"""
     configure_container(
-        database_url="sqlite+aiosqlite:///:memory:", debug=True)
+        database_url="sqlite+aiosqlite:///:memory:",
+        debug=True)
 
     # Get services multiple times
     settings1 = container.settings()
@@ -61,7 +64,8 @@ async def test_singleton_providers():
 async def test_factory_providers():
     """Test that factory providers return new instances"""
     configure_container(
-        database_url="sqlite+aiosqlite:///:memory:", debug=True)
+        database_url="sqlite+aiosqlite:///:memory:",
+        debug=True)
 
     # Get session managers (factory provider)
     try:
@@ -180,7 +184,8 @@ async def test_circular_dependency_detection():
 
     # This test just verifies the container is properly configured
     configure_container(
-        database_url="sqlite+aiosqlite:///:memory:", debug=True)
+        database_url="sqlite+aiosqlite:///:memory:",
+        debug=True)
 
     # Try to get services that might have circular dependencies
     try:

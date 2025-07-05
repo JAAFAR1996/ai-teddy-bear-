@@ -16,27 +16,40 @@ class ContentRecommendationEngine:
     """محرك اقتراح المحتوى المخصص"""
 
     def recommend_content(
-        self, personality: ChildPersonality, patterns: InteractionPattern, content_type: str = None
+        self,
+        personality: ChildPersonality,
+        patterns: InteractionPattern,
+        content_type: str = None,
     ) -> List[Dict]:
         """اقتراح محتوى مخصص بناءً على الشخصية والأنماط"""
         recommendations = []
 
         try:
             if content_type is None or content_type == "story":
-                recommendations.extend(self._recommend_stories(personality, patterns))
+                recommendations.extend(
+                    self._recommend_stories(
+                        personality, patterns))
 
             if content_type is None or content_type == "game":
-                recommendations.extend(self._recommend_games(personality, patterns))
+                recommendations.extend(
+                    self._recommend_games(
+                        personality, patterns))
 
             if content_type is None or content_type == "conversation":
-                recommendations.extend(self._recommend_conversations(personality, patterns))
+                recommendations.extend(
+                    self._recommend_conversations(personality, patterns)
+                )
 
             if content_type is None or content_type == "lesson":
-                recommendations.extend(self._recommend_lessons(personality, patterns))
+                recommendations.extend(
+                    self._recommend_lessons(
+                        personality, patterns))
 
             # ترتيب الاقتراحات حسب درجة الملاءمة
-            recommendations.sort(key=lambda x: x.get("suitability_score", 0), reverse=True)
-            
+            recommendations.sort(
+                key=lambda x: x.get("suitability_score", 0), reverse=True
+            )
+
             return recommendations[:10]  # أفضل 10 اقتراحات
 
         except Exception as e:
@@ -95,15 +108,19 @@ class ContentRecommendationEngine:
 
         # محادثات بناءً على الفضول
         if personality.curiosity_level > 0.6:
-            conversations.append(self._create_exploration_conversation(personality))
+            conversations.append(
+                self._create_exploration_conversation(personality))
 
         # محادثات بناءً على المواضيع المفضلة
         for topic in patterns.favorite_topics[:2]:
-            conversations.append(self._create_topic_conversation(personality, topic))
+            conversations.append(
+                self._create_topic_conversation(
+                    personality, topic))
 
         # محادثات بناءً على الحالة العاطفية
         if personality.neuroticism > 0.6:
-            conversations.append(self._create_supportive_conversation(personality))
+            conversations.append(
+                self._create_supportive_conversation(personality))
 
         return conversations
 
@@ -136,7 +153,7 @@ class ContentRecommendationEngine:
             "difficulty": personality.preferred_difficulty,
             "duration": personality.attention_span,
             "suitability_score": 0.9,
-            "description": "قصة مليئة بالاستكشاف والمغامرات الجديدة"
+            "description": "قصة مليئة بالاستكشاف والمغامرات الجديدة",
         }
 
     def _create_familiar_story(self, personality: ChildPersonality) -> Dict:
@@ -148,10 +165,13 @@ class ContentRecommendationEngine:
             "difficulty": "easy",
             "duration": min(15, personality.attention_span),
             "suitability_score": 0.8,
-            "description": "قصة تقليدية مع عناصر مألوفة ومريحة"
+            "description": "قصة تقليدية مع عناصر مألوفة ومريحة",
         }
 
-    def _create_topic_story(self, personality: ChildPersonality, topic: str) -> Dict:
+    def _create_topic_story(
+            self,
+            personality: ChildPersonality,
+            topic: str) -> Dict:
         """إنشاء قصة حول موضوع محدد"""
         return {
             "type": "story",
@@ -160,7 +180,7 @@ class ContentRecommendationEngine:
             "difficulty": personality.preferred_difficulty,
             "duration": personality.attention_span,
             "suitability_score": 0.85,
-            "description": f"قصة مخصصة حول موضوع {topic} المفضل"
+            "description": f"قصة مخصصة حول موضوع {topic} المفضل",
         }
 
     def _create_interactive_story(self, personality: ChildPersonality) -> Dict:
@@ -172,7 +192,7 @@ class ContentRecommendationEngine:
             "difficulty": personality.preferred_difficulty,
             "duration": personality.attention_span + 10,
             "suitability_score": 0.87,
-            "description": "قصة تفاعلية يمكن للطفل المشاركة في إنشائها"
+            "description": "قصة تفاعلية يمكن للطفل المشاركة في إنشائها",
         }
 
     # Game creation methods
@@ -185,7 +205,7 @@ class ContentRecommendationEngine:
             "difficulty": personality.preferred_difficulty,
             "duration": personality.attention_span,
             "suitability_score": 0.9,
-            "description": "لعبة تشجع على التفاعل والمشاركة"
+            "description": "لعبة تشجع على التفاعل والمشاركة",
         }
 
     def _create_quiet_game(self, personality: ChildPersonality) -> Dict:
@@ -197,7 +217,7 @@ class ContentRecommendationEngine:
             "difficulty": personality.preferred_difficulty,
             "duration": personality.attention_span,
             "suitability_score": 0.85,
-            "description": "لعبة هادئة تركز على التفكير والتأمل"
+            "description": "لعبة هادئة تركز على التفكير والتأمل",
         }
 
     def _create_challenge_game(self, personality: ChildPersonality) -> Dict:
@@ -209,10 +229,12 @@ class ContentRecommendationEngine:
             "difficulty": "hard",
             "duration": personality.attention_span + 15,
             "suitability_score": 0.88,
-            "description": "لعبة تحدي تتطلب المثابرة والصبر"
+            "description": "لعبة تحدي تتطلب المثابرة والصبر",
         }
 
-    def _create_activity_game(self, personality: ChildPersonality, activity: str) -> Dict:
+    def _create_activity_game(
+        self, personality: ChildPersonality, activity: str
+    ) -> Dict:
         """إنشاء لعبة بناءً على نشاط محدد"""
         return {
             "type": f"{activity}_game",
@@ -221,11 +243,12 @@ class ContentRecommendationEngine:
             "difficulty": personality.preferred_difficulty,
             "duration": personality.attention_span,
             "suitability_score": 0.83,
-            "description": f"لعبة مخصصة حول نشاط {activity}"
+            "description": f"لعبة مخصصة حول نشاط {activity}",
         }
 
     # Conversation creation methods
-    def _create_exploration_conversation(self, personality: ChildPersonality) -> Dict:
+    def _create_exploration_conversation(
+            self, personality: ChildPersonality) -> Dict:
         """إنشاء محادثة استكشافية"""
         return {
             "type": "exploration_conversation",
@@ -234,10 +257,12 @@ class ContentRecommendationEngine:
             "complexity": "high" if personality.openness > 0.6 else "medium",
             "duration": personality.attention_span,
             "suitability_score": 0.92,
-            "description": "محادثة تشجع على الاستكشاف والتعلم"
+            "description": "محادثة تشجع على الاستكشاف والتعلم",
         }
 
-    def _create_topic_conversation(self, personality: ChildPersonality, topic: str) -> Dict:
+    def _create_topic_conversation(
+        self, personality: ChildPersonality, topic: str
+    ) -> Dict:
         """إنشاء محادثة حول موضوع محدد"""
         return {
             "type": "topic_conversation",
@@ -246,10 +271,11 @@ class ContentRecommendationEngine:
             "complexity": personality.preferred_difficulty,
             "duration": personality.attention_span,
             "suitability_score": 0.86,
-            "description": f"محادثة ممتعة حول موضوع {topic}"
+            "description": f"محادثة ممتعة حول موضوع {topic}",
         }
 
-    def _create_supportive_conversation(self, personality: ChildPersonality) -> Dict:
+    def _create_supportive_conversation(
+            self, personality: ChildPersonality) -> Dict:
         """إنشاء محادثة داعمة"""
         return {
             "type": "supportive_conversation",
@@ -258,7 +284,7 @@ class ContentRecommendationEngine:
             "complexity": "easy",
             "duration": personality.attention_span - 5,
             "suitability_score": 0.89,
-            "description": "محادثة مهدئة وداعمة عاطفياً"
+            "description": "محادثة مهدئة وداعمة عاطفياً",
         }
 
     # Lesson creation methods
@@ -271,7 +297,7 @@ class ContentRecommendationEngine:
             "difficulty": personality.preferred_difficulty,
             "duration": personality.attention_span,
             "suitability_score": 0.88,
-            "description": "درس يعتمد على العناصر البصرية والصور"
+            "description": "درس يعتمد على العناصر البصرية والصور",
         }
 
     def _create_audio_lesson(self, personality: ChildPersonality) -> Dict:
@@ -283,10 +309,11 @@ class ContentRecommendationEngine:
             "difficulty": personality.preferred_difficulty,
             "duration": personality.attention_span,
             "suitability_score": 0.86,
-            "description": "درس يعتمد على الأصوات والموسيقى"
+            "description": "درس يعتمد على الأصوات والموسيقى",
         }
 
-    def _create_interactive_lesson(self, personality: ChildPersonality) -> Dict:
+    def _create_interactive_lesson(
+            self, personality: ChildPersonality) -> Dict:
         """إنشاء درس تفاعلي"""
         return {
             "type": "interactive_lesson",
@@ -295,10 +322,12 @@ class ContentRecommendationEngine:
             "difficulty": personality.preferred_difficulty,
             "duration": personality.attention_span,
             "suitability_score": 0.90,
-            "description": "درس يتطلب المشاركة والتفاعل العملي"
+            "description": "درس يتطلب المشاركة والتفاعل العملي",
         }
 
-    def _create_difficulty_appropriate_lesson(self, personality: ChildPersonality) -> Dict:
+    def _create_difficulty_appropriate_lesson(
+        self, personality: ChildPersonality
+    ) -> Dict:
         """إنشاء درس مناسب للمستوى"""
         return {
             "type": "adaptive_lesson",
@@ -307,5 +336,5 @@ class ContentRecommendationEngine:
             "difficulty": personality.preferred_difficulty,
             "duration": personality.attention_span,
             "suitability_score": 0.84,
-            "description": "درس مصمم خصيصاً لمستوى الطفل"
-        } 
+            "description": "درس مصمم خصيصاً لمستوى الطفل",
+        }

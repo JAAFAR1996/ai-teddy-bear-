@@ -2,13 +2,15 @@ import uuid
 from typing import Any, Dict, List
 
 
-
 class ChildProfile:
     """Child aggregate for testing"""
 
     def __init__(
-        self, name: str, age: int, parent_id: str, language_preference: str = "en"
-    ):
+            self,
+            name: str,
+            age: int,
+            parent_id: str,
+            language_preference: str = "en"):
         self.id = str(uuid.uuid4())
         self.name = name
         self.age = age
@@ -38,8 +40,10 @@ class TestChildAggregate:
     def test_child_creation(self):
         """Test creating a child profile"""
         child = ChildProfile(
-            name="Ahmed", age=7, parent_id="parent-123", language_preference="ar"
-        )
+            name="Ahmed",
+            age=7,
+            parent_id="parent-123",
+            language_preference="ar")
 
         assert child.name == "Ahmed"
         assert child.age == 7

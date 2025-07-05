@@ -81,7 +81,11 @@ class CleanupReport:
         """Calculate success rate as percentage"""
         if self.total_records_scanned == 0:
             return 100.0
-        return round((self.total_records_deleted / self.total_records_scanned) * 100, 2)
+        return round(
+            (self.total_records_deleted /
+             self.total_records_scanned) *
+            100,
+            2)
 
     def has_errors(self) -> bool:
         """Check if report has any errors"""

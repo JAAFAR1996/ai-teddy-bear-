@@ -165,9 +165,8 @@ class CircuitBreaker:
         if self._stats.last_failure_time is None:
             return False
 
-        return (
-            time.time() - self._stats.last_failure_time >= self.config.recovery_timeout
-        )
+        return (time.time() - self._stats.last_failure_time >=
+                self.config.recovery_timeout)
 
     async def call(self, func: Callable, *args, **kwargs) -> Any:
         """
@@ -285,21 +284,23 @@ class CircuitBreaker:
             # Run in event loop if needed
             try:
                 # Try to get running loop (Python 3.7+)
-                if hasattr(asyncio, 'get_running_loop'):
+                if hasattr(asyncio, "get_running_loop"):
                     loop = asyncio.get_running_loop()
                 else:
                     # Fallback for older Python versions
                     loop = asyncio.get_event_loop()
-                return loop.run_until_complete(self.call(func, *args, **kwargs))
+                return loop.run_until_complete(
+                    self.call(func, *args, **kwargs))
             except RuntimeError:
                 # No event loop, create one
-                if hasattr(asyncio, 'run'):
+                if hasattr(asyncio, "run"):
                     return asyncio.run(self.call(func, *args, **kwargs))
                 else:
                     # Fallback for older Python versions
                     loop = asyncio.new_event_loop()
                     try:
-                        return loop.run_until_complete(self.call(func, *args, **kwargs))
+                        return loop.run_until_complete(
+                            self.call(func, *args, **kwargs))
                     finally:
                         loop.close()
 
@@ -362,7 +363,8 @@ class CircuitBreakerManager:
 
     def get_all_status(self) -> Dict[str, Dict[str, Any]]:
         """Get status of all circuit breakers"""
-        return {name: breaker.get_status() for name, breaker in self._breakers.items()}
+        return {name: breaker.get_status()
+                for name, breaker in self._breakers.items()}
 
     async def reset_all(self) -> None:
         """Reset all circuit breakers"""

@@ -24,8 +24,10 @@ class TargetIdentificationService:
         self.logger = logging.getLogger(self.__class__.__name__)
 
     async def identify_cleanup_targets(
-        self, policy: DataRetentionPolicy, report: CleanupReport, session_manager
-    ) -> List[CleanupTarget]:
+            self,
+            policy: DataRetentionPolicy,
+            report: CleanupReport,
+            session_manager) -> List[CleanupTarget]:
         """تحديد البيانات المرشحة للحذف"""
 
         targets = []
@@ -47,13 +49,17 @@ class TargetIdentificationService:
 
         except Exception as e:
             report.add_error(f"Error identifying cleanup targets: {str(e)}")
-            self.logger.error(f"Error identifying cleanup targets: {e}", exc_info=True)
+            self.logger.error(
+                f"Error identifying cleanup targets: {e}",
+                exc_info=True)
 
         return targets
 
     async def _identify_emotion_targets(
-        self, policy: DataRetentionPolicy, report: CleanupReport, session_manager
-    ) -> List[CleanupTarget]:
+            self,
+            policy: DataRetentionPolicy,
+            report: CleanupReport,
+            session_manager) -> List[CleanupTarget]:
         """تحديد البيانات من قاعدة بيانات المشاعر"""
 
         targets = []
@@ -92,7 +98,8 @@ class TargetIdentificationService:
                 )
 
         except Exception as e:
-            report.add_error(f"Error identifying emotion database targets: {str(e)}")
+            report.add_error(
+                f"Error identifying emotion database targets: {str(e)}")
             self.logger.error(f"Error with emotion database: {e}")
 
         return targets
@@ -107,7 +114,7 @@ class TargetIdentificationService:
             text(
                 """
             SELECT id, child_id, created_at, session_id
-            FROM conversations 
+            FROM conversations
             WHERE created_at < :cutoff
         """
             ),
@@ -143,7 +150,7 @@ class TargetIdentificationService:
             text(
                 """
             SELECT id, conversation_id, created_at, content
-            FROM messages 
+            FROM messages
             WHERE created_at < :cutoff
         """
             ),
@@ -178,7 +185,7 @@ class TargetIdentificationService:
             text(
                 """
             SELECT id, child_id, analysis_timestamp, primary_emotion
-            FROM emotional_states 
+            FROM emotional_states
             WHERE analysis_timestamp < :cutoff
         """
             ),
@@ -246,7 +253,8 @@ class TargetIdentificationService:
                 for audio_file in audio_dir.rglob("*"):
                     if audio_file.is_file():
                         # Check file modification time
-                        file_mtime = datetime.fromtimestamp(audio_file.stat().st_mtime)
+                        file_mtime = datetime.fromtimestamp(
+                            audio_file.stat().st_mtime)
                         if file_mtime < audio_cutoff:
                             targets.append(
                                 CleanupTarget(
@@ -273,7 +281,8 @@ class TargetIdentificationService:
         if backup_directory.exists():
             for backup_file in backup_directory.rglob("*"):
                 if backup_file.is_file():
-                    file_mtime = datetime.fromtimestamp(backup_file.stat().st_mtime)
+                    file_mtime = datetime.fromtimestamp(
+                        backup_file.stat().st_mtime)
                     if file_mtime < backup_cutoff:
                         targets.append(
                             CleanupTarget(

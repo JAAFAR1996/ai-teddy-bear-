@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple
 try:
     from sqlalchemy import JSON, Boolean, Column, DateTime, String
     from sqlalchemy.ext.declarative import declarative_base
+
     Base = declarative_base()
     SQLALCHEMY_AVAILABLE = True
 except ImportError:
@@ -54,7 +55,8 @@ class ModerationResult:
     is_safe: bool
     severity: ModerationSeverity
     flagged_categories: List[ContentCategory] = field(default_factory=list)
-    confidence_scores: Dict[ContentCategory, float] = field(default_factory=dict)
+    confidence_scores: Dict[ContentCategory,
+                            float] = field(default_factory=dict)
     matched_rules: List[str] = field(default_factory=list)
     context_notes: List[str] = field(default_factory=list)
     alternative_response: Optional[str] = None
@@ -90,6 +92,7 @@ class ModerationRule:
 
 
 if SQLALCHEMY_AVAILABLE:
+
     class ModerationLog(Base):
         """Database model for moderation logs"""
 
@@ -105,10 +108,13 @@ if SQLALCHEMY_AVAILABLE:
         categories = Column(JSON)
         action_taken = Column(String)
         parent_notified = Column(Boolean, default=False)
+
 else:
+
     @dataclass
     class ModerationLog:
         """Mock moderation log for when SQLAlchemy is not available"""
+
         id: str
         session_id: Optional[str] = None
         user_id: Optional[str] = None
@@ -155,4 +161,4 @@ def create_topic_filter_rule(
         keywords=keywords,
         category=category,
         severity=severity,
-    ) 
+    )

@@ -11,6 +11,7 @@ from typing import Dict, List, Tuple
 @dataclass
 class ARExperience:
     """تجربة واقع معزز"""
+
     experience_id: str
     name: str
     description: str
@@ -68,7 +69,11 @@ class ARExperienceManager:
                 },
                 interaction_points=[
                     {"type": "touch", "object": "letter", "action": "play_sound"},
-                    {"type": "voice", "trigger": "say_letter", "response": "show_animation"},
+                    {
+                        "type": "voice",
+                        "trigger": "say_letter",
+                        "response": "show_animation",
+                    },
                 ],
             ),
             ARExperience(
@@ -92,7 +97,11 @@ class ARExperienceManager:
                 },
                 interaction_points=[
                     {"type": "gesture", "object": "animal", "action": "show_info"},
-                    {"type": "voice", "trigger": "animal_sound", "response": "play_animal_sound"},
+                    {
+                        "type": "voice",
+                        "trigger": "animal_sound",
+                        "response": "play_animal_sound",
+                    },
                 ],
             ),
         ]
@@ -112,15 +121,14 @@ class ARExperienceManager:
 
         if child_age:
             experiences = [
-                exp for exp in experiences
+                exp
+                for exp in experiences
                 if exp.age_range[0] <= child_age <= exp.age_range[1]
             ]
 
         if difficulty:
             experiences = [
-                exp for exp in experiences 
-                if exp.difficulty_level == difficulty
-            ]
+                exp for exp in experiences if exp.difficulty_level == difficulty]
 
         return experiences
 
@@ -147,4 +155,4 @@ class ARExperienceManager:
         if "مساحة" in str(experience.safety_requirements):
             instructions.append("تأكد من خلو المساحة من العوائق")
 
-        return instructions 
+        return instructions
