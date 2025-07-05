@@ -169,8 +169,10 @@ class DDDArchitectureAnalyzer:
             )
             visitor = FileVisitor(analysis)
             visitor.visit(tree)
-            analysis.domain_layer = self._classify_domain_layer(file_path, analysis)
-            analysis.complexity_score = self._calculate_file_complexity(analysis)
+            analysis.domain_layer = self._classify_domain_layer(
+                file_path, analysis)
+            analysis.complexity_score = self._calculate_file_complexity(
+                analysis)
             return analysis
         except Exception as e:
             logger.error(f"Error analyzing {file_path}: {e}")
@@ -184,59 +186,63 @@ class DDDArchitectureAnalyzer:
                 lines_of_code=0,
             )
 
-    def _classify_domain_layer(self, file_path: Path, analysis: FileAnalysis) -> str:
-        """Classify file into DDD layer"""
-        path_parts = file_path.parts
-        file_content = file_path.name.lower()
+    def _classify_by_path(self, path_parts: tuple, file_content: str) -> str:
+        """Classify file based on path structure."""
         if "domain" in path_parts:
-            if any(
-                pattern in file_content for pattern in self.domain_patterns["entity"]
-            ):
-                return "domain_entity"
-            elif any(
-                pattern in file_content
-                for pattern in self.domain_patterns["value_object"]
-            ):
-                return "value_object"
-            elif any(
-                pattern in file_content for pattern in self.domain_patterns["service"]
-            ):
-                return "domain_service"
-            else:
-                return "domain"
+            return self._classify_domain_content(file_content)
         elif "application" in path_parts or "use_case" in path_parts:
             return "application"
         elif "infrastructure" in path_parts or "adapter" in path_parts:
             return "infrastructure"
         elif "api" in path_parts or "web" in path_parts or "rest" in path_parts:
             return "presentation"
+        return None
+
+    def _classify_domain_content(self, file_content: str) -> str:
+        """Classify domain files based on content patterns."""
+        if any(pattern in file_content for pattern in self.domain_patterns["entity"]):
+            return "domain_entity"
+        elif any(pattern in file_content for pattern in self.domain_patterns["value_object"]):
+            return "value_object"
+        elif any(pattern in file_content for pattern in self.domain_patterns["service"]):
+            return "domain_service"
+        else:
+            return "domain"
+
+    def _classify_by_names(self, analysis: FileAnalysis) -> str:
+        """Classify file based on class and function names."""
         class_names = [name.lower() for name in analysis.classes]
         function_names = [name.lower() for name in analysis.functions]
         all_names = class_names + function_names
-        if any(
-            pattern in name
-            for name in all_names
-            for pattern in self.domain_patterns["entity"]
-        ):
-            return "domain_entity"
-        elif any(
-            pattern in name
-            for name in all_names
-            for pattern in self.domain_patterns["repository"]
-        ):
-            return "infrastructure"
-        elif any(
-            pattern in name
-            for name in all_names
-            for pattern in self.domain_patterns["use_case"]
-        ):
-            return "application"
-        elif any(
-            pattern in name
-            for name in all_names
-            for pattern in self.domain_patterns["adapter"]
-        ):
-            return "infrastructure"
+
+        name_classifications = [
+            ("domain_entity", self.domain_patterns["entity"]),
+            ("infrastructure", self.domain_patterns["repository"]),
+            ("application", self.domain_patterns["use_case"]),
+            ("infrastructure", self.domain_patterns["adapter"]),
+        ]
+
+        for classification, patterns in name_classifications:
+            if any(pattern in name for name in all_names for pattern in patterns):
+                return classification
+
+        return None
+
+    def _classify_domain_layer(self, file_path: Path, analysis: FileAnalysis) -> str:
+        """Classify file into DDD layer"""
+        path_parts = file_path.parts
+        file_content = file_path.name.lower()
+
+        # Try path-based classification first
+        path_result = self._classify_by_path(path_parts, file_content)
+        if path_result:
+            return path_result
+
+        # Try name-based classification
+        name_result = self._classify_by_names(analysis)
+        if name_result:
+            return name_result
+
         return "unclassified"
 
     def _build_dependency_graph(self):
@@ -315,7 +321,8 @@ class DDDArchitectureAnalyzer:
                     methods=[],
                     properties=[],
                     relationships=[],
-                    is_aggregate_root=self._is_aggregate_root(class_name, file_path),
+                    is_aggregate_root=self._is_aggregate_root(
+                        class_name, file_path),
                 )
                 self.domain_entities.append(entity)
 
@@ -335,9 +342,12 @@ class DDDArchitectureAnalyzer:
     def _calculate_complexity_metrics(self) -> Dict[str, Any]:
         """Calculate various complexity metrics"""
         total_files = len(self.files_analysis)
-        total_lines = sum(a.lines_of_code for a in self.files_analysis.values())
-        total_classes = sum(len(a.classes) for a in self.files_analysis.values())
-        total_functions = sum(len(a.functions) for a in self.files_analysis.values())
+        total_lines = sum(
+            a.lines_of_code for a in self.files_analysis.values())
+        total_classes = sum(len(a.classes)
+                            for a in self.files_analysis.values())
+        total_functions = sum(len(a.functions)
+                              for a in self.files_analysis.values())
         return {
             "total_files": total_files,
             "total_lines_of_code": total_lines,
@@ -365,84 +375,83 @@ class DDDArchitectureAnalyzer:
         complexity += analysis.lines_of_code // 10
         return complexity
 
-    def _generate_migration_plan(self) -> MigrationPlan:
-        """Generate comprehensive migration plan"""
-        logger.info("📋 Generating migration plan...")
+    def _create_setup_step(self) -> Dict[str, Any]:
+        """Create initial setup step for migration."""
+        return {
+            "phase": 1,
+            "title": "Create New DDD Directory Structure",
+            "description": "Create the new domain-driven design directory structure",
+            "actions": ["create_directories", "setup_base_classes"],
+            "estimated_hours": 2,
+        }
+
+    def _create_layer_migration_steps(self) -> List[Dict[str, Any]]:
+        """Create migration steps for each DDD layer."""
         steps = []
-        file_mappings = {}
-        import_updates = {}
-        steps.append(
+        phase = 2
+
+        layer_configs = [
+            ("Domain Entities", self.layer_mapping.domain_entities, 1.5),
+            ("Value Objects", self.layer_mapping.value_objects, 1.0),
+            ("Application Layer", self.layer_mapping.application_services, 2.0),
+            ("Infrastructure Layer", self.layer_mapping.infrastructure, 1.5),
+        ]
+
+        for title, files, hours_per_file in layer_configs:
+            if files:
+                steps.append({
+                    "phase": phase,
+                    "title": f"Migrate {title}",
+                    "description": f"Migrate {len(files)} {title.lower()}",
+                    "files": [str(f) for f in files],
+                    "estimated_hours": len(files) * hours_per_file,
+                })
+                phase += 1
+
+        return steps
+
+    def _create_final_steps(self, current_phase: int) -> List[Dict[str, Any]]:
+        """Create final migration steps."""
+        return [
             {
-                "phase": 1,
-                "title": "Create New DDD Directory Structure",
-                "description": "Create the new domain-driven design directory structure",
-                "actions": ["create_directories", "setup_base_classes"],
-                "estimated_hours": 2,
-            }
-        )
-        entity_files = self.layer_mapping.domain_entities
-        if entity_files:
-            steps.append(
-                {
-                    "phase": 2,
-                    "title": "Migrate Domain Entities",
-                    "description": f"Migrate {len(entity_files)} domain entities",
-                    "files": [str(f) for f in entity_files],
-                    "estimated_hours": len(entity_files) * 1.5,
-                }
-            )
-        vo_files = self.layer_mapping.value_objects
-        if vo_files:
-            steps.append(
-                {
-                    "phase": 3,
-                    "title": "Migrate Value Objects",
-                    "description": f"Migrate {len(vo_files)} value objects",
-                    "files": [str(f) for f in vo_files],
-                    "estimated_hours": len(vo_files) * 1,
-                }
-            )
-        app_files = self.layer_mapping.application_services
-        if app_files:
-            steps.append(
-                {
-                    "phase": 4,
-                    "title": "Migrate Application Layer",
-                    "description": f"Migrate {len(app_files)} application services",
-                    "files": [str(f) for f in app_files],
-                    "estimated_hours": len(app_files) * 2,
-                }
-            )
-        infra_files = self.layer_mapping.infrastructure
-        if infra_files:
-            steps.append(
-                {
-                    "phase": 5,
-                    "title": "Migrate Infrastructure Layer",
-                    "description": f"Migrate {len(infra_files)} infrastructure components",
-                    "files": [str(f) for f in infra_files],
-                    "estimated_hours": len(infra_files) * 1.5,
-                }
-            )
-        steps.append(
-            {
-                "phase": 6,
+                "phase": current_phase,
                 "title": "Update Imports and Dependencies",
                 "description": "Update all import statements and fix dependencies",
                 "actions": ["update_imports", "fix_circular_dependencies"],
                 "estimated_hours": 8,
-            }
-        )
-        steps.append(
+            },
             {
-                "phase": 7,
+                "phase": current_phase + 1,
                 "title": "Testing and Validation",
                 "description": "Run tests and validate migration success",
                 "actions": ["run_tests", "validate_architecture"],
                 "estimated_hours": 4,
             }
-        )
+        ]
+
+    def _generate_migration_plan(self) -> MigrationPlan:
+        """Generate comprehensive migration plan"""
+        logger.info("📋 Generating migration plan...")
+
+        steps = []
+        file_mappings = {}
+        import_updates = {}
+
+        # Add setup step
+        steps.append(self._create_setup_step())
+
+        # Add layer migration steps
+        layer_steps = self._create_layer_migration_steps()
+        steps.extend(layer_steps)
+
+        # Add final steps
+        final_phase = len(steps) + 1
+        final_steps = self._create_final_steps(final_phase)
+        steps.extend(final_steps)
+
+        # Calculate total effort
         total_hours = sum(step.get("estimated_hours", 0) for step in steps)
+
         return MigrationPlan(
             steps=steps,
             file_mappings=file_mappings,

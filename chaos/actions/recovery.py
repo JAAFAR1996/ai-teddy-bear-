@@ -8,9 +8,10 @@ import asyncio
 import logging
 import time
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import requests
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -152,58 +153,75 @@ async def restore_network_policies(
         return {"action": "restore_network_policies", "error": str(e), "success": False}
 
 
-async def restart_failed_services(
-    configuration: Dict[str, Any] = None,
-) -> Dict[str, Any]:
-    """Restart services that failed during chaos experiments"""
-    recovery = RecoveryActions()
-    restart_results = {}
-    logger.info("🔄 Restarting failed services")
+async def _restart_service(session: httpx.AsyncClient, service: str, endpoint: str) -> bool:
+    """Restarts a single service and waits for it to become ready."""
     try:
-        health_results = await verify_system_health(recovery.service_endpoints)
-        failed_services = [
-            service for service, healthy in health_results.items() if not healthy
-        ]
-        if not failed_services:
-            logger.info("✅ No failed services found")
-            return {
-                "action": "restart_failed_services",
-                "failed_services": [],
-                "restart_results": {},
-                "success": True,
-            }
+        logger.info(f"🔄 Attempting to restart {service}...")
+        restart_response = await session.post(
+            f"{endpoint}/admin/restart",
+            json={"force": True, "wait_for_ready": True},
+            timeout=60,
+        )
+        if restart_response.status_code in [200, 202]:
+            if await wait_for_service_ready(service, endpoint, 60):
+                logger.info(f"✅ {service} restarted successfully.")
+                return True
+        logger.error(
+            f"❌ {service} restart failed: Status {restart_response.status_code}")
+        return False
+    except (httpx.RequestError, asyncio.TimeoutError) as e:
+        logger.error(f"❌ {service} restart error: {e}")
+        return False
+
+
+async def _identify_failed_services(recovery: RecoveryActions) -> List[str]:
+    """Identify services that have failed and need restarting."""
+    health_results = await verify_system_health(recovery.service_endpoints)
+    failed_services = [
+        service for service, healthy in health_results.items() if not healthy
+    ]
+
+    if failed_services:
         logger.info(
             f"Found {len(failed_services)} failed services: {failed_services}")
-        for service in failed_services:
-            try:
-                restart_response = requests.post(
-                    f"{recovery.service_endpoints[service]}/admin/restart",
-                    json={"force": True, "wait_for_ready": True},
-                    timeout=60,
-                )
-                if restart_response.status_code in [200, 202]:
-                    await wait_for_service_ready(
-                        service, recovery.service_endpoints[service], 60
-                    )
-                    restart_results[service] = True
-                    logger.info(f"✅ {service} restarted successfully")
-                else:
-                    restart_results[service] = False
-                    logger.error(
-                        f"❌ {service} restart failed: {restart_response.status_code}"
-                    )
-            except Exception as e:
-                restart_results[service] = False
-                logger.error(f"❌ {service} restart error: {e}")
-        success = all(restart_results.values())
+    else:
+        logger.info("✅ No failed services found.")
+
+    return failed_services
+
+
+async def _restart_multiple_services(failed_services: List[str], recovery: RecoveryActions) -> Dict[str, bool]:
+    """Restart multiple failed services concurrently."""
+    async with httpx.AsyncClient() as session:
+        tasks = {
+            service: _restart_service(
+                session, service, recovery.service_endpoints[service])
+            for service in failed_services
+        }
+        return {service: await task for service, task in tasks.items()}
+
+
+async def restart_failed_services(configuration: Dict[str, Any] = None) -> Dict[str, Any]:
+    """Identifies and restarts services that failed during chaos experiments."""
+    recovery = RecoveryActions()
+    logger.info("🔄 Checking for failed services to restart.")
+
+    try:
+        failed_services = await _identify_failed_services(recovery)
+
+        if not failed_services:
+            return {"action": "restart_failed_services", "success": True, "restarted_services": []}
+
+        results = await _restart_multiple_services(failed_services, recovery)
+        success = all(results.values())
+
         return {
             "action": "restart_failed_services",
-            "failed_services": failed_services,
-            "restart_results": restart_results,
+            "restarted_services": results,
             "success": success,
         }
     except Exception as e:
-        logger.error(f"❌ Service restart failed: {e}")
+        logger.error(f"❌ Service restart orchestration failed: {e}")
         return {"action": "restart_failed_services", "error": str(e), "success": False}
 
 

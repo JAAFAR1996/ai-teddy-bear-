@@ -1,3 +1,5 @@
+from pathlib import Path
+from typing import List
 import logging
 
 logger = logging.getLogger(__name__)
@@ -7,7 +9,6 @@ logger = logging.getLogger(__name__)
 Lead Architect: جعفر أديب
 Creates complete Domain-Driven Design structure with base classes
 """
-from pathlib import Path
 
 
 class DDDStructureCreator:
@@ -27,9 +28,9 @@ class DDDStructureCreator:
         self._create_config_files()
         logger.info("✅ DDD Structure created successfully!")
 
-    def _create_directories(self):
-        """Create all DDD directories"""
-        directories = [
+    def _get_core_source_directories(self) -> List[str]:
+        """Get core source code directories."""
+        return [
             "src",
             "src/domain",
             "src/domain/entities",
@@ -64,6 +65,11 @@ class DDDStructureCreator:
             "src/shared/kernel",
             "src/shared/types",
             "src/shared/utils",
+        ]
+
+    def _get_test_directories(self) -> List[str]:
+        """Get test directories."""
+        return [
             "tests",
             "tests/unit",
             "tests/unit/domain",
@@ -72,6 +78,11 @@ class DDDStructureCreator:
             "tests/integration",
             "tests/e2e",
             "tests/performance",
+        ]
+
+    def _get_deployment_directories(self) -> List[str]:
+        """Get deployment and operations directories."""
+        return [
             "scripts",
             "scripts/migration",
             "scripts/deployment",
@@ -83,6 +94,9 @@ class DDDStructureCreator:
             "kubernetes/overlays/staging",
             "kubernetes/overlays/production",
         ]
+
+    def _create_directory_group(self, directories: List[str]) -> None:
+        """Create a group of directories with init files."""
         for directory in directories:
             dir_path = self.project_root / directory
             dir_path.mkdir(parents=True, exist_ok=True)
@@ -91,6 +105,17 @@ class DDDStructureCreator:
                 if not init_file.exists():
                     init_content = self._get_init_content(directory)
                     init_file.write_text(init_content)
+
+    def _create_directories(self):
+        """Create all DDD directories"""
+        all_directory_groups = [
+            self._get_core_source_directories(),
+            self._get_test_directories(),
+            self._get_deployment_directories(),
+        ]
+
+        for directory_group in all_directory_groups:
+            self._create_directory_group(directory_group)
 
     def _get_init_content(self, directory: str) -> str:
         """Get appropriate __init__.py content for directory"""
@@ -106,8 +131,8 @@ class DDDStructureCreator:
                 return f"{doc}\n"
         return '"""AI Teddy Bear - DDD Module"""\n'
 
-    def _create_domain_base_classes(self):
-        """Create domain layer base classes"""
+    def _create_entity_base_classes(self) -> None:
+        """Create domain entity base classes."""
         entity_content = """""\"
 🎯 Domain Entity Base Classes
 Lead Architect: جعفر أديب
@@ -174,6 +199,9 @@ class AggregateRoot(Entity):
 """
         entity_file = self.project_root / "src/domain/entities/base.py"
         entity_file.write_text(entity_content)
+
+    def _create_value_object_classes(self) -> None:
+        """Create domain value object classes."""
         value_object_content = """""\"
 💎 Domain Value Objects
 Lead Architect: جعفر أديب
@@ -246,6 +274,9 @@ class Language(ValueObject):
 """
         vo_file = self.project_root / "src/domain/value_objects/__init__.py"
         vo_file.write_text(value_object_content)
+
+    def _create_domain_service_classes(self) -> None:
+        """Create domain service classes."""
         service_content = """""\"
 ⚙️ Domain Services
 Lead Architect: جعفر أديب
@@ -283,8 +314,14 @@ class IAIInteractionService(Protocol):
         service_file = self.project_root / "src/domain/services/__init__.py"
         service_file.write_text(service_content)
 
-    def _create_application_base_classes(self):
-        """Create application layer base classes"""
+    def _create_domain_base_classes(self):
+        """Create domain layer base classes"""
+        self._create_entity_base_classes()
+        self._create_value_object_classes()
+        self._create_domain_service_classes()
+
+    def _create_cqrs_classes(self) -> None:
+        """Create CQRS command and query classes."""
         cqrs_content = """""\"
 📋 CQRS Commands and Queries
 Lead Architect: جعفر أديب
@@ -357,6 +394,9 @@ class GetConversationHistoryQuery(Query):
 """
         cqrs_file = self.project_root / "src/application/commands/__init__.py"
         cqrs_file.write_text(cqrs_content)
+
+    def _create_dto_classes(self) -> None:
+        """Create Data Transfer Object classes."""
         dto_content = """""\"
 📦 Data Transfer Objects
 Lead Architect: جعفر أديب
@@ -410,6 +450,11 @@ class AIResponseDto:
 """
         dto_file = self.project_root / "src/application/dto/__init__.py"
         dto_file.write_text(dto_content)
+
+    def _create_application_base_classes(self):
+        """Create application layer base classes"""
+        self._create_cqrs_classes()
+        self._create_dto_classes()
 
     def _create_infrastructure_base_classes(self):
         """Create infrastructure layer base classes"""

@@ -79,63 +79,89 @@ class ChaosOrchestrator:
     Manages complex chaos experiments across AI Teddy Bear system
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        self.config = config or {}
+    def _initialize_core_components(self, config: Dict[str, Any]) -> None:
+        """Initialize core orchestrator components."""
+        self.config = config
         self.active_experiments: Dict[str, Dict[str, Any]] = {}
         self.experiment_history: List[ExperimentMetrics] = []
         self.safety_monitors: List[Callable] = []
         self.executor = ThreadPoolExecutor(max_workers=10)
-        self.chaos_targets = {
-            "child-service": ChaosTarget(
-                service_name="child-service",
-                instance_count=3,
-                health_endpoint="/health",
-                recovery_time=30,
-                failure_types=[
-                    FailureType.NETWORK_LATENCY,
-                    FailureType.DATABASE_FAILURE,
-                    FailureType.MEMORY_PRESSURE,
-                ],
-                safety_critical=True,
-            ),
-            "ai-service": ChaosTarget(
-                service_name="ai-service",
-                instance_count=5,
-                health_endpoint="/health",
-                recovery_time=45,
-                failure_types=[
-                    FailureType.AI_HALLUCINATION,
-                    FailureType.CPU_SPIKE,
-                    FailureType.MEMORY_PRESSURE,
-                    FailureType.SERVICE_CRASH,
-                ],
-                safety_critical=True,
-            ),
-            "safety-service": ChaosTarget(
-                service_name="safety-service",
-                instance_count=3,
-                health_endpoint="/health",
-                recovery_time=15,
-                failure_types=[
-                    FailureType.TOXIC_CONTENT,
-                    FailureType.NETWORK_LATENCY,
-                    FailureType.DATABASE_FAILURE,
-                ],
-                safety_critical=True,
-            ),
-            "graphql-federation": ChaosTarget(
-                service_name="graphql-federation",
-                instance_count=3,
-                health_endpoint="/health",
-                recovery_time=20,
-                failure_types=[
-                    FailureType.NETWORK_LATENCY,
-                    FailureType.MEMORY_PRESSURE,
-                    FailureType.SERVICE_CRASH,
-                ],
-                safety_critical=False,
-            ),
+
+    def _setup_chaos_targets(self) -> Dict[str, ChaosTarget]:
+        """Setup chaos targets configuration."""
+        return {
+            "child-service": self._create_child_service_target(),
+            "ai-service": self._create_ai_service_target(),
+            "safety-service": self._create_safety_service_target(),
+            "graphql-federation": self._create_graphql_federation_target(),
         }
+
+    def _create_child_service_target(self) -> ChaosTarget:
+        """Create chaos target for child service."""
+        return ChaosTarget(
+            service_name="child-service",
+            instance_count=3,
+            health_endpoint="/health",
+            recovery_time=30,
+            failure_types=[
+                FailureType.NETWORK_LATENCY,
+                FailureType.DATABASE_FAILURE,
+                FailureType.MEMORY_PRESSURE,
+            ],
+            safety_critical=True,
+        )
+
+    def _create_ai_service_target(self) -> ChaosTarget:
+        """Create chaos target for AI service."""
+        return ChaosTarget(
+            service_name="ai-service",
+            instance_count=5,
+            health_endpoint="/health",
+            recovery_time=45,
+            failure_types=[
+                FailureType.AI_HALLUCINATION,
+                FailureType.CPU_SPIKE,
+                FailureType.MEMORY_PRESSURE,
+                FailureType.SERVICE_CRASH,
+            ],
+            safety_critical=True,
+        )
+
+    def _create_safety_service_target(self) -> ChaosTarget:
+        """Create chaos target for safety service."""
+        return ChaosTarget(
+            service_name="safety-service",
+            instance_count=3,
+            health_endpoint="/health",
+            recovery_time=15,
+            failure_types=[
+                FailureType.TOXIC_CONTENT,
+                FailureType.NETWORK_LATENCY,
+                FailureType.DATABASE_FAILURE,
+            ],
+            safety_critical=True,
+        )
+
+    def _create_graphql_federation_target(self) -> ChaosTarget:
+        """Create chaos target for GraphQL federation."""
+        return ChaosTarget(
+            service_name="graphql-federation",
+            instance_count=3,
+            health_endpoint="/health",
+            recovery_time=20,
+            failure_types=[
+                FailureType.NETWORK_LATENCY,
+                FailureType.MEMORY_PRESSURE,
+                FailureType.SERVICE_CRASH,
+            ],
+            safety_critical=False,
+        )
+
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        """Initialize ChaosOrchestrator with configuration."""
+        config = config or {}
+        self._initialize_core_components(config)
+        self.chaos_targets = self._setup_chaos_targets()
 
     def add_safety_monitor(self, monitor_func: Callable[[Dict[str, Any]], bool]):
         """Add safety monitor function"""
@@ -222,6 +248,28 @@ class ChaosOrchestrator:
         logger.info(f"🔄 Phase 4: Recovery validation for {experiment_id}")
         await self._validate_recovery(targets, metrics)
 
+    def _get_failure_injection_method(self, failure_type: FailureType):
+        """Get the appropriate injection method for failure type."""
+        failure_methods = {
+            FailureType.NETWORK_LATENCY: self._inject_network_latency,
+            FailureType.SERVICE_CRASH: self._inject_service_crash,
+            FailureType.DATABASE_FAILURE: self._inject_database_failure,
+            FailureType.MEMORY_PRESSURE: self._inject_memory_pressure,
+            FailureType.CPU_SPIKE: self._inject_cpu_spike,
+            FailureType.AI_HALLUCINATION: self._inject_ai_hallucination,
+            FailureType.TOXIC_CONTENT: self._inject_toxic_content,
+            FailureType.SECURITY_BREACH: self._inject_security_breach,
+        }
+        return failure_methods.get(failure_type)
+
+    async def _execute_failure_injection(self, target: str, failure_type: FailureType, intensity: float):
+        """Execute the actual failure injection."""
+        injection_method = self._get_failure_injection_method(failure_type)
+        if injection_method:
+            await injection_method(target, intensity)
+        else:
+            logger.warning(f"⚠️ Unknown failure type: {failure_type.value}")
+
     async def _inject_failure(
         self,
         target: str,
@@ -235,28 +283,12 @@ class ChaosOrchestrator:
             if target_config.safety_critical:
                 if not await self._safety_check_before_injection(target):
                     logger.warning(
-                        f"⚠️ Skipping injection for safety-critical service: {target}"
-                    )
+                        f"⚠️ Skipping injection for safety-critical service: {target}")
                     return
+
             logger.info(
-                f"💉 Injecting {failure_type.value} into {target} (intensity: {intensity})"
-            )
-            if failure_type == FailureType.NETWORK_LATENCY:
-                await self._inject_network_latency(target, intensity)
-            elif failure_type == FailureType.SERVICE_CRASH:
-                await self._inject_service_crash(target, intensity)
-            elif failure_type == FailureType.DATABASE_FAILURE:
-                await self._inject_database_failure(target, intensity)
-            elif failure_type == FailureType.MEMORY_PRESSURE:
-                await self._inject_memory_pressure(target, intensity)
-            elif failure_type == FailureType.CPU_SPIKE:
-                await self._inject_cpu_spike(target, intensity)
-            elif failure_type == FailureType.AI_HALLUCINATION:
-                await self._inject_ai_hallucination(target, intensity)
-            elif failure_type == FailureType.TOXIC_CONTENT:
-                await self._inject_toxic_content(target, intensity)
-            elif failure_type == FailureType.SECURITY_BREACH:
-                await self._inject_security_breach(target, intensity)
+                f"💉 Injecting {failure_type.value} into {target} (intensity: {intensity})")
+            await self._execute_failure_injection(target, failure_type, intensity)
             metrics.failures_injected += 1
         except Exception as e:
             logger.error(
