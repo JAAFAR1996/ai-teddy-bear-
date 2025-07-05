@@ -59,12 +59,44 @@ class ChildDomainService:
         blocking_issues = []
 
         # Check safety settings compatibility
+        compatibility_score, blocking_issues = self._check_safety_compatibility(
+            child, proposed_topic, compatibility_score, blocking_issues
+        )
+
+        # Check age and history compatibility
+        compatibility_score, recommendations = self._check_age_and_history_compatibility(
+            child, proposed_topic, conversation_history, compatibility_score, recommendations
+        )
+
+        # Check emotional and time compatibility
+        compatibility_score, recommendations = self._check_emotional_and_time_compatibility(
+            child, proposed_topic, compatibility_score, recommendations
+        )
+
+        return ConversationCompatibilityResult(
+            is_compatible=compatibility_score >= 0.6 and len(
+                blocking_issues) == 0,
+            compatibility_score=compatibility_score,
+            recommendations=recommendations,
+            blocking_issues=blocking_issues,
+        )
+
+    def _check_safety_compatibility(
+        self, child: Child, proposed_topic: str, compatibility_score: float, blocking_issues: List[str]
+    ) -> tuple[float, List[str]]:
+        """Check safety settings compatibility"""
         if not child.safety_settings.is_topic_allowed(proposed_topic):
             blocking_issues.append(
                 f"Topic '{proposed_topic}' is blocked by safety settings"
             )
             compatibility_score = 0.0
+        return compatibility_score, blocking_issues
 
+    def _check_age_and_history_compatibility(
+        self, child: Child, proposed_topic: str, conversation_history: List[Conversation],
+        compatibility_score: float, recommendations: List[str]
+    ) -> tuple[float, List[str]]:
+        """Check age appropriateness and conversation history compatibility"""
         # Check age appropriateness
         age_appropriate_score = self._assess_topic_age_appropriateness(
             proposed_topic, child.age
@@ -72,7 +104,8 @@ class ChildDomainService:
         compatibility_score *= age_appropriate_score
 
         if age_appropriate_score < 0.7:
-            recommendations.append(f"Consider simplifying topic for age {child.age}")
+            recommendations.append(
+                f"Consider simplifying topic for age {child.age}")
 
         # Check conversation history patterns
         history_score = self._analyze_conversation_history_compatibility(
@@ -85,6 +118,12 @@ class ChildDomainService:
                 "Topic may be repetitive based on recent conversations"
             )
 
+        return compatibility_score, recommendations
+
+    def _check_emotional_and_time_compatibility(
+        self, child: Child, proposed_topic: str, compatibility_score: float, recommendations: List[str]
+    ) -> tuple[float, List[str]]:
+        """Check emotional state and time appropriateness"""
         # Check current emotional state
         if child.emotional_state_history:
             recent_emotion = child.emotional_state_history[-1]
@@ -100,18 +139,15 @@ class ChildDomainService:
 
         # Check time of day appropriateness
         current_time = datetime.utcnow()
-        time_score = self._assess_time_appropriateness(proposed_topic, current_time)
+        time_score = self._assess_time_appropriateness(
+            proposed_topic, current_time)
         compatibility_score *= time_score
 
         if time_score < 0.8:
-            recommendations.append("Topic may not be appropriate for current time")
+            recommendations.append(
+                "Topic may not be appropriate for current time")
 
-        return ConversationCompatibilityResult(
-            is_compatible=compatibility_score >= 0.6 and len(blocking_issues) == 0,
-            compatibility_score=compatibility_score,
-            recommendations=recommendations,
-            blocking_issues=blocking_issues,
-        )
+        return compatibility_score, recommendations
 
     def conduct_comprehensive_safety_assessment(
         self,
@@ -130,6 +166,39 @@ class ChildDomainService:
         overall_safety_score = 1.0
 
         # Assess safety violations
+        overall_safety_score, risk_factors, protective_factors, recommendations = (
+            self._assess_safety_violations(
+                child, overall_safety_score, risk_factors, protective_factors, recommendations
+            )
+        )
+
+        # Assess behavioral patterns
+        overall_safety_score, risk_factors, protective_factors, recommendations = (
+            self._assess_behavioral_patterns(
+                child, recent_conversations, overall_safety_score, risk_factors, protective_factors, recommendations
+            )
+        )
+
+        # Assess parent involvement and review requirements
+        overall_safety_score, protective_factors, recommendations, requires_parent_review = (
+            self._assess_parent_involvement_and_review(
+                child, parent_feedback, overall_safety_score, protective_factors, recommendations
+            )
+        )
+
+        return SafetyAssessmentResult(
+            overall_safety_score=max(0.0, overall_safety_score),
+            risk_factors=risk_factors,
+            protective_factors=protective_factors,
+            recommendations=recommendations,
+            requires_parent_review=requires_parent_review,
+        )
+
+    def _assess_safety_violations(
+        self, child: Child, overall_safety_score: float, risk_factors: List[str],
+        protective_factors: List[str], recommendations: List[str]
+    ) -> tuple[float, List[str], List[str], List[str]]:
+        """Assess safety violations and their impact"""
         if child.safety_violations_count > 0:
             violation_impact = min(0.3, child.safety_violations_count * 0.1)
             overall_safety_score -= violation_impact
@@ -142,16 +211,24 @@ class ChildDomainService:
                     "Consider reviewing and updating safety settings"
                 )
         else:
-            protective_factors.append("No safety violations in recent activity")
+            protective_factors.append(
+                "No safety violations in recent activity")
 
+        return overall_safety_score, risk_factors, protective_factors, recommendations
+
+    def _assess_behavioral_patterns(
+        self, child: Child, recent_conversations: List[Conversation], overall_safety_score: float,
+        risk_factors: List[str], protective_factors: List[str], recommendations: List[str]
+    ) -> tuple[float, List[str], List[str], List[str]]:
+        """Assess conversation patterns, emotional stability, and usage patterns"""
         # Assess conversation patterns
         conversation_safety_score = self._assess_conversation_patterns_safety(
-            recent_conversations
-        )
+            recent_conversations)
         overall_safety_score *= conversation_safety_score
 
         if conversation_safety_score < 0.8:
-            risk_factors.append("Concerning patterns detected in recent conversations")
+            risk_factors.append(
+                "Concerning patterns detected in recent conversations")
             recommendations.append("Review recent conversation transcripts")
         else:
             protective_factors.append("Healthy conversation patterns observed")
@@ -176,17 +253,25 @@ class ChildDomainService:
         else:
             protective_factors.append("Healthy usage patterns maintained")
 
+        return overall_safety_score, risk_factors, protective_factors, recommendations
+
+    def _assess_parent_involvement_and_review(
+        self, child: Child, parent_feedback: Optional[Dict[str, Any]], overall_safety_score: float,
+        protective_factors: List[str], recommendations: List[str]
+    ) -> tuple[float, List[str], List[str], bool]:
+        """Assess parent involvement and determine review requirements"""
         # Check parent involvement
         if parent_feedback:
-            parent_involvement_score = self._assess_parent_involvement(parent_feedback)
+            parent_involvement_score = self._assess_parent_involvement(
+                parent_feedback)
             overall_safety_score *= parent_involvement_score
 
             if parent_involvement_score > 0.8:
-                protective_factors.append("Strong parent involvement and oversight")
+                protective_factors.append(
+                    "Strong parent involvement and oversight")
             else:
                 recommendations.append(
-                    "Encourage more parent involvement and oversight"
-                )
+                    "Encourage more parent involvement and oversight")
 
         # Determine if parent review is required
         requires_parent_review = (
@@ -200,13 +285,7 @@ class ChildDomainService:
         ]:
             recommendations.append("Parent review and approval required")
 
-        return SafetyAssessmentResult(
-            overall_safety_score=max(0.0, overall_safety_score),
-            risk_factors=risk_factors,
-            protective_factors=protective_factors,
-            recommendations=recommendations,
-            requires_parent_review=requires_parent_review,
-        )
+        return overall_safety_score, protective_factors, recommendations, requires_parent_review
 
     def recommend_voice_profile_adjustments(
         self, child: Child, recent_conversations: List[Conversation]
@@ -221,15 +300,37 @@ class ChildDomainService:
 
         current_profile = child.voice_profile
 
-        # Analyze engagement patterns
-        avg_engagement = self._calculate_average_engagement(recent_conversations)
+        # Analyze patterns and determine adjustments
+        avg_engagement, emotional_patterns = self._analyze_voice_adjustment_needs(
+            child, recent_conversations
+        )
 
-        # Analyze emotional responses
+        # Calculate specific adjustments
+        pitch_adjustment, speed_adjustment, emotion_sensitivity_adjustment = (
+            self._calculate_voice_adjustments(
+                avg_engagement, emotional_patterns)
+        )
+
+        # Apply adjustments and create new profile if needed
+        return self._apply_voice_adjustments(
+            current_profile, pitch_adjustment, speed_adjustment, emotion_sensitivity_adjustment
+        )
+
+    def _analyze_voice_adjustment_needs(
+        self, child: Child, recent_conversations: List[Conversation]
+    ) -> tuple[float, Dict[str, float]]:
+        """Analyze engagement patterns and emotional responses for voice adjustments"""
+        avg_engagement = self._calculate_average_engagement(
+            recent_conversations)
         emotional_patterns = self._analyze_emotional_response_patterns(
             child.emotional_state_history
         )
+        return avg_engagement, emotional_patterns
 
-        # Determine adjustments needed
+    def _calculate_voice_adjustments(
+        self, avg_engagement: float, emotional_patterns: Dict[str, float]
+    ) -> tuple[float, float, float]:
+        """Calculate specific voice adjustments based on patterns"""
         pitch_adjustment = 0.0
         speed_adjustment = 0.0
         emotion_sensitivity_adjustment = 0.0
@@ -260,9 +361,18 @@ class ChildDomainService:
             pitch_adjustment -= 0.05
             speed_adjustment -= 0.05
 
+        return pitch_adjustment, speed_adjustment, emotion_sensitivity_adjustment
+
+    def _apply_voice_adjustments(
+        self, current_profile: VoiceProfile, pitch_adjustment: float,
+        speed_adjustment: float, emotion_sensitivity_adjustment: float
+    ) -> Optional[VoiceProfile]:
+        """Apply adjustments and create new voice profile if changes are significant"""
         # Apply adjustments within safe ranges
-        new_pitch = max(0.5, min(2.0, current_profile.pitch + pitch_adjustment))
-        new_speed = max(0.5, min(2.0, current_profile.speed + speed_adjustment))
+        new_pitch = max(
+            0.5, min(2.0, current_profile.pitch + pitch_adjustment))
+        new_speed = max(
+            0.5, min(2.0, current_profile.speed + speed_adjustment))
         new_emotion_sensitivity = max(
             0.1,
             min(
@@ -277,7 +387,6 @@ class ChildDomainService:
             or abs(new_speed - current_profile.speed) > 0.03
             or abs(new_emotion_sensitivity - current_profile.emotion_sensitivity) > 0.05
         ):
-
             return current_profile.__class__(
                 pitch=new_pitch,
                 speed=new_speed,
@@ -323,18 +432,21 @@ class ChildDomainService:
                 child.safety_settings.max_session_minutes
                 > child.safety_settings.max_daily_minutes
             ):
-                violations.append("Session time limit cannot exceed daily time limit")
+                violations.append(
+                    "Session time limit cannot exceed daily time limit")
 
             if child.daily_usage_minutes > child.safety_settings.max_daily_minutes:
                 violations.append("Daily usage exceeds allowed limit")
 
         # Check conversation consistency
         if len(child.active_conversations) > 1:
-            violations.append("Child cannot have more than one active conversation")
+            violations.append(
+                "Child cannot have more than one active conversation")
 
         for conversation in child.active_conversations:
             if conversation.child_id != child.id:
-                violations.append("Active conversation belongs to different child")
+                violations.append(
+                    "Active conversation belongs to different child")
 
             if conversation.status not in ["active", "paused"]:
                 violations.append(
@@ -352,11 +464,19 @@ class ChildDomainService:
 
     def _assess_topic_age_appropriateness(self, topic: str, age: int) -> float:
         """Assess how age-appropriate a topic is (0.0 to 1.0)"""
-
         topic_lower = topic.lower()
 
-        # Define age-appropriate keywords
-        age_appropriateness_map = {
+        # Get age-appropriate keywords for this age
+        age_keywords = self._find_age_keywords(age)
+        if not age_keywords:
+            return 0.5  # Default score
+
+        # Score topic based on keywords
+        return self._score_topic_by_keywords(topic_lower, age_keywords)
+
+    def _get_age_appropriateness_map(self) -> Dict[tuple, Dict[str, List[str]]]:
+        """Define age-appropriate keywords mapping"""
+        return {
             (3, 4): {
                 "high": ["animals", "colors", "shapes", "toys", "family", "food"],
                 "medium": ["games", "friends", "school"],
@@ -398,27 +518,28 @@ class ChildDomainService:
             },
         }
 
-        # Find appropriate age range
-        age_map = None
+    def _find_age_keywords(self, age: int) -> Optional[Dict[str, List[str]]]:
+        """Find appropriate keywords for the given age"""
+        age_appropriateness_map = self._get_age_appropriateness_map()
+
         for age_range, keywords in age_appropriateness_map.items():
             if age_range[0] <= age <= age_range[1]:
-                age_map = keywords
-                break
+                return keywords
+        return None
 
-        if not age_map:
-            return 0.5  # Default score
-
+    def _score_topic_by_keywords(self, topic_lower: str, age_keywords: Dict[str, List[str]]) -> float:
+        """Score topic based on age-appropriate keywords"""
         # Check topic against age-appropriate keywords
-        if any(blocked in topic_lower for blocked in age_map["blocked"]):
+        if any(blocked in topic_lower for blocked in age_keywords["blocked"]):
             return 0.0
 
-        if any(high in topic_lower for high in age_map["high"]):
+        if any(high in topic_lower for high in age_keywords["high"]):
             return 1.0
 
-        if any(medium in topic_lower for medium in age_map["medium"]):
+        if any(medium in topic_lower for medium in age_keywords["medium"]):
             return 0.8
 
-        if any(low in topic_lower for low in age_map["low"]):
+        if any(low in topic_lower for low in age_keywords["low"]):
             return 0.6
 
         return 0.7  # Default for neutral topics
@@ -566,7 +687,8 @@ class ChildDomainService:
             safety_score -= escalation_count * 0.2
 
         # Check for safety violations in conversations
-        total_violations = sum(conv.safety_violations for conv in conversations)
+        total_violations = sum(
+            conv.safety_violations for conv in conversations)
         if total_violations > 0:
             safety_score -= total_violations * 0.15
 
@@ -585,7 +707,8 @@ class ChildDomainService:
         if not child.emotional_state_history:
             return 0.8  # Neutral score when no data
 
-        recent_emotions = child.emotional_state_history[-10:]  # Last 10 entries
+        # Last 10 entries
+        recent_emotions = child.emotional_state_history[-10:]
 
         # Count negative emotions
         negative_emotions = ["sad", "frustrated", "anxious", "angry"]
@@ -648,7 +771,8 @@ class ChildDomainService:
         if not conversations:
             return 0.5
 
-        engagement_scores = [conv.child_engagement_score for conv in conversations]
+        engagement_scores = [
+            conv.child_engagement_score for conv in conversations]
         return sum(engagement_scores) / len(engagement_scores)
 
     def _analyze_emotional_response_patterns(

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 """
 Performance Optimizer for Multi-Layer Caching System.
@@ -54,7 +54,8 @@ class PerformanceOptimizer:
     def __init__(self):
         self.metrics_history: List[PerformanceMetrics] = []
         self.analysis_window_hours = 24
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
 
     def record_metrics(self, cache_system) -> PerformanceMetrics:
         """Record current performance metrics."""
@@ -63,7 +64,8 @@ class PerformanceOptimizer:
 
             # Calculate throughput
             total_ops = metrics_data.get("total_requests", 0)
-            time_span = max(1, len(self.metrics_history))  # Avoid division by zero
+            # Avoid division by zero
+            time_span = max(1, len(self.metrics_history))
             throughput = total_ops / time_span
 
             # Create performance metrics
@@ -147,112 +149,120 @@ class PerformanceOptimizer:
             "performance_score": self._calculate_performance_score(stats),
         }
 
+    def _analyze_hit_rate(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+        """Analyzes hit rate and suggests increasing cache size if it's too low."""
+        if latest_metrics.hit_rate < 0.4:
+            return OptimizationRecommendation(
+                category="Cache Size",
+                priority="HIGH",
+                title="Increase L1 Cache Size",
+                description="Hit rate is below 40%. Increasing L1 cache size will improve performance.",
+                current_value=f"{current_config.l1_max_size_mb}MB",
+                recommended_value=f"{current_config.l1_max_size_mb * 2}MB",
+                expected_improvement="20-30% hit rate increase",
+                implementation_effort="LOW",
+            )
+        return None
+
+    def _analyze_latency(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+        """Analyzes latency and suggests enabling compression if it's too high."""
+        if latest_metrics.average_latency_ms > 100:
+            return OptimizationRecommendation(
+                category="Latency",
+                priority="HIGH",
+                title="Enable Compression",
+                description="High latency detected. Enable compression to reduce network overhead.",
+                current_value=current_config.compression_enabled,
+                recommended_value=True,
+                expected_improvement="30-50% latency reduction",
+                implementation_effort="LOW",
+            )
+        return None
+
+    def _analyze_memory_usage(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+        """Analyzes memory usage and suggests optimizing TTL settings if it's too high."""
+        memory_threshold = current_config.l1_max_size_mb * 0.8
+        if latest_metrics.memory_usage_mb > memory_threshold:
+            return OptimizationRecommendation(
+                category="Memory Management",
+                priority="MEDIUM",
+                title="Optimize TTL Settings",
+                description="Memory usage is high. Reducing TTL for less important content can help.",
+                current_value="Current TTL values",
+                recommended_value="Reduced TTL for transcriptions and emotions",
+                expected_improvement="20-25% memory reduction",
+                implementation_effort="MEDIUM",
+            )
+        return None
+
+    def _analyze_eviction_rate(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+        """Analyzes eviction rate and suggests implementing a smart eviction policy if it's too high."""
+        if latest_metrics.evictions_per_hour > 100:
+            return OptimizationRecommendation(
+                category="Cache Efficiency",
+                priority="MEDIUM",
+                title="Implement Smart Eviction",
+                description="High eviction rate detected. Implement LFU or custom eviction policy.",
+                current_value="LRU eviction",
+                recommended_value="LFU or weighted eviction",
+                expected_improvement="15-20% efficiency increase",
+                implementation_effort="HIGH",
+            )
+        return None
+
+    def _analyze_error_rate(self, latest_metrics, current_config) -> Optional[OptimizationRecommendation]:
+        """Analyzes error rate and suggests improving error handling if it's too high."""
+        if latest_metrics.error_rate > 0.05:
+            return OptimizationRecommendation(
+                category="Reliability",
+                priority="HIGH",
+                title="Improve Error Handling",
+                description="Error rate is above 5%. Implement better fallback mechanisms.",
+                current_value=f"{latest_metrics.error_rate:.2%}",
+                recommended_value="<2%",
+                expected_improvement="Better reliability and user experience",
+                implementation_effort="MEDIUM",
+            )
+        return None
+
+    def _analyze_hit_rate_trend(self, trends) -> Optional[OptimizationRecommendation]:
+        """Analyzes hit rate trend and suggests an investigation if it's declining."""
+        hit_rate_trend = trends.get("trends", {}).get("hit_rate", 0)
+        if hit_rate_trend < -0.1:  # Declining hit rate
+            return OptimizationRecommendation(
+                category="Performance Degradation",
+                priority="HIGH",
+                title="Investigate Hit Rate Decline",
+                description="Hit rate is declining over time. Review cache key generation and TTL settings.",
+                current_value=f"Trending down {abs(hit_rate_trend):.1%}/hour",
+                recommended_value="Stable or increasing",
+                expected_improvement="Prevent further performance degradation",
+                implementation_effort="MEDIUM",
+            )
+        return None
+
     def generate_optimization_recommendations(
         self, cache_system, current_config
     ) -> List[OptimizationRecommendation]:
         """Generate optimization recommendations based on performance analysis."""
-        recommendations = []
-
         if len(self.metrics_history) < 5:
-            return []  # Need sufficient data for recommendations
+            return []
 
-        # Get latest metrics
         latest_metrics = self.metrics_history[-1]
         trends = self.analyze_performance_trends()
 
-        # Analyze hit rate
-        if latest_metrics.hit_rate < 0.4:
-            recommendations.append(
-                OptimizationRecommendation(
-                    category="Cache Size",
-                    priority="HIGH",
-                    title="Increase L1 Cache Size",
-                    description="Hit rate is below 40%. Increasing L1 cache size will improve performance.",
-                    current_value=f"{current_config.l1_max_size_mb}MB",
-                    recommended_value=f"{current_config.l1_max_size_mb * 2}MB",
-                    expected_improvement="20-30% hit rate increase",
-                    implementation_effort="LOW",
-                )
-            )
+        potential_recommendations = [
+            self._analyze_hit_rate(latest_metrics, current_config),
+            self._analyze_latency(latest_metrics, current_config),
+            self._analyze_memory_usage(latest_metrics, current_config),
+            self._analyze_eviction_rate(latest_metrics, current_config),
+            self._analyze_error_rate(latest_metrics, current_config),
+            self._analyze_hit_rate_trend(trends),
+        ]
 
-        # Analyze latency
-        if latest_metrics.average_latency_ms > 100:
-            recommendations.append(
-                OptimizationRecommendation(
-                    category="Latency",
-                    priority="HIGH",
-                    title="Enable Compression",
-                    description="High latency detected. Enable compression to reduce network overhead.",
-                    current_value=current_config.compression_enabled,
-                    recommended_value=True,
-                    expected_improvement="30-50% latency reduction",
-                    implementation_effort="LOW",
-                )
-            )
+        recommendations = [
+            rec for rec in potential_recommendations if rec is not None]
 
-        # Analyze memory usage
-        memory_threshold = current_config.l1_max_size_mb * 0.8
-        if latest_metrics.memory_usage_mb > memory_threshold:
-            recommendations.append(
-                OptimizationRecommendation(
-                    category="Memory Management",
-                    priority="MEDIUM",
-                    title="Optimize TTL Settings",
-                    description="Memory usage is high. Reducing TTL for less important content can help.",
-                    current_value="Current TTL values",
-                    recommended_value="Reduced TTL for transcriptions and emotions",
-                    expected_improvement="20-25% memory reduction",
-                    implementation_effort="MEDIUM",
-                )
-            )
-
-        # Analyze eviction rate
-        if latest_metrics.evictions_per_hour > 100:
-            recommendations.append(
-                OptimizationRecommendation(
-                    category="Cache Efficiency",
-                    priority="MEDIUM",
-                    title="Implement Smart Eviction",
-                    description="High eviction rate detected. Implement LFU or custom eviction policy.",
-                    current_value="LRU eviction",
-                    recommended_value="LFU or weighted eviction",
-                    expected_improvement="15-20% efficiency increase",
-                    implementation_effort="HIGH",
-                )
-            )
-
-        # Analyze error rate
-        if latest_metrics.error_rate > 0.05:
-            recommendations.append(
-                OptimizationRecommendation(
-                    category="Reliability",
-                    priority="HIGH",
-                    title="Improve Error Handling",
-                    description="Error rate is above 5%. Implement better fallback mechanisms.",
-                    current_value=f"{latest_metrics.error_rate:.2%}",
-                    recommended_value="<2%",
-                    expected_improvement="Better reliability and user experience",
-                    implementation_effort="MEDIUM",
-                )
-            )
-
-        # Analyze trends
-        hit_rate_trend = trends.get("trends", {}).get("hit_rate", 0)
-        if hit_rate_trend < -0.1:  # Declining hit rate
-            recommendations.append(
-                OptimizationRecommendation(
-                    category="Performance Degradation",
-                    priority="HIGH",
-                    title="Investigate Hit Rate Decline",
-                    description="Hit rate is declining over time. Review cache key generation and TTL settings.",
-                    current_value=f"Trending down {abs(hit_rate_trend):.1%}/hour",
-                    recommended_value="Stable or increasing",
-                    expected_improvement="Prevent further performance degradation",
-                    implementation_effort="MEDIUM",
-                )
-            )
-
-        # Sort by priority
         priority_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
         recommendations.sort(key=lambda x: priority_order[x.priority])
 
@@ -271,7 +281,8 @@ class PerformanceOptimizer:
         y_mean = sum(values) / n
 
         # Calculate slope
-        numerator = sum((x - x_mean) * (y - y_mean) for x, y in zip(x_values, values))
+        numerator = sum((x - x_mean) * (y - y_mean)
+                        for x, y in zip(x_values, values))
         denominator = sum((x - x_mean) ** 2 for x in x_values)
 
         return numerator / denominator if denominator != 0 else 0.0
@@ -308,7 +319,8 @@ class PerformanceOptimizer:
         # Normalize throughput (relative to average)
         avg_throughput = stats["throughput"]["average"]
         current_throughput = stats["throughput"]["current"]
-        throughput_score = min(100, (current_throughput / max(1, avg_throughput)) * 100)
+        throughput_score = min(
+            100, (current_throughput / max(1, avg_throughput)) * 100)
 
         # Calculate weighted score
         total_score = (
@@ -401,7 +413,23 @@ class CacheHealthMonitor:
             "error_rate_max": 0.1,
             "memory_usage_max_pct": 90,
         }
-        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+        self.logger = logging.getLogger(
+            f"{__name__}.{self.__class__.__name__}")
+
+    def _check_metric(self, metric_name: str, current_value: float, threshold: float, is_max: bool) -> Optional[Dict]:
+        """Checks a single metric against its threshold and returns an alert if triggered."""
+        triggered = (current_value > threshold) if is_max else (
+            current_value < threshold)
+        if triggered:
+            level = "CRITICAL" if metric_name == "error_rate" else "WARNING"
+            comparison_text = "above" if is_max else "below"
+            return {
+                "level": level,
+                "metric": metric_name,
+                "message": f"{metric_name.replace('_', ' ').title()} ({current_value:.2% if '%' in str(threshold) else current_value}) {comparison_text} threshold ({threshold})",
+                "timestamp": datetime.now().isoformat(),
+            }
+        return None
 
     async def check_health(self, cache_system, current_config) -> Dict[str, Any]:
         """Check cache health and generate alerts if needed."""
@@ -409,63 +437,28 @@ class CacheHealthMonitor:
             return {"status": "no_data"}
 
         latest_metrics = self.optimizer.metrics_history[-1]
+
         alerts = []
 
-        # Check hit rate
-        if latest_metrics.hit_rate < self.alert_thresholds["hit_rate_min"]:
-            alerts.append(
-                {
-                    "level": "WARNING",
-                    "metric": "hit_rate",
-                    "message": f"Hit rate ({latest_metrics.hit_rate:.2%}) below threshold ({self.alert_thresholds['hit_rate_min']:.2%})",
-                    "timestamp": datetime.now().isoformat(),
-                }
-            )
+        # Check all metrics
+        alerts.append(self._check_metric(
+            "hit_rate", latest_metrics.hit_rate, self.alert_thresholds["hit_rate_min"], False))
+        alerts.append(self._check_metric(
+            "latency", latest_metrics.average_latency_ms, self.alert_thresholds["latency_max_ms"], True))
+        alerts.append(self._check_metric(
+            "error_rate", latest_metrics.error_rate, self.alert_thresholds["error_rate_max"], True))
 
-        # Check latency
-        if latest_metrics.average_latency_ms > self.alert_thresholds["latency_max_ms"]:
-            alerts.append(
-                {
-                    "level": "WARNING",
-                    "metric": "latency",
-                    "message": f"Average latency ({latest_metrics.average_latency_ms:.1f}ms) above threshold ({self.alert_thresholds['latency_max_ms']}ms)",
-                    "timestamp": datetime.now().isoformat(),
-                }
-            )
+        memory_pct = (latest_metrics.memory_usage_mb /
+                      current_config.l1_max_size_mb) * 100
+        alerts.append(self._check_metric("memory_usage", memory_pct,
+                      self.alert_thresholds["memory_usage_max_pct"], True))
 
-        # Check error rate
-        if latest_metrics.error_rate > self.alert_thresholds["error_rate_max"]:
-            alerts.append(
-                {
-                    "level": "CRITICAL",
-                    "metric": "error_rate",
-                    "message": f"Error rate ({latest_metrics.error_rate:.2%}) above threshold ({self.alert_thresholds['error_rate_max']:.2%})",
-                    "timestamp": datetime.now().isoformat(),
-                }
-            )
-
-        # Check memory usage
-        memory_pct = (
-            latest_metrics.memory_usage_mb / current_config.l1_max_size_mb
-        ) * 100
-        if memory_pct > self.alert_thresholds["memory_usage_max_pct"]:
-            alerts.append(
-                {
-                    "level": "WARNING",
-                    "metric": "memory_usage",
-                    "message": f"Memory usage ({memory_pct:.1f}%) above threshold ({self.alert_thresholds['memory_usage_max_pct']}%)",
-                    "timestamp": datetime.now().isoformat(),
-                }
-            )
+        valid_alerts = [alert for alert in alerts if alert]
 
         return {
             "health_check_timestamp": datetime.now().isoformat(),
-            "overall_status": (
-                "CRITICAL"
-                if any(a["level"] == "CRITICAL" for a in alerts)
-                else "WARNING" if alerts else "HEALTHY"
-            ),
-            "alerts": alerts,
+            "overall_status": ("CRITICAL" if any(a["level"] == "CRITICAL" for a in valid_alerts) else "WARNING" if valid_alerts else "HEALTHY"),
+            "alerts": valid_alerts,
             "metrics_summary": {
                 "hit_rate": latest_metrics.hit_rate,
                 "latency_ms": latest_metrics.average_latency_ms,
@@ -474,13 +467,15 @@ class CacheHealthMonitor:
             },
         }
 
-    def set_alert_threshold(float) -> None:
+    def set_alert_threshold(self, metric: str, value: float) -> None:
         """Update alert threshold for specific metric."""
         if metric in self.alert_thresholds:
             self.alert_thresholds[metric] = value
-            self.logger.info(f"Updated alert threshold for {metric} to {value}")
+            self.logger.info(
+                f"Updated alert threshold for {metric} to {value}")
         else:
-            self.logger.warning(f"Unknown metric for alert threshold: {metric}")
+            self.logger.warning(
+                f"Unknown metric for alert threshold: {metric}")
 
 
 # Factory functions

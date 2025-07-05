@@ -295,8 +295,6 @@ class Conversation(BaseModel):
         )
 
         self.messages.append(message)
-
-        # Update metrics
         self._update_metrics(message)
 
         # Update end time and duration
@@ -305,25 +303,43 @@ class Conversation(BaseModel):
 
         return message
 
-    def _update_metrics(self, message) -> None:
-        """Update conversation metrics"""
+    def _update_metrics(self, message: Message) -> None:
+        """Update conversation metrics with a new message."""
         self.metrics.total_messages += 1
+        self._update_turn_taking_metrics(message)
+        self._update_word_and_question_metrics(message)
 
-        if hasattr(message, 'content_type') and message.content_type == ContentType.TEXT:
-            words = message.content.split()
-            self.metrics.total_words += len(words)
+        if message.metadata.moderation_flags:
+            self.metrics.moderation_flags += 1
 
-            # Update turn taking
-            if hasattr(message, 'role') and message.role == MessageRole.USER:
-                self.turn_taking.user_turns += 1
-            elif hasattr(message, 'role') and message.role == MessageRole.ASSISTANT:
-                self.turn_taking.assistant_turns += 1
+    def _update_turn_taking_metrics(self, message: Message) -> None:
+        """Update turn-taking specific metrics."""
+        if message.role == MessageRole.USER:
+            self.turn_taking.user_turns += 1
+            if len(self.messages) > 1:
+                last_assistant_message = next(
+                    (m for m in reversed(
+                        self.messages[:-1]) if m.role == MessageRole.ASSISTANT), None
+                )
+                if last_assistant_message:
+                    self.turn_taking.response_times.append(
+                        (message.timestamp -
+                         last_assistant_message.timestamp).total_seconds()
+                    )
+        elif message.role == MessageRole.ASSISTANT:
+            self.turn_taking.assistant_turns += 1
 
-            # Count questions
-            if hasattr(message, 'extract_questions'):
-                questions = message.extract_questions()
-                if questions:
-                    self.metrics.questions_asked += len(questions)
+    def _update_word_and_question_metrics(self, message: Message) -> None:
+        """Update word count and question related metrics."""
+        word_count = message.get_word_count()
+        if word_count > 0:
+            self.metrics.total_words += word_count
+            all_words = " ".join(m.content for m in self.messages).lower()
+            self.metrics.unique_words = len(set(all_words.split()))
+
+        questions = message.extract_questions()
+        if questions:
+            self.metrics.questions_asked += len(questions)
 
     def get_context(self, max_messages: int = 10) -> str:
         """Get conversation context for LLM"""
@@ -338,207 +354,189 @@ class Conversation(BaseModel):
 
     def get_messages_for_llm(self, include_system: bool = True) -> List[Dict[str, str]]:
         """Get messages formatted for LLM input"""
-        llm_messages = []
-
-        for msg in self.messages:
-            if msg.role == MessageRole.SYSTEM and not include_system:
-                continue
-            if msg.content_type == ContentType.TEXT:
-                llm_messages.append(msg.to_llm_format())
-
-        return llm_messages
+        return [m.to_llm_format() for m in self.messages if include_system or m.role != MessageRole.SYSTEM]
 
     def extract_topics(self) -> List[str]:
-        """Extract topics from conversation messages"""
-        # Enhanced topic extraction
-        topic_keywords = {
-            "education": [
-                "learn",
-                "school",
-                "study",
-                "homework",
-                "teach",
-                "تعلم",
-                "مدرسة",
-            ],
-            "science": [
-                "science",
-                "biology",
-                "physics",
-                "chemistry",
-                "space",
-                "علم",
-                "فيزياء",
-            ],
-            "math": ["math", "number", "count", "calculate", "رياضيات", "رقم"],
-            "art": ["art", "draw", "paint", "color", "create", "فن", "رسم"],
-            "music": ["music", "song", "sing", "instrument", "موسيقى", "أغنية"],
-            "games": ["game", "play", "fun", "puzzle", "لعبة", "لعب"],
-            "stories": ["story", "tale", "book", "read", "قصة", "حكاية"],
-            "animals": ["animal", "pet", "dog", "cat", "bird", "حيوان", "قطة"],
-            "nature": ["nature", "tree", "flower", "weather", "طبيعة", "شجرة"],
-            "emotions": ["feel", "happy", "sad", "angry", "شعور", "سعيد", "حزين"],
-            "family": [
-                "family",
-                "mom",
-                "dad",
-                "brother",
-                "sister",
-                "عائلة",
-                "أم",
-                "أب",
-            ],
-        }
-
-        found_topics = set()
-        all_text = " ".join(
-            [
-                msg.content.lower()
-                for msg in self.messages
-                if msg.content_type == ContentType.TEXT
-            ]
+        """Extract topics from conversation using keyword matching."""
+        full_text = " ".join(
+            m.content.lower() for m in self.messages if m.content_type == ContentType.TEXT
         )
+        if not full_text:
+            return []
+
+        topic_keywords = self._get_topic_keywords()
+        detected_topics = defaultdict(int)
 
         for topic, keywords in topic_keywords.items():
-            if any(keyword in all_text for keyword in keywords):
-                found_topics.add(topic)
+            for keyword in keywords:
+                if re.search(r'\b' + re.escape(keyword) + r'\b', full_text):
+                    detected_topics[topic] += 1
 
-        # Also check message topics
-        for msg in self.messages:
-            found_topics.update(msg.topics)
+        if not detected_topics:
+            return ["general"]
 
-        self.topics = list(found_topics)
+        # Sort by frequency and return top topics
+        sorted_topics = sorted(detected_topics.items(),
+                               key=lambda item: item[1], reverse=True)
+        self.topics = [topic for topic, count in sorted_topics]
         return self.topics
 
+    def _get_topic_keywords(self) -> Dict[str, List[str]]:
+        """Returns a dictionary of topic keywords for extraction."""
+        return {
+            "science": ["science", "space", "planet", "star", "animal", "nature", "dinosaur", "experiment"],
+            "art": ["art", "draw", "paint", "color", "music", "sing", "dance", "story"],
+            "feelings": ["happy", "sad", "angry", "scared", "love", "friend", "feeling"],
+            "learning": ["learn", "school", "book", "read", "number", "letter", "teacher"],
+            "play": ["game", "play", "toy", "fun", "hide and seek"],
+            "family": ["mom", "dad", "family", "brother", "sister", "home"],
+            "food": ["eat", "food", "fruit", "vegetable", "hungry", "tasty"],
+            "daily_routine": ["bedtime", "sleep", "morning", "night", "bath", "brush teeth"],
+        }
+
     def analyze_emotional_journey(self) -> List[EmotionalState]:
-        """Analyze emotional progression throughout conversation"""
-        emotional_states = []
+        """Analyze emotional progression and identify key moments."""
+        if not self.emotional_states:
+            return []
 
-        # Group messages by time windows (e.g., every 5 messages)
-        window_size = 5
-        for i in range(0, len(self.messages), window_size):
-            window_messages = self.messages[i: i + window_size]
+        significant_moments = []
+        for i, state in enumerate(self.emotional_states):
+            if i > 0:
+                prev_state = self.emotional_states[i - 1]
+                shift = self._calculate_emotional_shift(prev_state, state)
+                if self._is_significant_emotional_moment(state, shift):
+                    significant_moments.append(state)
+            elif self._is_significant_emotional_moment(state):
+                significant_moments.append(state)
 
-            # Analyze emotions in this window
-            emotions = defaultdict(float)
-            total_weight = 0
+        # This is a simplified analysis. A real implementation would be more complex.
+        # For now, we just return the identified significant moments.
+        return significant_moments
 
-            for msg in window_messages:
-                if msg.role == MessageRole.USER and msg.sentiment is not None:
-                    # Weight user messages more heavily
-                    weight = 1.5
-                    emotions["valence"] += msg.sentiment * weight
-                    total_weight += weight
+    def _calculate_emotional_shift(self, prev_state: EmotionalState, current_state: EmotionalState) -> float:
+        """Calculate the magnitude of emotional shift between two states."""
+        return abs(current_state.valence - prev_state.valence) + abs(current_state.arousal - prev_state.arousal)
 
-            if total_weight > 0:
-                avg_valence = emotions["valence"] / total_weight
-
-                # Determine primary emotion based on valence
-                if avg_valence > 0.5:
-                    primary = "happy"
-                elif avg_valence > 0.2:
-                    primary = "content"
-                elif avg_valence < -0.5:
-                    primary = "sad"
-                elif avg_valence < -0.2:
-                    primary = "frustrated"
-                else:
-                    primary = "neutral"
-
-                state = EmotionalState(
-                    primary_emotion=primary,
-                    confidence=0.8,
-                    valence=avg_valence,
-                    arousal=0.5,  # Would need more analysis
-                    emotions={primary: abs(avg_valence)},
-                )
-
-                emotional_states.append(state)
-
-        self.emotional_states = emotional_states
-        return emotional_states
+    def _is_significant_emotional_moment(self, state: EmotionalState, shift: Optional[float] = None) -> bool:
+        """Determines if an emotional state or shift is significant."""
+        # Significant if strong negative emotion
+        if state.valence < -0.5 and state.arousal > 0.6:
+            return True
+        # Significant if a large positive shift occurred
+        if shift and shift > 0.8:
+            return True
+        return False
 
     def calculate_engagement_score(self) -> float:
-        """Calculate user engagement score"""
+        """Calculate overall engagement score from different metrics."""
         if not self.messages:
             return 0.0
 
-        factors = []
+        weights = {"interaction": 0.4, "turn_taking": 0.3, "questions": 0.3}
 
-        # Response rate
-        if self.turn_taking.assistant_turns > 0:
-            response_rate = (
-                self.turn_taking.user_turns / self.turn_taking.assistant_turns
-            )
-            factors.append(min(response_rate, 1.0))
+        interaction_score = self._calculate_interaction_score()
+        turn_taking_score = self._calculate_turn_taking_score()
+        question_score = self._calculate_question_score()
 
-        # Message length consistency
-        user_messages = [
-            m for m in self.messages if m.role == MessageRole.USER]
-        if len(user_messages) > 1:
-            lengths = [m.get_word_count() for m in user_messages]
-            avg_length = statistics.mean(lengths)
-            if avg_length > 5:  # More than just "yes/no" answers
-                factors.append(min(avg_length / 20, 1.0))
+        final_score = (
+            interaction_score * weights["interaction"]
+            + turn_taking_score * weights["turn_taking"]
+            + question_score * weights["questions"]
+        )
 
-        # Question asking
-        if self.metrics.total_messages > 0:
-            question_rate = self.metrics.questions_asked / self.metrics.total_messages
-            factors.append(question_rate * 2)  # Weight questions highly
+        self.metrics.engagement_score = final_score
+        return final_score
 
-        # Topic diversity
-        if len(self.topics) > 0:
-            topic_score = min(len(self.topics) / 5, 1.0)
-            factors.append(topic_score)
+    def _calculate_interaction_score(self) -> float:
+        """Calculate score based on interaction frequency and duration."""
+        if self.duration.total_seconds() == 0:
+            return 0.0
 
-        # Calculate final score
-        if factors:
-            self.metrics.engagement_score = statistics.mean(factors)
+        messages_per_minute = len(self.messages) / \
+            (self.duration.total_seconds() / 60)
+
+        if messages_per_minute > 5:
+            return 1.0
+        elif messages_per_minute > 2:
+            return 0.7
         else:
-            self.metrics.engagement_score = 0.0
+            return 0.4
 
-        return self.metrics.engagement_score
+    def _calculate_turn_taking_score(self) -> float:
+        """Calculate score based on turn-taking balance."""
+        total_turns = self.turn_taking.user_turns + self.turn_taking.assistant_turns
+        if total_turns == 0:
+            return 0.0
+
+        balance = 1.0 - abs(self.turn_taking.user_turns -
+                            self.turn_taking.assistant_turns) / total_turns
+        return balance
+
+    def _calculate_question_score(self) -> float:
+        """Calculate score based on questions asked."""
+        if self.turn_taking.user_turns == 0:
+            return 0.0
+
+        questions_per_turn = self.metrics.questions_asked / self.turn_taking.user_turns
+
+        if questions_per_turn > 0.5:
+            return 1.0
+        elif questions_per_turn > 0.2:
+            return 0.7
+        else:
+            return 0.3
 
     def calculate_educational_score(self) -> float:
-        """Calculate educational value score"""
-        edu_factors = []
+        """Calculate the educational score of the conversation."""
+        if not self.messages:
+            return 0.0
 
-        # Check for educational topics
-        edu_topics = ["education", "science", "math", "learning", "history"]
-        edu_topic_count = sum(
-            1 for topic in self.topics if topic in edu_topics)
-        if self.topics:
-            edu_factors.append(edu_topic_count / len(self.topics))
+        weights = {"topics": 0.4, "content": 0.4, "inquiry": 0.2}
 
-        # Check for learning-related keywords
-        learning_keywords = [
-            "learn",
-            "understand",
-            "know",
-            "discover",
-            "explore",
-            "why",
-            "how",
-        ]
-        all_text = " ".join([m.content.lower() for m in self.messages])
-        keyword_count = sum(
-            1 for keyword in learning_keywords if keyword in all_text)
-        edu_factors.append(min(keyword_count / 10, 1.0))
+        topic_score = self._calculate_topic_diversity_score()
+        content_score = self._calculate_content_quality_score()
+        inquiry_score = self._calculate_inquiry_score()
 
-        # Check for educational content in metadata
-        edu_content_count = sum(
-            1 for m in self.messages if m.metadata.educational_content is not None
+        final_score = (
+            topic_score * weights["topics"]
+            + content_score * weights["content"]
+            + inquiry_score * weights["inquiry"]
         )
-        if self.messages:
-            edu_factors.append(edu_content_count / len(self.messages))
 
-        # Calculate final score
-        if edu_factors:
-            self.educational_score = statistics.mean(edu_factors)
+        self.educational_score = final_score
+        return final_score
+
+    def _calculate_topic_diversity_score(self) -> float:
+        """Calculate score based on the diversity of educational topics."""
+        educational_topics = {"science", "learning", "art"}
+        covered_topics = set(self.topics).intersection(educational_topics)
+
+        if len(covered_topics) >= 3:
+            return 1.0
+        elif len(covered_topics) > 0:
+            return 0.6
         else:
-            self.educational_score = 0.0
+            return 0.1
 
-        return self.educational_score
+    def _calculate_content_quality_score(self) -> float:
+        """Calculate score based on explicit educational content markers."""
+        educational_messages = sum(
+            1 for m in self.messages if m.metadata.educational_content
+        )
+        if not self.messages:
+            return 0.0
+
+        return min(educational_messages / (len(self.messages) / 2), 1.0)
+
+    def _calculate_inquiry_score(self) -> float:
+        """Calculate score based on question-answer dynamics."""
+        if self.metrics.questions_asked == 0:
+            return 0.2  # Neutral score if no questions
+
+        # A simple proxy for answered questions
+        # A better implementation would track specific question-answer pairs
+        answered_ratio = self.turn_taking.assistant_turns / self.metrics.questions_asked
+        return min(answered_ratio, 1.0)
 
     def calculate_quality_score(self) -> float:
         """Calculate overall conversation quality score"""

@@ -24,22 +24,9 @@ class PersonalizedStoryGenerator:
         openai.api_key = openai_key
         self.story_history = []
 
-    def generate_personalized_story(
-        self,
-        child_name: str,
-        age: int,
-        mood: str,
-        interests: List[str],
-        theme: str = StoryTheme.ADVENTURE,
-        story_length: str = "medium",
-    ) -> Dict:
-        """توليد قصة مخصصة للطفل"""
-
-        # تحديد طول القصة
-        length_tokens = {"short": 500, "medium": 800, "long": 1200}
-
-        # بناء الـ prompt
-        prompt = f"""
+    def _build_story_prompt(self, child_name: str, age: int, mood: str, interests: List[str], theme: str) -> str:
+        """Builds the prompt for the story generation API."""
+        return f"""
         اكتب قصة {theme} للطفل {child_name} عمره {age} سنوات.
         
         معلومات عن الطفل:
@@ -56,7 +43,24 @@ class PersonalizedStoryGenerator:
         ابدأ القصة مباشرة.
         """
 
-        # توليد القصة
+    def _record_story(self, story_data: Dict):
+        """Records the generated story to the history."""
+        self.story_history.append(story_data)
+
+    def generate_personalized_story(
+        self,
+        child_name: str,
+        age: int,
+        mood: str,
+        interests: List[str],
+        theme: str = StoryTheme.ADVENTURE,
+        story_length: str = "medium",
+    ) -> Dict:
+        """توليد قصة مخصصة للطفل"""
+        length_tokens = {"short": 500, "medium": 800, "long": 1200}
+        prompt = self._build_story_prompt(
+            child_name, age, mood, interests, theme)
+
         messages = [
             {"role": "system", "content": "أنت راوي قصص محترف للأطفال"},
             {"role": "user", "content": prompt},
@@ -70,11 +74,8 @@ class PersonalizedStoryGenerator:
         )
 
         story_text = response.choices[0].message.content
-
-        # تحليل القصة لتحديد الشخصيات
         characters = self._extract_characters(story_text, child_name)
 
-        # حفظ في السجل
         story_record = {
             "id": f"story_{datetime.now().timestamp()}",
             "timestamp": datetime.now().isoformat(),
@@ -86,8 +87,7 @@ class PersonalizedStoryGenerator:
             "characters": characters,
             "interests_used": interests,
         }
-
-        self.story_history.append(story_record)
+        self._record_story(story_record)
 
         return {"story": story_text, "characters": characters, "id": story_record["id"]}
 

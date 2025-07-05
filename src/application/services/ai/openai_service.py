@@ -48,30 +48,36 @@ class ModernOpenAIService(IAIService):
         emotion_analyzer: EmotionAnalyzerService,
         fallback_service: FallbackResponseService,
     ):
+        self._initialize_services(
+            settings, cache_service, emotion_analyzer, fallback_service)
+        self._initialize_caching()
+        self._initialize_performance_tracking()
+        self._initialize_client()
+        logger.info(
+            "✅ Modern OpenAI Service initialized with enhanced features")
+
+    def _initialize_services(self, settings, cache_service, emotion_analyzer, fallback_service):
+        """Initializes service dependencies."""
         self.settings = settings
         self.cache = cache_service
         self.emotion_analyzer = emotion_analyzer
         self.fallback_service = fallback_service
         self.client = None
 
-        # Enhanced caching
+    def _initialize_caching(self):
+        """Initializes caching parameters."""
         self.memory_cache: Dict[str, tuple] = {}
         self.cache_ttl = 3600  # 1 hour
         self.max_cache_size = 1000
+        self.conversation_history: Dict[str, List[Dict]] = {}
+        self.max_history_length = 10
 
-        # Performance tracking
+    def _initialize_performance_tracking(self):
+        """Initializes performance tracking metrics."""
         self.request_count = 0
         self.total_processing_time = 0
         self.error_count = 0
         self.rate_limit_count = 0
-
-        # Conversation management
-        self.conversation_history: Dict[str, List[Dict]] = {}
-        self.max_history_length = 10
-
-        self._initialize_client()
-        logger.info(
-            "✅ Modern OpenAI Service initialized with enhanced features")
 
     def _initialize_client(self) -> None:
         """Initialize OpenAI client with comprehensive error handling"""
@@ -149,136 +155,168 @@ class ModernOpenAIService(IAIService):
         self.request_count += 1
 
         try:
-            # Generate session ID if not provided
-            if not session_id:
-                device_id = getattr(child, "device_id", "unknown")
-                session_id = f"session_{device_id}_{int(datetime.utcnow().timestamp())}"
+            # Prepare request context and check cache
+            session_id, cache_key, cached_response = await self._prepare_request_context(
+                message, child, session_id, context
+            )
 
-            # Check for wake words (fast path)
-            if self._is_wake_word_only(message):
-                return await self._create_wake_word_response(child, session_id)
-
-            # Enhanced caching strategy
-            child_profile = self._get_child_profile_key(child)
-            context_str = json.dumps(context or {}, sort_keys=True)
-            cache_key = self._get_cache_key(
-                message, context_str, child_profile)
-
-            # Check memory cache first (fastest)
-            cached_response = self._check_memory_cache(cache_key)
             if cached_response:
-                logger.info("🎯 Memory cache hit - response time: <1ms")
                 return cached_response
 
-            # Check persistent cache
-            persistent_cached = await self.cache.get(f"ai_response_{cache_key}")
-            if persistent_cached:
-                logger.info("🎯 Persistent cache hit")
-                response = AIResponseModel(**json.loads(persistent_cached))
-                response.cached = True
-                # Store in memory for next time
-                self._store_in_memory_cache(cache_key, response)
-                return response
+            # Process with OpenAI and create response
+            return await self._process_with_openai(
+                message, child, session_id, context, cache_key, start_time
+            )
 
-            # 🎭 Activate emotion analyzer (parallel processing)
-            emotion_task = asyncio.create_task(
-                self._enhanced_emotion_analysis(message))
-            category_task = asyncio.create_task(
-                self.categorize_message(message))
+        except (RateLimitError, APITimeoutError, APIError, Exception) as e:
+            return await self._handle_api_errors(e, message, child, session_id)
 
-            # Get conversation history
+    async def _prepare_request_context(
+        self, message: str, child: Child, session_id: Optional[str], context: Optional[Dict[str, Any]]
+    ) -> tuple[str, str, Optional[AIResponseModel]]:
+        """Prepare request context and check for cached responses"""
+        # Generate session ID if not provided
+        if not session_id:
             device_id = getattr(child, "device_id", "unknown")
-            history = self._get_conversation_history(device_id)
+            session_id = f"session_{device_id}_{int(datetime.utcnow().timestamp())}"
 
-            # Build enhanced system prompt with emotion context
-            system_prompt = await self._build_enhanced_system_prompt(child, context)
+        # Check for wake words (fast path)
+        if self._is_wake_word_only(message):
+            wake_response = await self._create_wake_word_response(child, session_id)
+            return session_id, "", wake_response
 
-            # 🤖 Call OpenAI API with comprehensive error handling
-            response = await self._enhanced_openai_call(
-                message=message,
-                system_prompt=system_prompt,
-                history=history,
-                emotion_context=await emotion_task,
-            )
+        # Enhanced caching strategy
+        child_profile = self._get_child_profile_key(child)
+        context_str = json.dumps(context or {}, sort_keys=True)
+        cache_key = self._get_cache_key(message, context_str, child_profile)
 
-            # Extract response data
-            response_text = response.choices[0].message.content.strip()
+        # Check memory cache first (fastest)
+        cached_response = self._check_memory_cache(cache_key)
+        if cached_response:
+            logger.info("🎯 Memory cache hit - response time: <1ms")
+            return session_id, cache_key, cached_response
 
-            # Wait for parallel tasks
-            emotion, category = await asyncio.gather(emotion_task, category_task)
-            learning_points = await self._extract_learning_points(
-                message, response_text
-            )
+        # Check persistent cache
+        persistent_cached = await self.cache.get(f"ai_response_{cache_key}")
+        if persistent_cached:
+            logger.info("🎯 Persistent cache hit")
+            response = AIResponseModel(**json.loads(persistent_cached))
+            response.cached = True
+            # Store in memory for next time
+            self._store_in_memory_cache(cache_key, response)
+            return session_id, cache_key, response
 
-            # Calculate processing time
-            processing_time = int(
-                (datetime.utcnow() - start_time).total_seconds() * 1000
-            )
-            self.total_processing_time += processing_time
+        return session_id, cache_key, None
 
-            # Create enhanced response model
-            ai_response = AIResponseModel(
-                text=response_text,
-                emotion=emotion,
-                category=category,
-                learning_points=learning_points,
-                session_id=session_id,
-                confidence=0.95,
-                processing_time_ms=processing_time,
-                cached=False,
-                model_used=response.model,
-                usage=response.usage.model_dump() if response.usage else {},
-            )
+    async def _process_with_openai(
+        self, message: str, child: Child, session_id: str,
+        context: Optional[Dict[str, Any]], cache_key: str, start_time: datetime
+    ) -> AIResponseModel:
+        """Process message with OpenAI API and create response"""
+        # Start parallel tasks
+        emotion_task = asyncio.create_task(
+            self._enhanced_emotion_analysis(message))
+        category_task = asyncio.create_task(self.categorize_message(message))
 
-            # Update conversation history
-            self._update_conversation_history(
-                device_id=device_id,
-                message=message,
-                response=response_text,
-                emotion=emotion,
-            )
+        # Get conversation history and build system prompt
+        device_id = getattr(child, "device_id", "unknown")
+        history = self._get_conversation_history(device_id)
+        system_prompt = await self._build_enhanced_system_prompt(child, context)
 
-            # Store in both caches
-            self._store_in_memory_cache(cache_key, ai_response)
-            await self.cache.set(
-                f"ai_response_{cache_key}",
-                json.dumps(ai_response.to_dict()),
-                ttl=self.cache_ttl,
-            )
+        # Call OpenAI API
+        response = await self._enhanced_openai_call(
+            message=message,
+            system_prompt=system_prompt,
+            history=history,
+            emotion_context=await emotion_task,
+        )
 
-            logger.info(
-                f"✅ AI response generated in {processing_time}ms (model: {response.model})"
-            )
-            return ai_response
+        # Create and cache response
+        return await self._create_response_model(
+            response, message, emotion_task, category_task,
+            session_id, device_id, cache_key, start_time
+        )
 
-        except RateLimitError:
+    async def _create_response_model(
+        self, response, message: str, emotion_task, category_task,
+        session_id: str, device_id: str, cache_key: str, start_time: datetime
+    ) -> AIResponseModel:
+        """Create the final AI response model with all metadata"""
+        # Extract response data
+        response_text = response.choices[0].message.content.strip()
+
+        # Wait for parallel tasks
+        emotion, category = await asyncio.gather(emotion_task, category_task)
+        learning_points = await self._extract_learning_points(message, response_text)
+
+        # Calculate processing time
+        processing_time = int(
+            (datetime.utcnow() - start_time).total_seconds() * 1000)
+        self.total_processing_time += processing_time
+
+        # Create enhanced response model
+        ai_response = AIResponseModel(
+            text=response_text,
+            emotion=emotion,
+            category=category,
+            learning_points=learning_points,
+            session_id=session_id,
+            confidence=0.95,
+            processing_time_ms=processing_time,
+            cached=False,
+            model_used=response.model,
+            usage=response.usage.model_dump() if response.usage else {},
+        )
+
+        # Update conversation history and cache
+        self._update_conversation_history(
+            device_id=device_id,
+            message=message,
+            response=response_text,
+            emotion=emotion,
+        )
+
+        # Store in both caches
+        self._store_in_memory_cache(cache_key, ai_response)
+        await self.cache.set(
+            f"ai_response_{cache_key}",
+            json.dumps(ai_response.to_dict()),
+            ttl=self.cache_ttl,
+        )
+
+        logger.info(
+            f"✅ AI response generated in {processing_time}ms (model: {response.model})")
+        return ai_response
+
+    async def _handle_api_errors(
+        self, error: Exception, message: str, child: Child, session_id: str
+    ) -> AIResponseModel:
+        """Handle different types of API errors with appropriate fallbacks"""
+        if isinstance(error, RateLimitError):
             self.rate_limit_count += 1
             logger.warning(
                 f"⚠️ OpenAI rate limit hit (#{self.rate_limit_count})")
             return await self.fallback_service.create_rate_limit_fallback(
                 message, child, session_id
             )
-
-        except APITimeoutError as e:
+        elif isinstance(error, APITimeoutError):
             self.error_count += 1
-            logger.error(f"⏰ OpenAI API timeout: {str(e)}")
+            logger.error(f"⏰ OpenAI API timeout: {str(error)}")
             return await self.fallback_service.create_timeout_fallback(
                 message, child, session_id
             )
-
-        except APIError as e:
+        elif isinstance(error, APIError):
             self.error_count += 1
-            logger.error(f"🚫 OpenAI API error: {str(e)}", exc_info=True)
+            logger.error(f"🚫 OpenAI API error: {str(error)}", exc_info=True)
             return await self.fallback_service.create_api_error_fallback(
-                message, child, session_id, str(e)
+                message, child, session_id, str(error)
             )
-
-        except Exception as e:
+        else:
             self.error_count += 1
             logger.error(
-                f"💥 Unexpected AI service error: {str(e)}", exc_info=True)
+                f"💥 Unexpected AI service error: {str(error)}", exc_info=True)
             return await self.fallback_service.create_generic_fallback(
-                message, child, session_id, str(e)
+                message, child, session_id, str(error)
             )
 
     async def _enhanced_openai_call(

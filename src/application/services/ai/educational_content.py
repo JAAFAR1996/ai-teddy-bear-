@@ -9,7 +9,7 @@ from typing import Any, Dict, List
 import structlog
 from opentelemetry import trace
 
-# from src.application.services.core.service_registry import ServiceBase
+from src.application.services.core.service_registry import ServiceBase
 from src.infrastructure.observability import trace_async
 
 logger = structlog.get_logger()
@@ -59,14 +59,16 @@ class EducationalContentProvider(ServiceBase):
         # Translate if needed
         if language == "ar":
             facts = self._translate_to_arabic(facts, topic)
-            activities = self._translate_to_arabic_activities(activities, topic)
+            activities = self._translate_to_arabic_activities(
+                activities, topic)
 
         return {
             "topic": topic,
             "age_group": age_group,
             "facts": random.sample(facts, min(3, len(facts))) if facts else [],
             "activities": (
-                random.sample(activities, min(2, len(activities))) if activities else []
+                random.sample(activities, min(2, len(activities))
+                              ) if activities else []
             ),
             "learning_objectives": self._get_learning_objectives(topic, age_group),
             "keywords": self._get_topic_keywords(topic, language),
@@ -87,113 +89,125 @@ class EducationalContentProvider(ServiceBase):
     def _load_content_database(self) -> Dict[str, Dict]:
         """Load educational content database"""
         return {
-            "numbers": {
-                "facts": {
-                    "toddler": [
-                        "One is the smallest counting number!",
-                        "You have two hands!",
-                        "A triangle has three sides!",
-                    ],
-                    "preschool": [
-                        "Zero means nothing at all!",
-                        "Ten fingers help us count!",
-                        "Even numbers can be shared equally!",
-                    ],
-                    "elementary": [
-                        "Numbers go on forever!",
-                        "Prime numbers only divide by 1 and themselves!",
-                        "The number Pi helps us measure circles!",
-                    ],
-                },
-                "activities": {
-                    "toddler": [
-                        "Let's count your toys!",
-                        "Show me three jumps!",
-                        "Clap your hands five times!",
-                    ],
-                    "preschool": [
-                        "Let's play a counting game!",
-                        "Find groups of the same number!",
-                        "Make patterns with numbers!",
-                    ],
-                    "elementary": [
-                        "Let's solve a number puzzle!",
-                        "Create your own math problem!",
-                        "Discover number patterns!",
-                    ],
-                },
+            "numbers": self._load_numbers_content(),
+            "animals": self._load_animals_content(),
+            "colors": self._load_colors_content(),
+        }
+
+    def _load_numbers_content(self) -> Dict[str, Dict]:
+        """Load numbers educational content"""
+        return {
+            "facts": {
+                "toddler": [
+                    "One is the smallest counting number!",
+                    "You have two hands!",
+                    "A triangle has three sides!",
+                ],
+                "preschool": [
+                    "Zero means nothing at all!",
+                    "Ten fingers help us count!",
+                    "Even numbers can be shared equally!",
+                ],
+                "elementary": [
+                    "Numbers go on forever!",
+                    "Prime numbers only divide by 1 and themselves!",
+                    "The number Pi helps us measure circles!",
+                ],
             },
-            "animals": {
-                "facts": {
-                    "toddler": [
-                        "Cats say meow!",
-                        "Dogs wag their tails when happy!",
-                        "Birds can fly!",
-                    ],
-                    "preschool": [
-                        "Elephants are the biggest land animals!",
-                        "Fish breathe underwater with gills!",
-                        "Some animals sleep all winter!",
-                    ],
-                    "elementary": [
-                        "Dolphins are mammals, not fish!",
-                        "Octopuses have three hearts!",
-                        "Penguins can't fly but swim very fast!",
-                    ],
-                },
-                "activities": {
-                    "toddler": [
-                        "Make animal sounds!",
-                        "Move like your favorite animal!",
-                        "Draw a simple animal!",
-                    ],
-                    "preschool": [
-                        "Let's play animal charades!",
-                        "Sort animals by where they live!",
-                        "Create an animal story!",
-                    ],
-                    "elementary": [
-                        "Research your favorite animal!",
-                        "Design a new animal habitat!",
-                        "Learn about endangered species!",
-                    ],
-                },
+            "activities": {
+                "toddler": [
+                    "Let's count your toys!",
+                    "Show me three jumps!",
+                    "Clap your hands five times!",
+                ],
+                "preschool": [
+                    "Let's play a counting game!",
+                    "Find groups of the same number!",
+                    "Make patterns with numbers!",
+                ],
+                "elementary": [
+                    "Let's solve a number puzzle!",
+                    "Create your own math problem!",
+                    "Discover number patterns!",
+                ],
             },
-            "colors": {
-                "facts": {
-                    "toddler": [
-                        "The sky is blue!",
-                        "Grass is green!",
-                        "The sun is yellow!",
-                    ],
-                    "preschool": [
-                        "Mixing red and blue makes purple!",
-                        "Rainbows have seven colors!",
-                        "White light contains all colors!",
-                    ],
-                    "elementary": [
-                        "Colors are different wavelengths of light!",
-                        "Some animals see colors we can't!",
-                        "Primary colors make all other colors!",
-                    ],
-                },
-                "activities": {
-                    "toddler": [
-                        "Find something red!",
-                        "Point to blue things!",
-                        "What color is this?",
-                    ],
-                    "preschool": [
-                        "Let's mix colors!",
-                        "Sort objects by color!",
-                        "Draw a colorful picture!",
-                    ],
-                    "elementary": [
-                        "Create a color wheel!",
-                        "Experiment with color mixing!",
-                        "Learn about color in nature!",
-                    ],
-                },
+        }
+
+    def _load_animals_content(self) -> Dict[str, Dict]:
+        """Load animals educational content"""
+        return {
+            "facts": {
+                "toddler": [
+                    "Cats say meow!",
+                    "Dogs wag their tails when happy!",
+                    "Birds can fly!",
+                ],
+                "preschool": [
+                    "Elephants are the biggest land animals!",
+                    "Fish breathe underwater with gills!",
+                    "Some animals sleep all winter!",
+                ],
+                "elementary": [
+                    "Dolphins are mammals, not fish!",
+                    "Octopuses have three hearts!",
+                    "Penguins can't fly but swim very fast!",
+                ],
+            },
+            "activities": {
+                "toddler": [
+                    "Make animal sounds!",
+                    "Move like your favorite animal!",
+                    "Draw a simple animal!",
+                ],
+                "preschool": [
+                    "Let's play animal charades!",
+                    "Sort animals by where they live!",
+                    "Create an animal story!",
+                ],
+                "elementary": [
+                    "Research your favorite animal!",
+                    "Design a new animal habitat!",
+                    "Learn about endangered species!",
+                ],
+            },
+        }
+
+    def _load_colors_content(self) -> Dict[str, Dict]:
+        """Load colors educational content"""
+        return {
+            "facts": {
+                "toddler": [
+                    "The sky is blue!",
+                    "Grass is green!",
+                    "The sun is yellow!",
+                ],
+                "preschool": [
+                    "Mixing red and blue makes purple!",
+                    "Rainbows have seven colors!",
+                    "White light contains all colors!",
+                ],
+                "elementary": [
+                    "Colors are different wavelengths of light!",
+                    "Some animals see colors we can't!",
+                    "Primary colors make all other colors!",
+                ],
+            },
+            "activities": {
+                "toddler": [
+                    "Find something red!",
+                    "Point to blue things!",
+                    "What color is this?",
+                ],
+                "preschool": [
+                    "Let's mix colors!",
+                    "Sort objects by color!",
+                    "Draw a colorful picture!",
+                ],
+                "elementary": [
+                    "Create a color wheel!",
+                    "Experiment with color mixing!",
+                    "Learn about color in nature!",
+                ],
             },
         }
 

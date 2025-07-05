@@ -73,57 +73,75 @@ def handle_exceptions(
     """
 
     def decorator(func):
+        def _handle_custom_exception(e, exception_handlers, propagate) -> (bool, Any):
+            """Handles a custom exception if a handler is registered."""
+            for exception_type, handler in exception_handlers:
+                if isinstance(e, exception_type):
+                    try:
+                        result = handler(e)
+                        return True, result if not propagate else e
+                    except Exception as handler_error:
+                        logger.error(
+                            f"Handler failed for {exception_type.__name__}", handler_error=str(handler_error))
+            return False, e
+
+        async def _handle_custom_exception_async(e, exception_handlers, propagate) -> (bool, Any):
+            """Asynchronously handles a custom exception."""
+            for exception_type, handler in exception_handlers:
+                if isinstance(e, exception_type):
+                    try:
+                        result = await handler(e) if asyncio.iscoroutinefunction(handler) else handler(e)
+                        return True, result if not propagate else e
+                    except Exception as handler_error:
+                        logger.error(
+                            f"Handler failed for {exception_type.__name__}", handler_error=str(handler_error))
+            return False, e
+
+        def _handle_global_exception(e, fallback, propagate) -> (Any):
+            """Handles an exception using the global handler."""
+            global_handler = get_global_exception_handler()
+            result = global_handler.handle_exception_sync(e)
+            if not propagate:
+                return result.get("recovery_result", fallback() if fallback else None)
+            return e  # Re-raise
+
+        async def _handle_global_exception_async(e, fallback, propagate) -> (Any):
+            """Asynchronously handles an exception using the global handler."""
+            global_handler = get_global_exception_handler()
+            result = await global_handler.handle_exception(e)
+            if not propagate:
+                recovery_result = result.get("recovery_result")
+                if recovery_result:
+                    return recovery_result
+                if fallback:
+                    return await fallback() if asyncio.iscoroutinefunction(fallback) else fallback()
+                return None
+            return e  # Re-raise
+
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
             try:
                 return await func(*args, **kwargs)
             except Exception as e:
-                # Log error if enabled
                 if log_errors:
                     logger.error(
-                        f"Exception in {func.__name__}",
-                        exception=type(e).__name__,
-                        message=str(e),
-                        exc_info=True,
-                    )
+                        f"Exception in {func.__name__}", exc_info=True)
 
-                # Try custom handlers
-                for exception_type, handler in exception_handlers:
-                    if isinstance(e, exception_type):
-                        try:
-                            result = (
-                                await handler(e)
-                                if asyncio.iscoroutinefunction(handler)
-                                else handler(e)
-                            )
-                            if not propagate:
-                                return result
-                            else:
-                                raise
-                        except Exception as handler_error:
-                            logger.error(
-                                f"Handler failed for {exception_type.__name__}",
-                                handler_error=str(handler_error),
-                            )
+                handled, result = await _handle_custom_exception_async(e, exception_handlers, propagate)
+                if handled:
+                    if propagate:
+                        raise result
+                    return result
 
-                # Use global handler if enabled
                 if use_global_handler:
-                    global_handler = get_global_exception_handler()
-                    result = await global_handler.handle_exception(e)
-                    if not propagate:
-                        return result.get(
-                            "recovery_result", fallback() if fallback else None
-                        )
+                    result = await _handle_global_exception_async(e, fallback, propagate)
+                    if propagate:
+                        raise result
+                    return result
 
-                # Use fallback if available
                 if fallback and not propagate:
-                    return (
-                        await fallback()
-                        if asyncio.iscoroutinefunction(fallback)
-                        else fallback()
-                    )
+                    return await fallback() if asyncio.iscoroutinefunction(fallback) else fallback()
 
-                # Re-raise if no handler found or propagate is True
                 raise
 
         @wraps(func)
@@ -131,44 +149,26 @@ def handle_exceptions(
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                # Log error if enabled
                 if log_errors:
                     logger.error(
-                        f"Exception in {func.__name__}",
-                        exception=type(e).__name__,
-                        message=str(e),
-                        exc_info=True,
-                    )
+                        f"Exception in {func.__name__}", exc_info=True)
 
-                # Try custom handlers
-                for exception_type, handler in exception_handlers:
-                    if isinstance(e, exception_type):
-                        try:
-                            result = handler(e)
-                            if not propagate:
-                                return result
-                            else:
-                                raise
-                        except Exception as handler_error:
-                            logger.error(
-                                f"Handler failed for {exception_type.__name__}",
-                                handler_error=str(handler_error),
-                            )
+                handled, result = _handle_custom_exception(
+                    e, exception_handlers, propagate)
+                if handled:
+                    if propagate:
+                        raise result
+                    return result
 
-                # Use global handler if enabled
                 if use_global_handler:
-                    global_handler = get_global_exception_handler()
-                    result = global_handler.handle_exception_sync(e)
-                    if not propagate:
-                        return result.get(
-                            "recovery_result", fallback() if fallback else None
-                        )
+                    result = _handle_global_exception(e, fallback, propagate)
+                    if propagate:
+                        raise result
+                    return result
 
-                # Use fallback if available
                 if fallback and not propagate:
                     return fallback()
 
-                # Re-raise if no handler found or propagate is True
                 raise
 
         return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper

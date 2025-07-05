@@ -135,6 +135,29 @@ class ChildSQLiteRepositoryRefactored(
             self.logger.error(f"Error retrieving child {child_id}: {e}")
             raise
 
+    def _prepare_update_data(self, child: Child) -> Dict[str, Any]:
+        """Prepares child data for the update operation."""
+        data = self._serialize_child_for_db(child)
+        update_data = {
+            k: v
+            for k, v in data.items()
+            if k in self._columns and k not in ("id", "created_at")
+        }
+        if not update_data:
+            self.logger.warning(
+                f"No valid fields to update for child {child.id}")
+            return {}
+
+        update_data["updated_at"] = datetime.now().isoformat()
+        return update_data
+
+    def _build_update_query(self, update_data: Dict) -> (str, List[Any]):
+        """Builds the SQL UPDATE query and its corresponding values."""
+        update_fields = ", ".join([f"{k} = ?" for k in update_data.keys()])
+        update_values = list(update_data.values())
+        sql = f"UPDATE {self.table_name} SET {update_fields} WHERE id = ?"
+        return sql, update_values
+
     async def update(self, child: Child) -> Child:
         """Update existing child profile"""
         if not child.id:
@@ -142,30 +165,12 @@ class ChildSQLiteRepositoryRefactored(
 
         try:
             with self.transaction() as cursor:
-                data = self._serialize_child_for_db(child)
-
-                update_data = {
-                    k: v
-                    for k, v in data.items()
-                    if k in self._columns and k not in ("id", "created_at")
-                }
-
+                update_data = self._prepare_update_data(child)
                 if not update_data:
-                    self.logger.warning(
-                        f"No valid fields to update for child {child.id}"
-                    )
                     return child
 
-                update_data["updated_at"] = datetime.now().isoformat()
-
-                # Secure: Ensure table and column names are validated and not user-controlled
-                update_fields = ", ".join(
-                    [f"{k} = ?" for k in update_data.keys()])
-                update_values = list(update_data.values())
+                sql, update_values = self._build_update_query(update_data)
                 update_values.append(child.id)
-
-                # Table and column names are from self._columns and self.table_name, not user input
-                sql = f"UPDATE {self.table_name} SET {update_fields} WHERE id = ?"
 
                 cursor.execute(sql, update_values)
 
@@ -190,6 +195,29 @@ class ChildSQLiteRepositoryRefactored(
             self.logger.error(f"Error deleting child {child_id}: {e}")
             raise
 
+    def _apply_sorting(self, sql: str, options: QueryOptions) -> str:
+        """Applies sorting to the SQL query if specified in options."""
+        if hasattr(options, "sort_by") and options.sort_by:
+            if options.sort_by not in self._columns:
+                raise ValueError(f"Invalid sort column: {options.sort_by}")
+            order = (
+                "DESC"
+                if hasattr(options, "sort_order") and options.sort_order == SortOrder.DESC
+                else "ASC"
+            )
+            sql += f" ORDER BY {options.sort_by} {order}"
+        return sql
+
+    def _apply_pagination(self, sql: str, params: List, options: QueryOptions) -> (str, List):
+        """Applies pagination (limit and offset) to the SQL query."""
+        if hasattr(options, "limit") and options.limit:
+            sql += " LIMIT ?"
+            params.append(options.limit)
+        if hasattr(options, "offset") and options.offset:
+            sql += " OFFSET ?"
+            params.append(options.offset)
+        return sql, params
+
     async def list(self, options: Optional[QueryOptions] = None) -> List[Child]:
         """List active children with optional filtering and sorting"""
         try:
@@ -197,24 +225,9 @@ class ChildSQLiteRepositoryRefactored(
             sql = f"SELECT * FROM {self.table_name} WHERE is_active = 1"
             params = []
 
-            if options and hasattr(options, "sort_by") and options.sort_by:
-                if options.sort_by not in self._columns:
-                    raise ValueError(f"Invalid sort column: {options.sort_by}")
-                order = (
-                    "DESC"
-                    if hasattr(options, "sort_order")
-                    and options.sort_order == SortOrder.DESC
-                    else "ASC"
-                )
-                sql += f" ORDER BY {options.sort_by} {order}"
-
-            if options and hasattr(options, "limit") and options.limit:
-                sql += " LIMIT ?"
-                params.append(options.limit)
-
-            if options and hasattr(options, "offset") and options.offset:
-                sql += " OFFSET ?"
-                params.append(options.offset)
+            if options:
+                sql = self._apply_sorting(sql, options)
+                sql, params = self._apply_pagination(sql, params, options)
 
             cursor.execute(sql, params)
             rows = cursor.fetchall()
@@ -278,20 +291,13 @@ class ChildSQLiteRepositoryRefactored(
 
         return data
 
-    def _deserialize_child_from_db(self, data: Dict[str, Any]) -> Child:
-        """Deserialize child data from database"""
+    def _deserialize_json_fields(self, data: Dict[str, Any]):
+        """Deserializes all JSON-encoded fields in the data dictionary."""
         json_fields = [
-            "interests",
-            "personality_traits",
-            "learning_preferences",
-            "allowed_topics",
-            "restricted_topics",
-            "parental_controls",
-            "emergency_contacts",
-            "privacy_settings",
-            "custom_settings",
+            "interests", "personality_traits", "learning_preferences",
+            "allowed_topics", "restricted_topics", "parental_controls",
+            "emergency_contacts", "privacy_settings", "custom_settings",
         ]
-
         for field in json_fields:
             if field in data and data[field]:
                 try:
@@ -301,7 +307,8 @@ class ChildSQLiteRepositoryRefactored(
             else:
                 data[field] = [] if field.endswith("s") else {}
 
-        # Parse datetime fields
+    def _deserialize_datetime_fields(self, data: Dict[str, Any]):
+        """Deserializes all datetime fields in the data dictionary."""
         datetime_fields = ["created_at", "updated_at", "last_interaction"]
         for field in datetime_fields:
             if field in data and data[field]:
@@ -310,17 +317,24 @@ class ChildSQLiteRepositoryRefactored(
                 except (ValueError, TypeError):
                     data[field] = None
 
-        # Parse date fields
+    def _deserialize_date_fields(self, data: Dict[str, Any]):
+        """Deserializes all date fields in the data dictionary."""
         if "date_of_birth" in data and data["date_of_birth"]:
             try:
                 data["date_of_birth"] = datetime.fromisoformat(
-                    data["date_of_birth"]
-                ).date()
+                    data["date_of_birth"]).date()
             except (ValueError, TypeError):
                 data["date_of_birth"] = None
 
-        # Convert boolean fields
+    def _deserialize_boolean_fields(self, data: Dict[str, Any]):
+        """Deserializes all boolean fields in the data dictionary."""
         if "is_active" in data:
             data["is_active"] = bool(data["is_active"])
 
+    def _deserialize_child_from_db(self, data: Dict[str, Any]) -> Child:
+        """Deserialize child data from database"""
+        self._deserialize_json_fields(data)
+        self._deserialize_datetime_fields(data)
+        self._deserialize_date_fields(data)
+        self._deserialize_boolean_fields(data)
         return Child(**data)

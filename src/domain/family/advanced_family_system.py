@@ -104,6 +104,30 @@ class ChildComparison:
     recommendations: List[str]
 
 
+@dataclass
+class MessageScheduleDetails:
+    """Details for scheduling a new message."""
+    child_name: str
+    device_id: str
+    message_type: MessageType
+    content: str
+    scheduled_time: time
+    days_of_week: List[int]
+
+
+@dataclass
+class TimeRestrictionDetails:
+    """Details for adding a new time restriction."""
+    child_name: str
+    device_id: str
+    restriction_type: TimeRestrictionType
+    reason: str
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+    daily_limit_minutes: Optional[int] = None
+    days_of_week: Optional[List[int]] = None
+
+
 class AdvancedFamilySystem:
     """النظام العائلي المتقدم"""
 
@@ -156,26 +180,16 @@ class AdvancedFamilySystem:
             ],
         }
 
-    def create_family_profile(
-        self,
-        family_name: str,
-        parent_name: str,
-        children_info: List[Dict],
-        settings: Dict = None,
-    ) -> str:
-        """إنشاء ملف عائلة جديد"""
-
-        family_id = f"family_{uuid.uuid4()}"
-
-        # إنشاء الأعضاء
+    def _create_family_members(
+        self, parent_name: str, children_info: List[Dict]
+    ) -> List[FamilyMember]:
+        """Helper to create family member objects."""
         members = []
-
-        # إضافة الوالد
         parent_member = FamilyMember(
             id=f"member_{uuid.uuid4()}",
             name=parent_name,
             role="parent",
-            age=None,  # اختياري للوالدين
+            age=None,
             relationship="parent",
             device_ids=[],
             preferences={},
@@ -183,7 +197,6 @@ class AdvancedFamilySystem:
         )
         members.append(parent_member)
 
-        # إضافة الأطفال
         for child_info in children_info:
             child_member = FamilyMember(
                 id=f"member_{uuid.uuid4()}",
@@ -196,28 +209,42 @@ class AdvancedFamilySystem:
                 created_at=datetime.now(),
             )
             members.append(child_member)
+        return members
 
-        # الإعدادات الافتراضية
+    def _prepare_family_settings(self, settings: Optional[Dict]) -> Dict:
+        """Helper to prepare shared family settings."""
         default_settings = {
-            "daily_interaction_limit": 60,  # دقيقة
+            "daily_interaction_limit": 60,
             "bedtime": "21:00",
             "wake_time": "07:00",
-            "break_intervals": 15,  # فترة راحة كل 15 دقيقة
+            "break_intervals": 15,
             "parental_notifications": True,
             "content_filtering": "moderate",
             "language_learning": True,
         }
-
         if settings:
             default_settings.update(settings)
+        return default_settings
 
-        # إنشاء الملف العائلي
+    def create_family_profile(
+        self,
+        family_name: str,
+        parent_name: str,
+        children_info: List[Dict],
+        settings: Dict = None,
+    ) -> str:
+        """إنشاء ملف عائلة جديد"""
+        family_id = f"family_{uuid.uuid4()}"
+
+        members = self._create_family_members(parent_name, children_info)
+        shared_settings = self._prepare_family_settings(settings)
+
         family_profile = FamilyProfile(
             family_id=family_id,
             family_name=family_name,
             members=members,
-            shared_settings=default_settings,
-            time_zone="Asia/Riyadh",  # افتراضي
+            shared_settings=shared_settings,
+            time_zone="Asia/Riyadh",
             language="ar",
             cultural_settings={"region": "middle_east", "religion": "islam"},
             subscription_type="basic",
@@ -227,348 +254,323 @@ class AdvancedFamilySystem:
 
         self.family_profiles[family_id] = family_profile
 
-        # إنشاء رسائل تشجيعية افتراضية
         self._create_default_scheduled_messages(family_profile)
-
-        # إنشاء قيود زمنية افتراضية
         self._create_default_time_restrictions(family_profile)
 
         return family_id
 
+    def _create_and_add_message(
+        self,
+        child: FamilyMember,
+        device_id: str,
+        msg_type: MessageType,
+        msg_time: time,
+        parent_name: str,
+    ):
+        """Helper to create and add a single scheduled message."""
+        content_template = random.choice(
+            self.message_templates.get(msg_type.value, [""]))
+        content = content_template.format(child_name=child.name)
+
+        message = ScheduledMessage(
+            id=f"msg_{uuid.uuid4()}",
+            child_name=child.name,
+            device_id=device_id,
+            message_type=msg_type,
+            content=content,
+            scheduled_time=msg_time,
+            days_of_week=list(range(7)),  # All days
+            is_active=True,
+            created_by_parent=parent_name,
+            created_at=datetime.now(),
+        )
+        self.scheduled_messages.append(message)
+
     def _create_default_scheduled_messages(self, family_profile: FamilyProfile) -> None:
         """إنشاء رسائل تشجيعية افتراضية للعائلة"""
-
-        children = [
-            member for member in family_profile.members if member.role == "child"]
+        children = [m for m in family_profile.members if m.role == "child"]
         parent = next(
-            (member for member in family_profile.members if member.role == "parent"), None
-        )
+            (m for m in family_profile.members if m.role == "parent"), None)
+        parent_name = parent.name if parent else "System"
+
+        default_messages_config = [
+            (MessageType.WAKE_UP, time(7, 30)),
+            (MessageType.BEDTIME, time(20, 30)),
+        ]
 
         for child in children:
             for device_id in child.device_ids:
-                # رسالة صباحية تحفيزية
-                morning_msg = ScheduledMessage(
-                    id=f"msg_{uuid.uuid4()}",
-                    child_name=child.name,
-                    device_id=device_id,
-                    message_type=MessageType.MOTIVATION,
-                    content=random.choice(
-                        self.message_templates[MessageType.MOTIVATION.value]
-                    ).format(child_name=child.name),
-                    scheduled_time=time(8, 0),  # 8:00 ص
-                    days_of_week=[0, 1, 2, 3, 4],  # الاثنين إلى الجمعة
-                    is_active=True,
-                    created_by_parent=parent.name if parent else "system",
-                    created_at=datetime.now(),
-                )
+                for msg_type, msg_time in default_messages_config:
+                    self._create_and_add_message(
+                        child, device_id, msg_type, msg_time, parent_name
+                    )
 
-                # رسالة مسائية للنوم
-                bedtime_msg = ScheduledMessage(
-                    id=f"msg_{uuid.uuid4()}",
-                    child_name=child.name,
-                    device_id=device_id,
-                    message_type=MessageType.BEDTIME,
-                    content=random.choice(
-                        self.message_templates[MessageType.BEDTIME.value]
-                    ).format(child_name=child.name),
-                    scheduled_time=time(20, 30),  # 8:30 م
-                    days_of_week=[0, 1, 2, 3, 4, 5, 6],  # كل يوم
-                    is_active=True,
-                    created_by_parent=parent.name if parent else "system",
-                    created_at=datetime.now(),
-                )
-
-                self.scheduled_messages.extend([morning_msg, bedtime_msg])
+    def _create_and_add_restriction(
+        self,
+        child: FamilyMember,
+        device_id: str,
+        config: Dict[str, Any],
+        parent_name: str,
+    ):
+        """Helper to create and add a single time restriction."""
+        restriction = TimeRestriction(
+            id=f"res_{uuid.uuid4()}",
+            child_name=child.name,
+            device_id=device_id,
+            restriction_type=config["type"],
+            start_time=config.get("start_time"),
+            end_time=config.get("end_time"),
+            daily_limit_minutes=config.get("daily_limit_minutes"),
+            days_of_week=config.get("days_of_week", list(range(7))),
+            is_active=True,
+            set_by_parent=parent_name,
+            reason=config["reason"],
+            created_at=datetime.now(),
+        )
+        self.time_restrictions.append(restriction)
 
     def _create_default_time_restrictions(self, family_profile: FamilyProfile) -> None:
-        """إنشاء قيود زمنية افتراضية"""
-
-        children = [
-            member for member in family_profile.members if member.role == "child"]
+        """إنشاء قيود زمنية افتراضية للعائلة"""
+        children = [m for m in family_profile.members if m.role == "child"]
         parent = next(
-            (member for member in family_profile.members if member.role == "parent"), None
-        )
+            (m for m in family_profile.members if m.role == "parent"), None)
+        parent_name = parent.name if parent else "System"
+
+        default_restrictions_config = [
+            {
+                "type": TimeRestrictionType.DAILY_LIMIT,
+                "daily_limit_minutes": 120,
+                "reason": "Default daily play time limit.",
+            },
+            {
+                "type": TimeRestrictionType.BEDTIME_RESTRICTION,
+                "start_time": time(21, 0),
+                "end_time": time(7, 0),
+                "reason": "Default bedtime restriction for healthy sleep.",
+            },
+        ]
 
         for child in children:
             for device_id in child.device_ids:
-                # حد زمني يومي
-                daily_limit = TimeRestriction(
-                    id=f"restriction_{uuid.uuid4()}",
-                    child_name=child.name,
-                    device_id=device_id,
-                    restriction_type=TimeRestrictionType.DAILY_LIMIT,
-                    start_time=None,
-                    end_time=None,
-                    daily_limit_minutes=family_profile.shared_settings.get(
-                        "daily_interaction_limit", 60
-                    ),
-                    days_of_week=[0, 1, 2, 3, 4, 5, 6],
-                    is_active=True,
-                    set_by_parent=parent.name if parent else "system",
-                    reason="صحة رقمية للطفل",
-                    created_at=datetime.now(),
-                )
-
-                # قيد وقت النوم
-                bedtime_restriction = TimeRestriction(
-                    id=f"restriction_{uuid.uuid4()}",
-                    child_name=child.name,
-                    device_id=device_id,
-                    restriction_type=TimeRestrictionType.BEDTIME_RESTRICTION,
-                    start_time=time(21, 0),  # 9:00 م
-                    end_time=time(7, 0),  # 7:00 ص
-                    daily_limit_minutes=None,
-                    days_of_week=[0, 1, 2, 3, 4, 5, 6],
-                    is_active=True,
-                    set_by_parent=parent.name if parent else "system",
-                    reason="وقت النوم الصحي",
-                    created_at=datetime.now(),
-                )
-
-                self.time_restrictions.extend(
-                    [daily_limit, bedtime_restriction])
+                for config in default_restrictions_config:
+                    self._create_and_add_restriction(
+                        child, device_id, config, parent_name
+                    )
 
     def add_scheduled_message(
         self,
         family_id: str,
-        child_name: str,
-        device_id: str,
-        message_type: MessageType,
-        content: str,
-        scheduled_time: time,
-        days_of_week: List[int],
+        details: MessageScheduleDetails,
         parent_name: str,
     ) -> str:
-        """إضافة رسالة مجدولة جديدة"""
+        """Add a new scheduled message to a family profile."""
+        if family_id not in self.family_profiles:
+            raise ValueError(f"Family with ID {family_id} not found.")
 
-        message = ScheduledMessage(
-            id=f"msg_{uuid.uuid4()}",
-            child_name=child_name,
-            device_id=device_id,
-            message_type=message_type,
-            content=content,
-            scheduled_time=scheduled_time,
-            days_of_week=days_of_week,
+        message_id = f"msg_{uuid.uuid4()}"
+        new_message = ScheduledMessage(
+            id=message_id,
+            child_name=details.child_name,
+            device_id=details.device_id,
+            message_type=details.message_type,
+            content=details.content,
+            scheduled_time=details.scheduled_time,
+            days_of_week=details.days_of_week,
             is_active=True,
             created_by_parent=parent_name,
             created_at=datetime.now(),
         )
 
-        self.scheduled_messages.append(message)
-        return message.id
+        self.scheduled_messages.append(new_message)
+        self.family_profiles[family_id].updated_at = datetime.now()
+        return message_id
 
     def add_time_restriction(
         self,
         family_id: str,
-        child_name: str,
-        device_id: str,
-        restriction_type: TimeRestrictionType,
+        details: TimeRestrictionDetails,
         parent_name: str,
-        reason: str,
-        start_time: time = None,
-        end_time: time = None,
-        daily_limit_minutes: int = None,
-        days_of_week: List[int] = None,
     ) -> str:
-        """إضافة قيد زمني جديد"""
+        """Add a new time restriction for a child."""
+        if family_id not in self.family_profiles:
+            raise ValueError(f"Family with ID {family_id} not found.")
 
-        if days_of_week is None:
-            days_of_week = [0, 1, 2, 3, 4, 5, 6]  # كل الأيام افتراضياً
+        # Validation logic
+        if details.restriction_type == TimeRestrictionType.DAILY_LIMIT and not details.daily_limit_minutes:
+            raise ValueError(
+                "Daily limit must be set for DAILY_LIMIT restriction.")
+        if details.restriction_type == TimeRestrictionType.TIME_WINDOW and not (details.start_time and details.end_time):
+            raise ValueError(
+                "Start and end times must be set for TIME_WINDOW restriction.")
 
-        restriction = TimeRestriction(
-            id=f"restriction_{uuid.uuid4()}",
-            child_name=child_name,
-            device_id=device_id,
-            restriction_type=restriction_type,
-            start_time=start_time,
-            end_time=end_time,
-            daily_limit_minutes=daily_limit_minutes,
-            days_of_week=days_of_week,
+        restriction_id = f"res_{uuid.uuid4()}"
+        new_restriction = TimeRestriction(
+            id=restriction_id,
+            child_name=details.child_name,
+            device_id=details.device_id,
+            restriction_type=details.restriction_type,
+            start_time=details.start_time,
+            end_time=details.end_time,
+            daily_limit_minutes=details.daily_limit_minutes,
+            days_of_week=details.days_of_week or list(range(7)),
             is_active=True,
             set_by_parent=parent_name,
-            reason=reason,
+            reason=details.reason,
             created_at=datetime.now(),
         )
 
-        self.time_restrictions.append(restriction)
-        return restriction.id
+        self.time_restrictions.append(new_restriction)
+        self.family_profiles[family_id].updated_at = datetime.now()
+        return restriction_id
+
+    def _get_active_restrictions_for_child(
+        self, device_id: str, child_name: str, now: datetime
+    ) -> List[TimeRestriction]:
+        """Get all active restrictions for a child on a specific device."""
+        current_day = now.weekday()
+        return [
+            r
+            for r in self.time_restrictions
+            if r.is_active
+            and r.device_id == device_id
+            and r.child_name == child_name
+            and current_day in r.days_of_week
+        ]
+
+    def _check_daily_limit(
+        self, restriction: TimeRestriction, usage_today_minutes: int
+    ) -> Optional[str]:
+        """Check daily limit restriction."""
+        if restriction.restriction_type == TimeRestrictionType.DAILY_LIMIT:
+            if usage_today_minutes >= restriction.daily_limit_minutes:
+                return f"Exceeded daily limit of {restriction.daily_limit_minutes} minutes. Reason: {restriction.reason}"
+        return None
+
+    def _check_time_window(
+        self, restriction: TimeRestriction, now_time: time
+    ) -> Optional[str]:
+        """Check time window or bedtime restrictions."""
+        if restriction.restriction_type in [
+            TimeRestrictionType.TIME_WINDOW,
+            TimeRestrictionType.BEDTIME_RESTRICTION,
+        ]:
+            start = restriction.start_time
+            end = restriction.end_time
+
+            if start and end:
+                # Handle overnight case (e.g., 9 PM to 7 AM)
+                if start > end:
+                    if not (end <= now_time < start):
+                        return f"Not allowed due to time restriction '{restriction.reason}' (overnight)."
+                # Handle same-day case
+                else:
+                    if not (start <= now_time < end):
+                        return f"Not allowed due to time restriction '{restriction.reason}'."
+        return None
 
     async def check_scheduled_messages(self) -> List[Dict]:
-        """فحص الرسائل المجدولة المستحقة للإرسال"""
-
-        current_time = datetime.now().time()
-        current_weekday = datetime.now().weekday()
-        today = datetime.now().date()
+        """Check and return messages that need to be sent."""
+        now = datetime.now()
+        now_time = now.time()
+        current_day = now.weekday()  # Monday is 0 and Sunday is 6
 
         messages_to_send = []
 
         for message in self.scheduled_messages:
-            if not message.is_active:
-                continue
-
-            # فحص اليوم
-            if current_weekday not in message.days_of_week:
-                continue
-
-            # فحص الوقت
-            if message.scheduled_time.hour != current_time.hour:
-                continue
-
-            # فحص إذا تم الإرسال اليوم
-            if message.last_sent and message.last_sent.date() == today:
-                continue
-
-            # إعداد الرسالة للإرسال
-            messages_to_send.append(
-                {
-                    "message_id": message.id,
-                    "device_id": message.device_id,
-                    "child_name": message.child_name,
-                    "content": message.content,
-                    "message_type": message.message_type.value,
-                }
-            )
-
-            # تحديث وقت آخر إرسال
-            message.last_sent = datetime.now()
+            if (
+                message.is_active
+                and current_day in message.days_of_week
+                and message.scheduled_time.hour == now_time.hour
+                and message.scheduled_time.minute == now_time.minute
+            ):
+                if message.last_sent is None or (now - message.last_sent).days >= 1:
+                    messages_to_send.append(
+                        {
+                            "device_id": message.device_id,
+                            "content": message.content,
+                        }
+                    )
+                    message.last_sent = now
 
         return messages_to_send
 
     def check_time_restrictions(
         self, device_id: str, child_name: str
     ) -> Dict[str, Any]:
-        """فحص القيود الزمنية للطفل"""
+        """Check current time restrictions for a child on a device."""
+        now = datetime.now()
+        now_time = now.time()
 
-        current_time = datetime.now().time()
-        current_weekday = datetime.now().weekday()
+        # This is a placeholder for actual usage tracking
+        usage_today_minutes = 100
 
-        restrictions_status = {
-            "allowed": True,
-            "restrictions": [],
-            "time_remaining": None,
-            "next_allowed_time": None,
+        active_restrictions = self._get_active_restrictions_for_child(
+            device_id, child_name, now
+        )
+
+        for r in active_restrictions:
+            if (violation := self._check_daily_limit(r, usage_today_minutes)):
+                return {"allowed": False, "reason": violation}
+            if (violation := self._check_time_window(r, now_time)):
+                return {"allowed": False, "reason": violation}
+
+        return {"allowed": True, "reason": "No active restrictions."}
+
+    def _find_extreme_children(self, children_data: Dict[str, Dict]) -> Dict[str, str]:
+        """Find the most and least active children from data."""
+        sorted_children = sorted(
+            children_data.items(),
+            key=lambda item: item[1].get("interaction_minutes", 0),
+            reverse=True,
+        )
+        return {
+            "most_active": sorted_children[0][0] if sorted_children else "N/A",
+            "least_active": sorted_children[-1][0] if sorted_children else "N/A",
         }
 
-        child_restrictions = [
-            r
-            for r in self.time_restrictions
-            if r.device_id == device_id and r.child_name == child_name and r.is_active
+    def _generate_comparison_insights(
+        self, children_data: Dict[str, Dict], extremes: Dict[str, str]
+    ) -> List[str]:
+        """Generate insights for the family comparison report."""
+        insights = [
+            f"Most active child this period: {extremes['most_active']}.",
+            f"Least active child this period: {extremes['least_active']}.",
         ]
+        if len(children_data) > 1:
+            total_minutes = sum(d.get("interaction_minutes", 0)
+                                for d in children_data.values())
+            avg_minutes = total_minutes / len(children_data)
+            insights.append(
+                f"Average interaction time: {avg_minutes:.2f} minutes per child.")
+        return insights
 
-        for restriction in child_restrictions:
-            # فحص اليوم
-            if current_weekday not in restriction.days_of_week:
-                continue
-
-            violation = False
-
-            if restriction.restriction_type == TimeRestrictionType.BEDTIME_RESTRICTION:
-                # فحص وقت النوم
-                if restriction.start_time and restriction.end_time:
-                    if restriction.start_time > restriction.end_time:
-                        # يمتد عبر منتصف الليل
-                        if (
-                            current_time >= restriction.start_time
-                            or current_time <= restriction.end_time
-                        ):
-                            violation = True
-                    else:
-                        # في نفس اليوم
-                        if (
-                            restriction.start_time
-                            <= current_time
-                            <= restriction.end_time
-                        ):
-                            violation = True
-
-            elif restriction.restriction_type == TimeRestrictionType.TIME_WINDOW:
-                # نافذة زمنية محددة
-                if (
-                    restriction.start_time
-                    and restriction.end_time
-                    and not (
-                        restriction.start_time <= current_time <= restriction.end_time
-                    )
-                ):
-                    violation = True
-
-            elif restriction.restriction_type == TimeRestrictionType.DAILY_LIMIT:
-                # فحص الحد اليومي - يحتاج لتتبع الوقت المستخدم
-                # هذا يتطلب دمج مع نظام تتبع الاستخدام
-                pass
-
-            if violation:
-                restrictions_status["allowed"] = False
-                restrictions_status["restrictions"].append(
-                    {
-                        "type": restriction.restriction_type.value,
-                        "reason": restriction.reason,
-                        "set_by": restriction.set_by_parent,
-                    }
-                )
-
-        return restrictions_status
+    def _generate_comparison_recommendations(
+        self, children_data: Dict[str, Dict], extremes: Dict[str, str]
+    ) -> List[str]:
+        """Generate recommendations for the family comparison report."""
+        recommendations = [
+            f"Engage with {extremes['least_active']} on topics they enjoy to encourage interaction.",
+            f"Review the activities of {extremes['most_active']} to ensure they are balanced.",
+        ]
+        # Add more complex recommendation logic here if needed
+        return recommendations
 
     def generate_family_comparison_report(
         self, family_id: str, children_data: Dict[str, Dict]
     ) -> ChildComparison:
-        """توليد تقرير مقارنة بين الأطفال في العائلة"""
-
+        """Generate a report comparing children's activity."""
         if family_id not in self.family_profiles:
-            return None
+            raise ValueError(f"Family with ID {family_id} not found.")
+        if not children_data or len(children_data) < 2:
+            raise ValueError(
+                "Comparison requires data for at least two children.")
 
-        family = self.family_profiles[family_id]
-        children = [
-            member for member in family.members if member.role == "child"]
+        extremes = self._find_extreme_children(children_data)
+        insights = self._generate_comparison_insights(children_data, extremes)
+        recommendations = self._generate_comparison_recommendations(
+            children_data, extremes)
 
-        insights = []
-        recommendations = []
-
-        # تحليل الأداء الأكاديمي
-        academic_scores = {}
-        for child_name, data in children_data.items():
-            academic_scores[child_name] = data.get("academic_performance", 0)
-
-        if academic_scores:
-            top_performer = max(academic_scores.items(), key=lambda x: x[1])
-            insights.append(
-                f"{top_performer[0]} يُظهر أداءً أكاديمياً ممتازاً")
-
-            for child_name, score in academic_scores.items():
-                if score < 70:  # أقل من 70%
-                    recommendations.append(
-                        f"يحتاج {child_name} دعماً إضافياً في التعليم")
-
-        # تحليل الوقت المستخدم
-        usage_times = {}
-        for child_name, data in children_data.items():
-            usage_times[child_name] = data.get("daily_usage_minutes", 0)
-
-        if usage_times:
-            avg_usage = sum(usage_times.values()) / len(usage_times)
-            for child_name, usage in usage_times.items():
-                if usage > avg_usage * 1.5:
-                    recommendations.append(
-                        f"قلل وقت استخدام {child_name} للجهاز")
-                elif usage < avg_usage * 0.5:
-                    insights.append(f"{child_name} يستخدم الجهاز بشكل معتدل")
-
-        # تحليل المهارات الاجتماعية
-        social_scores = {}
-        for child_name, data in children_data.items():
-            social_scores[child_name] = data.get("social_skills", 0)
-
-        if social_scores:
-            for child_name, score in social_scores.items():
-                if score > 80:
-                    insights.append(
-                        f"{child_name} يتمتع بمهارات اجتماعية ممتازة")
-                elif score < 50:
-                    recommendations.append(
-                        f"شجع {child_name} على المزيد من الأنشطة الاجتماعية"
-                    )
-
-        comparison = ChildComparison(
+        return ChildComparison(
             family_id=family_id,
             comparison_date=datetime.now(),
             children_data=children_data,
@@ -576,10 +578,8 @@ class AdvancedFamilySystem:
             recommendations=recommendations,
         )
 
-        return comparison
-
     def update_family_settings(self, family_id: str, new_settings: Dict) -> bool:
-        """تحديث إعدادات العائلة"""
+        """Update shared settings for a family."""
 
         if family_id not in self.family_profiles:
             return False
@@ -605,55 +605,65 @@ class AdvancedFamilySystem:
 
         return True
 
-    def get_family_dashboard(self, family_id: str) -> Dict[str, Any]:
-        """الحصول على لوحة تحكم العائلة"""
-
-        if family_id not in self.family_profiles:
-            return {"error": "العائلة غير موجودة"}
-
-        family = self.family_profiles[family_id]
-        children = [
-            member for member in family.members if member.role == "child"]
-
-        # إحصائيات سريعة
-        total_children = len(children)
-        active_devices = sum(len(child.device_ids) for child in children)
-        active_messages = len(
-            [msg for msg in self.scheduled_messages if msg.is_active])
-        active_restrictions = len(
-            [r for r in self.time_restrictions if r.is_active])
-
+    def _get_dashboard_member_summary(self, members: List[FamilyMember]) -> Dict:
+        """Generate a summary of family members for the dashboard."""
+        children = [m for m in members if m.role == "child"]
+        parents = [m for m in members if m.role == "parent"]
         return {
-            "family_info": {
-                "name": family.family_name,
-                "total_children": total_children,
-                "subscription": family.subscription_type,
-                "language": family.language,
-            },
-            "quick_stats": {
-                "active_devices": active_devices,
-                "scheduled_messages": active_messages,
-                "time_restrictions": active_restrictions,
-            },
-            "children": [
-                {
-                    "name": child.name,
-                    "age": child.age,
-                    "devices": len(child.device_ids),
-                    "last_active": "غير متوفر",  # سيتم ربطه بنظام التتبع
-                }
-                for child in children
-            ],
-            "recent_activity": [],  # سيتم ملؤه من أنظمة أخرى
-            "upcoming_messages": [
-                {
-                    "child": msg.child_name,
-                    "time": msg.scheduled_time.strftime("%H:%M"),
-                    "type": msg.message_type.value,
-                }
-                for msg in self.scheduled_messages[-5:]  # آخر 5 رسائل
-            ],
+            "total_members": len(members),
+            "children_count": len(children),
+            "parent_count": len(parents),
+            "children_names": [c.name for c in children],
         }
+
+    def _get_dashboard_message_summary(self, family_id: str) -> Dict:
+        """Generate a summary of scheduled messages for the dashboard."""
+        family_messages = [
+            m for m in self.scheduled_messages if m.device_id in self._get_family_device_ids(family_id)
+        ]
+        return {
+            "total_scheduled_messages": len(family_messages),
+            "active_messages": sum(1 for m in family_messages if m.is_active),
+        }
+
+    def _get_dashboard_restriction_summary(self, family_id: str) -> Dict:
+        """Generate a summary of time restrictions for the dashboard."""
+        family_restrictions = [
+            r for r in self.time_restrictions if r.device_id in self._get_family_device_ids(family_id)
+        ]
+        return {
+            "total_time_restrictions": len(family_restrictions),
+            "active_restrictions": sum(1 for r in family_restrictions if r.is_active),
+        }
+
+    def _get_family_device_ids(self, family_id: str) -> List[str]:
+        """Get all device IDs associated with a family."""
+        family = self.family_profiles.get(family_id)
+        if not family:
+            return []
+
+        device_ids = []
+        for member in family.members:
+            device_ids.extend(member.device_ids)
+        return list(set(device_ids))
+
+    def get_family_dashboard(self, family_id: str) -> Dict[str, Any]:
+        """Get a comprehensive dashboard for a family."""
+        family = self.family_profiles.get(family_id)
+        if not family:
+            return {"error": "Family not found"}
+
+        dashboard = {
+            "family_id": family.family_id,
+            "family_name": family.family_name,
+            "last_updated": family.updated_at.isoformat(),
+            "subscription_type": family.subscription_type,
+            "member_summary": self._get_dashboard_member_summary(family.members),
+            "message_summary": self._get_dashboard_message_summary(family_id),
+            "restriction_summary": self._get_dashboard_restriction_summary(family_id),
+            "shared_settings": family.shared_settings,
+        }
+        return dashboard
 
     def create_custom_encouragement_message(
         self, child_name: str, achievement: str, personal_traits: List[str]

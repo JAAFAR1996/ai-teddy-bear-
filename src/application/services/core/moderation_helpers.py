@@ -1,14 +1,5 @@
 #!/usr/bin/env python3
-"""
-🛠️ Moderation Service Helpers
-حل مشاكل التعقيد في moderation_service.py
 
-الحلول المطبقة:
-✅ Parameter Objects - تقليل معاملات الدوال
-✅ State Machine - بدلاً من الشروط المتعددة  
-✅ Lookup Tables - بدلاً من سلاسل المنطق
-✅ Decomposed Conditionals - تبسيط الشروط المعقدة
-"""
 
 from dataclasses import dataclass
 from datetime import datetime

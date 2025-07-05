@@ -5,7 +5,7 @@ Analyzes skill development and learning patterns
 
 import logging
 from collections import Counter
-from typing import List
+from typing import List, Dict
 
 from ..models.report_models import InteractionAnalysis, SkillAnalysis
 
@@ -13,8 +13,51 @@ from ..models.report_models import InteractionAnalysis, SkillAnalysis
 class SkillAnalyzer:
     """Domain service for skill analysis"""
 
+    ALL_POSSIBLE_SKILLS = {
+        "counting", "reading", "writing", "drawing", "singing", "problem_solving",
+        "memory_games", "pattern_recognition", "storytelling", "role_playing",
+        "creative_thinking", "social_skills", "emotional_expression", "listening",
+    }
+
+    SKILL_ACTIVITIES = {
+        "counting": "ألعاب الأرقام والعد التفاعلي",
+        "reading": "قراءة القصص المصورة البسيطة",
+        "writing": "أنشطة الرسم والكتابة الحرة",
+        "drawing": "الرسم والتلوين الإبداعي",
+        "singing": "تعلم الأغاني والموسيقى",
+        "problem_solving": "ألعاب الألغاز البسيطة",
+        "memory_games": "ألعاب الذاكرة والتذكر",
+        "pattern_recognition": "ألعاب الأنماط والأشكال",
+        "storytelling": "إنشاء القصص الخيالية",
+        "role_playing": "ألعاب تمثيل الأدوار",
+        "creative_thinking": "أنشطة الإبداع والخيال",
+        "social_skills": "ألعاب جماعية وتفاعلية",
+        "emotional_expression": "أنشطة التعبير عن المشاعر",
+        "listening": "ألعاب الاستماع والتركيز",
+    }
+
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+
+    def _count_skill_usage(self, interactions: List[InteractionAnalysis]) -> Counter:
+        """Counts the usage of each skill across all interactions."""
+        skill_counts = Counter()
+        for interaction in interactions:
+            skill_counts.update(interaction.skills_used)
+        return skill_counts
+
+    def _identify_new_skills(self, skill_counts: Counter) -> List[str]:
+        """Identifies new skills based on low usage count."""
+        return [skill for skill, count in skill_counts.items() if count <= 2]
+
+    def _identify_improvement_areas(self, skill_counts: Counter, new_skills: List[str]) -> List[str]:
+        """Identifies skills needing improvement."""
+        return [skill for skill, count in skill_counts.items() if count <= 3 and skill not in new_skills]
+
+    def _calculate_mastery_levels(self, skill_counts: Counter) -> Dict[str, float]:
+        """Calculates mastery level for each skill based on usage frequency."""
+        max_count = max(skill_counts.values()) if skill_counts else 1
+        return {skill: min(count / max_count, 1.0) for skill, count in skill_counts.items()}
 
     def analyze_skills_practiced(
         self, interactions: List[InteractionAnalysis]
@@ -29,36 +72,14 @@ class SkillAnalyzer:
                     mastery_level={},
                 )
 
-            # Count skill usage
-            skill_counts = {}
-            all_skills = set()
-
-            for interaction in interactions:
-                for skill in interaction.skills_used:
-                    skill_counts[skill] = skill_counts.get(skill, 0) + 1
-                    all_skills.add(skill)
-
-            # Identify new skills (skills used less frequently)
-            new_skills = [
-                skill for skill, count in skill_counts.items() if count <= 2
-            ]  # Used 2 times or less
-
-            # Identify improvement areas (skills used infrequently)
-            improvement_areas = [
-                skill
-                for skill, count in skill_counts.items()
-                if count <= 3 and skill not in new_skills
-            ]
-
-            # Calculate mastery levels
-            max_count = max(skill_counts.values()) if skill_counts else 1
-            mastery_level = {
-                skill: min(count / max_count, 1.0)
-                for skill, count in skill_counts.items()
-            }
+            skill_counts = self._count_skill_usage(interactions)
+            new_skills = self._identify_new_skills(skill_counts)
+            improvement_areas = self._identify_improvement_areas(
+                skill_counts, new_skills)
+            mastery_level = self._calculate_mastery_levels(skill_counts)
 
             return SkillAnalysis(
-                skills_practiced=skill_counts,
+                skills_practiced=dict(skill_counts),
                 new_skills_learned=new_skills,
                 improvement_areas=improvement_areas,
                 mastery_level=mastery_level,
@@ -73,84 +94,71 @@ class SkillAnalyzer:
                 mastery_level={},
             )
 
+    def _check_skill_diversity(self, interactions: List[InteractionAnalysis]) -> List[str]:
+        """Checks for skill diversity achievements."""
+        all_skills = {
+            skill for interaction in interactions for skill in interaction.skills_used}
+        skill_diversity = len(all_skills)
+        if skill_diversity >= 8:
+            return [f"تنوع مهاري ممتاز - استخدم {skill_diversity} مهارات مختلفة"]
+        elif skill_diversity >= 5:
+            return [f"تنوع مهاري جيد - استخدم {skill_diversity} مهارات"]
+        return []
+
+    def _check_skill_consistency(self, interactions: List[InteractionAnalysis]) -> List[str]:
+        """Checks for consistent skill practice."""
+        skill_counts = self._count_skill_usage(interactions)
+        consistent_skills = [skill for skill, count in skill_counts.items(
+        ) if count >= len(interactions) * 0.3]
+        if consistent_skills:
+            return [f"ممارسة مستمرة للمهارات: {', '.join(consistent_skills[:3])}"]
+        return []
+
+    def _check_advanced_skill_usage(self, interactions: List[InteractionAnalysis]) -> List[str]:
+        """Checks for the usage of advanced skills."""
+        advanced_skills = ["problem_solving", "critical_thinking",
+                           "creativity", "complex_reasoning", "analytical_thinking"]
+        used_advanced_skills = {
+            skill for interaction in interactions for skill in interaction.skills_used if skill in advanced_skills}
+        if used_advanced_skills:
+            return [f"استخدام مهارات متقدمة: {', '.join(used_advanced_skills)}"]
+        return []
+
+    def _check_skill_progression(self, interactions: List[InteractionAnalysis]) -> List[str]:
+        """Checks for skill progression over time."""
+        if len(interactions) < 5:
+            return []
+
+        mid_point = len(interactions) // 2
+        early_skills = {
+            skill for interaction in interactions[:mid_point] for skill in interaction.skills_used}
+        late_skills = {
+            skill for interaction in interactions[mid_point:] for skill in interaction.skills_used}
+
+        new_skills_gained = late_skills - early_skills
+        if new_skills_gained:
+            return [f"تطوير مهارات جديدة: {len(new_skills_gained)} مهارات جديدة"]
+        return []
+
     def identify_achievements(
         self, interactions: List[InteractionAnalysis]
     ) -> List[str]:
         """Identify learning achievements based on skill usage"""
         try:
+            if not interactions:
+                return []
+
             achievements = []
 
-            if not interactions:
-                return achievements
-
-            # Analyze skill diversity
-            all_skills = set()
-            for interaction in interactions:
-                all_skills.update(interaction.skills_used)
-
-            skill_diversity = len(all_skills)
-            if skill_diversity >= 8:
-                achievements.append(
-                    f"تنوع مهاري ممتاز - استخدم {skill_diversity} مهارات مختلفة"
-                )
-            elif skill_diversity >= 5:
-                achievements.append(f"تنوع مهاري جيد - استخدم {skill_diversity} مهارات")
-
-            # Skill consistency analysis
-            skill_counts = Counter()
-            for interaction in interactions:
-                skill_counts.update(interaction.skills_used)
-
-            # Check for consistent skill practice
-            consistent_skills = [
-                skill
-                for skill, count in skill_counts.items()
-                if count >= len(interactions) * 0.3  # Used in 30%+ of interactions
+            check_functions = [
+                self._check_skill_diversity,
+                self._check_skill_consistency,
+                self._check_advanced_skill_usage,
+                self._check_skill_progression,
             ]
 
-            if consistent_skills:
-                achievements.append(
-                    f"ممارسة مستمرة للمهارات: {', '.join(consistent_skills[:3])}"
-                )
-
-            # Advanced skill usage
-            advanced_skills = [
-                "problem_solving",
-                "critical_thinking",
-                "creativity",
-                "complex_reasoning",
-                "analytical_thinking",
-            ]
-
-            used_advanced_skills = [
-                skill
-                for skill in advanced_skills
-                if any(skill in interaction.skills_used for interaction in interactions)
-            ]
-
-            if used_advanced_skills:
-                achievements.append(
-                    f"استخدام مهارات متقدمة: {', '.join(used_advanced_skills)}"
-                )
-
-            # Skill progression (detecting improvement over time)
-            if len(interactions) >= 5:
-                early_skills = set()
-                late_skills = set()
-
-                mid_point = len(interactions) // 2
-
-                for interaction in interactions[:mid_point]:
-                    early_skills.update(interaction.skills_used)
-
-                for interaction in interactions[mid_point:]:
-                    late_skills.update(interaction.skills_used)
-
-                new_skills_gained = late_skills - early_skills
-                if new_skills_gained:
-                    achievements.append(
-                        f"تطوير مهارات جديدة: {len(new_skills_gained)} مهارات جديدة"
-                    )
+            for check_func in check_functions:
+                achievements.extend(check_func(interactions))
 
             return achievements
 
@@ -158,87 +166,49 @@ class SkillAnalyzer:
             self.logger.error(f"Achievement identification error: {e}")
             return []
 
+    def _recommend_for_underused_skills(self, used_skills: set) -> List[str]:
+        """Recommends activities for underused skills."""
+        underused_skills = self.ALL_POSSIBLE_SKILLS - used_skills
+        return [self.SKILL_ACTIVITIES[skill] for skill in list(underused_skills)[:5] if skill in self.SKILL_ACTIVITIES]
+
+    def _recommend_to_strengthen_top_skills(self, skill_counts: Counter) -> List[str]:
+        """Recommends activities to strengthen the most used skills."""
+        top_skills = [skill for skill, _ in skill_counts.most_common(3)]
+        return [f"تطوير المهارة القوية: {self.SKILL_ACTIVITIES[skill]}" for skill in top_skills if skill in self.SKILL_ACTIVITIES]
+
+    def _recommend_age_appropriate_activities(self, interactions: List[InteractionAnalysis]) -> List[str]:
+        """Recommends age-appropriate activities based on interaction complexity."""
+        avg_topics = sum(len(i.topics_discussed)
+                         for i in interactions) / len(interactions)
+        if avg_topics < 2:
+            return ["أنشطة بسيطة ومباشرة لبناء الثقة"]
+        elif avg_topics > 4:
+            return ["أنشطة معقدة ومتقدمة لتحدي القدرات"]
+        return []
+
     def generate_activity_recommendations(
         self, interactions: List[InteractionAnalysis]
     ) -> List[str]:
         """Generate activity recommendations based on skill analysis"""
         try:
-            recommendations = []
-
             if not interactions:
                 return ["أنشطة تفاعلية بسيطة لبناء الثقة"]
 
-            # Analyze current skill usage
-            skill_counts = Counter()
-            for interaction in interactions:
-                skill_counts.update(interaction.skills_used)
+            skill_counts = self._count_skill_usage(interactions)
 
-            # Identify underused skills
-            all_possible_skills = {
-                "counting",
-                "reading",
-                "writing",
-                "drawing",
-                "singing",
-                "problem_solving",
-                "memory_games",
-                "pattern_recognition",
-                "storytelling",
-                "role_playing",
-                "creative_thinking",
-                "social_skills",
-                "emotional_expression",
-                "listening",
-            }
+            recommendations = []
+            recommendations.extend(
+                self._recommend_for_underused_skills(set(skill_counts.keys())))
+            recommendations.extend(
+                self._recommend_to_strengthen_top_skills(skill_counts))
+            recommendations.extend(
+                self._recommend_age_appropriate_activities(interactions))
 
-            used_skills = set(skill_counts.keys())
-            underused_skills = all_possible_skills - used_skills
-
-            # Recommend activities for underused skills
-            skill_activities = {
-                "counting": "ألعاب الأرقام والعد التفاعلي",
-                "reading": "قراءة القصص المصورة البسيطة",
-                "writing": "أنشطة الرسم والكتابة الحرة",
-                "drawing": "الرسم والتلوين الإبداعي",
-                "singing": "تعلم الأغاني والموسيقى",
-                "problem_solving": "ألعاب الألغاز البسيطة",
-                "memory_games": "ألعاب الذاكرة والتذكر",
-                "pattern_recognition": "ألعاب الأنماط والأشكال",
-                "storytelling": "إنشاء القصص الخيالية",
-                "role_playing": "ألعاب تمثيل الأدوار",
-                "creative_thinking": "أنشطة الإبداع والخيال",
-                "social_skills": "ألعاب جماعية وتفاعلية",
-                "emotional_expression": "أنشطة التعبير عن المشاعر",
-                "listening": "ألعاب الاستماع والتركيز",
-            }
-
-            # Add recommendations for underused skills
-            for skill in list(underused_skills)[:5]:  # Top 5 underused skills
-                if skill in skill_activities:
-                    recommendations.append(skill_activities[skill])
-
-            # Recommend strengthening frequently used skills
-            top_skills = [skill for skill, _ in skill_counts.most_common(3)]
-            for skill in top_skills:
-                if skill in skill_activities:
-                    recommendations.append(
-                        f"تطوير المهارة القوية: {skill_activities[skill]}"
-                    )
-
-            # Age-appropriate recommendations based on interaction complexity
-            avg_topics_per_interaction = sum(
-                len(interaction.topics_discussed) for interaction in interactions
-            ) / len(interactions)
-
-            if avg_topics_per_interaction < 2:
-                recommendations.append("أنشطة بسيطة ومباشرة لبناء الثقة")
-            elif avg_topics_per_interaction > 4:
-                recommendations.append("أنشطة معقدة ومتقدمة لتحدي القدرات")
-
-            return recommendations[:8]  # Limit to 8 recommendations
+            return recommendations[:8]
 
         except Exception as e:
-            self.logger.error(f"Activity recommendations generation error: {e}")
+            self.logger.error(
+                f"Activity recommendations generation error: {e}")
             return ["أنشطة تعليمية متنوعة مناسبة للعمر"]
 
     def calculate_skill_progression_rate(
@@ -259,10 +229,10 @@ class SkillAnalyzer:
             for interaction in interactions[:third]:
                 period1_skills.update(interaction.skills_used)
 
-            for interaction in interactions[third : 2 * third]:
+            for interaction in interactions[third: 2 * third]:
                 period2_skills.update(interaction.skills_used)
 
-            for interaction in interactions[2 * third :]:
+            for interaction in interactions[2 * third:]:
                 period3_skills.update(interaction.skills_used)
 
             # Calculate progression
@@ -279,68 +249,37 @@ class SkillAnalyzer:
             self.logger.error(f"Skill progression calculation error: {e}")
             return 0.0
 
+    def _get_expected_skills_by_age(self, age: int) -> set:
+        """Returns the set of expected skills for a given age."""
+        if age <= 3:
+            return {"counting", "drawing", "singing", "emotional_expression", "listening"}
+        elif age <= 5:
+            return {"reading", "writing", "memory_games", "social_skills", "pattern_recognition"}
+        else:  # 6+
+            return {"problem_solving", "storytelling", "creative_thinking", "role_playing"}
+
     def identify_skill_gaps(
         self, interactions: List[InteractionAnalysis], age: int
     ) -> List[str]:
-        """Identify skill gaps based on age-appropriate expectations"""
+        """Identify skill gaps based on age and interactions"""
         try:
-            gaps = []
+            if not interactions:
+                return ["لا توجد بيانات كافية لتحديد الفجوات"]
 
-            # Age-appropriate skill expectations
-            age_expectations = {
-                3: ["counting", "simple_words", "basic_colors", "listening"],
-                4: [
-                    "counting",
-                    "simple_words",
-                    "basic_colors",
-                    "listening",
-                    "drawing",
-                    "sharing",
-                ],
-                5: [
-                    "counting",
-                    "reading",
-                    "writing",
-                    "problem_solving",
-                    "memory_games",
-                    "social_skills",
-                ],
-                6: [
-                    "reading",
-                    "writing",
-                    "problem_solving",
-                    "memory_games",
-                    "social_skills",
-                    "creative_thinking",
-                ],
-                7: [
-                    "reading",
-                    "writing",
-                    "problem_solving",
-                    "critical_thinking",
-                    "advanced_counting",
-                    "storytelling",
-                ],
-            }
+            practiced_skills = {
+                skill for interaction in interactions for skill in interaction.skills_used}
+            expected_skills = self._get_expected_skills_by_age(age)
 
-            # Get expected skills for age
-            expected_skills = set()
-            for expected_age in range(3, min(age + 1, 8)):
-                expected_skills.update(age_expectations.get(expected_age, []))
+            missing_skills = expected_skills - practiced_skills
 
-            # Get actually used skills
-            used_skills = set()
-            for interaction in interactions:
-                used_skills.update(interaction.skills_used)
+            if not missing_skills:
+                return ["لا توجد فجوات مهارية واضحة حالياً، أداء جيد!"]
 
-            # Identify gaps
-            missing_skills = expected_skills - used_skills
-
-            for skill in missing_skills:
-                gaps.append(f"مهارة مفقودة: {skill}")
-
-            return gaps[:5]  # Return top 5 gaps
+            return [
+                f"فجوة في مهارة: {self.SKILL_ACTIVITIES.get(skill, skill)}"
+                for skill in missing_skills
+            ]
 
         except Exception as e:
             self.logger.error(f"Skill gap identification error: {e}")
-            return []
+            return ["خطأ في تحديد الفجوات المهارية"]

@@ -1,5 +1,7 @@
 import random
 import uuid
+import json
+from pathlib import Path
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
@@ -44,7 +46,8 @@ class StoryChoice:
     choice_id: str
     text: str
     choice_type: ChoiceType
-    behavioral_score: Dict[str, float]  # مثل {"confidence": 0.8, "empathy": 0.6}
+    # مثل {"confidence": 0.8, "empathy": 0.6}
+    behavioral_score: Dict[str, float]
     leads_to_scene: str
     educational_content: Optional[str] = None
 
@@ -99,212 +102,35 @@ class InteractiveStoryEngine:
         self.behavioral_patterns: Dict[str, List[BehavioralPattern]] = {}
         self._load_stored_stories()
 
-    def _load_stored_stories(self) -> Any:
-        """تحميل القصص المخزنة المسبقاً"""
+    def _load_stored_stories(self) -> None:
+        """تحميل القصص المخزنة المسبقاً من ملف JSON."""
+        stories_path = Path(__file__).parent / "stored_stories.json"
+        try:
+            with stories_path.open("r", encoding="utf-8") as f:
+                stories_data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"Error loading stored stories: {e}")
+            return
 
-        # قصة مغامرة الكنز المفقود
-        treasure_story = {
-            "story_id": "treasure_adventure",
-            "title": "مغامرة الكنز المفقود",
-            "type": StoryType.STORED_ADVENTURE,
-            "age_range": (6, 12),
-            "scenes": {
-                "start": StoryScene(
-                    scene_id="start",
-                    title="بداية المغامرة",
-                    content="كان {child_name} يتجول في الحديقة مع {friend1} عندما وجدا خريطة قديمة مدفونة تحت شجرة كبيرة. الخريطة تُظهر مكان كنز مخفي!",
-                    audio_effects=["wind", "rustling_leaves", "mysterious_music"],
-                    choices=[
-                        StoryChoice(
-                            choice_id="follow_map_immediately",
-                            text="دعنا نتبع الخريطة فوراً!",
-                            choice_type=ChoiceType.COURAGE_VS_CAUTION,
-                            behavioral_score={
-                                "confidence": 0.8,
-                                "impulsiveness": 0.7,
-                                "adventure_seeking": 0.9,
-                            },
-                            leads_to_scene="forest_entrance",
-                        ),
-                        StoryChoice(
-                            choice_id="tell_parents_first",
-                            text="يجب أن نخبر الوالدين أولاً",
-                            choice_type=ChoiceType.COURAGE_VS_CAUTION,
-                            behavioral_score={
-                                "caution": 0.8,
-                                "responsibility": 0.9,
-                                "rule_following": 0.7,
-                            },
-                            leads_to_scene="parents_advice",
-                        ),
-                        StoryChoice(
-                            choice_id="study_map_carefully",
-                            text="دعنا نفحص الخريطة بعناية أولاً",
-                            choice_type=ChoiceType.CREATIVE_VS_LOGICAL,
-                            behavioral_score={
-                                "analytical_thinking": 0.8,
-                                "patience": 0.7,
-                                "planning": 0.9,
-                            },
-                            leads_to_scene="map_analysis",
-                        ),
-                    ],
-                ),
-                "forest_entrance": StoryScene(
-                    scene_id="forest_entrance",
-                    title="مدخل الغابة",
-                    content="وصل {child_name} و{friend1} إلى مدخل غابة مظلمة. يمكنهما سماع أصوات غريبة من الداخل، لكن الخريطة تشير إلى أن الكنز في عمق الغابة.",
-                    audio_effects=["forest_sounds", "owl_hooting", "tension_music"],
-                    choices=[
-                        StoryChoice(
-                            choice_id="enter_forest_bravely",
-                            text="ندخل الغابة بشجاعة!",
-                            choice_type=ChoiceType.COURAGE_VS_CAUTION,
-                            behavioral_score={
-                                "bravery": 0.9,
-                                "leadership": 0.7,
-                                "risk_taking": 0.8,
-                            },
-                            leads_to_scene="deep_forest",
-                        ),
-                        StoryChoice(
-                            choice_id="bring_flashlight",
-                            text="نعود لنحضر مصباحاً وحبلاً",
-                            choice_type=ChoiceType.PATIENCE_VS_IMPULSIVENESS,
-                            behavioral_score={
-                                "preparation": 0.9,
-                                "patience": 0.8,
-                                "practical_thinking": 0.8,
-                            },
-                            leads_to_scene="prepared_adventure",
-                        ),
-                        StoryChoice(
-                            choice_id="invite_more_friends",
-                            text="نستدعي المزيد من الأصدقاء للمساعدة",
-                            choice_type=ChoiceType.COOPERATION_VS_INDEPENDENCE,
-                            behavioral_score={
-                                "teamwork": 0.9,
-                                "social_skills": 0.8,
-                                "collaboration": 0.9,
-                            },
-                            leads_to_scene="team_adventure",
-                        ),
-                    ],
-                ),
-                "deep_forest": StoryScene(
-                    scene_id="deep_forest",
-                    title="عمق الغابة",
-                    content="في عمق الغابة، وجد {child_name} صندوقاً قديماً، لكنه محاط بألغاز رياضية! يجب حل اللغز لفتح الصندوق.",
-                    audio_effects=["magical_chimes", "puzzle_music"],
-                    choices=[
-                        StoryChoice(
-                            choice_id="solve_puzzle_alone",
-                            text="سأحل اللغز بنفسي!",
-                            choice_type=ChoiceType.COOPERATION_VS_INDEPENDENCE,
-                            behavioral_score={
-                                "independence": 0.8,
-                                "self_confidence": 0.9,
-                                "problem_solving": 0.7,
-                            },
-                            leads_to_scene="math_challenge",
-                            educational_content="math_puzzle",
-                        ),
-                        StoryChoice(
-                            choice_id="work_together",
-                            text="دعنا نحله معاً!",
-                            choice_type=ChoiceType.COOPERATION_VS_INDEPENDENCE,
-                            behavioral_score={
-                                "cooperation": 0.9,
-                                "teamwork": 0.8,
-                                "humility": 0.7,
-                            },
-                            leads_to_scene="team_puzzle",
-                            educational_content="collaborative_math",
-                        ),
-                    ],
-                    educational_challenge={
-                        "type": "math_puzzle",
-                        "question": "إذا كان في الصندوق 3 أكياس، وفي كل كيس 4 جواهر، كم جوهرة في المجموع؟",
-                        "answer": 12,
-                        "hint": "اضرب عدد الأكياس في عدد الجواهر في كل كيس",
-                    },
-                ),
-                "treasure_found": StoryScene(
-                    scene_id="treasure_found",
-                    title="اكتشاف الكنز",
-                    content="رائع! فتح {child_name} الصندوق ووجد كنزاً حقيقياً - ليس ذهباً، بل كتباً سحرية تحتوي على قصص وألغاز ممتعة! الكنز الحقيقي هو المعرفة والصداقة.",
-                    audio_effects=[
-                        "success_fanfare",
-                        "magical_sparkles",
-                        "happy_music",
-                    ],
-                    choices=[],
-                    is_ending=True,
-                ),
-            },
-        }
+        for story_id, story_data in stories_data.items():
+            story_data["type"] = StoryType(story_data["type"])
 
-        # قصة الصداقة والمشاركة
-        friendship_story = {
-            "story_id": "friendship_sharing",
-            "title": "قصة الصداقة الحقيقية",
-            "type": StoryType.BEHAVIORAL,
-            "age_range": (4, 10),
-            "scenes": {
-                "playground": StoryScene(
-                    scene_id="playground",
-                    title="في الملعب",
-                    content="كان {child_name} يلعب في الملعب عندما رأى طفلاً جديداً يجلس وحيداً. يبدو حزيناً ولا يعرف أحداً.",
-                    audio_effects=["playground_sounds", "children_laughing"],
-                    choices=[
-                        StoryChoice(
-                            choice_id="approach_new_kid",
-                            text="أذهب إليه وأدعوه للعب معي",
-                            choice_type=ChoiceType.HELPING_VS_SELF_FOCUS,
-                            behavioral_score={
-                                "empathy": 0.9,
-                                "social_initiative": 0.8,
-                                "kindness": 0.9,
-                            },
-                            leads_to_scene="making_friend",
-                        ),
-                        StoryChoice(
-                            choice_id="continue_playing",
-                            text="أستمر في اللعب مع أصدقائي",
-                            choice_type=ChoiceType.HELPING_VS_SELF_FOCUS,
-                            behavioral_score={"self_focus": 0.7, "comfort_zone": 0.8},
-                            leads_to_scene="missed_opportunity",
-                        ),
-                        StoryChoice(
-                            choice_id="tell_friends_to_include",
-                            text="أطلب من أصدقائي دعوته للعب معنا",
-                            choice_type=ChoiceType.COOPERATION_VS_INDEPENDENCE,
-                            behavioral_score={
-                                "leadership": 0.8,
-                                "inclusion": 0.9,
-                                "teamwork": 0.8,
-                            },
-                            leads_to_scene="group_friendship",
-                        ),
-                    ],
-                )
-            },
-        }
+            deserialized_scenes = {}
+            for scene_id, scene_data in story_data.get("scenes", {}).items():
+                deserialized_choices = []
+                for choice_data in scene_data.get("choices", []):
+                    choice_data["choice_type"] = ChoiceType(
+                        choice_data["choice_type"])
+                    deserialized_choices.append(StoryChoice(**choice_data))
 
-        self.stories["treasure_adventure"] = treasure_story
-        self.stories["friendship_sharing"] = friendship_story
+                scene_data["choices"] = deserialized_choices
+                deserialized_scenes[scene_id] = StoryScene(**scene_data)
 
-    async def start_interactive_story(
-        self,
-        child_name: str,
-        friends: List[str],
-        age: int,
-        story_type: StoryType = None,
-        device_id: str = None,
-    ) -> Dict[str, Any]:
-        """بدء قصة تفاعلية"""
+            story_data["scenes"] = deserialized_scenes
+            self.stories[story_id] = story_data
 
-        # اختيار القصة المناسبة
+    def _find_suitable_story(self, age: int, story_type: Optional[StoryType] = None) -> Optional[Dict]:
+        """Finds a story suitable for the child's age and requested type."""
         if story_type:
             suitable_stories = [
                 s
@@ -319,32 +145,16 @@ class InteractiveStoryEngine:
                 if s["age_range"][0] <= age <= s["age_range"][1]
             ]
 
-        if not suitable_stories:
-            return {"error": "لا توجد قصص مناسبة لهذا العمر"}
+        return random.choice(suitable_stories) if suitable_stories else None
 
-        selected_story = random.choice(suitable_stories)
+    def _prepare_story_state(self, story: Dict, child_name: str, friends: List[str], device_id: str) -> Dict:
+        """Initializes the state for the story session."""
+        first_scene_id = "start" if "start" in story["scenes"] else list(
+            story["scenes"].keys())[0]
 
-        # تخصيص القصة بأسماء الأطفال
-        friend1 = friends[0] if friends else "صديقك"
-        friend2 = friends[1] if len(friends) > 1 else "صديق آخر"
-
-        # بدء القصة من المشهد الأول
-        first_scene_id = (
-            "start"
-            if "start" in selected_story["scenes"]
-            else list(selected_story["scenes"].keys())[0]
-        )
-        current_scene = selected_story["scenes"][first_scene_id]
-
-        # تخصيص المحتوى
-        personalized_content = current_scene.content.format(
-            child_name=child_name, friend1=friend1, friend2=friend2
-        )
-
-        # إنشاء حالة القصة
-        story_state = {
-            "story_id": selected_story["story_id"],
-            "title": selected_story["title"],
+        return {
+            "story_id": story["story_id"],
+            "title": story["title"],
             "current_scene": first_scene_id,
             "child_name": child_name,
             "friends": friends,
@@ -354,24 +164,91 @@ class InteractiveStoryEngine:
             "behavioral_data": {},
         }
 
+    def _format_scene_for_display(self, scene: StoryScene, story_state: Dict) -> Dict:
+        """Formats a scene's content for the user."""
+        personalized_content = scene.content.format(
+            child_name=story_state["child_name"],
+            friend1=story_state["friends"][0] if story_state["friends"] else "صديقك",
+            friend2=story_state["friends"][1] if len(
+                story_state["friends"]) > 1 else "صديق آخر",
+        )
+
+        return {
+            "title": scene.title,
+            "content": personalized_content,
+            "audio_effects": scene.audio_effects,
+            "choices": [
+                {"choice_id": choice.choice_id, "text": choice.text,
+                    "educational_content": choice.educational_content}
+                for choice in scene.choices
+            ],
+            "educational_challenge": scene.educational_challenge,
+            "is_ending": scene.is_ending,
+        }
+
+    async def start_interactive_story(
+        self,
+        child_name: str,
+        friends: List[str],
+        age: int,
+        story_type: StoryType = None,
+        device_id: str = None,
+    ) -> Dict[str, Any]:
+        """بدء قصة تفاعلية"""
+        selected_story = self._find_suitable_story(age, story_type)
+
+        if not selected_story:
+            return {"error": "لا توجد قصص مناسبة لهذا العمر"}
+
+        story_state = self._prepare_story_state(
+            selected_story, child_name, friends, device_id)
+
+        first_scene_id = story_state["current_scene"]
+        current_scene = selected_story["scenes"][first_scene_id]
+
+        scene_for_display = self._format_scene_for_display(
+            current_scene, story_state)
+
         return {
             "story_state": story_state,
-            "scene": {
-                "title": current_scene.title,
-                "content": personalized_content,
-                "audio_effects": current_scene.audio_effects,
-                "choices": [
-                    {
-                        "choice_id": choice.choice_id,
-                        "text": choice.text,
-                        "educational_content": choice.educational_content,
-                    }
-                    for choice in current_scene.choices
-                ],
-                "educational_challenge": current_scene.educational_challenge,
-                "is_ending": current_scene.is_ending,
-            },
+            "scene": scene_for_display,
         }
+
+    def _find_selected_choice(self, scene: StoryScene, choice_id: str) -> Optional[StoryChoice]:
+        """Finds the selected choice object from a scene."""
+        for choice in scene.choices:
+            if choice.choice_id == choice_id:
+                return choice
+        return None
+
+    def _log_choice(self, story_state: Dict, choice: StoryChoice, voice_analysis: Optional[Dict], response_time: Optional[float]) -> None:
+        """Logs the child's choice."""
+        choice_log = StoryChoiceLog(
+            id=str(uuid.uuid4()),
+            device_id=story_state["device_id"],
+            child_name=story_state["child_name"],
+            story_id=story_state["story_id"],
+            scene_id=story_state["current_scene"],
+            choice_id=choice.choice_id,
+            choice_type=choice.choice_type,
+            behavioral_scores=choice.behavioral_score,
+            timestamp=datetime.now(),
+            voice_analysis=voice_analysis,
+            response_time=response_time,
+        )
+        self.choice_logs.append(choice_log)
+
+    def _update_story_state(self, story_state: Dict, choice: StoryChoice) -> None:
+        """Updates the story state after a choice is made."""
+        story_state["current_scene"] = choice.leads_to_scene
+        story_state["choices_made"].append(
+            {
+                "scene": story_state["current_scene"],
+                "choice": choice.choice_id,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
+        self._update_behavioral_data(story_state, choice)
 
     async def process_story_choice(
         self,
@@ -381,7 +258,6 @@ class InteractiveStoryEngine:
         response_time: Optional[float] = None,
     ) -> Dict[str, Any]:
         """معالجة اختيار الطفل في القصة"""
-
         story_id = story_state["story_id"]
         current_scene_id = story_state["current_scene"]
 
@@ -391,89 +267,29 @@ class InteractiveStoryEngine:
         story = self.stories[story_id]
         current_scene = story["scenes"][current_scene_id]
 
-        # العثور على الاختيار
-        selected_choice = None
-        for choice in current_scene.choices:
-            if choice.choice_id == choice_id:
-                selected_choice = choice
-                break
+        selected_choice = self._find_selected_choice(current_scene, choice_id)
 
         if not selected_choice:
             return {"error": "الاختيار غير صحيح"}
 
-        # تسجيل الاختيار في السجل
-        choice_log = StoryChoiceLog(
-            id=str(uuid.uuid4()),
-            device_id=story_state["device_id"],
-            child_name=story_state["child_name"],
-            story_id=story_id,
-            scene_id=current_scene_id,
-            choice_id=choice_id,
-            choice_type=selected_choice.choice_type,
-            behavioral_scores=selected_choice.behavioral_score,
-            timestamp=datetime.now(),
-            voice_analysis=voice_analysis,
-            response_time=response_time,
-        )
+        self._log_choice(story_state, selected_choice,
+                         voice_analysis, response_time)
+        self._update_story_state(story_state, selected_choice)
 
-        self.choice_logs.append(choice_log)
-
-        # تحديث البيانات السلوكية
-        self._update_behavioral_data(story_state, selected_choice)
-
-        # الانتقال للمشهد التالي
         next_scene_id = selected_choice.leads_to_scene
-
-        if next_scene_id in story["scenes"]:
-            next_scene = story["scenes"][next_scene_id]
-
-            # تخصيص المحتوى
-            personalized_content = next_scene.content.format(
-                child_name=story_state["child_name"],
-                friend1=(
-                    story_state["friends"][0] if story_state["friends"] else "صديقك"
-                ),
-                friend2=(
-                    story_state["friends"][1]
-                    if len(story_state["friends"]) > 1
-                    else "صديق آخر"
-                ),
-            )
-
-            # تحديث حالة القصة
-            story_state["current_scene"] = next_scene_id
-            story_state["choices_made"].append(
-                {
-                    "scene": current_scene_id,
-                    "choice": choice_id,
-                    "timestamp": datetime.now().isoformat(),
-                }
-            )
-
-            return {
-                "story_state": story_state,
-                "scene": {
-                    "title": next_scene.title,
-                    "content": personalized_content,
-                    "audio_effects": next_scene.audio_effects,
-                    "choices": [
-                        {
-                            "choice_id": choice.choice_id,
-                            "text": choice.text,
-                            "educational_content": choice.educational_content,
-                        }
-                        for choice in next_scene.choices
-                    ],
-                    "educational_challenge": next_scene.educational_challenge,
-                    "is_ending": next_scene.is_ending,
-                },
-                "behavioral_feedback": self._generate_behavioral_feedback(
-                    selected_choice
-                ),
-                "choice_recorded": True,
-            }
-        else:
+        if next_scene_id not in story["scenes"]:
             return {"error": "المشهد التالي غير موجود"}
+
+        next_scene = story["scenes"][next_scene_id]
+        scene_for_display = self._format_scene_for_display(
+            next_scene, story_state)
+
+        return {
+            "story_state": story_state,
+            "scene": scene_for_display,
+            "behavioral_feedback": self._generate_behavioral_feedback(selected_choice),
+            "choice_recorded": True,
+        }
 
     def _update_behavioral_data(self, story_state: Dict, choice: StoryChoice) -> None:
         """تحديث البيانات السلوكية"""
@@ -487,45 +303,39 @@ class InteractiveStoryEngine:
 
     def _generate_behavioral_feedback(self, choice: StoryChoice) -> Dict[str, Any]:
         """توليد تعليقات سلوكية للاختيار"""
-        feedback = {
-            "choice_type": choice.choice_type.value,
-            "traits_observed": list(choice.behavioral_score.keys()),
-            "encouragement": "",
+        feedback_map = {
+            ChoiceType.COURAGE_VS_CAUTION: {
+                "bravery": "أحسنت! تُظهر شجاعة رائعة!",
+                "caution": "خيار حكيم! التفكير قبل التصرف أمر ممتاز!",
+            },
+            ChoiceType.HELPING_VS_SELF_FOCUS: {
+                "empathy": "قلبك طيب! مساعدة الآخرين أمر جميل!",
+            },
+            ChoiceType.COOPERATION_VS_INDEPENDENCE: {
+                "teamwork": "العمل الجماعي يحقق أفضل النتائج!",
+                "independence": "الاعتماد على النفس مهارة مهمة!",
+            },
         }
 
-        # توليد رسالة تشجيعية بناءً على الاختيار
-        if choice.choice_type == ChoiceType.COURAGE_VS_CAUTION:
-            if (
-                "bravery" in choice.behavioral_score
-                and choice.behavioral_score["bravery"] > 0.7
-            ):
-                feedback["encouragement"] = "أحسنت! تُظهر شجاعة رائعة!"
-            elif "caution" in choice.behavioral_score:
-                feedback["encouragement"] = "خيار حكيم! التفكير قبل التصرف أمر ممتاز!"
+        encouragement = ""
+        # Get the encouragement message from the map
+        trait_messages = feedback_map.get(choice.choice_type)
+        if trait_messages:
+            for trait, message in trait_messages.items():
+                if choice.behavioral_score.get(trait, 0) > 0.7:
+                    encouragement = message
+                    break
 
-        elif choice.choice_type == ChoiceType.HELPING_VS_SELF_FOCUS:
-            if (
-                "empathy" in choice.behavioral_score
-                and choice.behavioral_score["empathy"] > 0.7
-            ):
-                feedback["encouragement"] = "قلبك طيب! مساعدة الآخرين أمر جميل!"
+        return {
+            "choice_type": choice.choice_type.value,
+            "traits_observed": list(choice.behavioral_score.keys()),
+            "encouragement": encouragement,
+        }
 
-        elif choice.choice_type == ChoiceType.COOPERATION_VS_INDEPENDENCE:
-            if "teamwork" in choice.behavioral_score:
-                feedback["encouragement"] = "العمل الجماعي يحقق أفضل النتائج!"
-            elif "independence" in choice.behavioral_score:
-                feedback["encouragement"] = "الاعتماد على النفس مهارة مهمة!"
-
-        return feedback
-
-    def analyze_behavioral_patterns(
-        self, child_name: str, device_id: str, days_back: int = 30
-    ) -> Dict[str, Any]:
-        """تحليل الأنماط السلوكية للطفل"""
-
-        # فلترة السجلات للطفل المحدد
+    def _filter_logs(self, child_name: str, device_id: str, days_back: int) -> List[StoryChoiceLog]:
+        """Filters choice logs for a specific child and timeframe."""
         cutoff_date = datetime.now() - timedelta(days=days_back)
-        relevant_logs = [
+        return [
             log
             for log in self.choice_logs
             if log.child_name == child_name
@@ -533,48 +343,46 @@ class InteractiveStoryEngine:
             and log.timestamp >= cutoff_date
         ]
 
-        if not relevant_logs:
-            return {"message": "لا توجد بيانات كافية للتحليل"}
-
-        # تجميع النقاط السلوكية
+    def _aggregate_scores(self, logs: List[StoryChoiceLog]) -> (Dict, Dict):
+        """Aggregates behavioral scores and choice types from logs."""
         behavioral_scores = {}
         choice_type_distribution = {}
 
-        for log in relevant_logs:
-            # تجميع النقاط
+        for log in logs:
             for trait, score in log.behavioral_scores.items():
-                if trait not in behavioral_scores:
-                    behavioral_scores[trait] = []
-                behavioral_scores[trait].append(score)
+                behavioral_scores.setdefault(trait, []).append(score)
 
-            # توزيع أنواع الاختيارات
             choice_type = log.choice_type.value
-            if choice_type not in choice_type_distribution:
-                choice_type_distribution[choice_type] = 0
-            choice_type_distribution[choice_type] += 1
+            choice_type_distribution[choice_type] = choice_type_distribution.get(
+                choice_type, 0) + 1
 
-        # حساب المتوسطات
         behavioral_averages = {
-            trait: sum(scores) / len(scores)
-            for trait, scores in behavioral_scores.items()
+            trait: sum(scores) / len(scores) for trait, scores in behavioral_scores.items()
         }
+        return behavioral_averages, choice_type_distribution
 
-        # تحديد الأنماط
+    def analyze_behavioral_patterns(
+        self, child_name: str, device_id: str, days_back: int = 30
+    ) -> Dict[str, Any]:
+        """تحليل الأنماط السلوكية للطفل"""
+        relevant_logs = self._filter_logs(child_name, device_id, days_back)
+
+        if not relevant_logs:
+            return {"message": "لا توجد بيانات كافية للتحليل"}
+
+        behavioral_averages, choice_distribution = self._aggregate_scores(
+            relevant_logs)
         patterns = self._identify_patterns(
-            behavioral_averages, choice_type_distribution
-        )
-
-        # توصيات للوالدين
+            behavioral_averages, choice_distribution)
         recommendations = self._generate_parent_recommendations(
-            patterns, behavioral_averages
-        )
+            patterns, behavioral_averages)
 
         return {
             "child_name": child_name,
             "analysis_period": f"{days_back} days",
             "total_choices": len(relevant_logs),
             "behavioral_averages": behavioral_averages,
-            "choice_distribution": choice_type_distribution,
+            "choice_distribution": choice_distribution,
             "patterns_identified": patterns,
             "recommendations": recommendations,
             "generated_at": datetime.now().isoformat(),
@@ -594,7 +402,8 @@ class InteractiveStoryEngine:
                         pattern_type="شجاع_ومغامر",
                         confidence_level=0.8,
                         description="الطفل يُظهر مستوى عالي من الشجاعة والاستعداد للمغامرة",
-                        recommendations=["شجع المغامرات الآمنة", "علم إدارة المخاطر"],
+                        recommendations=[
+                            "شجع المغامرات الآمنة", "علم إدارة المخاطر"],
                     )
                 )
             elif behavioral_averages["caution"] > 0.7:
@@ -618,7 +427,8 @@ class InteractiveStoryEngine:
                         pattern_type="متعاطف_ومساعد",
                         confidence_level=0.9,
                         description="الطفل يُظهر مستوى عالي من التعاطف ومساعدة الآخرين",
-                        recommendations=["شجع الأنشطة التطوعية", "علم الحدود الصحية"],
+                        recommendations=[
+                            "شجع الأنشطة التطوعية", "علم الحدود الصحية"],
                     )
                 )
 
@@ -640,10 +450,12 @@ class InteractiveStoryEngine:
             recommendations.append("انتبه: قد يحتاج الطفل لبناء الثقة بالنفس")
 
         if behavioral_averages.get("empathy", 0) > 0.8:
-            recommendations.append("ممتاز: الطفل يُظهر تعاطفاً عالياً مع الآخرين")
+            recommendations.append(
+                "ممتاز: الطفل يُظهر تعاطفاً عالياً مع الآخرين")
 
         if behavioral_averages.get("problem_solving", 0) > 0.7:
-            recommendations.append("رائع: الطفل لديه مهارات جيدة في حل المشكلات")
+            recommendations.append(
+                "رائع: الطفل لديه مهارات جيدة في حل المشكلات")
 
         # توصيات من الأنماط
         for pattern in patterns:
@@ -671,10 +483,12 @@ class InteractiveStoryEngine:
     def generate_story_report(self, child_name: str, device_id: str) -> Dict[str, Any]:
         """توليد تقرير شامل عن القصص والسلوك"""
         choice_history = self.get_story_choice_history(child_name, device_id)
-        behavioral_analysis = self.analyze_behavioral_patterns(child_name, device_id)
+        behavioral_analysis = self.analyze_behavioral_patterns(
+            child_name, device_id)
 
         # إحصائيات القصص
-        stories_played = len(set(choice["story_id"] for choice in choice_history))
+        stories_played = len(set(choice["story_id"]
+                             for choice in choice_history))
         total_choices = len(choice_history)
 
         # أكثر أنواع الاختيارات
@@ -684,7 +498,8 @@ class InteractiveStoryEngine:
             choice_types[choice_type] = choice_types.get(choice_type, 0) + 1
 
         most_common_choice = (
-            max(choice_types.items(), key=lambda x: x[1]) if choice_types else None
+            max(choice_types.items(),
+                key=lambda x: x[1]) if choice_types else None
         )
 
         return {

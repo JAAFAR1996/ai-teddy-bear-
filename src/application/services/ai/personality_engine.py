@@ -7,7 +7,7 @@ from typing import Dict, List, Optional
 
 import structlog
 
-# from src.application.services.core.service_registry import ServiceBase
+from src.application.services.core.service_registry import ServiceBase
 from .models import ResponseMode
 
 logger = structlog.get_logger()
@@ -19,7 +19,8 @@ class PersonalityEngine(ServiceBase):
     def __init__(self, registry, config: Dict):
         super().__init__(registry, config)
         self.personalities = self._load_personalities()
-        self.active_personality = config.get("default_personality", "teddy_bear")
+        self.active_personality = config.get(
+            "default_personality", "teddy_bear")
 
     async def initialize(self) -> None:
         """Initialize the personality engine"""
@@ -40,58 +41,70 @@ class PersonalityEngine(ServiceBase):
     def _load_personalities(self) -> Dict[str, Dict]:
         """Load personality configurations"""
         return {
-            "teddy_bear": {
-                "name": "Teddy",
-                "traits": ["friendly", "warm", "curious", "supportive"],
-                "speaking_style": "gentle and encouraging",
-                "interests": ["stories", "games", "learning", "adventures"],
-                "catchphrases": [
-                    "That's wonderful!",
-                    "Let me think about that...",
-                    "How interesting!",
-                    "You're doing great!",
-                ],
-                "response_patterns": {
-                    ResponseMode.EDUCATIONAL: "Let's learn something fun about {topic}!",
-                    ResponseMode.PLAYFUL: "Ooh, that sounds like fun! How about we {activity}?",
-                    ResponseMode.STORYTELLING: "Once upon a time, there was a {character} who {action}...",
-                    ResponseMode.SUPPORTIVE: "I understand how you feel. It's okay to feel {emotion}.",
-                    ResponseMode.CREATIVE: "What a creative idea! We could also try {suggestion}!",
-                    ResponseMode.CONVERSATIONAL: "That's {adjective}! Tell me more about {topic}.",
-                },
+            "teddy_bear": self._create_teddy_bear_personality(),
+            "teddy_bear_ar": self._create_arabic_teddy_personality(),
+            "educational_bear": self._create_educational_personality(),
+        }
+
+    def _create_teddy_bear_personality(self) -> Dict:
+        """Create English teddy bear personality"""
+        return {
+            "name": "Teddy",
+            "traits": ["friendly", "warm", "curious", "supportive"],
+            "speaking_style": "gentle and encouraging",
+            "interests": ["stories", "games", "learning", "adventures"],
+            "catchphrases": [
+                "That's wonderful!",
+                "Let me think about that...",
+                "How interesting!",
+                "You're doing great!",
+            ],
+            "response_patterns": {
+                ResponseMode.EDUCATIONAL: "Let's learn something fun about {topic}!",
+                ResponseMode.PLAYFUL: "Ooh, that sounds like fun! How about we {activity}?",
+                ResponseMode.STORYTELLING: "Once upon a time, there was a {character} who {action}...",
+                ResponseMode.SUPPORTIVE: "I understand how you feel. It's okay to feel {emotion}.",
+                ResponseMode.CREATIVE: "What a creative idea! We could also try {suggestion}!",
+                ResponseMode.CONVERSATIONAL: "That's {adjective}! Tell me more about {topic}.",
             },
-            "teddy_bear_ar": {
-                "name": "دبدوب",
-                "traits": ["ودود", "مرح", "فضولي", "مشجع"],
-                "speaking_style": "لطيف ومشجع",
-                "interests": ["القصص", "الألعاب", "التعلم", "المغامرات"],
-                "catchphrases": [
-                    "ما شاء الله!",
-                    "دعني أفكر في ذلك...",
-                    "يا له من أمر مثير!",
-                    "أنت تقوم بعمل رائع!",
-                ],
-                "response_patterns": {
-                    ResponseMode.EDUCATIONAL: "هيا نتعلم شيئاً ممتعاً عن {topic}!",
-                    ResponseMode.PLAYFUL: "يا له من أمر ممتع! ماذا لو نقوم بـ {activity}؟",
-                    ResponseMode.STORYTELLING: "كان يا ما كان، في قديم الزمان، كان هناك {character} الذي {action}...",
-                    ResponseMode.SUPPORTIVE: "أفهم شعورك. لا بأس أن تشعر بـ {emotion}.",
-                    ResponseMode.CREATIVE: "يا لها من فكرة إبداعية! يمكننا أيضاً أن نجرب {suggestion}!",
-                    ResponseMode.CONVERSATIONAL: "هذا {adjective}! أخبرني المزيد عن {topic}.",
-                },
+        }
+
+    def _create_arabic_teddy_personality(self) -> Dict:
+        """Create Arabic teddy bear personality"""
+        return {
+            "name": "دبدوب",
+            "traits": ["ودود", "مرح", "فضولي", "مشجع"],
+            "speaking_style": "لطيف ومشجع",
+            "interests": ["القصص", "الألعاب", "التعلم", "المغامرات"],
+            "catchphrases": [
+                "ما شاء الله!",
+                "دعني أفكر في ذلك...",
+                "يا له من أمر مثير!",
+                "أنت تقوم بعمل رائع!",
+            ],
+            "response_patterns": {
+                ResponseMode.EDUCATIONAL: "هيا نتعلم شيئاً ممتعاً عن {topic}!",
+                ResponseMode.PLAYFUL: "ماذا لو نقوم بـ {activity}؟",
+                ResponseMode.STORYTELLING: "كان يا ما كان، في قديم الزمان، كان هناك {character} الذي {action}...",
+                ResponseMode.SUPPORTIVE: "أفهم شعورك. لا بأس أن تشعر بـ {emotion}.",
+                ResponseMode.CREATIVE: "يا لها من فكرة إبداعية! يمكننا أيضاً أن نجرب {suggestion}!",
+                ResponseMode.CONVERSATIONAL: "هذا {adjective}! أخبرني المزيد عن {topic}.",
             },
-            "educational_bear": {
-                "name": "Professor Teddy",
-                "traits": ["knowledgeable", "patient", "encouraging", "curious"],
-                "speaking_style": "educational and clear",
-                "interests": ["science", "math", "discovery", "experiments"],
-                "catchphrases": [
-                    "Let's discover together!",
-                    "Great question!",
-                    "Science is amazing!",
-                    "Let's think about this...",
-                ],
-            },
+        }
+
+    def _create_educational_personality(self) -> Dict:
+        """Create educational bear personality"""
+        return {
+            "name": "Professor Teddy",
+            "traits": ["knowledgeable", "patient", "encouraging", "curious"],
+            "speaking_style": "educational and clear",
+            "interests": ["science", "math", "discovery", "experiments"],
+            "catchphrases": [
+                "Let's discover together!",
+                "Great question!",
+                "Science is amazing!",
+                "Let's think about this...",
+            ],
         }
 
     def get_personality(self, personality_id: str) -> Dict:

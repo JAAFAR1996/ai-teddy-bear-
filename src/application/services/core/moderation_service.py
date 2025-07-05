@@ -1,14 +1,5 @@
 #!/usr/bin/env python3
-"""
-🚀 Moderation Service - Refactored with High Cohesion
-خدمة الفلترة المحسنة - تم تطبيق EXTRACT CLASS للحصول على High Cohesion
 
-✅ تم حل مشكلة Low Cohesion بتقسيم المسؤوليات
-✅ تطبيق EXTRACT CLASS pattern بنجاح
-✅ فصل المسؤوليات: Cache, Analysis, Statistics, Legacy Support
-✅ تحسين جودة الكود واتباع SOLID principles
-✅ توافق كامل مع الواجهات القديمة
-"""
 
 import asyncio
 import logging
@@ -127,14 +118,7 @@ def get_config(secrets_manager=None):
 # ================== MAIN MODERATION SERVICE ==================
 
 class ModerationService:
-    """
-    🎯 خدمة الفلترة الرئيسية المحسنة - High Cohesion Edition
-    
-    تم تطبيق EXTRACT CLASS pattern لحل مشكلة Low Cohesion:
-    - المسؤوليات مقسمة إلى classes منفصلة ومتماسكة
-    - كل class له مسؤولية واحدة واضحة
-    - تحسين قابلية الصيانة والتطوير
-    """
+
     
     def __init__(self, config=None):
         """تهيئة الخدمة مع المكونات المستخرجة"""

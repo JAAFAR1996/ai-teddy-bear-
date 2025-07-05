@@ -45,7 +45,8 @@ class ConversationLog:
 
     def has_educational_content(self) -> bool:
         """Check if conversation had educational content"""
-        educational_topics = {"education", "science", "math", "learning", "study"}
+        educational_topics = {"education",
+                              "science", "math", "learning", "study"}
         return bool(set(self.topics_discussed) & educational_topics)
 
     def get_quality_score(self) -> float:
@@ -159,7 +160,8 @@ class UsageMetrics:
         if pattern == "intensive_user":
             insights.append("Child enjoys longer conversation sessions")
         elif pattern == "frequent_user":
-            insights.append("Child uses the system regularly throughout the day")
+            insights.append(
+                "Child uses the system regularly throughout the day")
 
         if self.peak_usage_hours:
             peak_times = [f"{h}:00" for h in self.peak_usage_hours[:3]]
@@ -234,7 +236,8 @@ class AnalyticsData:
         if self.sentiment_breakdown.get("positive", 0) > 0.7:
             insights.append("Child shows positive engagement patterns")
         elif self.sentiment_breakdown.get("negative", 0) > 0.3:
-            insights.append("Some negative sentiment detected - may need attention")
+            insights.append(
+                "Some negative sentiment detected - may need attention")
 
         return insights
 
@@ -267,30 +270,40 @@ class AnalyticsFilter:
     min_duration: Optional[int] = None
     max_duration: Optional[int] = None
 
+    def _check_child_id(self, log: ConversationLog) -> bool:
+        return not self.child_id or log.child_id == self.child_id
+
+    def _check_start_date(self, log: ConversationLog) -> bool:
+        return not self.start_date or log.timestamp >= self.start_date
+
+    def _check_end_date(self, log: ConversationLog) -> bool:
+        return not self.end_date or log.timestamp <= self.end_date
+
+    def _check_topics(self, log: ConversationLog) -> bool:
+        return not self.topics or set(log.topics_discussed) & set(self.topics)
+
+    def _check_sentiment(self, log: ConversationLog) -> bool:
+        return (
+            not self.sentiment_filter
+            or log.get_dominant_sentiment() == self.sentiment_filter
+        )
+
+    def _check_min_duration(self, log: ConversationLog) -> bool:
+        return not self.min_duration or log.duration_seconds >= self.min_duration
+
+    def _check_max_duration(self, log: ConversationLog) -> bool:
+        return not self.max_duration or log.duration_seconds <= self.max_duration
+
     def applies_to_log(self, log: ConversationLog) -> bool:
         """Check if filter applies to a conversation log"""
-        if self.child_id and log.child_id != self.child_id:
-            return False
+        checks = [
+            self._check_child_id,
+            self._check_start_date,
+            self._check_end_date,
+            self._check_topics,
+            self._check_sentiment,
+            self._check_min_duration,
+            self._check_max_duration,
+        ]
 
-        if self.start_date and log.timestamp < self.start_date:
-            return False
-
-        if self.end_date and log.timestamp > self.end_date:
-            return False
-
-        if self.topics and not set(log.topics_discussed) & set(self.topics):
-            return False
-
-        if (
-            self.sentiment_filter
-            and log.get_dominant_sentiment() != self.sentiment_filter
-        ):
-            return False
-
-        if self.min_duration and log.duration_seconds < self.min_duration:
-            return False
-
-        if self.max_duration and log.duration_seconds > self.max_duration:
-            return False
-
-        return True
+        return all(check(log) for check in checks)

@@ -32,7 +32,8 @@ class AgeRange:
         if self.min_age < 0:
             raise ValueError("Minimum age cannot be negative")
         if self.max_age < self.min_age:
-            raise ValueError("Maximum age must be greater than or equal to minimum age")
+            raise ValueError(
+                "Maximum age must be greater than or equal to minimum age")
         if self.max_age > 100:
             raise ValueError("Maximum age seems unrealistic")
 
@@ -124,31 +125,21 @@ class SearchFilters:
         )
 
     def get_active_filter_count(self) -> int:
-        """Get count of active filters"""
-        count = 0
-        if self.name_query:
-            count += 1
-        if self.age_range:
-            count += 1
-        if self.languages:
-            count += 1
-        if self.interests:
-            count += 1
-        if self.has_special_needs is not None:
-            count += 1
-        if self.communication_style:
-            count += 1
-        if self.learning_level:
-            count += 1
-        if self.family_code:
-            count += 1
-        if self.parent_id:
-            count += 1
-        if self.interaction_time_filter:
-            count += 1
-        if self.cultural_background:
-            count += 1
-        return count
+        """Get count of active filters by summing up boolean checks."""
+        active_filters = [
+            bool(self.name_query),
+            bool(self.age_range),
+            bool(self.languages),
+            bool(self.interests),
+            self.has_special_needs is not None,
+            bool(self.communication_style),
+            bool(self.learning_level),
+            bool(self.family_code),
+            bool(self.parent_id),
+            bool(self.interaction_time_filter),
+            bool(self.cultural_background),
+        ]
+        return sum(active_filters)
 
 
 @dataclass
@@ -191,110 +182,124 @@ class ChildSearchCriteria:
         return score
 
     def to_sql_conditions(self) -> Tuple[str, List[Any]]:
-        """Return SQL WHERE clause and params. All columns are validated and only parameterized queries are allowed."""
-        def _validate_column(name: str):
-            if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
-                raise ValueError(f"Unsafe column name: {name}")
-        # Validate all column names used in conditions
-        for col in ["parent_id", "cultural_background", "max_daily_interaction_time", "last_interaction", "interests"]:
-            _validate_column(col)
-        conditions = []
-        params = []
+        """
+        Return SQL WHERE clause and params by delegating to a ConditionBuilder.
+        All columns are validated and only parameterized queries are allowed.
+        """
+        builder = self._ConditionBuilder(self)
+        return builder.build()
 
-        # Base condition for active children
-        if not self.include_inactive:
-            conditions.append("is_active = 1")
+    class _ConditionBuilder:
+        """Inner class to build SQL conditions for ChildSearchCriteria."""
 
-        # Name search
-        if self.filters.name_query:
-            conditions.append("name LIKE ?")
-            params.append(f"%{self.filters.name_query}%")
+        def __init__(self, criteria: "ChildSearchCriteria"):
+            self.criteria = criteria
+            self.filters = criteria.filters
+            self.conditions: List[str] = []
+            self.params: List[Any] = []
+            self._validate_columns()
 
-        # Age range
-        if self.filters.age_range:
-            conditions.append("age BETWEEN ? AND ?")
-            params.extend(
-                [self.filters.age_range.min_age, self.filters.age_range.max_age]
-            )
+        def _validate_columns(self):
+            """Validate all column names that will be used in conditions."""
+            for name in [
+                "parent_id", "cultural_background", "max_daily_interaction_time",
+                "last_interaction", "interests", "name", "age",
+                "language_preference", "special_needs", "communication_style",
+                "educational_level", "family_code", "is_active",
+            ]:
+                if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
+                    raise ValueError(f"Unsafe column name: {name}")
 
-        # Languages
-        if self.filters.languages:
-            lang_conditions = []
-            for lang in self.filters.languages:
-                lang_conditions.append("language_preference = ?")
-                params.append(lang)
-            if lang_conditions:
-                conditions.append(f"({' OR '.join(lang_conditions)})")
+        def build(self) -> Tuple[str, List[Any]]:
+            """Constructs and returns the final WHERE clause and parameters."""
+            if not self.criteria.include_inactive:
+                self.conditions.append("is_active = 1")
 
-        # Special needs
-        if self.filters.has_special_needs is not None:
-            if self.filters.has_special_needs:
-                conditions.append("special_needs != '[]' AND special_needs IS NOT NULL")
-            else:
-                conditions.append("(special_needs = '[]' OR special_needs IS NULL)")
+            self._add_simple_conditions()
+            self._add_language_condition()
+            self._add_special_needs_condition()
+            self._add_interaction_time_conditions()
 
-        # Communication style
-        if self.filters.communication_style:
-            conditions.append("communication_style = ?")
-            params.append(self.filters.communication_style)
+            main_where_clause = " AND ".join(self.conditions)
+            interests_clause = self._get_interests_condition()
 
-        # Learning level
-        if self.filters.learning_level:
-            conditions.append("educational_level = ?")
-            params.append(self.filters.learning_level)
+            if interests_clause:
+                if main_where_clause:
+                    return f"{main_where_clause} AND {interests_clause}", self.params
+                return interests_clause, self.params
+            return main_where_clause, self.params
 
-        # Family code
-        if self.filters.family_code:
-            conditions.append("family_code = ?")
-            params.append(self.filters.family_code)
+        def _add_simple_conditions(self):
+            """Adds conditions for simple, direct-mapping filters."""
+            simple_filters = {
+                "name_query": f"name LIKE ?",
+                "communication_style": "communication_style = ?",
+                "learning_level": "educational_level = ?",
+                "family_code": "family_code = ?",
+                "parent_id": "parent_id = ?",
+                "cultural_background": "cultural_background = ?",
+            }
+            for attr, condition in simple_filters.items():
+                value = getattr(self.filters, attr)
+                if value:
+                    self.conditions.append(condition)
+                    param = f"%{value}%" if "LIKE" in condition else value
+                    self.params.append(param)
 
-        # Parent ID
-        if self.filters.parent_id:
-            conditions.append("parent_id = ?")
-            params.append(self.filters.parent_id)
+            if self.filters.age_range:
+                self.conditions.append("age BETWEEN ? AND ?")
+                self.params.extend(
+                    [self.filters.age_range.min_age, self.filters.age_range.max_age])
 
-        # Cultural background
-        if self.filters.cultural_background:
-            conditions.append("cultural_background = ?")
-            params.append(self.filters.cultural_background)
+        def _add_language_condition(self):
+            """Adds the condition for language preferences."""
+            if self.filters.languages:
+                lang_conditions = " OR ".join(
+                    ["language_preference = ?" for _ in self.filters.languages])
+                self.conditions.append(f"({lang_conditions})")
+                self.params.extend(self.filters.languages)
 
-        # Interaction time filters
-        if self.filters.interaction_time_filter:
+        def _add_special_needs_condition(self):
+            """Adds the condition for special needs."""
+            if self.filters.has_special_needs is not None:
+                if self.filters.has_special_needs:
+                    self.conditions.append(
+                        "special_needs != '[]' AND special_needs IS NOT NULL")
+                else:
+                    self.conditions.append(
+                        "(special_needs = '[]' OR special_needs IS NULL)")
+
+        def _add_interaction_time_conditions(self):
+            """Adds conditions for interaction time filters."""
             time_filter = self.filters.interaction_time_filter
+            if not time_filter:
+                return
 
             if time_filter.max_time is not None:
-                conditions.append("max_daily_interaction_time <= ?")
-                params.append(time_filter.max_time)
+                self.conditions.append("max_daily_interaction_time <= ?")
+                self.params.append(time_filter.max_time)
 
             if time_filter.recent_activity_days is not None:
                 cutoff = time_filter.get_cutoff_date_for_recent_activity()
-                conditions.append("last_interaction >= ?")
-                params.append(cutoff.isoformat())
+                self.conditions.append("last_interaction >= ?")
+                self.params.append(cutoff.isoformat())
 
             if time_filter.inactive_days is not None:
                 cutoff = time_filter.get_cutoff_date_for_inactive()
-                conditions.append("(last_interaction IS NULL OR last_interaction < ?)")
-                params.append(cutoff.isoformat())
+                self.conditions.append(
+                    "(last_interaction IS NULL OR last_interaction < ?)")
+                self.params.append(cutoff.isoformat())
 
-        # Handle interests separately due to JSON complexity
-        interests_condition = ""
-        if self.filters.interests:
+        def _get_interests_condition(self) -> str:
+            """Builds the sub-clause for searching interests in a JSON field."""
+            if not self.filters.interests:
+                return ""
+
             interest_conditions = []
             for interest in self.filters.interests:
-                interest_conditions.append("JSON_EXTRACT(interests, '$') LIKE ?")
-                params.append(f'%"{interest}"%')
+                interest_conditions.append(
+                    "JSON_EXTRACT(interests, '$') LIKE ?")
+                self.params.append(f'%"{interest}"%')
 
-            if self.match_all_interests:
-                interests_condition = " AND ".join(interest_conditions)
-            else:
-                interests_condition = f"({' OR '.join(interest_conditions)})"
-
-        # Combine all conditions
-        where_clause = " AND ".join(conditions)
-        if interests_condition:
-            if where_clause:
-                where_clause += f" AND {interests_condition}"
-            else:
-                where_clause = interests_condition
-
-        return where_clause, params
+            separator = " AND " if self.criteria.match_all_interests else " OR "
+            return f"({separator.join(interest_conditions)})"

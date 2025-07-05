@@ -95,40 +95,21 @@ class AudioRecordingService:
             return None
 
         try:
-            # Set defaults
-            if duration is None:
-                duration = self.config.default_record_duration
-            if format_type is None:
-                format_type = self.config.default_output_format
+            # Set defaults and validate parameters
+            duration, format_type = self._prepare_recording_parameters(
+                duration, format_type)
 
-            # Validate duration
-            duration = min(duration, self.config.max_record_duration)
-
-            # Start recording
-            self._start_recording(duration, session)
-
-            # Record audio data
-            start_time = time.time()
-            audio_data = self._perform_recording(duration)
-            processing_time = time.time() - start_time
-
-            if audio_data is None or len(audio_data) == 0:
-                self.logger.error("No audio data recorded")
+            # Execute recording
+            audio_data, processing_time = self._execute_recording(
+                duration, session)
+            if audio_data is None:
                 return None
 
-            # Create metadata
+            # Create metadata and update metrics
             metadata = self._create_recording_metadata(
-                duration, session, format_type, processing_time
-            )
-
-            # Update metrics
-            self.metrics.increment_recordings(processing_time)
-            self.metrics.record_format_usage(format_type.value)
-
-            # Update session if provided
-            if session:
-                session.add_recording(
-                    len(audio_data) / self.config.sample_rate)
+                duration, session, format_type, processing_time)
+            self._update_recording_metrics(
+                audio_data, format_type, session, processing_time)
 
             self.logger.info(
                 f"Successfully recorded {len(audio_data)} samples")
@@ -142,6 +123,44 @@ class AudioRecordingService:
 
         finally:
             self._stop_recording()
+
+    def _prepare_recording_parameters(self, duration: Optional[int], format_type: Optional[AudioFormatType]) -> Tuple[int, AudioFormatType]:
+        """Prepare and validate recording parameters."""
+        if duration is None:
+            duration = self.config.default_record_duration
+        if format_type is None:
+            format_type = self.config.default_output_format
+
+        # Validate duration
+        duration = min(duration, self.config.max_record_duration)
+
+        return duration, format_type
+
+    def _execute_recording(self, duration: int, session: Optional[AudioSession]) -> Tuple[Optional[np.ndarray], float]:
+        """Execute the recording process and return audio data with timing."""
+        # Start recording
+        self._start_recording(duration, session)
+
+        # Record audio data
+        start_time = time.time()
+        audio_data = self._perform_recording(duration)
+        processing_time = time.time() - start_time
+
+        if audio_data is None or len(audio_data) == 0:
+            self.logger.error("No audio data recorded")
+            return None, processing_time
+
+        return audio_data, processing_time
+
+    def _update_recording_metrics(self, audio_data: np.ndarray, format_type: AudioFormatType, session: Optional[AudioSession], processing_time: float) -> None:
+        """Update metrics and session data after successful recording."""
+        # Update metrics
+        self.metrics.increment_recordings(processing_time)
+        self.metrics.record_format_usage(format_type.value)
+
+        # Update session if provided
+        if session:
+            session.add_recording(len(audio_data) / self.config.sample_rate)
 
     def _start_recording(self, duration: int, session: Optional[AudioSession]) -> None:
         """Start recording process."""

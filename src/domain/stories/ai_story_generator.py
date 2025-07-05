@@ -128,57 +128,41 @@ class FairyLandAIGenerator:
             },
         }
 
+    def _get_animal_characters(self) -> List[str]:
+        """Returns a list of animal characters."""
+        return [
+            "أرنب صغير", "قطة لطيفة", "كلب وفي", "طائر مغرد", "فيل حكيم",
+            "دولفين ذكي", "سلحفاة صبورة", "نحلة نشيطة", "فراشة جميلة", "أسد شجاع",
+        ]
+
+    def _get_fantasy_characters(self) -> List[str]:
+        """Returns a list of fantasy characters."""
+        return [
+            "تنين ودود", "جنية طيبة", "ساحر حكيم", "أميرة شجاعة", "فارس نبيل",
+            "عملاق لطيف", "روح الغابة", "ملك الحيوانات", "حورية البحر", "طائر العنقاء",
+        ]
+
+    def _get_human_characters(self) -> List[str]:
+        """Returns a list of human characters."""
+        return [
+            "جد حكيم", "جدة محبة", "معلم صبور", "طبيب طيب", "شرطي مساعد",
+            "خباز ماهر", "فنان موهوب", "موسيقي مبدع", "رياضي قوي", "عالم ذكي",
+        ]
+
+    def _get_object_characters(self) -> List[str]:
+        """Returns a list of object characters."""
+        return [
+            "كتاب سحري", "مصباح عجيب", "شجرة متكلمة", "نجمة لامعة", "قلم ملون",
+            "حجر كريم", "مرآة سحرية", "صندوق الكنوز", "بوصلة ذهبية", "خريطة قديمة",
+        ]
+
     def _load_character_bank(self) -> Dict[str, List[str]]:
         """تحميل بنك الشخصيات"""
         return {
-            "animals": [
-                "أرنب صغير",
-                "قطة لطيفة",
-                "كلب وفي",
-                "طائر مغرد",
-                "فيل حكيم",
-                "دولفين ذكي",
-                "سلحفاة صبورة",
-                "نحلة نشيطة",
-                "فراشة جميلة",
-                "أسد شجاع",
-            ],
-            "fantasy": [
-                "تنين ودود",
-                "جنية طيبة",
-                "ساحر حكيم",
-                "أميرة شجاعة",
-                "فارس نبيل",
-                "عملاق لطيف",
-                "روح الغابة",
-                "ملك الحيوانات",
-                "حورية البحر",
-                "طائر العنقاء",
-            ],
-            "humans": [
-                "جد حكيم",
-                "جدة محبة",
-                "معلم صبور",
-                "طبيب طيب",
-                "شرطي مساعد",
-                "خباز ماهر",
-                "فنان موهوب",
-                "موسيقي مبدع",
-                "رياضي قوي",
-                "عالم ذكي",
-            ],
-            "objects": [
-                "كتاب سحري",
-                "مصباح عجيب",
-                "شجرة متكلمة",
-                "نجمة لامعة",
-                "قلم ملون",
-                "حجر كريم",
-                "مرآة سحرية",
-                "صندوق الكنوز",
-                "بوصلة ذهبية",
-                "خريطة قديمة",
-            ],
+            "animals": self._get_animal_characters(),
+            "fantasy": self._get_fantasy_characters(),
+            "humans": self._get_human_characters(),
+            "objects": self._get_object_characters(),
         }
 
     def _load_moral_lessons(self) -> Dict[str, List[str]]:
@@ -256,34 +240,47 @@ class FairyLandAIGenerator:
 
         return story
 
+    def _get_emotional_theme_map(self) -> Dict[str, StoryTheme]:
+        """Returns a mapping of emotional states to story themes."""
+        return {
+            "قلق": StoryTheme.FRIENDSHIP,  # Friendship stories can be calming
+            "متحمس": StoryTheme.ADVENTURE,  # Adventure for high energy
+            "حزين": StoryTheme.FAMILY,    # Family stories for comfort
+            "فضولي": StoryTheme.LEARNING,  # Learning for a curious mind
+        }
+
+    def _get_interest_theme_map(self) -> Dict[str, StoryTheme]:
+        """Returns a mapping of interests to story themes."""
+        return {
+            "فضاء": StoryTheme.SPACE,
+            "حيوانات": StoryTheme.ANIMALS,
+            "ابطال": StoryTheme.HEROIC,  # Using a keyword for heroes
+            "خيال": StoryTheme.FANTASY,
+            "حل الألغاز": StoryTheme.PROBLEM_SOLVING,
+        }
+
     def _suggest_theme_for_context(self, context: StoryContext) -> StoryTheme:
         """اقتراح موضوع مناسب للسياق"""
+        # 1. Check emotional state first
+        emotional_map = self._get_emotional_theme_map()
+        if context.emotional_state in emotional_map:
+            return emotional_map[context.emotional_state]
 
-        # اقتراح بناءً على الحالة العاطفية
-        if context.emotional_state == "قلق":
-            return StoryTheme.FRIENDSHIP  # قصص الصداقة مهدئة
-        elif context.emotional_state == "متحمس":
-            return StoryTheme.ADVENTURE  # مغامرات للطاقة العالية
-        elif context.emotional_state == "حزين":
-            return StoryTheme.FAMILY  # قصص عائلية دافئة
-        elif context.emotional_state == "فضولي":
-            return StoryTheme.LEARNING  # قصص تعليمية
+        # 2. Check interests
+        interest_map = self._get_interest_theme_map()
+        for interest, theme in interest_map.items():
+            if any(interest in user_interest for user_interest in context.interests):
+                return theme
 
-        # اقتراح بناءً على الاهتمامات
-        if "علوم" in context.interests:
+        # 3. Check learning goals
+        if context.learning_goals:
             return StoryTheme.LEARNING
-        elif "حيوانات" in context.interests:
-            return StoryTheme.ANIMALS
-        elif "فضاء" in context.interests:
-            return StoryTheme.SPACE
 
-        # اقتراح بناءً على العمر
-        if context.age <= 6:
-            return random.choice([StoryTheme.ANIMALS, StoryTheme.FRIENDSHIP])
-        elif context.age <= 10:
-            return random.choice([StoryTheme.ADVENTURE, StoryTheme.LEARNING])
+        # 4. Default theme based on age
+        if context.age < 6:
+            return StoryTheme.BEDTIME
         else:
-            return random.choice([StoryTheme.HEROIC, StoryTheme.PROBLEM_SOLVING])
+            return StoryTheme.ADVENTURE
 
     def _determine_age_group(self, age: int) -> AgeGroup:
         """تحديد الفئة العمرية"""
@@ -298,6 +295,51 @@ class FairyLandAIGenerator:
         else:
             return AgeGroup.TEEN
 
+    def _get_prompt_introduction(self, theme: StoryTheme, length_str: str) -> str:
+        """Generates the introduction for the story prompt."""
+        return f"Act as a master storyteller for children. Write a personalized, engaging, and age-appropriate story in Arabic. The theme is '{theme.value}' and the length should be '{length_str}'."
+
+    def _get_prompt_context_section(self, context: StoryContext) -> str:
+        """Generates the context section for the story prompt."""
+        return f"""
+### Child's Context
+- **Name:** {context.child_name}
+- **Age:** {context.age}
+- **Friends:** {', '.join(context.friends)}
+- **Family:** {', '.join(context.family_members)}
+- **Interests:** {', '.join(context.interests)}
+- **Emotional State:** {context.emotional_state}
+- **Learning Goals:** {', '.join(context.learning_goals)}
+"""
+
+    def _get_prompt_story_elements_section(self, theme: StoryTheme, age_group: AgeGroup, context: StoryContext) -> str:
+        """Generates the story elements section for the prompt."""
+        template = self.story_templates.get(theme.value, {})
+        characters = random.sample(self.character_bank.get(
+            random.choice(list(self.character_bank.keys())), []), 2)
+        if context.preferred_characters:
+            characters.extend(context.preferred_characters)
+        moral_lesson = random.choice(
+            self.moral_lessons.get(age_group.value, []))
+
+        return f"""
+### Story Elements
+- **Structure:** {template.get('structure', 'A simple beginning, middle, and end.')}
+- **Key Elements:** {', '.join(template.get('key_elements', []))}
+- **Main Characters:** {', '.join(characters)}
+- **Moral Lesson:** {moral_lesson}
+"""
+
+    def _get_prompt_style_and_rules_section(self) -> str:
+        """Generates the style and rules section for the prompt."""
+        return """
+### Style and Rules
+- **Language:** Modern Standard Arabic, simplified for children.
+- **Tone:** Warm, engaging, and positive.
+- **Rules:** No violence, scary situations, or complex vocabulary. Keep it simple and direct.
+- **Output Format:** Provide only the story content, starting with a title. Example: 'Title: [Story Title]\\n\\n[Story Content...]'
+"""
+
     async def _build_personalized_prompt(
         self,
         context: StoryContext,
@@ -305,68 +347,16 @@ class FairyLandAIGenerator:
         length: StoryLength,
         age_group: AgeGroup,
     ) -> str:
-        """بناء prompt مخصص للطفل"""
+        """بناء prompt مخصص ومفصل لـ GPT-4"""
+        length_str = self._get_length_description(length)
 
-        # اختيار درس أخلاقي مناسب
-        age_range = age_group.value
-        if age_range in self.moral_lessons:
-            moral_lesson = random.choice(self.moral_lessons[age_range])
-        else:
-            moral_lesson = "أهمية الصداقة والتعاون"
+        intro = self._get_prompt_introduction(theme, length_str)
+        context_section = self._get_prompt_context_section(context)
+        elements_section = self._get_prompt_story_elements_section(
+            theme, age_group, context)
+        style_section = self._get_prompt_style_and_rules_section()
 
-        # اختيار شخصيات من البنك
-        theme_characters = []
-        if theme in [StoryTheme.ANIMALS, StoryTheme.FRIENDSHIP]:
-            theme_characters = random.sample(
-                self.character_bank["animals"], 2)
-        elif theme in [StoryTheme.FANTASY, StoryTheme.ADVENTURE]:
-            theme_characters = random.sample(
-                self.character_bank["fantasy"], 2)
-        else:
-            theme_characters = random.sample(
-                self.character_bank["humans"], 2)
-
-        # بناء الـ prompt
-        prompt = f"""
-أنت كاتب قصص أطفال محترف متخصص في إنشاء قصص مخصصة وتفاعلية.
-
-معلومات الطفل:
-- الاسم: {context.child_name}
-- العمر: {context.age} سنوات
-- الأصدقاء: {', '.join(context.friends) if context.friends else 'لا يوجد أصدقاء مذكورين'}
-- أفراد العائلة: {', '.join(context.family_members) if context.family_members else 'العائلة'}
-- الاهتمامات: {', '.join(context.interests) if context.interests else 'متنوعة'}
-- الحالة العاطفية: {context.emotional_state}
-- الخلفية الثقافية: {context.cultural_background}
-
-مواصفات القصة:
-- الموضوع: {theme.value}
-- الطول: {length.value} ({self._get_length_description(length)})
-- الفئة العمرية: {age_group.value} سنوات
-- الدرس الأخلاقي: {moral_lesson}
-
-الشخصيات المقترحة: {', '.join(theme_characters)}
-
-متطلبات القصة:
-1. اجعل {context.child_name} البطل الرئيسي للقصة
-2. أدرج أصدقاءه {', '.join(context.friends[:2]) if context.friends else ''} كشخصيات مهمة
-3. اربط القصة بحالته العاطفية الحالية ({context.emotional_state})
-4. استخدم لغة مناسبة لعمر {context.age} سنوات
-5. أدرج الدرس الأخلاقي بشكل طبيعي في القصة
-6. أضف عناصر تفاعلية أو تعليمية مناسبة
-7. اختتم بنهاية إيجابية ومشجعة
-8. أضف إشارات للمؤثرات الصوتية في [أقواس معقوفة]
-
-هيكل القصة:
-{self.story_templates[theme.value]['structure']}
-
-العناصر المطلوبة:
-{', '.join(self.story_templates[theme.value]['key_elements'])}
-
-ابدأ القصة الآن:
-"""
-
-        return prompt
+        return f"{intro}{context_section}{elements_section}{style_section}"
 
     def _get_length_description(self, length: StoryLength) -> str:
         """وصف طول القصة"""
@@ -402,72 +392,47 @@ class FairyLandAIGenerator:
             )
 
             return response.choices[0].message.content
-        except Exception as exc:  # التراجع إلى قصة افتراضية في حالة الخطأ
+        except Exception as e:
+            print(f"An error occurred during GPT-4 generation: {e}")
             return self._generate_fallback_story(length)
 
-    def _generate_fallback_story(self, length: StoryLength) -> str:
-        """توليد قصة احتياطية في حالة فشل الـ AI"""
-
-        fallback_stories = {
-            StoryLength.SHORT: """
-عنوان: مغامرة {child_name} الصغيرة
-
-[موسيقى هادئة]
-
-كان {child_name} يلعب في الحديقة عندما رأى قطة صغيرة عالقة في الشجرة. 
-
-[صوت مواء القطة]
-
-"لا تخافي أيتها القطة الصغيرة، سأساعدك!" قال {child_name} بثقة.
-
-فكر {child_name} في طريقة آمنة لمساعدة القطة. استدعى {friend1} للمساعدة، وحضرا سلماً صغيراً.
-
-[أصوات تعاون]
-
-بعمل جماعي رائع، نجحا في إنقاذ القطة الصغيرة. شعر {child_name} بسعادة كبيرة لمساعدة حيوان محتاج.
-
-[موسيقى سعيدة]
-
-وهكذا تعلم {child_name} أن مساعدة الآخرين تجعلنا نشعر بالفخر والسعادة.
-
-النهاية.
-            """,
-            StoryLength.MEDIUM: """
-عنوان: كنز {child_name} المفقود
-
-[موسيقى مغامرات]
-
-في يوم مشمس جميل، كان {child_name} و{friend1} يلعبان في الحديقة عندما وجدا خريطة غامضة.
-
-[صوت ورق قديم]
-
-"انظر! هذه خريطة كنز حقيقية!" صرخ {child_name} بحماس.
-
-قرر الصديقان اتباع الخريطة. أولاً، مرا بجسر صغير فوق الجدول.
-
-[صوت مياه جارية]
-
-ثم وصلا إلى غابة صغيرة حيث التقيا بأرنب حكيم.
-
-"لتجدا الكنز، يجب أن تحلا هذا اللغز،" قال الأرنب. "ما هو الشيء الذي كلما أخذت منه كبر؟"
-
-فكر {child_name} قليلاً ثم أجاب: "الحفرة!"
-
-"أحسنت!" قال الأرنب، وأعطاهما المفتاح الذهبي.
-
-[صوت مفاتيح]
-
-وصل الأصدقاء أخيراً إلى صندوق الكنز. فتحاه بالمفتاح الذهبي، ووجدا بداخله... كتباً ملونة وألعاباً تعليمية!
-
-[موسيقى احتفالية]
-
-فهم {child_name} أن الكنز الحقيقي هو المعرفة والصداقة. وهكذا انتهت مغامرتهما الرائعة.
-
-النهاية.
-            """,
+    def _get_fallback_stories(self) -> Dict[str, Dict[str, str]]:
+        """Returns a dictionary of pre-written fallback stories."""
+        return {
+            "short_adventure": {
+                "title": "الأرنب الشجاع",
+                "content": "كان يا مكان، أرنب صغير اسمه فوفي. قرر فوفي أن يتسلق أعلى تل في الغابة. كان التل عالياً جداً، لكن فوفي لم يخف. قفز وتسلق حتى وصل إلى القمة ورأى كل الغابة من فوق.",
+            },
+            "short_friendship": {
+                "title": "القطة والكلب",
+                "content": "في حديقة جميلة، كانت هناك قطة صغيرة وكلب كبير. في البداية، كانا يخافان من بعضهما. لكن عندما بدأت تمطر، احتميا تحت نفس الشجرة وأصبحا صديقين حميمين.",
+            },
+            "medium_learning": {
+                "title": "النجمة اللامعة",
+                "content": "كان هناك طفل اسمه سامي يحب النظر إلى النجوم. سأل والده: لماذا تلمع النجوم؟ شرح له والده أن النجوم هي شموس بعيدة جداً، وأن نورها يسافر طويلاً ليصل إلينا. تعلم سامي شيئاً جديداً ومدهشاً ذلك اليوم.",
+            },
+            "long_fantasy": {
+                "title": "تنين الشوكولاتة",
+                "content": "في أرض بعيدة، كان هناك تنين لا ينفث النار، بل الشوكولاتة الساخنة. كان كل سكان القرية يحبونه، خاصة في أيام الشتاء الباردة. كان التنين سعيداً لأنه يجلب الدفء والبهجة للجميع. وفي أحد الأيام، ساعد التنين في إذابة جليد كبير كان يغلق الطريق، وأصبح بطلاً محبوباً أكثر.",
+            },
         }
 
-        return fallback_stories.get(length, fallback_stories[StoryLength.SHORT])
+    def _generate_fallback_story(self, length: StoryLength) -> str:
+        """توليد قصة بديلة في حال فشل GPT-4"""
+        fallback_stories = self._get_fallback_stories()
+
+        # Select a story based on length, or randomly
+        if length == StoryLength.SHORT:
+            story_key = random.choice(["short_adventure", "short_friendship"])
+        elif length == StoryLength.MEDIUM:
+            story_key = "medium_learning"
+        else:  # LONG
+            story_key = "long_fantasy"
+
+        story = fallback_stories.get(
+            story_key, fallback_stories["short_adventure"])
+
+        return f'Title: {story["title"]}\n\n{story["content"]}'
 
     async def _enhance_story_content(
         self, raw_content: str, context: StoryContext, theme: StoryTheme
@@ -568,54 +533,43 @@ class FairyLandAIGenerator:
 
     def _extract_moral_lesson(self, content: str, age: int) -> str:
         """استخراج الدرس الأخلاقي من القصة"""
-
-        moral_indicators = {
-            "مساعدة": "أهمية مساعدة الآخرين",
-            "صداقة": "قيمة الصداقة الحقيقية",
-            "تعاون": "قوة العمل الجماعي",
-            "صبر": "فوائد الصبر والمثابرة",
-            "شجاع": "الشجاعة في مواجهة التحديات",
-            "صدق": "أهمية الصدق والأمانة",
-            "مشاركة": "متعة المشاركة مع الآخرين",
-        }
-
-        for indicator, lesson in moral_indicators.items():
-            if indicator in content:
+        # This would ideally use a more advanced NLP model
+        lessons = self.moral_lessons.get(
+            self._determine_age_group(age).value, [])
+        for lesson in lessons:
+            if lesson.split()[0] in content or lesson.split()[-1] in content:
                 return lesson
+        return "الاستمتاع بالمغامرة والتعلم"
 
-        return "أهمية القيم الإيجابية في الحياة"
+    def _get_theme_to_keywords_map(self) -> Dict[StoryTheme, List[str]]:
+        """Returns a map of story themes to educational keywords."""
+        return {
+            StoryTheme.LEARNING: ["تعلم", "معرفة", "اكتشاف", "سؤال", "جواب"],
+            StoryTheme.ADVENTURE: ["شجاعة", "استكشاف", "خريطة", "كنز", "رحلة"],
+            StoryTheme.FRIENDSHIP: ["صداقة", "مشاركة", "تعاون", "مساعدة", "لطف"],
+            StoryTheme.SPACE: ["كوكب", "نجم", "فضاء", "صاروخ", "مجرة"],
+            StoryTheme.ANIMALS: ["قطة", "كلب", "أرنب", "طائر", "حيوان"],
+            StoryTheme.PROBLEM_SOLVING: ["لغز", "حل", "فكرة", "تفكير", "ذكاء"],
+        }
 
     def _extract_educational_elements(
         self, content: str, theme: StoryTheme
     ) -> List[str]:
-        """استخراج العناصر التعليمية"""
+        """استخراج العناصر التعليمية بناءً على الموضوع"""
+        theme_keywords = self._get_theme_to_keywords_map()
+        keywords_for_theme = theme_keywords.get(theme, [])
 
-        elements = []
+        found_elements = [
+            keyword for keyword in keywords_for_theme if keyword in content]
 
-        # العناصر التعليمية حسب الموضوع
-        if theme == StoryTheme.LEARNING:
-            if "لغز" in content or "سؤال" in content:
-                elements.append("حل المشكلات")
-            if any(word in content for word in ["رقم", "عدد", "حساب"]):
-                elements.append("الرياضيات")
+        # Add a default element if none are found
+        if not found_elements and keywords_for_theme:
+            found_elements.append(f"مفاهيم عامة عن {theme.value}")
 
-        if theme == StoryTheme.ANIMALS:
-            elements.append("تعلم عن الحيوانات")
-
-        if theme == StoryTheme.SPACE:
-            elements.append("استكشاف الفضاء")
-
-        # عناصر عامة
-        if "لون" in content:
-            elements.append("تعلم الألوان")
-        if any(word in content for word in ["كبير", "صغير", "طويل", "قصير"]):
-            elements.append("المفاهيم المكانية")
-
-        return elements
+        return found_elements
 
     def _extract_emotional_tags(self, content: str) -> List[str]:
-        """استخراج العلامات العاطفية"""
-
+        """استخراج العلامات العاطفية من القصة"""
         emotion_words = {
             "سعادة": ["سعيد", "فرح", "مبتهج", "مرح"],
             "شجاعة": ["شجاع", "قوي", "بطل", "جرئ"],

@@ -30,14 +30,20 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
         self.domain_analyzer = domain_analyzer
         self.emotion_cache: Dict[str, EmotionAnalysis] = {}
         self.cache_ttl = 300  # 5 minutes
-
-        # Enhanced emotion patterns with cultural context
-        self.emotion_patterns = self._load_emotion_patterns()
-
+        self.emotion_patterns = self._get_emotion_patterns()
         logger.info("✅ Emotion Analyzer Service initialized")
 
-    def _load_emotion_patterns(self) -> Dict[str, Dict[str, Any]]:
+    @staticmethod
+    def _get_emotion_patterns() -> Dict[str, Dict[str, Any]]:
         """Load enhanced emotion patterns with cultural awareness"""
+        return {
+            **EmotionAnalyzerService._load_basic_emotions(),
+            **EmotionAnalyzerService._load_complex_emotions(),
+        }
+
+    @staticmethod
+    def _load_basic_emotions() -> Dict[str, Dict[str, Any]]:
+        """Load basic emotion patterns (joy, sadness, anger, fear)"""
         return {
             "joy": {
                 "arabic_keywords": ["سعيد", "فرح", "مبسوط", "ضحك", "فرحان", "مسرور"],
@@ -69,6 +75,12 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
                 "emojis": ["😨", "😰", "😱", "😟", "😧"],
                 "weight": 1.0,
             },
+        }
+
+    @staticmethod
+    def _load_complex_emotions() -> Dict[str, Dict[str, Any]]:
+        """Load complex emotion patterns (love, excitement, curiosity, surprise)"""
+        return {
             "love": {
                 "arabic_keywords": ["حب", "أحب", "عشق", "أعشق", "أحبك", "حبيب"],
                 "english_keywords": ["love", "adore", "cherish", "affection"],
@@ -190,7 +202,8 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
                     score += data["weight"]
 
             # Apply contextual multipliers
-            score = self._apply_contextual_multipliers(text_lower, emotion, score)
+            score = self._apply_contextual_multipliers(
+                text_lower, emotion, score)
 
             if score > 0:
                 emotion_scores[emotion] = score
@@ -222,7 +235,8 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             multiplier *= 0.3
 
         # Intensifiers
-        intensifiers = ["جداً", "كثيراً", "very", "really", "extremely", "super"]
+        intensifiers = ["جداً", "كثيراً", "very",
+                        "really", "extremely", "super"]
         if any(intensifier in text for intensifier in intensifiers):
             multiplier *= 1.5
 
@@ -336,14 +350,14 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             1 for e in emotions[: len(emotions) // 2] if e in positive_emotions
         )
         late_positive = sum(
-            1 for e in emotions[len(emotions) // 2 :] if e in positive_emotions
+            1 for e in emotions[len(emotions) // 2:] if e in positive_emotions
         )
 
         early_negative = sum(
             1 for e in emotions[: len(emotions) // 2] if e in negative_emotions
         )
         late_negative = sum(
-            1 for e in emotions[len(emotions) // 2 :] if e in negative_emotions
+            1 for e in emotions[len(emotions) // 2:] if e in negative_emotions
         )
 
         return late_positive > early_positive or late_negative < early_negative
@@ -361,14 +375,14 @@ class EmotionAnalyzerService(IEmotionAnalyzer):
             1 for e in emotions[: len(emotions) // 2] if e in positive_emotions
         )
         late_positive = sum(
-            1 for e in emotions[len(emotions) // 2 :] if e in positive_emotions
+            1 for e in emotions[len(emotions) // 2:] if e in positive_emotions
         )
 
         early_negative = sum(
             1 for e in emotions[: len(emotions) // 2] if e in negative_emotions
         )
         late_negative = sum(
-            1 for e in emotions[len(emotions) // 2 :] if e in negative_emotions
+            1 for e in emotions[len(emotions) // 2:] if e in negative_emotions
         )
 
         return late_positive < early_positive or late_negative > early_negative

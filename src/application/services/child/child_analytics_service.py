@@ -119,35 +119,57 @@ class ChildAnalyticsDomainService:
             ChildStatistics with comprehensive analytics
         """
         if not children:
-            return ChildStatistics(
-                total_children=0,
-                age_statistics=AgeStatistics(
-                    min_age=0, max_age=0, average_age=0.0),
-                language_distribution={},
-                activity_statistics=ActivityStatistics(
-                    children_active_last_7_days=0,
-                    activity_percentage=0.0,
-                    total_children=0,
-                ),
-                generated_at=datetime.now(),
-            )
+            return self._create_empty_statistics()
 
-        # Calculate age statistics
+        # Calculate all statistics components
+        age_stats = self._calculate_age_statistics(children)
+        language_distribution = self._calculate_language_distribution(children)
+        activity_stats = self._calculate_activity_statistics(
+            children, active_children_last_7_days)
+
+        return ChildStatistics(
+            total_children=len(children),
+            age_statistics=age_stats,
+            language_distribution=language_distribution,
+            activity_statistics=activity_stats,
+            generated_at=datetime.now(),
+        )
+
+    def _create_empty_statistics(self) -> ChildStatistics:
+        """Create empty statistics for when no children are provided."""
+        return ChildStatistics(
+            total_children=0,
+            age_statistics=AgeStatistics(
+                min_age=0, max_age=0, average_age=0.0),
+            language_distribution={},
+            activity_statistics=ActivityStatistics(
+                children_active_last_7_days=0,
+                activity_percentage=0.0,
+                total_children=0,
+            ),
+            generated_at=datetime.now(),
+        )
+
+    def _calculate_age_statistics(self, children: List[Child]) -> AgeStatistics:
+        """Calculate age statistics from children list."""
         ages = [child.age for child in children if child.age is not None]
-        age_stats = AgeStatistics(
+        return AgeStatistics(
             min_age=min(ages) if ages else 0,
             max_age=max(ages) if ages else 0,
             average_age=sum(ages) / len(ages) if ages else 0.0,
         )
 
-        # Calculate language distribution
+    def _calculate_language_distribution(self, children: List[Child]) -> dict:
+        """Calculate language distribution from children list."""
         language_distribution = {}
         for child in children:
             lang = child.language_preference or "unknown"
             language_distribution[lang] = language_distribution.get(
                 lang, 0) + 1
+        return language_distribution
 
-        # Calculate activity statistics
+    def _calculate_activity_statistics(self, children: List[Child], active_children_last_7_days: int) -> ActivityStatistics:
+        """Calculate activity statistics from children list."""
         total_children = len(children)
         activity_percentage = (
             (active_children_last_7_days / total_children * 100)
@@ -155,18 +177,10 @@ class ChildAnalyticsDomainService:
             else 0.0
         )
 
-        activity_stats = ActivityStatistics(
+        return ActivityStatistics(
             children_active_last_7_days=active_children_last_7_days,
             activity_percentage=round(activity_percentage, 1),
             total_children=total_children,
-        )
-
-        return ChildStatistics(
-            total_children=total_children,
-            age_statistics=age_stats,
-            language_distribution=language_distribution,
-            activity_statistics=activity_stats,
-            generated_at=datetime.now(),
         )
 
     def identify_at_risk_children(self, children: List[Child]) -> List[Child]:
@@ -263,7 +277,17 @@ class ChildAnalyticsDomainService:
         score = 0.0
         max_score = 5.0
 
-        # Interaction consistency (0-1)
+        # Calculate all scoring components
+        score += self._calculate_interaction_consistency_score(child)
+        score += self._calculate_topic_diversity_score(child)
+        score += self._calculate_engagement_level_score(child)
+        score += self._calculate_profile_completeness_score(child)
+        score += self._calculate_recent_activity_score(child)
+
+        return min(score / max_score, 1.0)
+
+    def _calculate_interaction_consistency_score(self, child: Child) -> float:
+        """Calculate interaction consistency score (0-1)."""
         if child.total_interaction_time > 0:
             days_since_creation = (
                 (datetime.now() - child.created_at).days if child.created_at else 1
@@ -272,16 +296,17 @@ class ChildAnalyticsDomainService:
                 child.total_interaction_time /
                 (days_since_creation * 1800), 1.0
             )  # 30 min/day ideal
-            score += consistency
+            return consistency
+        return 0.0
 
-        # Topic diversity (0-1)
+    def _calculate_topic_diversity_score(self, child: Child) -> float:
+        """Calculate topic diversity score (0-1)."""
         if child.interests:
-            topic_diversity = min(
-                len(child.interests) / 5.0, 1.0
-            )  # 5 interests is ideal
-            score += topic_diversity
+            return min(len(child.interests) / 5.0, 1.0)  # 5 interests is ideal
+        return 0.0
 
-        # Engagement level (0-1)
+    def _calculate_engagement_level_score(self, child: Child) -> float:
+        """Calculate engagement level score (0-1)."""
         total_days = (
             (datetime.now() - child.created_at).days if child.created_at else 30
         )
@@ -293,9 +318,10 @@ class ChildAnalyticsDomainService:
             EngagementLevel.LOW: 0.4,
             EngagementLevel.INACTIVE: 0.0,
         }
-        score += engagement_scores.get(insight.engagement_level, 0.0)
+        return engagement_scores.get(insight.engagement_level, 0.0)
 
-        # Profile completeness (0-1)
+    def _calculate_profile_completeness_score(self, child: Child) -> float:
+        """Calculate profile completeness score (0-1)."""
         profile_fields = [
             child.name,
             child.age,
@@ -306,13 +332,12 @@ class ChildAnalyticsDomainService:
         ]
         completeness = sum(
             1 for field in profile_fields if field) / len(profile_fields)
-        score += completeness
+        return completeness
 
-        # Recent activity (0-1)
+    def _calculate_recent_activity_score(self, child: Child) -> float:
+        """Calculate recent activity score (0-1)."""
         if child.last_interaction:
             days_since_last = (datetime.now() - child.last_interaction).days
             # Decay over 30 days
-            recency_score = max(0, 1.0 - (days_since_last / 30.0))
-            score += recency_score
-
-        return min(score / max_score, 1.0)
+            return max(0, 1.0 - (days_since_last / 30.0))
+        return 0.0

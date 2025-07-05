@@ -161,19 +161,11 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
             raise
 
     async def update(self, child: Child) -> Child:
-        """Update existing child profile"""
+        """Update existing child profile by delegating query prep to a helper."""
         try:
             with self.transaction() as cursor:
                 data = self._serialize_child_for_db(child)
-
-                if "id" not in data or not data["id"]:
-                    raise ValueError("Child must have an ID for update")
-
-                update_fields = [f"{k} = ?" for k in data.keys() if k != "id"]
-                update_values = [v for k, v in data.items() if k != "id"]
-                update_values.append(data["id"])
-
-                sql = f"UPDATE {self.table_name} SET {', '.join(update_fields)} WHERE id = ?"
+                sql, update_values = self._prepare_update_query(data)
 
                 cursor.execute(sql, update_values)
 
@@ -185,6 +177,21 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
         except sqlite3.Error as e:
             self.logger.error(f"Error updating child: {e}")
             raise
+
+    def _prepare_update_query(self, data: Dict[str, Any]) -> tuple[str, list]:
+        """Prepares the SQL UPDATE query and values."""
+        if "id" not in data or not data["id"]:
+            raise ValueError("Child must have an ID for update")
+
+        update_fields = [f"{k} = ?" for k in data.keys() if k != "id"]
+        if not update_fields:
+            raise ValueError("No fields to update")
+
+        update_values = [v for k, v in data.items() if k != "id"]
+        update_values.append(data["id"])
+
+        sql = f"UPDATE {self.table_name} SET {', '.join(update_fields)} WHERE id = ?"
+        return sql, update_values
 
     async def delete(self, child_id: str) -> bool:
         """Soft delete child (mark as inactive)"""

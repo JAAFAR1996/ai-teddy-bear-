@@ -1,0 +1,12 @@
+---
+## Rules:
+- Stop after fixing exactly 5 files
+- Ask for permission before creating any new files
+- Focus on refactoring existing code to meet quality standards
+- Preserve all existing functionality
+
+Start by reading the SARIF file and identifying the issues to fix.
+description:
+globs:
+alwaysApply: false
+---

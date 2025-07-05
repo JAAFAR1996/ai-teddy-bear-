@@ -254,7 +254,8 @@ class ChildRepository(BaseRepository[Child, str]):
         matching = []
 
         for child in all_children:
-            has_milestone = any(m.name == milestone_name for m in child.milestones)
+            has_milestone = any(
+                m.name == milestone_name for m in child.milestones)
 
             if has_milestone == achieved:
                 matching.append(child)
@@ -490,14 +491,16 @@ class ChildRepository(BaseRepository[Child, str]):
         all_children = await self.list()
         for child in all_children:
             for interest in child.interests:
-                interest_counts[interest] = interest_counts.get(interest, 0) + 1
+                interest_counts[interest] = interest_counts.get(
+                    interest, 0) + 1
 
         # Sort by count descending
         sorted_interests = sorted(
             interest_counts.items(), key=lambda x: x[1], reverse=True
         )
 
-        return sorted_interests[:limit]
+        top_interests = sorted_interests[:limit]
+        return top_interests
 
     # Search and Filter Builders
 
@@ -511,77 +514,70 @@ class ChildRepository(BaseRepository[Child, str]):
         page_size: int = 20,
     ) -> Dict[str, Any]:
         """
-        Advanced search with pagination
-
-        Args:
-            query: Search query for name
-            filters: Additional filters
-            sort_by: Sort field
-            sort_order: Sort direction
-            page: Page number
-            page_size: Items per page
-
-        Returns:
-            Paginated search results
+        Performs a comprehensive search for children with filtering, sorting, and pagination.
         """
-        # Build search criteria
-        criteria = []
+        search_criteria = self._build_search_criteria(query, filters)
+        query_options = self._build_query_options(
+            sort_by, sort_order, page, page_size
+        )
 
+        total_count = await self.count(search_criteria)
+        results = await self.search(search_criteria, query_options)
+
+        return {
+            "total_count": total_count,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": (total_count + page_size - 1) // page_size,
+            "data": results,
+        }
+
+    def _build_search_criteria(
+        self, query: Optional[str], filters: Optional[Dict[str, Any]]
+    ) -> List[SearchCriteria]:
+        """Builds a list of SearchCriteria objects from query and filters."""
+        criteria = []
         if query:
+            # Add criteria for a general text query, searching in multiple fields
             criteria.append(
-                SearchCriteria(field="name", operator="ilike", value=f"%{query}%")
+                SearchCriteria(
+                    field="name",
+                    operator="contains",
+                    value=query,
+                    logical_operator="OR",
+                )
+            )
+            criteria.append(
+                SearchCriteria(
+                    field="interests",
+                    operator="contains",
+                    value=query,
+                    logical_operator="OR",
+                )
             )
 
         if filters:
             for field, value in filters.items():
-                if isinstance(value, dict):
-                    # Range query
-                    if "min" in value:
-                        criteria.append(
-                            SearchCriteria(
-                                field=field, operator="gte", value=value["min"]
-                            )
-                        )
-                    if "max" in value:
-                        criteria.append(
-                            SearchCriteria(
-                                field=field, operator="lte", value=value["max"]
-                            )
-                        )
+                if isinstance(value, dict) and "operator" in value:
+                    criteria.append(
+                        SearchCriteria(field=field, **value)
+                    )
                 else:
                     criteria.append(
                         SearchCriteria(field=field, operator="eq", value=value)
                     )
+        return criteria
 
-        # Create query options
-        options = QueryOptions(
-            limit=page_size,
-            offset=(page - 1) * page_size,
+    def _build_query_options(
+        self, sort_by: str, sort_order: SortOrder, page: int, page_size: int
+    ) -> QueryOptions:
+        """Builds the QueryOptions object for sorting and pagination."""
+        return QueryOptions(
             sort_by=sort_by,
             sort_order=sort_order,
+            limit=page_size,
+            offset=(page - 1) * page_size,
         )
-
-        # Execute search
-        if criteria:
-            results = await self.search(criteria, options)
-            total_count = await self.count(criteria=criteria)
-        else:
-            results = await self.list(options=options)
-            total_count = await self.count()
-
-        total_pages = (total_count + page_size - 1) // page_size
-
-        return {
-            "items": results,
-            "pagination": {
-                "page": page,
-                "page_size": page_size,
-                "total_count": total_count,
-                "total_pages": total_pages,
-                "has_next": page < total_pages,
-                "has_prev": page > 1,
-            },
-        }
 
     # Helper Methods
 

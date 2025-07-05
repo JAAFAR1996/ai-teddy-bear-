@@ -1,4 +1,6 @@
 import random
+import json
+from pathlib import Path
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -79,82 +81,14 @@ class MathemythsEngine:
 
     def _load_educational_content(self) -> Dict[str, Dict]:
         """تحميل المحتوى التعليمي حسب المواد والمستويات"""
-        return {
-            SubjectType.MATH.value: {
-                DifficultyLevel.BEGINNER.value: [
-                    {
-                        "question": "كم يد لديك؟",
-                        "answer": "2",
-                        "wrong_answers": ["1", "3", "4"],
-                        "hint": "انظر إلى يديك وعدها",
-                        "explanation": "لدى كل إنسان يدان - يد يمنى ويد يسرى",
-                    },
-                    {
-                        "question": "كم عين للقطة؟",
-                        "answer": "2",
-                        "wrong_answers": ["1", "3", "4"],
-                        "hint": "مثل الإنسان تماماً",
-                        "explanation": "القطط لها عينان مثل البشر",
-                    },
-                ],
-                DifficultyLevel.ELEMENTARY.value: [
-                    {
-                        "question": "5 + 3 = ؟",
-                        "answer": "8",
-                        "wrong_answers": ["7", "9", "6"],
-                        "hint": "عد على أصابعك من 5 إلى 8",
-                        "explanation": "عندما نجمع 5 + 3، نحصل على 8",
-                    },
-                    {
-                        "question": "في الحديقة 6 ورود، قطفنا 2، كم بقي؟",
-                        "answer": "4",
-                        "wrong_answers": ["3", "5", "2"],
-                        "hint": "نطرح عدد الورود المقطوفة من العدد الكلي",
-                        "explanation": "6 - 2 = 4 ورود باقية",
-                    },
-                ],
-                DifficultyLevel.INTERMEDIATE.value: [
-                    {
-                        "question": "7 × 4 = ؟",
-                        "answer": "28",
-                        "wrong_answers": ["24", "32", "21"],
-                        "hint": "7 + 7 + 7 + 7 أو 4 + 4 + 4 + 4 + 4 + 4 + 4",
-                        "explanation": "الضرب هو جمع متكرر: 7 × 4 = 28",
-                    }
-                ],
-            },
-            SubjectType.SCIENCE.value: {
-                DifficultyLevel.BEGINNER.value: [
-                    {
-                        "question": "أي لون تحصل عليه عند خلط الأحمر والأزرق؟",
-                        "answer": "البنفسجي",
-                        "wrong_answers": ["الأخضر", "الأصفر", "البرتقالي"],
-                        "hint": "فكر في ألوان قوس قزح",
-                        "explanation": "الأحمر + الأزرق = البنفسجي",
-                    }
-                ],
-                DifficultyLevel.ELEMENTARY.value: [
-                    {
-                        "question": "كم عدد أرجل العنكبوت؟",
-                        "answer": "8",
-                        "wrong_answers": ["6", "10", "4"],
-                        "hint": "أكثر من الحشرة العادية",
-                        "explanation": "العناكب لها 8 أرجل دائماً",
-                    }
-                ],
-            },
-            SubjectType.LANGUAGE.value: {
-                DifficultyLevel.BEGINNER.value: [
-                    {
-                        "question": "ما عكس كلمة 'كبير'؟",
-                        "answer": "صغير",
-                        "wrong_answers": ["طويل", "عريض", "ضخم"],
-                        "hint": "فكر في الحجم المقابل",
-                        "explanation": "كبير وصغير كلمتان متضادتان",
-                    }
-                ]
-            },
-        }
+        content_path = Path(__file__).parent / "educational_content.json"
+        try:
+            with content_path.open("r", encoding="utf-8") as f:
+                return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            # In a real-world application, proper logging is crucial.
+            print(f"Error loading educational content: {e}")
+            return {}
 
     def get_appropriate_challenge(
         self, child_age: int, subject: SubjectType, child_name: str, device_id: str
@@ -307,13 +241,15 @@ class MathemythsEngine:
 
         if correct:
             response["feedback"] = "ممتاز! إجابة صحيحة!"
-            response["narrative"] = self._get_success_narrative(challenge, child_name)
+            response["narrative"] = self._get_success_narrative(
+                challenge, child_name)
         else:
             response["feedback"] = (
                 f"محاولة جيدة! الإجابة الصحيحة هي: {challenge.correct_answer}"
             )
             response["hint"] = challenge.hint
-            response["narrative"] = self._get_failure_narrative(challenge, child_name)
+            response["narrative"] = self._get_failure_narrative(
+                challenge, child_name)
 
         return response
 
@@ -351,7 +287,8 @@ class MathemythsEngine:
             progress.subject_progress[subject] = {}
 
         if level not in progress.subject_progress[subject]:
-            progress.subject_progress[subject][level] = {"correct": 0, "total": 0}
+            progress.subject_progress[subject][level] = {
+                "correct": 0, "total": 0}
 
         progress.subject_progress[subject][level]["total"] += 1
         if correct:
@@ -360,7 +297,8 @@ class MathemythsEngine:
 
         # تحديث المستوى الحالي إذا لزم الأمر
         if correct and self._should_level_up(progress, subject, level):
-            progress.current_level[subject] = self._get_next_level(challenge.difficulty)
+            progress.current_level[subject] = self._get_next_level(
+                challenge.difficulty)
 
         # تحديث نقاط القوة والضعف
         await self._update_strengths_and_weaknesses(progress)
@@ -448,7 +386,8 @@ class MathemythsEngine:
                 challenges.append(challenge)
 
         # إنشاء قصة أساسية
-        base_story = self._generate_base_educational_story(child_name, age, interests)
+        base_story = self._generate_base_educational_story(
+            child_name, age, interests)
 
         # دمج التحديات في القصة
         enhanced_story = self._integrate_challenges_into_story(
@@ -577,35 +516,25 @@ class MathemythsEngine:
 
         return story
 
-    def get_learning_report(self, child_name: str, device_id: str) -> Dict[str, Any]:
-        """الحصول على تقرير التعلم للطفل"""
-
-        progress_key = f"{device_id}_{child_name}"
-
-        if progress_key not in self.learning_progress:
-            return {"message": "لا توجد بيانات تعلم للطفل"}
-
-        progress = self.learning_progress[progress_key]
-
-        # حساب الإحصائيات العامة
-        total_challenges = len(progress.challenges_completed)
-        subjects_studied = len(progress.subject_progress)
-
-        # حساب معدل النجاح الإجمالي
+    def _calculate_overall_progress(self, subject_progress: Dict) -> tuple[int, int]:
         total_correct = sum(
             sum(level_data["correct"] for level_data in subject_data.values())
-            for subject_data in progress.subject_progress.values()
+            for subject_data in subject_progress.values()
         )
         total_attempts = sum(
             sum(level_data["total"] for level_data in subject_data.values())
-            for subject_data in progress.subject_progress.values()
+            for subject_data in subject_progress.values()
         )
+        return total_correct, total_attempts
 
-        overall_success_rate = (
-            (total_correct / total_attempts * 100) if total_attempts > 0 else 0
-        )
+    def _get_performance_level(self, rate: float) -> str:
+        if rate >= 80:
+            return "ممتاز"
+        if rate >= 60:
+            return "جيد"
+        return "يحتاج تحسين"
 
-        # تحليل التقدم بكل مادة
+    def _analyze_subject_progress(self, progress: LearningProgress) -> Dict:
         subject_analysis = {}
         for subject, levels in progress.subject_progress.items():
             subject_correct = sum(data["correct"] for data in levels.values())
@@ -618,19 +547,36 @@ class MathemythsEngine:
                 "success_rate": round(subject_rate, 1),
                 "challenges_completed": subject_total,
                 "current_level": progress.current_level.get(subject, "مبتدئ"),
-                "performance": (
-                    "ممتاز"
-                    if subject_rate >= 80
-                    else "جيد" if subject_rate >= 60 else "يحتاج تحسين"
-                ),
+                "performance": self._get_performance_level(subject_rate),
             }
+        return subject_analysis
+
+    def get_learning_report(self, child_name: str, device_id: str) -> Dict[str, Any]:
+        """الحصول على تقرير التعلم للطفل"""
+
+        progress_key = f"{device_id}_{child_name}"
+
+        if progress_key not in self.learning_progress:
+            return {"message": "لا توجد بيانات تعلم للطفل"}
+
+        progress = self.learning_progress[progress_key]
+
+        total_correct, total_attempts = self._calculate_overall_progress(
+            progress.subject_progress
+        )
+
+        overall_success_rate = (
+            (total_correct / total_attempts * 100) if total_attempts > 0 else 0
+        )
+
+        subject_analysis = self._analyze_subject_progress(progress)
 
         return {
             "child_name": child_name,
             "overview": {
                 "total_points": progress.total_points,
-                "total_challenges": total_challenges,
-                "subjects_studied": subjects_studied,
+                "total_challenges": len(progress.challenges_completed),
+                "subjects_studied": len(progress.subject_progress),
                 "overall_success_rate": round(overall_success_rate, 1),
             },
             "subject_analysis": subject_analysis,
@@ -648,11 +594,13 @@ class MathemythsEngine:
 
         # توصيات بناءً على نقاط القوة
         for strength in progress.strengths:
-            recommendations.append(f"ممتاز في {strength}! حاول تحديات أكثر صعوبة")
+            recommendations.append(
+                f"ممتاز في {strength}! حاول تحديات أكثر صعوبة")
 
         # توصيات للتحسين
         for weakness in progress.areas_for_improvement:
-            recommendations.append(f"مارس المزيد من تمارين {weakness} لتحسين الأداء")
+            recommendations.append(
+                f"مارس المزيد من تمارين {weakness} لتحسين الأداء")
 
         # توصيات عامة
         if progress.total_points < 100:
