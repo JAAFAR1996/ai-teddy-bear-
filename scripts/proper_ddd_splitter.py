@@ -4,18 +4,17 @@ Proper DDD Splitter - تقسيم صحيح للـ God Classes
 تقسيم الخدمات الكبيرة إلى بنية DDD صحيحة
 """
 
+import logging
 import os
 import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 class ProperDDDSplitter:
-
     def __init__(self):
         self.src_dir = Path("src")
         self.services_dir = self.src_dir / "application" / "services"
