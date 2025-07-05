@@ -1,9 +1,9 @@
-import random
 import json
-from pathlib import Path
+import random
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 
@@ -241,15 +241,13 @@ class MathemythsEngine:
 
         if correct:
             response["feedback"] = "ممتاز! إجابة صحيحة!"
-            response["narrative"] = self._get_success_narrative(
-                challenge, child_name)
+            response["narrative"] = self._get_success_narrative(challenge, child_name)
         else:
             response["feedback"] = (
                 f"محاولة جيدة! الإجابة الصحيحة هي: {challenge.correct_answer}"
             )
             response["hint"] = challenge.hint
-            response["narrative"] = self._get_failure_narrative(
-                challenge, child_name)
+            response["narrative"] = self._get_failure_narrative(challenge, child_name)
 
         return response
 
@@ -287,8 +285,7 @@ class MathemythsEngine:
             progress.subject_progress[subject] = {}
 
         if level not in progress.subject_progress[subject]:
-            progress.subject_progress[subject][level] = {
-                "correct": 0, "total": 0}
+            progress.subject_progress[subject][level] = {"correct": 0, "total": 0}
 
         progress.subject_progress[subject][level]["total"] += 1
         if correct:
@@ -297,8 +294,7 @@ class MathemythsEngine:
 
         # تحديث المستوى الحالي إذا لزم الأمر
         if correct and self._should_level_up(progress, subject, level):
-            progress.current_level[subject] = self._get_next_level(
-                challenge.difficulty)
+            progress.current_level[subject] = self._get_next_level(challenge.difficulty)
 
         # تحديث نقاط القوة والضعف
         await self._update_strengths_and_weaknesses(progress)
@@ -386,8 +382,7 @@ class MathemythsEngine:
                 challenges.append(challenge)
 
         # إنشاء قصة أساسية
-        base_story = self._generate_base_educational_story(
-            child_name, age, interests)
+        base_story = self._generate_base_educational_story(child_name, age, interests)
 
         # دمج التحديات في القصة
         enhanced_story = self._integrate_challenges_into_story(
@@ -594,13 +589,11 @@ class MathemythsEngine:
 
         # توصيات بناءً على نقاط القوة
         for strength in progress.strengths:
-            recommendations.append(
-                f"ممتاز في {strength}! حاول تحديات أكثر صعوبة")
+            recommendations.append(f"ممتاز في {strength}! حاول تحديات أكثر صعوبة")
 
         # توصيات للتحسين
         for weakness in progress.areas_for_improvement:
-            recommendations.append(
-                f"مارس المزيد من تمارين {weakness} لتحسين الأداء")
+            recommendations.append(f"مارس المزيد من تمارين {weakness} لتحسين الأداء")
 
         # توصيات عامة
         if progress.total_points < 100:

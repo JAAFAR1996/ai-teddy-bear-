@@ -4,14 +4,20 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from src.core.domain.entities.child import (Child, ChildPreferences,
-                                            DevelopmentMilestone,
-                                            Language,
-                                            LearningLevel)
-from src.infrastructure.persistence.base import (BaseRepository,
-                                                 BulkOperationResult,
-                                                 QueryOptions, SearchCriteria,
-                                                 SortOrder)
+from src.core.domain.entities.child import (
+    Child,
+    ChildPreferences,
+    DevelopmentMilestone,
+    Language,
+    LearningLevel,
+)
+from src.infrastructure.persistence.base import (
+    BaseRepository,
+    BulkOperationResult,
+    QueryOptions,
+    SearchCriteria,
+    SortOrder,
+)
 
 
 class ChildRepository(BaseRepository[Child, str]):
@@ -254,8 +260,7 @@ class ChildRepository(BaseRepository[Child, str]):
         matching = []
 
         for child in all_children:
-            has_milestone = any(
-                m.name == milestone_name for m in child.milestones)
+            has_milestone = any(m.name == milestone_name for m in child.milestones)
 
             if has_milestone == achieved:
                 matching.append(child)
@@ -491,8 +496,7 @@ class ChildRepository(BaseRepository[Child, str]):
         all_children = await self.list()
         for child in all_children:
             for interest in child.interests:
-                interest_counts[interest] = interest_counts.get(
-                    interest, 0) + 1
+                interest_counts[interest] = interest_counts.get(interest, 0) + 1
 
         # Sort by count descending
         sorted_interests = sorted(
@@ -517,9 +521,7 @@ class ChildRepository(BaseRepository[Child, str]):
         Performs a comprehensive search for children with filtering, sorting, and pagination.
         """
         search_criteria = self._build_search_criteria(query, filters)
-        query_options = self._build_query_options(
-            sort_by, sort_order, page, page_size
-        )
+        query_options = self._build_query_options(sort_by, sort_order, page, page_size)
 
         total_count = await self.count(search_criteria)
         results = await self.search(search_criteria, query_options)
@@ -559,9 +561,7 @@ class ChildRepository(BaseRepository[Child, str]):
         if filters:
             for field, value in filters.items():
                 if isinstance(value, dict) and "operator" in value:
-                    criteria.append(
-                        SearchCriteria(field=field, **value)
-                    )
+                    criteria.append(SearchCriteria(field=field, **value))
                 else:
                     criteria.append(
                         SearchCriteria(field=field, operator="eq", value=value)

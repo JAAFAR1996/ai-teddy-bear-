@@ -45,8 +45,7 @@ class EmotionalState(BaseModel):
     """Emotional state analysis"""
 
     primary_emotion: str = Field(..., description="Primary emotion detected")
-    confidence: float = Field(..., ge=0.0, le=1.0,
-                              description="Confidence score")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence score")
     valence: float = Field(
         ..., ge=-1.0, le=1.0, description="Emotional valence (-1 to 1)"
     )
@@ -103,8 +102,7 @@ class Message(BaseModel):
     sentiment: Optional[float] = Field(
         None, ge=-1.0, le=1.0, description="Sentiment score"
     )
-    topics: List[str] = Field(default_factory=list,
-                              description="Detected topics")
+    topics: List[str] = Field(default_factory=list, description="Detected topics")
     entities: List[Dict[str, Any]] = Field(
         default_factory=list, description="Named entities"
     )
@@ -229,8 +227,7 @@ class Conversation(BaseModel):
     )
 
     # Timing
-    start_time: datetime = Field(
-        default_factory=datetime.now, description="Start time")
+    start_time: datetime = Field(default_factory=datetime.now, description="Start time")
     end_time: Optional[datetime] = Field(None, description="End time")
     duration: timedelta = Field(default=timedelta(), description="Duration")
 
@@ -240,8 +237,7 @@ class Conversation(BaseModel):
     )
 
     # Analysis
-    topics: List[str] = Field(default_factory=list,
-                              description="Conversation topics")
+    topics: List[str] = Field(default_factory=list, description="Conversation topics")
     emotional_states: List[EmotionalState] = Field(
         default_factory=list, description="Emotional journey"
     )
@@ -253,8 +249,7 @@ class Conversation(BaseModel):
     )
 
     # Quality & Safety
-    safety_score: float = Field(
-        default=1.0, ge=0.0, le=1.0, description="Safety score")
+    safety_score: float = Field(default=1.0, ge=0.0, le=1.0, description="Safety score")
     quality_score: float = Field(
         default=0.0, ge=0.0, le=1.0, description="Quality score"
     )
@@ -264,8 +259,7 @@ class Conversation(BaseModel):
 
     # Context
     llm_provider: Optional[str] = Field(None, description="LLM provider used")
-    voice_profile: Optional[str] = Field(
-        None, description="Voice profile used")
+    voice_profile: Optional[str] = Field(None, description="Voice profile used")
     language: str = Field(default="en", description="Primary language")
 
     # Summary
@@ -274,8 +268,7 @@ class Conversation(BaseModel):
     )
 
     # Parent visibility
-    parent_visible: bool = Field(
-        default=True, description="Visible to parents")
+    parent_visible: bool = Field(default=True, description="Visible to parents")
     parent_notes: Optional[str] = Field(None, description="Notes from parents")
 
     def add_message(
@@ -290,8 +283,7 @@ class Conversation(BaseModel):
             role=role,
             content=content,
             content_type=content_type,
-            metadata=MessageMetadata(
-                **metadata) if metadata else MessageMetadata(),
+            metadata=MessageMetadata(**metadata) if metadata else MessageMetadata(),
         )
 
         self.messages.append(message)
@@ -318,13 +310,18 @@ class Conversation(BaseModel):
             self.turn_taking.user_turns += 1
             if len(self.messages) > 1:
                 last_assistant_message = next(
-                    (m for m in reversed(
-                        self.messages[:-1]) if m.role == MessageRole.ASSISTANT), None
+                    (
+                        m
+                        for m in reversed(self.messages[:-1])
+                        if m.role == MessageRole.ASSISTANT
+                    ),
+                    None,
                 )
                 if last_assistant_message:
                     self.turn_taking.response_times.append(
-                        (message.timestamp -
-                         last_assistant_message.timestamp).total_seconds()
+                        (
+                            message.timestamp - last_assistant_message.timestamp
+                        ).total_seconds()
                     )
         elif message.role == MessageRole.ASSISTANT:
             self.turn_taking.assistant_turns += 1
@@ -354,12 +351,18 @@ class Conversation(BaseModel):
 
     def get_messages_for_llm(self, include_system: bool = True) -> List[Dict[str, str]]:
         """Get messages formatted for LLM input"""
-        return [m.to_llm_format() for m in self.messages if include_system or m.role != MessageRole.SYSTEM]
+        return [
+            m.to_llm_format()
+            for m in self.messages
+            if include_system or m.role != MessageRole.SYSTEM
+        ]
 
     def extract_topics(self) -> List[str]:
         """Extract topics from conversation using keyword matching."""
         full_text = " ".join(
-            m.content.lower() for m in self.messages if m.content_type == ContentType.TEXT
+            m.content.lower()
+            for m in self.messages
+            if m.content_type == ContentType.TEXT
         )
         if not full_text:
             return []
@@ -369,29 +372,62 @@ class Conversation(BaseModel):
 
         for topic, keywords in topic_keywords.items():
             for keyword in keywords:
-                if re.search(r'\b' + re.escape(keyword) + r'\b', full_text):
+                if re.search(r"\b" + re.escape(keyword) + r"\b", full_text):
                     detected_topics[topic] += 1
 
         if not detected_topics:
             return ["general"]
 
         # Sort by frequency and return top topics
-        sorted_topics = sorted(detected_topics.items(),
-                               key=lambda item: item[1], reverse=True)
+        sorted_topics = sorted(
+            detected_topics.items(), key=lambda item: item[1], reverse=True
+        )
         self.topics = [topic for topic, count in sorted_topics]
         return self.topics
 
     def _get_topic_keywords(self) -> Dict[str, List[str]]:
         """Returns a dictionary of topic keywords for extraction."""
         return {
-            "science": ["science", "space", "planet", "star", "animal", "nature", "dinosaur", "experiment"],
+            "science": [
+                "science",
+                "space",
+                "planet",
+                "star",
+                "animal",
+                "nature",
+                "dinosaur",
+                "experiment",
+            ],
             "art": ["art", "draw", "paint", "color", "music", "sing", "dance", "story"],
-            "feelings": ["happy", "sad", "angry", "scared", "love", "friend", "feeling"],
-            "learning": ["learn", "school", "book", "read", "number", "letter", "teacher"],
+            "feelings": [
+                "happy",
+                "sad",
+                "angry",
+                "scared",
+                "love",
+                "friend",
+                "feeling",
+            ],
+            "learning": [
+                "learn",
+                "school",
+                "book",
+                "read",
+                "number",
+                "letter",
+                "teacher",
+            ],
             "play": ["game", "play", "toy", "fun", "hide and seek"],
             "family": ["mom", "dad", "family", "brother", "sister", "home"],
             "food": ["eat", "food", "fruit", "vegetable", "hungry", "tasty"],
-            "daily_routine": ["bedtime", "sleep", "morning", "night", "bath", "brush teeth"],
+            "daily_routine": [
+                "bedtime",
+                "sleep",
+                "morning",
+                "night",
+                "bath",
+                "brush teeth",
+            ],
         }
 
     def analyze_emotional_journey(self) -> List[EmotionalState]:
@@ -413,11 +449,17 @@ class Conversation(BaseModel):
         # For now, we just return the identified significant moments.
         return significant_moments
 
-    def _calculate_emotional_shift(self, prev_state: EmotionalState, current_state: EmotionalState) -> float:
+    def _calculate_emotional_shift(
+        self, prev_state: EmotionalState, current_state: EmotionalState
+    ) -> float:
         """Calculate the magnitude of emotional shift between two states."""
-        return abs(current_state.valence - prev_state.valence) + abs(current_state.arousal - prev_state.arousal)
+        return abs(current_state.valence - prev_state.valence) + abs(
+            current_state.arousal - prev_state.arousal
+        )
 
-    def _is_significant_emotional_moment(self, state: EmotionalState, shift: Optional[float] = None) -> bool:
+    def _is_significant_emotional_moment(
+        self, state: EmotionalState, shift: Optional[float] = None
+    ) -> bool:
         """Determines if an emotional state or shift is significant."""
         # Significant if strong negative emotion
         if state.valence < -0.5 and state.arousal > 0.6:
@@ -452,8 +494,7 @@ class Conversation(BaseModel):
         if self.duration.total_seconds() == 0:
             return 0.0
 
-        messages_per_minute = len(self.messages) / \
-            (self.duration.total_seconds() / 60)
+        messages_per_minute = len(self.messages) / (self.duration.total_seconds() / 60)
 
         if messages_per_minute > 5:
             return 1.0
@@ -468,8 +509,11 @@ class Conversation(BaseModel):
         if total_turns == 0:
             return 0.0
 
-        balance = 1.0 - abs(self.turn_taking.user_turns -
-                            self.turn_taking.assistant_turns) / total_turns
+        balance = (
+            1.0
+            - abs(self.turn_taking.user_turns - self.turn_taking.assistant_turns)
+            / total_turns
+        )
         return balance
 
     def _calculate_question_score(self) -> float:
@@ -628,5 +672,4 @@ class Conversation(BaseModel):
     class Config:
         """Pydantic configuration"""
 
-        json_encoders = {datetime: lambda v: v.isoformat(),
-                         timedelta: lambda v: str(v)}
+        json_encoders = {datetime: lambda v: v.isoformat(), timedelta: lambda v: str(v)}

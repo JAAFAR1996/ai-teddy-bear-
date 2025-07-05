@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 import structlog
 
 from src.application.services.core.service_registry import ServiceBase
+
 from .models import ResponseMode
 
 logger = structlog.get_logger()
@@ -19,8 +20,7 @@ class PersonalityEngine(ServiceBase):
     def __init__(self, registry, config: Dict):
         super().__init__(registry, config)
         self.personalities = self._load_personalities()
-        self.active_personality = config.get(
-            "default_personality", "teddy_bear")
+        self.active_personality = config.get("default_personality", "teddy_bear")
 
     async def initialize(self) -> None:
         """Initialize the personality engine"""

@@ -8,11 +8,13 @@ from typing import Any, Dict, List, Optional
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
+
 from .base import Entity
 
 
 class EmotionData(BaseModel):
     """Data container for emotion analysis"""
+
     child_id: UUID
     child_name: str
     dominant_emotion: str
@@ -27,11 +29,7 @@ class EmotionData(BaseModel):
 class EmotionEntity(Entity):
     """Domain entity representing an emotion analysis"""
 
-    def __init__(
-        self,
-        data: EmotionData,
-        entity_id: Optional[UUID] = None
-    ):
+    def __init__(self, data: EmotionData, entity_id: Optional[UUID] = None):
         super().__init__(str(entity_id) if entity_id else None)
         self.data = data
         self.analysis_timestamp = datetime.utcnow()
@@ -58,8 +56,13 @@ class EmotionEntity(Entity):
 
     def is_positive_emotion(self) -> bool:
         """Check if the dominant emotion is positive"""
-        positive_emotions = ['joy', 'happiness',
-                             'excitement', 'curiosity', 'playfulness']
+        positive_emotions = [
+            "joy",
+            "happiness",
+            "excitement",
+            "curiosity",
+            "playfulness",
+        ]
         return self.dominant_emotion.lower() in positive_emotions
 
     def get_emotional_intensity(self) -> float:
@@ -73,16 +76,21 @@ class EmotionEntity(Entity):
 
     def has_concerning_pattern(self) -> bool:
         """Check if emotion shows concerning patterns"""
-        concerning_emotions = ['sadness', 'anger', 'fear', 'anxiety']
+        concerning_emotions = ["sadness", "anger", "fear", "anxiety"]
 
         # High confidence in negative emotion
-        if (self.dominant_emotion.lower() in concerning_emotions and
-                self.confidence > 0.7):
+        if (
+            self.dominant_emotion.lower() in concerning_emotions
+            and self.confidence > 0.7
+        ):
             return True
 
         # Multiple negative emotions with significant scores
-        negative_count = sum(1 for emotion, score in self.all_emotions.items()
-                             if emotion.lower() in concerning_emotions and score > 0.3)
+        negative_count = sum(
+            1
+            for emotion, score in self.all_emotions.items()
+            if emotion.lower() in concerning_emotions and score > 0.3
+        )
 
         return negative_count >= 2
 
@@ -100,30 +108,29 @@ class EmotionEntity(Entity):
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization"""
         entity_dict = {
-            'id': self.id,
-            'analysis_timestamp': self.analysis_timestamp.isoformat(),
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat()
+            "id": self.id,
+            "analysis_timestamp": self.analysis_timestamp.isoformat(),
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
         }
         entity_dict.update(self.data.dict())
-        entity_dict['child_id'] = str(entity_dict['child_id'])
+        entity_dict["child_id"] = str(entity_dict["child_id"])
         return entity_dict
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'EmotionEntity':
+    def from_dict(cls, data: Dict[str, Any]) -> "EmotionEntity":
         """Create instance from dictionary"""
         emotion_data = EmotionData(
-            child_id=UUID(data['child_id']),
-            child_name=data['child_name'],
-            dominant_emotion=data['dominant_emotion'],
-            confidence=data['confidence'],
-            all_emotions=data.get('all_emotions', {}),
-            behavioral_indicators=data.get('behavioral_indicators', []),
-            transcription=data.get('transcription', ''),
-            response_text=data.get('response_text', ''),
-            session_context=data.get('session_context', {}),
+            child_id=UUID(data["child_id"]),
+            child_name=data["child_name"],
+            dominant_emotion=data["dominant_emotion"],
+            confidence=data["confidence"],
+            all_emotions=data.get("all_emotions", {}),
+            behavioral_indicators=data.get("behavioral_indicators", []),
+            transcription=data.get("transcription", ""),
+            response_text=data.get("response_text", ""),
+            session_context=data.get("session_context", {}),
         )
         return cls(
-            data=emotion_data,
-            entity_id=UUID(data['id']) if data.get('id') else None
+            data=emotion_data, entity_id=UUID(data["id"]) if data.get("id") else None
         )

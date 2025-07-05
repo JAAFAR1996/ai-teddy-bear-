@@ -4,11 +4,11 @@ Child Search Criteria Domain Models
 Contains domain models for child search and filtering operations.
 """
 
+import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, List, Optional, Tuple
-import re
 
 
 class AgeGroup(Enum):
@@ -32,8 +32,7 @@ class AgeRange:
         if self.min_age < 0:
             raise ValueError("Minimum age cannot be negative")
         if self.max_age < self.min_age:
-            raise ValueError(
-                "Maximum age must be greater than or equal to minimum age")
+            raise ValueError("Maximum age must be greater than or equal to minimum age")
         if self.max_age > 100:
             raise ValueError("Maximum age seems unrealistic")
 
@@ -202,10 +201,19 @@ class ChildSearchCriteria:
         def _validate_columns(self):
             """Validate all column names that will be used in conditions."""
             for name in [
-                "parent_id", "cultural_background", "max_daily_interaction_time",
-                "last_interaction", "interests", "name", "age",
-                "language_preference", "special_needs", "communication_style",
-                "educational_level", "family_code", "is_active",
+                "parent_id",
+                "cultural_background",
+                "max_daily_interaction_time",
+                "last_interaction",
+                "interests",
+                "name",
+                "age",
+                "language_preference",
+                "special_needs",
+                "communication_style",
+                "educational_level",
+                "family_code",
+                "is_active",
             ]:
                 if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
                     raise ValueError(f"Unsafe column name: {name}")
@@ -249,13 +257,15 @@ class ChildSearchCriteria:
             if self.filters.age_range:
                 self.conditions.append("age BETWEEN ? AND ?")
                 self.params.extend(
-                    [self.filters.age_range.min_age, self.filters.age_range.max_age])
+                    [self.filters.age_range.min_age, self.filters.age_range.max_age]
+                )
 
         def _add_language_condition(self):
             """Adds the condition for language preferences."""
             if self.filters.languages:
                 lang_conditions = " OR ".join(
-                    ["language_preference = ?" for _ in self.filters.languages])
+                    ["language_preference = ?" for _ in self.filters.languages]
+                )
                 self.conditions.append(f"({lang_conditions})")
                 self.params.extend(self.filters.languages)
 
@@ -264,10 +274,12 @@ class ChildSearchCriteria:
             if self.filters.has_special_needs is not None:
                 if self.filters.has_special_needs:
                     self.conditions.append(
-                        "special_needs != '[]' AND special_needs IS NOT NULL")
+                        "special_needs != '[]' AND special_needs IS NOT NULL"
+                    )
                 else:
                     self.conditions.append(
-                        "(special_needs = '[]' OR special_needs IS NULL)")
+                        "(special_needs = '[]' OR special_needs IS NULL)"
+                    )
 
         def _add_interaction_time_conditions(self):
             """Adds conditions for interaction time filters."""
@@ -287,7 +299,8 @@ class ChildSearchCriteria:
             if time_filter.inactive_days is not None:
                 cutoff = time_filter.get_cutoff_date_for_inactive()
                 self.conditions.append(
-                    "(last_interaction IS NULL OR last_interaction < ?)")
+                    "(last_interaction IS NULL OR last_interaction < ?)"
+                )
                 self.params.append(cutoff.isoformat())
 
         def _get_interests_condition(self) -> str:
@@ -297,8 +310,7 @@ class ChildSearchCriteria:
 
             interest_conditions = []
             for interest in self.filters.interests:
-                interest_conditions.append(
-                    "JSON_EXTRACT(interests, '$') LIKE ?")
+                interest_conditions.append("JSON_EXTRACT(interests, '$') LIKE ?")
                 self.params.append(f'%"{interest}"%')
 
             separator = " AND " if self.criteria.match_all_interests else " OR "

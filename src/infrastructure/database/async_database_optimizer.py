@@ -18,23 +18,24 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
-import asyncpg
 import aiomysql
-from sqlalchemy import text, create_engine, MetaData, Table, Column, Index
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
+import asyncpg
+from prometheus_client import Counter, Gauge, Histogram
+from sqlalchemy import Column, Index, MetaData, Table, create_engine, text
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import QueuePool
-from prometheus_client import Counter, Histogram, Gauge
 
 logger = logging.getLogger(__name__)
 
 # Prometheus metrics
 DB_QUERY_DURATION = Histogram(
-    'db_query_duration_seconds', 'Database query duration', ['operation', 'table'])
-DB_CONNECTION_ACTIVE = Gauge(
-    'db_connections_active', 'Active database connections')
-DB_QUERY_TOTAL = Counter('db_queries_total', 'Total database queries', [
-                         'operation', 'status'])
+    "db_query_duration_seconds", "Database query duration", ["operation", "table"]
+)
+DB_CONNECTION_ACTIVE = Gauge("db_connections_active", "Active database connections")
+DB_QUERY_TOTAL = Counter(
+    "db_queries_total", "Total database queries", ["operation", "status"]
+)
 
 
 class DatabaseShard:
@@ -122,12 +123,12 @@ class AsyncDatabaseOptimizer:
                     "shared_buffers": "256MB",
                     "effective_cache_size": "1GB",
                     "random_page_cost": "1.1",
-                    "effective_io_concurrency": "200"
+                    "effective_io_concurrency": "200",
                 },
                 "command_timeout": 60,
                 "min_size": 10,
                 "max_size": primary_config.get("pool_size", 20),
-            }
+            },
         )
 
         # Test connection
@@ -144,7 +145,7 @@ class AsyncDatabaseOptimizer:
             replica = ReadReplica(
                 name=replica_config["name"],
                 url=replica_config["url"],
-                lag_threshold=replica_config.get("lag_threshold", 30)
+                lag_threshold=replica_config.get("lag_threshold", 30),
             )
 
             # Create engine for replica
@@ -156,9 +157,9 @@ class AsyncDatabaseOptimizer:
                 connect_args={
                     "server_settings": {
                         "application_name": f"ai_teddy_bear_replica_{replica.name}",
-                        "jit": "off"
+                        "jit": "off",
                     }
-                }
+                },
             )
 
             # Test replica connection
@@ -181,7 +182,7 @@ class AsyncDatabaseOptimizer:
             shard = DatabaseShard(
                 name=shard_config["name"],
                 url=shard_config["url"],
-                weight=shard_config.get("weight", 1)
+                weight=shard_config.get("weight", 1),
             )
 
             # Create engine for shard
@@ -189,7 +190,7 @@ class AsyncDatabaseOptimizer:
                 shard.url,
                 pool_size=shard_config.get("pool_size", 15),
                 max_overflow=shard_config.get("max_overflow", 30),
-                pool_pre_ping=True
+                pool_pre_ping=True,
             )
 
             # Test shard connection
@@ -234,7 +235,9 @@ class AsyncDatabaseOptimizer:
             finally:
                 await session.close()
 
-    def _select_replica(self, replica_name: Optional[str] = None) -> Optional[ReadReplica]:
+    def _select_replica(
+        self, replica_name: Optional[str] = None
+    ) -> Optional[ReadReplica]:
         """Selects a healthy read replica, either by name or round-robin."""
         healthy_replicas = [r for r in self.read_replicas if r.is_healthy]
         if not healthy_replicas:
@@ -242,10 +245,12 @@ class AsyncDatabaseOptimizer:
 
         if replica_name:
             replica = next(
-                (r for r in healthy_replicas if r.name == replica_name), None)
+                (r for r in healthy_replicas if r.name == replica_name), None
+            )
             if not replica:
                 raise ValueError(
-                    f"Read replica '{replica_name}' not found or unhealthy")
+                    f"Read replica '{replica_name}' not found or unhealthy"
+                )
             return replica
 
         # Simplified round-robin selection for now
@@ -272,34 +277,33 @@ class AsyncDatabaseOptimizer:
             finally:
                 await session.close()
 
-    def _check_cache(self, cache_key: str, cache_ttl: int) -> Optional[List[Dict[str, Any]]]:
+    def _check_cache(
+        self, cache_key: str, cache_ttl: int
+    ) -> Optional[List[Dict[str, Any]]]:
         """Checks if a valid result exists in the cache."""
         if cache_key in self.query_cache:
             cached_result = self.query_cache[cache_key]
             if time.time() - cached_result["timestamp"] < cache_ttl:
-                DB_QUERY_TOTAL.labels(
-                    operation="cache_hit", status="success").inc()
+                DB_QUERY_TOTAL.labels(operation="cache_hit", status="success").inc()
                 return cached_result["data"]
         return None
 
     def _cache_result(self, cache_key: str, data: List[Dict[str, Any]]):
         """Caches a query result."""
-        self.query_cache[cache_key] = {
-            "data": data,
-            "timestamp": time.time()
-        }
+        self.query_cache[cache_key] = {"data": data, "timestamp": time.time()}
 
     async def execute_optimized_query(
         self,
         query: str,
         params: Optional[Dict] = None,
         use_cache: bool = True,
-        cache_ttl: int = 300
+        cache_ttl: int = 300,
     ) -> List[Dict[str, Any]]:
         """Execute optimized query with caching and monitoring. Only parameterized queries allowed. Do NOT build SQL from user input."""
         if "'" in query or '"' in query or ";" in query:
             raise ValueError(
-                "Potentially unsafe SQL detected. Only parameterized queries allowed.")
+                "Potentially unsafe SQL detected. Only parameterized queries allowed."
+            )
 
         cache_key = f"{query}:{hash(str(params))}"
         if use_cache:
@@ -318,10 +322,10 @@ class AsyncDatabaseOptimizer:
                     self._cache_result(cache_key, data)
 
                 duration = time.time() - start_time
-                DB_QUERY_DURATION.labels(
-                    operation="select", table="unknown").observe(duration)
-                DB_QUERY_TOTAL.labels(operation="select",
-                                      status="success").inc()
+                DB_QUERY_DURATION.labels(operation="select", table="unknown").observe(
+                    duration
+                )
+                DB_QUERY_TOTAL.labels(operation="select", status="success").inc()
 
                 return data
 
@@ -337,17 +341,14 @@ class AsyncDatabaseOptimizer:
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_children_age_active ON children(age, is_active)",
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_children_parent_language ON children(parent_id, language_preference)",
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_children_last_interaction ON children(last_interaction DESC)",
-
             # Conversation table indexes
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_conversations_child_time ON conversations(child_id, start_time DESC)",
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_conversations_quality ON conversations(quality_score DESC)",
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_conversations_type_language ON conversations(interaction_type, primary_language)",
-
             # Message table indexes
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_messages_conversation_seq ON messages(conversation_id, sequence_number)",
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_messages_timestamp ON messages(timestamp DESC)",
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_messages_role_content ON messages(role, content_type)",
-
             # Emotional state indexes
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_emotional_states_conversation ON emotional_states(conversation_id, timestamp DESC)",
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_emotional_states_emotion ON emotional_states(primary_emotion, confidence)",
@@ -370,7 +371,7 @@ class AsyncDatabaseOptimizer:
             "VACUUM ANALYZE conversations",
             "VACUUM ANALYZE messages",
             "VACUUM ANALYZE emotional_states",
-            "REINDEX DATABASE ai_teddy_bear"
+            "REINDEX DATABASE ai_teddy_bear",
         ]
 
         async with self.get_primary_session() as session:
@@ -394,17 +395,20 @@ class AsyncDatabaseOptimizer:
         if replica.engine:
             try:
                 async with replica.engine.begin() as conn:
-                    result = await conn.execute(text(
-                        "SELECT EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp())) AS lag_seconds"
-                    ))
+                    result = await conn.execute(
+                        text(
+                            "SELECT EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp())) AS lag_seconds"
+                        )
+                    )
                     lag_row = result.fetchone()
                     if lag_row:
                         replica.replication_lag = lag_row[0] or 0
-                        replica.is_healthy = replica.replication_lag < replica.lag_threshold
+                        replica.is_healthy = (
+                            replica.replication_lag < replica.lag_threshold
+                        )
             except Exception as e:
                 replica.is_healthy = False
-                logger.warning(
-                    f"Replica {replica.name} health check failed: {e}")
+                logger.warning(f"Replica {replica.name} health check failed: {e}")
 
     async def _monitor_database_health(self) -> None:
         """Monitor database health and replication lag"""
@@ -418,7 +422,8 @@ class AsyncDatabaseOptimizer:
                     await self._check_replica_health(replica)
 
                 DB_CONNECTION_ACTIVE.set(
-                    len([r for r in self.read_replicas if r.is_healthy]) + 1)
+                    len([r for r in self.read_replicas if r.is_healthy]) + 1
+                )
 
             except asyncio.CancelledError:
                 break
@@ -454,8 +459,10 @@ class AsyncDatabaseOptimizer:
                         "timestamp": datetime.now().isoformat(),
                         "table_stats": [dict(row._mapping) for row in stats],
                         "cache_size": len(self.query_cache),
-                        "healthy_replicas": len([r for r in self.read_replicas if r.is_healthy]),
-                        "total_shards": len(self.shards)
+                        "healthy_replicas": len(
+                            [r for r in self.read_replicas if r.is_healthy]
+                        ),
+                        "total_shards": len(self.shards),
                     }
 
             except asyncio.CancelledError:
@@ -473,20 +480,22 @@ class AsyncDatabaseOptimizer:
                     replica.name: {
                         "healthy": replica.is_healthy,
                         "replication_lag": replica.replication_lag,
-                        "lag_threshold": replica.lag_threshold
-                    } for replica in self.read_replicas
+                        "lag_threshold": replica.lag_threshold,
+                    }
+                    for replica in self.read_replicas
                 },
                 "shards": {
                     shard.name: {
                         "health_status": shard.health_status,
-                        "weight": shard.weight
-                    } for shard in self.shards
+                        "weight": shard.weight,
+                    }
+                    for shard in self.shards
                 },
                 "cache_stats": {
                     "cache_size": len(self.query_cache),
-                    "cache_hit_ratio": self._calculate_cache_hit_ratio()
+                    "cache_hit_ratio": self._calculate_cache_hit_ratio(),
                 },
-                "performance_stats": self.performance_stats
+                "performance_stats": self.performance_stats,
             }
         }
 

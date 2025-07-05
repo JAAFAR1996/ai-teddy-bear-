@@ -93,8 +93,7 @@ class ScreenTimeManager:
                 with open(settings_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     for child_id, settings_data in data.items():
-                        self.settings[child_id] = ScreenTimeSettings(
-                            **settings_data)
+                        self.settings[child_id] = ScreenTimeSettings(**settings_data)
 
             usage_file = self.data_dir / "daily_usage.json"
             if usage_file.exists():
@@ -129,28 +128,30 @@ class ScreenTimeManager:
             self._save_data()
         return self.settings[child_id]
 
-    async def _can_start_session(self, child_id: str, settings: ScreenTimeSettings) -> bool:
+    async def _can_start_session(
+        self, child_id: str, settings: ScreenTimeSettings
+    ) -> bool:
         """Checks if a new session can be started for the child."""
         if child_id in self.active_sessions:
             logger.warning(f"Session already active for child: {child_id}")
             return False
 
         if not self._is_allowed_time(settings):
-            logger.info(
-                "⛔ Playtime is not allowed right now. Let's play later!")
+            logger.info("⛔ Playtime is not allowed right now. Let's play later!")
             return False
 
         today = datetime.now().strftime("%Y-%m-%d")
         daily_used = self._get_daily_usage(child_id, today)
 
         if daily_used >= settings.daily_limit_minutes:
-            logger.info(
-                "📅 Daily playtime is over! We'll play again tomorrow 🌙")
+            logger.info("📅 Daily playtime is over! We'll play again tomorrow 🌙")
             return False
 
         return True
 
-    def _create_and_register_session(self, child_id: str, activity_type: str) -> UsageSession:
+    def _create_and_register_session(
+        self, child_id: str, activity_type: str
+    ) -> UsageSession:
         """Creates and registers a new usage session."""
         session = UsageSession(
             child_id=child_id, start_time=datetime.now(), activity_type=activity_type
@@ -158,7 +159,9 @@ class ScreenTimeManager:
         self.active_sessions[child_id] = session
         return session
 
-    async def _setup_session_monitoring_tasks(self, child_id: str, settings: ScreenTimeSettings) -> None:
+    async def _setup_session_monitoring_tasks(
+        self, child_id: str, settings: ScreenTimeSettings
+    ) -> None:
         """Sets up background tasks for session warnings and break reminders."""
         await self._setup_session_warnings(child_id, settings)
         await self._setup_break_reminders(child_id, settings)
@@ -175,8 +178,7 @@ class ScreenTimeManager:
         session = self._create_and_register_session(child_id, activity_type)
         await self._setup_session_monitoring_tasks(child_id, settings)
 
-        logger.info(
-            f"New session started for child {child_id}: {activity_type}")
+        logger.info(f"New session started for child {child_id}: {activity_type}")
         return True
 
     def _is_allowed_time(self, settings: ScreenTimeSettings) -> bool:
@@ -259,8 +261,7 @@ class ScreenTimeManager:
         try:
             if self.monitoring_task is None or self.monitoring_task.done():
                 loop = asyncio.get_running_loop()
-                self.monitoring_task = loop.create_task(
-                    self._monitoring_loop())
+                self.monitoring_task = loop.create_task(self._monitoring_loop())
         except RuntimeError:
             # لا توجد حلقة أحداث نشطة، سيتم بدء المراقبة عند الحاجة
             pass
@@ -350,7 +351,6 @@ class ScreenTimeManager:
         settings = self.get_child_settings(child_id)
         today = datetime.now().strftime("%Y-%m-%d")
         used_today = self._get_daily_usage(child_id, today)
-        stats["today_remaining"] = max(
-            0, settings.daily_limit_minutes - used_today)
+        stats["today_remaining"] = max(0, settings.daily_limit_minutes - used_today)
 
         return stats

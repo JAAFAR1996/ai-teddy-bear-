@@ -8,7 +8,11 @@ from typing import Any, Dict, Optional, Tuple
 import numpy as np
 
 from ....domain.audio.models import (
-    AudioFormatType, AudioSession, AudioSystemConfig, PerformanceMetrics)
+    AudioFormatType,
+    AudioSession,
+    AudioSystemConfig,
+    PerformanceMetrics,
+)
 
 
 class AudioSystemError(Exception):
@@ -38,8 +42,7 @@ class AudioRecordingService:
         try:
             # Try to import and initialize real recorder
             try:
-                from ....infrastructure.audio.audio_recorder import \
-                    AudioRecorder
+                from ....infrastructure.audio.audio_recorder import AudioRecorder
 
                 self.recorder = AudioRecorder()
                 self.logger.info("Real audio recorder initialized")
@@ -59,8 +62,7 @@ class AudioRecordingService:
         """Configure recorder based on system settings."""
         try:
             if hasattr(self.recorder, "set_noise_reduction"):
-                self.recorder.set_noise_reduction(
-                    self.config.noise_reduction_enabled)
+                self.recorder.set_noise_reduction(self.config.noise_reduction_enabled)
 
             if hasattr(self.recorder, "set_sample_rate"):
                 self.recorder.set_sample_rate(self.config.sample_rate)
@@ -97,22 +99,23 @@ class AudioRecordingService:
         try:
             # Set defaults and validate parameters
             duration, format_type = self._prepare_recording_parameters(
-                duration, format_type)
+                duration, format_type
+            )
 
             # Execute recording
-            audio_data, processing_time = self._execute_recording(
-                duration, session)
+            audio_data, processing_time = self._execute_recording(duration, session)
             if audio_data is None:
                 return None
 
             # Create metadata and update metrics
             metadata = self._create_recording_metadata(
-                duration, session, format_type, processing_time)
+                duration, session, format_type, processing_time
+            )
             self._update_recording_metrics(
-                audio_data, format_type, session, processing_time)
+                audio_data, format_type, session, processing_time
+            )
 
-            self.logger.info(
-                f"Successfully recorded {len(audio_data)} samples")
+            self.logger.info(f"Successfully recorded {len(audio_data)} samples")
             return audio_data, metadata
 
         except Exception as e:
@@ -124,7 +127,9 @@ class AudioRecordingService:
         finally:
             self._stop_recording()
 
-    def _prepare_recording_parameters(self, duration: Optional[int], format_type: Optional[AudioFormatType]) -> Tuple[int, AudioFormatType]:
+    def _prepare_recording_parameters(
+        self, duration: Optional[int], format_type: Optional[AudioFormatType]
+    ) -> Tuple[int, AudioFormatType]:
         """Prepare and validate recording parameters."""
         if duration is None:
             duration = self.config.default_record_duration
@@ -136,7 +141,9 @@ class AudioRecordingService:
 
         return duration, format_type
 
-    def _execute_recording(self, duration: int, session: Optional[AudioSession]) -> Tuple[Optional[np.ndarray], float]:
+    def _execute_recording(
+        self, duration: int, session: Optional[AudioSession]
+    ) -> Tuple[Optional[np.ndarray], float]:
         """Execute the recording process and return audio data with timing."""
         # Start recording
         self._start_recording(duration, session)
@@ -152,7 +159,13 @@ class AudioRecordingService:
 
         return audio_data, processing_time
 
-    def _update_recording_metrics(self, audio_data: np.ndarray, format_type: AudioFormatType, session: Optional[AudioSession], processing_time: float) -> None:
+    def _update_recording_metrics(
+        self,
+        audio_data: np.ndarray,
+        format_type: AudioFormatType,
+        session: Optional[AudioSession],
+        processing_time: float,
+    ) -> None:
         """Update metrics and session data after successful recording."""
         # Update metrics
         self.metrics.increment_recordings(processing_time)

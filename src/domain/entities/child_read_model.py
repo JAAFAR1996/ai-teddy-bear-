@@ -13,12 +13,16 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from ...domain.events.child_events import (ChildProfileUpdated,
-                                           ChildRegistered,
-                                           SafetyViolationDetected)
-from ...domain.events.conversation_events import (ConversationEnded,
-                                                  ConversationStarted,
-                                                  MessageReceived)
+from ...domain.events.child_events import (
+    ChildProfileUpdated,
+    ChildRegistered,
+    SafetyViolationDetected,
+)
+from ...domain.events.conversation_events import (
+    ConversationEnded,
+    ConversationStarted,
+    MessageReceived,
+)
 from ...shared.kernel import DomainEvent
 
 logger = logging.getLogger(__name__)
@@ -90,8 +94,7 @@ class ChildProjectionManager:
 
     def __init__(self):
         self.read_models: Dict[str, ChildReadModel] = {}
-        self.conversation_summaries: Dict[str,
-                                          ConversationSummaryReadModel] = {}
+        self.conversation_summaries: Dict[str, ConversationSummaryReadModel] = {}
         self.safety_metrics: Dict[str, SafetyMetricsReadModel] = {}
 
     async def handle_event(self, event: DomainEvent) -> None:
@@ -134,8 +137,7 @@ class ChildProjectionManager:
         self.read_models[child_id] = read_model
 
         # Initialize safety metrics
-        self.safety_metrics[child_id] = SafetyMetricsReadModel(
-            child_id=child_id)
+        self.safety_metrics[child_id] = SafetyMetricsReadModel(child_id=child_id)
 
         logger.info(f"Child read model created for {child_id}")
 
@@ -217,8 +219,7 @@ class ChildProjectionManager:
         if child_model:
             child_model.conversation_count += 1
             child_model.last_interaction_at = event.started_at
-            child_model.engagement_level = self._calculate_engagement_level(
-                child_model)
+            child_model.engagement_level = self._calculate_engagement_level(child_model)
 
         logger.info(f"Conversation started: {conversation_id}")
 
@@ -357,8 +358,7 @@ class ChildProjectionManager:
 
         total_children = len(self.read_models)
         total_conversations = len(self.conversation_summaries)
-        total_violations = sum(
-            m.total_violations for m in self.safety_metrics.values())
+        total_violations = sum(m.total_violations for m in self.safety_metrics.values())
 
         return {
             "total_children": total_children,

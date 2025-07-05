@@ -28,9 +28,13 @@ from src.domain.exceptions.security import (
 )
 from src.domain.exceptions.validation import ValidationException
 from src.infrastructure.exception_handling.global_handler import (
-    CircuitBreaker, get_global_exception_handler)
-from src.infrastructure.monitoring.metrics import (MetricsCollector,
-                                                   track_request_duration)
+    CircuitBreaker,
+    get_global_exception_handler,
+)
+from src.infrastructure.monitoring.metrics import (
+    MetricsCollector,
+    track_request_duration,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -82,22 +86,32 @@ def handle_exceptions(
                         return True, result if not propagate else e
                     except Exception as handler_error:
                         logger.error(
-                            f"Handler failed for {exception_type.__name__}", handler_error=str(handler_error))
+                            f"Handler failed for {exception_type.__name__}",
+                            handler_error=str(handler_error),
+                        )
             return False, e
 
-        async def _handle_custom_exception_async(e, exception_handlers, propagate) -> (bool, Any):
+        async def _handle_custom_exception_async(
+            e, exception_handlers, propagate
+        ) -> (bool, Any):
             """Asynchronously handles a custom exception."""
             for exception_type, handler in exception_handlers:
                 if isinstance(e, exception_type):
                     try:
-                        result = await handler(e) if asyncio.iscoroutinefunction(handler) else handler(e)
+                        result = (
+                            await handler(e)
+                            if asyncio.iscoroutinefunction(handler)
+                            else handler(e)
+                        )
                         return True, result if not propagate else e
                     except Exception as handler_error:
                         logger.error(
-                            f"Handler failed for {exception_type.__name__}", handler_error=str(handler_error))
+                            f"Handler failed for {exception_type.__name__}",
+                            handler_error=str(handler_error),
+                        )
             return False, e
 
-        def _handle_global_exception(e, fallback, propagate) -> (Any):
+        def _handle_global_exception(e, fallback, propagate) -> Any:
             """Handles an exception using the global handler."""
             global_handler = get_global_exception_handler()
             result = global_handler.handle_exception_sync(e)
@@ -105,7 +119,7 @@ def handle_exceptions(
                 return result.get("recovery_result", fallback() if fallback else None)
             return e  # Re-raise
 
-        async def _handle_global_exception_async(e, fallback, propagate) -> (Any):
+        async def _handle_global_exception_async(e, fallback, propagate) -> Any:
             """Asynchronously handles an exception using the global handler."""
             global_handler = get_global_exception_handler()
             result = await global_handler.handle_exception(e)
@@ -114,7 +128,11 @@ def handle_exceptions(
                 if recovery_result:
                     return recovery_result
                 if fallback:
-                    return await fallback() if asyncio.iscoroutinefunction(fallback) else fallback()
+                    return (
+                        await fallback()
+                        if asyncio.iscoroutinefunction(fallback)
+                        else fallback()
+                    )
                 return None
             return e  # Re-raise
 
@@ -124,23 +142,30 @@ def handle_exceptions(
                 return await func(*args, **kwargs)
             except Exception as e:
                 if log_errors:
-                    logger.error(
-                        f"Exception in {func.__name__}", exc_info=True)
+                    logger.error(f"Exception in {func.__name__}", exc_info=True)
 
-                handled, result = await _handle_custom_exception_async(e, exception_handlers, propagate)
+                handled, result = await _handle_custom_exception_async(
+                    e, exception_handlers, propagate
+                )
                 if handled:
                     if propagate:
                         raise result
                     return result
 
                 if use_global_handler:
-                    result = await _handle_global_exception_async(e, fallback, propagate)
+                    result = await _handle_global_exception_async(
+                        e, fallback, propagate
+                    )
                     if propagate:
                         raise result
                     return result
 
                 if fallback and not propagate:
-                    return await fallback() if asyncio.iscoroutinefunction(fallback) else fallback()
+                    return (
+                        await fallback()
+                        if asyncio.iscoroutinefunction(fallback)
+                        else fallback()
+                    )
 
                 raise
 
@@ -150,11 +175,11 @@ def handle_exceptions(
                 return func(*args, **kwargs)
             except Exception as e:
                 if log_errors:
-                    logger.error(
-                        f"Exception in {func.__name__}", exc_info=True)
+                    logger.error(f"Exception in {func.__name__}", exc_info=True)
 
                 handled, result = _handle_custom_exception(
-                    e, exception_handlers, propagate)
+                    e, exception_handlers, propagate
+                )
                 if handled:
                     if propagate:
                         raise result
@@ -603,8 +628,7 @@ def authenticated(required_role: Optional[str] = None, check_token_expiry: bool 
                 auth_context = kwargs["auth_context"]
 
             if not auth_context:
-                raise AuthenticationException(
-                    reason="No authentication context found")
+                raise AuthenticationException(reason="No authentication context found")
 
             # Check if authenticated
             if not auth_context.get("authenticated", False):
@@ -641,8 +665,7 @@ def authenticated(required_role: Optional[str] = None, check_token_expiry: bool 
                 auth_context = kwargs["auth_context"]
 
             if not auth_context:
-                raise AuthenticationException(
-                    reason="No authentication context found")
+                raise AuthenticationException(reason="No authentication context found")
 
             if not auth_context.get("authenticated", False):
                 raise AuthenticationException(reason="User not authenticated")
@@ -686,8 +709,7 @@ class ChildInteractionService:
         ),
         (
             ParentalConsentRequiredException,
-            lambda e: {"error": "Parent approval needed",
-                       "action": "notify_parent"},
+            lambda e: {"error": "Parent approval needed", "action": "notify_parent"},
         ),
         (
             ValidationException,

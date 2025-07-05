@@ -1,4 +1,4 @@
-﻿"""Analytics service for emotion insights and reporting."""
+"""Analytics service for emotion insights and reporting."""
 
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
@@ -6,9 +6,14 @@ from typing import Dict, List
 
 import structlog
 
-from src.domain.emotion.models import (EmotionInsight, EmotionResult,
-                                       EmotionTrend, ParentalReport,
-                                       RiskAssessment, RiskLevel)
+from src.domain.emotion.models import (
+    EmotionInsight,
+    EmotionResult,
+    EmotionTrend,
+    ParentalReport,
+    RiskAssessment,
+    RiskLevel,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -42,13 +47,11 @@ class EmotionAnalyticsService:
             period_end = date.today()
 
             # Calculate basic statistics and emotion analysis
-            basic_stats = self._calculate_basic_statistics(
-                emotions, period_days)
+            basic_stats = self._calculate_basic_statistics(emotions, period_days)
             emotion_analysis = self._analyze_emotion_distribution(emotions)
 
             # Generate behavior and insight analysis
-            behavior_insights = self._generate_behavior_insights(
-                emotions, period_days)
+            behavior_insights = self._generate_behavior_insights(emotions, period_days)
 
             # Generate final recommendations and risk assessment
             recommendations = self._generate_parental_recommendations(
@@ -129,24 +132,26 @@ class EmotionAnalyticsService:
             total = len(emotions)
 
             # Calculate risk and protective factors
-            emotional_risks = self._calculate_emotional_risks(
-                emotion_counts, total)
+            emotional_risks = self._calculate_emotional_risks(emotion_counts, total)
             behavioral_risks = []
             environmental_factors = []
 
             emotional_strengths = self._calculate_emotional_strengths(
-                emotion_counts, total)
+                emotion_counts, total
+            )
             support_systems = []
             coping_mechanisms = []
 
             # Calculate overall risk score and level
             risk_score = self._calculate_risk_score(
-                emotional_risks, behavioral_risks, environmental_factors)
+                emotional_risks, behavioral_risks, environmental_factors
+            )
             risk_level = self._determine_risk_level(risk_score)
 
             # Generate recommendations
-            immediate_actions, monitoring_plan, needs_referral = self._generate_risk_recommendations(
-                risk_level)
+            immediate_actions, monitoring_plan, needs_referral = (
+                self._generate_risk_recommendations(risk_level)
+            )
 
             return RiskAssessment(
                 child_id=child_id,
@@ -168,7 +173,9 @@ class EmotionAnalyticsService:
             logger.error(f" Risk assessment failed: {e}")
             return self._create_safe_default_assessment(child_id)
 
-    def _calculate_emotional_risks(self, emotion_counts: Counter, total: int) -> List[str]:
+    def _calculate_emotional_risks(
+        self, emotion_counts: Counter, total: int
+    ) -> List[str]:
         """Calculate emotional risk factors."""
         emotional_risks = []
 
@@ -186,7 +193,9 @@ class EmotionAnalyticsService:
 
         return emotional_risks
 
-    def _calculate_emotional_strengths(self, emotion_counts: Counter, total: int) -> List[str]:
+    def _calculate_emotional_strengths(
+        self, emotion_counts: Counter, total: int
+    ) -> List[str]:
         """Calculate emotional protective factors."""
         emotional_strengths = []
 
@@ -196,8 +205,7 @@ class EmotionAnalyticsService:
             curious_ratio = emotion_counts.get("curious", 0) / total
 
             if happy_ratio > 0.4:
-                emotional_strengths.append(
-                    "Strong positive emotional expression")
+                emotional_strengths.append("Strong positive emotional expression")
             if calm_ratio > 0.2:
                 emotional_strengths.append("Good emotional regulation")
             if curious_ratio > 0.25:
@@ -223,11 +231,13 @@ class EmotionAnalyticsService:
         needs_referral = False
 
         if risk_level in [RiskLevel.HIGH, RiskLevel.CRITICAL]:
-            immediate_actions.extend([
-                "Increase emotional support and attention",
-                "Monitor for signs of distress",
-                "Consider professional consultation",
-            ])
+            immediate_actions.extend(
+                [
+                    "Increase emotional support and attention",
+                    "Monitor for signs of distress",
+                    "Consider professional consultation",
+                ]
+            )
             needs_referral = risk_level == RiskLevel.CRITICAL
 
         return immediate_actions, monitoring_plan, needs_referral
@@ -317,7 +327,9 @@ class EmotionAnalyticsService:
                 significance = (
                     "high"
                     if abs(change) > 0.3
-                    else "medium" if abs(change) > 0.1 else "low"
+                    else "medium"
+                    if abs(change) > 0.1
+                    else "low"
                 )
 
                 trends.append(
@@ -409,8 +421,7 @@ class EmotionAnalyticsService:
         highlights = []
 
         if emotions.get("happy", 0) > 0.4:
-            highlights.append(
-                "Child shows strong positive emotional expression")
+            highlights.append("Child shows strong positive emotional expression")
         if emotions.get("curious", 0) > 0.25:
             highlights.append("Healthy level of curiosity and engagement")
         if emotions.get("calm", 0) > 0.2:
@@ -455,7 +466,9 @@ class EmotionAnalyticsService:
 
         return recommendations
 
-    def _calculate_basic_statistics(self, emotions: List[EmotionResult], period_days: int) -> Dict:
+    def _calculate_basic_statistics(
+        self, emotions: List[EmotionResult], period_days: int
+    ) -> Dict:
         """Calculate basic statistics for the report."""
         total_interactions = len(emotions)
         avg_daily = total_interactions / period_days if period_days > 0 else 0
@@ -485,7 +498,9 @@ class EmotionAnalyticsService:
             "stability": stability,
         }
 
-    def _generate_behavior_insights(self, emotions: List[EmotionResult], period_days: int) -> Dict:
+    def _generate_behavior_insights(
+        self, emotions: List[EmotionResult], period_days: int
+    ) -> Dict:
         """Generate behavioral insights and patterns."""
         # Generate trends
         trends = self._generate_emotion_trends(emotions, period_days)
@@ -499,7 +514,8 @@ class EmotionAnalyticsService:
 
         # Generate positive highlights and concerns
         positive_highlights = self._generate_positive_highlights(
-            dominant_emotions, behavioral_changes)
+            dominant_emotions, behavioral_changes
+        )
         concerns = self._identify_concerns(dominant_emotions, trends)
 
         return {

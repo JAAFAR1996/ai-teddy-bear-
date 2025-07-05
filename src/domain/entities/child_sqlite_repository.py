@@ -15,26 +15,26 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.application.services.child.child_analytics_service import \
-    ChildAnalyticsService
-from src.application.services.child.child_bulk_operations_service import \
-    ChildBulkOperationsService
-from src.application.services.child.child_interaction_service import \
-    ChildInteractionService
-from src.application.services.child.child_search_service import \
-    ChildSearchService
+from src.application.services.child.child_analytics_service import ChildAnalyticsService
+from src.application.services.child.child_bulk_operations_service import (
+    ChildBulkOperationsService,
+)
+from src.application.services.child.child_interaction_service import (
+    ChildInteractionService,
+)
+from src.application.services.child.child_search_service import ChildSearchService
 from src.core.domain.entities.child import Child
+
 # Import refactored services
-from src.domain.child.services.child_analytics_service import \
-    ChildAnalyticsDomainService
-from src.domain.child.services.child_family_service import \
-    ChildFamilyDomainService
-from src.domain.child.services.child_interaction_service import \
-    ChildInteractionDomainService
-from src.infrastructure.persistence.base import (QueryOptions, SearchCriteria,
-                                                 SortOrder)
-from src.infrastructure.persistence.base_sqlite_repository import \
-    BaseSQLiteRepository
+from src.domain.child.services.child_analytics_service import (
+    ChildAnalyticsDomainService,
+)
+from src.domain.child.services.child_family_service import ChildFamilyDomainService
+from src.domain.child.services.child_interaction_service import (
+    ChildInteractionDomainService,
+)
+from src.infrastructure.persistence.base import QueryOptions, SearchCriteria, SortOrder
+from src.infrastructure.persistence.base_sqlite_repository import BaseSQLiteRepository
 from src.infrastructure.persistence.child_repository import ChildRepository
 
 

@@ -8,8 +8,11 @@ from collections import Counter
 from datetime import datetime, timedelta
 from typing import Dict, List
 
-from ..models.report_models import (EmotionDistribution,
-                                    InteractionAnalysis, SkillAnalysis)
+from ..models.report_models import (
+    EmotionDistribution,
+    InteractionAnalysis,
+    SkillAnalysis,
+)
 
 
 class ProgressAnalyzer:
@@ -25,8 +28,7 @@ class ProgressAnalyzer:
         if not interactions:
             return 0
 
-        max_duration = max(
-            interaction.duration for interaction in interactions)
+        max_duration = max(interaction.duration for interaction in interactions)
         return int(max_duration / 60)
 
     def extract_favorite_topics(
@@ -60,8 +62,7 @@ class ProgressAnalyzer:
             emotion_totals = {}
             for interaction in interactions:
                 for emotion, score in interaction.emotions.items():
-                    emotion_totals[emotion] = emotion_totals.get(
-                        emotion, 0) + score
+                    emotion_totals[emotion] = emotion_totals.get(emotion, 0) + score
 
             # Calculate percentages
             total_score = sum(emotion_totals.values())
@@ -130,12 +131,14 @@ class ProgressAnalyzer:
             return 0.5
 
     def _group_interactions_by_day(
-        self, interactions: List[InteractionAnalysis], start_date: datetime, end_date: datetime
+        self,
+        interactions: List[InteractionAnalysis],
+        start_date: datetime,
+        end_date: datetime,
     ) -> Dict[datetime.date, List[InteractionAnalysis]]:
         """Groups interactions into daily buckets."""
         total_days = (end_date - start_date).days + 1
-        days = [(start_date + timedelta(days=i)).date()
-                for i in range(total_days)]
+        days = [(start_date + timedelta(days=i)).date() for i in range(total_days)]
 
         daily_interactions = {day: [] for day in days}
         for interaction in interactions:
@@ -146,17 +149,25 @@ class ProgressAnalyzer:
 
     def _get_all_emotions(self, interactions: List[InteractionAnalysis]) -> set:
         """Gets a unique set of all emotions from interactions."""
-        return set(emotion for interaction in interactions for emotion in interaction.emotions.keys())
+        return set(
+            emotion
+            for interaction in interactions
+            for emotion in interaction.emotions.keys()
+        )
 
     def _calculate_daily_emotion_scores(
-        self, daily_interactions: Dict[datetime.date, List[InteractionAnalysis]], emotion: str
+        self,
+        daily_interactions: Dict[datetime.date, List[InteractionAnalysis]],
+        emotion: str,
     ) -> List[float]:
         """Calculates the average daily score for a specific emotion."""
         daily_scores = []
         for day_interactions in daily_interactions.values():
             if day_interactions:
-                day_emotion_scores = [interaction.emotions.get(
-                    emotion, 0.0) for interaction in day_interactions]
+                day_emotion_scores = [
+                    interaction.emotions.get(emotion, 0.0)
+                    for interaction in day_interactions
+                ]
                 avg_score = sum(day_emotion_scores) / len(day_emotion_scores)
             else:
                 avg_score = 0.0
@@ -175,13 +186,15 @@ class ProgressAnalyzer:
                 return {}
 
             daily_interactions = self._group_interactions_by_day(
-                interactions, start_date, end_date)
+                interactions, start_date, end_date
+            )
             all_emotions = self._get_all_emotions(interactions)
 
             mood_trends = {}
             for emotion in all_emotions:
                 mood_trends[emotion] = self._calculate_daily_emotion_scores(
-                    daily_interactions, emotion)
+                    daily_interactions, emotion
+                )
 
             return mood_trends
 
@@ -197,8 +210,7 @@ class ProgressAnalyzer:
             if not interactions:
                 return 0.0
 
-            durations = [interaction.duration_minutes()
-                         for interaction in interactions]
+            durations = [interaction.duration_minutes() for interaction in interactions]
             return sum(durations) / len(durations)
 
         except Exception as e:
@@ -213,8 +225,7 @@ class ProgressAnalyzer:
             if not interactions:
                 return 0.0
 
-            quality_scores = [
-                interaction.quality_score for interaction in interactions]
+            quality_scores = [interaction.quality_score for interaction in interactions]
             avg_quality = sum(quality_scores) / len(quality_scores)
 
             # Higher quality = faster response (inverse relationship)
@@ -274,7 +285,9 @@ class ProgressAnalyzer:
             self.logger.error(f"Question frequency calculation error: {e}")
             return 0.0
 
-    def _get_all_skills_and_proficiencies(self, interactions: List[InteractionAnalysis]) -> Dict[str, List[float]]:
+    def _get_all_skills_and_proficiencies(
+        self, interactions: List[InteractionAnalysis]
+    ) -> Dict[str, List[float]]:
         """Aggregates all skills and their proficiency scores from interactions."""
         skill_proficiencies = {}
         for interaction in interactions:
@@ -284,20 +297,28 @@ class ProgressAnalyzer:
                 skill_proficiencies[skill].append(proficiency)
         return skill_proficiencies
 
-    def _calculate_skill_usage(self, skill_proficiencies: Dict[str, List[float]]) -> Dict[str, int]:
+    def _calculate_skill_usage(
+        self, skill_proficiencies: Dict[str, List[float]]
+    ) -> Dict[str, int]:
         """Calculates the usage count for each skill."""
-        return {skill: len(proficiencies) for skill, proficiencies in skill_proficiencies.items()}
+        return {
+            skill: len(proficiencies)
+            for skill, proficiencies in skill_proficiencies.items()
+        }
 
-    def _calculate_skill_proficiency(self, skill_proficiencies: Dict[str, List[float]]) -> Dict[str, float]:
+    def _calculate_skill_proficiency(
+        self, skill_proficiencies: Dict[str, List[float]]
+    ) -> Dict[str, float]:
         """Calculates the average proficiency for each skill."""
         skill_proficiency = {}
         for skill, proficiencies in skill_proficiencies.items():
             if proficiencies:
-                skill_proficiency[skill] = sum(
-                    proficiencies) / len(proficiencies)
+                skill_proficiency[skill] = sum(proficiencies) / len(proficiencies)
         return skill_proficiency
 
-    def _calculate_skill_trends(self, skill_proficiencies: Dict[str, List[float]]) -> Dict[str, str]:
+    def _calculate_skill_trends(
+        self, skill_proficiencies: Dict[str, List[float]]
+    ) -> Dict[str, str]:
         """Analyzes the trend for each skill."""
         skill_trends = {}
         for skill, proficiencies in skill_proficiencies.items():
@@ -305,8 +326,9 @@ class ProgressAnalyzer:
                 # Simplified trend: compare first half to second half
                 mid_point = len(proficiencies) // 2
                 first_half_avg = sum(proficiencies[:mid_point]) / mid_point
-                second_half_avg = sum(
-                    proficiencies[mid_point:]) / (len(proficiencies) - mid_point)
+                second_half_avg = sum(proficiencies[mid_point:]) / (
+                    len(proficiencies) - mid_point
+                )
                 if second_half_avg > first_half_avg + 0.1:
                     skill_trends[skill] = "improving"
                 elif second_half_avg < first_half_avg - 0.1:
@@ -325,12 +347,10 @@ class ProgressAnalyzer:
             if not interactions:
                 return SkillAnalysis(usage={}, proficiency={}, trends={})
 
-            skill_proficiencies = self._get_all_skills_and_proficiencies(
-                interactions)
+            skill_proficiencies = self._get_all_skills_and_proficiencies(interactions)
 
             usage = self._calculate_skill_usage(skill_proficiencies)
-            proficiency = self._calculate_skill_proficiency(
-                skill_proficiencies)
+            proficiency = self._calculate_skill_proficiency(skill_proficiencies)
             trends = self._calculate_skill_trends(skill_proficiencies)
 
             return SkillAnalysis(
@@ -353,25 +373,26 @@ class ProgressAnalyzer:
             achievements = []
 
             # Data aggregations
-            total_duration_minutes = sum(i.duration_minutes()
-                                         for i in interactions)
-            avg_quality = sum(
-                i.quality_score for i in interactions) / len(interactions)
-            all_topics = {
-                topic for i in interactions for topic in i.topics_discussed}
-            all_skills = {
-                skill for i in interactions for skill in i.skills_used.keys()}
+            total_duration_minutes = sum(i.duration_minutes() for i in interactions)
+            avg_quality = sum(i.quality_score for i in interactions) / len(interactions)
+            all_topics = {topic for i in interactions for topic in i.topics_discussed}
+            all_skills = {skill for i in interactions for skill in i.skills_used.keys()}
 
             achievement_checks = [
-                ("تجاوز 100 دقيقة من المحادثات",
-                 lambda: total_duration_minutes > 100),
+                ("تجاوز 100 دقيقة من المحادثات", lambda: total_duration_minutes > 100),
                 ("مستوى تفاعل عالي", lambda: avg_quality > 0.8),
                 ("مستكشف فضولي", lambda: len(all_topics) > 10),
                 ("متعلم متعدد المهارات", lambda: len(all_skills) > 5),
-                ("إتقان مهارة جديدة", lambda: any(
-                    p > 0.9 for i in interactions for p in i.skills_used.values())),
-                ("محادثة طويلة ومميزة", lambda: any(
-                    i.duration_minutes() > 15 for i in interactions)),
+                (
+                    "إتقان مهارة جديدة",
+                    lambda: any(
+                        p > 0.9 for i in interactions for p in i.skills_used.values()
+                    ),
+                ),
+                (
+                    "محادثة طويلة ومميزة",
+                    lambda: any(i.duration_minutes() > 15 for i in interactions),
+                ),
             ]
 
             for name, check in achievement_checks:
@@ -395,21 +416,22 @@ class ProgressAnalyzer:
             improvement_areas = []
 
             # Data aggregations
-            avg_duration_minutes = sum(i.duration_minutes()
-                                       for i in interactions) / len(interactions)
-            avg_quality = sum(
-                i.quality_score for i in interactions) / len(interactions)
+            avg_duration_minutes = sum(
+                i.duration_minutes() for i in interactions
+            ) / len(interactions)
+            avg_quality = sum(i.quality_score for i in interactions) / len(interactions)
             emotion_dist = self.analyze_emotion_distribution(interactions)
             skill_analysis = self.analyze_skills_practiced(interactions)
 
             improvement_checks = [
                 ("تطوير مدة التفاعل والتركيز", lambda: avg_duration_minutes < 3),
                 ("تحسين جودة الحوار", lambda: avg_quality < 0.6),
-                ("تعزيز الاستقرار العاطفي",
-                 lambda: emotion_dist.stability_score < 0.5),
+                ("تعزيز الاستقرار العاطفي", lambda: emotion_dist.stability_score < 0.5),
                 ("توسيع المهارات المستخدمة", lambda: len(skill_analysis.usage) < 4),
-                ("زيادة المبادرة في المحادثة",
-                 lambda: self.calculate_question_frequency(interactions) < 1.0),
+                (
+                    "زيادة المبادرة في المحادثة",
+                    lambda: self.calculate_question_frequency(interactions) < 1.0,
+                ),
             ]
 
             for area, check in improvement_checks:

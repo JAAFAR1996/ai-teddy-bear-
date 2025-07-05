@@ -1,17 +1,18 @@
-import requests
-import psutil
-from tkinter import messagebox, scrolledtext, ttk
-from datetime import datetime
-import tkinter as tk
-import time
-import threading
-import sys
-import subprocess
-import os
 import json
-import structlog
 import logging
+import os
+import subprocess
+import sys
+import threading
+import time
+import tkinter as tk
+from datetime import datetime
+from tkinter import messagebox, scrolledtext, ttk
 from typing import Any, Dict, List, Optional
+
+import psutil
+import requests
+import structlog
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +24,8 @@ logger = logging.getLogger(__name__)
 
 logger = structlog.get_logger(__name__)
 
-
 # Add src to path
-sys.path.insert(0, os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
 
 
 class CloudServerLauncher:
@@ -46,7 +45,7 @@ class CloudServerLauncher:
         self.root = tk.Tk()
         self.root.title("☁️ AI Teddy Bear - Cloud Server Control")
         self.root.geometry("1000x700")
-        self.root.configure(bg='#2c3e50')
+        self.root.configure(bg="#2c3e50")
 
         # Header
         self.create_header()
@@ -59,55 +58,55 @@ class CloudServerLauncher:
 
     def create_header(self) -> Any:
         """إنشاء الهيدر"""
-        header = tk.Frame(self.root, bg='#34495e', height=100)
+        header = tk.Frame(self.root, bg="#34495e", height=100)
         header.pack(fill="x")
         header.pack_propagate(False)
 
         # Title
-        title_frame = tk.Frame(header, bg='#34495e')
+        title_frame = tk.Frame(header, bg="#34495e")
         title_frame.pack(side="left", fill="y", padx=20)
 
         tk.Label(
             title_frame,
             text="☁️ AI Teddy Bear Cloud Server",
-            font=('Arial', 22, 'bold'),
-            fg='white',
-            bg='#34495e'
+            font=("Arial", 22, "bold"),
+            fg="white",
+            bg="#34495e",
         ).pack(anchor="w", pady=10)
 
         tk.Label(
             title_frame,
             text="Complete Production-Ready Cloud Infrastructure",
-            font=('Arial', 12),
-            fg='#bdc3c7',
-            bg='#34495e'
+            font=("Arial", 12),
+            fg="#bdc3c7",
+            bg="#34495e",
         ).pack(anchor="w")
 
         # Server Status
-        status_frame = tk.Frame(header, bg='#34495e')
+        status_frame = tk.Frame(header, bg="#34495e")
         status_frame.pack(side="right", fill="y", padx=20)
 
         self.server_status_label = tk.Label(
             status_frame,
             text="🔴 SERVER OFFLINE",
-            font=('Arial', 14, 'bold'),
-            fg='#e74c3c',
-            bg='#34495e'
+            font=("Arial", 14, "bold"),
+            fg="#e74c3c",
+            bg="#34495e",
         )
         self.server_status_label.pack(pady=15)
 
         self.server_url_label = tk.Label(
             status_frame,
             text=f"URL: {self.server_url}",
-            font=('Arial', 10),
-            fg='#bdc3c7',
-            bg='#34495e'
+            font=("Arial", 10),
+            fg="#bdc3c7",
+            bg="#34495e",
         )
         self.server_url_label.pack()
 
     def create_main_content(self) -> Any:
         """إنشاء المحتوى الرئيسي"""
-        main_frame = tk.Frame(self.root, bg='#ecf0f1')
+        main_frame = tk.Frame(self.root, bg="#ecf0f1")
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Control Panel
@@ -118,30 +117,50 @@ class CloudServerLauncher:
 
     def _create_main_control_buttons(self, parent_frame):
         """Creates the main server control buttons (Start, Stop, Restart)."""
-        buttons_frame = tk.Frame(parent_frame, bg='#ecf0f1')
+        buttons_frame = tk.Frame(parent_frame, bg="#ecf0f1")
         buttons_frame.pack(pady=15)
 
         self.start_button = tk.Button(
-            buttons_frame, text="🚀 START SERVER", font=('Arial', 14, 'bold'),
-            bg='#27ae60', fg='white', width=15, height=2, command=self.start_server
+            buttons_frame,
+            text="🚀 START SERVER",
+            font=("Arial", 14, "bold"),
+            bg="#27ae60",
+            fg="white",
+            width=15,
+            height=2,
+            command=self.start_server,
         )
         self.start_button.pack(side="left", padx=10)
 
         self.stop_button = tk.Button(
-            buttons_frame, text="🛑 STOP SERVER", font=('Arial', 14, 'bold'),
-            bg='#e74c3c', fg='white', width=15, height=2, command=self.stop_server, state='disabled'
+            buttons_frame,
+            text="🛑 STOP SERVER",
+            font=("Arial", 14, "bold"),
+            bg="#e74c3c",
+            fg="white",
+            width=15,
+            height=2,
+            command=self.stop_server,
+            state="disabled",
         )
         self.stop_button.pack(side="left", padx=10)
 
         self.restart_button = tk.Button(
-            buttons_frame, text="🔄 RESTART", font=('Arial', 14, 'bold'),
-            bg='#f39c12', fg='white', width=15, height=2, command=self.restart_server, state='disabled'
+            buttons_frame,
+            text="🔄 RESTART",
+            font=("Arial", 14, "bold"),
+            bg="#f39c12",
+            fg="white",
+            width=15,
+            height=2,
+            command=self.restart_server,
+            state="disabled",
         )
         self.restart_button.pack(side="left", padx=10)
 
     def _create_quick_action_buttons(self, parent_frame):
         """Creates the quick action buttons for server management."""
-        actions_frame = tk.Frame(parent_frame, bg='#ecf0f1')
+        actions_frame = tk.Frame(parent_frame, bg="#ecf0f1")
         actions_frame.pack(pady=10)
 
         quick_actions = [
@@ -150,20 +169,29 @@ class CloudServerLauncher:
             ("🔍 Health Check", self.health_check, "#2ecc71"),
             ("📁 Open Logs", self.open_logs, "#95a5a6"),
             ("⚙️ Config Manager", self.config_manager, "#34495e"),
-            ("🗄️ Database Admin", self.database_admin, "#e67e22")
+            ("🗄️ Database Admin", self.database_admin, "#e67e22"),
         ]
 
         for i, (text, command, color) in enumerate(quick_actions):
             btn = tk.Button(
-                actions_frame, text=text, command=command, bg=color, fg='white',
-                width=18, font=('Arial', 9)
+                actions_frame,
+                text=text,
+                command=command,
+                bg=color,
+                fg="white",
+                width=18,
+                font=("Arial", 9),
             )
-            btn.grid(row=i//3, column=i % 3, padx=5, pady=5)
+            btn.grid(row=i // 3, column=i % 3, padx=5, pady=5)
 
     def create_control_panel(self, parent) -> Any:
         """لوحة التحكم"""
-        control_frame = tk.LabelFrame(parent, text="🎮 Server Control Panel", font=(
-            'Arial', 12, 'bold'), bg='#ecf0f1')
+        control_frame = tk.LabelFrame(
+            parent,
+            text="🎮 Server Control Panel",
+            font=("Arial", 12, "bold"),
+            bg="#ecf0f1",
+        )
         control_frame.pack(fill="x", pady=10)
 
         self._create_main_control_buttons(control_frame)
@@ -191,94 +219,123 @@ class CloudServerLauncher:
 
     def create_logs_tab(self, notebook) -> Any:
         """تبويب السجلات"""
-        logs_frame = tk.Frame(notebook, bg='#ffffff')
+        logs_frame = tk.Frame(notebook, bg="#ffffff")
         notebook.add(logs_frame, text="📋 Server Logs")
 
         # Log Controls
-        log_controls = tk.Frame(logs_frame, bg='#ffffff')
+        log_controls = tk.Frame(logs_frame, bg="#ffffff")
         log_controls.pack(fill="x", padx=10, pady=5)
 
-        tk.Button(log_controls, text="🔄 Refresh", command=self.refresh_logs,
-                  bg="#3498db", fg="white").pack(side="left", padx=5)
-        tk.Button(log_controls, text="🗑️ Clear", command=self.clear_logs,
-                  bg="#e74c3c", fg="white").pack(side="left", padx=5)
-        tk.Button(log_controls, text="💾 Save", command=self.save_logs,
-                  bg="#27ae60", fg="white").pack(side="left", padx=5)
+        tk.Button(
+            log_controls,
+            text="🔄 Refresh",
+            command=self.refresh_logs,
+            bg="#3498db",
+            fg="white",
+        ).pack(side="left", padx=5)
+        tk.Button(
+            log_controls,
+            text="🗑️ Clear",
+            command=self.clear_logs,
+            bg="#e74c3c",
+            fg="white",
+        ).pack(side="left", padx=5)
+        tk.Button(
+            log_controls,
+            text="💾 Save",
+            command=self.save_logs,
+            bg="#27ae60",
+            fg="white",
+        ).pack(side="left", padx=5)
 
         # Log Level Filter
-        tk.Label(log_controls, text="Level:", bg='#ffffff').pack(
-            side="left", padx=(20, 5))
+        tk.Label(log_controls, text="Level:", bg="#ffffff").pack(
+            side="left", padx=(20, 5)
+        )
         self.log_level_var = tk.StringVar(value="ALL")
         log_level_combo = ttk.Combobox(
-            log_controls, textvariable=self.log_level_var, width=10)
-        log_level_combo['values'] = (
-            'ALL', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+            log_controls, textvariable=self.log_level_var, width=10
+        )
+        log_level_combo["values"] = (
+            "ALL",
+            "DEBUG",
+            "INFO",
+            "WARNING",
+            "ERROR",
+            "CRITICAL",
+        )
         log_level_combo.pack(side="left", padx=5)
 
         # Log Display
         self.logs_text = scrolledtext.ScrolledText(
             logs_frame,
             height=20,
-            font=('Consolas', 9),
-            bg='#2c3e50',
-            fg='#ecf0f1',
-            insertbackground='white'
+            font=("Consolas", 9),
+            bg="#2c3e50",
+            fg="#ecf0f1",
+            insertbackground="white",
         )
         self.logs_text.pack(fill="both", expand=True, padx=10, pady=10)
 
     def create_stats_tab(self, notebook) -> Any:
         """تبويب إحصائيات النظام"""
-        stats_frame = tk.Frame(notebook, bg='#ffffff')
+        stats_frame = tk.Frame(notebook, bg="#ffffff")
         notebook.add(stats_frame, text="📊 System Stats")
 
         # Stats Grid
-        stats_grid = tk.Frame(stats_frame, bg='#ffffff')
+        stats_grid = tk.Frame(stats_frame, bg="#ffffff")
         stats_grid.pack(fill="x", padx=10, pady=10)
 
         # Create stat displays
+        self.create_stat_display(stats_grid, "💻 CPU Usage", "cpu_percent", "%", 0, 0)
         self.create_stat_display(
-            stats_grid, "💻 CPU Usage", "cpu_percent", "%", 0, 0)
+            stats_grid, "🧠 Memory Usage", "memory_percent", "%", 0, 1
+        )
+        self.create_stat_display(stats_grid, "💽 Disk Usage", "disk_percent", "%", 0, 2)
         self.create_stat_display(
-            stats_grid, "🧠 Memory Usage", "memory_percent", "%", 0, 1)
-        self.create_stat_display(
-            stats_grid, "💽 Disk Usage", "disk_percent", "%", 0, 2)
-        self.create_stat_display(
-            stats_grid, "🌐 Network I/O", "network_io", "MB/s", 0, 3)
+            stats_grid, "🌐 Network I/O", "network_io", "MB/s", 0, 3
+        )
 
         self.create_stat_display(
-            stats_grid, "👥 Active Users", "active_users", "", 1, 0)
+            stats_grid, "👥 Active Users", "active_users", "", 1, 0
+        )
         self.create_stat_display(
-            stats_grid, "🔗 API Requests", "api_requests", "/min", 1, 1)
+            stats_grid, "🔗 API Requests", "api_requests", "/min", 1, 1
+        )
         self.create_stat_display(
-            stats_grid, "🗄️ DB Connections", "db_connections", "", 1, 2)
+            stats_grid, "🗄️ DB Connections", "db_connections", "", 1, 2
+        )
         self.create_stat_display(stats_grid, "⏱️ Uptime", "uptime", "", 1, 3)
 
         # Detailed System Info
         info_frame = tk.LabelFrame(
-            stats_frame, text="📋 Detailed System Information", font=('Arial', 12, 'bold'))
+            stats_frame,
+            text="📋 Detailed System Information",
+            font=("Arial", 12, "bold"),
+        )
         info_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        self.system_info_text = tk.Text(
-            info_frame, height=15, font=('Consolas', 9))
+        self.system_info_text = tk.Text(info_frame, height=15, font=("Consolas", 9))
         info_scroll = tk.Scrollbar(
-            info_frame, orient="vertical", command=self.system_info_text.yview)
+            info_frame, orient="vertical", command=self.system_info_text.yview
+        )
         self.system_info_text.configure(yscrollcommand=info_scroll.set)
         self.system_info_text.pack(side="left", fill="both", expand=True)
         info_scroll.pack(side="right", fill="y")
 
     def create_stat_display(self, parent, title, key, unit, row, col) -> Any:
         """إنشاء عرض إحصائي"""
-        stat_frame = tk.LabelFrame(
-            parent, text=title, font=('Arial', 10, 'bold'))
-        stat_frame.grid(row=row, column=col, padx=5, pady=5,
-                        sticky="ew", ipadx=10, ipady=5)
+        stat_frame = tk.LabelFrame(parent, text=title, font=("Arial", 10, "bold"))
+        stat_frame.grid(
+            row=row, column=col, padx=5, pady=5, sticky="ew", ipadx=10, ipady=5
+        )
 
-        value_label = tk.Label(stat_frame, text="--",
-                               font=('Arial', 16, 'bold'), fg='#2c3e50')
+        value_label = tk.Label(
+            stat_frame, text="--", font=("Arial", 16, "bold"), fg="#2c3e50"
+        )
         value_label.pack()
 
-        unit_label = tk.Label(stat_frame, text=unit,
-                              font=('Arial', 10), fg='#7f8c8d')
+        unit_label = tk.Label(stat_frame, text=unit, font=("Arial", 10), fg="#7f8c8d")
         unit_label.pack()
 
         # Store reference for updates
@@ -286,12 +343,13 @@ class CloudServerLauncher:
 
     def create_api_tab(self, notebook) -> Any:
         """تبويب مراقبة API"""
-        api_frame = tk.Frame(notebook, bg='#ffffff')
+        api_frame = tk.Frame(notebook, bg="#ffffff")
         notebook.add(api_frame, text="🔌 API Monitor")
 
         # API Endpoints Status
         endpoints_frame = tk.LabelFrame(
-            api_frame, text="🎯 API Endpoints Status", font=('Arial', 12, 'bold'))
+            api_frame, text="🎯 API Endpoints Status", font=("Arial", 12, "bold")
+        )
         endpoints_frame.pack(fill="x", padx=10, pady=10)
 
         # Test buttons for endpoints
@@ -304,7 +362,7 @@ class CloudServerLauncher:
             ("Audio Processing", "/esp32/audio", self.test_audio_processing),
             ("Children API", "/api/children", self.test_children_api),
             ("Conversations", "/api/conversations", self.test_conversations),
-            ("Analytics", "/api/analytics", self.test_analytics)
+            ("Analytics", "/api/analytics", self.test_analytics),
         ]
 
         for i, (name, endpoint, command) in enumerate(endpoints):
@@ -314,29 +372,28 @@ class CloudServerLauncher:
                 command=command,
                 bg="#3498db",
                 fg="white",
-                width=20
+                width=20,
             )
-            btn.grid(row=i//2, column=i % 2, padx=5, pady=5)
+            btn.grid(row=i // 2, column=i % 2, padx=5, pady=5)
 
         # API Response Display
         response_frame = tk.LabelFrame(
-            api_frame, text="📄 API Response", font=('Arial', 12, 'bold'))
+            api_frame, text="📄 API Response", font=("Arial", 12, "bold")
+        )
         response_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         self.api_response_text = scrolledtext.ScrolledText(
-            response_frame,
-            height=15,
-            font=('Consolas', 9)
+            response_frame, height=15, font=("Consolas", 9)
         )
         self.api_response_text.pack(fill="both", expand=True, padx=10, pady=10)
 
     def create_database_tab(self, notebook) -> Any:
         """تبويب مراقبة قاعدة البيانات"""
-        db_frame = tk.Frame(notebook, bg='#ffffff')
+        db_frame = tk.Frame(notebook, bg="#ffffff")
         notebook.add(db_frame, text="🗄️ Database")
 
         # Database Actions
-        db_actions = tk.Frame(db_frame, bg='#ffffff')
+        db_actions = tk.Frame(db_frame, bg="#ffffff")
         db_actions.pack(fill="x", padx=10, pady=10)
 
         db_buttons = [
@@ -345,72 +402,69 @@ class CloudServerLauncher:
             ("💬 Conversations", self.show_conversations, "#9b59b6"),
             ("🧹 Cleanup Old Data", self.cleanup_database, "#e74c3c"),
             ("💾 Backup Database", self.backup_database, "#f39c12"),
-            ("🔄 Reset Database", self.reset_database, "#95a5a6")
+            ("🔄 Reset Database", self.reset_database, "#95a5a6"),
         ]
 
         for i, (text, command, color) in enumerate(db_buttons):
             btn = tk.Button(
-                db_actions,
-                text=text,
-                command=command,
-                bg=color,
-                fg="white",
-                width=18
+                db_actions, text=text, command=command, bg=color, fg="white", width=18
             )
-            btn.grid(row=i//3, column=i % 3, padx=5, pady=5)
+            btn.grid(row=i // 3, column=i % 3, padx=5, pady=5)
 
         # Database Display
         self.db_text = scrolledtext.ScrolledText(
-            db_frame,
-            height=20,
-            font=('Consolas', 9)
+            db_frame, height=20, font=("Consolas", 9)
         )
         self.db_text.pack(fill="both", expand=True, padx=10, pady=10)
 
     def create_connections_tab(self, notebook) -> Any:
         """تبويب الاتصالات النشطة"""
-        conn_frame = tk.Frame(notebook, bg='#ffffff')
+        conn_frame = tk.Frame(notebook, bg="#ffffff")
         notebook.add(conn_frame, text="🔗 Active Connections")
 
         # Connection Controls
-        conn_controls = tk.Frame(conn_frame, bg='#ffffff')
+        conn_controls = tk.Frame(conn_frame, bg="#ffffff")
         conn_controls.pack(fill="x", padx=10, pady=10)
 
-        tk.Button(conn_controls, text="🔄 Refresh", command=self.refresh_connections,
-                  bg="#3498db", fg="white").pack(side="left", padx=5)
-        tk.Button(conn_controls, text="🚫 Disconnect All", command=self.disconnect_all,
-                  bg="#e74c3c", fg="white").pack(side="left", padx=5)
+        tk.Button(
+            conn_controls,
+            text="🔄 Refresh",
+            command=self.refresh_connections,
+            bg="#3498db",
+            fg="white",
+        ).pack(side="left", padx=5)
+        tk.Button(
+            conn_controls,
+            text="🚫 Disconnect All",
+            command=self.disconnect_all,
+            bg="#e74c3c",
+            fg="white",
+        ).pack(side="left", padx=5)
 
         # Connections Display
         self.connections_text = scrolledtext.ScrolledText(
-            conn_frame,
-            height=20,
-            font=('Consolas', 9)
+            conn_frame, height=20, font=("Consolas", 9)
         )
         self.connections_text.pack(fill="both", expand=True, padx=10, pady=10)
 
     def create_footer(self) -> Any:
         """إنشاء الفوتر"""
-        footer = tk.Frame(self.root, bg='#34495e', height=40)
+        footer = tk.Frame(self.root, bg="#34495e", height=40)
         footer.pack(fill="x", side="bottom")
         footer.pack_propagate(False)
 
         self.status_label = tk.Label(
             footer,
             text="🏗️ Cloud Server Control Panel Ready",
-            font=('Arial', 11),
-            fg='white',
-            bg='#34495e'
+            font=("Arial", 11),
+            fg="white",
+            bg="#34495e",
         )
         self.status_label.pack(side="left", padx=15, pady=10)
 
         # Server Time
         self.time_label = tk.Label(
-            footer,
-            text="",
-            font=('Arial', 10),
-            fg='#bdc3c7',
-            bg='#34495e'
+            footer, text="", font=("Arial", 10), fg="#bdc3c7", bg="#34495e"
         )
         self.time_label.pack(side="right", padx=15, pady=10)
 
@@ -439,16 +493,15 @@ class CloudServerLauncher:
                 stderr=subprocess.PIPE,
                 text=True,
                 bufsize=1,
-                universal_newlines=True
+                universal_newlines=True,
             )
 
             # Update UI
             self.server_running = True
-            self.server_status_label.config(
-                text="🟢 SERVER STARTING", fg="#f39c12")
-            self.start_button.config(state='disabled')
-            self.stop_button.config(state='normal')
-            self.restart_button.config(state='normal')
+            self.server_status_label.config(text="🟢 SERVER STARTING", fg="#f39c12")
+            self.start_button.config(state="disabled")
+            self.stop_button.config(state="normal")
+            self.restart_button.config(state="normal")
 
             # Start log monitoring
             self.start_log_monitoring()
@@ -470,11 +523,10 @@ class CloudServerLauncher:
                 self.server_process.wait(timeout=10)
 
             self.server_running = False
-            self.server_status_label.config(
-                text="🔴 SERVER OFFLINE", fg="#e74c3c")
-            self.start_button.config(state='normal')
-            self.stop_button.config(state='disabled')
-            self.restart_button.config(state='disabled')
+            self.server_status_label.config(text="🔴 SERVER OFFLINE", fg="#e74c3c")
+            self.start_button.config(state="normal")
+            self.stop_button.config(state="disabled")
+            self.restart_button.config(state="disabled")
 
             self.log("✅ Server stopped successfully")
 
@@ -490,11 +542,11 @@ class CloudServerLauncher:
 
     def check_server_ready(self) -> Any:
         """فحص جاهزية السيرفر"""
+
         def check() -> Any:
             for attempt in range(30):  # 30 seconds timeout
                 try:
-                    response = requests.get(
-                        f"{self.server_url}/health", timeout=2)
+                    response = requests.get(f"{self.server_url}/health", timeout=2)
                     if response.status_code == 200:
                         self.root.after(0, self.server_ready)
                         return
@@ -521,13 +573,15 @@ class CloudServerLauncher:
 
     def start_log_monitoring(self) -> Any:
         """بدء مراقبة السجلات"""
+
         def monitor_logs() -> Any:
             if self.server_process and self.server_running:
                 try:
-                    for line in iter(self.server_process.stdout.readline, ''):
+                    for line in iter(self.server_process.stdout.readline, ""):
                         if line and self.server_running:
                             self.root.after(
-                                0, lambda l=line: self.add_log_line(l.strip()))
+                                0, lambda l=line: self.add_log_line(l.strip())
+                            )
                         elif not self.server_running:
                             break
                 except Exception as e:
@@ -537,6 +591,7 @@ class CloudServerLauncher:
 
     def start_monitoring(self) -> Any:
         """بدء مراقبة النظام"""
+
         def monitor() -> Any:
             while True:
                 if self.server_running:
@@ -552,19 +607,23 @@ class CloudServerLauncher:
         try:
             # CPU Usage
             cpu_percent = psutil.cpu_percent(interval=1)
-            self.root.after(0, lambda: self.cpu_percent_label.config(
-                text=f"{cpu_percent:.1f}"))
+            self.root.after(
+                0, lambda: self.cpu_percent_label.config(text=f"{cpu_percent:.1f}")
+            )
 
             # Memory Usage
             memory = psutil.virtual_memory()
-            self.root.after(0, lambda: self.memory_percent_label.config(
-                text=f"{memory.percent:.1f}"))
+            self.root.after(
+                0,
+                lambda: self.memory_percent_label.config(text=f"{memory.percent:.1f}"),
+            )
 
             # Disk Usage
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
             disk_percent = (disk.used / disk.total) * 100
-            self.root.after(0, lambda: self.disk_percent_label.config(
-                text=f"{disk_percent:.1f}"))
+            self.root.after(
+                0, lambda: self.disk_percent_label.config(text=f"{disk_percent:.1f}")
+            )
 
             # Update detailed info
             self.update_detailed_system_info()
@@ -577,15 +636,15 @@ class CloudServerLauncher:
         try:
             info = f"""
 🖥️ System Information:
-{'='*50}
+{"=" * 50}
 CPU Cores: {psutil.cpu_count()} cores
 Memory Total: {psutil.virtual_memory().total // (1024**3)} GB
 Memory Available: {psutil.virtual_memory().available // (1024**3)} GB
-Disk Total: {psutil.disk_usage('/').total // (1024**3)} GB
-Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
+Disk Total: {psutil.disk_usage("/").total // (1024**3)} GB
+Disk Free: {psutil.disk_usage("/").free // (1024**3)} GB
 
 ⚡ Process Information:
-{'='*50}
+{"=" * 50}
 """
 
             # Add process info if server is running
@@ -593,7 +652,9 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
                 try:
                     process = psutil.Process(self.server_process.pid)
                     info += f"Server PID: {self.server_process.pid}\n"
-                    info += f"Server Memory: {process.memory_info().rss // (1024**2)} MB\n"
+                    info += (
+                        f"Server Memory: {process.memory_info().rss // (1024**2)} MB\n"
+                    )
                     info += f"Server CPU: {process.cpu_percent():.1f}%\n"
                 except Exception as e:
                     info += "Server process info unavailable\n"
@@ -631,12 +692,14 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
     def open_dashboard(self) -> Any:
         """فتح لوحة التحكم"""
         import webbrowser
+
         webbrowser.open(f"{self.server_url}/dashboard")
         self.log("🌐 Web dashboard opened")
 
     def view_api_docs(self) -> Any:
         """عرض توثيق API"""
         import webbrowser
+
         webbrowser.open(f"{self.server_url}/docs")
         self.log("📖 API documentation opened")
 
@@ -648,8 +711,9 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
                 result = response.json()
                 self.log("✅ Health check passed")
                 self.api_response_text.delete(1.0, "end")
-                self.api_response_text.insert(1.0, json.dumps(
-                    result, indent=2, ensure_ascii=False))
+                self.api_response_text.insert(
+                    1.0, json.dumps(result, indent=2, ensure_ascii=False)
+                )
             else:
                 self.log(f"❌ Health check failed: {response.status_code}")
         except Exception as e:
@@ -657,8 +721,7 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
 
     def open_logs(self) -> Any:
         """فتح مجلد السجلات"""
-        logs_dir = os.path.join(os.path.dirname(
-            os.path.dirname(__file__)), "logs")
+        logs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
         if os.path.exists(logs_dir):
             os.startfile(logs_dir)
             self.log("📁 Logs directory opened")
@@ -684,15 +747,12 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
         data = {
             "device_id": "ESP32_TEST123",
             "firmware_version": "2.0.0",
-            "hardware_version": "ESP32-S3"
+            "hardware_version": "ESP32-S3",
         }
         self.api_test("POST", "/esp32/register", data)
 
     def test_audio_processing(self) -> Any:
-        data = {
-            "audio": "مرحبا يا دبدوب",
-            "device_id": "ESP32_TEST123"
-        }
+        data = {"audio": "مرحبا يا دبدوب", "device_id": "ESP32_TEST123"}
         self.api_test("POST", "/esp32/audio", data)
 
     def test_children_api(self) -> Any:
@@ -717,15 +777,15 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
             result = {
                 "status_code": response.status_code,
                 "response": response.json() if response.content else None,
-                "headers": dict(response.headers)
+                "headers": dict(response.headers),
             }
 
             self.api_response_text.delete(1.0, "end")
-            self.api_response_text.insert(1.0, json.dumps(
-                result, indent=2, ensure_ascii=False))
+            self.api_response_text.insert(
+                1.0, json.dumps(result, indent=2, ensure_ascii=False)
+            )
 
-            self.log(
-                f"🧪 API test: {method} {endpoint} -> {response.status_code}")
+            self.log(f"🧪 API test: {method} {endpoint} -> {response.status_code}")
 
         except Exception as e:
             self.log(f"❌ API test failed: {e}")
@@ -737,13 +797,11 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
     def show_tables(self) -> Any:
         """عرض جداول قاعدة البيانات"""
         try:
-            response = requests.get(
-                f"{self.server_url}/api/admin/tables", timeout=5)
+            response = requests.get(f"{self.server_url}/api/admin/tables", timeout=5)
             if response.status_code == 200:
                 tables = response.json()
                 self.db_text.delete(1.0, "end")
-                self.db_text.insert(
-                    1.0, "📊 Database Tables:\n" + "="*50 + "\n")
+                self.db_text.insert(1.0, "📊 Database Tables:\n" + "=" * 50 + "\n")
                 for table in tables:
                     self.db_text.insert("end", f"• {table}\n")
                 self.log("📊 Database tables loaded")
@@ -753,7 +811,7 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
     def count_users(self) -> Any:
         """عد المستخدمين"""
         self.db_text.delete(1.0, "end")
-        self.db_text.insert(1.0, "👥 User Statistics:\n" + "="*50 + "\n")
+        self.db_text.insert(1.0, "👥 User Statistics:\n" + "=" * 50 + "\n")
         self.db_text.insert("end", "Total Children: 5\n")
         self.db_text.insert("end", "Active Devices: 3\n")
         self.db_text.insert("end", "Total Conversations: 1,247\n")
@@ -762,12 +820,12 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
     def show_conversations(self) -> Any:
         """عرض المحادثات"""
         self.db_text.delete(1.0, "end")
-        self.db_text.insert(1.0, "💬 Recent Conversations:\n" + "="*50 + "\n")
+        self.db_text.insert(1.0, "💬 Recent Conversations:\n" + "=" * 50 + "\n")
         sample_conversations = [
             "[Sara] مرحبا يا دبدوب",
             "[Teddy] مرحبا سارة! كيف حالك اليوم؟",
             "[Ahmed] احكي لي قصة",
-            "[Teddy] بكل سرور! كان يا ما كان..."
+            "[Teddy] بكل سرور! كان يا ما كان...",
         ]
         for conv in sample_conversations:
             self.db_text.insert("end", f"{conv}\n")
@@ -776,7 +834,8 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
     def cleanup_database(self) -> Any:
         """تنظيف قاعدة البيانات"""
         result = messagebox.askyesno(
-            "Cleanup Database", "Remove old conversations and logs?")
+            "Cleanup Database", "Remove old conversations and logs?"
+        )
         if result:
             self.log("🧹 Database cleanup initiated")
 
@@ -787,7 +846,8 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
     def reset_database(self) -> Any:
         """إعادة تعيين قاعدة البيانات"""
         result = messagebox.askyesno(
-            "Reset Database", "⚠️ This will delete ALL data! Continue?")
+            "Reset Database", "⚠️ This will delete ALL data! Continue?"
+        )
         if result:
             self.log("🔄 Database reset initiated")
 
@@ -809,7 +869,7 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
         filename = f"server_logs_{timestamp}.txt"
 
         try:
-            with open(filename, 'w', encoding='utf-8') as f:
+            with open(filename, "w", encoding="utf-8") as f:
                 f.write(logs_content)
             self.log(f"💾 Logs saved to {filename}")
         except Exception as e:
@@ -820,13 +880,12 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
     def refresh_connections(self) -> Any:
         """تحديث الاتصالات"""
         self.connections_text.delete(1.0, "end")
-        self.connections_text.insert(
-            1.0, "🔗 Active Connections:\n" + "="*50 + "\n")
+        self.connections_text.insert(1.0, "🔗 Active Connections:\n" + "=" * 50 + "\n")
 
         sample_connections = [
             "ESP32_ABC12345 - Sara's Teddy - 192.168.1.101 - Connected 2h ago",
             "ESP32_DEF67890 - Ahmed's Teddy - 192.168.1.102 - Connected 45m ago",
-            "Parent_App_001 - Mobile App - 192.168.1.103 - Connected 10m ago"
+            "Parent_App_001 - Mobile App - 192.168.1.103 - Connected 10m ago",
         ]
 
         for conn in sample_connections:
@@ -837,7 +896,8 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
     def disconnect_all(self) -> Any:
         """قطع جميع الاتصالات"""
         result = messagebox.askyesno(
-            "Disconnect All", "Disconnect all active connections?")
+            "Disconnect All", "Disconnect all active connections?"
+        )
         if result:
             self.log("🚫 All connections disconnected")
             self.refresh_connections()
@@ -858,7 +918,8 @@ Disk Free: {psutil.disk_usage('/').free // (1024**3)} GB
         """عند إغلاق النافذة"""
         if self.server_running:
             result = messagebox.askyesno(
-                "Exit", "Server is running. Stop server and exit?")
+                "Exit", "Server is running. Stop server and exit?"
+            )
             if result:
                 self.stop_server()
                 self.root.destroy()

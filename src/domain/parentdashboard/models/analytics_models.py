@@ -45,8 +45,7 @@ class ConversationLog:
 
     def has_educational_content(self) -> bool:
         """Check if conversation had educational content"""
-        educational_topics = {"education",
-                              "science", "math", "learning", "study"}
+        educational_topics = {"education", "science", "math", "learning", "study"}
         return bool(set(self.topics_discussed) & educational_topics)
 
     def get_quality_score(self) -> float:
@@ -160,8 +159,7 @@ class UsageMetrics:
         if pattern == "intensive_user":
             insights.append("Child enjoys longer conversation sessions")
         elif pattern == "frequent_user":
-            insights.append(
-                "Child uses the system regularly throughout the day")
+            insights.append("Child uses the system regularly throughout the day")
 
         if self.peak_usage_hours:
             peak_times = [f"{h}:00" for h in self.peak_usage_hours[:3]]
@@ -236,8 +234,7 @@ class AnalyticsData:
         if self.sentiment_breakdown.get("positive", 0) > 0.7:
             insights.append("Child shows positive engagement patterns")
         elif self.sentiment_breakdown.get("negative", 0) > 0.3:
-            insights.append(
-                "Some negative sentiment detected - may need attention")
+            insights.append("Some negative sentiment detected - may need attention")
 
         return insights
 
