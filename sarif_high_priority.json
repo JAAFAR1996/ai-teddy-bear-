@@ -1,0 +1,243 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ExtractedIssues",
+          "version": "1.0.0"
+        }
+      },
+      "results": [
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "child_aggregate_validator.py"
+                },
+                "region": {
+                  "startLine": 9
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method validate has a cyclomatic complexity of 15 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emotion_service.py"
+                },
+                "region": {
+                  "startLine": 261
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method analyze_emotion_trends has a cyclomatic complexity of 17 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_analytics_service.py"
+                },
+                "region": {
+                  "startLine": 17
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_conversation_analytics has a cyclomatic complexity of 17 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "data_cleanup_service.py"
+                },
+                "region": {
+                  "startLine": 429
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_database_size_info has a cyclomatic complexity of 15 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "report_generation_service.py"
+                },
+                "region": {
+                  "startLine": 226
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_monthly_trends has a cyclomatic complexity of 15 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "advanced_progress_analyzer.py"
+                },
+                "region": {
+                  "startLine": 398
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_vocabulary_development has a cyclomatic complexity of 15 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "child_data_analyzer.py"
+                },
+                "region": {
+                  "startLine": 393
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _identify_learning_patterns has a cyclomatic complexity of 15 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "child_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 369
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _deserialize_child_from_db has a cyclomatic complexity of 15 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "enhanced_security.py"
+                },
+                "region": {
+                  "startLine": 272
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _get_password_validators has a cyclomatic complexity of 19 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "modern_container.py"
+                },
+                "region": {
+                  "startLine": 482
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _create_service_instance has a cyclomatic complexity of 15 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "feedback_collector.py"
+                },
+                "region": {
+                  "startLine": 430
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _calculate_aggregate_metrics has a cyclomatic complexity of 19 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "55.py"
+                },
+                "region": {
+                  "startLine": 58
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method classify_priority has a cyclomatic complexity of 17 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        }
+      ]
+    }
+  ]
+}

@@ -223,6 +223,42 @@ class ReportGenerationService:
                 f"Failed to get interactions for {child_id}: {e}")
             return []
 
+    def _analyze_interaction_trend(self, weekly_reports: List[ChildProgress]) -> str:
+        """Analyzes the trend of total interactions over the weeks."""
+        interaction_counts = [
+            report.total_interactions for report in weekly_reports]
+        if len(interaction_counts) < 2:
+            return "stable"
+        if interaction_counts[-1] > interaction_counts[0]:
+            return "increasing"
+        if interaction_counts[-1] < interaction_counts[0]:
+            return "decreasing"
+        return "stable"
+
+    def _analyze_emotion_stability_trend(self, weekly_reports: List[ChildProgress]) -> str:
+        """Analyzes the trend of emotional stability."""
+        stability_scores = [
+            report.emotion_analysis.stability_score for report in weekly_reports if report.emotion_analysis]
+        if len(stability_scores) < 2:
+            return "improving"
+        if stability_scores[-1] > stability_scores[0]:
+            return "improving"
+        if stability_scores[-1] < stability_scores[0]:
+            return "declining"
+        return "stable"
+
+    def _analyze_skill_development_trend(self, weekly_reports: List[ChildProgress]) -> str:
+        """Analyzes the trend of skill development."""
+        skill_counts = [report.skill_analysis.get_total_practice_sessions(
+        ) for report in weekly_reports if report.skill_analysis]
+        if len(skill_counts) < 2:
+            return "positive"
+        if skill_counts[-1] > skill_counts[0]:
+            return "positive"
+        if skill_counts[-1] < skill_counts[0]:
+            return "needs_attention"
+        return "stable"
+
     def _analyze_monthly_trends(
         self, weekly_reports: List[ChildProgress]
     ) -> Dict[str, Any]:
@@ -231,45 +267,13 @@ class ReportGenerationService:
             if not weekly_reports:
                 return {}
 
-            trends = {
-                "interaction_trend": "stable",
-                "emotion_stability_trend": "improving",
-                "skill_development_trend": "positive",
-                "attention_span_trend": "stable",
-                "overall_progress": "good",
+            return {
+                "interaction_trend": self._analyze_interaction_trend(weekly_reports),
+                "emotion_stability_trend": self._analyze_emotion_stability_trend(weekly_reports),
+                "skill_development_trend": self._analyze_skill_development_trend(weekly_reports),
+                "attention_span_trend": "stable",  # Placeholder
+                "overall_progress": "good",  # Placeholder
             }
-
-            # Analyze interaction trends
-            interaction_counts = [
-                report.total_interactions for report in weekly_reports
-            ]
-            if len(interaction_counts) >= 2:
-                if interaction_counts[-1] > interaction_counts[0]:
-                    trends["interaction_trend"] = "increasing"
-                elif interaction_counts[-1] < interaction_counts[0]:
-                    trends["interaction_trend"] = "decreasing"
-
-            # Analyze emotion stability trends
-            stability_scores = [
-                report.emotion_analysis.stability_score for report in weekly_reports]
-            if len(stability_scores) >= 2:
-                if stability_scores[-1] > stability_scores[0]:
-                    trends["emotion_stability_trend"] = "improving"
-                elif stability_scores[-1] < stability_scores[0]:
-                    trends["emotion_stability_trend"] = "declining"
-
-            # Analyze skill development
-            skill_counts = [
-                report.skill_analysis.get_total_practice_sessions()
-                for report in weekly_reports
-            ]
-            if len(skill_counts) >= 2:
-                if skill_counts[-1] > skill_counts[0]:
-                    trends["skill_development_trend"] = "positive"
-                elif skill_counts[-1] < skill_counts[0]:
-                    trends["skill_development_trend"] = "needs_attention"
-
-            return trends
 
         except Exception as e:
             self.logger.error(f"Monthly trends analysis error: {e}")

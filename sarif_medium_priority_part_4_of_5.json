@@ -1,0 +1,4905 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ExtractedIssues",
+          "version": "1.0.0"
+        }
+      },
+      "results": [
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/di/enterprise_container.py"
+                },
+                "region": {
+                  "startLine": 103
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/di/enterprise_container.py"
+                },
+                "region": {
+                  "startLine": 109
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/di/enterprise_container.py"
+                },
+                "region": {
+                  "startLine": 10
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import weakref"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/di/enterprise_container.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Union imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/di/enterprise_container.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Provide imported from dependency_injector.wiring"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/di/enterprise_container.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused inject imported from dependency_injector.wiring"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/di/enterprise_container.py"
+                },
+                "region": {
+                  "startLine": 19
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused BaseModel imported from pydantic"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/di/enterprise_container.py"
+                },
+                "region": {
+                  "startLine": 19
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Field imported from pydantic"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/emotion/audio_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 47
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'magnitudes'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/emotion/emotion_repository.py"
+                },
+                "region": {
+                  "startLine": 65
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'cutoff_date'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/exception_handling/enterprise_exception_handler.py"
+                },
+                "region": {
+                  "startLine": 310
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/exception_handling/enterprise_exception_handler.py"
+                },
+                "region": {
+                  "startLine": 13
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Union imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/exception_handling/global_handler.py"
+                },
+                "region": {
+                  "startLine": 583
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'error_code'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/advanced_ai_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/advanced_ai_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/advanced_ai_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/advanced_ai_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/audio_io.py"
+                },
+                "region": {
+                  "startLine": 86
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/audio_io.py"
+                },
+                "region": {
+                  "startLine": 92
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/audio_io.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused normalize imported from pydub.effects"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/audio_manager.py"
+                },
+                "region": {
+                  "startLine": 33
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/audio_manager.py"
+                },
+                "region": {
+                  "startLine": 140
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Redefining built-in 'format'"
+          },
+          "ruleId": "redefined-builtin"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/audio_manager.py"
+                },
+                "region": {
+                  "startLine": 252
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Redefining built-in 'format'"
+          },
+          "ruleId": "redefined-builtin"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/distributed_processor.py"
+                },
+                "region": {
+                  "startLine": 36
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import openai"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/distributed_processor.py"
+                },
+                "region": {
+                  "startLine": 37
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import whisper"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/distributed_processor.py"
+                },
+                "region": {
+                  "startLine": 46
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import librosa"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/distributed_processor.py"
+                },
+                "region": {
+                  "startLine": 47
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused soundfile imported as sf"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/distributed_processor.py"
+                },
+                "region": {
+                  "startLine": 55
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused ModernTranscriptionService imported from application.services.audio.transcription_service"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/distributed_processor.py"
+                },
+                "region": {
+                  "startLine": 58
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused VoiceInteractionService imported from application.services.voice_interaction_service"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_2025.py"
+                },
+                "region": {
+                  "startLine": 362
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'i'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_2025.py"
+                },
+                "region": {
+                  "startLine": 532
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'audio_data'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_2025.py"
+                },
+                "region": {
+                  "startLine": 11
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import json"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_2025.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Union imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 545
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'adjusted_confidence'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Any imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 12
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import asyncio"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 13
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import json"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/hume_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 3)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/hume_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 3)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/hume_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 3)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/hume_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 3)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/hume_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused numpy imported as np"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/hume_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Tuple imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/hume_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Path imported from pathlib"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/hume_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 9
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import json"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/hume_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 10
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import base64"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/speech_disorder_detector.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'voiced_flag'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/speech_disorder_detector.py"
+                },
+                "region": {
+                  "startLine": 42
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'voiced_flag'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/voice_enhancements.py"
+                },
+                "region": {
+                  "startLine": 108
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Redefining built-in 'float'"
+          },
+          "ruleId": "redefined-builtin"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/mock/transformers.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/external_services/mock/transformers.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import ast"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/graphql/context.py"
+                },
+                "region": {
+                  "startLine": 33
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Redefining built-in 'str'"
+          },
+          "ruleId": "redefined-builtin"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/graphql/context.py"
+                },
+                "region": {
+                  "startLine": 37
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Redefining built-in 'str'"
+          },
+          "ruleId": "redefined-builtin"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/graphql/context.py"
+                },
+                "region": {
+                  "startLine": 41
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Redefining built-in 'str'"
+          },
+          "ruleId": "redefined-builtin"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/graphql/dataloaders.py"
+                },
+                "region": {
+                  "startLine": 246
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/graphql/performance.py"
+                },
+                "region": {
+                  "startLine": 8
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import asyncio"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_consumer.py"
+                },
+                "region": {
+                  "startLine": 41
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_consumer.py"
+                },
+                "region": {
+                  "startLine": 200
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'topic_partition'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_consumer.py"
+                },
+                "region": {
+                  "startLine": 349
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'publisher'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_consumer.py"
+                },
+                "region": {
+                  "startLine": 356
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'dlq_event'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 127
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 135
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 140
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 149
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 157
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 165
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 174
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 181
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 190
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 197
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 243
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'message_id'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 505
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'result'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_driven_architecture.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Union imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_handlers.py"
+                },
+                "region": {
+                  "startLine": 183
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'conversation_id'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_handlers.py"
+                },
+                "region": {
+                  "startLine": 184
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'started_at'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_handlers.py"
+                },
+                "region": {
+                  "startLine": 194
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'child_id'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_publisher.py"
+                },
+                "region": {
+                  "startLine": 29
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/messaging/event_publisher.py"
+                },
+                "region": {
+                  "startLine": 132
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'result'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 100
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 105
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 112
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 117
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 127
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 135
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 146
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 153
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 162
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 167
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 172
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 293
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'service'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 750
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Redefining built-in 'id'"
+          },
+          "ruleId": "redefined-builtin"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import json"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Type imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Union imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 19
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import kubernetes"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused BaseModel imported from pydantic"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Field imported from pydantic"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/microservices/service_orchestrator.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Protocol imported from typing_extensions"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/observability/custom_metrics.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/observability/custom_metrics.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/observability/custom_metrics.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/observability/custom_metrics.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/observability/custom_metrics.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/observability/custom_metrics.py"
+                },
+                "region": {
+                  "startLine": 178
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'registry'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/observability/custom_metrics.py"
+                },
+                "region": {
+                  "startLine": 771
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Redefining built-in 'str'"
+          },
+          "ruleId": "redefined-builtin"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/performance/auto_scaling.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Tuple imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/base.py"
+                },
+                "region": {
+                  "startLine": 120
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/base.py"
+                },
+                "region": {
+                  "startLine": 170
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/base.py"
+                },
+                "region": {
+                  "startLine": 175
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/base.py"
+                },
+                "region": {
+                  "startLine": 180
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/base.py"
+                },
+                "region": {
+                  "startLine": 185
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/base.py"
+                },
+                "region": {
+                  "startLine": 194
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/base.py"
+                },
+                "region": {
+                  "startLine": 202
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/base.py"
+                },
+                "region": {
+                  "startLine": 209
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/base.py"
+                },
+                "region": {
+                  "startLine": 214
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/base.py"
+                },
+                "region": {
+                  "startLine": 329
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/connection_pool.py"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Base imported from models"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/connection_pool.py"
+                },
+                "region": {
+                  "startLine": 10
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused timedelta imported from datetime"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/connection_pool.py"
+                },
+                "region": {
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused pool imported from sqlalchemy"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/models.py"
+                },
+                "region": {
+                  "startLine": 587
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/base_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 25
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/base_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 75
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/base_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 377
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Variadics removed in overriding 'BaseSQLiteRepository.list' method"
+          },
+          "ruleId": "arguments-differ"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/base_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 486
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Variadics removed in overriding 'BaseSQLiteRepository.count' method"
+          },
+          "ruleId": "arguments-differ"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/base_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 676
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Number of parameters was 2 in 'BaseRepository.find_one' and is now 2 in overriding 'BaseSQLiteRepository.find_one' method"
+          },
+          "ruleId": "arguments-differ"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/base_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 676
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Variadics removed in overriding 'BaseSQLiteRepository.find_one' method"
+          },
+          "ruleId": "arguments-differ"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/base_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 773
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Variadics removed in overriding 'BaseSQLiteRepository.aggregate' method"
+          },
+          "ruleId": "arguments-differ"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/comprehensive_fix_and_report.py"
+                },
+                "region": {
+                  "startLine": 74
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'dirs'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/conversation_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 157
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Redefining built-in 'format'"
+          },
+          "ruleId": "redefined-builtin"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/conversation_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 307
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/emotion_log_repository.py"
+                },
+                "region": {
+                  "startLine": 37
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Redefining built-in 'str'"
+          },
+          "ruleId": "redefined-builtin"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/event_sourcing_repository.py"
+                },
+                "region": {
+                  "startLine": 26
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/event_sourcing_repository.py"
+                },
+                "region": {
+                  "startLine": 31
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/sqlalchemy_base_repository.py"
+                },
+                "region": {
+                  "startLine": 36
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/sqlalchemy_base_repository.py"
+                },
+                "region": {
+                  "startLine": 42
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/sqlalchemy_base_repository.py"
+                },
+                "region": {
+                  "startLine": 48
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/sqlalchemy_base_repository.py"
+                },
+                "region": {
+                  "startLine": 251
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/sqlalchemy_base_repository.py"
+                },
+                "region": {
+                  "startLine": 455
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Variadics removed in overriding 'SQLAlchemyBaseRepository.list' method"
+          },
+          "ruleId": "arguments-differ"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/sqlalchemy_base_repository.py"
+                },
+                "region": {
+                  "startLine": 507
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Variadics removed in overriding 'SQLAlchemyBaseRepository.count' method"
+          },
+          "ruleId": "arguments-differ"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/sqlalchemy_base_repository.py"
+                },
+                "region": {
+                  "startLine": 722
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Number of parameters was 2 in 'BaseRepository.find_one' and is now 2 in overriding 'SQLAlchemyBaseRepository.find_one' method"
+          },
+          "ruleId": "arguments-differ"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/sqlalchemy_base_repository.py"
+                },
+                "region": {
+                  "startLine": 722
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Variadics removed in overriding 'SQLAlchemyBaseRepository.find_one' method"
+          },
+          "ruleId": "arguments-differ"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/persistence/repositories/sqlalchemy_base_repository.py"
+                },
+                "region": {
+                  "startLine": 750
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Variadics removed in overriding 'SQLAlchemyBaseRepository.aggregate' method"
+          },
+          "ruleId": "arguments-differ"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 133
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 138
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 143
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 148
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 153
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 158
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 167
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 172
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 177
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 182
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 187
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 314
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Use of exec"
+          },
+          "ruleId": "exec-used"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 320
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 326
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 332
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 6
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import asyncio"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 11
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import os"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Callable imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Type imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Union imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused urlparse imported from urllib.parse"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 24
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import docker"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/plugins/plugin_architecture.py"
+                },
+                "region": {
+                  "startLine": 26
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Protocol imported from typing_extensions"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 565
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'priority'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 753
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'worker_id'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 896
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'analysis_type'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 940
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'data'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 25
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import librosa"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 26
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused numpy imported as np"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/processing/async_processor.py"
+                },
+                "region": {
+                  "startLine": 27
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Image imported from PIL"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/reporting/chart_generator.py"
+                },
+                "region": {
+                  "startLine": 17
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused seaborn imported as sns"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/reporting/pdf_generator.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused letter imported from reportlab.lib.pagesizes"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/reporting/pdf_generator.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused canvas imported from reportlab.pdfgen"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/advanced_content_filter.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/advanced_content_filter.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/advanced_content_filter.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/advanced_content_filter.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/advanced_content_filter.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/advanced_content_filter.py"
+                },
+                "region": {
+                  "startLine": 552
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'category'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/api_security_gateway.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/api_security_gateway.py"
+                },
+                "region": {
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/api_security_gateway.py"
+                },
+                "region": {
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/api_security_gateway.py"
+                },
+                "region": {
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/api_security_gateway.py"
+                },
+                "region": {
+                  "startLine": 50
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Lambda may not be necessary"
+          },
+          "ruleId": "unnecessary-lambda"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/audit_logger.py"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused hashes imported from cryptography.hazmat.primitives"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/audit_logger.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused rsa imported from cryptography.hazmat.primitives.asymmetric"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/audit_logger.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused padding imported from cryptography.hazmat.primitives.asymmetric"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/audit_logger.py"
+                },
+                "region": {
+                  "startLine": 23
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused validator imported from pydantic"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/audit_logger.py"
+                },
+                "region": {
+                  "startLine": 25
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused SecurityException imported from domain.exceptions"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/audit_system.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/audit_system.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/audit_system.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/audit_system.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/audit_system.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/enhanced_security.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/enhanced_security.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/enhanced_security.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/enhanced_security.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/enhanced_security.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/homomorphic_encryption.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/homomorphic_encryption.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/homomorphic_encryption.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/homomorphic_encryption.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/homomorphic_encryption.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/jwt_auth.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/jwt_auth.py"
+                },
+                "region": {
+                  "startLine": 13
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/jwt_enhanced.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/jwt_enhanced.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/jwt_enhanced.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/jwt_enhanced.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/jwt_enhanced.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/rbac_manager.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/rbac_manager.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/rbac_manager.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/rbac_manager.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/rbac_manager.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/rbac_manager.py"
+                },
+                "region": {
+                  "startLine": 17
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import asyncio"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/rbac_manager.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import json"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/rbac_manager.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Union imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/safe_expression_parser.py"
+                },
+                "region": {
+                  "startLine": 131
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/safe_expression_parser.py"
+                },
+                "region": {
+                  "startLine": 137
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/safe_expression_parser.py"
+                },
+                "region": {
+                  "startLine": 143
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/safe_expression_parser.py"
+                },
+                "region": {
+                  "startLine": 152
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/safe_expression_parser.py"
+                },
+                "region": {
+                  "startLine": 159
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/safe_expression_parser.py"
+                },
+                "region": {
+                  "startLine": 13
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused datetime imported from datetime"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/safe_expression_parser.py"
+                },
+                "region": {
+                  "startLine": 13
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused timedelta imported from datetime"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/safe_expression_parser.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused validator imported from pydantic"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/secrets_manager.py"
+                },
+                "region": {
+                  "startLine": 101
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/secrets_manager.py"
+                },
+                "region": {
+                  "startLine": 110
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/secrets_manager.py"
+                },
+                "region": {
+                  "startLine": 115
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/secrets_manager.py"
+                },
+                "region": {
+                  "startLine": 120
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/secrets_manager.py"
+                },
+                "region": {
+                  "startLine": 125
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security.py"
+                },
+                "region": {
+                  "startLine": 390
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Redefining built-in 'int'"
+          },
+          "ruleId": "redefined-builtin"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security.py"
+                },
+                "region": {
+                  "startLine": 11
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused datetime imported from datetime"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security.py"
+                },
+                "region": {
+                  "startLine": 11
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused timedelta imported from datetime"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security.py"
+                },
+                "region": {
+                  "startLine": 17
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused HTTPException imported from fastapi"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security.py"
+                },
+                "region": {
+                  "startLine": 17
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Response imported from fastapi"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security_audit_logger.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security_audit_logger.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security_audit_logger.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security_audit_logger.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security_audit_logger.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security_audit_logger.py"
+                },
+                "region": {
+                  "startLine": 594
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security_audit_logger.py"
+                },
+                "region": {
+                  "startLine": 627
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'cutoff'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/security_manager.py"
+                },
+                "region": {
+                  "startLine": 206
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'ip_address'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/infrastructure/security/unified_encryption_service.py"
+                },
+                "region": {
+                  "startLine": 13
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused List imported from typing"
+          },
+          "ruleId": "unused-import"
+        }
+      ]
+    }
+  ],
+  "properties": {
+    "chunkNumber": 4,
+    "totalChunks": 5,
+    "chunkSize": 257,
+    "startIndex": 771,
+    "endIndex": 1027
+  }
+}

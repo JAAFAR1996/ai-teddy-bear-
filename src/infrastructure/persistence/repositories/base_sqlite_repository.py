@@ -389,37 +389,59 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             self.logger.error(f"Error listing entities: {e}")
             raise DatabaseError(f"Failed to list entities: {e}")
 
+    def _apply_criteria_to_query(
+        self, sql: str, params: List[Any], criteria: List[SearchCriteria]
+    ) -> Tuple[str, List[Any]]:
+        """Applies search criteria to the SQL query."""
+        if not criteria:
+            return sql, params
+
+        conditions = []
+        for criterion in criteria:
+            condition, param = self._build_search_condition(criterion)
+            conditions.append(condition)
+            if isinstance(param, list):
+                params.extend(param)
+            elif param is not None:
+                params.append(param)
+
+        if conditions:
+            sql += " WHERE " + " AND ".join(conditions)
+
+        return sql, params
+
+    def _apply_options_to_query(
+        self, sql: str, params: List[Any], options: QueryOptions
+    ) -> Tuple[str, List[Any]]:
+        """Applies query options (sorting, pagination) to the SQL query."""
+        if options.sort_by:
+            self._validate_table_and_column(options.sort_by)
+            order = "DESC" if options.sort_order == SortOrder.DESC else "ASC"
+            sql += f" ORDER BY {self.table_name}.{options.sort_by} {order}"
+
+        if options.limit:
+            sql += " LIMIT ?"
+            params.append(options.limit)
+
+        if options.offset:
+            sql += " OFFSET ?"
+            params.append(options.offset)
+
+        return sql, params
+
     def _build_search_query(
         self, criteria: List[SearchCriteria], options: Optional[QueryOptions] = None
     ) -> Tuple[str, List[Any]]:
         """Builds the SQL query for the search method."""
         self._validate_table_and_column(self.table_name)
         sql = f"SELECT * FROM {self.table_name}"
-        params = []
+        params: List[Any] = []
 
         if criteria:
-            conditions = []
-            for criterion in criteria:
-                condition, param = self._build_search_condition(criterion)
-                conditions.append(condition)
-                if isinstance(param, list):
-                    params.extend(param)
-                elif param is not None:
-                    params.append(param)
-            if conditions:
-                sql += " WHERE " + " AND ".join(conditions)
+            sql, params = self._apply_criteria_to_query(sql, params, criteria)
 
         if options:
-            if options.sort_by:
-                self._validate_table_and_column(options.sort_by)
-                order = "DESC" if options.sort_order == SortOrder.DESC else "ASC"
-                sql += f" ORDER BY {self.table_name}.{options.sort_by} {order}"
-            if options.limit:
-                sql += " LIMIT ?"
-                params.append(options.limit)
-            if options.offset:
-                sql += " OFFSET ?"
-                params.append(options.offset)
+            sql, params = self._apply_options_to_query(sql, params, options)
 
         return sql, params
 

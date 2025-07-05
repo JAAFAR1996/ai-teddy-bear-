@@ -215,146 +215,179 @@ class ReportGeneratorService:
             logger.error(f"PDF report generation error: {e}")
             return ""
 
-    def _create_html_template(
-        self, progress: ChildProgress, format: ReportFormat
-    ) -> str:
-        """إنشاء قالب HTML"""
-        template = f"""
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقرير تقدم {progress.child_name}</title>
-    <style>
-        body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-            direction: rtl;
-        }}
-        .container {{
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }}
-        .header {{
-            text-align: center;
-            border-bottom: 3px solid #4CAF50;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }}
-        .metric {{
-            background: #f8f9fa;
-            padding: 15px;
-            margin: 10px 0;
-            border-left: 4px solid #007bff;
-            border-radius: 5px;
-        }}
-        .skills-list {{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin: 20px 0;
-        }}
-        .skill-item {{
-            background: #e3f2fd;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-        }}
-        .concerns {{
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-        }}
-        .recommendations {{
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
+    def _get_html_styles(self) -> str:
+        """Returns the CSS styles for the HTML report."""
+        return """
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f5f5f5;
+                direction: rtl;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            }
+            .header {
+                text-align: center;
+                border-bottom: 3px solid #4CAF50;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+            }
+            .metric {
+                background: #f8f9fa;
+                padding: 15px;
+                margin: 10px 0;
+                border-left: 4px solid #007bff;
+                border-radius: 5px;
+            }
+            .skills-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 10px;
+                margin: 20px 0;
+            }
+            .skill-item {
+                background: #e3f2fd;
+                padding: 10px;
+                border-radius: 5px;
+                text-align: center;
+            }
+            .concerns {
+                background: #fff3cd;
+                border: 1px solid #ffeaa7;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+            }
+            .recommendations {
+                background: #d1ecf1;
+                border: 1px solid #bee5eb;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+            }
+        </style>
+        """
+
+    def _get_html_header(self, progress: ChildProgress) -> str:
+        """Returns the header section of the HTML report."""
+        return f"""
         <div class="header">
             <h1>🧸 تقرير تقدم الطفل</h1>
             <h2>{progress.child_name}</h2>
             <p>العمر: {progress.age} سنوات | الفترة: {progress.period_start.strftime('%Y-%m-%d')} - {progress.period_end.strftime('%Y-%m-%d')}</p>
         </div>
+        """
 
+    def _get_html_metrics(self, progress: ChildProgress) -> str:
+        """Returns the metrics section of the HTML report."""
+        return f"""
         <div class="metric">
             <strong>📊 إجمالي التفاعلات:</strong> {progress.total_interactions}
         </div>
-
         <div class="metric">
             <strong>📈 متوسط التفاعلات اليومية:</strong> {progress.avg_daily_interactions:.1f}
         </div>
-
         <div class="metric">
             <strong>😊 المشاعر المهيمنة:</strong> {progress.dominant_emotion}
         </div>
-
         <div class="metric">
             <strong>⏱️ مدة التركيز:</strong> {progress.attention_span:.1f} دقيقة
         </div>
-
         <div class="metric">
             <strong>📚 نمو المفردات:</strong> {progress.vocabulary_growth} كلمة جديدة
         </div>
+        """
 
+    def _get_html_skills(self, progress: ChildProgress) -> str:
+        """Returns the skills section of the HTML report."""
+        skills_html = """
         <h3>🎯 المهارات المُمارسة</h3>
         <div class="skills-list">
         """
-
         for skill, count in progress.skills_practiced.items():
-            template += f"""
+            skills_html += f"""
             <div class="skill-item">
                 <strong>{skill}</strong><br>
                 {count} مرة
             </div>
             """
+        skills_html += "</div>"
+        return skills_html
 
-        template += "</div>"
+    def _get_html_concerns(self, progress: ChildProgress) -> str:
+        """Returns the concerns section of the HTML report."""
+        if not progress.concerning_patterns:
+            return ""
 
-        if progress.concerning_patterns:
-            template += """
-            <div class="concerns">
-                <h3>⚠️ نقاط تحتاج انتباه</h3>
-                <ul>
-            """
-            for concern in progress.concerning_patterns:
-                template += f"<li>{concern}</li>"
-            template += "</ul></div>"
+        concerns_html = """
+        <div class="concerns">
+            <h3>⚠️ نقاط تحتاج انتباه</h3>
+            <ul>
+        """
+        for concern in progress.concerning_patterns:
+            concerns_html += f"<li>{concern}</li>"
+        concerns_html += "</ul></div>"
+        return concerns_html
 
-        if progress.recommended_activities:
-            template += """
-            <div class="recommendations">
-                <h3>💡 الأنشطة المُوصى بها</h3>
-                <ul>
-            """
-            for activity in progress.recommended_activities:
-                template += f"<li>{activity}</li>"
-            template += "</ul></div>"
+    def _get_html_recommendations(self, progress: ChildProgress) -> str:
+        """Returns the recommendations section of the HTML report."""
+        if not progress.recommended_activities:
+            return ""
 
-        template += f"""
+        recommendations_html = """
+        <div class="recommendations">
+            <h3>💡 الأنشطة المُوصى بها</h3>
+            <ul>
+        """
+        for activity in progress.recommended_activities:
+            recommendations_html += f"<li>{activity}</li>"
+        recommendations_html += "</ul></div>"
+        return recommendations_html
+
+    def _get_html_footer(self) -> str:
+        """Returns the footer section of the HTML report."""
+        return f"""
         <div style="text-align: center; margin-top: 30px; color: #666;">
             <p>تم إنشاء التقرير في: {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
         </div>
-    </div>
-</body>
-</html>
         """
 
-        return template
+    def _create_html_template(
+        self, progress: ChildProgress, format: ReportFormat
+    ) -> str:
+        """إنشاء قالب HTML"""
+
+        html_parts = [
+            "<!DOCTYPE html>",
+            '<html lang="ar" dir="rtl">',
+            "<head>",
+            '<meta charset="UTF-8">',
+            '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
+            f"<title>تقرير تقدم {progress.child_name}</title>",
+            self._get_html_styles(),
+            "</head>",
+            "<body>",
+            '<div class="container">',
+            self._get_html_header(progress),
+            self._get_html_metrics(progress),
+            self._get_html_skills(progress),
+            self._get_html_concerns(progress),
+            self._get_html_recommendations(progress),
+            self._get_html_footer(),
+            "</div>",
+            "</body>",
+            "</html>"
+        ]
+
+        return "\n".join(html_parts)
 
     def get_available_formats(self) -> list:
         """الحصول على التنسيقات المتاحة"""

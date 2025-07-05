@@ -6,7 +6,7 @@ Domain service for child analytics and engagement insights business logic.
 
 import logging
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from src.domain.entities.child import Child
 from src.domain.child.models.child_analytics import (
@@ -218,6 +218,48 @@ class ChildAnalyticsDomainService:
 
         return at_risk_children
 
+    def _get_time_based_recommendations(self, metrics: InteractionMetrics) -> List[str]:
+        """Generates time-based engagement recommendations."""
+        recommendations = []
+        if metrics.needs_engagement_reminder():
+            recommendations.append(
+                "Send gentle reminder to engage with AI assistant")
+        if metrics.is_under_utilization_threshold():
+            recommendations.append(
+                "Suggest shorter, more frequent interaction sessions")
+        elif metrics.is_over_utilization_threshold():
+            recommendations.append(
+                "Consider extending daily interaction time limits")
+        return recommendations
+
+    def _get_age_based_recommendations(self, age: Optional[int]) -> List[str]:
+        """Generates age-based engagement recommendations."""
+        if age is None:
+            return []
+        if age < 6:
+            return ["Focus on play-based learning activities"]
+        elif age > 12:
+            return ["Introduce more complex topics and challenges"]
+        return []
+
+    def _get_interest_based_recommendations(self, interests: Optional[List[str]]) -> List[str]:
+        """Generates interest-based engagement recommendations."""
+        if interests and len(interests) < 3:
+            return ["Help child discover new interests and hobbies"]
+        return []
+
+    def _get_special_needs_recommendations(self, special_needs: Optional[List[str]]) -> List[str]:
+        """Generates special needs-based engagement recommendations."""
+        if special_needs:
+            return ["Ensure interactions are adapted for special needs"]
+        return []
+
+    def _get_language_based_recommendations(self, language_preference: Optional[str]) -> List[str]:
+        """Generates language-based engagement recommendations."""
+        if language_preference and language_preference != "en":
+            return [f"Provide more {language_preference} language content"]
+        return []
+
     def generate_engagement_recommendations(
         self, child: Child, metrics: InteractionMetrics
     ) -> List[str]:
@@ -232,43 +274,14 @@ class ChildAnalyticsDomainService:
             List of personalized recommendations
         """
         recommendations = []
-
-        # Time-based recommendations
-        if metrics.needs_engagement_reminder():
-            recommendations.append(
-                "Send gentle reminder to engage with AI assistant")
-
-        if metrics.is_under_utilization_threshold():
-            recommendations.append(
-                "Suggest shorter, more frequent interaction sessions"
-            )
-        elif metrics.is_over_utilization_threshold():
-            recommendations.append(
-                "Consider extending daily interaction time limits")
-
-        # Age-based recommendations
-        if child.age and child.age < 6:
-            recommendations.append("Focus on play-based learning activities")
-        elif child.age and child.age > 12:
-            recommendations.append(
-                "Introduce more complex topics and challenges")
-
-        # Interest-based recommendations
-        if child.interests and len(child.interests) < 3:
-            recommendations.append(
-                "Help child discover new interests and hobbies")
-
-        # Special needs considerations
-        if child.special_needs and child.special_needs != []:
-            recommendations.append(
-                "Ensure interactions are adapted for special needs")
-
-        # Language-based recommendations
-        if child.language_preference and child.language_preference != "en":
-            recommendations.append(
-                f"Provide more {child.language_preference} language content"
-            )
-
+        recommendations.extend(self._get_time_based_recommendations(metrics))
+        recommendations.extend(self._get_age_based_recommendations(child.age))
+        recommendations.extend(
+            self._get_interest_based_recommendations(child.interests))
+        recommendations.extend(
+            self._get_special_needs_recommendations(child.special_needs))
+        recommendations.extend(
+            self._get_language_based_recommendations(child.language_preference))
         return recommendations
 
     def calculate_learning_progress_score(self, child: Child) -> float:
@@ -299,7 +312,8 @@ class ChildAnalyticsDomainService:
             days_since_creation = (
                 (datetime.now() - child.created_at).days if child.created_at else 1)
             consistency = min(
-                child.total_interaction_time / (days_since_creation * 1800), 1.0
+                child.total_interaction_time /
+                (days_since_creation * 1800), 1.0
             )  # 30 min/day ideal
             return consistency
         return 0.0

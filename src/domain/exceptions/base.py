@@ -73,6 +73,18 @@ class ErrorContext:
         }
 
 
+@dataclass
+class ExceptionConfig:
+    """Configuration for AITeddyBearException."""
+    severity: ErrorSeverity = ErrorSeverity.MEDIUM
+    category: ErrorCategory = ErrorCategory.BUSINESS_LOGIC
+    context: Optional[ErrorContext] = None
+    recoverable: bool = True
+    retry_after: Optional[int] = None
+    suggested_actions: Optional[List[str]] = None
+    internal_message: Optional[str] = None
+
+
 class AITeddyBearException(Exception):
     """Base exception لكل exceptions المشروع"""
 
@@ -80,23 +92,18 @@ class AITeddyBearException(Exception):
         self,
         message: str,
         error_code: str,
-        severity: ErrorSeverity = ErrorSeverity.MEDIUM,
-        category: ErrorCategory = ErrorCategory.BUSINESS_LOGIC,
-        context: Optional[ErrorContext] = None,
-        recoverable: bool = True,
-        retry_after: Optional[int] = None,
-        suggested_actions: Optional[List[str]] = None,
-        internal_message: Optional[str] = None,
+        config: Optional[ExceptionConfig] = None,
     ):
+        config = config or ExceptionConfig()
         super().__init__(message)
         self.error_code = error_code
-        self.severity = severity
-        self.category = category
-        self.context = context or ErrorContext()
-        self.recoverable = recoverable
-        self.retry_after = retry_after
-        self.suggested_actions = suggested_actions or []
-        self.internal_message = internal_message or message
+        self.severity = config.severity
+        self.category = config.category
+        self.context = config.context or ErrorContext()
+        self.recoverable = config.recoverable
+        self.retry_after = config.retry_after
+        self.suggested_actions = config.suggested_actions or []
+        self.internal_message = config.internal_message or message
         self.timestamp = datetime.utcnow()
 
     def to_dict(self) -> Dict[str, Any]:

@@ -82,6 +82,30 @@ class AudioPlaybackService:
             self.tts_available = False
             self.logger.warning("Using mock TTS system")
 
+    def _handle_playback(
+        self,
+        audio_data: Optional[np.ndarray],
+        filename: Optional[str],
+        volume: float,
+        options: PlaybackOptions,
+        format_hint: Optional[AudioFormatType] = None,
+    ) -> bool:
+        """Handles the actual playback logic."""
+        if filename:
+            return self._play_audio_file(
+                filename,
+                volume,
+                options.loop,
+                options.fade_in,
+                options.fade_out,
+                format_hint,
+            )
+        elif audio_data is not None:
+            return self._play_audio_array(
+                audio_data, volume, options.loop, options.fade_in, options.fade_out
+            )
+        return False
+
     def play_audio(
         self,
         audio_data: Optional[np.ndarray] = None,
@@ -97,6 +121,10 @@ class AudioPlaybackService:
             self.logger.warning("Playback already in progress")
             return False
 
+        if audio_data is None and filename is None:
+            self.logger.error("Either audio_data or filename must be provided")
+            return False
+
         try:
             volume = (
                 options.volume
@@ -104,26 +132,11 @@ class AudioPlaybackService:
                 else self.config.volume_level
             )
 
-            if audio_data is None and filename is None:
-                self.logger.error(
-                    "Either audio_data or filename must be provided")
-                return False
-
             self._start_playback(session)
 
-            success = False
-            if filename:
-                success = self._play_audio_file(
-                    filename,
-                    volume,
-                    options.loop,
-                    options.fade_in,
-                    options.fade_out,
-                    format_hint,
-                )
-            elif audio_data is not None:
-                success = self._play_audio_array(
-                    audio_data, volume, options.loop, options.fade_in, options.fade_out)
+            success = self._handle_playback(
+                audio_data, filename, volume, options, format_hint
+            )
 
             if success:
                 self.metrics.increment_playbacks()

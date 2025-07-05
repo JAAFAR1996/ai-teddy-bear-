@@ -53,7 +53,8 @@ class RuleEngine:
                 id="bullying_1",
                 name="Bullying Detection",
                 description="Detects bullying language",
-                keywords=["stupid", "dumb", "loser", "hate you", "nobody likes"],
+                keywords=["stupid", "dumb", "loser",
+                          "hate you", "nobody likes"],
                 category=ContentCategory.BULLYING,
                 severity=ModerationSeverity.MEDIUM,
             ),
@@ -61,7 +62,8 @@ class RuleEngine:
                 id="drugs_1",
                 name="Drug References",
                 description="Detects drug-related content",
-                keywords=["drugs", "cocaine", "marijuana", "pills", "high", "stoned"],
+                keywords=["drugs", "cocaine", "marijuana",
+                          "pills", "high", "stoned"],
                 category=ContentCategory.DRUGS,
                 severity=ModerationSeverity.HIGH,
             ),
@@ -78,7 +80,8 @@ class RuleEngine:
                 id="self_harm_1",
                 name="Self Harm Detection",
                 description="Detects self-harm content",
-                keywords=["suicide", "cut myself", "kill myself", "end my life"],
+                keywords=["suicide", "cut myself",
+                          "kill myself", "end my life"],
                 category=ContentCategory.SELF_HARM,
                 severity=ModerationSeverity.CRITICAL,
             ),
@@ -166,39 +169,49 @@ class RuleEngine:
         return [rule for rule in self.rules.values() if rule.severity ==
                 severity]
 
+    def _is_rule_applicable(self, rule: ModerationRule, age: int, language: str) -> bool:
+        """Check if a rule is applicable based on enabled status, age, and language."""
+        if not rule.enabled:
+            return False
+        if not (rule.age_range[0] <= age <= rule.age_range[1]):
+            return False
+        if language not in rule.languages:
+            return False
+        return True
+
+    def _calculate_pattern_confidence(self, rule: ModerationRule, text: str) -> float:
+        """Calculate confidence based on regex pattern matching."""
+        if rule.pattern and rule.is_regex and rule.id in self.compiled_patterns:
+            if self.compiled_patterns[rule.id].search(text):
+                return 0.9
+        return 0.0
+
+    def _calculate_keyword_confidence(self, rule: ModerationRule, text: str) -> float:
+        """Calculate confidence based on keyword matching."""
+        if rule.keywords:
+            text_lower = text.lower()
+            matches = sum(
+                1 for keyword in rule.keywords if keyword.lower() in text_lower)
+            if matches > 0:
+                return min(matches * 0.3, 0.9)
+        return 0.0
+
+    def _calculate_confidence(self, rule: ModerationRule, text: str) -> float:
+        """Calculate the overall confidence for a rule."""
+        pattern_confidence = self._calculate_pattern_confidence(rule, text)
+        keyword_confidence = self._calculate_keyword_confidence(rule, text)
+        return max(pattern_confidence, keyword_confidence)
+
     async def evaluate(
         self, text: str, age: int = 10, language: str = "en"
     ) -> List[Tuple[ModerationRule, float]]:
         """Evaluate text against all rules"""
         matched_rules = []
-
-        for rule_id, rule in self.rules.items():
-            if not rule.enabled:
+        for rule in self.rules.values():
+            if not self._is_rule_applicable(rule, age, language):
                 continue
 
-            # Check age range
-            if not (rule.age_range[0] <= age <= rule.age_range[1]):
-                continue
-
-            # Check language
-            if language not in rule.languages:
-                continue
-
-            confidence = 0.0
-
-            # Check regex pattern
-            if rule.pattern and rule.is_regex and rule_id in self.compiled_patterns:
-                if self.compiled_patterns[rule_id].search(text):
-                    confidence = 0.9
-
-            # Check keywords
-            if rule.keywords:
-                text_lower = text.lower()
-                matches = sum(
-                    1 for keyword in rule.keywords if keyword.lower() in text_lower)
-                if matches > 0:
-                    confidence = max(confidence, min(matches * 0.3, 0.9))
-
+            confidence = self._calculate_confidence(rule, text)
             if confidence > 0:
                 matched_rules.append((rule, confidence))
 

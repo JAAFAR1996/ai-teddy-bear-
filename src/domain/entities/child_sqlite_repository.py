@@ -205,6 +205,21 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
             self.logger.error(f"Error deleting child {child_id}: {e}")
             raise
 
+    def _add_sorting_to_query(self, sql: str, options: QueryOptions) -> str:
+        """Adds sorting clause to the SQL query if specified in options."""
+        if options.sort_by:
+            order = "DESC" if options.sort_order == SortOrder.DESC else "ASC"
+            sql += f" ORDER BY {options.sort_by} {order}"
+        return sql
+
+    def _add_pagination_to_query(self, sql: str, options: QueryOptions) -> str:
+        """Adds pagination clauses (LIMIT/OFFSET) to the SQL query."""
+        if options.limit is not None:
+            sql += f" LIMIT {options.limit}"
+        if options.offset is not None:
+            sql += f" OFFSET {options.offset}"
+        return sql
+
     async def list(
             self,
             options: Optional[QueryOptions] = None) -> List[Child]:
@@ -212,24 +227,12 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
         try:
             cursor = self._connection.cursor()
             sql = f"SELECT * FROM {self.table_name} WHERE is_active = 1"
-            params = []
 
-            if options and hasattr(options, "sort_by") and options.sort_by:
-                order = (
-                    "DESC"
-                    if hasattr(options, "sort_order")
-                    and options.sort_order == SortOrder.DESC
-                    else "ASC"
-                )
-                sql += f" ORDER BY {options.sort_by} {order}"
+            if options:
+                sql = self._add_sorting_to_query(sql, options)
+                sql = self._add_pagination_to_query(sql, options)
 
-            if options and hasattr(options, "limit") and options.limit:
-                sql += f" LIMIT {options.limit}"
-
-            if options and hasattr(options, "offset") and options.offset:
-                sql += f" OFFSET {options.offset}"
-
-            cursor.execute(sql, params)
+            cursor.execute(sql)
             rows = cursor.fetchall()
 
             return [self._deserialize_child_from_db(dict(row)) for row in rows]
@@ -366,20 +369,13 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
 
         return data
 
-    def _deserialize_child_from_db(self, data: Dict[str, Any]) -> Child:
-        """Deserialize child data from database"""
+    def _deserialize_json_fields(self, data: Dict[str, Any]):
+        """Deserializes all JSON-encoded fields in the data dictionary."""
         json_fields = [
-            "interests",
-            "personality_traits",
-            "learning_preferences",
-            "allowed_topics",
-            "restricted_topics",
-            "parental_controls",
-            "emergency_contacts",
-            "privacy_settings",
-            "custom_settings",
+            "interests", "personality_traits", "learning_preferences",
+            "allowed_topics", "restricted_topics", "parental_controls",
+            "emergency_contacts", "privacy_settings", "custom_settings",
         ]
-
         for field in json_fields:
             if field in data and data[field]:
                 try:
@@ -389,7 +385,8 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
             else:
                 data[field] = [] if field.endswith("s") else {}
 
-        # Parse datetime fields
+    def _deserialize_datetime_fields(self, data: Dict[str, Any]):
+        """Deserializes all datetime fields in the data dictionary."""
         datetime_fields = ["created_at", "updated_at", "last_interaction"]
         for field in datetime_fields:
             if field in data and data[field]:
@@ -398,17 +395,24 @@ class ChildSQLiteRepository(BaseSQLiteRepository[Child, int], ChildRepository):
                 except (ValueError, TypeError):
                     data[field] = None
 
-        # Parse date fields
+    def _deserialize_date_fields(self, data: Dict[str, Any]):
+        """Deserializes all date fields in the data dictionary."""
         if "date_of_birth" in data and data["date_of_birth"]:
             try:
                 data["date_of_birth"] = datetime.fromisoformat(
-                    data["date_of_birth"]
-                ).date()
+                    data["date_of_birth"]).date()
             except (ValueError, TypeError):
                 data["date_of_birth"] = None
 
-        # Convert boolean fields
+    def _deserialize_boolean_fields(self, data: Dict[str, Any]):
+        """Deserializes all boolean fields in the data dictionary."""
         if "is_active" in data:
             data["is_active"] = bool(data["is_active"])
 
+    def _deserialize_child_from_db(self, data: Dict[str, Any]) -> Child:
+        """Deserialize child data from database by delegating to specialized helpers."""
+        self._deserialize_json_fields(data)
+        self._deserialize_datetime_fields(data)
+        self._deserialize_date_fields(data)
+        self._deserialize_boolean_fields(data)
         return Child(**data)

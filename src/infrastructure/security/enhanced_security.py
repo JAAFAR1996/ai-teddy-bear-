@@ -27,6 +27,17 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from fastapi import HTTPException, Request, status
 
+from .password_validators import (
+    LengthValidator,
+    UppercaseValidator,
+    LowercaseValidator,
+    DigitValidator,
+    SymbolValidator,
+    ForbiddenPatternValidator,
+    EntropyValidator,
+    UserInfoValidator,
+)
+
 logger = structlog.get_logger()
 
 
@@ -237,7 +248,7 @@ class AdvancedEncryption:
 
 
 class PasswordSecurity:
-    """Advanced password security with enterprise policies"""
+    """Advanced password security management"""
 
     def __init__(self):
         self.min_length = 12
@@ -246,18 +257,28 @@ class PasswordSecurity:
         self.require_lowercase = True
         self.require_digits = True
         self.require_symbols = True
-        self.min_entropy = 50  # bits
-        self.password_history_size = 12
-        self.max_age_days = 90
+        self.min_entropy = 60
+        self.forbidden_patterns = ["password", "123456", "qwerty", "admin"]
 
-        # Common password patterns to reject
-        self.forbidden_patterns = [
-            r"(.)\1{3,}",  # Repeated characters
-            r"(012|123|234|345|456|567|678|789|890)",  # Sequential numbers
-            # Sequential letters
-            r"(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)",
-            r"(qwerty|asdfgh|zxcvbn)",  # Keyboard patterns
+        self.validators = self._initialize_validators()
+
+    def _initialize_validators(self):
+        """Initializes the list of password validators."""
+        validators = [
+            LengthValidator(self.min_length, self.max_length),
+            ForbiddenPatternValidator(self.forbidden_patterns),
+            EntropyValidator(self.min_entropy),
+            UserInfoValidator(),
         ]
+        if self.require_uppercase:
+            validators.append(UppercaseValidator())
+        if self.require_lowercase:
+            validators.append(LowercaseValidator())
+        if self.require_digits:
+            validators.append(DigitValidator())
+        if self.require_symbols:
+            validators.append(SymbolValidator())
+        return validators
 
     def hash_password(self, password: str) -> str:
         """Hash password using bcrypt with high cost factor"""
@@ -269,75 +290,14 @@ class PasswordSecurity:
         """Verify password against hash"""
         return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
-    def _get_password_validators(
-        self, user_info: Optional[Dict[str, str]] = None
-    ) -> List[Callable]:
-        """Returns a list of password validation functions."""
-        validators = [
-            lambda p: (
-                f"Password must be at least {self.min_length} characters long"
-                if len(p) < self.min_length
-                else None
-            ),
-            lambda p: (
-                f"Password must be no more than {self.max_length} characters long"
-                if len(p) > self.max_length
-                else None
-            ),
-            lambda p: (
-                "Password must contain at least one uppercase letter"
-                if self.require_uppercase and not re.search(r"[A-Z]", p)
-                else None
-            ),
-            lambda p: (
-                "Password must contain at least one lowercase letter"
-                if self.require_lowercase and not re.search(r"[a-z]", p)
-                else None
-            ),
-            lambda p: (
-                "Password must contain at least one digit"
-                if self.require_digits and not re.search(r"\d", p)
-                else None
-            ),
-            lambda p: (
-                "Password must contain at least one special character"
-                if self.require_symbols and not re.search(r'[!@#$%^&*(),.?":{}|<>]', p)
-                else None
-            ),
-            lambda p: (
-                "Password contains forbidden patterns"
-                if any(
-                    re.search(pattern, p.lower()) for pattern in self.forbidden_patterns
-                )
-                else None
-            ),
-            lambda p: (
-                f"Password is too predictable (entropy: {self._calculate_entropy(p):.1f} bits, minimum: {self.min_entropy})"
-                if self._calculate_entropy(p) < self.min_entropy
-                else None
-            ),
-        ]
-        if user_info:
-            for key, value in user_info.items():
-                if value and len(value) > 3:
-                    validators.append(
-                        lambda p, k=key, v=value: (
-                            f"Password cannot contain {k}"
-                            if v.lower() in p.lower()
-                            else None
-                        )
-                    )
-        return validators
-
     def validate_password(
         self, password: str, user_info: Optional[Dict[str, str]] = None
     ) -> Tuple[bool, List[str]]:
-        """Comprehensive password validation"""
-        validators = self._get_password_validators(user_info)
+        """Comprehensive password validation using the validator classes."""
         errors = [
             error
-            for validator in validators
-            if (error := validator(password)) is not None
+            for validator in self.validators
+            if (error := validator.validate(password, user_info)) is not None
         ]
         return not errors, errors
 

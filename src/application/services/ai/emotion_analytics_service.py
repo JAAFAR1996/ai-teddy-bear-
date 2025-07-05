@@ -285,19 +285,45 @@ class EmotionAnalyticsService:
         stability = positive_emotions - (negative_emotions * 0.5)
         return max(0, min(1, stability))
 
+    def _calculate_trend(self, values: List[float]) -> Dict[str, any]:
+        """Calculates trend direction, change, and significance."""
+        if len(values) < 2:
+            return {"direction": "stable", "change": 0, "significance": "low"}
+
+        recent_avg = sum(values[-3:]) / min(3, len(values))
+        earlier_avg = (
+            sum(values[:-3]) / max(1, len(values) - 3)
+            if len(values) > 3
+            else recent_avg
+        )
+
+        change = (recent_avg - earlier_avg) / max(earlier_avg, 0.01)
+
+        if change > 0.1:
+            direction = "increasing"
+        elif change < -0.1:
+            direction = "decreasing"
+        else:
+            direction = "stable"
+
+        significance = (
+            "high"
+            if abs(change) > 0.3
+            else "medium" if abs(change) > 0.1 else "low"
+        )
+
+        return {"direction": direction, "change": change, "significance": significance}
+
     def _generate_emotion_trends(
         self, emotions: List[EmotionResult], days: int
     ) -> List[EmotionTrend]:
         """Generate emotion trends over time."""
         trends = []
-
-        # Group emotions by day
         daily_emotions = defaultdict(list)
         for emotion in emotions:
             day = datetime.fromisoformat(emotion.timestamp).date()
             daily_emotions[day].append(emotion.primary_emotion)
 
-        # Calculate trends for each emotion type
         emotion_types = ["happy", "sad", "angry", "scared", "calm", "curious"]
 
         for emotion_type in emotion_types:
@@ -310,41 +336,18 @@ class EmotionAnalyticsService:
                 total_day = len(daily_emotions[day])
                 values.append(day_count / total_day if total_day > 0 else 0)
 
-            if len(values) >= 2:
-                # Calculate trend direction
-                recent_avg = sum(values[-3:]) / min(3, len(values))
-                earlier_avg = (
-                    sum(values[:-3]) / max(1, len(values) - 3)
-                    if len(values) > 3
-                    else recent_avg
-                )
-
-                change = (recent_avg - earlier_avg) / max(earlier_avg, 0.01)
-
-                if change > 0.1:
-                    direction = "increasing"
-                elif change < -0.1:
-                    direction = "decreasing"
-                else:
-                    direction = "stable"
-
-                significance = (
-                    "high"
-                    if abs(change) > 0.3
-                    else "medium" if abs(change) > 0.1 else "low"
-                )
-
+            trend_data = self._calculate_trend(values)
+            if trend_data:
                 trends.append(
                     EmotionTrend(
                         emotion=emotion_type,
                         dates=dates,
                         values=values,
-                        direction=direction,
-                        change_percentage=change * 100,
-                        significance=significance,
+                        direction=trend_data["direction"],
+                        change_percentage=trend_data["change"] * 100,
+                        significance=trend_data["significance"],
                     )
                 )
-
         return trends
 
     def _calculate_risk_score(

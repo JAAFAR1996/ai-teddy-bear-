@@ -73,6 +73,20 @@ class SecurityEvent:
             self.event_id = hashlib.sha256(data.encode()).hexdigest()[:16]
 
 
+@dataclass
+class EventCreationParams:
+    """Parameters for creating a security event."""
+    user_id: Optional[str] = None
+    username: Optional[str] = None
+    device_id: Optional[str] = None
+    ip_address: Optional[str] = None
+    resource: Optional[str] = None
+    action: Optional[str] = None
+    result: str = "success"
+    details: Optional[Dict[str, Any]] = None
+    sensitive_data: bool = False
+
+
 class SecurityAuditLogger:
     """Security audit logging system"""
 
@@ -124,30 +138,22 @@ class SecurityAuditLogger:
     async def log_event(
         self,
         event_type: SecurityEventType,
-        user_id: Optional[str] = None,
-        username: Optional[str] = None,
-        device_id: Optional[str] = None,
-        ip_address: Optional[str] = None,
-        resource: Optional[str] = None,
-        action: Optional[str] = None,
-        result: str = "success",
-        details: Optional[Dict[str, Any]] = None,
-        sensitive_data: bool = False,
+        params: EventCreationParams,
     ) -> str:
         """Log a security event"""
         event = SecurityEvent(
             event_id="",
             event_type=event_type,
             timestamp=datetime.utcnow(),
-            user_id=user_id,
-            username=username,
-            device_id=device_id,
-            ip_address=ip_address,
-            resource=resource,
-            action=action,
-            result=result,
-            details=details or {},
-            sensitive_data=sensitive_data,
+            user_id=params.user_id,
+            username=params.username,
+            device_id=params.device_id,
+            ip_address=params.ip_address,
+            resource=params.resource,
+            action=params.action,
+            result=params.result,
+            details=params.details or {},
+            sensitive_data=params.sensitive_data,
         )
         await self._log_event_object(event)
         return event.event_id
@@ -363,14 +369,16 @@ async def log_child_interaction(
 ) -> str:
     """Log child interaction"""
     audit_logger = get_audit_logger()
-
-    return await audit_logger.log_event(
-        event_type=SecurityEventType.CHILD_INTERACTION,
+    params = EventCreationParams(
         user_id=user_id,
         device_id=device_id,
         action=interaction_type,
         details=kwargs,
         sensitive_data=True,
+    )
+    return await audit_logger.log_event(
+        event_type=SecurityEventType.CHILD_INTERACTION,
+        params=params,
     )
 
 
@@ -379,13 +387,15 @@ async def log_audio_recording(
 ) -> str:
     """Log audio recording"""
     audit_logger = get_audit_logger()
-
-    return await audit_logger.log_event(
-        event_type=SecurityEventType.AUDIO_RECORDING,
+    params = EventCreationParams(
         user_id=user_id,
         device_id=device_id,
         details={"duration_seconds": duration, **kwargs},
         sensitive_data=True,
+    )
+    return await audit_logger.log_event(
+        event_type=SecurityEventType.AUDIO_RECORDING,
+        params=params,
     )
 
 
@@ -394,18 +404,19 @@ async def log_login_attempt(
 ) -> str:
     """Log login attempt"""
     audit_logger = get_audit_logger()
-
     event_type = (
         SecurityEventType.LOGIN_SUCCESS
         if result == "success"
         else SecurityEventType.LOGIN_FAILURE
     )
-
-    return await audit_logger.log_event(
-        event_type=event_type,
+    params = EventCreationParams(
         user_id=user_id,
         username=username,
         ip_address=ip_address,
         result=result,
         details=kwargs,
+    )
+    return await audit_logger.log_event(
+        event_type=event_type,
+        params=params,
     )

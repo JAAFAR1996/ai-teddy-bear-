@@ -678,26 +678,24 @@ class PerformanceMonitor:
         self, deployment_id: str, model_ids: List[str]
     ) -> Dict[str, int]:
         """Aggregate monitoring statistics for a given deployment."""
-        total_metrics = sum(
-            1
+        relevant_metrics = [
+            s
             for s in self.metric_history
             if any(mid in s.model_id for mid in model_ids)
-        )
-        alerts_triggered = sum(
-            1 for a in self.active_alerts if deployment_id in a.alert_id
-        )
-        anomalies_detected = sum(
-            len(s.anomalies_detected)
-            for s in self.metric_history
-            if any(mid in s.model_id for mid in model_ids)
-        )
-        auto_resolutions = sum(
-            1
-            for a in self.active_alerts
-            if deployment_id in a.alert_id and a.auto_resolved
-        )
+        ]
+
+        relevant_alerts = [
+            a for a in self.active_alerts if deployment_id in a.alert_id
+        ]
+
+        total_metrics_collected = len(relevant_metrics)
+        alerts_triggered = len(relevant_alerts)
+        anomalies_detected = sum(len(s.anomalies_detected)
+                                 for s in relevant_metrics)
+        auto_resolutions = sum(1 for a in relevant_alerts if a.auto_resolved)
+
         return {
-            "total_metrics_collected": total_metrics,
+            "total_metrics_collected": total_metrics_collected,
             "alerts_triggered": alerts_triggered,
             "anomalies_detected": anomalies_detected,
             "auto_resolutions": auto_resolutions,

@@ -126,7 +126,8 @@ class PerformanceMonitor:
                 "error_count": self.stats["error_count"],
                 "error_rate": error_rate,
                 "syntheses_per_minute": (
-                    self.stats["total_syntheses"] / (uptime / 60) if uptime > 0 else 0
+                    self.stats["total_syntheses"] /
+                    (uptime / 60) if uptime > 0 else 0
                 ),
                 "provider_metrics": provider_metrics,
                 "system_health": self._calculate_system_health(),
@@ -174,16 +175,31 @@ class PerformanceMonitor:
             logger.error(f"Failed to calculate system health: {e}")
             return {"score": 0.0, "status": "unknown", "error": str(e)}
 
+    def _get_provider_stats(self, provider_name: str) -> tuple:
+        """Gets the statistics for a given provider."""
+        usage_count = self.stats["provider_usage"].get(provider_name, 0)
+        error_count = self.stats["provider_errors"].get(provider_name, 0)
+        response_times = self.stats["provider_response_times"].get(
+            provider_name, []
+        )
+        return usage_count, error_count, response_times
+
+    def _determine_provider_status(self, error_rate: float, avg_response_time: float) -> str:
+        """Determines the provider status based on error rate and response time."""
+        if error_rate == 0 and avg_response_time < 5.0:
+            return "healthy"
+        if error_rate < 0.1 and avg_response_time < 10.0:
+            return "good"
+        if error_rate < 0.3 and avg_response_time < 30.0:
+            return "degraded"
+        return "unhealthy"
+
     def get_provider_health(self, provider: VoiceProvider) -> Dict[str, Any]:
         """Get health metrics for a specific provider"""
         try:
             provider_name = provider.value
-
-            usage_count = self.stats["provider_usage"].get(provider_name, 0)
-            error_count = self.stats["provider_errors"].get(provider_name, 0)
-            response_times = self.stats["provider_response_times"].get(
-                provider_name, []
-            )
+            usage_count, error_count, response_times = self._get_provider_stats(
+                provider_name)
 
             if usage_count == 0:
                 return {
@@ -196,17 +212,11 @@ class PerformanceMonitor:
             error_rate = error_count / usage_count
             avg_response_time = (
                 sum(response_times) /
-                len(response_times) if response_times else 0)
+                len(response_times) if response_times else 0
+            )
 
-            # Determine status
-            if error_rate == 0 and avg_response_time < 5.0:
-                status = "healthy"
-            elif error_rate < 0.1 and avg_response_time < 10.0:
-                status = "good"
-            elif error_rate < 0.3 and avg_response_time < 30.0:
-                status = "degraded"
-            else:
-                status = "unhealthy"
+            status = self._determine_provider_status(
+                error_rate, avg_response_time)
 
             return {
                 "status": status,

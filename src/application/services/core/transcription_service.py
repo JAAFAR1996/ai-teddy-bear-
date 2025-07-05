@@ -24,277 +24,22 @@ except ImportError:
 import librosa
 from openai import AsyncOpenAI
 
+from .transcription_models import (
+    AudioFormat,
+    ProcessingState,
+    TranscriptionConfig,
+)
+from .audio_processor import AudioProcessor
+from .streaming_audio_buffer import StreamingAudioBuffer
+from .child_speech_processor import ChildSpeechProcessor
+from .providers.base import BaseProvider
+from .providers.whisper_provider import WhisperProvider
+from .providers.openai_provider import OpenAIProvider
+from .performance_tracker import PerformanceTracker
+
 # Value objects
 
 logger = logging.getLogger(__name__)
-
-# ================== AUDIO PROCESSING ENUMS ==================
-
-
-class AudioFormat(Enum):
-    """تصنيف أنواع البيانات الصوتية المدعومة"""
-
-    FILE_PATH = "file_path"
-    BYTES_DATA = "bytes_data"
-    NUMPY_ARRAY = "numpy_array"
-    UNKNOWN = "unknown"
-
-
-class ProcessingState(Enum):
-    """حالات معالجة البيانات الصوتية"""
-
-    INITIAL = "initial"
-    CONVERTED = "converted"
-    FORMATTED = "formatted"
-    RESAMPLED = "resampled"
-    READY = "ready"
-
-
-# ================== AUDIO PROCESSOR ==================
-
-
-class AudioProcessor:
-    """
-    🎛️ معالج الصوت المحسن مع نمط State Machine
-    يدير تحويل البيانات الصوتية خلال مراحل معالجة محددة
-    """
-
-    def __init__(self, config: "TranscriptionConfig"):
-        self.config = config
-        self.state = ProcessingState.INITIAL
-
-    @lru_cache(maxsize=50)
-    def get_audio_format(
-        self, data_type: str, has_sample_rate: bool = False
-    ) -> AudioFormat:
-        """تحديد تنسيق البيانات الصوتية مع تخزين مؤقت للنتائج"""
-        if data_type == "str":
-            return AudioFormat.FILE_PATH
-        elif data_type == "bytes":
-            return AudioFormat.BYTES_DATA
-        elif data_type == "ndarray":
-            return AudioFormat.NUMPY_ARRAY
-        return AudioFormat.UNKNOWN
-
-    async def process_with_fallback(
-        self, audio_data: Union[np.ndarray, bytes, str]
-    ) -> np.ndarray:
-        """معالجة الصوت مع آليات احتياطية للأخطاء"""
-        try:
-            return await self._process_primary_method(audio_data)
-        except Exception as e:
-            logger.warning(
-                f"⚠️ Primary processing failed, trying fallback: {e}")
-            return await self._process_fallback_method(audio_data)
-
-    async def _process_primary_method(self, audio_data: Any) -> np.ndarray:
-        """الطريقة الأساسية للمعالجة (محسنة للأداء)"""
-        audio_format = self.get_audio_format(
-            type(audio_data).__name__, hasattr(audio_data, "sample_rate")
-        )
-
-        if audio_format == AudioFormat.FILE_PATH:
-            return await self._load_from_file_optimized(audio_data)
-        elif audio_format == AudioFormat.BYTES_DATA:
-            return self._convert_bytes_optimized(audio_data)
-        elif audio_format == AudioFormat.NUMPY_ARRAY:
-            return self._process_array_optimized(audio_data)
-        else:
-            raise ValueError(f"Unsupported audio format: {audio_format}")
-
-    async def _process_fallback_method(self, audio_data: Any) -> np.ndarray:
-        """طريقة احتياطية أساسية للمعالجة"""
-        if isinstance(audio_data, str):
-            # تحميل أساسي بدون تحسينات
-            audio, _ = librosa.load(audio_data, sr=None)
-            return librosa.resample(
-                audio, orig_sr=22050, target_sr=self.config.sample_rate
-            )
-        elif isinstance(audio_data, bytes):
-            # تحويل أساسي
-            return (
-                np.frombuffer(
-                    audio_data,
-                    dtype=np.int16).astype(
-                    np.float32) /
-                32768.0)
-        else:
-            # تحويل أساسي لـ numpy
-            return np.array(audio_data, dtype=np.float32)
-
-    async def _load_from_file_optimized(self, file_path: str) -> np.ndarray:
-        """تحميل محسن من الملف مع معالجة الأخطاء"""
-        try:
-            # استخدام librosa مع إعدادات محسنة
-            audio, sr = librosa.load(
-                file_path,
-                sr=self.config.sample_rate,
-                mono=True,  # تحويل مباشر إلى mono
-                dtype=np.float32,
-            )
-            return audio
-        except Exception as e:
-            logger.error(f"❌ Optimized file loading failed: {e}")
-            raise
-
-    def _convert_bytes_optimized(self, audio_bytes: bytes) -> np.ndarray:
-        """تحويل محسن من bytes"""
-        # تحويل محسن مع فحص الأخطاء
-        if len(audio_bytes) == 0:
-            raise ValueError("Empty audio bytes received")
-
-        try:
-            return (
-                np.frombuffer(
-                    audio_bytes,
-                    dtype=np.int16).astype(
-                    np.float32) /
-                32768.0)
-        except ValueError as e:
-            # محاولة تنسيقات أخرى
-            logger.warning(f"⚠️ Int16 conversion failed, trying float32: {e}")
-            return np.frombuffer(audio_bytes, dtype=np.float32)
-
-    def _process_array_optimized(self, audio_array: np.ndarray) -> np.ndarray:
-        """معالجة محسنة لـ numpy array"""
-        if audio_array.size == 0:
-            raise ValueError("Empty audio array received")
-
-        # تحويل إلى float32 إذا لم يكن كذلك
-        if audio_array.dtype != np.float32:
-            audio_array = audio_array.astype(np.float32)
-
-        # تحويل إلى mono بطريقة محسنة
-        if audio_array.ndim > 1:
-            if audio_array.shape[0] < audio_array.shape[1]:
-                # شكل (channels, samples)
-                audio_array = np.mean(audio_array, axis=0)
-            else:
-                # شكل (samples, channels)
-                audio_array = np.mean(audio_array, axis=1)
-
-        return audio_array
-
-
-# ================== CONFIGURATION ==================
-
-
-@dataclass
-class TranscriptionConfig:
-    """Configuration for transcription service"""
-
-    whisper_model: str = "base"  # tiny, base, small, medium, large
-    chunk_duration: float = 3.0  # seconds
-    overlap_duration: float = 0.5  # seconds
-    min_silence_duration: float = 1.0  # seconds
-    confidence_threshold: float = 0.7
-    sample_rate: int = 16000
-    use_gpu: bool = True
-    language: Optional[str] = None  # Auto-detect if None
-
-    @property
-    def device(self) -> str:
-        """Get optimal computing device for transcription"""
-        if self._should_use_cuda():
-            return "cuda"
-        elif self._should_use_mps():
-            return "mps"
-        return "cpu"
-
-    def _should_use_cuda(self) -> bool:
-        """تحديد ما إذا كان يجب استخدام CUDA GPU"""
-        return self.use_gpu and torch.cuda.is_available()
-
-    def _should_use_mps(self) -> bool:
-        """تحديد ما إذا كان يجب استخدام Apple Silicon MPS"""
-        has_mps_backend = hasattr(torch.backends, "mps")
-        mps_available = has_mps_backend and torch.backends.mps.is_available()
-        return self.use_gpu and mps_available
-
-
-# ================== AUDIO BUFFER ==================
-
-
-class StreamingAudioBuffer:
-    """Smart audio buffer for streaming transcription"""
-
-    def __init__(self, config: TranscriptionConfig):
-        self.config = config
-        self.buffer = np.array([], dtype=np.float32)
-        self.sample_rate = config.sample_rate
-        self.chunk_samples = int(config.chunk_duration * self.sample_rate)
-        self.overlap_samples = int(config.overlap_duration * self.sample_rate)
-        self.min_silence_samples = int(
-            config.min_silence_duration * self.sample_rate)
-
-        # State tracking
-        self.last_activity = time.time()
-        self.is_speech_detected = False
-
-    def add_chunk(self, audio_chunk: np.ndarray) -> None:
-        """Add audio chunk to buffer"""
-        # Ensure correct format
-        if audio_chunk.dtype != np.float32:
-            audio_chunk = audio_chunk.astype(np.float32)
-
-        # Normalize if needed
-        if np.max(np.abs(audio_chunk)) > 1.0:
-            audio_chunk = audio_chunk / np.max(np.abs(audio_chunk))
-
-        # Add to buffer
-        self.buffer = np.concatenate([self.buffer, audio_chunk])
-
-        # Update activity detection
-        if self._detect_activity(audio_chunk):
-            self.last_activity = time.time()
-            self.is_speech_detected = True
-
-    def _detect_activity(self, audio_chunk: np.ndarray) -> bool:
-        """Simple voice activity detection"""
-        # Calculate RMS energy
-        rms = np.sqrt(np.mean(audio_chunk**2))
-
-        # Dynamic threshold based on recent history
-        threshold = 0.01  # Base threshold
-        return rms > threshold
-
-    def get_ready_chunk(self) -> Optional[np.ndarray]:
-        """Get audio chunk ready for transcription"""
-        if len(self.buffer) < self.chunk_samples:
-            return None
-
-        # Check for silence gap
-        silence_duration = time.time() - self.last_activity
-
-        if (
-            self.is_speech_detected
-            and silence_duration >= self.config.min_silence_duration
-        ):
-            # Extract complete utterance
-            chunk = self.buffer.copy()
-            self.buffer = np.array([], dtype=np.float32)
-            self.is_speech_detected = False
-            return chunk
-
-        # Extract chunk with overlap
-        if len(self.buffer) >= self.chunk_samples:
-            chunk = self.buffer[: self.chunk_samples]
-            # Keep overlap for next chunk
-            self.buffer = self.buffer[self.chunk_samples -
-                                      self.overlap_samples:]
-            return chunk
-
-        return None
-
-    @property
-    def duration(self) -> float:
-        """Current buffer duration in seconds"""
-        return len(self.buffer) / self.sample_rate
-
-    def clear(self) -> None:
-        """Clear the buffer"""
-        self.buffer = np.array([], dtype=np.float32)
-        self.is_speech_detected = False
 
 
 # ================== TRANSCRIPTION SERVICE ==================
@@ -319,18 +64,13 @@ class ModernTranscriptionService:
         self.config = config or TranscriptionConfig()
         self.model = None
         self.openai_client = None
+        self.whisper_provider = None
+        self.openai_provider = None
 
         # Initialize audio processor for complex audio handling
         self.audio_processor = AudioProcessor(self.config)
-
-        # Performance tracking
-        self.stats = {
-            "total_transcriptions": 0,
-            "total_processing_time": 0.0,
-            "average_confidence": 0.0,
-            "error_count": 0,
-            "fallback_usage": 0,  # تتبع استخدام الطرق الاحتياطية
-        }
+        self.child_speech_processor = ChildSpeechProcessor()
+        self.performance_tracker = PerformanceTracker()
 
         logger.info(
             f"✅ Modern Transcription Service initialized (model: {self.config.whisper_model}, device: {self.config.device})"
@@ -351,10 +91,15 @@ class ModernTranscriptionService:
             # Initialize OpenAI client if API key provided
             if openai_api_key:
                 self.openai_client = AsyncOpenAI(api_key=openai_api_key)
+                self.openai_provider = OpenAIProvider(
+                    self.openai_client, self.config)
                 logger.info("✅ OpenAI client initialized for transcription")
 
             # Pre-load model for faster first transcription
             await self._ensure_model_loaded()
+            if self.model:
+                self.whisper_provider = WhisperProvider(
+                    self.model, self.config)
 
             logger.info("🚀 Transcription service fully initialized")
 
@@ -434,7 +179,7 @@ class ModernTranscriptionService:
 
         except Exception as e:
             logger.error(f"❌ Stream transcription error: {e}")
-            self.stats["error_count"] += 1
+            self.performance_tracker.increment_error_count()
 
     async def transcribe_audio(
         self,
@@ -477,17 +222,21 @@ class ModernTranscriptionService:
 
             # 🔊 تحسين الصوت للأطفال
             if child_mode:
-                audio_array = self._enhance_for_children(audio_array)
+                audio_array = self.child_speech_processor.enhance_for_children(
+                    audio_array)
 
             # اختيار مقدم الخدمة
-            if provider == "openai" and self.openai_client:
-                result = await self._transcribe_openai(audio_array, language)
+            if provider == "openai" and self.openai_provider:
+                result = await self.openai_provider.transcribe(audio_array, language)
+            elif self.whisper_provider:
+                result = await self.whisper_provider.transcribe(audio_array, language)
             else:
-                result = await self._transcribe_whisper(audio_array, language)
+                raise RuntimeError("No transcription provider is available.")
 
             # 👶 تحسين النتيجة للأطفال
             if child_mode:
-                result = self._post_process_child_speech(result)
+                result = self.child_speech_processor.post_process_child_speech(
+                    result)
 
             # حساب وقت المعالجة
             processing_time = time.time() - start_time
@@ -495,7 +244,7 @@ class ModernTranscriptionService:
             result["child_mode"] = child_mode
 
             # تحديث الإحصائيات
-            self._update_stats(result, processing_time)
+            self.performance_tracker.update_stats(result, processing_time)
 
             logger.debug(
                 f"🎯 {'👶 Child mode' if child_mode else 'Adult mode'} transcription in {processing_time:.2f}s: '{result['text'][:50]}...'"
@@ -504,7 +253,7 @@ class ModernTranscriptionService:
 
         except Exception as e:
             logger.error(f"❌ Transcription failed: {e}")
-            self.stats["error_count"] += 1
+            self.performance_tracker.increment_error_count()
 
             return {
                 "text": "",
@@ -518,177 +267,6 @@ class ModernTranscriptionService:
         finally:
             # استعادة الإعدادات الأصلية
             self.config.confidence_threshold = original_confidence_threshold
-
-    def _enhance_for_children(self, audio_array: np.ndarray) -> np.ndarray:
-        """
-        🎪 تحسين البيانات الصوتية للأطفال
-        Child-specific audio enhancements
-        """
-        # تعزيز الترددات العالية (أصوات الأطفال عادة أعلى)
-        audio_array = self._boost_high_frequencies(audio_array)
-
-        # تقليل الضوضاء الخلفية (اللعب، الحركة)
-        audio_array = self._reduce_background_noise(audio_array)
-
-        # تطبيع الصوت للأطفال الهادئين
-        audio_array = self._normalize_for_quiet_children(audio_array)
-
-        return audio_array
-
-    def _boost_high_frequencies(self, audio_array: np.ndarray) -> np.ndarray:
-        """تعزيز الترددات العالية لأصوات الأطفال"""
-        # تطبيق مرشح تمرير عالي بسيط
-        # هذا تبسيط - في الواقع نحتاج مرشح أكثر تعقيداً
-        if len(audio_array) > 2:
-            # تطبيق تنعيم بسيط للترددات العالية
-            enhanced = np.copy(audio_array)
-            enhanced[1:-1] = (0.25 * enhanced[:-2] + 0.5 *
-                              enhanced[1:-1] + 0.25 * enhanced[2:])
-            return enhanced
-        return audio_array
-
-    def _reduce_background_noise(self, audio_array: np.ndarray) -> np.ndarray:
-        """تقليل ضوضاء الخلفية الشائعة في بيئة الأطفال"""
-        # تطبيق حد أدنى للإشارة (noise gate)
-        noise_threshold = np.std(audio_array) * 0.1
-        audio_array = np.where(
-            np.abs(audio_array) < noise_threshold, 0, audio_array)
-        return audio_array
-
-    def _normalize_for_quiet_children(
-            self, audio_array: np.ndarray) -> np.ndarray:
-        """تطبيع الصوت للأطفال ذوي الأصوات المنخفضة"""
-        max_val = np.max(np.abs(audio_array))
-        if max_val > 0 and max_val < 0.3:  # أصوات منخفضة
-            # تعزيز الإشارة مع تجنب التشبع
-            boost_factor = min(3.0, 0.8 / max_val)
-            audio_array = audio_array * boost_factor
-        return audio_array
-
-    def _post_process_child_speech(
-            self, result: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        👶 معالجة لاحقة لتحسين نتائج نسخ كلام الأطفال
-        """
-        text = result.get("text", "").strip()
-
-        if not text:
-            return result
-
-        # 🔤 إصلاح الأخطاء الشائعة في كلام الأطفال
-        text = self._fix_common_child_speech_errors(text)
-
-        # 🎯 تعزيز الثقة للكلمات الواضحة
-        confidence = result.get("confidence", 0.0)
-        if self._is_clear_child_speech(text):
-            confidence = min(1.0, confidence + 0.1)
-
-        result["text"] = text
-        result["confidence"] = confidence
-        result["child_optimized"] = True
-
-        return result
-
-    def _fix_common_child_speech_errors(self, text: str) -> str:
-        """إصلاح الأخطاء الشائعة في كلام الأطفال"""
-        # قاموس للإصلاحات الشائعة (يمكن توسيعه)
-        common_fixes = {
-            " wike ": " like ",
-            " wove ": " love ",
-            " pwease ": " please ",
-            " fwiend ": " friend ",
-            " bwother ": " brother ",
-            " sistew ": " sister ",
-            # يمكن إضافة المزيد من الإصلاحات حسب اللغة
-        }
-
-        for wrong, correct in common_fixes.items():
-            text = text.replace(wrong, correct)
-
-        return text
-
-    def _is_clear_child_speech(self, text: str) -> bool:
-        """تحديد ما إذا كان النص يشير إلى كلام طفل واضح"""
-        # مؤشرات الكلام الواضح للأطفال
-        clear_indicators = [
-            len(text.split()) >= 3,  # جمل كاملة
-            not any(char in text for char in "[](){}"),  # بدون رموز غريبة
-            text.count(" ") >= 2,  # أكثر من كلمتين
-            any(
-                word in text.lower()
-                for word in ["hello", "hi", "teddy", "play", "story"]
-            ),  # كلمات شائعة
-        ]
-
-        return sum(clear_indicators) >= 2
-
-    async def _transcribe_whisper(
-        self, audio_array: np.ndarray, language: Optional[str]
-    ) -> Dict[str, Any]:
-        """Transcribe using Whisper model"""
-        await self._ensure_model_loaded()
-
-        # Prepare options
-        options = {
-            "language": language or self.config.language,
-            "task": "transcribe"}
-
-        # Run transcription in thread to avoid blocking
-        result = await asyncio.to_thread(
-            self.model.transcribe,
-            audio_array,
-            **{k: v for k, v in options.items() if v is not None},
-        )
-
-        # Extract confidence from segments
-        confidence = self._calculate_confidence(result.get("segments", []))
-
-        return {
-            "text": result["text"].strip(),
-            "confidence": confidence,
-            "language": result.get("language", "unknown"),
-            "segments": result.get("segments", []),
-            "provider": "whisper",
-        }
-
-    async def _transcribe_openai(
-        self, audio_array: np.ndarray, language: Optional[str]
-    ) -> Dict[str, Any]:
-        """Transcribe using OpenAI Whisper API"""
-        try:
-            # Convert to wav bytes
-            import io
-
-            import soundfile as sf
-
-            buffer = io.BytesIO()
-            sf.write(
-                buffer,
-                audio_array,
-                self.config.sample_rate,
-                format="WAV")
-            buffer.seek(0)
-
-            # Call OpenAI API
-            response = await self.openai_client.audio.transcriptions.create(
-                model="whisper-1",
-                file=buffer,
-                language=language,
-                response_format="verbose_json",
-            )
-
-            return {
-                "text": response.text.strip(),
-                "confidence": 0.95,  # OpenAI doesn't provide confidence
-                "language": response.language,
-                "segments": getattr(response, "segments", []),
-                "provider": "openai",
-            }
-
-        except Exception as e:
-            logger.error(f"❌ OpenAI transcription failed: {e}")
-            # Fallback to Whisper
-            return await self._transcribe_whisper(audio_array, language)
 
     async def _prepare_audio(
         self, audio_data: Union[np.ndarray, bytes, str]
@@ -708,7 +286,7 @@ class ModernTranscriptionService:
 
         except Exception as e:
             logger.error(f"❌ Critical audio preparation failure: {e}")
-            self.stats["error_count"] += 1
+            self.performance_tracker.increment_error_count()
 
             # آلية احتياطية أساسية جداً
             return await self._emergency_audio_fallback(audio_data)
@@ -756,7 +334,7 @@ class ModernTranscriptionService:
         آلية احتياطية للحالات الطارئة
         تضمن عدم فشل الخدمة حتى لو فشلت كل الطرق الأخرى
         """
-        self.stats["fallback_usage"] += 1
+        self.performance_tracker.increment_fallback_usage()
         logger.warning(
             "🚨 Using emergency audio fallback - basic processing only")
 
@@ -804,74 +382,12 @@ class ModernTranscriptionService:
 
         return 0.8  # Default high confidence for Whisper
 
-    def _update_stats(
-            self, result: Dict[str, Any], processing_time: float) -> None:
-        """Update performance statistics"""
-        self.stats["total_transcriptions"] += 1
-        self.stats["total_processing_time"] += processing_time
-
-        # Update average confidence
-        current_avg = self.stats["average_confidence"]
-        count = self.stats["total_transcriptions"]
-        new_confidence = result.get("confidence", 0.0)
-
-        self.stats["average_confidence"] = (
-            current_avg * (count - 1) + new_confidence
-        ) / count
-
     def get_performance_metrics(self) -> Dict[str, Any]:
         """
         📊 Get comprehensive performance metrics
         Enhanced for teddy bear monitoring and optimization
         """
-        total_transcriptions = self.stats["total_transcriptions"]
-
-        avg_processing_time = (
-            self.stats["total_processing_time"] / total_transcriptions
-            if total_transcriptions > 0
-            else 0
-        )
-
-        error_rate = (
-            self.stats["error_count"] / total_transcriptions
-            if total_transcriptions > 0
-            else 0
-        )
-
-        fallback_rate = (
-            self.stats["fallback_usage"] / total_transcriptions
-            if total_transcriptions > 0
-            else 0
-        )
-
-        return {
-            # 📈 Basic metrics
-            "total_transcriptions": total_transcriptions,
-            "average_processing_time_s": round(avg_processing_time, 3),
-            "average_confidence": round(self.stats["average_confidence"], 3),
-            # 🔧 Reliability metrics
-            "error_count": self.stats["error_count"],
-            "error_rate": round(error_rate, 3),
-            "fallback_usage": self.stats["fallback_usage"],
-            "fallback_rate": round(fallback_rate, 3),
-            # 🎯 Teddy bear specific metrics
-            "is_child_friendly": error_rate < 0.05 and avg_processing_time < 2.0,
-            "response_quality": (
-                "excellent"
-                if error_rate < 0.02
-                else "good" if error_rate < 0.05 else "needs_improvement"
-            ),
-            "processing_speed": (
-                "fast"
-                if avg_processing_time < 1.0
-                else "acceptable" if avg_processing_time < 2.0 else "slow"
-            ),
-            # 🖥️ System info
-            "model": self.config.whisper_model,
-            "device": self.config.device,
-            "sample_rate": self.config.sample_rate,
-            "confidence_threshold": self.config.confidence_threshold,
-        }
+        return self.performance_tracker.get_metrics(self.config)
 
     async def health_check(self) -> Dict[str, Any]:
         """Perform health check"""

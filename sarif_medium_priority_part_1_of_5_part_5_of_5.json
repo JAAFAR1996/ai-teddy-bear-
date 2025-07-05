@@ -1,0 +1,953 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ExtractedIssues",
+          "version": "1.0.0"
+        }
+      },
+      "results": [
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/advanced_progress_analyzer.py"
+                },
+                "region": {
+                  "startLine": 26
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused displacy imported from spacy"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/advanced_progress_analyzer.py"
+                },
+                "region": {
+                  "startLine": 27
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused flesch_reading_ease imported from textstat"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/advanced_progress_analyzer.py"
+                },
+                "region": {
+                  "startLine": 27
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused syllable_count imported from textstat"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/advanced_progress_analyzer.py"
+                },
+                "region": {
+                  "startLine": 38
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused AutoModel imported from transformers"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/advanced_progress_analyzer.py"
+                },
+                "region": {
+                  "startLine": 38
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused AutoTokenizer imported from transformers"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/circuit_breaker.py"
+                },
+                "region": {
+                  "startLine": 56
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/screen_time_manager.py"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/screen_time_manager.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/screen_time_manager.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/screen_time_manager.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/screen_time_manager.py"
+                },
+                "region": {
+                  "startLine": 182
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'session'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 31
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 36
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 41
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 46
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 57
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 64
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 75
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 82
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 91
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 96
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 101
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 112
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 124
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/ai_service_interface.py"
+                },
+                "region": {
+                  "startLine": 129
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unnecessary pass statement"
+          },
+          "ruleId": "unnecessary-pass"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/conversation_compatibility_assessor.py"
+                },
+                "region": {
+                  "startLine": 5
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused VoiceProfile imported from domain.value_objects"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/edge_ai_integration_service.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/edge_ai_integration_service.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/edge_ai_integration_service.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/edge_ai_integration_service.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/edge_ai_integration_service.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/edge_ai_integration_service.py"
+                },
+                "region": {
+                  "startLine": 32
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused AudioConfig imported from audio.audio_processing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/edge_ai_integration_service.py"
+                },
+                "region": {
+                  "startLine": 33
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused AdvancedEmotionAnalyzer imported from domain.services.advanced_emotion_analyzer"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/edge_ai_integration_service.py"
+                },
+                "region": {
+                  "startLine": 41
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused AIResponseService imported from application.services.ai"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/email_service.py"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/email_service.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/email_service.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/emotion_database_service.py"
+                },
+                "region": {
+                  "startLine": 69
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'session'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/emotion_database_service.py"
+                },
+                "region": {
+                  "startLine": 102
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'session'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/emotion_database_service.py"
+                },
+                "region": {
+                  "startLine": 104
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'start_time'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/emotion_database_service.py"
+                },
+                "region": {
+                  "startLine": 130
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'session'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/emotion_database_service.py"
+                },
+                "region": {
+                  "startLine": 169
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'cutoff_date'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/emotion_database_service.py"
+                },
+                "region": {
+                  "startLine": 171
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'session'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/emotion_database_service.py"
+                },
+                "region": {
+                  "startLine": 186
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'session'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/emotion_service.py"
+                },
+                "region": {
+                  "startLine": 5
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused asdict imported from dataclasses"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/emotion_service.py"
+                },
+                "region": {
+                  "startLine": 12
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Optional imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/llm_anthropic_adapter.py"
+                },
+                "region": {
+                  "startLine": 5
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import hashlib"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/llm_anthropic_adapter.py"
+                },
+                "region": {
+                  "startLine": 6
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import json"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/services/ai/llm_anthropic_adapter.py"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import logging"
+          },
+          "ruleId": "unused-import"
+        }
+      ]
+    }
+  ],
+  "properties": {
+    "chunkNumber": 5,
+    "totalChunks": 5,
+    "chunkSize": 49,
+    "startIndex": 208,
+    "endIndex": 256
+  }
+}

@@ -64,6 +64,27 @@ class BaseProviderService(ABC, Generic[RequestType]):
         # Sort by priority
         self.providers.sort(key=lambda x: x.priority, reverse=True)
 
+    async def _process_with_single_provider(
+        self, provider: ProviderConfig, request: RequestType, executor: ProviderExecutor
+    ) -> Optional[str]:
+        """Processes the request with a single provider."""
+        try:
+            result = await executor.execute(provider, request)
+            if result:
+                logger.info(
+                    f"✅ {self.operation_type.value} successful with {provider.name}"
+                )
+                return result
+            else:
+                logger.debug(
+                    f"❌ {self.operation_type.value} failed with {provider.name}"
+                )
+        except Exception as e:
+            logger.error(
+                f"Error in {provider.name} {self.operation_type.value}: {str(e)}"
+            )
+        return None
+
     async def process_with_providers(
         self, request: RequestType, executor: ProviderExecutor
     ) -> Optional[str]:
@@ -73,50 +94,29 @@ class BaseProviderService(ABC, Generic[RequestType]):
         """
         start_time = asyncio.get_event_loop().time()
 
-        # Check cache if request has cache key
         if hasattr(request, "cache_key") and request.cache_key:
             cached_result = await self.cache_manager.get(request.cache_key)
             if cached_result:
                 logger.debug(f"Cache hit for {self.operation_type.value}")
                 return cached_result
 
-        # Get available providers
         available_providers = [p for p in self.providers if p.is_available]
-
         if not available_providers:
             logger.error(
                 f"No available providers for {self.operation_type.value}")
             return None
 
-        # Try each provider
         for provider in available_providers:
-            try:
-                result = await executor.execute(provider, request)
-                if result:
-                    logger.info(
-                        f"✅ {self.operation_type.value} successful with {provider.name}"
-                    )
+            result = await self._process_with_single_provider(provider, request, executor)
+            if result:
+                if hasattr(request, "cache_key") and request.cache_key:
+                    await self.cache_manager.set(request.cache_key, result)
 
-                    # Cache result if applicable
-                    if hasattr(request, "cache_key") and request.cache_key:
-                        await self.cache_manager.set(request.cache_key, result)
-
-                    # Record metrics
-                    processing_time = asyncio.get_event_loop().time() - start_time
-                    await metrics_collector.record_metric(
-                        self.metric_name, processing_time
-                    )
-
-                    return result
-                else:
-                    logger.debug(
-                        f"❌ {self.operation_type.value} failed with {provider.name}"
-                    )
-            except Exception as e:
-                logger.error(
-                    f"Error in {provider.name} {self.operation_type.value}: {str(e)}"
+                processing_time = asyncio.get_event_loop().time() - start_time
+                await metrics_collector.record_metric(
+                    self.metric_name, processing_time
                 )
-                continue
+                return result
 
         logger.warning(f"⚠️  All {self.operation_type.value} providers failed")
         return None

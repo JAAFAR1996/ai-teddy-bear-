@@ -355,31 +355,6 @@ class LegacyModerationAdapter:
         else:
             raise ValueError("Metadata must be dict or ModerationMetadata")
 
-    def create_content_check_params(
-        self,
-        content: str,
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        age: int = 10,
-        language: str = "en",
-        context: Optional[List] = None,
-        strict_mode: bool = False,
-        use_cache: bool = True,
-    ) -> ContentCheckParams:
-        """
-        Helper to create ContentCheckParams from individual parameters.
-        """
-        return ContentCheckParams(
-            content=content,
-            user_id=user_id,
-            session_id=session_id,
-            age=age,
-            language=language,
-            context=context,
-            strict_mode=strict_mode,
-            use_cache=use_cache,
-        )
-
     def validate_parameters(
             self, params: LegacyModerationParams) -> Dict[str, Any]:
         """

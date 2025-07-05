@@ -60,27 +60,34 @@ class SarifRawExtractor:
         message = issue.get("message", {}).get("text", "").lower()
         level = issue.get("level", "warning").lower()
 
-        # تافهة
-        if "trailing-whitespace" in rule_id:
-            return "trivial"
+        # Priority rules mapping
+        priority_rules = {
+            "trivial": ["trailing-whitespace"],
+            "critical": ["error"],
+            "high": [],
+            "medium": ["lizard_ccn-medium", "lizard_nloc-medium"],
+            "low": ["style", "format", "naming"],
+        }
 
-        # حرجة
-        if level == "error":
-            return "critical"
+        # Check simple rule ID and level matches
+        for priority, keywords in priority_rules.items():
+            if level == priority:
+                return "critical"  # level 'error' maps to 'critical'
+            if any(keyword in rule_id for keyword in keywords):
+                return priority
 
-        # عالية
+        # Handle complex message-based rules
         if "cyclomatic complexity" in message:
             numbers = re.findall(r"(\d+)", message)
             if numbers:
                 complexity = int(numbers[0])
                 if complexity >= 20:
                     return "critical"
-                elif complexity >= 15:
+                if complexity >= 15:
                     return "high"
-                elif complexity >= 11:
+                if complexity >= 11:
                     return "medium"
-                else:
-                    return "low"
+                return "low"
 
         if "lines of code" in message:
             numbers = re.findall(r"(\d+)", message)
@@ -88,25 +95,13 @@ class SarifRawExtractor:
                 lines = int(numbers[0])
                 if lines >= 200:
                     return "critical"
-                elif lines >= 150:
+                if lines >= 150:
                     return "high"
-                elif lines >= 100:
+                if lines >= 100:
                     return "medium"
-                else:
-                    return "low"
+                return "low"
 
-        # متوسطة
-        if any(
-            k in rule_id for k in [
-                "lizard_ccn-medium",
-                "lizard_nloc-medium"]):
-            return "medium"
-
-        # منخفضة
-        if any(k in rule_id for k in ["style", "format", "naming"]):
-            return "low"
-
-        return "medium"
+        return "medium"  # Default priority
 
     def group_and_create_files(self):
         """تجميع وإنشاء الملفات"""

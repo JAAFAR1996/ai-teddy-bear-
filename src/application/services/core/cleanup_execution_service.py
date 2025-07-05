@@ -162,47 +162,53 @@ class CleanupExecutionService:
 
         return deleted_count
 
+    def _is_file_orphaned(self, file_path: Path) -> bool:
+        """Check if a file is considered orphaned."""
+        try:
+            file_stat = file_path.stat()
+            file_age = datetime.now() - datetime.fromtimestamp(file_stat.st_mtime)
+            file_size = file_stat.st_size
+            # Older than 24 hours and smaller than 1MB
+            return file_age.total_seconds() > 86400 and file_size < 1024 * 1024
+        except FileNotFoundError:
+            return False
+
+    def _find_orphaned_files_in_dir(self, directory: Path) -> List[Path]:
+        """Finds orphaned files in a specific directory."""
+        if not directory.exists():
+            return []
+
+        orphaned_files = []
+        for file_path in directory.rglob("*"):
+            if file_path.is_file() and self._is_file_orphaned(file_path):
+                orphaned_files.append(file_path)
+        return orphaned_files
+
+    def _delete_found_orphaned_files(self, orphaned_files: List[Path], report: CleanupReport):
+        """Deletes a list of orphaned files and updates the report."""
+        for file_path in orphaned_files:
+            try:
+                file_path.unlink()
+                report.file_operations_count += 1
+                self.logger.debug(f"Cleaned up orphaned file: {file_path}")
+            except Exception as e:
+                self.logger.warning(
+                    f"Could not delete orphaned file {file_path}: {e}"
+                )
+        if orphaned_files:
+            self.logger.info(
+                f"Cleaned up {len(orphaned_files)} orphaned files")
+
     async def _cleanup_orphaned_files(self, report: CleanupReport):
         """تنظيف الملفات المهجورة"""
-
         try:
-            # Clean up orphaned files
-            orphaned_files = []
-
-            # Check cache directories
             cache_dirs = [Path("cache"), Path("temp"), Path("uploads")]
-
+            all_orphaned_files = []
             for cache_dir in cache_dirs:
-                if cache_dir.exists():
-                    for file_path in cache_dir.rglob("*"):
-                        if file_path.is_file():
-                            # Check if file is older than 24 hours and small
-                            # (likely temp)
-                            file_age = datetime.now() - datetime.fromtimestamp(
-                                file_path.stat().st_mtime
-                            )
-                            file_size = file_path.stat().st_size
+                all_orphaned_files.extend(
+                    self._find_orphaned_files_in_dir(cache_dir))
 
-                            if (
-                                file_age.total_seconds() > 86400
-                                and file_size < 1024 * 1024
-                            ):  # 1MB
-                                orphaned_files.append(file_path)
-
-            # Delete orphaned files
-            for file_path in orphaned_files:
-                try:
-                    file_path.unlink()
-                    report.file_operations_count += 1
-                    self.logger.debug(f"Cleaned up orphaned file: {file_path}")
-                except Exception as e:
-                    self.logger.warning(
-                        f"Could not delete orphaned file {file_path}: {e}"
-                    )
-
-            if orphaned_files:
-                self.logger.info(
-                    f"Cleaned up {len(orphaned_files)} orphaned files")
+            self._delete_found_orphaned_files(all_orphaned_files, report)
 
         except Exception as e:
             report.add_error(f"Error cleaning up related files: {str(e)}")

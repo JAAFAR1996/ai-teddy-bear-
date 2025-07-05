@@ -1,48 +1,44 @@
-from typing import List
+from typing import List, Type
 
 from ....domain.entities import Child
+from .validation_strategies import (
+    AgeValidator,
+    ConversationValidator,
+    NameValidator,
+    SafetySettingsValidator,
+    UsageMetricsValidator,
+    ValidationStrategy,
+    VoiceProfileValidator,
+)
 
 
 class ChildAggregateValidator:
-    """Validates the consistency of a Child aggregate."""
+    """Validates the consistency of a Child aggregate using a set of strategies."""
+
+    def __init__(self) -> None:
+        self._validators: List[Type[ValidationStrategy]] = [
+            NameValidator,
+            AgeValidator,
+            VoiceProfileValidator,
+            SafetySettingsValidator,
+            ConversationValidator,
+            UsageMetricsValidator,
+        ]
 
     def validate(self, child: Child) -> List[str]:
         """
-        Validate the consistency of a Child aggregate and return any
-        business rule violations or inconsistencies.
+        Validate the consistency of a Child aggregate by applying all registered
+        validation strategies.
+
+        Args:
+            child: The Child aggregate to validate.
+
+        Returns:
+            A list of all validation violations. An empty list indicates a
+            fully consistent aggregate.
         """
         violations = []
-
-        if not child.name or not child.name.strip():
-            violations.append("Child name cannot be empty")
-        if not 3 <= child.age <= 12:
-            violations.append("Child age must be between 3 and 12")
-
-        if child.voice_profile and not child.voice_profile.is_age_appropriate(child.age):
-            violations.append(
-                "Voice profile complexity not appropriate for child's age")
-
-        if child.safety_settings:
-            if child.safety_settings.max_session_minutes > child.safety_settings.max_daily_minutes:
-                violations.append(
-                    "Session time limit cannot exceed daily time limit")
-            if child.daily_usage_minutes > child.safety_settings.max_daily_minutes:
-                violations.append("Daily usage exceeds allowed limit")
-
-        if len(child.active_conversations) > 1:
-            violations.append(
-                "Child cannot have more than one active conversation")
-        for conversation in child.active_conversations:
-            if conversation.child_id != child.id:
-                violations.append(
-                    "Active conversation belongs to different child")
-            if conversation.status not in ["active", "paused"]:
-                violations.append(
-                    "Active conversation list contains non-active conversation")
-
-        if child.total_conversations_today < 0:
-            violations.append("Daily conversation count cannot be negative")
-        if child.daily_usage_minutes < 0:
-            violations.append("Daily usage minutes cannot be negative")
-
+        for validator_class in self._validators:
+            validator_instance = validator_class()
+            violations.extend(validator_instance.validate(child))
         return violations

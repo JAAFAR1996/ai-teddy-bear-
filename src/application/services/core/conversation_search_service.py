@@ -89,6 +89,37 @@ class ConversationSearchService:
             self.logger.error(f"Error searching conversation content: {e}")
             raise
 
+    def _filter_conversations_by_topic(
+        self,
+        conversations: List[sqlite3.Row],
+        topics: List[str],
+        match_all: bool
+    ) -> List[Dict[str, Any]]:
+        """Filters a list of conversations by topics."""
+        matching_conversations = []
+        for conv in conversations:
+            conv_dict = dict(conv)
+            if not conv_dict["topics"]:
+                continue
+
+            try:
+                conv_topics = json.loads(conv_dict["topics"])
+                # Using a set for faster lookups
+                conv_topics_set = set(conv_topics)
+
+                if match_all:
+                    if all(topic in conv_topics_set for topic in topics):
+                        matching_conversations.append(conv_dict)
+                else:
+                    if any(topic in conv_topics_set for topic in topics):
+                        matching_conversations.append(conv_dict)
+            except json.JSONDecodeError:
+                self.logger.warning(
+                    f"Could not decode topics for conversation {conv_dict.get('id')}")
+                continue
+
+        return matching_conversations
+
     async def get_conversations_by_topics(
         self, topics: List[str], match_all: bool = False, child_id: Optional[str] = None
     ) -> List[Dict[str, Any]]:
@@ -103,30 +134,11 @@ class ConversationSearchService:
                 sql += " AND child_id = ?"
                 params.append(child_id)
 
-            # We'll filter topics in Python since SQLite JSON functions are
-            # limited
+            # We'll filter topics in Python since SQLite JSON functions are limited
             cursor.execute(sql, params)
             all_conversations = cursor.fetchall()
 
-            # Filter by topics
-            matching_conversations = []
-            for conv in all_conversations:
-                conv_dict = dict(conv)
-                if conv_dict["topics"]:
-                    try:
-                        conv_topics = json.loads(conv_dict["topics"])
-                        if match_all:
-                            # All requested topics must be present
-                            if all(topic in conv_topics for topic in topics):
-                                matching_conversations.append(conv_dict)
-                        else:
-                            # Any of the requested topics must be present
-                            if any(topic in conv_topics for topic in topics):
-                                matching_conversations.append(conv_dict)
-                    except json.JSONDecodeError:
-                        continue
-
-            return matching_conversations
+            return self._filter_conversations_by_topic(all_conversations, topics, match_all)
 
         except sqlite3.Error as e:
             self.logger.error(f"Error searching conversations by topics: {e}")

@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type, TypeVar
+from typing import Any, Dict, List, Optional, Type, TypeVar, Tuple
 
 import structlog
 
@@ -291,37 +291,47 @@ class ServiceRegistry:
 
         return order
 
-    def _topological_sort(self, services: List[str]) -> List[str]:
-        """Topological sort for dependency resolution"""
-        # Build dependency graph
-        graph = {s: set() for s in services}
-        for service in services:
-            info = self._services[service]
-            for dep in info.dependencies:
-                if dep in graph:
-                    graph[service].add(dep)
-
-        # Kahn's algorithm
+    def _build_adj_list_and_in_degrees(self, services: List[str]) -> Tuple[Dict[str, List[str]], Dict[str, int]]:
+        """Builds an adjacency list and in-degree map for Kahn's algorithm."""
+        adj = {s: [] for s in services}
         in_degree = {s: 0 for s in services}
-        for deps in graph.values():
-            for dep in deps:
-                in_degree[dep] += 1
 
-        queue = [s for s in services if in_degree[s] == 0]
+        for s in services:
+            info = self._services.get(s)
+            if not info:
+                continue
+
+            for dep in info.dependencies:
+                if dep in services:
+                    adj[dep].append(s)
+                    in_degree[s] += 1
+        return adj, in_degree
+
+    def _topological_sort(self, services: List[str]) -> List[str]:
+        """Topological sort for dependency resolution using Kahn's algorithm."""
+        adj, in_degree = self._build_adj_list_and_in_degrees(services)
+
+        # Services with no dependencies
+        queue = sorted([s for s in services if in_degree[s] == 0])
         result = []
 
         while queue:
             service = queue.pop(0)
             result.append(service)
 
-            for dep in graph[service]:
-                in_degree[dep] -= 1
-                if in_degree[dep] == 0:
-                    queue.append(dep)
+            for dependent in sorted(adj.get(service, [])):
+                in_degree[dependent] -= 1
+                if in_degree[dependent] == 0:
+                    queue.append(dependent)
+
+            queue.sort()
 
         # Check for cycles
         if len(result) != len(services):
-            raise ValueError("Circular dependency detected")
+            cycle_nodes = sorted(
+                [s for s, degree in in_degree.items() if degree > 0])
+            raise ValueError(
+                f"Circular dependency detected in services: {cycle_nodes}")
 
         return result
 

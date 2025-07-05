@@ -168,69 +168,64 @@ class CircuitBreaker:
         return (time.time() - self._stats.last_failure_time >=
                 self.config.recovery_timeout)
 
-    async def call(self, func: Callable, *args, **kwargs) -> Any:
-        """
-        Execute function with circuit breaker protection
-        """
+    async def _before_call(self):
+        """Checks circuit state before executing a call."""
         async with self._lock:
-            # Check if we should transition from OPEN to HALF_OPEN
             if self.is_open and await self._should_attempt_reset():
                 await self._change_state(CircuitState.HALF_OPEN)
                 self._half_open_calls = 0
                 self._stats.success_count = 0
                 self._stats.failure_count = 0
 
-            # Reject if circuit is open
             if self.is_open:
                 raise CircuitBreakerError(
                     f"Circuit breaker is OPEN (name={self.config.name})"
                 )
 
-            # Check half-open call limit
-            if (
-                self.is_half_open
-                and self._half_open_calls >= self.config.half_open_max_calls
-            ):
+            if self.is_half_open and self._half_open_calls >= self.config.half_open_max_calls:
                 raise CircuitBreakerError(
                     f"Circuit breaker half-open call limit reached (name={self.config.name})"
                 )
 
-        # Execute function
-        start_time = time.time()
-        try:
-            if self.is_half_open:
+    async def _do_call(self, func: Callable, *args, **kwargs):
+        """Executes the function and handles success/failure."""
+        if self.is_half_open:
+            async with self._lock:
                 self._half_open_calls += 1
 
-            # Call function
+        try:
             if asyncio.iscoroutinefunction(func):
                 result = await func(*args, **kwargs)
             else:
                 result = func(*args, **kwargs)
 
-            # Record success
             await self._on_success()
-
             return result
-
         except Exception as e:
-            # Check if exception should be ignored
             if isinstance(e, self.config.excluded_exceptions):
                 raise
 
-            # Record failure
             await self._on_failure(e)
-
             raise
 
-        finally:
-            # Update stats
-            self._stats.total_calls += 1
-            duration = time.time() - start_time
+    def _after_call(self, start_time: float):
+        """Updates statistics after a call."""
+        self._stats.total_calls += 1
+        duration = time.time() - start_time
+        if hasattr(self, "_metrics_recorder"):
+            self._metrics_recorder.record_call(
+                self.config.name, self._state.value, duration
+            )
 
-            if hasattr(self, "_metrics_recorder"):
-                self._metrics_recorder.record_call(
-                    self.config.name, self._state.value, duration
-                )
+    async def call(self, func: Callable, *args, **kwargs) -> Any:
+        """Execute function with circuit breaker protection"""
+        await self._before_call()
+
+        start_time = time.time()
+        try:
+            return await self._do_call(func, *args, **kwargs)
+        finally:
+            self._after_call(start_time)
 
     async def _on_success(self) -> None:
         """Handle successful call"""

@@ -11,6 +11,7 @@ import time
 from datetime import datetime
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
 
 from openai import APIError, APITimeoutError, AsyncOpenAI, RateLimitError
 from openai.types.chat import ChatCompletion
@@ -23,6 +24,13 @@ from src.application.services.ai.fallback_response_service import (
     FallbackResponseService,
 )
 from src.application.services.ai.core import IAIService
+from src.application.services.ai.managers.cache_manager import CacheManager
+from src.application.services.ai.managers.error_handler import ErrorHandler
+from src.application.services.ai.managers.prompt_builder import PromptBuilder
+from src.application.services.ai.managers.response_processor import (
+    ResponseProcessor,
+    ResponseModelData,
+)
 from src.application.services.ai.models.ai_response_models import AIResponseModel
 from src.core.domain.entities.child import Child
 from src.infrastructure.caching.simple_cache_service import CacheService
@@ -51,7 +59,6 @@ class ModernOpenAIService(IAIService):
         self._initialize_services(
             settings, cache_service, emotion_analyzer, fallback_service
         )
-        self._initialize_caching()
         self._initialize_performance_tracking()
         self._initialize_client()
         logger.info(
@@ -62,16 +69,13 @@ class ModernOpenAIService(IAIService):
     ):
         """Initializes service dependencies."""
         self.settings = settings
-        self.cache = cache_service
         self.emotion_analyzer = emotion_analyzer
         self.fallback_service = fallback_service
+        self.cache_manager = CacheManager(cache_service)
+        self.response_processor = ResponseProcessor(self.cache_manager)
+        self.error_handler = ErrorHandler(fallback_service)
+        self.prompt_builder = PromptBuilder()
         self.client = None
-
-    def _initialize_caching(self):
-        """Initializes caching parameters."""
-        self.memory_cache: Dict[str, tuple] = {}
-        self.cache_ttl = 3600  # 1 hour
-        self.max_cache_size = 1000
         self.conversation_history: Dict[str, List[Dict]] = {}
         self.max_history_length = 10
 
@@ -79,8 +83,6 @@ class ModernOpenAIService(IAIService):
         """Initializes performance tracking metrics."""
         self.request_count = 0
         self.total_processing_time = 0
-        self.error_count = 0
-        self.rate_limit_count = 0
 
     def _initialize_client(self) -> None:
         """Initialize OpenAI client with comprehensive error handling"""
@@ -99,59 +101,6 @@ class ModernOpenAIService(IAIService):
                 f"❌ Failed to initialize OpenAI client: {str(e)}",
                 exc_info=True)
             raise
-
-    @lru_cache(maxsize=1000)
-    def _get_cache_key(
-            self,
-            text: str,
-            context: str,
-            child_profile: str) -> str:
-        """Generate optimized cache key with LRU caching"""
-        combined = f"{text}:{context}:{child_profile}"
-        return hashlib.sha512(combined.encode()).hexdigest()
-
-    def _get_child_profile_key(self, child: Child) -> str:
-        """Generate child profile key for caching"""
-        return f"{child.name}:{child.age}:{getattr(child, 'learning_level', 'basic')}"
-
-    def _check_memory_cache(self, cache_key: str) -> Optional[AIResponseModel]:
-        """Check memory cache with TTL validation"""
-        if cache_key in self.memory_cache:
-            response_dict, timestamp = self.memory_cache[cache_key]
-            if time.time() - timestamp < self.cache_ttl:
-                logger.debug(f"🎯 Memory cache hit for key: {cache_key[:8]}...")
-                response = AIResponseModel(**response_dict)
-                response.cached = True
-                return response
-            else:
-                # Remove expired entry
-                del self.memory_cache[cache_key]
-                logger.debug(
-                    f"🧹 Expired cache entry removed: {cache_key[:8]}...")
-
-        return None
-
-    def _store_in_memory_cache(
-            self,
-            cache_key: str,
-            response: AIResponseModel) -> None:
-        """Store response in memory cache with size management"""
-        # Clean old entries if cache is full
-        if len(self.memory_cache) >= self.max_cache_size:
-            # Remove 10% oldest entries
-            sorted_entries = sorted(
-                self.memory_cache.items(), key=lambda x: x[1][1]
-            )  # Sort by timestamp
-            entries_to_remove = int(self.max_cache_size * 0.1)
-            for key, _ in sorted_entries[:entries_to_remove]:
-                del self.memory_cache[key]
-            logger.debug(f"🧹 Cleaned {entries_to_remove} old cache entries")
-
-        # Store new entry
-        response_dict = response.to_dict()
-        response_dict["cached"] = False  # Don't store cached flag
-        self.memory_cache[cache_key] = (response_dict, time.time())
-        logger.debug(f"💾 Stored in memory cache: {cache_key[:8]}...")
 
     async def generate_response(
         self,
@@ -179,7 +128,7 @@ class ModernOpenAIService(IAIService):
             )
 
         except (RateLimitError, APITimeoutError, APIError, Exception) as e:
-            return await self._handle_api_errors(e, message, child, session_id)
+            return await self.error_handler.handle_api_errors(e, message, child, session_id)
 
     async def _prepare_request_context(
         self,
@@ -200,25 +149,14 @@ class ModernOpenAIService(IAIService):
             return session_id, "", wake_response
 
         # Enhanced caching strategy
-        child_profile = self._get_child_profile_key(child)
+        child_profile = self.cache_manager.get_child_profile_key(child)
         context_str = json.dumps(context or {}, sort_keys=True)
-        cache_key = self._get_cache_key(message, context_str, child_profile)
+        cache_key = self.cache_manager.get_cache_key(
+            message, context_str, child_profile)
 
-        # Check memory cache first (fastest)
-        cached_response = self._check_memory_cache(cache_key)
+        cached_response = await self.cache_manager.get_cached_response(cache_key)
         if cached_response:
-            logger.info("🎯 Memory cache hit - response time: <1ms")
             return session_id, cache_key, cached_response
-
-        # Check persistent cache
-        persistent_cached = await self.cache.get(f"ai_response_{cache_key}")
-        if persistent_cached:
-            logger.info("🎯 Persistent cache hit")
-            response = AIResponseModel(**json.loads(persistent_cached))
-            response.cached = True
-            # Store in memory for next time
-            self._store_in_memory_cache(cache_key, response)
-            return session_id, cache_key, response
 
         return session_id, cache_key, None
 
@@ -240,7 +178,9 @@ class ModernOpenAIService(IAIService):
         # Get conversation history and build system prompt
         device_id = getattr(child, "device_id", "unknown")
         history = self._get_conversation_history(device_id)
-        system_prompt = await self._build_enhanced_system_prompt(child, context)
+        system_prompt = await self.prompt_builder.build_enhanced_system_prompt(
+            child, context
+        )
 
         # Call OpenAI API
         response = await self._enhanced_openai_call(
@@ -250,108 +190,21 @@ class ModernOpenAIService(IAIService):
             emotion_context=await emotion_task,
         )
 
-        # Create and cache response
-        return await self._create_response_model(
-            response,
-            message,
-            emotion_task,
-            category_task,
-            session_id,
-            device_id,
-            cache_key,
-            start_time,
-        )
-
-    async def _create_response_model(
-        self,
-        response,
-        message: str,
-        emotion_task,
-        category_task,
-        session_id: str,
-        device_id: str,
-        cache_key: str,
-        start_time: datetime,
-    ) -> AIResponseModel:
-        """Create the final AI response model with all metadata"""
-        # Extract response data
-        response_text = response.choices[0].message.content.strip()
-
-        # Wait for parallel tasks
-        emotion, category = await asyncio.gather(emotion_task, category_task)
-        learning_points = await self._extract_learning_points(message, response_text)
-
-        # Calculate processing time
-        processing_time = int(
-            (datetime.utcnow() - start_time).total_seconds() * 1000)
-        self.total_processing_time += processing_time
-
-        # Create enhanced response model
-        ai_response = AIResponseModel(
-            text=response_text,
-            emotion=emotion,
-            category=category,
-            learning_points=learning_points,
-            session_id=session_id,
-            confidence=0.95,
-            processing_time_ms=processing_time,
-            cached=False,
-            model_used=response.model,
-            usage=response.usage.model_dump() if response.usage else {},
-        )
-
-        # Update conversation history and cache
-        self._update_conversation_history(
-            device_id=device_id,
+        model_data = ResponseModelData(
+            response=response,
             message=message,
-            response=response_text,
-            emotion=emotion,
+            emotion_task=emotion_task,
+            category_task=category_task,
+            session_id=session_id,
+            device_id=device_id,
+            cache_key=cache_key,
+            start_time=start_time,
+            conversation_history=history,
+            max_history_length=self.max_history_length,
         )
 
-        # Store in both caches
-        self._store_in_memory_cache(cache_key, ai_response)
-        await self.cache.set(
-            f"ai_response_{cache_key}",
-            json.dumps(ai_response.to_dict()),
-            ttl=self.cache_ttl,
-        )
-
-        logger.info(
-            f"✅ AI response generated in {processing_time}ms (model: {response.model})"
-        )
-        return ai_response
-
-    async def _handle_api_errors(
-        self, error: Exception, message: str, child: Child, session_id: str
-    ) -> AIResponseModel:
-        """Handle different types of API errors with appropriate fallbacks"""
-        if isinstance(error, RateLimitError):
-            self.rate_limit_count += 1
-            logger.warning(
-                f"⚠️ OpenAI rate limit hit (#{self.rate_limit_count})")
-            return await self.fallback_service.create_rate_limit_fallback(
-                message, child, session_id
-            )
-        elif isinstance(error, APITimeoutError):
-            self.error_count += 1
-            logger.error(f"⏰ OpenAI API timeout: {str(error)}")
-            return await self.fallback_service.create_timeout_fallback(
-                message, child, session_id
-            )
-        elif isinstance(error, APIError):
-            self.error_count += 1
-            logger.error(f"🚫 OpenAI API error: {str(error)}", exc_info=True)
-            return await self.fallback_service.create_api_error_fallback(
-                message, child, session_id, str(error)
-            )
-        else:
-            self.error_count += 1
-            logger.error(
-                f"💥 Unexpected AI service error: {str(error)}",
-                exc_info=True)
-            return await self.fallback_service.create_generic_fallback(
-                message, child, session_id, str(error)
-            )
+        # Create and cache response
+        return await self.response_processor.create_response_model(model_data)
 
     async def _enhanced_openai_call(
         self,
@@ -403,24 +256,18 @@ class ModernOpenAIService(IAIService):
     def _basic_emotion_detection(self, message: str) -> str:
         """Basic rule-based emotion detection"""
         message_lower = message.lower()
+        emotion_map = {
+            "joy": ["سعيد", "happy", "فرح", "مبسوط"],
+            "sadness": ["حزين", "sad", "بكي", "زعلان"],
+            "anger": ["غضب", "angry", "زعل", "عصبي"],
+            "fear": ["خوف", "scared", "afraid", "خائف"],
+            "love": ["حب", "love", "أحب"],
+            "excitement": ["متحمس", "excited", "رائع", "واو"],
+        }
 
-        if any(
-            word in message_lower for word in [
-                "سعيد",
-                "happy",
-                "فرح",
-                "مبسوط"]):
-            return "joy"
-        elif any(word in message_lower for word in ["حزين", "sad", "بكي", "زعلان"]):
-            return "sadness"
-        elif any(word in message_lower for word in ["غضب", "angry", "زعل", "عصبي"]):
-            return "anger"
-        elif any(word in message_lower for word in ["خوف", "scared", "afraid", "خائف"]):
-            return "fear"
-        elif any(word in message_lower for word in ["حب", "love", "أحب"]):
-            return "love"
-        elif any(word in message_lower for word in ["متحمس", "excited", "رائع", "واو"]):
-            return "excitement"
+        for emotion, keywords in emotion_map.items():
+            if any(word in message_lower for word in keywords):
+                return emotion
 
         return "neutral"
 
@@ -431,65 +278,20 @@ class ModernOpenAIService(IAIService):
     async def categorize_message(self, message: str) -> str:
         """Enhanced message categorization"""
         message_lower = message.lower()
+        category_map = {
+            "story_request": ["قصة", "story", "حكاية", "احكي"],
+            "play_request": ["لعب", "play", "game", "نلعب"],
+            "learning_inquiry": ["تعلم", "learn", "درس", "علمني"],
+            "music_request": ["غناء", "sing", "أغنية", "غني"],
+            "question": ["?", "؟", "كيف", "لماذا", "متى"],
+            "greeting": ["مرحبا", "hello", "أهلا", "السلام"],
+        }
 
-        if any(
-            word in message_lower for word in [
-                "قصة",
-                "story",
-                "حكاية",
-                "احكي"]):
-            return "story_request"
-        elif any(word in message_lower for word in ["لعب", "play", "game", "نلعب"]):
-            return "play_request"
-        elif any(word in message_lower for word in ["تعلم", "learn", "درس", "علمني"]):
-            return "learning_inquiry"
-        elif any(word in message_lower for word in ["غناء", "sing", "أغنية", "غني"]):
-            return "music_request"
-        elif any(word in message_lower for word in ["?", "؟", "كيف", "لماذا", "متى"]):
-            return "question"
-        elif any(
-            word in message_lower for word in ["مرحبا", "hello", "أهلا", "السلام"]
-        ):
-            return "greeting"
+        for category, keywords in category_map.items():
+            if any(word in message_lower for word in keywords):
+                return category
 
         return "general_conversation"
-
-    async def _build_enhanced_system_prompt(
-        self, child: Child, context: Optional[Dict[str, Any]] = None
-    ) -> str:
-        """Build enhanced system prompt with context awareness"""
-        base_prompt = f"""أنت دبدوب، دب محبوب وذكي يتحدث مع الأطفال باللغة العربية.
-
-معلومات الطفل:
-- الاسم: {child.name}
-- العمر: {child.age} سنوات
-- مستوى التعلم: {getattr(child, 'learning_level', 'متوسط')}
-- الجهاز: {getattr(child, 'device_id', 'غير محدد')}
-
-شخصيتك المحدثة 2025:
-- محبوب وودود ومرح وذكي
-- تتكيف مع مشاعر الطفل وحالته النفسية
-- تستخدم تقنيات التعلم الحديثة والتفاعل الإيجابي
-- تشجع الفضول والإبداع والتفكير النقدي
-- تقدم محتوى تعليمي ممتع ومناسب للعمر
-
-قواعد التفاعل المحدثة:
-- اجعل الردود قصيرة ومفيدة (2-3 جمل كحد أقصى)
-- استخدم اللغة العربية الفصحى المبسطة
-- أضف لمسة من الدعابة والمرح المناسب
-- شجع على التعلم والاستكشاف
-- كن صبوراً ومتفهماً ومحباً"""
-
-        # Add context-specific instructions
-        if context:
-            if context.get("time_of_day"):
-                base_prompt += f"\n- وقت التفاعل: {context['time_of_day']}"
-            if context.get("activity"):
-                base_prompt += f"\n- النشاط الحالي: {context['activity']}"
-            if context.get("mood"):
-                base_prompt += f"\n- مزاج الطفل: {context['mood']}"
-
-        return base_prompt
 
     def _is_wake_word_only(self, message: str) -> bool:
         """Enhanced wake word detection"""
@@ -530,63 +332,10 @@ class ModernOpenAIService(IAIService):
             processing_time_ms=8,
         )
 
-    async def _extract_learning_points(
-            self, message: str, response: str) -> List[str]:
-        """Enhanced learning points extraction"""
-        points = []
-        combined_text = f"{message} {response}".lower()
-
-        learning_patterns = {
-            "emotional_intelligence": ["مشاعر", "حزين", "سعيد", "خائف"],
-            "language_development": ["كلمة", "جملة", "قراءة", "كتابة"],
-            "mathematical_thinking": ["رقم", "عدد", "حساب", "جمع"],
-            "scientific_curiosity": ["لماذا", "كيف", "تجربة", "اكتشاف"],
-            "social_skills": ["صديق", "شكراً", "من فضلك", "آسف"],
-            "creative_expression": ["رسم", "قصة", "إبداع", "خيال"],
-            "cultural_awareness": ["تقاليد", "عادات", "ثقافة"],
-            "problem_solving": ["حل", "مشكلة", "فكر", "طريقة"],
-        }
-
-        for skill, keywords in learning_patterns.items():
-            if any(keyword in combined_text for keyword in keywords):
-                points.append(skill)
-
-        return points if points else ["general_communication"]
-
-    def _update_conversation_history(
-        self, device_id: str, message: str, response: str, emotion: str
-    ):
-        """Enhanced conversation history with emotion tracking"""
-        if device_id not in self.conversation_history:
-            self.conversation_history[device_id] = []
-
-        history = self.conversation_history[device_id]
-
-        # Add message with emotion context
-        history.append(
-            {
-                "role": "user",
-                "content": message,
-                "emotion": emotion,
-                "timestamp": datetime.utcnow().isoformat(),
-            }
-        )
-        history.append(
-            {
-                "role": "assistant",
-                "content": response,
-                "timestamp": datetime.utcnow().isoformat(),
-            }
-        )
-
-        # Keep only recent history
-        if len(history) > self.max_history_length * 2:
-            self.conversation_history[device_id] = history[
-                -self.max_history_length * 2:
-            ]
-
     def _get_conversation_history(self, device_id: str) -> List[Dict]:
         """Get conversation history for device"""
+        if device_id not in self.conversation_history:
+            self.conversation_history[device_id] = []
         return self.conversation_history.get(device_id, [])
 
     async def get_performance_metrics(self) -> Dict[str, Any]:
@@ -597,16 +346,19 @@ class ModernOpenAIService(IAIService):
             else 0
         )
 
+        error_count = self.error_handler.error_count
+        rate_limit_count = self.error_handler.rate_limit_count
+
         return {
             "total_requests": self.request_count,
-            "total_errors": self.error_count,
-            "rate_limit_hits": self.rate_limit_count,
+            "total_errors": error_count,
+            "rate_limit_hits": rate_limit_count,
             "error_rate": (
-                self.error_count /
+                error_count /
                 self.request_count if self.request_count > 0 else 0),
             "average_processing_time_ms": avg_processing_time,
             "cache_size": len(
-                self.memory_cache),
+                self.cache_manager.memory_cache),
             "active_conversations": len(
                 self.conversation_history),
         }

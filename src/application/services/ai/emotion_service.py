@@ -10,6 +10,7 @@ import asyncio
 import structlog
 import logging
 from typing import Any, Dict, List, Optional
+from collections import Counter
 
 logger = logging.getLogger(__name__)
 
@@ -262,102 +263,93 @@ class EmotionService(BaseService):
         self, history: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """تحليل اتجاهات المشاعر"""
-
         if not history:
             return {"message": "لا توجد بيانات كافية للتحليل"}
 
         try:
-            # حساب متوسط المشاعر
-            emotion_fields = [
-                "joy",
-                "sadness",
-                "anger",
-                "fear",
-                "excitement",
-                "curiosity",
-                "playfulness",
-                "tiredness",
-            ]
-
-            avg_emotions = {}
-            for field in emotion_fields:
-                values = [item[field]
-                          for item in history if item[field] is not None]
-                if values:
-                    avg_emotions[field] = round(statistics.mean(values), 3)
-                else:
-                    avg_emotions[field] = 0.0
-
-            # المشاعر المهيمنة
-            dominant_emotions = [item["dominant_emotion"] for item in history]
-            emotion_counts = {}
-            for emotion in dominant_emotions:
-                emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
-
-            most_common_emotion = max(
-                emotion_counts.items(), key=lambda x: x[1])
-
-            # تحليل الاستقرار العاطفي
+            avg_emotions = self._calculate_average_emotions(history)
+            most_common_emotion, emotion_counts = self._get_dominant_emotion_stats(
+                history)
             stability = self._calculate_emotional_stability(history)
+            avg_energy = self._calculate_average_energy(history)
+            top_indicators = self._get_top_developmental_indicators(history)
 
-            # تحليل الطاقة والنشاط
-            energy_levels = [
-                item["energy_level"]
-                for item in history
-                if item["energy_level"] is not None
-            ]
-            avg_energy = statistics.mean(
-                energy_levels) if energy_levels else 0.5
-
-            # مؤشرات التطوير الأكثر شيوعاً
-            all_indicators = []
-            for item in history:
-                try:
-                    indicators = item["developmental_indicators"]
-                    if isinstance(indicators, str):
-                        indicators = json.loads(indicators)
-                    all_indicators.extend(indicators)
-                except json.JSONDecodeError as e:
-                    logger.error(f"Error in operation: {e}", exc_info=True)
-                    continue
-
-            indicator_counts = {}
-            for indicator in all_indicators:
-                indicator_counts[indicator] = indicator_counts.get(
-                    indicator, 0) + 1
-
-            top_indicators = sorted(
-                indicator_counts.items(), key=lambda x: x[1], reverse=True
-            )[:5]
-
-            # توصيات بناء على التحليل
             recommendations = self._generate_trend_recommendations(
-                avg_emotions, most_common_emotion[0], stability, avg_energy
+                avg_emotions, most_common_emotion["emotion"], stability, avg_energy
             )
 
             return {
                 "analysis_period": f"{len(history)} تفاعل خلال الفترة المحددة",
                 "average_emotions": avg_emotions,
-                "most_common_emotion": {
-                    "emotion": most_common_emotion[0],
-                    "percentage": round(most_common_emotion[1] / len(history) * 100, 1),
-                },
+                "most_common_emotion": most_common_emotion,
                 "emotion_distribution": emotion_counts,
                 "emotional_stability": round(stability, 3),
                 "average_energy_level": round(avg_energy, 3),
-                "top_developmental_indicators": [
-                    {"indicator": indicator, "frequency": count}
-                    for indicator, count in top_indicators
-                ],
+                "top_developmental_indicators": top_indicators,
                 "recommendations": recommendations,
                 "summary": self._generate_summary(
-                    avg_emotions, most_common_emotion[0], stability
+                    avg_emotions, most_common_emotion["emotion"], stability
                 ),
             }
 
         except Exception as e:
             logger.error(f"Error: {e}", exc_info=True)
             return {"error": f"خطأ في تحليل الاتجاهات: {str(e)}"}
+
+    def _calculate_average_emotions(self, history: List[Dict[str, Any]]) -> Dict[str, float]:
+        """Calculates the average of core emotions from history."""
+        emotion_fields = [
+            "joy", "sadness", "anger", "fear", "excitement",
+            "curiosity", "playfulness", "tiredness",
+        ]
+        avg_emotions = {}
+        for field in emotion_fields:
+            values = [item[field]
+                      for item in history if item.get(field) is not None]
+            avg_emotions[field] = round(
+                statistics.mean(values), 3) if values else 0.0
+        return avg_emotions
+
+    def _get_dominant_emotion_stats(self, history: List[Dict[str, Any]]) -> tuple[Dict[str, Any], Dict[str, int]]:
+        """Gets statistics about the most common dominant emotion."""
+        dominant_emotions = [item["dominant_emotion"] for item in history]
+        emotion_counts = Counter(dominant_emotions)
+        most_common = emotion_counts.most_common(1)[0]
+
+        most_common_emotion_stat = {
+            "emotion": most_common[0],
+            "percentage": round(most_common[1] / len(history) * 100, 1),
+        }
+        return most_common_emotion_stat, dict(emotion_counts)
+
+    def _calculate_average_energy(self, history: List[Dict[str, Any]]) -> float:
+        """Calculates the average energy level from history."""
+        energy_levels = [item["energy_level"]
+                         for item in history if item.get("energy_level") is not None]
+        return statistics.mean(energy_levels) if energy_levels else 0.5
+
+    def _get_top_developmental_indicators(self, history: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Extracts and counts the top developmental indicators."""
+        all_indicators = []
+        for item in history:
+            try:
+                indicators = item["developmental_indicators"]
+                if isinstance(indicators, str):
+                    indicators = json.loads(indicators)
+                if isinstance(indicators, list):
+                    all_indicators.extend(indicators)
+            except (json.JSONDecodeError, KeyError) as e:
+                logger.warning(
+                    f"Could not parse developmental_indicators for an item: {e}")
+                continue
+
+        indicator_counts = Counter(all_indicators)
+        top_indicators = indicator_counts.most_common(5)
+
+        return [
+            {"indicator": indicator, "frequency": count}
+            for indicator, count in top_indicators
+        ]
 
     def _calculate_emotional_stability(
             self, history: List[Dict[str, Any]]) -> float:

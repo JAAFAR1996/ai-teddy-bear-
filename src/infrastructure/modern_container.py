@@ -479,6 +479,52 @@ class EnterpriseContainer:
         raise ValueError(
             f"No service registered for type '{service_type.__name__}'")
 
+    async def _resolve_dependencies(self, registration: ServiceRegistration) -> Dict[str, Any]:
+        """Resolves all dependencies for a given service registration."""
+        dependencies = {}
+        for dep_name in registration.dependencies:
+            dependencies[dep_name] = await self.get_service(dep_name)
+        return dependencies
+
+    async def _map_dependencies_to_constructor(
+        self, registration: ServiceRegistration, dependencies: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Maps resolved dependencies to the service's constructor parameters."""
+        constructor = registration.implementation.__init__
+        sig = inspect.signature(constructor)
+        constructor_params = {}
+
+        for param_name, param in sig.parameters.items():
+            if param_name == "self":
+                continue
+
+            if param_name in dependencies:
+                constructor_params[param_name] = dependencies[param_name]
+            elif param.annotation != inspect.Parameter.empty:
+                try:
+                    constructor_params[param_name] = await self.get_service(param.annotation)
+                except ValueError:
+                    if param.default != inspect.Parameter.empty:
+                        constructor_params[param_name] = param.default
+        return constructor_params
+
+    async def _instantiate_service(self, registration: ServiceRegistration, constructor_params: Dict[str, Any]) -> Any:
+        """Instantiates the service, handling both sync and async cases."""
+        if asyncio.iscoroutinefunction(registration.implementation):
+            return await registration.implementation(**constructor_params)
+        else:
+            return await asyncio.get_event_loop().run_in_executor(
+                self._executor,
+                lambda: registration.implementation(**constructor_params),
+            )
+
+    async def _initialize_service(self, service: Any, registration: ServiceRegistration):
+        """Initializes the service if it has an async initialize method."""
+        if hasattr(service, "initialize") and asyncio.iscoroutinefunction(service.initialize):
+            await asyncio.wait_for(
+                service.initialize(), timeout=registration.initialization_timeout
+            )
+
     async def _create_service_instance(
         self, service_name: str, registration: ServiceRegistration
     ) -> Any:
@@ -486,52 +532,11 @@ class EnterpriseContainer:
         try:
             logger.debug("Creating service instance", service=service_name)
 
-            # Resolve dependencies first
-            dependencies = {}
-            for dep_name in registration.dependencies:
-                dependencies[dep_name] = await self.get_service(dep_name)
+            dependencies = await self._resolve_dependencies(registration)
+            constructor_params = await self._map_dependencies_to_constructor(registration, dependencies)
+            service = await self._instantiate_service(registration, constructor_params)
+            await self._initialize_service(service, registration)
 
-            # Get constructor parameters
-            constructor = registration.implementation.__init__
-            sig = inspect.signature(constructor)
-            constructor_params = {}
-
-            # Map dependencies to constructor parameters
-            for param_name, param in sig.parameters.items():
-                if param_name == "self":
-                    continue
-
-                # Try to find dependency by name or type annotation
-                if param_name in dependencies:
-                    constructor_params[param_name] = dependencies[param_name]
-                elif param.annotation != inspect.Parameter.empty:
-                    try:
-                        dep_service = await self.get_service(param.annotation)
-                        constructor_params[param_name] = dep_service
-                    except ValueError:
-                        # Parameter not available, use default if provided
-                        if param.default != inspect.Parameter.empty:
-                            constructor_params[param_name] = param.default
-
-            # Create instance
-            if asyncio.iscoroutinefunction(registration.implementation):
-                service = await registration.implementation(**constructor_params)
-            else:
-                # Run in thread pool for CPU-intensive initialization
-                service = await asyncio.get_event_loop().run_in_executor(
-                    self._executor,
-                    lambda: registration.implementation(**constructor_params),
-                )
-
-            # Initialize if has async initialization
-            if hasattr(service, "initialize") and asyncio.iscoroutinefunction(
-                service.initialize
-            ):
-                await asyncio.wait_for(
-                    service.initialize(), timeout=registration.initialization_timeout
-                )
-
-            # Create service instance wrapper
             instance = ServiceInstance(
                 service=service,
                 registration=registration,
@@ -539,7 +544,6 @@ class EnterpriseContainer:
                 status=ServiceStatus.HEALTHY,
             )
 
-            # Store instance based on lifetime
             if registration.lifetime == ServiceLifetime.SINGLETON:
                 self._instances[service_name] = instance
             elif registration.lifetime == ServiceLifetime.THREAD_LOCAL:

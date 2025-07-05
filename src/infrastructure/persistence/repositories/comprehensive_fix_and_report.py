@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from pathlib import Path
 from datetime import datetime
 import re
@@ -158,6 +158,28 @@ class ComprehensiveFixer:
             "structure_score": structure_score,
         }
 
+    def _count_lines_in_dir(
+        self, directory: Path, relative_to: Path = None
+    ) -> Tuple[Dict[str, int], int]:
+        """Helper to count lines in a directory."""
+        file_lines = {}
+        total_lines = 0
+        if directory.exists():
+            for file_path in directory.rglob("*.py"):
+                try:
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        lines = len(f.readlines())
+                    key = (
+                        str(file_path.relative_to(relative_to))
+                        if relative_to
+                        else file_path.name
+                    )
+                    file_lines[key] = lines
+                    total_lines += lines
+                except Exception:
+                    continue
+        return file_lines, total_lines
+
     def count_lines_recovered(self) -> Dict:
         """حساب الأسطر المستردة من التقسيم"""
         lines_info = {
@@ -167,42 +189,36 @@ class ComprehensiveFixer:
             "total_lines_new": 0,
             "recovery_percentage": 0,
         }
+
         legacy_dir = self.src_dir / "legacy" / "god_classes"
-        if legacy_dir.exists():
-            for file_path in legacy_dir.glob("*.py"):
-                try:
-                    with open(file_path, "r", encoding="utf-8") as f:
-                        lines = len(f.readlines())
-                    lines_info["original_god_classes"][file_path.name] = lines
-                    lines_info["total_lines_original"] += lines
-                except Exception:
-                    continue
-        for domain_dir in (self.src_dir / "domain").glob("*"):
-            if domain_dir.is_dir():
-                for file_path in domain_dir.rglob("*.py"):
-                    try:
-                        with open(file_path, "r", encoding="utf-8") as f:
-                            lines = len(f.readlines())
-                        rel_path = str(file_path.relative_to(self.src_dir))
-                        lines_info["new_files_created"][rel_path] = lines
-                        lines_info["total_lines_new"] += lines
-                    except Exception:
-                        continue
-        for app_dir in (self.src_dir / "application").glob("*"):
-            if app_dir.is_dir() and app_dir.name not in [
-                    "services", "__pycache__"]:
-                for file_path in app_dir.rglob("*.py"):
-                    try:
-                        with open(file_path, "r", encoding="utf-8") as f:
-                            lines = len(f.readlines())
-                        rel_path = str(file_path.relative_to(self.src_dir))
-                        lines_info["new_files_created"][rel_path] = lines
-                        lines_info["total_lines_new"] += lines
-                    except Exception:
-                        continue
+        (
+            lines_info["original_god_classes"],
+            lines_info["total_lines_original"],
+        ) = self._count_lines_in_dir(legacy_dir)
+
+        domain_dir = self.src_dir / "domain"
+        new_files, new_lines = self._count_lines_in_dir(
+            domain_dir, relative_to=self.src_dir
+        )
+        lines_info["new_files_created"].update(new_files)
+        lines_info["total_lines_new"] += new_lines
+
+        app_dir = self.src_dir / "application"
+        if app_dir.exists():
+            for sub_dir in app_dir.glob("*"):
+                if sub_dir.is_dir() and sub_dir.name not in ["services", "__pycache__"]:
+                    new_files, new_lines = self._count_lines_in_dir(
+                        sub_dir, relative_to=self.src_dir
+                    )
+                    lines_info["new_files_created"].update(new_files)
+                    lines_info["total_lines_new"] += new_lines
+
         if lines_info["total_lines_original"] > 0:
             lines_info["recovery_percentage"] = int(
-                lines_info["total_lines_new"] / lines_info["total_lines_original"] * 100)
+                lines_info["total_lines_new"]
+                / lines_info["total_lines_original"]
+                * 100
+            )
         return lines_info
 
     def _generate_report_header(self) -> str:

@@ -127,6 +127,87 @@ class ExportService:
             self.logger.error(f"Error exporting as Excel: {e}")
             return b""
 
+    def _create_pdf_summary_table(self, conversations: List[Dict[str, Any]]) -> "Table":
+        """Creates the summary table for the PDF report."""
+        summary_data = [
+            ["Total Conversations", str(len(conversations))],
+            ["Export Date", datetime.now().strftime("%Y-%m-%d %H:%M")],
+        ]
+        if conversations:
+            total_duration = (sum(c.get("duration_seconds", 0)
+                                  for c in conversations) / 60)
+            avg_duration = (
+                total_duration / len(conversations) if conversations else 0
+            )
+            summary_data.extend(
+                [
+                    ["Total Duration (minutes)", f"{total_duration:.1f}"],
+                    ["Average Session (minutes)", f"{avg_duration:.1f}"],
+                ]
+            )
+        summary_table = Table(summary_data)
+        summary_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 12),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
+        return summary_table
+
+    def _create_pdf_conversations_table(self, conversations: List[Dict[str, Any]]) -> "Table":
+        """Creates the detailed conversations table for the PDF report."""
+        table_data = [
+            ["Date", "Duration (min)", "Messages", "Topics", "Summary"]
+        ]
+        for conv in conversations[:20]:  # Limit to 20 for PDF size
+            row = [
+                conv.get("started_at", "")[:10],  # Date only
+                f"{conv.get('duration_seconds', 0) / 60:.1f}",
+                str(conv.get("message_count", 0)),
+                ", ".join(conv.get("topics", [])[:3]),  # Limit topics
+                (
+                    conv.get("summary", "")[:100] + "..."
+                    if len(conv.get("summary", "")) > 100
+                    else conv.get("summary", "")
+                ),
+            ]
+            table_data.append(row)
+        conv_table = Table(
+            table_data,
+            colWidths=[
+                1.2 * inch,
+                1 * inch,
+                0.8 * inch,
+                1.5 * inch,
+                2.5 * inch,
+            ],
+        )
+        conv_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("FONTSIZE", (0, 1), (-1, -1), 8),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ]
+            )
+        )
+        return conv_table
+
     async def export_conversation_history_as_pdf(
         self, conversations: List[Dict[str, Any]], child_name: str = "Child"
     ) -> bytes:
@@ -158,40 +239,7 @@ class ExportService:
 
             # Summary section
             story.append(Paragraph("Summary", styles["Heading2"]))
-            summary_data = [
-                ["Total Conversations", str(len(conversations))],
-                ["Export Date", datetime.now().strftime("%Y-%m-%d %H:%M")],
-            ]
-
-            if conversations:
-                total_duration = (sum(c.get("duration_seconds", 0)
-                                      for c in conversations) / 60)
-                avg_duration = (
-                    total_duration / len(conversations) if conversations else 0
-                )
-                summary_data.extend(
-                    [
-                        ["Total Duration (minutes)", f"{total_duration:.1f}"],
-                        ["Average Session (minutes)", f"{avg_duration:.1f}"],
-                    ]
-                )
-
-            summary_table = Table(summary_data)
-            summary_table.setStyle(
-                TableStyle(
-                    [
-                        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                        ("FONTSIZE", (0, 0), (-1, 0), 12),
-                        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                        ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
-                        ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                    ]
-                )
-            )
-
+            summary_table = self._create_pdf_summary_table(conversations)
             story.append(summary_table)
             story.append(Spacer(1, 20))
 
@@ -201,54 +249,8 @@ class ExportService:
                     Paragraph(
                         "Detailed Conversations",
                         styles["Heading2"]))
-
-                # Prepare table data
-                table_data = [
-                    ["Date", "Duration (min)", "Messages", "Topics", "Summary"]
-                ]
-
-                for conv in conversations[:20]:  # Limit to 20 for PDF size
-                    row = [
-                        conv.get("started_at", "")[:10],  # Date only
-                        f"{conv.get('duration_seconds', 0) / 60:.1f}",
-                        str(conv.get("message_count", 0)),
-                        ", ".join(conv.get("topics", [])[:3]),  # Limit topics
-                        (
-                            conv.get("summary", "")[:100] + "..."
-                            if len(conv.get("summary", "")) > 100
-                            else conv.get("summary", "")
-                        ),
-                    ]
-                    table_data.append(row)
-
-                # Create table
-                conv_table = Table(
-                    table_data,
-                    colWidths=[
-                        1.2 * inch,
-                        1 * inch,
-                        0.8 * inch,
-                        1.5 * inch,
-                        2.5 * inch,
-                    ],
-                )
-                conv_table.setStyle(
-                    TableStyle(
-                        [
-                            ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-                            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                            ("FONTSIZE", (0, 0), (-1, 0), 10),
-                            ("FONTSIZE", (0, 1), (-1, -1), 8),
-                            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                            ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
-                            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-                            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                        ]
-                    )
-                )
-
+                conv_table = self._create_pdf_conversations_table(
+                    conversations)
                 story.append(conv_table)
 
             # Build PDF
@@ -391,7 +393,8 @@ class ExportService:
         # Metrics table
         metrics_data = [
             ["Metric", "Value"],
-            ["Total Conversations", str(analytics_data.get("total_conversations", 0))],
+            ["Total Conversations", str(
+                analytics_data.get("total_conversations", 0))],
             [
                 "Total Duration (minutes)",
                 f"{analytics_data.get('total_duration_minutes', 0):.1f}",

@@ -1,0 +1,3378 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ExtractedIssues",
+          "version": "1.0.0"
+        }
+      },
+      "results": [
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ai.py"
+                },
+                "region": {
+                  "startLine": 53
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _send_hallucination_prompt has 53 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ai.py"
+                },
+                "region": {
+                  "startLine": 319
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _calculate_overload_metrics has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ai.py"
+                },
+                "region": {
+                  "startLine": 371
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method test_ai_model_recovery has 51 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "recovery.py"
+                },
+                "region": {
+                  "startLine": 37
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method restore_all_systems has 53 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "chaos_metrics.py"
+                },
+                "region": {
+                  "startLine": 175
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _calculate_performance_metrics has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "chaos_metrics.py"
+                },
+                "region": {
+                  "startLine": 226
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_services has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emergency_response.py"
+                },
+                "region": {
+                  "startLine": 235
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _execute_emergency_action has 53 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 191
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method process_on_edge has 53 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "use_cases.py"
+                },
+                "region": {
+                  "startLine": 25
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_vocabulary_nlp has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "base_provider.py"
+                },
+                "region": {
+                  "startLine": 230
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _categorize_message has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_compatibility_assessor.py"
+                },
+                "region": {
+                  "startLine": 133
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _score_topic_by_keywords has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_compatibility_assessor.py"
+                },
+                "region": {
+                  "startLine": 145
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_conversation_history_compatibility has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_maintenance_service.py"
+                },
+                "region": {
+                  "startLine": 194
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_performance_bottlenecks has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_maintenance_service.py"
+                },
+                "region": {
+                  "startLine": 243
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _calculate_performance_metrics has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_manager.py"
+                },
+                "region": {
+                  "startLine": 214
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_mood_trend has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "edge_ai_integration_service.py"
+                },
+                "region": {
+                  "startLine": 381
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _generate_edge_response has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "email_service.py"
+                },
+                "region": {
+                  "startLine": 70
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method send_html_email has 52 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emotion_analysis_service.py"
+                },
+                "region": {
+                  "startLine": 156
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_text_rules has 53 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emotion_analysis_service.py"
+                },
+                "region": {
+                  "startLine": 251
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _extract_text_indicators has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emotion_history_service.py"
+                },
+                "region": {
+                  "startLine": 189
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method identify_concerning_patterns has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emotion_history_service.py"
+                },
+                "region": {
+                  "startLine": 361
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _identify_emotional_triggers has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emotion_history_service.py"
+                },
+                "region": {
+                  "startLine": 391
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _identify_positive_indicators has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emotion_service.py"
+                },
+                "region": {
+                  "startLine": 135
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method save_emotion_analysis has 68 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emotion_service.py"
+                },
+                "region": {
+                  "startLine": 261
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method analyze_emotion_trends has 81 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emotion_service.py"
+                },
+                "region": {
+                  "startLine": 380
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _generate_trend_recommendations has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "llm_service_factory.py"
+                },
+                "region": {
+                  "startLine": 198
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method generate_response has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "safety_assessor.py"
+                },
+                "region": {
+                  "startLine": 140
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _assess_conversation_patterns_safety has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "audio_playback_service.py"
+                },
+                "region": {
+                  "startLine": 85
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method play_audio has 51 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "interaction_recommender.py"
+                },
+                "region": {
+                  "startLine": 10
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method generate has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "session_manager.py"
+                },
+                "region": {
+                  "startLine": 34
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method update has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "content_analyzer.py"
+                },
+                "region": {
+                  "startLine": 228
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _load_default_whitelist has 85 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "moderation_rules.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _load_default_rules has 92 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "llm_processor.py"
+                },
+                "region": {
+                  "startLine": 86
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method build_conversation_history has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "llm_processor.py"
+                },
+                "region": {
+                  "startLine": 349
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _log_successful_interaction has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "analytics_service.py"
+                },
+                "region": {
+                  "startLine": 157
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _calculate_comparisons has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ar_experience_manager.py"
+                },
+                "region": {
+                  "startLine": 48
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _initialize_default_experiences has 62 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ar_vr_analytics.py"
+                },
+                "region": {
+                  "startLine": 32
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method generate_child_report has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ar_vr_analytics.py"
+                },
+                "region": {
+                  "startLine": 66
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method generate_personalized_recommendations has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ar_vr_analytics.py"
+                },
+                "region": {
+                  "startLine": 145
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_session_times has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ar_vr_safety_manager.py"
+                },
+                "region": {
+                  "startLine": 68
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method assess_safety_compliance has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ar_vr_session_manager.py"
+                },
+                "region": {
+                  "startLine": 145
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method analyze_session_performance has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ar_vr_session_manager.py"
+                },
+                "region": {
+                  "startLine": 190
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_session_statistics has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cache_integration_service.py"
+                },
+                "region": {
+                  "startLine": 382
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _setup_cache_strategies has 52 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cache_integration_service.py"
+                },
+                "region": {
+                  "startLine": 520
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method optimize_cache_settings has 58 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_analytics_service.py"
+                },
+                "region": {
+                  "startLine": 17
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_conversation_analytics has 65 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_export_service.py"
+                },
+                "region": {
+                  "startLine": 104
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _export_csv has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_export_service.py"
+                },
+                "region": {
+                  "startLine": 155
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _export_text has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_search_service.py"
+                },
+                "region": {
+                  "startLine": 19
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method search_conversation_content has 53 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_search_service.py"
+                },
+                "region": {
+                  "startLine": 19
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method search_conversation_content has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "data_cleanup_service.py"
+                },
+                "region": {
+                  "startLine": 160
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method run_comprehensive_cleanup has 60 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "data_cleanup_service.py"
+                },
+                "region": {
+                  "startLine": 160
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method run_comprehensive_cleanup has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "data_cleanup_service.py"
+                },
+                "region": {
+                  "startLine": 429
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_database_size_info has 79 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "data_cleanup_service.py"
+                },
+                "region": {
+                  "startLine": 516
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method main has 66 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "data_cleanup_service.py"
+                },
+                "region": {
+                  "startLine": 599
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method test_cleanup_service has 51 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "export_service.py"
+                },
+                "region": {
+                  "startLine": 130
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method export_conversation_history_as_pdf has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "export_service.py"
+                },
+                "region": {
+                  "startLine": 358
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _export_analytics_pdf has 59 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "fallback_response_service.py"
+                },
+                "region": {
+                  "startLine": 37
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _load_fallback_responses has 84 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "gui_service.py"
+                },
+                "region": {
+                  "startLine": 219
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _create_status_panel has 81 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "he_integration_service.py"
+                },
+                "region": {
+                  "startLine": 78
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method extract_and_encrypt_features has 57 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "he_integration_service.py"
+                },
+                "region": {
+                  "startLine": 202
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method analyze_emotions_privately has 56 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "memory_storage_service.py"
+                },
+                "region": {
+                  "startLine": 251
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method forget_memories has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "moderation_helpers.py"
+                },
+                "region": {
+                  "startLine": 91
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _build_transition_table has 51 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "moderation_local_checkers.py"
+                },
+                "region": {
+                  "startLine": 326
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method check_age_specific_content has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "moderation_service.py"
+                },
+                "region": {
+                  "startLine": 540
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method __post_init__ has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "notification_service.py"
+                },
+                "region": {
+                  "startLine": 134
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _load_templates has 91 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "recommendation_service.py"
+                },
+                "region": {
+                  "startLine": 215
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _generate_cot_recommendation has 77 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "streaming_service_refactored.py"
+                },
+                "region": {
+                  "startLine": 440
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_cohesion_improvement_stats has 92 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "transcription_service.py"
+                },
+                "region": {
+                  "startLine": 439
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method transcribe_audio has 62 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "transcription_service.py"
+                },
+                "region": {
+                  "startLine": 822
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_performance_metrics has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "vr_environment_manager.py"
+                },
+                "region": {
+                  "startLine": 96
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_available_environments has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "websocket_manager.py"
+                },
+                "region": {
+                  "startLine": 372
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _cleanup_loop has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "access_control_service.py"
+                },
+                "region": {
+                  "startLine": 149
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _get_next_allowed_time has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "parent_dashboard_service.py"
+                },
+                "region": {
+                  "startLine": 71
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method __init__ has 58 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "progress_analyzer.py"
+                },
+                "region": {
+                  "startLine": 54
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_vocabulary has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "rate_monitor_service.py"
+                },
+                "region": {
+                  "startLine": 213
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method record_notification has 54 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "report_generation_service.py"
+                },
+                "region": {
+                  "startLine": 33
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method generate_weekly_report has 88 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "report_generation_service.py"
+                },
+                "region": {
+                  "startLine": 278
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _generate_long_term_recommendations has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "report_generation_service.py"
+                },
+                "region": {
+                  "startLine": 319
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _check_developmental_milestones has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "content_recommendation_engine.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method recommend_content has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "insights_analyzer.py"
+                },
+                "region": {
+                  "startLine": 212
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _get_optimization_suggestions has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "performance_monitor.py"
+                },
+                "region": {
+                  "startLine": 86
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_performance_metrics has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "advanced_progress_analyzer.py"
+                },
+                "region": {
+                  "startLine": 205
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _load_analysis_templates has 57 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "advanced_progress_analyzer.py"
+                },
+                "region": {
+                  "startLine": 398
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_vocabulary_development has 57 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "health_monitoring.py"
+                },
+                "region": {
+                  "startLine": 93
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method analyze_interaction has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "health_monitoring.py"
+                },
+                "region": {
+                  "startLine": 224
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method send_health_alert has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "health_monitoring.py"
+                },
+                "region": {
+                  "startLine": 303
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _get_parent_info has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "child_data_analyzer.py"
+                },
+                "region": {
+                  "startLine": 280
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _calculate_mood_trends has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "child_data_analyzer.py"
+                },
+                "region": {
+                  "startLine": 320
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_response_patterns has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation.py"
+                },
+                "region": {
+                  "startLine": 361
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method extract_topics has 55 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation.py"
+                },
+                "region": {
+                  "startLine": 423
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method analyze_emotional_journey has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation.py"
+                },
+                "region": {
+                  "startLine": 552
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method calculate_quality_score has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "model_benchmark.py"
+                },
+                "region": {
+                  "startLine": 31
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _benchmark_llm has 86 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "child_safety_chaos.py"
+                },
+                "region": {
+                  "startLine": 70
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _build_steady_state_hypothesis has 59 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "child_safety_chaos.py"
+                },
+                "region": {
+                  "startLine": 130
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _build_method has 80 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation.py"
+                },
+                "region": {
+                  "startLine": 376
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method extract_topics has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation.py"
+                },
+                "region": {
+                  "startLine": 599
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method calculate_quality_score has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "advanced_family_system.py"
+                },
+                "region": {
+                  "startLine": 292
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _create_default_scheduled_messages has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "advanced_family_system.py"
+                },
+                "region": {
+                  "startLine": 337
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _create_default_time_restrictions has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "progress_analyzer.py"
+                },
+                "region": {
+                  "startLine": 426
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method identify_improvement_areas has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 450
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method analyze_hybrid has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 574
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _load_emoji_emotions has 59 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "performance_optimizer.py"
+                },
+                "region": {
+                  "startLine": 453
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method check_health has 58 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "async_database_optimizer.py"
+                },
+                "region": {
+                  "startLine": 300
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method execute_optimized_query has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "exception_handler.py"
+                },
+                "region": {
+                  "startLine": 144
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method handle_exceptions.handle_exceptions.decorator.async_wrapper has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "exception_handler.py"
+                },
+                "region": {
+                  "startLine": 179
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method handle_exceptions.handle_exceptions.decorator.sync_wrapper has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "audio_emotion_analyzer.py"
+                },
+                "region": {
+                  "startLine": 70
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _map_features_to_emotions has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "enterprise_exception_handler.py"
+                },
+                "region": {
+                  "startLine": 464
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method with_retry.with_retry.decorator.async_wrapper has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "enterprise_exception_handler.py"
+                },
+                "region": {
+                  "startLine": 502
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method with_retry.with_retry.decorator.sync_wrapper has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 363
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method analyze_emotion_multilang has 66 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 618
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _get_language_specific_recommendations has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 719
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _build_comprehensive_report has 65 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 785
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method merge_historical_data has 65 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "enhanced_hume_integration_2025.py"
+                },
+                "region": {
+                  "startLine": 867
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _fetch_historical_sessions_advanced has 54 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "hume_integration.py"
+                },
+                "region": {
+                  "startLine": 128
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method analyze_batch has 51 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "hume_integration.py"
+                },
+                "region": {
+                  "startLine": 217
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method analyze_stream has 52 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "hume_integration.py"
+                },
+                "region": {
+                  "startLine": 281
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _extract_from_batch has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "custom_metrics.py"
+                },
+                "region": {
+                  "startLine": 89
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _initialize_metrics has 65 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "custom_metrics.py"
+                },
+                "region": {
+                  "startLine": 407
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method __init__ has 80 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "custom_metrics.py"
+                },
+                "region": {
+                  "startLine": 529
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _record_all_ai_metrics has 54 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "base_sqlite_repository.py"
+                },
+                "region": {
+                  "startLine": 344
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _build_list_query has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "report_repository.py"
+                },
+                "region": {
+                  "startLine": 161
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _create_mock_interaction has 56 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "audit_system.py"
+                },
+                "region": {
+                  "startLine": 272
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _event_matches_filters has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "enhanced_security.py"
+                },
+                "region": {
+                  "startLine": 272
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _get_password_validators has 59 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "rbac_manager.py"
+                },
+                "region": {
+                  "startLine": 186
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _get_role_permission_config has 87 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "rbac_manager.py"
+                },
+                "region": {
+                  "startLine": 680
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_audit_log has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "safe_expression_parser.py"
+                },
+                "region": {
+                  "startLine": 278
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method __init__ has 58 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "security.py"
+                },
+                "region": {
+                  "startLine": 222
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _add_security_headers has 53 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cloud_server_launcher.py"
+                },
+                "region": {
+                  "startLine": 217
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method create_logs_tab has 52 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "cloud_server_launcher.py"
+                },
+                "region": {
+                  "startLine": 277
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method create_stats_tab has 51 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "modern_container.py"
+                },
+                "region": {
+                  "startLine": 482
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _create_service_instance has 57 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "deployment_manager.py"
+                },
+                "region": {
+                  "startLine": 706
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _determine_ab_test_recommendation has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "training_pipeline.py"
+                },
+                "region": {
+                  "startLine": 439
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _prepare_model_data has 67 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "authentication.py"
+                },
+                "region": {
+                  "startLine": 319
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method authenticate_user has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "authentication.py"
+                },
+                "region": {
+                  "startLine": 404
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method verify_token has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "federation_gateway.py"
+                },
+                "region": {
+                  "startLine": 685
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_query_services has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "performance_monitor.py"
+                },
+                "region": {
+                  "startLine": 404
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method get_performance_summary has 62 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "verify_graphql_federation.py"
+                },
+                "region": {
+                  "startLine": 89
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method verify_implementation has 55 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "auth.py"
+                },
+                "region": {
+                  "startLine": 192
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method require_parent_auth.decorated_function has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "auth.py"
+                },
+                "region": {
+                  "startLine": 248
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method require_child_auth.decorated_function has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "api_documentation.py"
+                },
+                "region": {
+                  "startLine": 6
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method custom_openapi has 72 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "smart_restructure.py"
+                },
+                "region": {
+                  "startLine": 198
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method execute_migration has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "conversation_widget.py"
+                },
+                "region": {
+                  "startLine": 27
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method setup_ui has 57 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "enterprise_dashboard.py"
+                },
+                "region": {
+                  "startLine": 642
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method create_metrics_panel has 89 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "code_analyzer.py"
+                },
+                "region": {
+                  "startLine": 271
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _analyze_single_class has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "code_analyzer.py"
+                },
+                "region": {
+                  "startLine": 378
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _find_security_concerns has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "performance_tester.py"
+                },
+                "region": {
+                  "startLine": 255
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _run_load_test has 75 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "performance_tester.py"
+                },
+                "region": {
+                  "startLine": 445
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _run_spike_test has 54 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "performance_tester.py"
+                },
+                "region": {
+                  "startLine": 621
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _run_endurance_test has 65 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "performance_tester.py"
+                },
+                "region": {
+                  "startLine": 621
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _run_endurance_test has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "performance_tester.py"
+                },
+                "region": {
+                  "startLine": 772
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _check_metric_and_recommend has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "security_tester.py"
+                },
+                "region": {
+                  "startLine": 81
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method __init__ has 56 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "security_tester.py"
+                },
+                "region": {
+                  "startLine": 149
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method run_comprehensive_security_test has 55 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "security_tester.py"
+                },
+                "region": {
+                  "startLine": 651
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _test_input_validation has 55 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "smart_fuzzer.py"
+                },
+                "region": {
+                  "startLine": 163
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _calculate_session_metrics has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "validators.py"
+                },
+                "region": {
+                  "startLine": 30
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method __init__ has 54 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "validators.py"
+                },
+                "region": {
+                  "startLine": 154
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method __init__ has 75 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_concurrent_users.py"
+                },
+                "region": {
+                  "startLine": 59
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method run_concurrent_test has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_system_performance.py"
+                },
+                "region": {
+                  "startLine": 174
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method test_database_query_performance has 53 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "comprehensive_testing_framework.py"
+                },
+                "region": {
+                  "startLine": 394
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _run_child_safety_tests has 59 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "comprehensive_testing_framework.py"
+                },
+                "region": {
+                  "startLine": 466
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _run_performance_tests has 70 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "comprehensive_testing_framework.py"
+                },
+                "region": {
+                  "startLine": 549
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _run_security_tests has 59 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contract_tests.py"
+                },
+                "region": {
+                  "startLine": 137
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _test_child_service_contracts has 58 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contract_tests.py"
+                },
+                "region": {
+                  "startLine": 205
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _test_audio_service_contracts has 64 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contract_tests.py"
+                },
+                "region": {
+                  "startLine": 279
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _test_ai_service_contracts has 69 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contract_tests.py"
+                },
+                "region": {
+                  "startLine": 358
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _test_security_service_contracts has 58 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "contract_tests.py"
+                },
+                "region": {
+                  "startLine": 426
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _test_parent_service_contracts has 62 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "final_test.py"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method test_services has 82 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "final_test.py"
+                },
+                "region": {
+                  "startLine": 21
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method test_services has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "mutation_tests.py"
+                },
+                "region": {
+                  "startLine": 71
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _initialize_mutation_operators has 95 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_backward_compatibility.py"
+                },
+                "region": {
+                  "startLine": 26
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method test_backward_compatibility has 92 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_backward_compatibility.py"
+                },
+                "region": {
+                  "startLine": 26
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method test_backward_compatibility has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_comprehensive_backend.py"
+                },
+                "region": {
+                  "startLine": 829
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method test_weekly_report_with_insights has 58 lines of code (limit is 50)"
+          },
+          "ruleId": "Lizard_nloc-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_validator.py"
+                },
+                "region": {
+                  "startLine": 177
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _check_imports has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_validator.py"
+                },
+                "region": {
+                  "startLine": 198
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _check_test_logic has a cyclomatic complexity of 10 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_validator.py"
+                },
+                "region": {
+                  "startLine": 229
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _generate_suggestions has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_validator.py"
+                },
+                "region": {
+                  "startLine": 261
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _fix_syntax_errors has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_validator.py"
+                },
+                "region": {
+                  "startLine": 338
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Method _fix_test_structure has a cyclomatic complexity of 9 (limit is 8)"
+          },
+          "ruleId": "Lizard_ccn-medium"
+        }
+      ]
+    }
+  ]
+}

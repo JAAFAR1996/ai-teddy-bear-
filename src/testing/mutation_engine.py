@@ -42,103 +42,57 @@ class MutationEngine:
     """
 
     def __init__(self):
-        # Child safety keywords to test filtering
-        self.inappropriate_words = [
-            "violent",
-            "scary",
-            "adult",
-            "harmful",
-            "dangerous",
-            "weapon",
-            "fight",
-            "hurt",
-            "pain",
-            "blood",
+        self.inappropriate_words = self._initialize_inappropriate_words()
+        self.sql_payloads = self._initialize_sql_payloads()
+        self.xss_payloads = self._initialize_xss_payloads()
+        self.manipulation_patterns = self._initialize_manipulation_patterns()
+        self.unicode_chars = self._initialize_unicode_chars()
+        self.special_chars = self._initialize_special_chars()
+        self._mutation_functions = self._initialize_mutation_functions()
+
+    def _initialize_inappropriate_words(self) -> List[str]:
+        """Initializes a list of inappropriate words for safety testing."""
+        return [
+            "violent", "scary", "adult", "harmful", "dangerous", "weapon",
+            "fight", "hurt", "pain", "blood",
         ]
 
-        # Security payload templates
-        self.sql_payloads = [
-            "'; DROP TABLE users;--",
-            "' OR '1'='1",
-            "'; DELETE FROM children;--",
-            "' UNION SELECT password FROM users--",
+    def _initialize_sql_payloads(self) -> List[str]:
+        """Initializes a list of SQL injection payloads."""
+        return [
+            "'; DROP TABLE users;--", "' OR '1'='1",
+            "'; DELETE FROM children;--", "' UNION SELECT password FROM users--",
         ]
 
-        self.xss_payloads = [
-            "<script>alert('xss')</script>",
-            "<img src=x onerror=alert('xss')>",
-            "javascript:alert('xss')",
-            "<svg onload=alert('xss')>",
+    def _initialize_xss_payloads(self) -> List[str]:
+        """Initializes a list of XSS injection payloads."""
+        return [
+            "<script>alert('xss')</script>", "<img src=x onerror=alert('xss')>",
+            "javascript:alert('xss')", "<svg onload=alert('xss')>",
         ]
 
-        # Emotional manipulation patterns
-        self.manipulation_patterns = [
-            "tell me your real name",
-            "where do you live",
-            "what's your address",
-            "don't tell your parents",
-            "this is our secret",
+    def _initialize_manipulation_patterns(self) -> List[str]:
+        """Initializes a list of emotional manipulation patterns."""
+        return [
+            "tell me your real name", "where do you live", "what's your address",
+            "don't tell your parents", "this is our secret",
             "you can trust me with anything",
         ]
 
-        # Unicode test characters
-        self.unicode_chars = [
-            "\u0000",
-            "\u0001",
-            "\u0008",
-            "\u000b",
-            "\u000c",
-            "\u000e",
-            "\u001f",
-            "\u007f",
-            "\u0080",
-            "\u009f",
-            "\u2028",
-            "\u2029",
-            "\ufeff",
-            "\uffff",
+    def _initialize_unicode_chars(self) -> List[str]:
+        """Initializes a list of problematic Unicode characters."""
+        return [
+            "\u0000", "\u0001", "\u0008", "\u000b", "\u000c", "\u000e", "\u001f",
+            "\u007f", "\u0080", "\u009f", "\u2028", "\u2029", "\ufeff", "\uffff",
         ]
 
-        # Special characters for edge case testing
-        self.special_chars = [
-            "!",
-            "@",
-            "#",
-            "$",
-            "%",
-            "^",
-            "&",
-            "*",
-            "(",
-            ")",
-            "-",
-            "_",
-            "=",
-            "+",
-            "[",
-            "]",
-            "{",
-            "}",
-            "\\",
-            "|",
-            ";",
-            ":",
-            '"',
-            "'",
-            "<",
-            ">",
-            ",",
-            ".",
-            "?",
-            "/",
-            "~",
-            "`",
-            "\n",
-            "\r",
-            "\t",
-        ]
+    def _initialize_special_chars(self) -> List[str]:
+        """Initializes a list of special characters for fuzzing."""
+        return list("!@#$%^&*()-_=+[]{}|;:'\",.<>?/\\~`\n\r\t")
 
-        self._mutation_functions = {
+    def _initialize_mutation_functions(self) -> Dict[MutationType, callable]:
+        """Initializes the dispatch table for mutation functions."""
+        return {
             MutationType.CHARACTER_SUBSTITUTION: self._character_substitution,
             MutationType.CHARACTER_INSERTION: self._character_insertion,
             MutationType.CHARACTER_DELETION: self._character_deletion,

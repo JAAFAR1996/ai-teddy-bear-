@@ -155,34 +155,32 @@ class PersonalizationInsightsAnalyzer:
             "engagement_consistency": self._calculate_engagement_consistency(patterns),
         }
 
-    def _analyze_content_preferences(
-        self, content_performance: List[AdaptiveContent]
-    ) -> Dict:
-        """تحليل تفضيلات المحتوى"""
-        if not content_performance:
-            return {"message": "لا توجد بيانات كافية"}
-
-        # أفضل أنواع المحتوى
+    def _get_best_content_type(self, content_performance: List[AdaptiveContent]) -> tuple:
+        """Determines the best content type based on engagement scores."""
         content_scores = defaultdict(list)
         for content in content_performance:
             content_scores[content.content_type].append(
                 content.engagement_score)
 
+        if not content_scores:
+            return "unknown", 0, {}
+
         avg_scores = {
             content_type: np.mean(scores)
             for content_type, scores in content_scores.items()
         }
-        best_content_type = (
-            max(avg_scores.items(), key=lambda x: x[1])
-            if avg_scores
-            else ("unknown", 0)
-        )
+        best_content_type = max(avg_scores.items(), key=lambda x: x[1])
+        return best_content_type[0], best_content_type[1], avg_scores
 
-        # أفضل مواضيع
+    def _get_best_topics(self, content_performance: List[AdaptiveContent]) -> tuple:
+        """Determines the best topics based on engagement scores."""
         topic_scores = defaultdict(list)
         for content in content_performance:
             if content.topic:
                 topic_scores[content.topic].append(content.engagement_score)
+
+        if not topic_scores:
+            return [], {}
 
         avg_topic_scores = {
             topic: np.mean(scores) for topic, scores in topic_scores.items()
@@ -191,17 +189,29 @@ class PersonalizationInsightsAnalyzer:
             avg_topic_scores.items(), key=lambda x: x[1], reverse=True
         )[:5]
 
-        # تحليل المستوى المفضل
+        return [topic for topic, score in best_topics], dict(best_topics)
+
+    def _analyze_content_preferences(
+        self, content_performance: List[AdaptiveContent]
+    ) -> Dict:
+        """تحليل تفضيلات المحتوى"""
+        if not content_performance:
+            return {"message": "لا توجد بيانات كافية"}
+
+        best_content_type, content_confidence, content_scores = self._get_best_content_type(
+            content_performance)
+        best_topics, topic_scores = self._get_best_topics(content_performance)
+
         difficulty_performance = self._analyze_difficulty_performance(
             content_performance
         )
 
         return {
-            "preferred_content_type": best_content_type[0],
-            "content_type_confidence": best_content_type[1],
-            "content_type_scores": avg_scores,
-            "preferred_topics": [topic for topic, score in best_topics],
-            "topic_scores": dict(best_topics),
+            "preferred_content_type": best_content_type,
+            "content_type_confidence": content_confidence,
+            "content_type_scores": content_scores,
+            "preferred_topics": best_topics,
+            "topic_scores": topic_scores,
             "difficulty_analysis": difficulty_performance,
             "content_diversity": len(set(c.content_type for c in content_performance)),
             "average_engagement": np.mean(

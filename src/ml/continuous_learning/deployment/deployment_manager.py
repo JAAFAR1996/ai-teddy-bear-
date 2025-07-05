@@ -444,32 +444,48 @@ class DeploymentManager:
             "cpu_usage_percent": np.random.uniform(30, 70),
         }
 
+    def _check_single_threshold(
+        self, metric: str, current_value: float, threshold: float
+    ) -> Optional[str]:
+        """Checks a single performance metric against its threshold."""
+        validators = {
+            "response_time_ms": {
+                "is_issue": lambda v, t: v > t,
+                "message": "Response time {value:.0f}ms exceeds threshold {threshold}ms",
+            },
+            "error_rate": {
+                "is_issue": lambda v, t: v > t,
+                "message": "Error rate {value:.3f} exceeds threshold {threshold}",
+            },
+            "safety_score": {
+                "is_issue": lambda v, t: v < t,
+                "message": "Safety score {value:.3f} below threshold {threshold}",
+            },
+            "child_satisfaction": {
+                "is_issue": lambda v, t: v < t,
+                "message": "Child satisfaction {value:.3f} below threshold {threshold}",
+            },
+        }
+
+        validator = validators.get(metric)
+        if validator and validator["is_issue"](current_value, threshold):
+            return validator["message"].format(value=current_value, threshold=threshold)
+        return None
+
     def _check_performance_thresholds(
         self, metrics: Dict[str, float], thresholds: Dict[str, float]
     ) -> List[str]:
         """Checks performance metrics against thresholds."""
         issues = []
         for metric, threshold in thresholds.items():
-            current_value = metrics.get(metric.replace("_ms", ""), 0)
+            # Handle cases like 'response_time_ms' in thresholds but 'response_time' in metrics
+            metric_key_in_metrics = metric.replace("_ms", "")
+            current_value = metrics.get(metric_key_in_metrics, 0)
 
-            is_issue = False
-            message = ""
-
-            if metric == "response_time_ms" and current_value > threshold:
-                is_issue = True
-                message = f"Response time {current_value:.0f}ms exceeds threshold {threshold}ms"
-            elif metric == "error_rate" and current_value > threshold:
-                is_issue = True
-                message = f"Error rate {current_value:.3f} exceeds threshold {threshold}"
-            elif metric == "safety_score" and current_value < threshold:
-                is_issue = True
-                message = f"Safety score {current_value:.3f} below threshold {threshold}"
-            elif metric == "child_satisfaction" and current_value < threshold:
-                is_issue = True
-                message = f"Child satisfaction {current_value:.3f} below threshold {threshold}"
-
-            if is_issue:
-                issues.append(message)
+            issue = self._check_single_threshold(
+                metric, current_value, threshold)
+            if issue:
+                issues.append(issue)
         return issues
 
     async def _trigger_rollback(

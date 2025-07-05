@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تنبيه AI Teddy Bear</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f0f8ff; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+        .teddy-icon { font-size: 48px; margin-bottom: 10px; }
+        .content { padding: 30px; line-height: 1.6; }
+        .alert-box { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 20px 0; }
+        .data-summary { background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; margin: 10px 0; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 14px; color: #666; }
+        .countdown { font-size: 24px; font-weight: bold; color: #e74c3c; text-align: center; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="teddy-icon">🧸</div>
+            <h1>AI Teddy Bear</h1>
+            <h2>تنبيه مهم حول بيانات طفلك</h2>
+        </div>
+
+        <div class="content">
+            <p>عزيزي ولي الأمر،</p>
+
+            <div class="alert-box">
+                <h3>⚠️ تنبيه: سيتم حذف البيانات قريباً</h3>
+                <p>نود إعلامكم أن بيانات طفلكم <strong>{{ child_name }}</strong> القديمة ستحذف تلقائياً.</p>
+            </div>
+
+            <div class="countdown">
+                ⏰ {{ days_until_deletion }} أيام متبقية
+            </div>
+
+            <div class="data-summary">
+                <h3>📊 ملخص البيانات المتأثرة:</h3>
+                <ul>
+                    <li><strong>عدد الجلسات:</strong> {{ sessions_count }}</li>
+                    <li><strong>أقدم تسجيل:</strong> {{ oldest_date.strftime('%Y-%m-%d') if oldest_date }}</li>
+                    <li><strong>أحدث تسجيل:</strong> {{ newest_date.strftime('%Y-%m-%d') if newest_date }}</li>
+                </ul>
+            </div>
+
+            <h3>💾 للاحتفاظ بالبيانات:</h3>
+            <ol>
+                <li>سجلوا دخولكم إلى تطبيق AI Teddy</li>
+                <li>اذهبوا إلى قسم "إعدادات البيانات"</li>
+                <li>اختاروا "تصدير البيانات" لحفظها محلياً</li>
+            </ol>
+
+            <div style="text-align: center;">
+                <a href="https://app.aiteddybear.com/data-export" class="button">تصدير البيانات الآن</a>
+            </div>
+
+            <p><strong>لماذا نحذف البيانات؟</strong></p>
+            <p>نحن ملتزمون بحماية خصوصية طفلكم وفقاً للقوانين الدولية (GDPR, COPPA). يساعد الحذف الدوري في الحفاظ على أمان البيانات وأداء النظام.</p>
+        </div>
+
+        <div class="footer">
+            <p>مع أطيب التحيات،<br><strong>فريق AI Teddy Bear</strong></p>
+            <p>📧 support@aiteddybear.com | 📱 تطبيق AI Teddy</p>
+            <p><small>هذا إشعار تلقائي. لا ترد على هذا البريد.</small></p>
+        </div>
+    </div>
+</body>
+</html> 

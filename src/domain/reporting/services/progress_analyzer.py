@@ -6,7 +6,7 @@ Analyzes child development progress and metrics
 import logging
 from collections import Counter
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Dict, List, Any
 
 from ..models.report_models import (
     EmotionDistribution,
@@ -374,6 +374,49 @@ class ProgressAnalyzer:
             self.logger.error(f"Skill analysis error: {e}")
             return SkillAnalysis(usage={}, proficiency={}, trends={})
 
+    def _aggregate_interaction_data(self, interactions: List[InteractionAnalysis]) -> Dict[str, Any]:
+        """Aggregate data from interactions for achievement checks."""
+        if not interactions:
+            return {}
+
+        total_duration_minutes = sum(i.duration_minutes()
+                                     for i in interactions)
+        avg_quality = sum(
+            i.quality_score for i in interactions) / len(interactions)
+        all_topics = {
+            topic for i in interactions for topic in i.topics_discussed}
+        all_skills = {
+            skill for i in interactions for skill in i.skills_used.keys()}
+
+        return {
+            "total_duration_minutes": total_duration_minutes,
+            "avg_quality": avg_quality,
+            "topic_count": len(all_topics),
+            "skill_count": len(all_skills),
+        }
+
+    def _check_milestone_achievements(self, aggregated_data: Dict[str, Any]) -> List[str]:
+        """Check for milestone-based achievements."""
+        achievements = []
+        if aggregated_data.get("total_duration_minutes", 0) > 100:
+            achievements.append("تجاوز 100 دقيقة من المحادثات")
+        if aggregated_data.get("avg_quality", 0) > 0.8:
+            achievements.append("مستوى تفاعل عالي")
+        if aggregated_data.get("topic_count", 0) > 10:
+            achievements.append("مستكشف فضولي")
+        if aggregated_data.get("skill_count", 0) > 5:
+            achievements.append("متعلم متعدد المهارات")
+        return achievements
+
+    def _check_performance_achievements(self, interactions: List[InteractionAnalysis]) -> List[str]:
+        """Check for performance-based achievements in single interactions."""
+        achievements = []
+        if any(p > 0.9 for i in interactions for p in i.skills_used.values()):
+            achievements.append("إتقان مهارة جديدة")
+        if any(i.duration_minutes() > 15 for i in interactions):
+            achievements.append("محادثة طويلة ومميزة")
+        return achievements
+
     def identify_achievements(
         self, interactions: List[InteractionAnalysis]
     ) -> List[str]:
@@ -382,42 +425,14 @@ class ProgressAnalyzer:
             if not interactions:
                 return []
 
-            achievements = []
+            aggregated_data = self._aggregate_interaction_data(interactions)
 
-            # Data aggregations
-            total_duration_minutes = sum(
-                i.duration_minutes() for i in interactions)
-            avg_quality = sum(
-                i.quality_score for i in interactions) / len(interactions)
-            all_topics = {
-                topic for i in interactions for topic in i.topics_discussed}
-            all_skills = {
-                skill for i in interactions for skill in i.skills_used.keys()}
+            milestone_achievements = self._check_milestone_achievements(
+                aggregated_data)
+            performance_achievements = self._check_performance_achievements(
+                interactions)
 
-            achievement_checks = [
-                ("تجاوز 100 دقيقة من المحادثات",
-                 lambda: total_duration_minutes > 100),
-                ("مستوى تفاعل عالي",
-                 lambda: avg_quality > 0.8),
-                ("مستكشف فضولي",
-                 lambda: len(all_topics) > 10),
-                ("متعلم متعدد المهارات",
-                 lambda: len(all_skills) > 5),
-                ("إتقان مهارة جديدة",
-                    lambda: any(
-                        p > 0.9 for i in interactions for p in i.skills_used.values()),
-                 ),
-                ("محادثة طويلة ومميزة",
-                    lambda: any(
-                        i.duration_minutes() > 15 for i in interactions),
-                 ),
-            ]
-
-            for name, check in achievement_checks:
-                if check():
-                    achievements.append(name)
-
-            return achievements
+            return milestone_achievements + performance_achievements
 
         except Exception as e:
             self.logger.error(f"Achievements identification error: {e}")
@@ -453,7 +468,8 @@ class ProgressAnalyzer:
                  lambda: len(
                      skill_analysis.usage) < 4),
                 ("زيادة المبادرة في المحادثة",
-                    lambda: self.calculate_question_frequency(interactions) < 1.0,
+                    lambda: self.calculate_question_frequency(
+                        interactions) < 1.0,
                  ),
             ]
 

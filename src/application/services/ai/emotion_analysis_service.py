@@ -6,22 +6,23 @@ import numpy as np
 from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime
 import asyncio
-﻿"""Core emotion analysis service."""
+"""Core emotion analysis service."""
 
 
 logger = structlog.get_logger(__name__)
 
 # For text emotion analysis
 try:
-    try:
     from transformers import pipeline
-except ImportError:
-    from src.infrastructure.external_services.mock.transformers import pipeline
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
-    TRANSFORMERS_AVAILABLE = False
-    logger.warning(
-        " Transformers not installed. Install with: pip install transformers")
+    try:
+        from src.infrastructure.external_services.mock.transformers import pipeline
+        TRANSFORMERS_AVAILABLE = True
+    except ImportError:
+        TRANSFORMERS_AVAILABLE = False
+        logger.warning(
+            " Transformers not installed. Install with: pip install transformers")
 
 # For audio emotion analysis
 try:
@@ -80,8 +81,7 @@ class EmotionAnalysisService:
         audio_sr: Optional[int] = None,
         context: Optional[EmotionContext] = None
     ) -> EmotionResult:
-        """
-        Comprehensive emotion analysis from text and/or audio.
+        """Comprehensive emotion analysis from text and/or audio.
 
         Args:
             text: Text to analyze
@@ -151,54 +151,39 @@ class EmotionAnalysisService:
                 logger.error(f" Text analysis error: {e}")
 
         # Fallback to rule-based analysis
-        return self._analyze_text_rules(text)
+        return self._analyze_text_rules_refactored(text)
 
-    def _analyze_text_rules(self, text: str) -> EmotionResult:
+    def _get_emotion_score(self, text_lower: str, keywords: List[str], emotion: str) -> Tuple[float, List[str]]:
+        """Calculates the score for a given emotion based on keywords."""
+        score = 0.0
+        indicators = []
+        for word in keywords:
+            if word in text_lower:
+                score += 0.3
+                indicators.append(f"{emotion} word: {word}")
+        return score, indicators
+
+    def _analyze_text_rules_refactored(self, text: str) -> EmotionResult:
         """Rule-based text emotion analysis as fallback."""
         text_lower = text.lower()
         scores = {emotion: 0.0 for emotion in self.child_emotions.keys()}
         indicators = []
 
-        # Happy indicators
-        happy_words = [
-            'يضحك',
-            'سعيد',
-            'مرح',
-            'رائع',
-            'أحب',
-            'happy',
-            'laugh',
-            'fun',
-            'love',
-            'great']
-        for word in happy_words:
-            if word in text_lower:
-                scores['happy'] += 0.3
-                indicators.append(f"positive word: {word}")
+        emotion_keywords = {
+            "happy": ['يضحك', 'سعيد', 'مرح', 'رائع', 'أحب', 'happy', 'laugh', 'fun', 'love', 'great'],
+            "sad": ['حزين', 'بكي', 'متضايق', 'sad', 'cry', 'upset', 'hurt'],
+            "angry": ['غاضب', 'زعلان', 'angry', 'mad', 'frustrated'],
+            "scared": ['خائف', 'قلق', 'scared', 'afraid', 'worried']
+        }
 
-        # Sad indicators
-        sad_words = ['حزين', 'بكي', 'متضايق', 'sad', 'cry', 'upset', 'hurt']
-        for word in sad_words:
-            if word in text_lower:
-                scores['sad'] += 0.3
-                indicators.append(f"sad word: {word}")
-
-        # Angry indicators
-        angry_words = ['غاضب', 'زعلان', 'angry', 'mad', 'frustrated']
-        for word in angry_words:
-            if word in text_lower:
-                scores['angry'] += 0.3
-                indicators.append(f"angry word: {word}")
-
-        # Scared indicators
-        scared_words = ['خائف', 'قلق', 'scared', 'afraid', 'worried']
-        for word in scared_words:
-            if word in text_lower:
-                scores['scared'] += 0.3
-                indicators.append(f"fear word: {word}")
+        for emotion, keywords in emotion_keywords.items():
+            score, new_indicators = self._get_emotion_score(
+                text_lower, keywords, emotion)
+            scores[emotion] += score
+            indicators.extend(new_indicators)
 
         # Questions indicate curiosity
-        if '?' in text or '' in text:
+        if '?' in text or 'why' in text_lower or 'what' in text_lower or 'how' in text_lower:
             scores['curious'] += 0.2
             indicators.append("questioning")
 
@@ -207,15 +192,17 @@ class EmotionAnalysisService:
         if total > 0:
             scores = {k: v / total for k, v in scores.items()}
         else:
-            scores['calm'] = 0.5
+            scores['calm'] = 0.5  # Default emotion if no indicators found
 
-        primary = max(scores.items(), key=lambda x: x[1])
+        primary = max(scores.items(), key=lambda x: x[1]) if scores else (
+            'calm', 0.5)
 
         return EmotionResult(
             primary_emotion=primary[0],
+            # Cap confidence for rule-based method
             confidence=min(primary[1], 0.8),
             all_emotions=scores,
-            source='text',
+            source='text_rules',
             timestamp=datetime.now().isoformat(),
             behavioral_indicators=indicators,
             recommendations=[]

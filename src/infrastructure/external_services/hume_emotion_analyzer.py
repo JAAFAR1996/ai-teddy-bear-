@@ -283,33 +283,39 @@ class HumeSpeechEmotionAnalyzer:
         self, hume_results: Dict[str, Any], child_emotion: ChildVoiceEmotion
     ):
         """Processes the raw predictions from the Hume API response."""
-        if "predictions" in hume_results:
-            predictions = hume_results["predictions"]
-            if predictions and len(predictions) > 0:
-                first_prediction = predictions[0]
-                if (
-                    "models" in first_prediction
-                    and "prosody" in first_prediction["models"]
-                ):
-                    prosody_data = first_prediction["models"]["prosody"]
-                    if "grouped_predictions" in prosody_data:
-                        grouped = prosody_data["grouped_predictions"]
-                        if grouped and len(grouped) > 0:
-                            emotions = grouped[0]["predictions"]
-                            for emotion_data in emotions:
-                                emotion_name = emotion_data["name"]
-                                emotion_score = emotion_data["score"]
-                                if emotion_name in self.child_emotion_map:
-                                    child_field = self.child_emotion_map[emotion_name]
-                                    if hasattr(child_emotion, child_field):
-                                        current_value = getattr(
-                                            child_emotion, child_field
-                                        )
-                                        setattr(
-                                            child_emotion,
-                                            child_field,
-                                            max(current_value, emotion_score),
-                                        )
+        predictions = hume_results.get("predictions")
+        if not predictions:
+            return
+
+        first_prediction = predictions[0]
+        prosody_data = first_prediction.get("models", {}).get("prosody")
+        if not prosody_data:
+            return
+
+        grouped = prosody_data.get("grouped_predictions")
+        if not grouped:
+            return
+
+        emotions = grouped[0].get("predictions")
+        if not emotions:
+            return
+
+        for emotion_data in emotions:
+            emotion_name = emotion_data.get("name")
+            emotion_score = emotion_data.get("score")
+
+            if not emotion_name or emotion_score is None:
+                continue
+
+            if emotion_name in self.child_emotion_map:
+                child_field = self.child_emotion_map[emotion_name]
+                if hasattr(child_emotion, child_field):
+                    current_value = getattr(child_emotion, child_field)
+                    setattr(
+                        child_emotion,
+                        child_field,
+                        max(current_value, emotion_score),
+                    )
 
     async def _convert_to_child_emotion(
         self,

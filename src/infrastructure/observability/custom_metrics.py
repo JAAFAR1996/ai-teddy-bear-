@@ -68,6 +68,20 @@ class ChildInteractionMetrics:
     violations: List[SafetyViolationType]
 
 
+@dataclass
+class AIInteractionMetrics:
+    """Metrics for a single AI interaction"""
+    response_time_ms: float
+    tokens_used: int
+    model_name: str
+    temperature: float
+    accuracy_score: float
+    quality_score: float
+    context_utilization: float
+    cost_usd: float
+    child_context: Dict[str, Any]
+
+
 class ChildSafetyMetrics:
     """
     Comprehensive child safety metrics collection and monitoring.
@@ -502,124 +516,78 @@ class AIPerformanceMetrics:
         )
 
     def _create_ai_interaction_span_attributes(
-        self,
-        response_time_ms: float,
-        tokens_used: int,
-        model_name: str,
-        temperature: float,
-        accuracy_score: float,
-        quality_score: float,
-        context_utilization: float,
-        cost_usd: float,
-        child_context: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        self, metrics: AIInteractionMetrics
+    ) -> Dict[str, Any]:  # nopa
         """Creates a dictionary of span attributes for AI interaction tracing."""
         return {
-            "ai.model": model_name,
-            "ai.temperature": temperature,
-            "ai.tokens_used": tokens_used,
-            "ai.response_time_ms": response_time_ms,
-            "ai.accuracy": accuracy_score,
-            "ai.quality": quality_score,
-            "ai.context_utilization": context_utilization,
-            "ai.cost_usd": cost_usd,
-            "child.age_group": child_context.get("age_group", "unknown"),
+            "ai.model": metrics.model_name,
+            "ai.temperature": metrics.temperature,
+            "ai.tokens_used": metrics.tokens_used,
+            "ai.response_time_ms": metrics.response_time_ms,
+            "ai.accuracy": metrics.accuracy_score,
+            "ai.quality": metrics.quality_score,
+            "ai.context_utilization": metrics.context_utilization,
+            "ai.cost_usd": metrics.cost_usd,
+            "child.age_group": metrics.child_context.get("age_group", "unknown"),
         }
 
-    def _record_all_ai_metrics(
-        self,
-        response_time_ms: float,
-        tokens_used: int,
-        model_name: str,
-        temperature: float,
-        accuracy_score: float,
-        quality_score: float,
-        context_utilization: float,
-        cost_usd: float,
-        child_context: Dict[str, Any],
-    ):
+    def _record_all_ai_metrics(self, metrics: AIInteractionMetrics):  # nopa
         """Records all AI performance metrics."""
+        child_context = metrics.child_context
         self.ai_response_time.record(
-            response_time_ms,
+            metrics.response_time_ms,
             attributes={
-                "model": model_name,
+                "model": metrics.model_name,
                 "age_group": child_context.get("age_group", "unknown"),
-                "temperature_range": self._categorize_temperature(temperature),
+                "temperature_range": self._categorize_temperature(metrics.temperature),
             },
         )
         self.ai_accuracy.record(
-            accuracy_score,
+            metrics.accuracy_score,
             attributes={
-                "model": model_name,
+                "model": metrics.model_name,
                 "age_group": child_context.get("age_group", "unknown"),
             },
         )
         self.token_usage.add(
-            tokens_used, attributes={
-                "model": model_name, "interaction_type": child_context.get(
-                    "interaction_type", "chat"), "age_group": child_context.get(
-                    "age_group", "unknown"), }, )
-        self.inference_cost.add(
-            cost_usd,
+            metrics.tokens_used,
             attributes={
-                "model": model_name,
-                "cost_tier": self._categorize_cost(cost_usd),
+                "model": metrics.model_name,
+                "interaction_type": child_context.get("interaction_type", "chat"),
+                "age_group": child_context.get("age_group", "unknown"),
+            },
+        )
+        self.inference_cost.add(
+            metrics.cost_usd,
+            attributes={
+                "model": metrics.model_name,
+                "cost_tier": self._categorize_cost(metrics.cost_usd),
             },
         )
         self.context_utilization.record(
-            context_utilization,
+            metrics.context_utilization,
             attributes={
-                "model": model_name,
-                "utilization_level": self._categorize_utilization(context_utilization),
+                "model": metrics.model_name,
+                "utilization_level": self._categorize_utilization(
+                    metrics.context_utilization
+                ),
             },
         )
         self.response_quality.record(
-            quality_score,
+            metrics.quality_score,
             attributes={
-                "model": model_name,
+                "model": metrics.model_name,
                 "age_group": child_context.get("age_group", "unknown"),
-                "quality_tier": self._categorize_quality(quality_score),
+                "quality_tier": self._categorize_quality(metrics.quality_score),
             },
         )
 
-    def record_ai_interaction(
-        self,
-        response_time_ms: float,
-        tokens_used: int,
-        model_name: str,
-        temperature: float,
-        accuracy_score: float,
-        quality_score: float,
-        context_utilization: float,
-        cost_usd: float,
-        child_context: Dict[str, Any],
-    ):
+    def record_ai_interaction(self, metrics: AIInteractionMetrics):
         """Record comprehensive AI interaction metrics"""
         with self.tracer.start_as_current_span("ai_interaction") as span:
-            attributes = self._create_ai_interaction_span_attributes(
-                response_time_ms,
-                tokens_used,
-                model_name,
-                temperature,
-                accuracy_score,
-                quality_score,
-                context_utilization,
-                cost_usd,
-                child_context,
-            )
+            attributes = self._create_ai_interaction_span_attributes(metrics)
             span.set_attributes(attributes)
-
-            self._record_all_ai_metrics(
-                response_time_ms,
-                tokens_used,
-                model_name,
-                temperature,
-                accuracy_score,
-                quality_score,
-                context_utilization,
-                cost_usd,
-                child_context,
-            )
+            self._record_all_ai_metrics(metrics)
 
     def _categorize_temperature(self, temperature: float) -> str:
         """Categorize AI temperature settings"""

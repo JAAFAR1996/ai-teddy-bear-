@@ -262,6 +262,21 @@ class EmotionHistoryService:
 
         return groups
 
+    def _get_trend_direction_and_significance(self, change: float) -> Dict[str, str]:
+        """Determines trend direction and significance from a change value."""
+        if change > 0.1:
+            direction = "increasing"
+        elif change < -0.1:
+            direction = "decreasing"
+        else:
+            direction = "stable"
+
+        significance = (
+            "high" if abs(change) > 0.3 else "medium" if abs(
+                change) > 0.1 else "low"
+        )
+        return {"direction": direction, "significance": significance}
+
     def _calculate_emotion_trend(
         self,
         emotion_type: str,
@@ -278,47 +293,36 @@ class EmotionHistoryService:
         for time_key in sorted(time_groups.keys()):
             emotions_in_period = time_groups[time_key]
             emotion_count = sum(
-                1 for e in emotions_in_period if e.primary_emotion == emotion_type)
+                1 for e in emotions_in_period if e.primary_emotion == emotion_type
+            )
             total_count = len(emotions_in_period)
-
             ratio = emotion_count / total_count if total_count > 0 else 0
-
-            dates.append(
-                datetime.strptime(
-                    time_key.split()[0],
-                    "%Y-%m-%d").date())
+            dates.append(datetime.strptime(
+                time_key.split()[0], "%Y-%m-%d").date())
             values.append(ratio)
 
         if len(values) < 2:
             return None
 
-        # Calculate trend direction
         recent_values = values[-3:] if len(values) >= 3 else values[-2:]
         earlier_values = values[:-3] if len(values) > 3 else values[:-2]
 
         recent_avg = sum(recent_values) / len(recent_values)
-        earlier_avg = (sum(earlier_values) / len(earlier_values)
-                       if earlier_values else recent_avg)
+        earlier_avg = (
+            sum(earlier_values) /
+            len(earlier_values) if earlier_values else recent_avg
+        )
 
         change = (recent_avg - earlier_avg) / max(earlier_avg, 0.01)
-
-        if change > 0.1:
-            direction = "increasing"
-        elif change < -0.1:
-            direction = "decreasing"
-        else:
-            direction = "stable"
-
-        significance = ("high" if abs(change) >
-                        0.3 else "medium" if abs(change) > 0.1 else "low")
+        trend_info = self._get_trend_direction_and_significance(change)
 
         return EmotionTrend(
             emotion=emotion_type,
             dates=dates,
             values=values,
-            direction=direction,
+            direction=trend_info["direction"],
             change_percentage=change * 100,
-            significance=significance,
+            significance=trend_info["significance"],
         )
 
     def _calculate_emotion_variance(
@@ -414,41 +418,44 @@ class EmotionHistoryService:
 
         return indicators
 
-    def _identify_risk_factors(
-            self, emotions: List[EmotionResult]) -> List[str]:
-        """Identify emotional risk factors."""
-        risk_factors = []
-
-        if not emotions:
-            return risk_factors
-
-        # High negative emotion ratio
+    def _check_negative_emotion_ratio(self, emotions: List[EmotionResult], risk_factors: List[str]):
+        """Checks for a high ratio of negative emotions."""
         negative_count = sum(
-            1 for e in emotions if e.primary_emotion in [
-                "sad", "angry", "scared"])
+            1 for e in emotions if e.primary_emotion in ["sad", "angry", "scared"]
+        )
         negative_ratio = negative_count / len(emotions)
-
         if negative_ratio > 0.4:
             risk_factors.append("High frequency of negative emotions")
 
-        # Low interaction confidence
+    def _check_low_confidence(self, emotions: List[EmotionResult], risk_factors: List[str]):
+        """Checks for low average confidence in emotion detection."""
         avg_confidence = sum(e.confidence for e in emotions) / len(emotions)
         if avg_confidence < 0.5:
             risk_factors.append("Low confidence in emotion detection")
 
-        # Concerning behavioral indicators
+    def _check_behavioral_concerns(self, emotions: List[EmotionResult], risk_factors: List[str]):
+        """Checks for concerning behavioral indicators."""
         concerning_indicators = [
             "short response",
             "hesitation",
             "quiet voice",
             "withdrawal",
         ]
-
         for emotion in emotions:
             for indicator in emotion.behavioral_indicators:
-                if any(concern in indicator.lower()
-                        for concern in concerning_indicators):
+                if any(concern in indicator.lower() for concern in concerning_indicators):
                     risk_factors.append(f"Behavioral concern: {indicator}")
                     break
+
+    def _identify_risk_factors(
+            self, emotions: List[EmotionResult]) -> List[str]:
+        """Identify emotional risk factors."""
+        risk_factors = []
+        if not emotions:
+            return risk_factors
+
+        self._check_negative_emotion_ratio(emotions, risk_factors)
+        self._check_low_confidence(emotions, risk_factors)
+        self._check_behavioral_concerns(emotions, risk_factors)
 
         return list(set(risk_factors))  # Remove duplicates

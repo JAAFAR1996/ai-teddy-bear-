@@ -427,6 +427,30 @@ class FeedbackCollector:
             "satisfaction": outcome["engagement_during_learning"],
         }
 
+    def _calculate_learning_metrics(self, items: List[Dict[str, Any]], processed: Dict[str, Any]):
+        """Calculates metrics related to learning outcomes."""
+        learning_items = [
+            item for item in items if item["type"] == "learning_outcome"]
+        if learning_items:
+            processed["learning_effectiveness"] = np.mean(
+                [item["quality_score"] for item in learning_items])
+
+    def _calculate_engagement_metrics(self, items: List[Dict[str, Any]], processed: Dict[str, Any]):
+        """Calculates metrics related to child engagement."""
+        engagement_items = [
+            item for item in items if item["type"] == "child_interaction"]
+        if engagement_items:
+            processed["engagement_score"] = np.mean(
+                [item["satisfaction"] for item in engagement_items])
+
+    def _calculate_parent_satisfaction_metrics(self, items: List[Dict[str, Any]], processed: Dict[str, Any]):
+        """Calculates metrics related to parent satisfaction."""
+        parent_items = [
+            item for item in items if item["type"] == "parent_feedback"]
+        if parent_items:
+            processed["parent_satisfaction"] = np.mean(
+                [item["satisfaction"] for item in parent_items])
+
     async def _calculate_aggregate_metrics(self, all_items: List[Dict[str, Any]], processed: Dict[str, Any]):
         """Calculates and populates aggregate metrics from all processed feedback items."""
         if not all_items:
@@ -438,26 +462,11 @@ class FeedbackCollector:
         processed["safety_incidents"] = sum(
             1 for item in all_items if item["safety_score"] < 0.95)
         processed["high_satisfaction_rate"] = sum(
-            1 for item in all_items if item["satisfaction"] > 0.8
-        ) / len(all_items)
+            1 for item in all_items if item["satisfaction"] > 0.8) / len(all_items)
 
-        learning_items = [
-            item for item in all_items if item["type"] == "learning_outcome"]
-        if learning_items:
-            processed["learning_effectiveness"] = np.mean(
-                [item["quality_score"] for item in learning_items])
-
-        engagement_items = [
-            item for item in all_items if item["type"] == "child_interaction"]
-        if engagement_items:
-            processed["engagement_score"] = np.mean(
-                [item["satisfaction"] for item in engagement_items])
-
-        parent_items = [
-            item for item in all_items if item["type"] == "parent_feedback"]
-        if parent_items:
-            processed["parent_satisfaction"] = np.mean(
-                [item["satisfaction"] for item in parent_items])
+        self._calculate_learning_metrics(all_items, processed)
+        self._calculate_engagement_metrics(all_items, processed)
+        self._calculate_parent_satisfaction_metrics(all_items, processed)
 
     async def _process_and_filter_feedback(
         self, raw_feedback: Dict[str, Any]

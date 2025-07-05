@@ -107,16 +107,18 @@ class ModerationStatistics:
             self._update_hourly_stats(is_safe)
 
             # Add to recent history
-            self._add_to_history(
-                user_id,
-                session_id,
-                content_length,
-                is_safe,
-                severity,
-                categories,
-                result.get("confidence", 0.0),
-                processing_time_ms,
+            entry = ModerationStatsEntry(
+                timestamp=time.time(),
+                user_id=user_id,
+                session_id=session_id,
+                content_length=content_length,
+                is_safe=is_safe,
+                severity=severity,
+                categories=categories.copy(),
+                confidence=result.get("confidence", 0.0),
+                processing_time_ms=processing_time_ms,
             )
+            self._add_to_history(entry)
 
         except Exception as e:
             self.logger.error(f"Failed to record moderation result: {e}")
@@ -184,30 +186,8 @@ class ModerationStatistics:
         else:
             hour_data["blocked"] += 1
 
-    def _add_to_history(
-        self,
-        user_id: Optional[str],
-        session_id: Optional[str],
-        content_length: int,
-        is_safe: bool,
-        severity: str,
-        categories: List[str],
-        confidence: float,
-        processing_time_ms: float,
-    ) -> None:
+    def _add_to_history(self, entry: ModerationStatsEntry) -> None:
         """Add entry to recent history"""
-        entry = ModerationStatsEntry(
-            timestamp=time.time(),
-            user_id=user_id,
-            session_id=session_id,
-            content_length=content_length,
-            is_safe=is_safe,
-            severity=severity,
-            categories=categories.copy(),
-            confidence=confidence,
-            processing_time_ms=processing_time_ms,
-        )
-
         self.recent_entries.append(entry)
 
         # Maintain max history size

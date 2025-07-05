@@ -1,0 +1,9 @@
+{
+    "title": "🧸 تنبيه AI Teddy Bear",
+    "body": "بيانات {{ child_name }} ستحذف خلال {{ days_until_deletion }} أيام. اضغط للتفاصيل.",
+    "data": {
+        "type": "data_cleanup_warning",
+        "child_name": "{{ child_name }}",
+        "days_until_deletion": "{{ days_until_deletion }}"
+    }
+} 

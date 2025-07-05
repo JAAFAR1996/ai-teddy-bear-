@@ -9,7 +9,7 @@ import logging
 import statistics
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -355,34 +355,35 @@ class ChildDataAnalyzer:
             logger.error(f"Response patterns analysis error: {e}")
             return {}
 
+    def _get_indicator_type(self, indicator_str: str) -> Optional[str]:
+        """Helper to identify the type of a single behavioral indicator string."""
+        lower_indicator = indicator_str.lower()
+
+        if "empathy" in lower_indicator:
+            return "empathy"
+        if any(k in lower_indicator for k in ["sharing", "share"]):
+            return "sharing"
+        if any(k in lower_indicator for k in ["cooperation", "cooperate"]):
+            return "cooperation"
+        if any(k in lower_indicator for k in ["polite", "please", "thank"]):
+            return "politeness"
+        return None
+
     def _count_social_indicators(
         self, interactions: List[InteractionData]
     ) -> Dict[str, int]:
         """عد المؤشرات الاجتماعية"""
         try:
             indicators = {
-                "empathy": 0,
-                "sharing": 0,
-                "cooperation": 0,
-                "politeness": 0}
+                "empathy": 0, "sharing": 0, "cooperation": 0, "politeness": 0
+            }
 
             for interaction in interactions:
-                for indicator in interaction.behavioral_indicators:
-                    if "empathy" in indicator.lower():
-                        indicators["empathy"] += 1
-                    elif "sharing" in indicator.lower() or "share" in indicator.lower():
-                        indicators["sharing"] += 1
-                    elif (
-                        "cooperation" in indicator.lower()
-                        or "cooperate" in indicator.lower()
-                    ):
-                        indicators["cooperation"] += 1
-                    elif (
-                        "polite" in indicator.lower()
-                        or "please" in indicator.lower()
-                        or "thank" in indicator.lower()
-                    ):
-                        indicators["politeness"] += 1
+                for behavior_indicator in interaction.behavioral_indicators:
+                    indicator_type = self._get_indicator_type(
+                        behavior_indicator)
+                    if indicator_type:
+                        indicators[indicator_type] += 1
 
             return indicators
 
@@ -390,45 +391,51 @@ class ChildDataAnalyzer:
             logger.error(f"Social indicators counting error: {e}")
             return {}
 
+    def _analyze_activity_timing(self, interactions: List[InteractionData]) -> List[str]:
+        """Analyzes the timing of interactions to find active periods."""
+        patterns = []
+        total = len(interactions)
+        if total == 0:
+            return patterns
+
+        morning_interactions = sum(
+            1 for i in interactions if 6 <= i.timestamp.hour < 12)
+        afternoon_interactions = sum(
+            1 for i in interactions if 12 <= i.timestamp.hour < 18)
+        evening_interactions = sum(
+            1 for i in interactions if 18 <= i.timestamp.hour < 22)
+
+        if morning_interactions / total > 0.4:
+            patterns.append("learner_morning_active")
+        if afternoon_interactions / total > 0.4:
+            patterns.append("learner_afternoon_active")
+        if evening_interactions / total > 0.4:
+            patterns.append("learner_evening_active")
+
+        return patterns
+
+    def _analyze_topic_preferences(self, interactions: List[InteractionData]) -> List[str]:
+        """Analyzes topic preferences from interactions."""
+        patterns = []
+        topic_counts = {}
+        for interaction in interactions:
+            for topic in interaction.topics:
+                topic_counts[topic] = topic_counts.get(topic, 0) + 1
+
+        if topic_counts:
+            favorite_topic = max(topic_counts, key=topic_counts.get)
+            patterns.append(f"prefers_{favorite_topic}")
+
+        return patterns
+
     def _identify_learning_patterns(
         self, interactions: List[InteractionData]
     ) -> List[str]:
         """تحديد أنماط التعلم"""
         try:
-            patterns = []
-
-            # تحليل أوقات النشاط
-            morning_interactions = sum(
-                1 for i in interactions if 6 <= i.timestamp.hour < 12
-            )
-            afternoon_interactions = sum(
-                1 for i in interactions if 12 <= i.timestamp.hour < 18
-            )
-            evening_interactions = sum(
-                1 for i in interactions if 18 <= i.timestamp.hour < 22
-            )
-
-            total = len(interactions)
-            if total > 0:
-                if morning_interactions / total > 0.4:
-                    patterns.append("learner_morning_active")
-                if afternoon_interactions / total > 0.4:
-                    patterns.append("learner_afternoon_active")
-                if evening_interactions / total > 0.4:
-                    patterns.append("learner_evening_active")
-
-            # تحليل تفضيلات المواضيع
-            topic_counts = {}
-            for interaction in interactions:
-                for topic in interaction.topics:
-                    topic_counts[topic] = topic_counts.get(topic, 0) + 1
-
-            if topic_counts:
-                favorite_topic = max(topic_counts.keys(), key=topic_counts.get)
-                patterns.append(f"prefers_{favorite_topic}")
-
-            return patterns
-
+            timing_patterns = self._analyze_activity_timing(interactions)
+            topic_patterns = self._analyze_topic_preferences(interactions)
+            return timing_patterns + topic_patterns
         except Exception as e:
             logger.error(f"Learning patterns identification error: {e}")
             return []

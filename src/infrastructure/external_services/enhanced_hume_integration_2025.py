@@ -1,9 +1,10 @@
 from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
 
 #!/usr/bin/env python3
 """
 🎤 Enhanced HUME AI Integration - 2025 Edition
-تكامل Hume AI مع المهام الثلاث:
+تكامل HUME AI مع المهام الثلاث:
 1. معايرة دقة تحليل المشاعر
 2. دعم اللغات المتعددة
 3. تكامل البيانات التاريخية
@@ -14,13 +15,18 @@ import json
 import logging
 import os
 import statistics
-from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Union
 
 import numpy as np
 import uuid
+import random
+import time
+import openai
+import soundfile as sf
+from hume import AsyncHumeClient, HumeClient
+from pydantic import BaseModel, Field
 
 # HUME AI imports
 try:
@@ -58,8 +64,20 @@ class CalibrationConfig:
             }
 
 
+@dataclass
+class ComprehensiveReportData:
+    device_id: str
+    start_date: datetime
+    end_date: datetime
+    historical_sessions: List
+    processed_data: Dict
+    trends_analysis: Dict
+    insights: Dict
+    include_detailed_analysis: bool
+
+
 class EnhancedHumeIntegration:
-    """🎭 Enhanced HUME AI Integration with 2025 Standards"""
+    """🎭 Enhanced Hume AI Integration with 2025 Standards"""
 
     def __init__(self, api_key: Optional[str] = None):
         """تهيئة التكامل المحسن مع HUME AI"""
@@ -85,6 +103,8 @@ class EnhancedHumeIntegration:
             self.client = None
             self.async_client = None
             self.logger.info("🔄 Running in mock mode for development")
+
+        openai.api_key = os.getenv("OPENAI_API_KEY")
 
     # ==================== TASK 1: CALIBRATION ====================
 
@@ -716,69 +736,60 @@ class EnhancedHumeIntegration:
 
     # ==================== TASK 3: HISTORICAL DATA ====================
 
-    def _build_comprehensive_report(
-        self,
-        device_id: str,
-        start_date: datetime,
-        end_date: datetime,
-        historical_sessions: List,
-        processed_data: Dict,
-        trends_analysis: Dict,
-        insights: Dict,
-        include_detailed_analysis: bool,
-    ) -> Dict:
+    def _build_comprehensive_report(self, report_data: ComprehensiveReportData) -> Dict:
         """Builds the comprehensive historical data report."""
         return {
             "metadata": {
-                "device_id": device_id,
+                "device_id": report_data.device_id,
                 "analysis_period": {
-                    "start": start_date.isoformat(),
-                    "end": end_date.isoformat(),
-                    "total_days": (end_date - start_date).days,
+                    "start": report_data.start_date.isoformat(),
+                    "end": report_data.end_date.isoformat(),
+                    "total_days": (report_data.end_date - report_data.start_date).days,
                     "generated_at": datetime.now().isoformat(),
                 },
                 "data_quality": {
-                    "sessions_found": len(historical_sessions),
-                    "data_completeness": processed_data["data_quality_score"],
-                    "confidence_level": processed_data["overall_confidence"],
+                    "sessions_found": len(report_data.historical_sessions),
+                    "data_completeness": report_data.processed_data["data_quality_score"],
+                    "confidence_level": report_data.processed_data["overall_confidence"],
                 },
             },
             "summary_statistics": {
-                "total_sessions": len(historical_sessions),
-                "average_sessions_per_day": len(historical_sessions)
-                / max((end_date - start_date).days, 1),
-                "total_interaction_time": processed_data["total_duration"],
-                "average_session_duration": processed_data["avg_session_duration"],
-                "most_common_emotion": processed_data["dominant_emotion"],
-                "emotional_stability_score": processed_data["stability_score"],
-                "language_distribution": processed_data["language_stats"],
+                "total_sessions": len(report_data.historical_sessions),
+                "average_sessions_per_day": len(report_data.historical_sessions)
+                / max((report_data.end_date - report_data.start_date).days, 1),
+                "total_interaction_time": report_data.processed_data["total_duration"],
+                "average_session_duration": report_data.processed_data["avg_session_duration"],
+                "most_common_emotion": report_data.processed_data["dominant_emotion"],
+                "emotional_stability_score": report_data.processed_data["stability_score"],
+                "language_distribution": report_data.processed_data["language_stats"],
             },
             "detailed_analysis": (
-                processed_data["daily_breakdown"] if include_detailed_analysis else {}
+                report_data.processed_data["daily_breakdown"] if report_data.include_detailed_analysis else {
+                }
             ),
             "trends_and_patterns": {
-                "emotional_trends": trends_analysis["emotion_trends"],
-                "temporal_patterns": trends_analysis["time_patterns"],
-                "language_usage_trends": trends_analysis["language_trends"],
-                "development_indicators": trends_analysis["development_trends"],
+                "emotional_trends": report_data.trends_analysis["emotion_trends"],
+                "temporal_patterns": report_data.trends_analysis["time_patterns"],
+                "language_usage_trends": report_data.trends_analysis["language_trends"],
+                "development_indicators": report_data.trends_analysis["development_trends"],
             },
             "insights_and_recommendations": {
-                "key_insights": insights["key_findings"],
-                "emotional_health_assessment": insights["emotional_health"],
-                "developmental_assessment": insights["development_status"],
-                "parental_recommendations": insights["recommendations"],
-                "areas_of_concern": insights["concerns"],
-                "positive_highlights": insights["highlights"],
+                "key_insights": report_data.insights["key_findings"],
+                "emotional_health_assessment": report_data.insights["emotional_health"],
+                "developmental_assessment": report_data.insights["development_status"],
+                "parental_recommendations": report_data.insights["recommendations"],
+                "areas_of_concern": report_data.insights["concerns"],
+                "positive_highlights": report_data.insights["highlights"],
             },
             "hume_integration_metrics": {
-                "analysis_accuracy": processed_data.get("hume_accuracy", 0.85),
-                "language_detection_success": processed_data.get(
+                "analysis_accuracy": report_data.processed_data.get("hume_accuracy", 0.85),
+                "language_detection_success": report_data.processed_data.get(
                     "lang_detection_success", 0.90
                 ),
                 "calibration_effectiveness": self._assess_calibration_effectiveness(
-                    processed_data
+                    report_data.processed_data
                 ),
-                "data_processing_notes": processed_data.get("processing_notes", []),
+                "data_processing_notes": report_data.processed_data.get("processing_notes", []),
             },
         }
 
@@ -837,16 +848,18 @@ class EnhancedHumeIntegration:
                 processed_data, trends_analysis
             )
 
-            comprehensive_report = self._build_comprehensive_report(
-                device_id,
-                start_date,
-                end_date,
-                historical_sessions,
-                processed_data,
-                trends_analysis,
-                insights,
-                include_detailed_analysis,
+            report_data = ComprehensiveReportData(
+                device_id=device_id,
+                start_date=start_date,
+                end_date=end_date,
+                historical_sessions=historical_sessions,
+                processed_data=processed_data,
+                trends_analysis=trends_analysis,
+                insights=insights,
+                include_detailed_analysis=include_detailed_analysis,
             )
+            comprehensive_report = self._build_comprehensive_report(
+                report_data)
 
             await self._save_historical_report(device_id, comprehensive_report)
 
