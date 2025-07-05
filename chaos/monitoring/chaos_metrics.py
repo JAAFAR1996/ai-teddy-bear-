@@ -98,8 +98,7 @@ class ChaosMetricsCollector:
                             )
                         )
             except Exception as e:
-                logger.error(
-                    f"Failed to collect metrics for {service_name}: {e}")
+                logger.error(f"Failed to collect metrics for {service_name}: {e}")
 
     async def _collect_health_snapshot(self, experiment_id: str):
         """Collect overall system health snapshot"""
@@ -163,26 +162,42 @@ class ChaosMetricsCollector:
     def _filter_experiment_data(self, experiment_id: str) -> tuple:
         """Filter metrics and snapshots for specific experiment."""
         experiment_metrics = [
-            m for m in self.metrics_buffer if m.experiment_id == experiment_id]
+            m for m in self.metrics_buffer if m.experiment_id == experiment_id
+        ]
         experiment_snapshots = [
-            s for s in self.health_snapshots if s.experiment_id == experiment_id]
+            s for s in self.health_snapshots if s.experiment_id == experiment_id
+        ]
         return experiment_metrics, experiment_snapshots
 
-    def _calculate_performance_metrics(self, experiment_metrics: List[ChaosMetric]) -> Dict[str, float]:
+    def _calculate_performance_metrics(
+        self, experiment_metrics: List[ChaosMetric]
+    ) -> Dict[str, float]:
         """Calculate performance metrics from experiment data."""
         response_times = [
-            m.metric_value for m in experiment_metrics if m.metric_name == "response_time"]
+            m.metric_value
+            for m in experiment_metrics
+            if m.metric_name == "response_time"
+        ]
         memory_usage = [
-            m.metric_value for m in experiment_metrics if m.metric_name == "memory_usage"]
+            m.metric_value
+            for m in experiment_metrics
+            if m.metric_name == "memory_usage"
+        ]
 
         return {
-            "avg_response_time": sum(response_times) / len(response_times) if response_times else 0,
+            "avg_response_time": (
+                sum(response_times) / len(response_times) if response_times else 0
+            ),
             "max_response_time": max(response_times) if response_times else 0,
             "min_response_time": min(response_times) if response_times else 0,
-            "avg_memory_usage": sum(memory_usage) / len(memory_usage) if memory_usage else 0,
+            "avg_memory_usage": (
+                sum(memory_usage) / len(memory_usage) if memory_usage else 0
+            ),
         }
 
-    def _calculate_health_metrics(self, experiment_snapshots: List[SystemHealthSnapshot]) -> Dict[str, float]:
+    def _calculate_health_metrics(
+        self, experiment_snapshots: List[SystemHealthSnapshot]
+    ) -> Dict[str, float]:
         """Calculate health metrics from experiment snapshots."""
         if not experiment_snapshots:
             return {
@@ -193,40 +208,55 @@ class ChaosMetricsCollector:
             }
 
         return {
-            "avg_health_ratio": sum(s.services_healthy / s.services_total for s in experiment_snapshots) / len(experiment_snapshots),
+            "avg_health_ratio": sum(
+                s.services_healthy / s.services_total for s in experiment_snapshots
+            )
+            / len(experiment_snapshots),
             "max_error_rate": max(s.error_rate for s in experiment_snapshots),
             "min_throughput": min(s.throughput for s in experiment_snapshots),
-            "total_safety_violations": sum(s.safety_violations for s in experiment_snapshots),
+            "total_safety_violations": sum(
+                s.safety_violations for s in experiment_snapshots
+            ),
         }
 
-    def _analyze_services(self, experiment_metrics: List[ChaosMetric]) -> Dict[str, Dict[str, float]]:
+    def _analyze_services(
+        self, experiment_metrics: List[ChaosMetric]
+    ) -> Dict[str, Dict[str, float]]:
         """Analyze metrics per service."""
         service_analysis = {}
         for service_name in self.service_endpoints.keys():
             service_metrics = [
-                m for m in experiment_metrics if m.service_name == service_name]
+                m for m in experiment_metrics if m.service_name == service_name
+            ]
             service_response_times = [
-                m.metric_value for m in service_metrics if m.metric_name == "response_time"]
+                m.metric_value
+                for m in service_metrics
+                if m.metric_name == "response_time"
+            ]
 
             if service_response_times:
                 service_analysis[service_name] = {
-                    "avg_response_time": sum(service_response_times) / len(service_response_times),
+                    "avg_response_time": sum(service_response_times)
+                    / len(service_response_times),
                     "max_response_time": max(service_response_times),
                     "metric_count": len(service_metrics),
-                    "availability": len([rt for rt in service_response_times if rt < 5.0]) / len(service_response_times),
+                    "availability": len(
+                        [rt for rt in service_response_times if rt < 5.0]
+                    )
+                    / len(service_response_times),
                 }
         return service_analysis
 
     def generate_experiment_report(self, experiment_id: str) -> Dict[str, Any]:
         """Generate comprehensive experiment report"""
         experiment_metrics, experiment_snapshots = self._filter_experiment_data(
-            experiment_id)
+            experiment_id
+        )
 
         if not experiment_metrics and not experiment_snapshots:
             return {"error": f"No metrics found for experiment {experiment_id}"}
 
-        performance_metrics = self._calculate_performance_metrics(
-            experiment_metrics)
+        performance_metrics = self._calculate_performance_metrics(experiment_metrics)
         health_metrics = self._calculate_health_metrics(experiment_snapshots)
         service_analysis = self._analyze_services(experiment_metrics)
 
@@ -234,7 +264,7 @@ class ChaosMetricsCollector:
             health_metrics["avg_health_ratio"],
             health_metrics["max_error_rate"],
             performance_metrics["avg_response_time"],
-            health_metrics["total_safety_violations"]
+            health_metrics["total_safety_violations"],
         )
 
         return {
@@ -327,10 +357,10 @@ class ChaosMetricsCollector:
     ) -> str:
         """Calculate experiment grade based on metrics"""
         score = (
-            self._score_health_ratio(health_ratio) +
-            self._score_error_rate(error_rate) +
-            self._score_response_time(response_time) +
-            self._score_safety_violations(safety_violations)
+            self._score_health_ratio(health_ratio)
+            + self._score_error_rate(error_rate)
+            + self._score_response_time(response_time)
+            + self._score_safety_violations(safety_violations)
         )
         return self._convert_score_to_grade(score)
 
@@ -345,8 +375,7 @@ class ChaosMetricsCollector:
                 prometheus_line = f'chaos_{metric.metric_name}{{experiment_id="{metric.experiment_id}",service="{metric.service_name}"}} {metric.metric_value} {int(metric.timestamp.timestamp() * 1000)}'
                 prometheus_data.append(prometheus_line)
             if prometheus_data:
-                logger.info(
-                    f"📊 Exported {len(prometheus_data)} metrics to Prometheus")
+                logger.info(f"📊 Exported {len(prometheus_data)} metrics to Prometheus")
                 return True
             return False
         except Exception as e:
@@ -375,16 +404,20 @@ class ChaosMetricsCollector:
         """Get recent metrics and snapshots for experiment."""
         recent_time = datetime.now() - timedelta(minutes=5)
         recent_metrics = [
-            m for m in self.metrics_buffer
+            m
+            for m in self.metrics_buffer
             if m.experiment_id == experiment_id and m.timestamp > recent_time
         ]
         recent_snapshots = [
-            s for s in self.health_snapshots
+            s
+            for s in self.health_snapshots
             if s.experiment_id == experiment_id and s.timestamp > recent_time
         ]
         return recent_metrics, recent_snapshots
 
-    def _build_current_status(self, latest_snapshot: SystemHealthSnapshot) -> Dict[str, Any]:
+    def _build_current_status(
+        self, latest_snapshot: SystemHealthSnapshot
+    ) -> Dict[str, Any]:
         """Build current status from latest snapshot."""
         if not latest_snapshot:
             return {
@@ -398,19 +431,26 @@ class ChaosMetricsCollector:
         return {
             "healthy_services": latest_snapshot.services_healthy,
             "total_services": latest_snapshot.services_total,
-            "health_ratio": latest_snapshot.services_healthy / latest_snapshot.services_total,
+            "health_ratio": latest_snapshot.services_healthy
+            / latest_snapshot.services_total,
             "avg_response_time": latest_snapshot.avg_response_time,
             "error_rate": latest_snapshot.error_rate,
         }
 
-    def _build_service_status(self, recent_metrics: List[ChaosMetric]) -> Dict[str, Dict[str, Any]]:
+    def _build_service_status(
+        self, recent_metrics: List[ChaosMetric]
+    ) -> Dict[str, Dict[str, Any]]:
         """Build service status from recent metrics."""
         service_status = {}
         for service_name in self.service_endpoints.keys():
             service_metrics = [
-                m for m in recent_metrics if m.service_name == service_name]
+                m for m in recent_metrics if m.service_name == service_name
+            ]
             response_times = [
-                m.metric_value for m in service_metrics if m.metric_name == "response_time"]
+                m.metric_value
+                for m in service_metrics
+                if m.metric_name == "response_time"
+            ]
 
             if response_times:
                 service_status[service_name] = {
@@ -426,11 +466,15 @@ class ChaosMetricsCollector:
                 }
         return service_status
 
-    def _build_time_series(self, recent_snapshots: List[SystemHealthSnapshot]) -> Dict[str, List]:
+    def _build_time_series(
+        self, recent_snapshots: List[SystemHealthSnapshot]
+    ) -> Dict[str, List]:
         """Build time series data from recent snapshots."""
         return {
             "timestamps": [s.timestamp.isoformat() for s in recent_snapshots],
-            "health_ratios": [(s.services_healthy / s.services_total) for s in recent_snapshots],
+            "health_ratios": [
+                (s.services_healthy / s.services_total) for s in recent_snapshots
+            ],
             "response_times": [s.avg_response_time for s in recent_snapshots],
             "error_rates": [s.error_rate for s in recent_snapshots],
         }
@@ -438,7 +482,8 @@ class ChaosMetricsCollector:
     def get_real_time_dashboard_data(self, experiment_id: str) -> Dict[str, Any]:
         """Get real-time dashboard data for ongoing experiment"""
         recent_metrics, recent_snapshots = self._get_recent_experiment_data(
-            experiment_id)
+            experiment_id
+        )
 
         if not recent_metrics and not recent_snapshots:
             return {"status": "no_data", "experiment_id": experiment_id}

@@ -10,8 +10,8 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List
 
-import requests
 import httpx
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -103,12 +103,10 @@ async def clear_chaos_state(configuration: Dict[str, Any] = None) -> Dict[str, A
                     },
                     timeout=15,
                 )
-                clear_results[service_name] = clear_response.status_code in [
-                    200, 202]
+                clear_results[service_name] = clear_response.status_code in [200, 202]
             except Exception as e:
                 clear_results[service_name] = False
-                logger.error(
-                    f"❌ Failed to clear chaos state for {service_name}: {e}")
+                logger.error(f"❌ Failed to clear chaos state for {service_name}: {e}")
         success = all(clear_results.values())
         return {
             "action": "clear_chaos_state",
@@ -139,8 +137,7 @@ async def restore_network_policies(
                 success_count += 1
                 await asyncio.sleep(1)
             except Exception as e:
-                logger.error(
-                    f"❌ Network policy restoration failed: {command} - {e}")
+                logger.error(f"❌ Network policy restoration failed: {command} - {e}")
         success = success_count == len(network_commands)
         return {
             "action": "restore_network_policies",
@@ -153,7 +150,9 @@ async def restore_network_policies(
         return {"action": "restore_network_policies", "error": str(e), "success": False}
 
 
-async def _restart_service(session: httpx.AsyncClient, service: str, endpoint: str) -> bool:
+async def _restart_service(
+    session: httpx.AsyncClient, service: str, endpoint: str
+) -> bool:
     """Restarts a single service and waits for it to become ready."""
     try:
         logger.info(f"🔄 Attempting to restart {service}...")
@@ -167,7 +166,8 @@ async def _restart_service(session: httpx.AsyncClient, service: str, endpoint: s
                 logger.info(f"✅ {service} restarted successfully.")
                 return True
         logger.error(
-            f"❌ {service} restart failed: Status {restart_response.status_code}")
+            f"❌ {service} restart failed: Status {restart_response.status_code}"
+        )
         return False
     except (httpx.RequestError, asyncio.TimeoutError) as e:
         logger.error(f"❌ {service} restart error: {e}")
@@ -182,26 +182,30 @@ async def _identify_failed_services(recovery: RecoveryActions) -> List[str]:
     ]
 
     if failed_services:
-        logger.info(
-            f"Found {len(failed_services)} failed services: {failed_services}")
+        logger.info(f"Found {len(failed_services)} failed services: {failed_services}")
     else:
         logger.info("✅ No failed services found.")
 
     return failed_services
 
 
-async def _restart_multiple_services(failed_services: List[str], recovery: RecoveryActions) -> Dict[str, bool]:
+async def _restart_multiple_services(
+    failed_services: List[str], recovery: RecoveryActions
+) -> Dict[str, bool]:
     """Restart multiple failed services concurrently."""
     async with httpx.AsyncClient() as session:
         tasks = {
             service: _restart_service(
-                session, service, recovery.service_endpoints[service])
+                session, service, recovery.service_endpoints[service]
+            )
             for service in failed_services
         }
         return {service: await task for service, task in tasks.items()}
 
 
-async def restart_failed_services(configuration: Dict[str, Any] = None) -> Dict[str, Any]:
+async def restart_failed_services(
+    configuration: Dict[str, Any] = None,
+) -> Dict[str, Any]:
     """Identifies and restarts services that failed during chaos experiments."""
     recovery = RecoveryActions()
     logger.info("🔄 Checking for failed services to restart.")
@@ -210,7 +214,11 @@ async def restart_failed_services(configuration: Dict[str, Any] = None) -> Dict[
         failed_services = await _identify_failed_services(recovery)
 
         if not failed_services:
-            return {"action": "restart_failed_services", "success": True, "restarted_services": []}
+            return {
+                "action": "restart_failed_services",
+                "success": True,
+                "restarted_services": [],
+            }
 
         results = await _restart_multiple_services(failed_services, recovery)
         success = all(results.values())
@@ -291,10 +299,12 @@ async def wait_for_service_ready(
                 return True
         except requests.exceptions.RequestException as exc:
             logger.warning(
-                f"Waiting for service {service_name} to be ready. Error: {exc}")
+                f"Waiting for service {service_name} to be ready. Error: {exc}"
+            )
         await asyncio.sleep(2)
     logger.error(
-        f"Service {service_name} did not become ready in {timeout_seconds} seconds.")
+        f"Service {service_name} did not become ready in {timeout_seconds} seconds."
+    )
     return False
 
 
@@ -367,7 +377,8 @@ async def check_performance_metrics() -> Dict[str, Any]:
     try:
         start_time = time.time()
         test_response = requests.get(
-            "https://graphql-federation:8000/health", timeout=5)
+            "https://graphql-federation:8000/health", timeout=5
+        )
         response_time = time.time() - start_time
         performance_acceptable = (
             test_response.status_code == 200 and response_time < 2.0
