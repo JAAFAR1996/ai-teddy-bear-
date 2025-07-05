@@ -66,6 +66,7 @@ class RateLimiter:
 
         # Fall back to IP address
         forwarded = request.headers.get("X-Forwarded-For")
+        ip = request.client.host
         if forwarded:
-            return f"ip:{forwarded.split(',')[0].strip()}"
-        return f"ip:{request.client.host}"
+            ip = forwarded.split(",")[0].strip()
+        return f"ip:{ip}"

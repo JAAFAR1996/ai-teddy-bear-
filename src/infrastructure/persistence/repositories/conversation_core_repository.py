@@ -13,6 +13,24 @@ from src.core.domain.entities.conversation import Conversation
 class ConversationCoreRepository:
     """Core repository for conversation CRUD operations."""
 
+    _columns = [
+        "id",
+        "child_id",
+        "session_id",
+        "start_time",
+        "end_time",
+        "duration",
+        "summary",
+        "full_transcript",
+        "topics",
+        "emotional_states",
+        "parent_visible",
+        "metadata",
+        "created_at",
+        "updated_at",
+        "archived",
+    ]
+
     def __init__(self, connection: sqlite3.Connection):
         """Initialize core repository with database connection."""
         self.connection = connection
@@ -55,7 +73,8 @@ class ConversationCoreRepository:
             return None
 
         except sqlite3.Error as e:
-            self.logger.error(f"Error retrieving conversation {conversation_id}: {e}")
+            self.logger.error(
+                f"Error retrieving conversation {conversation_id}: {e}")
             raise
 
     async def get_by_session_id(self, session_id: str) -> Optional[Conversation]:
@@ -87,9 +106,20 @@ class ConversationCoreRepository:
             if "id" not in data or not data["id"]:
                 raise ValueError("Conversation must have an ID for update")
 
+            # Whitelist columns to prevent SQL injection
+            update_data = {
+                k: v for k, v in data.items() if k in self._columns and k != "id"
+            }
+
+            if not update_data:
+                self.logger.warning(
+                    f"No valid fields to update for conversation {data.get('id')}"
+                )
+                return conversation
+
             # Prepare update SQL
-            update_fields = [f"{k} = ?" for k in data.keys() if k != "id"]
-            update_values = [v for k, v in data.items() if k != "id"]
+            update_fields = [f"{k} = ?" for k in update_data.keys()]
+            update_values = list(update_data.values())
             update_values.append(data["id"])
 
             sql = (
@@ -118,7 +148,8 @@ class ConversationCoreRepository:
             return cursor.rowcount > 0
 
         except sqlite3.Error as e:
-            self.logger.error(f"Error deleting conversation {conversation_id}: {e}")
+            self.logger.error(
+                f"Error deleting conversation {conversation_id}: {e}")
             raise
 
     async def get_conversations_by_child(
@@ -145,7 +176,8 @@ class ConversationCoreRepository:
             sql += " ORDER BY start_time DESC"
 
             if limit:
-                sql += f" LIMIT {limit}"
+                sql += " LIMIT ?"
+                params.append(limit)
 
             cursor.execute(sql, params)
             rows = cursor.fetchall()
@@ -175,7 +207,8 @@ class ConversationCoreRepository:
                 data[field] = json.dumps(data[field])
 
         # Handle datetime fields
-        datetime_fields = ["start_time", "end_time", "created_at", "updated_at"]
+        datetime_fields = ["start_time",
+                           "end_time", "created_at", "updated_at"]
         for field in datetime_fields:
             if field in data and data[field] and isinstance(data[field], datetime):
                 data[field] = data[field].isoformat()
@@ -204,7 +237,8 @@ class ConversationCoreRepository:
                 data[field] = [] if field == "topics" else {}
 
         # Parse datetime fields
-        datetime_fields = ["start_time", "end_time", "created_at", "updated_at"]
+        datetime_fields = ["start_time",
+                           "end_time", "created_at", "updated_at"]
         for field in datetime_fields:
             if field in data and data[field]:
                 try:

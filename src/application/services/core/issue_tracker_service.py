@@ -2,35 +2,7 @@ from typing import Any, Dict
 
 #!/usr/bin/env python3
 """
-🐛 Issue Tracker Service - REFACTORED VERSION
-نظام تتبع الأخطاء والمشاكل - نسخة محسنة
 
-✅ تم إصلاح مشكلة Excess Function Arguments بتطبيق Parameter Object pattern
-✅ تم تحسين Cyclomatic Complexity بتطبيق Extract Function refactoring
-✅ تم تطبيق Single Responsibility Principle في validation services
-✅ تم تحسين Code Cohesion والصيانة بشكل كبير
-
-التحسينات المطبقة (Applied Improvements):
-1. ✅ Fixed Excess Function Arguments: Parameter Objects used throughout (≤4 args max)
-2. ✅ Reduced Cyclomatic Complexity: Extracted validation methods with single responsibility
-3. ✅ Improved Code Cohesion: Clear separation of validation, data, and service logic
-4. ✅ Enhanced Maintainability: Modern methods use Parameter Objects, Legacy methods for compatibility
-
-المكونات المحسنة (Refactored Components):
-- IssueValidationService: Parameter Validation with low complexity methods
-- IssueDataValidator: Specialized validator for issue data
-- IssueQueryValidator: Specialized validator for query parameters
-- IssueData: Parameter Object for issue creation/reporting
-- IssueQueryParams: Parameter Object for search queries
-- IssueUpdateData: Parameter Object for issue updates
-
-نتائج التحسين (Results):
-- 🎯 Function Arguments: All functions now have ≤4 arguments (was 6 max)
-- 🎯 Cyclomatic Complexity: Reduced from 17 to 2-3 per method
-- 🎯 Code Duplication: Eliminated through Parameter Objects
-- 🎯 Maintainability: Significantly improved with clear responsibilities
-
-تسجيل وتتبع الأخطاء مع Stacktrace وسجلات تفصيلية
 """
 
 import hashlib

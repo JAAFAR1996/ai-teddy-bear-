@@ -2,7 +2,7 @@
 📊 Dashboard Analytics Endpoints
 """
 
-import random
+import secrets
 from datetime import datetime, timedelta
 from typing import Any, Dict
 
@@ -23,24 +23,24 @@ async def get_child_stats(
         stats = {
             "child_id": child_id,
             "period": period,
-            "total_interactions": random.randint(10, 100),
-            "learning_time_minutes": random.randint(60, 300),
+            "total_interactions": secrets.randbelow(91) + 10,
+            "learning_time_minutes": secrets.randbelow(241) + 60,
             "favorite_topics": [
-                {"topic": "قصص", "count": random.randint(5, 20)},
-                {"topic": "رياضيات", "count": random.randint(3, 15)},
-                {"topic": "علوم", "count": random.randint(2, 10)},
+                {"topic": "قصص", "count": secrets.randbelow(16) + 5},
+                {"topic": "رياضيات", "count": secrets.randbelow(13) + 3},
+                {"topic": "علوم", "count": secrets.randbelow(9) + 2},
             ],
             "emotion_analysis": {
-                "happy": random.randint(40, 60),
-                "curious": random.randint(20, 40),
-                "frustrated": random.randint(0, 10),
-                "excited": random.randint(10, 30),
+                "happy": secrets.randbelow(21) + 40,
+                "curious": secrets.randbelow(21) + 20,
+                "frustrated": secrets.randbelow(11),
+                "excited": secrets.randbelow(21) + 10,
             },
             "daily_activity": [
                 {
                     "date": (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d"),
-                    "interactions": random.randint(0, 10),
-                    "learning_minutes": random.randint(0, 60),
+                    "interactions": secrets.randbelow(11),
+                    "learning_minutes": secrets.randbelow(61),
                 }
                 for i in range(7)
             ],
@@ -65,15 +65,15 @@ async def get_devices_status() -> Dict[str, Any]:
                 "child_name": "أحمد",
                 "status": "online",
                 "last_seen": datetime.now().isoformat(),
-                "battery_level": random.randint(20, 100),
-                "wifi_strength": random.randint(50, 100),
+                "battery_level": secrets.randbelow(81) + 20,
+                "wifi_strength": secrets.randbelow(51) + 50,
             },
             {
                 "device_id": "esp32_002",
                 "child_name": "فاطمة",
                 "status": "offline",
                 "last_seen": (datetime.now() - timedelta(hours=2)).isoformat(),
-                "battery_level": random.randint(10, 50),
+                "battery_level": secrets.randbelow(41) + 10,
                 "wifi_strength": 0,
             },
         ]
@@ -108,11 +108,11 @@ async def get_system_health(container=Depends(get_container)) -> Dict[str, Any]:
                 "redis": "healthy",
             },
             "metrics": {
-                "response_time_ms": random.randint(100, 500),
-                "active_connections": random.randint(5, 50),
-                "cpu_usage": random.randint(20, 80),
-                "memory_usage": random.randint(30, 70),
-                "requests_per_minute": random.randint(10, 100),
+                "response_time_ms": secrets.randbelow(401) + 100,
+                "active_connections": secrets.randbelow(46) + 5,
+                "cpu_usage": secrets.randbelow(61) + 20,
+                "memory_usage": secrets.randbelow(41) + 30,
+                "requests_per_minute": secrets.randbelow(91) + 10,
             },
         }
     except Exception as e:

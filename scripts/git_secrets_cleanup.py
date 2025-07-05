@@ -1,3 +1,7 @@
+from typing import Dict, List
+from pathlib import Path
+import subprocess
+import os
 import logging
 
 logger = logging.getLogger(__name__)
@@ -6,10 +10,6 @@ logger = logging.getLogger(__name__)
 🗑️ Git Secrets Cleanup Helper
 Helps identify and clean secrets from Git history
 """
-import os
-import subprocess
-from pathlib import Path
-from typing import Dict, List
 
 
 class GitSecretsCleanup:
@@ -174,7 +174,7 @@ exit 0
 """
         with open(pre_commit_hook, "w") as f:
             f.write(hook_content)
-        os.chmod(pre_commit_hook, 493)
+        os.chmod(pre_commit_hook, 448)
         logger.info(f"✅ Created pre-commit hook: {pre_commit_hook}")
 
     def generate_full_report(self) -> str:
@@ -189,7 +189,8 @@ exit 0
         report.append("=" * 60)
         report.append("")
         if secrets_in_history:
-            report.append(f"⚠️ SECRETS FOUND IN GIT HISTORY: {len(secrets_in_history)}")
+            report.append(
+                f"⚠️ SECRETS FOUND IN GIT HISTORY: {len(secrets_in_history)}")
             report.append("-" * 40)
             for secret_info in secrets_in_history:
                 report.append(f"Commit: {secret_info['commit'][:8]}...")

@@ -104,7 +104,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         elif hasattr(entity, "__dict__"):
             return entity.__dict__.copy()
         else:
-            raise ValueError(f"Cannot convert entity {type(entity)} to dictionary")
+            raise ValueError(
+                f"Cannot convert entity {type(entity)} to dictionary")
 
     def _dict_to_entity(self, data: Dict[str, Any]) -> T:
         """Convert dictionary from database to entity"""
@@ -140,7 +141,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             if field in processed and processed[field]:
                 if isinstance(processed[field], str):
                     try:
-                        processed[field] = datetime.fromisoformat(processed[field])
+                        processed[field] = datetime.fromisoformat(
+                            processed[field])
                     except ValueError:
                         # Try alternative datetime format
                         try:
@@ -215,6 +217,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                 if "id" in serialized_dict and not serialized_dict["id"]:
                     del serialized_dict["id"]
 
+                for col in serialized_dict.keys():
+                    self._validate_table_and_column(col)
+
                 # Prepare SQL
                 columns = ", ".join(serialized_dict.keys())
                 placeholders = ", ".join(["?" for _ in serialized_dict])
@@ -280,11 +285,16 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                     k: self._serialize_for_db(v) for k, v in entity_dict.items()
                 }
 
+                for col in serialized_dict.keys():
+                    if col != 'id':
+                        self._validate_table_and_column(col)
+
                 # Prepare update SQL
                 update_fields = [
                     f"{k} = ?" for k in serialized_dict.keys() if k != "id"
                 ]
-                update_values = [v for k, v in serialized_dict.items() if k != "id"]
+                update_values = [
+                    v for k, v in serialized_dict.items() if k != "id"]
                 update_values.append(serialized_dict["id"])
 
                 sql = f"UPDATE {self.table_name} SET {', '.join(update_fields)} WHERE id = ?"
@@ -292,7 +302,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                 cursor.execute(sql, update_values)
 
                 if cursor.rowcount == 0:
-                    raise ValueError(f"No entity found with ID {entity_dict['id']}")
+                    raise ValueError(
+                        f"No entity found with ID {entity_dict['id']}")
 
                 return entity
 
@@ -332,6 +343,7 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             if options and options.filters:
                 filter_conditions = []
                 for key, value in options.filters.items():
+                    self._validate_table_and_column(key)
                     filter_conditions.append(f"{key} = ?")
                     params.append(self._serialize_for_db(value))
 
@@ -340,15 +352,18 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
             # Apply sorting
             if options and options.sort_by:
+                self._validate_table_and_column(options.sort_by)
                 order = "DESC" if options.sort_order == SortOrder.DESC else "ASC"
-                sql += f" ORDER BY {options.sort_by} {order}"
+                sql += f" ORDER BY {self.table_name}.{options.sort_by} {order}"
 
             # Apply pagination
             if options and options.limit:
-                sql += f" LIMIT {options.limit}"
+                sql += " LIMIT ?"
+                params.append(options.limit)
 
             if options and options.offset:
-                sql += f" OFFSET {options.offset}"
+                sql += " OFFSET ?"
+                params.append(options.offset)
 
             cursor.execute(sql, params)
             rows = cursor.fetchall()
@@ -374,7 +389,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                 for criterion in criteria:
                     condition, param = self._build_search_condition(criterion)
                     conditions.append(condition)
-                    if param is not None:
+                    if isinstance(param, list):
+                        params.extend(param)
+                    elif param is not None:
                         params.append(param)
 
                 if conditions:
@@ -382,15 +399,18 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
             # Apply sorting
             if options and options.sort_by:
+                self._validate_table_and_column(options.sort_by)
                 order = "DESC" if options.sort_order == SortOrder.DESC else "ASC"
-                sql += f" ORDER BY {options.sort_by} {order}"
+                sql += f" ORDER BY {self.table_name}.{options.sort_by} {order}"
 
             # Apply pagination
             if options and options.limit:
-                sql += f" LIMIT {options.limit}"
+                sql += " LIMIT ?"
+                params.append(options.limit)
 
             if options and options.offset:
-                sql += f" OFFSET {options.offset}"
+                sql += " OFFSET ?"
+                params.append(options.offset)
 
             cursor.execute(sql, params)
             rows = cursor.fetchall()
@@ -406,6 +426,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
         field = criterion.field
         operator = criterion.operator
         value = self._serialize_for_db(criterion.value)
+
+        self._validate_table_and_column(field)
 
         if operator == "eq":
             return f"{field} = ?", value
@@ -425,9 +447,10 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             return f"LOWER({field}) LIKE LOWER(?)", f"%{value}%"
         elif operator == "in":
             if isinstance(value, (list, tuple)):
+                if not value:
+                    return "1=0", []
                 placeholders = ", ".join(["?" for _ in value])
-                # Handle separately
-                return f"{field} IN ({placeholders})", None
+                return f"{field} IN ({placeholders})", value
             else:
                 return f"{field} = ?", value
         elif operator == "is_null":
@@ -450,7 +473,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                 for criterion in criteria:
                     condition, param = self._build_search_condition(criterion)
                     conditions.append(condition)
-                    if param is not None:
+                    if isinstance(param, list):
+                        params.extend(param)
+                    elif param is not None:
                         params.append(param)
 
                 if conditions:
@@ -493,8 +518,12 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                         if "id" in serialized_dict and not serialized_dict["id"]:
                             del serialized_dict["id"]
 
+                        for col in serialized_dict.keys():
+                            self._validate_table_and_column(col)
+
                         columns = ", ".join(serialized_dict.keys())
-                        placeholders = ", ".join(["?" for _ in serialized_dict])
+                        placeholders = ", ".join(
+                            ["?" for _ in serialized_dict])
                         sql = f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})"
 
                         cursor.execute(sql, list(serialized_dict.values()))
@@ -508,7 +537,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                     except Exception as e:
                         entity_id = getattr(entity, "id", "unknown")
                         failed_ids.append(entity_id)
-                        self.logger.error(f"Failed to create entity {entity_id}: {e}")
+                        self.logger.error(
+                            f"Failed to create entity {entity_id}: {e}")
 
         except sqlite3.Error as e:
             self.logger.error(f"Bulk create failed: {e}")
@@ -567,7 +597,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
                     except Exception as e:
                         entity_id = getattr(entity, "id", "unknown")
                         failed_ids.append(entity_id)
-                        self.logger.error(f"Failed to update entity {entity_id}: {e}")
+                        self.logger.error(
+                            f"Failed to update entity {entity_id}: {e}")
 
         except sqlite3.Error as e:
             self.logger.error(f"Bulk update failed: {e}")
@@ -606,7 +637,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
                     except Exception as e:
                         failed_ids.append(entity_id)
-                        self.logger.error(f"Failed to delete entity {entity_id}: {e}")
+                        self.logger.error(
+                            f"Failed to delete entity {entity_id}: {e}")
 
         except sqlite3.Error as e:
             self.logger.error(f"Bulk delete failed: {e}")
@@ -752,7 +784,8 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
             elif operation.lower() == "min":
                 agg_func = f"MIN({field})"
             else:
-                raise ValueError(f"Unsupported aggregation operation: {operation}")
+                raise ValueError(
+                    f"Unsupported aggregation operation: {operation}")
             sql = f"SELECT {agg_func} FROM {self.table_name}"
             params = []
 
@@ -795,8 +828,9 @@ class BaseSQLiteRepository(BaseRepository[T, ID]):
 
     def _validate_table_and_column(self, name: str) -> None:
         """Ensure table/column name is safe (alphanumeric/underscore only)"""
-        if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
-            raise ValueError(f"Unsafe table/column name: {name}")
+        if not re.match(r"^[a-zA-Z0-9_]+$", name):
+            self.logger.error(f"Invalid table or column name detected: {name}")
+            raise ValueError(f"Invalid table or column name: {name}")
 
 
 async def get(self, entity_id: str) -> Optional[T]:

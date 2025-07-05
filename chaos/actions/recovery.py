@@ -20,10 +20,10 @@ class RecoveryActions:
 
     def __init__(self):
         self.service_endpoints = {
-            "child-service": "http://child-service:8000",
-            "ai-service": "http://ai-service:8000",
-            "safety-service": "http://safety-service:8000",
-            "graphql-federation": "http://graphql-federation:8000",
+            "child-service": "https://child-service:8000",
+            "ai-service": "https://ai-service:8000",
+            "safety-service": "https://safety-service:8000",
+            "graphql-federation": "https://graphql-federation:8000",
         }
         self.recovery_timeouts = {
             "child-service": 30,
@@ -285,19 +285,19 @@ async def test_critical_functionality() -> Dict[str, bool]:
     tests = {}
     try:
         child_test = requests.post(
-            "http://child-service:8000/children/test-health",
+            "https://child-service:8000/children/test-health",
             json={"test_type": "basic"},
             timeout=10,
         )
         tests["child_service_functionality"] = child_test.status_code == 200
         ai_test = requests.post(
-            "http://ai-service:8000/chat",
+            "https://ai-service:8000/chat",
             json={"message": "Hello", "child_age": 8},
             timeout=15,
         )
         tests["ai_service_functionality"] = ai_test.status_code == 200
         safety_test = requests.post(
-            "http://safety-service:8000/moderate",
+            "https://safety-service:8000/moderate",
             json={"content": "test content"},
             timeout=10,
         )
@@ -311,7 +311,7 @@ async def validate_safety_systems() -> Dict[str, Any]:
     """Validate safety systems are operational"""
     try:
         filter_test = requests.post(
-            "http://safety-service:8000/moderate",
+            "https://safety-service:8000/moderate",
             json={"content": "inappropriate content test"},
             timeout=10,
         )
@@ -319,11 +319,11 @@ async def validate_safety_systems() -> Dict[str, Any]:
             filter_test.status_code == 200 and filter_test.json().get("blocked", False)
         )
         parental_test = requests.get(
-            "http://child-service:8000/parental/health", timeout=10
+            "https://child-service:8000/parental/health", timeout=10
         )
         parental_controls_working = parental_test.status_code == 200
         age_test = requests.post(
-            "http://child-service:8000/age/verify",
+            "https://child-service:8000/age/verify",
             json={"child_id": "test", "claimed_age": 10},
             timeout=10,
         )
@@ -349,7 +349,7 @@ async def check_performance_metrics() -> Dict[str, Any]:
     try:
         start_time = time.time()
         test_response = requests.get(
-            "http://graphql-federation:8000/health", timeout=5)
+            "https://graphql-federation:8000/health", timeout=5)
         response_time = time.time() - start_time
         performance_acceptable = (
             test_response.status_code == 200 and response_time < 2.0

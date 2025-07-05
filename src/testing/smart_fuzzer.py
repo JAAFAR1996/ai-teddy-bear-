@@ -8,7 +8,7 @@ to discover security vulnerabilities and child safety issues.
 
 import asyncio
 import logging
-import random
+import secrets
 import string
 from dataclasses import dataclass
 from enum import Enum
@@ -240,7 +240,8 @@ class SmartFuzzer:
             if result.vulnerability_found or result.safety_violation:
                 # Generate similar inputs to explore the vulnerability
                 similar_inputs = await self._generate_similar_inputs(test_input)
-                for similar_input in similar_inputs[:5]:  # Test 5 similar inputs
+                # Test 5 similar inputs
+                for similar_input in similar_inputs[:5]:
                     similar_result = await self._execute_fuzz_test(
                         target_function, similar_input, context, strategy
                     )
@@ -266,10 +267,10 @@ class SmartFuzzer:
     async def _generate_child_safety_input(self) -> Tuple[str, ChildContext]:
         """Generate inputs to test child safety mechanisms"""
         # Mix appropriate and inappropriate content
-        if random.random() < 0.3:  # 30% inappropriate content
-            base_input = random.choice(self.inappropriate_content)
+        if secrets.randbelow(10) < 3:  # 30% inappropriate content
+            base_input = secrets.choice(self.inappropriate_content)
         else:
-            base_input = random.choice(
+            base_input = secrets.choice(
                 [
                     "tell me a story",
                     "help with homework",
@@ -283,8 +284,8 @@ class SmartFuzzer:
         mutated_input = await self.mutation_engine.mutate_for_safety_testing(base_input)
 
         # Create child context
-        age = random.randint(3, 12)
-        emotion = random.choice(self.emotion_states)
+        age = secrets.randbelow(10) + 3  # 3-12
+        emotion = secrets.choice(self.emotion_states)
         context = ChildContext(age=age, emotion=emotion)
 
         return mutated_input, context
@@ -292,8 +293,8 @@ class SmartFuzzer:
     async def _generate_security_input(self) -> Tuple[str, ChildContext]:
         """Generate inputs to test security vulnerabilities"""
         # Mix normal input with security payloads
-        if random.random() < 0.4:  # 40% security payloads
-            base_input = random.choice(self.security_payloads)
+        if secrets.randbelow(10) < 4:  # 40% security payloads
+            base_input = secrets.choice(self.security_payloads)
         else:
             base_input = "normal user input"
 
@@ -315,11 +316,11 @@ class SmartFuzzer:
             "emotional manipulation attempt",
         ]
 
-        base_input = random.choice(base_inputs)
+        base_input = secrets.choice(base_inputs)
         mutated_input = await self.mutation_engine.ai_guided_mutation(base_input)
 
         context = ChildContext(
-            age=random.randint(3, 12), emotion=random.choice(self.emotion_states)
+            age=secrets.randbelow(10) + 3, emotion=secrets.choice(self.emotion_states)
         )
 
         return mutated_input, context
@@ -327,15 +328,18 @@ class SmartFuzzer:
     async def _generate_performance_input(self) -> Tuple[str, ChildContext]:
         """Generate inputs to test performance boundaries"""
         # Generate large inputs, rapid sequences, etc.
-        if random.random() < 0.3:
+        rand_val = secrets.randbelow(10)
+        if rand_val < 3:
             # Large input
-            base_input = "a" * random.randint(1000, 10000)
-        elif random.random() < 0.6:
+            base_input = "a" * (secrets.randbelow(9001) + 1000)
+        elif rand_val < 6:
             # Rapid sequence simulation
-            base_input = " ".join(["quick input"] * random.randint(10, 100))
+            base_input = " ".join(
+                ["quick input"] * (secrets.randbelow(91) + 10))
         else:
             # Complex input
-            base_input = "complex " + "nested " * random.randint(5, 50) + "input"
+            base_input = "complex " + "nested " * \
+                (secrets.randbelow(46) + 5) + "input"
 
         context = ChildContext(age=8, emotion="neutral")
         return base_input, context
@@ -343,12 +347,12 @@ class SmartFuzzer:
     async def _generate_random_input(self) -> Tuple[str, ChildContext]:
         """Generate random inputs for baseline testing"""
         # Random string generation
-        length = random.randint(1, 500)
+        length = secrets.randbelow(500) + 1
         chars = string.ascii_letters + string.digits + string.punctuation + " "
-        base_input = "".join(random.choice(chars) for _ in range(length))
+        base_input = "".join(secrets.choice(chars) for _ in range(length))
 
         context = ChildContext(
-            age=random.randint(3, 12), emotion=random.choice(self.emotion_states)
+            age=secrets.randbelow(10) + 3, emotion=secrets.choice(self.emotion_states)
         )
 
         return base_input, context
@@ -386,7 +390,8 @@ class SmartFuzzer:
                 test_input, response
             )
 
-            execution_time = (asyncio.get_event_loop().time() - start_time) * 1000
+            execution_time = (
+                asyncio.get_event_loop().time() - start_time) * 1000
 
             return FuzzResult(
                 test_input=test_input,
@@ -401,7 +406,8 @@ class SmartFuzzer:
             )
 
         except Exception as e:
-            execution_time = (asyncio.get_event_loop().time() - start_time) * 1000
+            execution_time = (
+                asyncio.get_event_loop().time() - start_time) * 1000
 
             return FuzzResult(
                 test_input=test_input,
@@ -523,7 +529,7 @@ class SmartFuzzer:
         # Character substitution
         for i in range(min(5, len(original_input))):
             modified = list(original_input)
-            modified[i] = random.choice(string.ascii_letters + string.digits)
+            modified[i] = secrets.choice(string.ascii_letters + string.digits)
             similar_inputs.append("".join(modified))
 
         # Append/prepend variations

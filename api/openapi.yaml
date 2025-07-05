@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: AI Teddy Bear API
   description: |
@@ -366,6 +366,8 @@ paths:
     post:
       tags: [Authentication]
       summary: Register a new user
+      description: Register a new user with email, password, and profile information.
+      operationId: registerUser
       requestBody:
         required: true
         content:
@@ -412,6 +414,8 @@ paths:
     post:
       tags: [Authentication]
       summary: Login user
+      description: Authenticate a user and receive access and refresh tokens.
+      operationId: loginUser
       requestBody:
         required: true
         content:
@@ -452,6 +456,8 @@ paths:
     post:
       tags: [Authentication]
       summary: Refresh access token
+      description: Refresh an expired access token using a valid refresh token.
+      operationId: refreshToken
       requestBody:
         required: true
         content:
@@ -480,6 +486,8 @@ paths:
     get:
       tags: [Children]
       summary: Get all children for a parent
+      description: Retrieves a list of all children associated with the authenticated parent's account.
+      operationId: getChildren
       security:
         - bearerAuth: []
       responses:
@@ -500,6 +508,8 @@ paths:
     post:
       tags: [Children]
       summary: Add a new child
+      description: Add a new child profile to the parent's account.
+      operationId: addChild
       security:
         - bearerAuth: []
       requestBody:
@@ -535,6 +545,8 @@ paths:
     get:
       tags: [Children]
       summary: Get child details
+      description: Retrieves detailed information for a specific child by their unique ID.
+      operationId: getChildById
       security:
         - bearerAuth: []
       parameters:
@@ -561,6 +573,8 @@ paths:
     put:
       tags: [Children]
       summary: Update child information
+      description: Updates the profile information for a specific child.
+      operationId: updateChild
       security:
         - bearerAuth: []
       parameters:
@@ -594,6 +608,8 @@ paths:
     delete:
       tags: [Children]
       summary: Delete a child profile
+      description: Deletes a child's profile. This is a soft delete operation.
+      operationId: deleteChild
       security:
         - bearerAuth: []
       parameters:
@@ -611,6 +627,8 @@ paths:
     get:
       tags: [Conversations]
       summary: Get conversations
+      description: Retrieves a list of conversations, with optional filtering by child, date, and pagination.
+      operationId: getConversations
       security:
         - bearerAuth: []
       parameters:
@@ -659,6 +677,8 @@ paths:
     post:
       tags: [Conversations]
       summary: Start a new conversation
+      description: Initiates a new conversation session for a child and returns a session token.
+      operationId: startConversation
       security:
         - bearerAuth: []
       requestBody:
@@ -693,6 +713,8 @@ paths:
     get:
       tags: [Conversations]
       summary: Get conversation details
+      description: Retrieves the full details of a single conversation, including transcript and emotion analysis.
+      operationId: getConversationById
       security:
         - bearerAuth: []
       parameters:
@@ -713,6 +735,8 @@ paths:
     patch:
       tags: [Conversations]
       summary: End conversation
+      description: Marks a conversation as ended and optionally adds a final summary.
+      operationId: endConversation
       security:
         - bearerAuth: []
       parameters:
@@ -745,6 +769,8 @@ paths:
     post:
       tags: [Conversations]
       summary: Add message to conversation
+      description: Adds a new message to an ongoing conversation.
+      operationId: addConversationMessage
       security:
         - bearerAuth: []
       parameters:
@@ -772,6 +798,8 @@ paths:
     post:
       tags: [Emotions]
       summary: Analyze emotion from audio or text
+      description: Analyzes emotion from a provided audio file or text snippet.
+      operationId: analyzeEmotion
       security:
         - bearerAuth: []
       requestBody:
@@ -801,6 +829,8 @@ paths:
     get:
       tags: [Reports]
       summary: Get reports
+      description: Retrieves a list of generated reports for a specific child.
+      operationId: getReports
       security:
         - bearerAuth: []
       parameters:
@@ -838,6 +868,8 @@ paths:
     post:
       tags: [Reports]
       summary: Generate a new report
+      description: Generates a new progress and activity report for a child.
+      operationId: generateReport
       security:
         - bearerAuth: []
       requestBody:
@@ -878,6 +910,8 @@ paths:
     get:
       tags: [Reports]
       summary: Get report details
+      description: Retrieves the detailed information for a single generated report.
+      operationId: getReportById
       security:
         - bearerAuth: []
       parameters:
@@ -899,6 +933,8 @@ paths:
     get:
       tags: [Reports]
       summary: Export report as PDF
+      description: Exports a specific report as a downloadable PDF file.
+      operationId: exportReport
       security:
         - bearerAuth: []
       parameters:
@@ -921,6 +957,8 @@ paths:
     post:
       tags: [ESP32]
       summary: Register ESP32 device
+      description: Registers a new ESP32 device with the platform.
+      operationId: registerDevice
       security:
         - apiKey: []
       requestBody:
@@ -958,6 +996,8 @@ paths:
     post:
       tags: [ESP32]
       summary: Update device status
+      description: Updates the status of an ESP32 device (e.g., online, battery level).
+      operationId: updateDeviceStatus
       security:
         - apiKey: []
       requestBody:
@@ -974,6 +1014,8 @@ paths:
     post:
       tags: [ESP32]
       summary: Stream audio data
+      description: Streams audio data from the ESP32 device to the server for processing.
+      operationId: streamAudio
       security:
         - apiKey: []
       requestBody:
@@ -1012,6 +1054,7 @@ paths:
     get:
       tags: [WebSocket]
       summary: WebSocket connection for real-time communication
+      operationId: establishWebSocket
       description: |
         WebSocket endpoint for real-time communication between ESP32 devices and the server.
         

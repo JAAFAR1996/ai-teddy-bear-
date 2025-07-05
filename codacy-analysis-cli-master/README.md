@@ -5,6 +5,8 @@
 
 # Codacy Analysis CLI
 
+ Codacy Analysis CLI
+
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2aa6927599ba4d9db6c9cfcb38e397e4)](https://www.codacy.com/gh/codacy/codacy-analysis-cli?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=codacy/codacy-analysis-cli&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/2aa6927599ba4d9db6c9cfcb38e397e4)](https://www.codacy.com/gh/codacy/codacy-analysis-cli?utm_source=github.com&utm_medium=referral&utm_content=codacy/codacy-analysis-cli&utm_campaign=Badge_Coverage)
 [![CircleCI](https://circleci.com/gh/codacy/codacy-analysis-cli.svg?style=svg)](https://circleci.com/gh/codacy/codacy-analysis-cli)
@@ -14,23 +16,23 @@
 Command line interface to execute Codacy code analysis locally.
 
 With a single command you can:
-  - Get static code analysis issues, complexity, duplication and other code metrics
-  - Run a tool or the whole suite of supported tools by Codacy
-  - Use the tools' default patterns, your configuration files or your settings saved on Codacy
+- Get static code analysis issues, complexity, duplication and other code metrics
+- Run a tool or the whole suite of supported tools by Codacy
+- Use the tools' default patterns, your configuration files or your settings saved on Codacy
 
 ## Prerequisites
 
 ### Usage
 
-* Java 8+
-* Docker 17.09+
+- Java 8+
+- Docker 17.09+
 
 ### Development
 
-* Java 8+
-* SBT 1.1.x
-* Scala 2.12.x
-* Docker 17.09+
+- Java 8+
+- SBT 1.1.x
+- Scala 2.12.x
+- Docker 17.09+
 
 ## Install
 
@@ -42,15 +44,18 @@ cd codacy-analysis-cli-* && sudo make install
 ### Windows
 
 #### Pre-Requisites
-- Have Docker installed on Windows (https://hub.docker.com/editions/community/docker-ce-desktop-windows)
-- Have WSL enabled with Ubuntu bash installed (https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+
+- Have Docker installed on Windows (<https://hub.docker.com/editions/community/docker-ce-desktop-windows>)  
+- Have WSL enabled with Ubuntu bash installed (<https://docs.microsoft.com/en-us/windows/wsl/install-win10>)
 
 #### Docker Configuration
+
 Once the pre-requisites are met, it’s time to enable the connectivity between bash and docker.
 
 It’s mandatory that the daemon is exposed without TLS. In order to do that go to Docker Settings -> General. Just click on the checkbox with the label 'Expose daemon on tcp://localhost:2375 without TLS' and docker will reload.
 
 #### Preparing docker client on bash
+
 Now it’s time to go to the bash and install and configure the docker client.
 
 If you are using Windows 10 (build above 1803) the following command will make the docker client available from the bash

@@ -26,6 +26,16 @@ class ChildSQLiteRepositoryRefactored(
     Following Clean Architecture with separated concerns
     """
 
+    _columns = [
+        'id', 'name', 'age', 'date_of_birth', 'gender', 'interests',
+        'personality_traits', 'learning_preferences', 'communication_style',
+        'max_daily_interaction_time', 'allowed_topics', 'restricted_topics',
+        'language_preference', 'cultural_background', 'parental_controls',
+        'emergency_contacts', 'medical_notes', 'educational_level',
+        'special_needs', 'created_at', 'updated_at', 'last_interaction',
+        'total_interaction_time', 'is_active', 'privacy_settings', 'custom_settings'
+    ]
+
     def __init__(
         self,
         session_factory,
@@ -127,28 +137,45 @@ class ChildSQLiteRepositoryRefactored(
 
     async def update(self, child: Child) -> Child:
         """Update existing child profile"""
+        if not child.id:
+            raise ValueError("Child must have an ID for update")
+
         try:
             with self.transaction() as cursor:
                 data = self._serialize_child_for_db(child)
 
-                if "id" not in data or not data["id"]:
-                    raise ValueError("Child must have an ID for update")
+                update_data = {
+                    k: v
+                    for k, v in data.items()
+                    if k in self._columns and k not in ("id", "created_at")
+                }
 
-                update_fields = [f"{k} = ?" for k in data.keys() if k != "id"]
-                update_values = [v for k, v in data.items() if k != "id"]
-                update_values.append(data["id"])
+                if not update_data:
+                    self.logger.warning(
+                        f"No valid fields to update for child {child.id}"
+                    )
+                    return child
 
-                sql = f"UPDATE {self.table_name} SET {', '.join(update_fields)} WHERE id = ?"
+                update_data["updated_at"] = datetime.now().isoformat()
+
+                # Secure: Ensure table and column names are validated and not user-controlled
+                update_fields = ", ".join(
+                    [f"{k} = ?" for k in update_data.keys()])
+                update_values = list(update_data.values())
+                update_values.append(child.id)
+
+                # Table and column names are from self._columns and self.table_name, not user input
+                sql = f"UPDATE {self.table_name} SET {update_fields} WHERE id = ?"
 
                 cursor.execute(sql, update_values)
 
                 if cursor.rowcount == 0:
-                    raise ValueError(f"No child found with ID {data['id']}")
+                    raise ValueError(f"No child found with ID {child.id}")
 
                 return child
 
         except sqlite3.Error as e:
-            self.logger.error(f"Error updating child: {e}")
+            self.logger.error(f"Error updating child {child.id}: {e}")
             raise
 
     async def delete(self, child_id: str) -> bool:
@@ -171,6 +198,8 @@ class ChildSQLiteRepositoryRefactored(
             params = []
 
             if options and hasattr(options, "sort_by") and options.sort_by:
+                if options.sort_by not in self._columns:
+                    raise ValueError(f"Invalid sort column: {options.sort_by}")
                 order = (
                     "DESC"
                     if hasattr(options, "sort_order")
@@ -180,10 +209,12 @@ class ChildSQLiteRepositoryRefactored(
                 sql += f" ORDER BY {options.sort_by} {order}"
 
             if options and hasattr(options, "limit") and options.limit:
-                sql += f" LIMIT {options.limit}"
+                sql += " LIMIT ?"
+                params.append(options.limit)
 
             if options and hasattr(options, "offset") and options.offset:
-                sql += f" OFFSET {options.offset}"
+                sql += " OFFSET ?"
+                params.append(options.offset)
 
             cursor.execute(sql, params)
             rows = cursor.fetchall()

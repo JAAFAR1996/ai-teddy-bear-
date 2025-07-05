@@ -7,7 +7,8 @@ from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 
-from ....domain.audio.models import (AudioFormatType, AudioSession, AudioSystemConfig, PerformanceMetrics)
+from ....domain.audio.models import (
+    AudioFormatType, AudioSession, AudioSystemConfig, PerformanceMetrics)
 
 
 class AudioSystemError(Exception):
@@ -58,7 +59,8 @@ class AudioRecordingService:
         """Configure recorder based on system settings."""
         try:
             if hasattr(self.recorder, "set_noise_reduction"):
-                self.recorder.set_noise_reduction(self.config.noise_reduction_enabled)
+                self.recorder.set_noise_reduction(
+                    self.config.noise_reduction_enabled)
 
             if hasattr(self.recorder, "set_sample_rate"):
                 self.recorder.set_sample_rate(self.config.sample_rate)
@@ -125,9 +127,11 @@ class AudioRecordingService:
 
             # Update session if provided
             if session:
-                session.add_recording(len(audio_data) / self.config.sample_rate)
+                session.add_recording(
+                    len(audio_data) / self.config.sample_rate)
 
-            self.logger.info(f"Successfully recorded {len(audio_data)} samples")
+            self.logger.info(
+                f"Successfully recorded {len(audio_data)} samples")
             return audio_data, metadata
 
         except Exception as e:
@@ -248,7 +252,6 @@ class MockAudioRecorder:
     def record_audio(self, duration: int) -> np.ndarray:
         """Mock audio recording."""
         self._recording = True
-        time.sleep(0.1)  # Simulate recording time
         # Generate mock audio data
         sample_rate = 44100
         return np.random.random(duration * sample_rate).astype(np.float32)
