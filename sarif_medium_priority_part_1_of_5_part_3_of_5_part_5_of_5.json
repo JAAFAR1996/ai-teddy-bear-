@@ -1,0 +1,174 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ExtractedIssues",
+          "version": "1.0.0"
+        }
+      },
+      "results": [
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_wake_word_detector.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Dict imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_wake_word_detector.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused List imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_wake_word_detector.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Optional imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_wake_word_detector.py"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused tflite_runtime.interpreter imported as tflite"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/accessibility/use_cases/use_cases.py"
+                },
+                "region": {
+                  "startLine": 8
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import json"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/accessibility/use_cases/use_cases.py"
+                },
+                "region": {
+                  "startLine": 9
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import logging"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/accessibility/use_cases/use_cases.py"
+                },
+                "region": {
+                  "startLine": 10
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import uuid"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/application/accessibility/use_cases/use_cases.py"
+                },
+                "region": {
+                  "startLine": 11
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused asdict imported from dataclasses"
+          },
+          "ruleId": "unused-import"
+        }
+      ]
+    }
+  ],
+  "properties": {
+    "chunkNumber": 5,
+    "totalChunks": 5,
+    "chunkSize": 8,
+    "startIndex": 44,
+    "endIndex": 51
+  }
+}

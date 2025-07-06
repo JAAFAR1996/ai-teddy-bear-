@@ -22,6 +22,20 @@ import pytest
 import pytest_asyncio
 from pydantic import BaseModel, Field
 
+from .framework_components import (
+    TestConfig,
+    generate_comprehensive_report,
+    run_child_safety_tests,
+    run_contract_tests,
+    run_e2e_tests,
+    run_integration_tests,
+    run_mutation_tests,
+    run_performance_tests,
+    run_quality_automation,
+    run_security_tests,
+    run_unit_tests,
+)
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -97,8 +111,8 @@ class ComprehensiveTestFramework:
 
     def __init__(self, config: TestConfig):
         self.config = config
-        self.test_suites: Dict[str, TestSuite] = {}
-        self.overall_results = {
+        self.test_suites: Dict[str, Any] = {}
+        self.overall_results: Dict[str, Any] = {
             "total_tests": 0,
             "passed_tests": 0,
             "failed_tests": 0,
@@ -115,30 +129,30 @@ class ComprehensiveTestFramework:
         start_time = time.time()
 
         # 1. Multi-layered Test Strategy
-        await self._run_unit_tests()
-        await self._run_integration_tests()
-        await self._run_e2e_tests()
-        await self._run_contract_tests()
-        await self._run_mutation_tests()
+        await run_unit_tests(self)
+        await run_integration_tests(self)
+        await run_e2e_tests(self)
+        await run_contract_tests(self)
+        await run_mutation_tests(self)
 
         # 2. Child Safety Testing
-        await self._run_child_safety_tests()
+        await run_child_safety_tests(self)
 
         # 3. Performance Testing
-        await self._run_performance_tests()
+        await run_performance_tests(self)
 
         # 4. Security Testing
-        await self._run_security_tests()
+        await run_security_tests(self)
 
         # 5. Quality Automation
-        await self._run_quality_automation()
+        await run_quality_automation(self)
 
         # Calculate overall results
         execution_time = time.time() - start_time
         self._calculate_overall_results()
 
         # Generate comprehensive report
-        report = self._generate_comprehensive_report(execution_time)
+        report = generate_comprehensive_report(self, execution_time)
 
         # Check quality gates
         quality_gates_status = self._check_quality_gates()
@@ -149,522 +163,6 @@ class ComprehensiveTestFramework:
             "overall_results": self.overall_results,
             "execution_time_seconds": execution_time,
         }
-
-    async def _run_unit_tests(self):
-        """تشغيل اختبارات الوحدة"""
-        logger.info("🧪 تشغيل اختبارات الوحدة...")
-
-        suite = TestSuite(
-            name="Unit Tests",
-            description="اختبارات الوحدة مع pytest و fixtures متقدمة")
-
-        # Test core domain entities
-        await self._test_domain_entities(suite)
-
-        # Test application services
-        await self._test_application_services(suite)
-
-        # Test infrastructure components
-        await self._test_infrastructure_components(suite)
-
-        # Test security components
-        await self._test_security_components(suite)
-
-        self.test_suites["unit"] = suite
-
-    async def _test_domain_entities(self, suite: TestSuite):
-        """اختبار كيانات المجال الأساسية"""
-        entities_to_test = [
-            "Child",
-            "Parent",
-            "Conversation",
-            "AudioStream",
-            "EmotionData",
-            "SafetyAlert",
-            "PrivacySettings",
-        ]
-
-        for entity in entities_to_test:
-            result = TestResult(
-                test_name=f"test_{entity.lower()}_entity",
-                test_type="unit",
-                status="passed",
-                duration_ms=50.0,
-                coverage_percent=98.5,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-    async def _test_application_services(self, suite: TestSuite):
-        """اختبار خدمات التطبيق"""
-        services_to_test = [
-            "ChildInteractionService",
-            "AudioProcessingService",
-            "EmotionAnalysisService",
-            "SafetyModerationService",
-            "ParentReportingService",
-            "PersonalizationService",
-        ]
-
-        for service in services_to_test:
-            result = TestResult(
-                test_name=f"test_{service.lower()}",
-                test_type="unit",
-                status="passed",
-                duration_ms=75.0,
-                coverage_percent=96.2,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-    async def _test_infrastructure_components(self, suite: TestSuite):
-        """اختبار مكونات البنية التحتية"""
-        components_to_test = [
-            "DatabaseRepository",
-            "CacheService",
-            "MessageQueue",
-            "ExternalAPIClient",
-            "FileStorage",
-            "LoggingService",
-        ]
-
-        for component in components_to_test:
-            result = TestResult(
-                test_name=f"test_{component.lower()}",
-                test_type="unit",
-                status="passed",
-                duration_ms=60.0,
-                coverage_percent=94.8,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-    async def _test_security_components(self, suite: TestSuite):
-        """اختبار مكونات الأمان"""
-        security_components = [
-            "AuthenticationService",
-            "AuthorizationService",
-            "EncryptionService",
-            "AuditLogger",
-            "SafeExpressionParser",
-        ]
-
-        for component in security_components:
-            result = TestResult(
-                test_name=f"test_{component.lower()}",
-                test_type="unit",
-                status="passed",
-                duration_ms=80.0,
-                coverage_percent=99.1,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-    async def _run_integration_tests(self):
-        """تشغيل اختبارات التكامل"""
-        logger.info("🔗 تشغيل اختبارات التكامل...")
-
-        suite = TestSuite(
-            name="Integration Tests",
-            description="اختبارات التكامل لجميع تفاعلات الخدمات",
-        )
-
-        # Test service interactions
-        integration_scenarios = [
-            "child_voice_interaction_flow",
-            "emotion_analysis_pipeline",
-            "safety_moderation_workflow",
-            "parent_reporting_system",
-            "data_persistence_flow",
-        ]
-
-        for scenario in integration_scenarios:
-            result = TestResult(
-                test_name=f"test_{scenario}",
-                test_type="integration",
-                status="passed",
-                duration_ms=200.0,
-                coverage_percent=92.3,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        self.test_suites["integration"] = suite
-
-    async def _run_e2e_tests(self):
-        """تشغيل اختبارات النهاية إلى النهاية"""
-        logger.info("🌐 تشغيل اختبارات النهاية إلى النهاية...")
-
-        suite = TestSuite(
-            name="End-to-End Tests",
-            description="اختبارات النهاية إلى النهاية لرحلات المستخدم الكاملة",
-        )
-
-        # Test complete user journeys
-        e2e_scenarios = [
-            "child_activates_teddy_bear",
-            "voice_conversation_complete_flow",
-            "parent_views_dashboard",
-            "emergency_safety_protocol",
-            "system_maintenance_and_updates",
-        ]
-
-        for scenario in e2e_scenarios:
-            result = TestResult(
-                test_name=f"test_{scenario}",
-                test_type="e2e",
-                status="passed",
-                duration_ms=500.0,
-                coverage_percent=88.7,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        self.test_suites["e2e"] = suite
-
-    async def _run_contract_tests(self):
-        """تشغيل اختبارات العقد"""
-        logger.info("📋 تشغيل اختبارات العقد...")
-
-        suite = TestSuite(
-            name="Contract Tests", description="اختبارات العقد لتوافق API"
-        )
-
-        # Test API contracts
-        api_contracts = [
-            "child_interaction_api",
-            "parent_dashboard_api",
-            "audio_processing_api",
-            "safety_moderation_api",
-            "reporting_api",
-        ]
-
-        for contract in api_contracts:
-            result = TestResult(
-                test_name=f"test_{contract}_contract",
-                test_type="contract",
-                status="passed",
-                duration_ms=150.0,
-                coverage_percent=95.4,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        self.test_suites["contract"] = suite
-
-    async def _run_mutation_tests(self):
-        """تشغيل اختبارات الطفرة"""
-        logger.info("🧬 تشغيل اختبارات الطفرة...")
-
-        suite = TestSuite(
-            name="Mutation Tests",
-            description="اختبارات الطفرة للتحقق من جودة الاختبارات",
-        )
-
-        # Test mutation scenarios
-        mutation_scenarios = [
-            "arithmetic_operator_mutation",
-            "logical_operator_mutation",
-            "comparison_operator_mutation",
-            "statement_deletion_mutation",
-            "return_value_mutation",
-        ]
-
-        for scenario in mutation_scenarios:
-            result = TestResult(
-                test_name=f"test_{scenario}",
-                test_type="mutation",
-                status="passed",
-                duration_ms=300.0,
-                coverage_percent=91.2,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        self.test_suites["mutation"] = suite
-
-    async def _run_child_safety_tests(self):
-        """تشغيل اختبارات أمان الأطفال"""
-        logger.info("👶 تشغيل اختبارات أمان الأطفال...")
-
-        suite = TestSuite(name="Child Safety Tests",
-                          description="اختبارات أمان الأطفال والمراقبة")
-
-        # Content filtering tests
-        content_tests = [
-            "inappropriate_content_detection",
-            "age_appropriate_response_validation",
-            "profanity_filtering",
-            "violence_content_blocking",
-            "inappropriate_behavior_detection",
-        ]
-
-        for test in content_tests:
-            result = TestResult(
-                test_name=f"test_{test}",
-                test_type="child_safety",
-                status="passed",
-                duration_ms=100.0,
-                child_safety_score=0.98,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        # Privacy protection tests
-        privacy_tests = [
-            "data_encryption_validation",
-            "privacy_settings_enforcement",
-            "data_retention_compliance",
-            "parental_consent_validation",
-            "coppa_compliance_checking",
-        ]
-
-        for test in privacy_tests:
-            result = TestResult(
-                test_name=f"test_{test}",
-                test_type="child_safety",
-                status="passed",
-                duration_ms=120.0,
-                child_safety_score=0.97,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        # Emergency safety tests
-        emergency_tests = [
-            "emergency_alert_triggering",
-            "safety_protocol_execution",
-            "parent_notification_system",
-            "system_lockdown_procedure",
-            "emergency_contact_activation",
-        ]
-
-        for test in emergency_tests:
-            result = TestResult(
-                test_name=f"test_{test}",
-                test_type="child_safety",
-                status="passed",
-                duration_ms=80.0,
-                child_safety_score=0.99,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        self.test_suites["child_safety"] = suite
-
-    async def _run_performance_tests(self):
-        """تشغيل اختبارات الأداء"""
-        logger.info("⚡ تشغيل اختبارات الأداء...")
-
-        suite = TestSuite(
-            name="Performance Tests",
-            description="إطار اختبار الأداء مع Locust لـ 10,000+ مستخدم متزامن",
-        )
-
-        # Load testing
-        load_tests = [
-            "concurrent_users_1000",
-            "concurrent_users_5000",
-            "concurrent_users_10000",
-            "concurrent_users_15000",
-        ]
-
-        for test in load_tests:
-            result = TestResult(
-                test_name=f"test_{test}",
-                test_type="performance",
-                status="passed",
-                duration_ms=60000.0,  # 1 minute
-                performance_metrics={
-                    "response_time_ms": 250,
-                    "throughput_rps": 5000,
-                    "error_rate_percent": 0.01,
-                    "memory_usage_mb": 450,
-                    "cpu_usage_percent": 75.0,
-                },
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        # Stress testing
-        stress_tests = [
-            "system_breaking_point_detection",
-            "memory_leak_detection",
-            "connection_pool_exhaustion",
-            "database_connection_limit",
-        ]
-
-        for test in stress_tests:
-            result = TestResult(
-                test_name=f"test_{test}",
-                test_type="performance",
-                status="passed",
-                duration_ms=30000.0,
-                performance_metrics={
-                    "breaking_point_users": 18000,
-                    "memory_usage_mb": 800,
-                    "cpu_usage_percent": 95.0,
-                },
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        # Spike testing
-        spike_tests = [
-            "traffic_surge_handling",
-            "instant_load_increase",
-            "traffic_drop_recovery",
-        ]
-
-        for test in spike_tests:
-            result = TestResult(
-                test_name=f"test_{test}",
-                test_type="performance",
-                status="passed",
-                duration_ms=15000.0,
-                performance_metrics={
-                    "spike_handling_time_ms": 5000,
-                    "recovery_time_ms": 3000,
-                },
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        self.test_suites["performance"] = suite
-
-    async def _run_security_tests(self):
-        """تشغيل اختبارات الأمان"""
-        logger.info("🔐 تشغيل اختبارات الأمان...")
-
-        suite = TestSuite(
-            name="Security Tests",
-            description="مجموعة اختبارات الأمان مع أدوات اختراق آلية",
-        )
-
-        # Penetration testing
-        penetration_tests = [
-            "sql_injection_prevention",
-            "xss_vulnerability_testing",
-            "csrf_protection_validation",
-            "authentication_bypass_testing",
-            "authorization_control_testing",
-        ]
-
-        for test in penetration_tests:
-            result = TestResult(
-                test_name=f"test_{test}",
-                test_type="security",
-                status="passed",
-                duration_ms=5000.0,
-                security_score=0.99,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        # Data encryption testing
-        encryption_tests = [
-            "data_at_rest_encryption",
-            "data_in_transit_encryption",
-            "key_management_validation",
-            "encryption_algorithm_strength",
-        ]
-
-        for test in encryption_tests:
-            result = TestResult(
-                test_name=f"test_{test}",
-                test_type="security",
-                status="passed",
-                duration_ms=3000.0,
-                security_score=0.98,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        # API security testing
-        api_security_tests = [
-            "owasp_top_10_compliance",
-            "rate_limiting_validation",
-            "input_validation_testing",
-            "output_encoding_validation",
-        ]
-
-        for test in api_security_tests:
-            result = TestResult(
-                test_name=f"test_{test}",
-                test_type="security",
-                status="passed",
-                duration_ms=4000.0,
-                security_score=0.97,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        self.test_suites["security"] = suite
-
-    async def _run_quality_automation(self):
-        """تشغيل أتمتة الجودة"""
-        logger.info("🤖 تشغيل أتمتة الجودة...")
-
-        suite = TestSuite(name="Quality Automation",
-                          description="أتمتة الجودة مع مراجعة الكود الآلية")
-
-        # Code quality tests
-        quality_tests = [
-            "code_complexity_analysis",
-            "maintainability_index_calculation",
-            "technical_debt_assessment",
-            "code_smell_detection",
-            "best_practices_compliance",
-        ]
-
-        for test in quality_tests:
-            result = TestResult(
-                test_name=f"test_{test}",
-                test_type="quality",
-                status="passed",
-                duration_ms=2000.0,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        # Dependency scanning
-        dependency_tests = [
-            "vulnerability_scanning",
-            "license_compliance_checking",
-            "dependency_update_validation",
-            "security_patch_verification",
-        ]
-
-        for test in dependency_tests:
-            result = TestResult(
-                test_name=f"test_{test}",
-                test_type="quality",
-                status="passed",
-                duration_ms=1500.0,
-            )
-            suite.test_results.append(result)
-            suite.total_tests += 1
-            suite.passed_tests += 1
-
-        self.test_suites["quality"] = suite
 
     def _calculate_overall_results(self):
         """حساب النتائج الإجمالية"""
@@ -750,58 +248,6 @@ class ComprehensiveTestFramework:
         }
 
         return gates
-
-    def _generate_comprehensive_report(
-            self, execution_time: float) -> Dict[str, Any]:
-        """توليد تقرير شامل"""
-        return {
-            "timestamp": datetime.now().isoformat(),
-            "phase": "Phase 3: Testing & Quality Assurance",
-            "execution_time_seconds": execution_time,
-            "overall_results": self.overall_results,
-            "test_suites": {
-                name: {
-                    "name": suite.name,
-                    "description": suite.description,
-                    "total_tests": suite.total_tests,
-                    "passed_tests": suite.passed_tests,
-                    "failed_tests": suite.failed_tests,
-                    "coverage_percent": (
-                        sum(r.coverage_percent or 0 for r in suite.test_results)
-                        / len(suite.test_results)
-                        if suite.test_results
-                        else 0.0
-                    ),
-                }
-                for name, suite in self.test_suites.items()
-            },
-            "quality_gates_status": self._check_quality_gates(),
-            "recommendations": self._generate_recommendations(),
-        }
-
-    def _generate_recommendations(self) -> List[str]:
-        """توليد التوصيات"""
-        recommendations = []
-
-        if self.overall_results["coverage_percent"] < self.config.min_coverage:
-            recommendations.append("📈 زيادة تغطية الاختبارات لتصل إلى 95%+")
-
-        if self.overall_results["security_score"] < 0.95:
-            recommendations.append("🔒 تحسين إجراءات الأمان")
-
-        if self.overall_results["child_safety_score"] < 0.95:
-            recommendations.append("👶 تعزيز حماية الأطفال")
-
-        recommendations.extend(
-            [
-                "🚀 إعداد CI/CD pipeline مع بوابات الجودة",
-                "📊 مراقبة الأداء المستمر",
-                "🔍 فحص الأمان الدوري",
-                "📝 تحديث التوثيق",
-            ]
-        )
-
-        return recommendations
 
 
 async def main():

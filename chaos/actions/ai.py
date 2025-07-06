@@ -323,7 +323,8 @@ def _calculate_overload_metrics(
     successful_requests = sum(1 for r in results if r["success"])
     timeout_count = sum(1 for r in results if r["timeout"])
     average_response_time = (
-        sum(r["response_time"] for r in results) / len(results) if results else 0
+        sum(r["response_time"]
+            for r in results) / len(results) if results else 0
     )
     success_rate = successful_requests / total_requests if total_requests > 0 else 0
 
@@ -391,7 +392,7 @@ async def test_ai_model_recovery(
             }
 
         # Simulate model reset/reload
-        reset_response = requests.post(
+        requests.post(
             "http://ai-service:8000/models/reset",
             json={"model": "chat_model", "force": True},
             timeout=30,

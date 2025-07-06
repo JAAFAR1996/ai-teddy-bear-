@@ -1,6 +1,5 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-#!/usr/bin/env python3
 """
 🚀 AI Teddy Bear - Unified Application Entry Point
 Lead Architect: جعفر أديب (Jaafar Adeeb)
@@ -16,11 +15,9 @@ Enterprise-grade application bootstrap with:
 """
 
 import asyncio
-import logging
 import signal
 import sys
 from pathlib import Path
-from typing import Optional
 
 import structlog
 from dependency_injector import containers, providers
@@ -136,13 +133,15 @@ class Container(containers.DeclarativeContainer):
     ai_service = providers.Factory(
         "infrastructure.ai.AIService",
         openai_api_key=vault_client.provided.get_secret("openai_api_key"),
-        anthropic_api_key=vault_client.provided.get_secret("anthropic_api_key"),
+        anthropic_api_key=vault_client.provided.get_secret(
+            "anthropic_api_key"),
     )
 
     # Speech service
     speech_service = providers.Factory(
         "infrastructure.ai.SpeechService",
-        elevenlabs_api_key=vault_client.provided.get_secret("elevenlabs_api_key"),
+        elevenlabs_api_key=vault_client.provided.get_secret(
+            "elevenlabs_api_key"),
     )
 
     # Emotion analysis service
@@ -334,13 +333,13 @@ class Application:
 
         # Initialize Enhanced Components - 2025 Edition
         try:
-            enhanced_audio_processor = self.container.enhanced_audio_processor()
+            self.container.enhanced_audio_processor()
             logger.info("✅ Enhanced Audio Processor initialized")
 
-            advanced_ai_orchestrator = self.container.advanced_ai_orchestrator()
+            self.container.advanced_ai_orchestrator()
             logger.info("✅ Advanced AI Orchestrator initialized")
 
-            advanced_content_filter = self.container.advanced_content_filter()
+            self.container.advanced_content_filter()
             logger.info("✅ Advanced Content Filter initialized")
 
         except Exception as e:
@@ -396,7 +395,7 @@ class Application:
             await self.startup()
 
             # Start all servers concurrently
-            server_tasks = await asyncio.gather(
+            await asyncio.gather(
                 self._run_fastapi_server(),
                 self._run_websocket_server(),
                 self._run_grpc_server(),

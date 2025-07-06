@@ -3,93 +3,30 @@
 import json
 import logging
 import os
-import shutil
 import tempfile
 import threading
 import uuid
 from contextlib import contextmanager
-from dataclasses import dataclass
 from datetime import datetime, timedelta
-from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple
 
 try:
     import librosa
     import numpy as np
     import soundfile as sf
     from pydub import AudioSegment
-    from pydub.effects import compress_dynamic_range, normalize
+    from pydub.effects import compress_dynamic_range
 except ImportError as e:
     logging.warning(f"Some audio libraries not available: {e}")
 
-
-class AudioFormat(Enum):
-    """Supported audio formats."""
-
-    WAV = "wav"
-    MP3 = "mp3"
-    OGG = "ogg"
-    FLAC = "flac"
-    M4A = "m4a"
-    AAC = "aac"
-
-
-class AudioQuality(Enum):
-    """Audio quality presets."""
-
-    LOW = {"sample_rate": 8000, "bitrate": "64k"}
-    MEDIUM = {"sample_rate": 16000, "bitrate": "128k"}
-    HIGH = {"sample_rate": 22050, "bitrate": "192k"}
-    PREMIUM = {"sample_rate": 44100, "bitrate": "320k"}
-
-
-@dataclass
-class AudioMetadata:
-    """Audio file metadata."""
-
-    filename: str
-    format: str
-    duration: float
-    sample_rate: int
-    channels: int
-    bitrate: Optional[int] = None
-    size_bytes: int = 0
-    created_at: datetime = None
-    modified_at: datetime = None
-    checksum: Optional[str] = None
-    tags: Dict[str, Any] = None
-
-    def __post_init__(self):
-        if self.created_at is None:
-            self.created_at = datetime.now()
-        if self.tags is None:
-            self.tags = {}
-
-
-@dataclass
-class AudioProcessingConfig:
-    """Audio processing configuration."""
-
-    target_sample_rate: int = 16000
-    target_channels: int = 1  # Mono
-    normalize_audio: bool = True
-    remove_silence: bool = True
-    apply_noise_reduction: bool = True
-    max_duration: Optional[float] = None
-    quality: AudioQuality = AudioQuality.MEDIUM
-
-
-class AudioValidationError(Exception):
-    """Audio validation error."""
-
-    pass
-
-
-class AudioProcessingError(Exception):
-    """Audio processing error."""
-
-    pass
+from .exceptions import AudioProcessingError, AudioValidationError
+from .models import (
+    AudioFormat,
+    AudioMetadata,
+    AudioProcessingConfig,
+    AudioQuality,
+)
 
 
 class AudioIO:
@@ -224,7 +161,7 @@ class AudioIO:
         filename: str,
         sample_rate: int = 16000,
         audio_format: AudioFormat = AudioFormat.WAV,
-        quality: AudioQuality = None,
+        quality: Optional[AudioQuality] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> AudioMetadata:
         """Save audio data to file with enhanced options."""
@@ -635,7 +572,7 @@ class AudioIO:
         input_file: str,
         output_file: str,
         target_format: AudioFormat,
-        quality: AudioQuality = None,
+        quality: Optional[AudioQuality] = None,
     ) -> AudioMetadata:
         """
         Convert audio file to different format.
@@ -703,222 +640,3 @@ class AudioIO:
             self.cleanup_temp_files()
         except Exception as e:
             self.logger.error(f"Error during cleanup: {e}")
-
-
-# Utility functions for backward compatibility and convenience
-
-
-def cleanup_temp_files(max_age_hours: int = 24) -> None:
-    """Global function to clean up temporary audio files."""
-    try:
-        with AudioIO() as audio_io:
-            audio_io.cleanup_temp_files(max_age_hours)
-    except Exception as e:
-        logging.error(f"Error in cleanup_temp_files: {e}")
-
-
-def get_audio_files(
-    directory: str, include_metadata: bool = False
-) -> List[Union[str, Dict[str, Any]]]:
-    """
-    Get list of audio files in directory with optional metadata.
-
-    Args:
-        directory: Directory to search
-        include_metadata: Whether to include metadata
-
-    Returns:
-        List of audio files or file info dictionaries
-    """
-    try:
-        audio_files = []
-        supported_extensions = [
-            ".wav",
-            ".mp3",
-            ".ogg",
-            ".flac",
-            ".m4a",
-            ".aac"]
-
-        directory_path = Path(directory)
-        if not directory_path.exists():
-            return []
-
-        for ext in supported_extensions:
-            for file_path in directory_path.glob(f"*{ext}"):
-                if include_metadata:
-                    try:
-                        audio_io = AudioIO()
-                        metadata = audio_io.validate_audio_file(str(file_path))
-                        audio_files.append(
-                            {"filepath": str(file_path), "metadata": metadata}
-                        )
-                    except Exception as e:
-                        logging.warning(
-                            f"Error getting metadata for {file_path}: {e}")
-                        audio_files.append(
-                            {"filepath": str(file_path), "metadata": None}
-                        )
-                else:
-                    audio_files.append(str(file_path))
-
-        return sorted(
-            audio_files, key=lambda x: x if isinstance(
-                x, str) else x["filepath"])
-
-    except Exception as e:
-        logging.error(f"Error getting audio files: {e}")
-        return []
-
-
-def copy_audio_file(
-        src: str,
-        dst: str,
-        preserve_metadata: bool = True) -> bool:
-    """
-    Copy audio file with optional metadata preservation.
-
-    Args:
-        src: Source filename
-        dst: Destination filename
-        preserve_metadata: Whether to preserve metadata
-
-    Returns:
-        Success status
-    """
-    try:
-        # Ensure destination directory exists
-        os.makedirs(os.path.dirname(dst), exist_ok=True)
-
-        # Copy file
-        shutil.copy2(src, dst)
-
-        # Copy metadata if requested and available
-        if preserve_metadata:
-            try:
-                audio_io = AudioIO()
-                metadata = audio_io.load_metadata(src)
-                if metadata:
-                    # Update filename in metadata
-                    metadata.filename = dst
-                    metadata.modified_at = datetime.now()
-                    audio_io._save_metadata(dst, metadata)
-            except Exception as e:
-                logging.warning(f"Error copying metadata: {e}")
-
-        logging.info(f"Copied audio file from {src} to {dst}")
-        return True
-
-    except Exception as e:
-        logging.error(f"Error copying audio file: {e}")
-        return False
-
-
-def get_audio_duration(filename: str) -> float:
-    """
-    Get duration of audio file in seconds.
-
-    Args:
-        filename: Audio filename
-
-    Returns:
-        Duration in seconds
-    """
-    try:
-        with sf.SoundFile(filename) as f:
-            return float(len(f)) / f.samplerate
-    except Exception as e:
-        logging.error(f"Error getting audio duration: {e}")
-        return 0.0
-
-
-def get_audio_format(filename: str) -> Dict[str, Any]:
-    """
-    Get audio file format information.
-
-    Args:
-        filename: Audio filename
-
-    Returns:
-        Format information dictionary
-    """
-    try:
-        audio_io = AudioIO()
-        metadata = audio_io.validate_audio_file(filename)
-
-        return {
-            "format": metadata.format,
-            "channels": metadata.channels,
-            "samplerate": metadata.sample_rate,
-            "duration": metadata.duration,
-            "size_bytes": metadata.size_bytes,
-            "created_at": metadata.created_at.isoformat(),
-            "modified_at": metadata.modified_at.isoformat(),
-        }
-
-    except Exception as e:
-        logging.error(f"Error getting audio format: {e}")
-        return {}
-
-
-def validate_audio_for_children(filename: str) -> Dict[str, Any]:
-    """
-    Validate audio file for children's content (safety checks).
-
-    Args:
-        filename: Audio filename
-
-    Returns:
-        Validation results
-    """
-    try:
-        audio_io = AudioIO()
-        metadata = audio_io.validate_audio_file(filename)
-
-        validation_results = {
-            "is_valid": True,
-            "issues": [],
-            "metadata": metadata}
-
-        # Check duration (max 5 minutes for children)
-        if metadata.duration > 300:
-            validation_results["issues"].append(
-                "Audio too long for children (max 5 minutes)"
-            )
-
-        # Check file size (reasonable limits)
-        if metadata.size_bytes > 50 * 1024 * 1024:  # 50MB
-            validation_results["issues"].append("Audio file too large")
-
-        # Check sample rate (should be reasonable)
-        if metadata.sample_rate < 8000:
-            validation_results["issues"].append(
-                "Sample rate too low for good quality")
-
-        validation_results["is_valid"] = len(validation_results["issues"]) == 0
-
-        return validation_results
-
-    except Exception as e:
-        return {
-            "is_valid": False,
-            "issues": [f"Validation error: {e}"],
-            "metadata": None,
-        }
-
-
-__all__ = [
-    "AudioFormat",
-    "AudioQuality",
-    "AudioMetadata",
-    "AudioProcessingConfig",
-    "AudioValidationError",
-    "AudioProcessingError",
-    "AudioIO",
-    "cleanup_temp_files",
-    "get_audio_files",
-    "copy_audio_file",
-    "get_audio_duration",
-    "get_audio_format",
-    "validate_audio_for_children",
-]

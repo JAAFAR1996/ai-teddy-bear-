@@ -14,7 +14,6 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 import requests
-import secrets
 
 from .chaos_injector import ChaosInjector
 from .chaos_monitor import ChaosMonitor
@@ -291,7 +290,7 @@ class ChaosOrchestrator:
         try:
             response = requests.get(f"http://{target}:8000/health", timeout=5)
             return response.status_code == 200
-        except Exception as exc:
+        except Exception:
             return False
 
     async def _post_experiment_verification(self, metrics: ExperimentMetrics):

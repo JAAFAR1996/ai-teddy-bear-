@@ -190,7 +190,6 @@ class EmergencyHandler:
         """تحديد الإجراء الطارئ المطلوب"""
         labels = alert.get("labels", {})
         alert_name = labels.get("alertname", "")
-        category = labels.get("category", "")
 
         # قواعد الإجراءات الطارئة
         if "APIKeyCompromised" in alert_name:

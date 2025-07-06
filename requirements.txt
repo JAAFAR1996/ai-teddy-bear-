@@ -92,6 +92,7 @@ pytest-cov==4.1.0                 # Coverage testing
 pytest-mock==3.12.0               # Mocking utilities
 pytest-benchmark>=4.0.0           # Performance testing
 httpx>=0.25.0                     # HTTP testing client
+pytest-playwright>=0.4.3          # Playwright for Python with pytest
 
 # ================== CODE QUALITY ==================
 black==23.11.0                    # Code formatting

@@ -1,4 +1,3 @@
-from typing import Any, Dict, List, Optional
 import numpy as np
 import time
 import logging
@@ -114,7 +113,7 @@ class EdgeFeatureExtractor:
         rms_energy = float(np.sqrt(np.mean(np.square(audio_data))))
 
         # Pitch features
-        pitches, magnitudes = librosa.piptrack(
+        pitches, _ = librosa.piptrack(
             y=audio_data, sr=self.sample_rate)
         pitch_values = pitches[pitches > 0]
         pitch_mean = float(np.mean(pitch_values)) if len(

@@ -1,11 +1,10 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Tuple
 import numpy as np
 import time
 import logging
 
 try:
-    import tflite_runtime.interpreter as tflite
-
+    import tflite_runtime.interpreter
     TF_AVAILABLE = True
 except ImportError:
     TF_AVAILABLE = False
@@ -106,7 +105,5 @@ class EdgeWakeWordDetector:
         # Mock logic: higher energy = more likely to be wake word
         confidence = min(energy * 10, 1.0)
         detected = confidence > 0.5
-
-        processing_time = (time.time() - start_time) * 1000
 
         return detected, confidence

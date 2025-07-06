@@ -2,9 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .chaos_orchestrator import ChaosOrchestrator
-
-from .chaos_orchestrator import ExperimentMetrics
+    from .chaos_orchestrator import ChaosOrchestrator, ExperimentMetrics
 
 
 class ChaosReporter:

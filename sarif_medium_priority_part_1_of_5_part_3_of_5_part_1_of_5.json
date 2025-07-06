@@ -1,0 +1,231 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ExtractedIssues",
+          "version": "1.0.0"
+        }
+      },
+      "results": [
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "chaos/monitoring/chaos_metrics.py"
+                },
+                "region": {
+                  "startLine": 123
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'exc'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "monitoring/emergency/api/emergency_response.py"
+                },
+                "region": {
+                  "startLine": 193
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'category'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main.py"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main.py"
+                },
+                "region": {
+                  "startLine": 23
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main.py"
+                },
+                "region": {
+                  "startLine": 337
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'enhanced_audio_processor'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main.py"
+                },
+                "region": {
+                  "startLine": 340
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'advanced_ai_orchestrator'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main.py"
+                },
+                "region": {
+                  "startLine": 343
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'advanced_content_filter'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main.py"
+                },
+                "region": {
+                  "startLine": 399
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'server_tasks'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Dict imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused List imported from typing"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main.py"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused Optional imported from typing"
+          },
+          "ruleId": "unused-import"
+        }
+      ]
+    }
+  ],
+  "properties": {
+    "chunkNumber": 1,
+    "totalChunks": 5,
+    "chunkSize": 11,
+    "startIndex": 0,
+    "endIndex": 10
+  }
+}

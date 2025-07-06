@@ -1,6 +1,6 @@
-projectKey=ai-teddy
+projectKey=ai-teddy-bear-v5
 serverUrl=http://localhost:9000
 serverVersion=25.6.0.109173
-dashboardUrl=http://localhost:9000/dashboard?id=ai-teddy
-ceTaskId=b2da4b6f-713a-43d9-832d-6143674a9fea
-ceTaskUrl=http://localhost:9000/api/ce/task?id=b2da4b6f-713a-43d9-832d-6143674a9fea
+dashboardUrl=http://localhost:9000/dashboard?id=ai-teddy-bear-v5
+ceTaskId=e1fa9cf2-221d-4aad-9414-579e565227cf
+ceTaskUrl=http://localhost:9000/api/ce/task?id=e1fa9cf2-221d-4aad-9414-579e565227cf

@@ -1,0 +1,231 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ExtractedIssues",
+          "version": "1.0.0"
+        }
+      },
+      "results": [
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main.py"
+                },
+                "region": {
+                  "startLine": 19
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import logging"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "String statement has no effect"
+          },
+          "ruleId": "pointless-string-statement"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 25
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Any' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 25
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Dict' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 25
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'List' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 25
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Reimport 'Optional' (imported line 1)"
+          },
+          "ruleId": "reimported"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 415
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused variable 'cpu_cores'"
+          },
+          "ruleId": "unused-variable"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import asyncio"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 15
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import hashlib"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import json"
+          },
+          "ruleId": "unused-import"
+        },
+        {
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/adapters/edge/edge_ai_manager.py"
+                },
+                "region": {
+                  "startLine": 18
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Unused import pickle"
+          },
+          "ruleId": "unused-import"
+        }
+      ]
+    }
+  ],
+  "properties": {
+    "chunkNumber": 2,
+    "totalChunks": 5,
+    "chunkSize": 11,
+    "startIndex": 11,
+    "endIndex": 21
+  }
+}

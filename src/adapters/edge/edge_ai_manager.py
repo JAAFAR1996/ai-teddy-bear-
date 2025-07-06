@@ -1,5 +1,3 @@
-from typing import Any, Dict, List, Optional
-
 """
 Enterprise-Grade Edge AI Manager for AI Teddy Bear Project.
 
@@ -10,32 +8,23 @@ without cloud dependency for instant response.
 AI Team Implementation - Task 10
 Author: AI Team Lead
 """
-
-import asyncio
-import hashlib
-import json
+from typing import Any, Dict, List, Optional
 import logging
-import pickle
 import time
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
 # TensorFlow Lite for Edge AI
 try:
-    import tensorflow as tf
-    import tflite_runtime.interpreter as tflite
+    import tensorflow
+    import tflite_runtime.interpreter
 
     TF_AVAILABLE = True
 except ImportError:
     TF_AVAILABLE = False
-    tf = None
-    tflite = None
 
 # Audio processing
 try:
@@ -412,7 +401,6 @@ class EdgeAIManager:
         """Optimize processing based on device specifications."""
         # Adjust processing mode based on device capabilities
         memory_mb = device_specs.get("memory_mb", 512)
-        cpu_cores = device_specs.get("cpu_cores", 2)
 
         if memory_mb < 256:
             self.config.processing_mode = EdgeProcessingMode.POWER_SAVE

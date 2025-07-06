@@ -120,7 +120,7 @@ async def process_full_audio(
         )
 
         # Generate TTS
-        response_audio = await voice_service.text_to_speech(
+        await voice_service.text_to_speech(
             ai_response["text"], "child_friendly"
         )
 

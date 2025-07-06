@@ -1,78 +1,14 @@
-from dataclasses import dataclass
 from datetime import datetime, timedelta
-from enum import Enum
 from typing import Any, Dict, List, Optional
 
-
-class VoicePattern(Enum):
-    """أنماط الصوت المختلفة"""
-
-    CONFIDENT = "واثق"
-    HESITANT = "متردد"
-    EXCITED = "متحمس"
-    ANXIOUS = "قلق"
-    CALM = "هادئ"
-    TIRED = "متعب"
-    HAPPY = "سعيد"
-    SAD = "حزين"
-
-
-class BehavioralConcern(Enum):
-    """المخاوف السلوكية التي تحتاج تنبيه الوالدين"""
-
-    REPEATED_ANXIETY = "قلق_متكرر"
-    SOCIAL_WITHDRAWAL = "انسحاب_اجتماعي"
-    LOW_CONFIDENCE = "ثقة_منخفضة"
-    AGGRESSIVE_PATTERNS = "أنماط_عدوانية"
-    REGRESSION_SIGNS = "علامات_تراجع"
-    EMOTIONAL_INSTABILITY = "عدم_استقرار_عاطفي"
-
-
-@dataclass
-class VoiceAnalysis:
-    """تحليل مفصل للصوت"""
-
-    speed_wpm: float  # كلمات في الدقيقة
-    pause_frequency: float  # تكرار التوقفات
-    pause_duration_avg: float  # متوسط مدة التوقفات
-    pitch_variation: float  # تنوع طبقة الصوت
-    volume_consistency: float  # ثبات الصوت
-    confidence_score: float  # نقاط الثقة (0-1)
-    emotional_tone: str  # النبرة العاطفية
-    detected_patterns: List[VoicePattern]
-    analysis_timestamp: datetime
-
-
-@dataclass
-class BehavioralAlert:
-    """تنبيه سلوكي للوالدين"""
-
-    id: str
-    child_name: str
-    device_id: str
-    concern_type: BehavioralConcern
-    severity_level: str  # "منخفض", "متوسط", "عالي"
-    description: str
-    evidence: List[str]  # الأدلة المؤدية للتنبيه
-    recommendations: List[str]
-    created_at: datetime
-    parent_notified: bool = False
-
-
-@dataclass
-class PsychologicalProfile:
-    """الملف النفسي للطفل"""
-
-    child_name: str
-    device_id: str
-    personality_traits: Dict[str, float]  # الصفات الشخصية مع نقاطها
-    emotional_patterns: Dict[str, List[float]]  # أنماط المشاعر عبر الوقت
-    stress_indicators: List[str]  # مؤشرات التوتر
-    strengths: List[str]  # نقاط القوة
-    areas_of_concern: List[str]  # مناطق الاهتمام
-    social_skills_level: float  # مستوى المهارات الاجتماعية
-    confidence_trend: List[float]  # اتجاه الثقة بالنفس
-    last_updated: datetime
+from src.domain.config import alert_messages
+from src.domain.entities.behavioral_entities import (
+    BehavioralAlert,
+    BehavioralConcern,
+    PsychologicalProfile,
+    VoiceAnalysis,
+    VoicePattern,
+)
 
 
 class AdvancedBehavioralAnalyzer:
@@ -198,10 +134,14 @@ class AdvancedBehavioralAnalyzer:
         """Returns a dictionary of word lists for speech pattern analysis."""
         return {
             "hesitation": [
-                "أمم", "أه", "لست متأكد", "ربما", "لا أعرف", "أعتقد"], "anxiety": [
-                "مخيف", "خائف", "قلق", "لا أستطيع", "صعب"], "confidence": [
-                "نعم", "أكيد", "بالطبع", "أستطيع", "سأفعل"], "happiness": [
-                    "سعيد", "رائع", "ممتع", "أحب", "جميل"], }
+                "أمم", "أه", "لست متأكد", "ربما", "لا أعرف", "أعتقد"],
+            "anxiety": [
+                "مخيف", "خائف", "قلق", "لا أستطيع", "صعب"],
+            "confidence": [
+                "نعم", "أكيد", "بالطبع", "أستطيع", "سأفعل"],
+            "happiness": [
+                "سعيد", "رائع", "ممتع", "أحب", "جميل"],
+        }
 
     async def _analyze_speech_patterns(self, text: str) -> Dict[str, Any]:
         """تحليل أنماط الكلام"""
@@ -376,7 +316,7 @@ class AdvancedBehavioralAnalyzer:
 
         profile.last_updated = datetime.now()
 
-        await self._check_for_behavioral_concerns(child_name, device_id)
+        await self.check_for_behavioral_concerns(child_name, device_id)
 
     async def check_for_behavioral_concerns(
             self, child_name: str, device_id: str):
@@ -416,24 +356,18 @@ class AdvancedBehavioralAnalyzer:
 
         if anxiety_count >= threshold["min_occurrences"]:
             # إنشاء تنبيه
+            alert_details = alert_messages.REPEATED_ANXIETY
             alert = BehavioralAlert(
                 id=f"anxiety_{device_id}_{datetime.now().timestamp()}",
                 child_name=child_name,
                 device_id=device_id,
                 concern_type=BehavioralConcern.REPEATED_ANXIETY,
                 severity_level="متوسط" if anxiety_count < 5 else "عالي",
-                description=f"الطفل أظهر علامات قلق في {anxiety_count} من آخر 7 جلسات",
-                evidence=[
-                    f"قلق مكتشف في {anxiety_count} جلسات",
-                    "أنماط صوتية تدل على التوتر",
-                    "استخدام كلمات تدل على الخوف",
-                ],
-                recommendations=[
-                    "تحدث مع الطفل عن مشاعره",
-                    "وفر بيئة آمنة ومطمئنة",
-                    "فكر في استشارة مختص إذا استمر القلق",
-                    "شجع أنشطة الاسترخاء",
-                ],
+                description=alert_details["description"].format(
+                    count=anxiety_count),
+                evidence=[ev.format(count=anxiety_count)
+                          for ev in alert_details["evidence"]],
+                recommendations=alert_details["recommendations"],
                 created_at=datetime.now(),
             )
 
@@ -451,24 +385,18 @@ class AdvancedBehavioralAnalyzer:
         threshold = self.concern_thresholds[BehavioralConcern.LOW_CONFIDENCE]
 
         if avg_confidence < threshold["confidence_threshold"]:
+            alert_details = alert_messages.LOW_CONFIDENCE
             alert = BehavioralAlert(
                 id=f"confidence_{device_id}_{datetime.now().timestamp()}",
                 child_name=child_name,
                 device_id=device_id,
                 concern_type=BehavioralConcern.LOW_CONFIDENCE,
                 severity_level="متوسط",
-                description=f"متوسط الثقة بالنفس منخفض: {avg_confidence:.2f}",
-                evidence=[
-                    f"متوسط نقاط الثقة: {avg_confidence:.2f}",
-                    "تردد واضح في الاختيارات",
-                    "استخدام كلمات تدل على عدم اليقين",
-                ],
-                recommendations=[
-                    "شجع الطفل وامدح محاولاته",
-                    "ابدأ بأنشطة سهلة لبناء الثقة",
-                    "تجنب النقد المباشر",
-                    "احتفل بالإنجازات الصغيرة",
-                ],
+                description=alert_details["description"].format(
+                    avg_confidence=avg_confidence),
+                evidence=[ev.format(avg_confidence=avg_confidence)
+                          for ev in alert_details["evidence"]],
+                recommendations=alert_details["recommendations"],
                 created_at=datetime.now(),
             )
 
@@ -487,23 +415,17 @@ class AdvancedBehavioralAnalyzer:
 
             # فحص إذا كان الطفل يتجنب الخيارات الاجتماعية
             if profile.social_skills_level < 0.3:
+                alert_details = alert_messages.SOCIAL_WITHDRAWAL
                 alert = BehavioralAlert(
                     id=f"social_{device_id}_{datetime.now().timestamp()}",
                     child_name=child_name,
                     device_id=device_id,
                     concern_type=BehavioralConcern.SOCIAL_WITHDRAWAL,
                     severity_level="متوسط",
-                    description="الطفل يُظهر علامات تجنب للمواقف الاجتماعية",
-                    evidence=[
-                        f"مستوى المهارات الاجتماعية: {profile.social_skills_level:.2f}",
-                        "تجنب خيارات التفاعل الاجتماعي في القصص",
-                    ],
-                    recommendations=[
-                        "شجع اللعب مع الأطفال الآخرين",
-                        "انضم لأنشطة جماعية",
-                        "مارس الحوار اليومي مع الطفل",
-                        "فكر في أنشطة اجتماعية تدريجية",
-                    ],
+                    description=alert_details["description"],
+                    evidence=[ev.format(social_skills_level=profile.social_skills_level)
+                              for ev in alert_details["evidence"]],
+                    recommendations=alert_details["recommendations"],
                     created_at=datetime.now(),
                 )
 

@@ -110,7 +110,7 @@ class ChaosMetricsCollector:
         total_services = len(self.service_endpoints)
         response_times = []
         error_count = 0
-        for service_name, endpoint in self.service_endpoints.items():
+        for endpoint in self.service_endpoints.values():
             try:
                 start_time = time.time()
                 response = requests.get(f"{endpoint}/health", timeout=5)
@@ -120,7 +120,7 @@ class ChaosMetricsCollector:
                     healthy_services += 1
                 else:
                     error_count += 1
-            except Exception as exc:
+            except Exception:
                 error_count += 1
         avg_response_time = (
             sum(response_times) / len(response_times) if response_times else 0
